@@ -1390,6 +1390,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // aborted
                     result = Executor.currentExecutor().abortResult();
                     listener.getLogger().println(Messages.Run_BuildAborted());
+                    Executor.currentExecutor().recordCauseOfInterruption(Run.this,listener);
                     LOGGER.log(Level.INFO,toString()+" aborted",e);
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);

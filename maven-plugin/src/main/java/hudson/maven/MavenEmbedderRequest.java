@@ -47,7 +47,7 @@ public class MavenEmbedderRequest
     private String privateRepository;
 
     private File alternateSettings;
-    
+
     private TransferListener transferListener;
     
     /**
@@ -78,6 +78,11 @@ public class MavenEmbedderRequest
      * @since 1.393
      */
     private WorkspaceReader workspaceReader;
+
+    /**
+     * @since 1.426
+     */
+    private File globalSettings;
     
     /**
      * @param listener
@@ -209,5 +214,14 @@ public class MavenEmbedderRequest
 
     public void setWorkspaceReader( WorkspaceReader workspaceReader ) {
         this.workspaceReader = workspaceReader;
+    }
+
+    public File getGlobalSettings() {
+        return globalSettings;
+    }
+
+    public MavenEmbedderRequest setGlobalSettings( File globalSettings ) {
+        this.globalSettings = globalSettings;
+        return this;
     }
 }

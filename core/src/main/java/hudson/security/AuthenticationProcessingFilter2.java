@@ -35,7 +35,7 @@ import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
- * {@link AuthenticationProcessingFilter} with a change for Hudson so that
+ * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
  * we can pick up the hidden "from" form field defined in <tt>login.jelly</tt>
  * to send the user back to where he came from, after a successful authentication.
  * 

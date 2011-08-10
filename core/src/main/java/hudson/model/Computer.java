@@ -566,7 +566,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns projects that are tied on this node.
      */
     public List<AbstractProject> getTiedJobs() {
-        return getNode().getSelfLabel().getTiedJobs();
+        Node node = getNode();
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
     }
 
     public RunList getBuilds() {

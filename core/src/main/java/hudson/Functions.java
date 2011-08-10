@@ -55,6 +55,7 @@ import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
@@ -71,6 +72,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
+import javax.management.modelmbean.DescriptorSupport;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -730,21 +732,58 @@ public class Functions {
     /**
      * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
      * so that descriptors of similar types come nearby.
+     *
+     * <p>
+     * We sort them by {@link Extension#ordinal()} but only for {@link GlobalConfiguration}s,
+     * as the value is normally used to compare similar kinds of extensions, and we needed
+     * {@link GlobalConfiguration}s to be able to position themselves in a layer above.
+     * This however creates some asymmetry between regular {@link Descriptor}s and {@link GlobalConfiguration}s.
+     * Perhaps it is better to introduce another annotation element? But then,
+     * extensions shouldn't normally concern themselves about ordering too much, and the only reason
+     * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
-        for (Descriptor<?> d : Jenkins.getInstance().getExtensionList(Descriptor.class)) {
-            if (d.getGlobalConfigPage()==null)  continue;
-            r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
+        class Tag implements Comparable<Tag> {
+            double ordinal;
+            String hierarchy;
+            Descriptor d;
+
+            Tag(double ordinal, Descriptor d) {
+                this.ordinal = ordinal;
+                this.d = d;
+                this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
+            }
+
+            private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+                Class sc = c.getSuperclass();
+                if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+                return buf.append(c.getName());
+            }
+
+            public int compareTo(Tag that) {
+                int r = Double.compare(this.ordinal, that.ordinal);
+                if (r!=0)   return -r; // descending for ordinal
+                return this.hierarchy.compareTo(that.hierarchy);
+            }
         }
-        return r.values();
+
+        ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
+        List<Tag> r = new ArrayList<Tag>(exts.size());
+
+        for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
+            Descriptor d = c.getInstance();
+            if (d.getGlobalConfigPage()==null)  continue;
+
+            r.add(new Tag(d instanceof GlobalConfiguration ? c.ordinal() : 0, d));
+        }
+        Collections.sort(r);
+
+        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
+        for (Tag d : r) answer.add(d.d);
+
+        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
-    private static StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
-        Class sc = c.getSuperclass();
-        if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
-        return buf.append(c.getName());
-    }
 
     /**
      * Computes the path to the icon of the given action

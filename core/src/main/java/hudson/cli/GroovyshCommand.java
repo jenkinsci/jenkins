@@ -52,7 +52,7 @@ import jline.Terminal;
 public class GroovyshCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Runs an interactive groovy shell";
+        return Messages.GroovyshCommand_ShortDescription();
     }
 
     @Override

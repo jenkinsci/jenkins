@@ -40,6 +40,7 @@ import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
 import hudson.security.HttpSessionContextIntegrationFilter2
 import hudson.security.SecurityRealm
 import hudson.security.NoopFilter
+import jenkins.security.ApiTokenFilter
 
 // providers that apply to both patterns
 def commonProviders() {
@@ -63,6 +64,7 @@ filter(ChainedServletFilter) {
         // this persists the authentication across requests by using session
         bean(HttpSessionContextIntegrationFilter2) {
         },
+        bean(ApiTokenFilter),
         // allow clients to submit basic authentication credential
         // but allow that to be skipped since it can interfere with reverse proxy setup
         Boolean.getBoolean("jenkins.security.ignoreBasicAuth") ? bean(NoopFilter) :
@@ -73,7 +75,7 @@ filter(ChainedServletFilter) {
             // since users of basic auth tends to be a program and won't see the redirection to the form
             // page as a failure
             authenticationEntryPoint = bean(BasicProcessingFilterEntryPoint) {
-                realmName = "Hudson"
+                realmName = "Jenkins"
             }
         },
         bean(AuthenticationProcessingFilter2) {

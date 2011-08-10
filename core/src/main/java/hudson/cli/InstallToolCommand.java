@@ -56,11 +56,11 @@ public class InstallToolCommand extends CLICommand {
     @Argument(index=0,metaVar="KIND",usage="The type of the tool to install, such as 'Ant'")
     public String toolType;
 
-    @Argument(index=1,metaVar="NAME",usage="The name of the tool to install, as you've entered in the Hudson system configuration")
+    @Argument(index=1,metaVar="NAME",usage="The name of the tool to install, as you've entered in the Jenkins system configuration")
     public String toolName;
 
     public String getShortDescription() {
-        return "Performs automatic tool installation, and print its location to stdout. Can be only called from inside a build";
+        return Messages.InstallToolCommand_ShortDescription();
     }
 
     protected int run() throws Exception {

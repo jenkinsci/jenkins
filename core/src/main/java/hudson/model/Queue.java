@@ -1181,6 +1181,7 @@ public class Queue extends ResourceController implements Saveable {
          * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item}.
          */
+        @Exported
     	public final int id;
     	
 		/**

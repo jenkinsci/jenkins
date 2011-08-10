@@ -27,6 +27,7 @@ package hudson.maven;
 import static hudson.model.Result.FAILURE;
 import hudson.AbortException;
 import hudson.EnvVars;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
@@ -35,6 +36,9 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -62,15 +66,14 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
-import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -85,6 +88,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.BuildFailureException;
@@ -97,6 +101,8 @@ import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import org.jenkinsci.lib.configprovider.ConfigProvider;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -157,10 +163,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = getMavenOpts(log);
 
-        if(opts!=null)
-            envs.put("MAVEN_OPTS", opts);
         // We need to add M2_HOME and the mvn binary to the PATH so if Maven
         // needs to run Maven it will pick the correct one.
         // This can happen if maven calls ANT which itself calls Maven
@@ -545,24 +548,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
     }
 
-    public String getMavenOpts(TaskListener listener) {
-        String opts = project.getMavenOpts();
-        if (opts == null ) return null;
-        try {
-            Class<?> clazz = Class.forName( "org.jenkinsci.plugins.tokenmacro.TokenMacro" );
-            Method expandMethod =
-                ReflectionUtils.findMethod(clazz, "expand", new Class[]{ AbstractBuild.class, TaskListener.class, String.class} );
-            opts = (String) expandMethod.invoke( null, this, listener, opts );
-        }
-        catch(Exception tokenException) {
-            //Token plugin not present. Ignore, this is OK.
-            //listener.error("Ignore Problem expanding maven opts macros " + tokenException.getMessage());
-        }
-        catch(LinkageError linkageError) {
-            // Token plugin not present. Ignore, this is OK.
-        }
-
-        return opts;
+    public String getMavenOpts(TaskListener listener, EnvVars envVars) {
+        return envVars.expand(expandTokens(listener, project.getMavenOpts()));
     }
 
     /**
@@ -575,6 +562,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
             Result r = null;
+            FilePath remoteSettings = null, remoteGlobalSettings = null;
+
             try {
                 
                 EnvVars envVars = getEnvironment(listener);
@@ -619,6 +608,38 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         if(!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
+
+
+                        String settingsConfigId = project.getSettingConfigId();
+                        if (settingsConfigId != null) {
+                            Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
+                            if (config == null) {
+                                logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
+                                                   + " but cannot find the config");
+                            } else {
+                                logger.println("using settings config with name " + config.name);
+                                String settingsContent = config.content;
+                                if (config.content != null ) {
+                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                    project.setAlternateSettings( remoteSettings.getRemote() );
+                                }
+                            }
+                        }
+
+                        String globalSettingsConfigId = project.getGlobalSettingConfigId();
+                        if (globalSettingsConfigId != null) {
+                            Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
+                            if (config == null) {
+                                logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
+                                                   + " but cannot find the config");
+                            } else {
+                                logger.println("using global settings config with name " + config.name);
+                                if (config.content != null ) {
+                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                    project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
+                                }
+                            }
+                        }
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
@@ -673,7 +694,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.fine( "using maven 3 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener),
+                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener, envVars),
                                                                                             pom.getParent() ) );
                         }
                         else
@@ -681,12 +702,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             LOGGER.fine( "using maven 2 " + mavenVersion );
                             process =
                                 MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener),
+                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         if(project.usesPrivateRepository())
                             margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
+
+                        if (project.globalSettingConfigPath != null)
+                            margs.add("-gs" , project.globalSettingConfigPath);
+
+
                         
                         // If incrementalBuild is set
                         // and the previous build didn't specify that we need a full build
@@ -793,6 +819,19 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 logger.println("project.getModules()="+project.getModules());
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
+            } finally {
+                if (project.getSettingConfigId() != null) {
+                    // restore to null if as was modified
+                    project.setAlternateSettings( null );
+                    project.save();
+                }
+                // delete tmp files used for MavenSettingsProvider
+                if (remoteSettings != null) {
+                    remoteSettings.delete();
+                }
+                if (project.getGlobalSettingConfigId() != null ) {
+                    remoteGlobalSettings.delete();
+                }
             }
         }
 
@@ -1158,6 +1197,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final Properties properties;
         private final String privateRepository;
         private final String alternateSettings;
+        private final String globalSetings;
         private final boolean nonRecursive;
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
@@ -1215,7 +1255,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
-
+            this.globalSetings = project.globalSettingConfigPath;
         }
 
         
@@ -1287,6 +1327,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
                 mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
+                if (globalSetings != null) {
+                    mavenEmbedderRequest.setGlobalSettings( new File(globalSetings) );
+                }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?

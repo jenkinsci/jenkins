@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2009, Sun Microsystems, Inc.
+Copyright (c) 2009, Sun Microsystems, Inc., CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ THE SOFTWARE.
         <select name="_.id">
           <j:forEach var="family" items="${jdks}">
             <optgroup label="${family.name}">
-              <j:forEach var="jdk" items="${family.list}">
-                <f:option value="${jdk.id}" selected="${jdk.id==instance.id}">${jdk.name}</f:option>
+              <j:forEach var="jdk" items="${family.releases}">
+                <f:option value="${jdk.name}" selected="${jdk.matchesId(instance.id)}">${jdk.title}</f:option>
               </j:forEach>
             </optgroup>
           </j:forEach>

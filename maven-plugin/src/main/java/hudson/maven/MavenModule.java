@@ -24,42 +24,55 @@
 package hudson.maven;
 
 import hudson.CopyOnWrite;
-import hudson.Util;
 import hudson.Functions;
+import hudson.Util;
 import hudson.maven.reporters.MavenMailer;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import jenkins.model.Jenkins;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.Label;
+import hudson.model.Node;
+import hudson.model.Resource;
+import hudson.model.Saveable;
 import hudson.tasks.LogRotator;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Publisher;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import jenkins.model.Jenkins;
+
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-
-import com.google.common.util.concurrent.MoreExecutors;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * {@link Job} that builds projects based on Maven2.
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
+public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
@@ -79,6 +92,15 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * @since 1.199
      */
     private String version;
+    
+    /**
+     * Packaging type of the module.
+     * 
+     * pom, jar, maven-plugin, ejb, war, ear, rar, par or other custom types.
+     * 
+     * @since 1.425
+     */
+    private String packaging;
 
     private transient ModuleName moduleName;
 
@@ -175,6 +197,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     /*package*/ void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.version = pom.version;
+        this.packaging = pom.packaging;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
         this.children = pom.children;
@@ -224,7 +247,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                 if (d instanceof ModuleDependency) {
                     deps.add((ModuleDependency) d);
                 } else {
-                    deps.add(new ModuleDependency((ModuleName)d, ModuleDependency.UNKNOWN));
+                    deps.add(new ModuleDependency((ModuleName)d, ModuleDependency.UNKNOWN, false));
                 }
             }
             dependencies = deps;
@@ -304,7 +327,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets groupId+artifactId+version as {@link ModuleDependency}.
      */
     public ModuleDependency asDependency() {
-        return new ModuleDependency(moduleName,Functions.defaulted(version,ModuleDependency.UNKNOWN));
+        return new ModuleDependency(moduleName,Functions.defaulted(version,ModuleDependency.UNKNOWN),
+                PomInfo.PACKAGING_TYPE_PLUGIN.equals(this.packaging));
     }
 
     @Override
@@ -403,7 +427,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         if (data == null) {
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
     
-            for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
+            for (MavenModule m : getAllMavenModules()) {
                 if(!m.isBuildable())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
                 MavenModule old = modules.get(moduleDependency);
@@ -419,7 +443,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         } else {
             if (hasDependenciesWithUnknownVersion && !data.withUnknownVersions) {
                 // found 'old' MavenModule: add dependencies with unknown versions now
-                for (MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class)) {
+                for (MavenModule m : getAllMavenModules()) {
                     if(m.isDisabled())  continue;
                     ModuleDependency moduleDependency = m.asDependency().withUnknownVersion();
                     data.allModules.put(moduleDependency,m);
@@ -467,6 +491,13 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                     graph.addDependency(dep);
             }
         }
+    }
+    
+    /**
+     * Returns all Maven modules in this Jenkins instance.
+     */
+    protected Collection<MavenModule> getAllMavenModules() {
+        return Jenkins.getInstance().getAllItems(MavenModule.class);
     }
     
     /**

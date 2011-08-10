@@ -23,8 +23,10 @@
  */
 package hudson.security;
 
+import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
+import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -46,9 +48,9 @@ import java.net.URLEncoder;
  * Implements the dual authentcation mechanism.
  *
  * <p>
- * Hudson supports both the HTTP basic authentication and the form-based authentication.
+ * Jenkins supports both the HTTP basic authentication and the form-based authentication.
  * The former is for scripted clients, and the latter is for humans. Unfortunately,
- * becase the servlet spec does not allow us to programatically authenticate users,
+ * because the servlet spec does not allow us to programatically authenticate users,
  * we need to rely on some hack to make it work, and this is the class that implements
  * that hack.
  *
@@ -127,9 +129,24 @@ public class BasicAuthenticationFilter implements Filter {
 
         if(username==null) {
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            rsp.setHeader("WWW-Authenticate","Basic realm=\"Hudson administrator\"");
+            rsp.setHeader("WWW-Authenticate","Basic realm=\"Jenkins user\"");
             return;
         }
+
+        {// attempt to authenticate as API token
+            User u = User.get(username);
+            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+            if (t!=null && t.matchesPassword(password)) {
+                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                try {
+                    chain.doFilter(request,response);
+                } finally {
+                    SecurityContextHolder.clearContext();
+                }
+                return;
+            }
+        }
+
 
         path = req.getContextPath()+"/secured"+path;
         String q = req.getQueryString();

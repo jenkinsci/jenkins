@@ -74,7 +74,7 @@ import com.thoughtworks.xstream.XStream;
 public abstract class Plugin implements Saveable {
 
     /**
-     * Set by the {@link PluginManager}.
+     * Set by the {@link PluginManager}, before the {@link #start()} method is called.
      * This points to the {@link PluginWrapper} that wraps
      * this {@link Plugin} object.
      */
@@ -93,6 +93,15 @@ public abstract class Plugin implements Saveable {
      * @since 1.42
      */
     public void setServletContext(ServletContext context) {
+    }
+
+    /**
+     * Gets the paired {@link PluginWrapper}.
+     *
+     * @since 1.426
+     */
+    public PluginWrapper getWrapper() {
+        return wrapper;
     }
 
     /**

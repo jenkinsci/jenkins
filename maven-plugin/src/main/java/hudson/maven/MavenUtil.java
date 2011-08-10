@@ -161,10 +161,12 @@ public class MavenUtil {
         } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
-        
 
-        // FIXME configure those !!
-        mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+        if ( mavenEmbedderRequest.getGlobalSettings() != null) {
+            mavenRequest.setGlobalSettingsFile( mavenEmbedderRequest.getGlobalSettings().getAbsolutePath() );
+        } else {
+            mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+        }
         
         if (mavenEmbedderRequest.getWorkspaceReader() != null ) {
             mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );

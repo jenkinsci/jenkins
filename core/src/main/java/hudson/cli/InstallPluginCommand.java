@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
@@ -49,11 +50,11 @@ import java.util.Set;
 @Extension
 public class InstallPluginCommand extends CLICommand {
     public String getShortDescription() {
-        return "Installs a plugin either from a file, an URL, or from update center";
+        return Messages.InstallPluginCommand_ShortDescription();
     }
 
     @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file, that file will be installed. " +
-            "If this is an URL, Hudson downloads the URL and installs that as a plugin." +
+            "If this is an URL, Jenkins downloads the URL and installs that as a plugin." +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like \"findbugs\")," +
             "and the plugin will be installed from the update center")
     public List<String> sources = new ArrayList<String>();
@@ -61,7 +62,7 @@ public class InstallPluginCommand extends CLICommand {
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically.)")
     public String name;
 
-    @Option(name="-restart",usage="Restart Hudson upon successful installation")
+    @Option(name="-restart",usage="Restart Jenkins upon successful installation")
     public boolean restart;
 
     protected int run() throws Exception {
@@ -100,7 +101,9 @@ public class InstallPluginCommand extends CLICommand {
             UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
-                p.deploy().get();
+                Throwable e = p.deploy().get().getError();
+                if (e!=null)
+                    throw new IOException2("Failed to install plugin "+source,e);
                 continue;
             }
 

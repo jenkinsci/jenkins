@@ -40,7 +40,7 @@ import java.util.List;
 public class DeleteBuildsCommand extends AbstractBuildRangeCommand {
     @Override
     public String getShortDescription() {
-        return "Deletes build record(s)";
+        return Messages.DeleteBuildsCommand_ShortDescription();
     }
 
     @Override

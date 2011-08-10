@@ -195,7 +195,22 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
     }
 
+    /**
+     * Help file redirect, keyed by the field name to the path.
+     *
+     * @see #getHelpFile(String) 
+     */
+    private final Map<String,String> helpRedirect = new HashMap<String, String>();
+
+    /**
+     *
+     * @param clazz
+     *      Pass in {@link #self()} to have the descriptor describe itself,
+     *      (this hack is needed since derived types can't call "getClass()" to refer to itself.
+     */
     protected Descriptor(Class<? extends T> clazz) {
+        if (clazz==self())
+            clazz = (Class)getClass();
         this.clazz = clazz;
         // doing this turns out to be very error prone,
         // as field initializers in derived types will override values.
@@ -587,6 +602,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * locale variations.
      */
     public String getHelpFile(final String fieldName) {
+        String v = helpRedirect.get(fieldName);
+        if (v!=null)    return v;
+
         for(Class c=clazz; c!=null; c=c.getSuperclass()) {
             String page = "/descriptor/" + getId() + "/help";
             String suffix;
@@ -609,6 +627,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if(in!=null)    return page;
         }
         return null;
+    }
+
+    /**
+     * Tells Jenkins that the help file for the field 'fieldName' is defined in the help file for
+     * the 'fieldNameToRedirectTo' in the 'owner' class.
+     * @since 1.425
+     */
+    protected void addHelpFileRedirect(String fieldName, Class<? extends Describable> owner, String fieldNameToRedirectTo) {
+        helpRedirect.put(fieldName,
+            Jenkins.getInstance().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo));
     }
 
     /**
@@ -900,4 +928,12 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Used in {@link #checkMethods} to indicate that there's no check method.
      */
     private static final String NONE = "\u0000";
+
+    /**
+     * Special type indicating that {@link Descriptor} describes itself.
+     * @see Descriptor#Descriptor(Class)
+     */
+    public static final class Self {}
+
+    protected static Class self() { return Self.class; }
 }

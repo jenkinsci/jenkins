@@ -41,7 +41,7 @@ THE SOFTWARE.
           </f:entry>
         </j:if>
         <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}"/>
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
         </f:entry>
 
         <j:if test="${it.supportsLogRotator()}">

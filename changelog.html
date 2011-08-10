@@ -55,18 +55,90 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class='major bug'>
-    Fixed memory leak in the master/slave communication.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10424">issue 10424</a>)
-  <li class='bug'>
-    Fixed a problem in the core that prevents CLI users from authenticating with Crowd plugin (and others like it.)
+  <li class=bug>
+    Fixed a bug where SSH public key authentication for CLI wasn't working for username/password based security realm.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10647">issue 10647</a>)
+  <li class=bug>
+    Failing to install a plugin from CLI should result in non-zero exit code
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10057">issue 10057</a>)
+  <li class=bug>
+    Fixed NPE in trying to diagnose undefined job error.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7826">issue 7826</a>)
+  <li class=bug>
+    Disable auto refresh in slave markOffline screen
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10608">issue 10608</a>)
+  <li class=rfe>
+    Improved the speed of shutdown
+  <li class=rfe>
+    RPM package should honor user-modified configuration file better
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10037">issue 10037</a>)
+  <li class=rfe>
+    OS X package now provides customizable commandline
+    (<a href="https://github.com/jenkinsci/jenkins/pull/195">pull request 195</a>)
+  <li class=rfe>
+    Improved the remote API for queue
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10414">issue 10414</a>)
+  <li class=rfe>
+    Added a dignosis CLI command to report the current granted authorities.
+  <li class=rfe>
+    Added a CLI command to set display name of the build
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9126">issue 9126</a>)
+  <li class=rfe>
+    Added an option in CLI build command to check for SCM changes before carrying out a build
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9968">issue 9968</a>)
+  <li class=rfe>
+    If CLI fails to connect via a JNLP Slave port, fall back to HTTP full-duplex.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10611">issue 10611</a>)
+  <li class=rfe>
+    Added two CLI commands to manipulate job by its XML definition.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8797">issue 8797</a>)
+  <li class=rfe>
+    Added two CLI commands to shutdown Jenkins
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6594">issue 6594</a>)
+  <li class=rfe>
+    Fixed unclear text for Tabs with no jobs
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9330">issue 9330</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.424>What's new in 1.424</a> <!--=DATE=--></h3>
+<h3><a name=v1.426>What's new in 1.426</a> <!--=DATE=--></h3>
 <ul class=image>
+  <li class=bug>
+    Auto Install JDK asks for Oracle account, but the link goes 404.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10556">issue 10556</a>)
+  <li class=rfe>
+    Record and display who aborted builds.
+  <li class=rfe>
+    Added API token support.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9363">issue 9363</a>)
+  <li class=rfe>
+    Maven Plugin can use settings and global settings files provided by the config provider plugin
+  <li class=bug>
+    Fixed background of title image
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9571">issue 9571</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.425>What's new in 1.425</a> (2011/08/08)</h3>
+<ul class=image>
+  <li class=rfe>
+    Make syntax highlighting optional
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10509">issue 10509</a>)
+  <li class=bug>
+    isPartial() check for matrix builds now only reference active configurations.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10197">issue 10197</a>)
+  <li class=bug>
+    Maven jobs building plugins were no longer identified as upstream snapshot dependencies.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10530">issue 10530</a>)
+  <li class=bug>
+    MAVEN_OPTS configuration wasn't expanding environment variables.
+</ul>
+<h3><a name=v1.424>What's new in 1.424</a> (2011/08/01)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Java Web Start binaries weren't signed.
+    (<a href="http://jenkins.361315.n4.nabble.com/Launching-slave-agent-not-working-since-upgrading-from-1-421-to-1-423-td3696291.html">report</a>)
   <li class=bug>
     Fixed Maven build error if headless option is set and MAVEN_OPTS empty
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10375">issue 10375</a>)
@@ -88,8 +160,10 @@ Upcoming changes</a>
   <li class=rfe>
     Maven jobs which are disabled should be excluded from dependency graph
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10367">issue 10367</a>)
+  <li class='major rfe'>
+    Updated JDK installer to reflect changes in Oracle download server
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10511">issue 10511</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.423>What's new in 1.423</a> (2011/07/25)</h3>
 <ul class=image>
   <li class='major bug'>

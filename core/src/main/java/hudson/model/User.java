@@ -96,7 +96,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, Saveable, Comparable<User> {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User> {
 
     private transient final String id;
 
@@ -572,6 +572,10 @@ public class User extends AbstractModelObject implements AccessControlled, Savea
     public boolean canDelete() {
         return hasPermission(Jenkins.ADMINISTER) && !id.equals(Jenkins.getAuthentication().getName())
                 && new File(getRootDir(), id).exists();
+    }
+
+    public Descriptor getDescriptorByName(String className) {
+        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     public Object getDynamic(String token) {

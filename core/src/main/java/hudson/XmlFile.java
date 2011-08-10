@@ -52,10 +52,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.StringWriter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Represents an XML data file that Hudson uses as a data file.
+ * Represents an XML data file that Jenkins uses as a data file.
  *
  *
  * <h2>Evolving data format</h2>
@@ -124,7 +125,9 @@ public final class XmlFile {
      * Loads the contents of this file into a new object.
      */
     public Object read() throws IOException {
-        LOGGER.fine("Reading "+file);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Reading "+file);
+        }
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             return xs.fromXML(in);

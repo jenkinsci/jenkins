@@ -40,6 +40,11 @@ import java.io.Writer;
  * <p>
  * This is an extension point in Hudson, allowing plugins to implement different markup formatters.
  *
+ * <p>
+ * Implement the following methods to enable and control CodeMirror syntax highlighting
+ * public String getCodeMirrorMode() // return null to disable CodeMirror dynamically
+ * public String getCodeMirrorConfig()
+ *   
  * <h2>Views</h2>
  * <p>
  * This extension point must have a valid <tt>config.jelly</tt> that feeds the constructor.

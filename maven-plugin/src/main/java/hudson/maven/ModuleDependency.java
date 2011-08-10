@@ -46,19 +46,28 @@ public final class ModuleDependency implements Serializable {
     /**
      * @since 1.395
      */
-    public boolean plugin = false;
+    public final boolean plugin;
 
     public ModuleDependency(String groupId, String artifactId, String version) {
+        this(groupId, artifactId, version, false);
+    }
+    
+    public ModuleDependency(String groupId, String artifactId, String version, boolean plugin) {
         this.groupId = groupId.intern();
         this.artifactId = artifactId.intern();
         if(version==null)
             this.version = UNKNOWN;
         else
             this.version = version.intern();
+        this.plugin = plugin;
     }
 
     public ModuleDependency(ModuleName name, String version) {
-        this(name.groupId,name.artifactId,version);
+        this(name.groupId,name.artifactId,version,false);
+    }
+    
+    public ModuleDependency(ModuleName name, String version, boolean plugin) {
+        this(name.groupId,name.artifactId,version,plugin);
     }
 
     public ModuleDependency(org.apache.maven.model.Dependency dep) {
@@ -70,26 +79,25 @@ public final class ModuleDependency implements Serializable {
     }
 
     public ModuleDependency(Plugin p) {
-        this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE));
-        this.plugin = true;
+        this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE),true);
     }
 
     public ModuleDependency(ReportPlugin p) {
-        this(p.getGroupId(),p.getArtifactId(),p.getVersion());
-        this.plugin = true;
+        this(p.getGroupId(),p.getArtifactId(),p.getVersion(),true);
     }
 
     public ModuleDependency(Extension ext) {
         this(ext.getGroupId(),ext.getArtifactId(),ext.getVersion());
     }
 
-    private ModuleDependency(String groupId, String artifactId) {
+    private ModuleDependency(String groupId, String artifactId, boolean plugin) {
         // to be used only by the withUnknownVersion() method
         // where we know that groupId and artifactId are already interned
         // and where we want an UNKNOWN version
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = UNKNOWN;
+        this.plugin = plugin;
     }
     
     public ModuleName getName() {
@@ -103,7 +111,7 @@ public final class ModuleDependency implements Serializable {
         if (UNKNOWN.equals(version))
             return this;
         else
-            return new ModuleDependency(groupId,artifactId);
+            return new ModuleDependency(groupId,artifactId,plugin);
     }
 
     public boolean equals(Object o) {
@@ -131,7 +139,7 @@ public final class ModuleDependency implements Serializable {
      * Upon reading from the disk, intern strings.
      */
     public ModuleDependency readResolve() {
-        return new ModuleDependency(groupId,artifactId,version);
+        return new ModuleDependency(groupId,artifactId,version,plugin);
     }
 
     /**

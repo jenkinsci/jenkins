@@ -93,5 +93,21 @@ public class MavenOptsTest extends HudsonTestCase {
 	
     }
 
+    /**
+     * Makes sure that environment variables in MAVEN_OPTS are properly expanded.
+     */
+    public void testEnvironmentVariableExpansion() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+        m.setMavenOpts("$FOO");
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
+        m.setGoals("validate");
+        m.setAssignedLabel(createSlave(new EnvVars("FOO", "-Dhudson.mavenOpt.test=foo -Dhudson.mavenOpt.test2=bar")).getSelfLabel());
+
+        buildAndAssertSuccess(m);
+
+        assertLogContains("[hudson.mavenOpt.test=foo]", m.getLastBuild());
+    }
+
 }
 

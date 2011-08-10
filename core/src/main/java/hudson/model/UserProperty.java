@@ -51,7 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class UserProperty implements Describable<UserProperty>, ExtensionPoint {
+public abstract class UserProperty implements ReconfigurableDescribable<UserProperty>, ExtensionPoint {
     /**
      * The user object that owns this property.
      * This value will be set by the Hudson code.
@@ -76,6 +76,6 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
     }
 
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-    	return getDescriptor().newInstance(req, form);
+        return form==null ? null : getDescriptor().newInstance(req, form);
     }
 }

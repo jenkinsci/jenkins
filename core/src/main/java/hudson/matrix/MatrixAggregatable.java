@@ -23,13 +23,15 @@
  */
 package hudson.matrix;
 
+import hudson.model.JobProperty;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 
 /**
- * {@link Publisher} can optionally implement this interface
+ * {@link Publisher}, {@link JobProperty}, {@link BuildWrapper} can optionally implement this interface
  * to perform result aggregation across {@link MatrixRun}.
  *
  * <p>

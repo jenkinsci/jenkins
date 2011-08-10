@@ -33,7 +33,7 @@ THE SOFTWARE.
           <f:textbox name="displayName" value="${it.hasCustomDisplayName()?it.displayName:''}"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/run-config/description.html">
-          <f:textarea name="description" value="${it.description}"/>
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
         </f:entry>
 
         <j:if test="${h.hasPermission(it,it.UPDATE)}">

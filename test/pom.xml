@@ -29,11 +29,10 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.424-SNAPSHOT</version>
+    <version>1.427-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
-  <packaging>stapler-jar</packaging>
 
   <name>Test harness for Jenkins and plugins</name>
   <description>

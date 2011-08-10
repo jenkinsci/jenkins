@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
@@ -89,40 +90,56 @@ public class CLI {
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
 
+        Channel channel = null;
         int clip = getCliTcpPort(url);
         if(clip>=0) {
             // connect via CLI port
-            String host = new URL(url).getHost();
-            LOGGER.fine("Trying to connect directly via TCP/IP to port "+clip+" of "+host);
-            Socket s = new Socket(host,clip);
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-            dos.writeUTF("Protocol:CLI-connect");
-
-            channel = new Channel("CLI connection to "+jenkins, pool,
-                    new BufferedInputStream(new SocketInputStream(s)),
-                    new BufferedOutputStream(new SocketOutputStream(s)));
-        } else {
-            // connect via HTTP
-            LOGGER.fine("Trying to connect to "+url+" via HTTP");
-            url+="cli";
-            jenkins = new URL(url);
-
-            FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
-            channel = new Channel("Chunked connection to "+jenkins,
-                    pool,con.getInputStream(),con.getOutputStream());
-            new PingThread(channel,30*1000) {
-                protected void onDead() {
-                    // noop. the point of ping is to keep the connection alive
-                    // as most HTTP servers have a rather short read time out
-                }
-            }.start();
+            try {
+                channel = connectViaCliPort(jenkins, url, clip);
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+            }
         }
+        if (channel==null) {
+            // connect via HTTP
+            channel = connectViaHttp(url);
+        }
+        this.channel = channel;
 
         // execute the command
         entryPoint = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
 
         if(entryPoint.protocolVersion()!=CliEntryPoint.VERSION)
             throw new IOException(Messages.CLI_VersionMismatch());
+    }
+
+    private Channel connectViaHttp(String url) throws IOException {
+        LOGGER.fine("Trying to connect to "+url+" via HTTP");
+        url+="cli";
+        URL jenkins = new URL(url);
+
+        FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
+        Channel ch = new Channel("Chunked connection to "+jenkins,
+                pool,con.getInputStream(),con.getOutputStream());
+        new PingThread(ch,30*1000) {
+            protected void onDead() {
+                // noop. the point of ping is to keep the connection alive
+                // as most HTTP servers have a rather short read time out
+            }
+        }.start();
+        return ch;
+    }
+
+    private Channel connectViaCliPort(URL jenkins, String url, int clip) throws IOException {
+        String host = new URL(url).getHost();
+        LOGGER.fine("Trying to connect directly via TCP/IP to port "+clip+" of "+host);
+        Socket s = new Socket(host,clip);
+        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+        dos.writeUTF("Protocol:CLI-connect");
+
+        return new Channel("CLI connection to "+jenkins, pool,
+                new BufferedInputStream(new SocketInputStream(s)),
+                new BufferedOutputStream(new SocketOutputStream(s)));
     }
 
     /**

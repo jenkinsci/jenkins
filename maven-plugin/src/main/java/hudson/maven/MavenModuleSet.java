@@ -27,10 +27,14 @@ package hudson.maven;
 import static hudson.Util.fixEmpty;
 import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.CopyOnWrite;
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
@@ -38,6 +42,7 @@ import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
+import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -86,6 +91,8 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.jenkinsci.lib.configprovider.ConfigProvider;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -103,7 +110,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -212,6 +219,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     private boolean runHeadless = false;
 
+    /**
+     * @since 1.426
+     */
+    private String settingConfigId;
+
+    /**
+     * @since 1.426
+     */
+    private String globalSettingConfigId;
+
+    /**
+     * used temporary during maven build to store file path
+     * @since 1.426
+     */
+    protected transient String globalSettingConfigPath;
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
@@ -420,8 +442,40 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public int getMavenValidationLevel() {
         return mavenValidationLevel;
-    }    
-    
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getSettingConfigId() {
+        return settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param settingConfigId
+     */
+    public void setSettingConfigId( String settingConfigId ) {
+        this.settingConfigId = settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getGlobalSettingConfigId() {
+        return globalSettingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param globalSettingConfigId
+     */
+    public void setGlobalSettingConfigId( String globalSettingConfigId ) {
+        this.globalSettingConfigId = globalSettingConfigId;
+    }
+
     /**
      * List of active {@link MavenReporter}s that should be applied to all module builds.
      */
@@ -738,6 +792,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * to be used to launch Maven process.
      *
      * If mavenOpts is null or empty, we'll return the globally-defined MAVEN_OPTS.
+     *
+     * <p>
+     * This method returns a configured value as-is, which can include variabl references.
+     * At runtime, use {@link AbstractMavenBuild#getMavenOpts(TaskListener, EnvVars)} to obtain
+     * a fully resolved value.
      */
     public String getMavenOpts() {
         if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
@@ -752,6 +811,40 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return globalOpts;
             }
         }
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllMavenSettingsConfigs() {
+        List<Config> mavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof MavenSettingsProvider) {
+                    mavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return mavenSettingsConfigs;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllGlobalMavenSettingsConfigs() {
+        List<Config> globalMavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof GlobalMavenSettingsProvider) {
+                    globalMavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return globalMavenSettingsConfigs;
     }
 
     /**
@@ -840,6 +933,8 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
+        globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
     }
 
     /**

@@ -34,6 +34,7 @@ import static hudson.util.TimeUnit2.DAYS;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -85,7 +86,6 @@ public class UsageStatistics extends PageDecorator {
      * Creates an instance with a specific public key image.
      */
     public UsageStatistics(String keyImage) {
-        super(UsageStatistics.class);
         this.keyImage = keyImage;
         load();
     }
@@ -176,6 +176,17 @@ public class UsageStatistics extends PageDecorator {
             return new String(Base64.encode(baos.toByteArray()));
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
+        }
+    }
+
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        try {
+            // for backward compatibility reasons, this configuration is stored in Jenkins
+            Jenkins.getInstance().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : true);
+            return true;
+        } catch (IOException e) {
+            throw new FormException(e,"usageStatisticsCollected");
         }
     }
 
