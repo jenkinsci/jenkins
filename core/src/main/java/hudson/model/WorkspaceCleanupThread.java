@@ -96,11 +96,6 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         // TODO: the use of remoting is not optimal.
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
         TopLevelItem item = Jenkins.getInstance().getItem(jobName);
-        if(item==null) {
-            // no such project anymore
-            LOGGER.fine("Directory "+dir+" is not owned by any project");
-            return true;
-        }
 
         if(!dir.exists())
             return false;
@@ -109,6 +104,13 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         long now = new Date().getTime();
         if(dir.lastModified() + 30 * DAY > now) {
             LOGGER.fine("Directory "+dir+" is only "+ Util.getTimeSpanString(now-dir.lastModified())+" old, so not deleting");
+            return false;
+        }
+
+        // Assuming build name == workspace name breaks custom workspaces. Just skip out if the 30-day window doesn't catch it yet.
+        // TODO: Add a check that covers custom workspaces, if possible.
+        // TODO: If and when we do the above, also add checkbox that lets users configure a workspace to never be auto-cleaned.
+        if(item==null) {
             return false;
         }
 
