@@ -56,6 +56,7 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.Authentication;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
+import org.apache.maven.cli.ConsoleMavenTransferListener;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jenkinsci.lib.configprovider.model.Config;
@@ -284,6 +285,8 @@ public class RedeployPublisher extends Recorder {
                 mavenEmbedderRequest.setGlobalSettings( remoteGlobalSettingsFromConfig );
             }
 
+            mavenEmbedderRequest.setTransferListener(new ConsoleMavenTransferListener(listener.getLogger()));
+
             return MavenUtil.createEmbedder(mavenEmbedderRequest);
         } finally {
             if (tmpSettings != null) {
@@ -292,7 +295,7 @@ public class RedeployPublisher extends Recorder {
             if (remoteSettingsFromConfig != null) {
                 remoteSettingsFromConfig.delete();
             }
-            FileUtils.deleteQuietly( remoteGlobalSettingsFromConfig );
+            FileUtils.deleteQuietly(remoteGlobalSettingsFromConfig);
         }
     }
     
