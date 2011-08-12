@@ -1467,19 +1467,17 @@ public class Queue extends ResourceController implements Saveable {
                 label = null;    // no master/slave. pointless to talk about nodes
 
             if (label != null) {
+                Set<Node> nodes = label.getNodes();
                 if (label.isOffline()) {
-                    Set<Node> nodes = label.getNodes();
                     if (nodes.size() != 1)      return new BecauseLabelIsOffline(label);
                     else                        return new BecauseNodeIsOffline(nodes.iterator().next());
+                } else {
+                    if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
+                    else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
+            } else {
+                return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
-
-            if(label==null)
-                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutor());
-
-            Set<Node> nodes = label.getNodes();
-            if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
-            else                        return new BecauseNodeIsBusy(nodes.iterator().next());
         }
 
         @Override
