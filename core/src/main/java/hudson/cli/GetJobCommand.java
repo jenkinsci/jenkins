@@ -23,27 +23,31 @@
  */
 package hudson.cli;
 
+import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.Item;
 import hudson.util.IOUtils;
+import org.apache.xpath.operations.String;
 import org.kohsuke.args4j.Argument;
-
-import javax.xml.transform.stream.StreamSource;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UpdateJobXmlCommand extends CLICommand {
+@Extension
+public class GetJobCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
     public AbstractProject<?,?> job;
 
     @Override
     public String getShortDescription() {
-        return "Updates the job definition XML from stdin. The opposite of the get-job-xml command";
+        return "Dumps the job definition XML to stdout";
     }
 
     protected int run() throws Exception {
-        job.updateByXml(new StreamSource(stdin));
+        job.checkPermission(Item.EXTENDED_READ);
+        IOUtils.copy(
+            job.getConfigFile().getFile(),
+            stdout);
         return 0;
     }
 }
-
