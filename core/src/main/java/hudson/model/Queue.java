@@ -890,7 +890,7 @@ public class Queue extends ResourceController implements Saveable {
      * and instead stay in the {@link #blockedProjects} state.
      */
     private boolean isBuildBlocked(Item i) {
-        if (i.task.isBuildBlocked() || !canRun(i.task.getResourceList()) || !allowNewBuildableTask(i.task))
+        if (i.task.isBuildBlocked() || !canRun(i.task.getResourceList()))
             return true;
 
         for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
@@ -935,7 +935,7 @@ public class Queue extends ResourceController implements Saveable {
         Iterator<BlockedItem> itr = blockedProjects.values().iterator();
         while (itr.hasNext()) {
             BlockedItem p = itr.next();
-            if (!isBuildBlocked(p)) {
+            if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                 // ready to be executed
                 LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
                 itr.remove();
@@ -951,7 +951,7 @@ public class Queue extends ResourceController implements Saveable {
 
             waitingList.remove(top);
             Task p = top.task;
-            if (!isBuildBlocked(top)) {
+            if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                 // ready to be executed immediately
                 LOGGER.fine(p.getFullDisplayName() + " ready to build");
                 makeBuildable(new BuildableItem(top));
