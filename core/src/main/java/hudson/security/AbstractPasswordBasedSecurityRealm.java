@@ -16,6 +16,7 @@ import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.xpath.operations.String;
 import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
@@ -53,7 +54,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
     @Override
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
-            @Option(name="--username",usage="User name to authenticate yourself to Hudson")
+            @Option(name="--username",usage="User name to authenticate yourself to Jenkins")
             public String userName;
 
             @Option(name="--password",usage="Password for authentication. Note that passing a password in arguments is insecure.")
