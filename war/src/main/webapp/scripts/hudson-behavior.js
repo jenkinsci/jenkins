@@ -939,6 +939,9 @@ var hudsonRules = {
         }
         var start = e;
 
+        // @ref on start refers to the ID of the element that controls the JSON object created from these rows
+        // if we don't find it, turn the start node into the governing node (thus the end result is that you
+        // created an intermediate JSON object that's always on.)
         var ref = start.getAttribute("ref");
         if(ref==null)
             start.id = ref = "rowSetStart"+(iota++);
@@ -1251,6 +1254,10 @@ function replaceDescription() {
     return false;
 }
 
+/**
+ * Indicates that form fields from rows [s,e) should be grouped into a JSON object,
+ * and attached under the element identified by the specified id.
+ */
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
