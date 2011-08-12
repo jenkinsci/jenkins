@@ -25,8 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.AbstractProject;
-import hudson.util.IOUtils;
-import org.apache.xpath.operations.String;
 import org.kohsuke.args4j.Argument;
 
 import javax.xml.transform.stream.StreamSource;

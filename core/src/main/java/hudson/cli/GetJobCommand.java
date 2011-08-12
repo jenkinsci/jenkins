@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.util.IOUtils;
-import org.apache.xpath.operations.String;
 import org.kohsuke.args4j.Argument;
 
 /**
