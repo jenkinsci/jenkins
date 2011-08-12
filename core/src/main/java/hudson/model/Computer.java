@@ -696,6 +696,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Returns true if this computer has some idle executors that can take more workload.
+     */
+    public final boolean isPartiallyIdle() {
+        for (Executor e : executors)
+            if(e.isIdle())
+                return true;
+        return false;
+    }
+
+    /**
      * Returns the time when this computer last became idle.
      *
      * <p>
