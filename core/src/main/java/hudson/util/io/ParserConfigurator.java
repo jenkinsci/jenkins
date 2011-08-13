@@ -25,7 +25,6 @@ package hudson.util.io;
  
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import jenkins.model.Jenkins;
