@@ -119,7 +119,9 @@ public final class SuiteResult implements Serializable {
 
     private static void parseSuite(File xmlReport, boolean keepLongStdio, List<SuiteResult> r, Element root) throws DocumentException, IOException {
         // nested test suites
-        for (Element suite : (List<Element>)root.elements("testsuite"))
+        @SuppressWarnings("unchecked")
+        List<Element> testSuites = (List<Element>)root.elements("testsuite");
+        for (Element suite : testSuites)
             parseSuite(xmlReport, keepLongStdio, r, suite);
 
         // child test cases
@@ -154,8 +156,10 @@ public final class SuiteResult implements Serializable {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
             addCase(new CaseResult(this, suite, "<init>", keepLongStdio));
         }
-
-        for (Element e : (List<Element>)suite.elements("testcase")) {
+        
+        @SuppressWarnings("unchecked")
+        List<Element> testCases = (List<Element>)suite.elements("testcase");
+        for (Element e : testCases) {
             // https://issues.jenkins-ci.org/browse/JENKINS-1233 indicates that
             // when <testsuites> is present, we are better off using @classname on the
             // individual testcase class.
