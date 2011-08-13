@@ -1,6 +1,7 @@
 package hudson.tools;
 
-import hudson.model.Descriptor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.DownloadService;
 import hudson.tools.JDKInstaller.DescriptorImpl;
 import org.jvnet.hudson.test.HudsonTestCase;
