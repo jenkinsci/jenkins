@@ -42,7 +42,6 @@ import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
-import hudson.util.IOException2;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
