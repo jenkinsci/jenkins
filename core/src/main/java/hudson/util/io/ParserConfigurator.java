@@ -55,6 +55,8 @@ import java.util.Collections;
  * @since 1.416
  */
 public abstract class ParserConfigurator implements ExtensionPoint, Serializable {
+    private static final long serialVersionUID = -2523542286453177108L;
+
     /**
      * Configures the given {@link SAXReader}
      *
@@ -78,6 +80,9 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
             Channel ch = Channel.current();
             if (ch!=null)
                 all = ch.call(new Callable<Collection<ParserConfigurator>, IOException>() {
+
+                    private static final long serialVersionUID = -2178106894481500733L;
+
                     public Collection<ParserConfigurator> call() throws IOException {
                         return new ArrayList<ParserConfigurator>(all());
                     }

@@ -140,6 +140,8 @@ public class SurefireArchiver extends MavenReporter {
                 result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
     
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
+                        private static final long serialVersionUID = -1023888330720922136L;
+
                         public Integer call(MavenBuild build) throws IOException, InterruptedException {
                             SurefireReport sr = build.getAction(SurefireReport.class);
                             if(sr==null)
