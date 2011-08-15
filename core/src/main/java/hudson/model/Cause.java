@@ -236,7 +236,7 @@ public abstract class Cause {
         
         @Exported(visibility = 3)
         public String getUserName() {
-            String userName = "anonymouse";
+            String userName = "anonymous";
             if (userId != null) {
                 User user = User.get(userId, false);
                 if (user != null) 

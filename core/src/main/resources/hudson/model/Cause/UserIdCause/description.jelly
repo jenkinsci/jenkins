@@ -28,7 +28,7 @@ THE SOFTWARE.
         <span>${%started_by_user(it.userId, it.userName, rootURL)}</span>
       </j:when>
       <j:otherwise>
-        <span>${%started_by_anonymouse}</span>
+        <span>${%started_by_anonymous}</span>
       </j:otherwise>
     </j:choose>  
 </j:jelly>
