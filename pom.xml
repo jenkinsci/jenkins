@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.22</version>
+    <version>1.23</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.427-SNAPSHOT</version>
+  <version>1.428-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>

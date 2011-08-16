@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.427-SNAPSHOT</version>
+    <version>1.428-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -445,9 +445,9 @@ THE SOFTWARE.
       <version>3.3.0-jenkins-2</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.akuma</groupId>
+      <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libpam4j</groupId>

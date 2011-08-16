@@ -288,7 +288,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public boolean isOffline() {
         for (Node n : getNodes()) {
-            if(n.toComputer() != null && !n.toComputer().isOffline())
+            Computer c = n.toComputer();
+            if(c != null && !c.isOffline())
                 return false;
         }
         return true;

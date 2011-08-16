@@ -829,7 +829,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if (remoteSettings != null) {
                     remoteSettings.delete();
                 }
-                if (project.getGlobalSettingConfigId() != null ) {
+                if (remoteGlobalSettings != null ) {
                     remoteGlobalSettings.delete();
                 }
             }

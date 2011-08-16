@@ -129,7 +129,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         }
 
     	Jenkins.getInstance().getQueue().schedule(
-                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
