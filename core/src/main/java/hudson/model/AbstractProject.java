@@ -41,7 +41,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
-import hudson.model.Cause.UserCause;
+import hudson.model.Cause.UserIdCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
@@ -1589,7 +1589,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             String causeText = req.getParameter("cause");
             cause = new RemoteCause(req.getRemoteAddr(), causeText);
         } else {
-            cause = new UserCause();
+            cause = new UserIdCause();
         }
         return new CauseAction(cause);
     }
