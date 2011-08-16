@@ -122,12 +122,13 @@ public class Executor extends Thread implements ModelObject {
      */
     public void interrupt(Result result) {
         Authentication a = Jenkins.getAuthentication();
-        User u = User.current();
-        
-        if (a!=ACL.SYSTEM && u!=null)
-            interrupt(result, new UserInterruption(u));    // worth recording who did it
-        else
+        if(a instanceof AnonymousAuthenticationToken || a==ACL.SYSTEM)
             interrupt(result, new CauseOfInterruption[0]);
+        else {
+            // worth recording who did it
+            // avoid using User.get() to avoid deadlock.
+            interrupt(result, new UserInterruption(a.getName()));
+        }
     }
 
     /**

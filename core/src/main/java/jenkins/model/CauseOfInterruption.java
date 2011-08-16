@@ -74,6 +74,10 @@ public abstract class CauseOfInterruption {
             this.user = user.getId();
         }
 
+        public UserInterruption(String userId) {
+            this.user = userId;
+        }
+
         public User getUser() {
             return User.get(user);
         }
