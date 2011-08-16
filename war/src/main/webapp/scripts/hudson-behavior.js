@@ -853,6 +853,54 @@ var hudsonRules = {
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // radioBlock.jelly
+    "INPUT.radio-block-control" : function(r) {
+        r.id = "radio-block-"+(iota++);
+
+        // when one radio button is clicked, we need to update foldable block for
+        // other radio buttons with the same name. To do this, group all the
+        // radio buttons with the same name together and hang it under the form object
+        var f = r.form;
+        var radios = f.radios;
+        if (radios == null)
+            f.radios = radios = {};
+
+        var g = radios[r.name];
+        if (g == null) {
+            radios[r.name] = g = object(radioBlockSupport);
+            g.buttons = [];
+        }
+
+        var s = findAncestorClass(r,"radio-block-start");
+        s.setAttribute("ref", r.id);
+
+        // find the end node
+        var e = (function() {
+            var e = s;
+            var cnt=1;
+            while(cnt>0) {
+                e = e.nextSibling;
+                if (Element.hasClassName(e,"radio-block-start"))
+                    cnt++;
+                if (Element.hasClassName(e,"radio-block-end"))
+                    cnt--;
+            }
+            return e;
+        })();
+
+        var u = function() {
+            g.updateSingleButton(r,s,e);
+        };
+        g.buttons.push(u);
+
+        // apply the initial visibility
+        u();
+
+        // install event handlers to update visibility.
+        // needs to use onclick and onchange for Safari compatibility
+        r.onclick = r.onchange = function() { g.updateButtons(); };
+    },
+
     // see RowVisibilityGroupTest
     "TR.rowvg-start" : function(e) {
         // figure out the corresponding end marker
@@ -1004,54 +1052,6 @@ var hudsonRules = {
                 if (inputs[i].defaultChecked) inputs[i].checked = true;
             }
         }
-    },
-
-    // radioBlock.jelly
-    "INPUT.radio-block-control" : function(r) {
-        r.id = "radio-block-"+(iota++);
-
-        // when one radio button is clicked, we need to update foldable block for
-        // other radio buttons with the same name. To do this, group all the
-        // radio buttons with the same name together and hang it under the form object
-        var f = r.form;
-        var radios = f.radios;
-        if (radios == null)
-            f.radios = radios = {};
-
-        var g = radios[r.name];
-        if (g == null) {
-            radios[r.name] = g = object(radioBlockSupport);
-            g.buttons = [];
-        }
-
-        var s = findAncestorClass(r,"radio-block-start");
-
-        // find the end node
-        var e = (function() {
-            var e = s;
-            var cnt=1;
-            while(cnt>0) {
-                e = e.nextSibling;
-                if (Element.hasClassName(e,"radio-block-start"))
-                    cnt++;
-                if (Element.hasClassName(e,"radio-block-end"))
-                    cnt--;
-            }
-            return e;
-        })();
-
-        var u = function() {
-            g.updateSingleButton(r,s,e);
-        };
-        applyNameRef(s,e,r.id);
-        g.buttons.push(u);
-
-        // apply the initial visibility
-        u();
-
-        // install event handlers to update visibility.
-        // needs to use onclick and onchange for Safari compatibility
-        r.onclick = r.onchange = function() { g.updateButtons(); };
     },
 
     // editableComboBox.jelly
@@ -1588,7 +1588,7 @@ var repeatableSupport = {
 
 // prototype object to be duplicated for each radio button group
 var radioBlockSupport = {
-    buttons : null,
+    buttons : null, // set of functions, one for updating one radio block each
 
     updateButtons : function() {
         for( var i=0; i<this.buttons.length; i++ )
