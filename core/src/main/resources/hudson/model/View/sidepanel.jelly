@@ -51,7 +51,7 @@ THE SOFTWARE.
           <l:task icon="images/24x24/user.png" href="${rootURL}/${it.viewUrl}people/" title="${%People}" />
         </j:when>
       </j:choose>
-      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
+      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.viewUrl}builds" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
         <l:task icon="images/24x24/gear.png" href="${rootURL}/${it.viewUrl}configure" title="${%Edit View}" permission="${it.CONFIGURE}" />
