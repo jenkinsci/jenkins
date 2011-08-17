@@ -146,7 +146,7 @@ public class Channel implements VirtualChannel, IChannel {
     /**
      * Objects exported via {@link #export(Class, Object)}.
      */
-    private final ExportTable<Object> exportedObjects = new ExportTable<Object>();
+    /*package (for test)*/ final ExportTable<Object> exportedObjects = new ExportTable<Object>();
 
     /**
      * {@link PipeWindow}s keyed by their OIDs (of the OutputStream exported by the other side.)
@@ -526,9 +526,10 @@ public class Channel implements VirtualChannel, IChannel {
                 logger.log(Level.WARNING, "Unable to send GC command",e);
             }
 
-        // proxy will unexport this instance when it's GC-ed on the remote machine, so don't unexport on our side automatically at the end of a call.
-        final int id = export(instance,false);
-        return RemoteInvocationHandler.wrap(null, id, type, userProxy, exportedObjects.isRecording());
+        // either local side will auto-unexport, or the remote side will unexport when it's GC-ed
+        boolean autoUnexportByCaller = exportedObjects.isRecording();
+        final int id = export(instance,autoUnexportByCaller);
+        return RemoteInvocationHandler.wrap(null, id, type, userProxy, autoUnexportByCaller);
     }
 
     /*package*/ int export(Object instance) {

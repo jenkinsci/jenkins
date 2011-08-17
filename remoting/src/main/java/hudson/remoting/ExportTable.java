@@ -216,4 +216,8 @@ final class ExportTable<T> {
             e.allocationTrace.printStackTrace(w);
         }
     }
+
+    /*package*/ synchronized  boolean isExported(T o) {
+        return reverse.containsKey(o);
+    }
 }
