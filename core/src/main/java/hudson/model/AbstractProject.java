@@ -1646,6 +1646,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         rsp.forwardToPreviousPage(req);
     }
 
+    /**
+     * Deletes this project.
+     */
+    @Override
+    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+        requirePOST();
+        delete();
+        if (req == null || rsp == null)
+            return;
+        View view = req.findAncestorObject(View.class);
+        if (view == null)
+            rsp.sendRedirect2(req.getContextPath() + '/' + getParent().getUrl());
+        else 
+            rsp.sendRedirect2(req.getContextPath() + '/' + view.getUrl());
+    }
+    
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
