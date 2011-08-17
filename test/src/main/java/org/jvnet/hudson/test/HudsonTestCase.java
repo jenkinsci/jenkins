@@ -1352,8 +1352,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
         if(!e.hasMoreElements())    return; // nope
 
-        final URL hpl = e.nextElement();
-
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
