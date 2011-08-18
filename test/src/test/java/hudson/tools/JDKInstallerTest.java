@@ -52,7 +52,7 @@ public class JDKInstallerTest extends HudsonTestCase {
                 if (u==null || p==null) {
                     LOGGER.warning(f+" doesn't contain oracle.userName and oracle.password. Skipping JDK installation tests.");
                 } else {
-                    DescriptorImpl d = jenkins.getDescriptorByType(DescriptorImpl.class);
+                    DescriptorImpl d = hudson.getDescriptorByType(DescriptorImpl.class);
                     d.doPostCredential(u,p);
                 }
             } finally {
