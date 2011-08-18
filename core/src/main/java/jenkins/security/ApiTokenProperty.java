@@ -24,13 +24,11 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -96,7 +94,7 @@ public class ApiTokenProperty extends UserProperty {
     @Extension
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
-            return "API Token";
+            return Messages.ApiTokenProperty_DisplayName();
         }
 
         /**
@@ -120,7 +118,7 @@ public class ApiTokenProperty extends UserProperty {
                 p.changeApiToken();
             }
             rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
-            return HttpResponses.html("<div>Updated</div>");
+            return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_Success());
         }
     }
 
