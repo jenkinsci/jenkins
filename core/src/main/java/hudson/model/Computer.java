@@ -906,7 +906,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
         // Starts
-        //Fix: 
+        //Fix: 1.395.1
     	//Aim: Non-Admin user with CONFIGURE/DELETE permission can mark slave offline.
     	//checkPermission(Hudson.ADMINISTER);
     	try{

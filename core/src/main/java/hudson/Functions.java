@@ -601,6 +601,34 @@ public class Functions {
         }
     }
 
+    /**
+     * Fix - v1.395.1
+     * This version is so that the 'hasPermission' can degrade gracefully
+     * if "it" is not an {@link AccessControlled} object from "ANY ONE" of the
+     * requested permissions.
+     * Permissions [ ADMINSTER|READ|WRITE|CREATE|UPDATE|DELETE|CONFIGURE ]
+     */
+    public static boolean hasPermissions(Object object, Permission permission_1, Permission permission_2, Permission permission_3, Permission permission_4, Permission permission_5, Permission permission_6, Permission permission_7 )throws IOException, ServletException {
+    	
+    	List<Permission> permissions = new ArrayList<Permission>();
+    	permissions.add(permission_1);
+    	permissions.add(permission_2);
+    	permissions.add(permission_3);
+    	permissions.add(permission_4);
+    	permissions.add(permission_5);
+    	permissions.add(permission_6);
+    	permissions.add(permission_7);
+    	
+    	for(Permission permission: permissions){
+    		if ( permission != null ){
+    			if (hasPermission(object, permission)){
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
+    }
+    
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
         // the permission based model.

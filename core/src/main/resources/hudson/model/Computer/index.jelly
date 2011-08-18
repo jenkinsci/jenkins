@@ -27,7 +27,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- temporarily offline switch -->
-      <l:hasPermissions>
+      <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" >
       <div style="float:right">
         <j:choose>
           <j:when test="${it.temporarilyOffline}">

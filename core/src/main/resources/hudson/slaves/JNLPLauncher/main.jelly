@@ -31,7 +31,7 @@ THE SOFTWARE.
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
-      <l:hasPermissions><!-- TODO: we need a permission to launch a slave -->
+      <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" ><!-- TODO: we need a permission to launch a slave -->
         <p>
           ${%Connect slave to Hudson one of these ways:}
         </p>

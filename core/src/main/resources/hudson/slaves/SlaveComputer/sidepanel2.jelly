@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:hasPermissions>
+  <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" >
     <l:task icon="images/24x24/clipboard.gif" href="log" title="${%Log}" />
     <l:task icon="images/24x24/computer.gif" href="systemInfo" title="${%System Information}" />
     <j:if test="${it.channel!=null}">

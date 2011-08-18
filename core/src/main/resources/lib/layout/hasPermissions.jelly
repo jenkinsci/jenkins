@@ -1,5 +1,28 @@
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
-  <j:if test="${h.hasPermission(app.ADMINISTER) or h.hasPermission(it.CONFIGURE) or h.hasPermission(it.DELETE)}">
-    <d:invokeBody />
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Renders the body only if the current user has the specified permission
+    <st:attribute name="permission_1" use="required" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_2" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_3" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_4" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_5" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_6" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>
+    <st:attribute name="permission_7" use="optional" type="Permission">
+      permission object to check. If this is null, the body will be also rendered.
+    </st:attribute>            
+  <j:if test="${h.hasPermissions(it, permission_1, permission_2, permission_3, permission_4, permission_5, permission_6, permission_7)}">
+    <d:invokeBody/>
   </j:if>
 </j:jelly>

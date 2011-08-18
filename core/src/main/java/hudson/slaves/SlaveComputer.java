@@ -393,7 +393,7 @@ public class SlaveComputer extends Computer {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
             // Starts
-            //Fix: 
+            //Fix: 1.395.1
         	//Aim: Non-Admin user with CONFIGURE/DELETE permission can disconnect slave.
         	//checkPermission(Hudson.ADMINISTER);
         	try{

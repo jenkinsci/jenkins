@@ -38,11 +38,11 @@ THE SOFTWARE.
       </j:when>
 
       <j:otherwise>
-        <l:isAdmin>
+        <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" >
           <form method="get" action="launchSlaveAgent">
             <f:submit value="${%Launch slave agent}" />
           </form>
-        </l:isAdmin>
+        </l:hasPermissions>
       </j:otherwise>
     </j:choose>
   </j:if>

@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName} log" secured="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:hasPermissions>
+      <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" >
         <pre id="out" />
         <div id="spinner">
           <img src="${imagesURL}/spinner.gif" alt=""/>

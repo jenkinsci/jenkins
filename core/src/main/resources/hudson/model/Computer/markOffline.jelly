@@ -26,7 +26,7 @@ THE SOFTWARE.
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:hasPermissions>
+      <l:hasPermissions permission_1="${app.ADMINISTER}" permission_2="${it.CONFIGURE}" permission_3="${it.DELETE}" >
         <h2>${%title(it.displayName)}</h2>
         <p>
           ${%blurb}
