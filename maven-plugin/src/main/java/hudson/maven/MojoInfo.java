@@ -175,6 +175,7 @@ public class MojoInfo {
                 f.setAccessible(true);
                 Object oldValue = f.get(mojo);
                 f.set(mojo,value);
+                return (T)oldValue;
             } catch (NoSuchFieldException e) {
                 continue;
             } catch (IllegalAccessException e) {
