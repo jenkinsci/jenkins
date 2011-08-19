@@ -76,10 +76,9 @@ public class UnixLifecycle extends Lifecycle {
         }
 
         // exec to self
-        LIBC.execv(
-            Daemon.getCurrentExecutable(),
-            new StringArray(args.toArray(new String[args.size()])));
-        throw new IOException("Failed to exec "+LIBC.strerror(Native.getLastError()));
+        String exe = Daemon.getCurrentExecutable();
+        LIBC.execv(exe, new StringArray(args.toArray(new String[args.size()])));
+        throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
 
     @Override
