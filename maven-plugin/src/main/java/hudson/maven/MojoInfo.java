@@ -92,6 +92,8 @@ public class MojoInfo {
     private final ConverterLookup converterLookup = new DefaultConverterLookup();
 
     public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+        if (mojo==null)     throw new IllegalArgumentException();
+        // TODO: exactly what other variables are always non-null?
         this.mojo = mojo;
         this.mojoExecution = mojoExecution;
         this.configuration = configuration;
@@ -130,14 +132,13 @@ public class MojoInfo {
         PlexusConfiguration child = configuration.getChild(configName);
         if(child==null) return null;    // no such config
        
-        ClassLoader cl = null;
+        ClassLoader cl;
         PluginDescriptor pd = mojoExecution.getMojoDescriptor().getPluginDescriptor();
         // for maven2 builds ClassRealm doesn't extends ClassLoader !
         // so check stuff with reflection
         Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
        
-        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm)
-        {
+        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm) {
             ClassRealm cr = (ClassRealm) ReflectionUtils.invokeMethod( method, pd );
             cl = cr.getClassLoader();
         } else {
