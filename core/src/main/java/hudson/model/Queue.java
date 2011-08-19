@@ -1119,7 +1119,8 @@ public class Queue extends ResourceController implements Saveable {
         String getUrl();
         
         /**
-         * True if the task allows concurrent builds
+         * True if the task allows concurrent builds, where the same {@link Task} is executed
+         * by multiple executors concurrently on the same or different nodes.
          *
          * @since 1.338
          */
