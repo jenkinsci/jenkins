@@ -74,17 +74,18 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     }
 
     /**
-     * Add all the {@link #systemProps hudson defined system properties} into the {@link System#getProperties() system properties}
-     * @throws IllegalArgumentException if a {@link #systemProps hudson system property} has an empty key or null value
+     * Add all the {@link #systemProps jenkins environment variables} into the {@link System#getProperties() system properties}
+     * Ignores {@link #systemProps jenkins environment variables} with empty keys.
+     * @throws IllegalArgumentException if a {@link #systemProps jenkins environment variable} has null value
      *      as it blows up Maven.
-     * @see https://groups.google.com/forum/#!topic/jenkinsci-dev/hoxoNi7sNtk/discussion
+     * @see http://jenkins.361315.n4.nabble.com/Upgrade-to-1-424-broke-our-Maven-builds-due-to-empty-system-property-key-td3726460.html
      */
     protected void registerSystemProperties() {
         for (Map.Entry<String,String> e : systemProps.entrySet()) {
             if ("".equals(e.getKey()))
-                throw new IllegalArgumentException("System property has an empty key");
+                continue;
             if (e.getValue()==null)
-                throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
+                throw new IllegalArgumentException("Global Environment Variable "+e.getKey()+" has a null value");
             System.getProperties().put(e.getKey(), e.getValue());
         }
     }
