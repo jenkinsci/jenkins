@@ -611,7 +611,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
 
                         String settingsConfigId = project.getSettingConfigId();
-                        if (settingsConfigId != null) {
+                        if (!StringUtils.isBlank(settingsConfigId)) {
                             Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
@@ -627,7 +627,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
-                        if (globalSettingsConfigId != null) {
+                        if (!StringUtils.isBlank(globalSettingsConfigId)) {
                             Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId

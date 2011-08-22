@@ -208,7 +208,7 @@ public class RedeployPublisher extends Recorder {
                 String settingsConfigId = mavenModuleSet.getSettingConfigId();
                 String altSettingsPath = null;
 
-                if (settingsConfigId != null) {
+                if (!StringUtils.isBlank(settingsConfigId)) {
                     Config config = SettingsProviderUtils.findConfig( settingsConfigId,
                                                                       MavenSettingsProvider.class );
                     if (config == null) {
@@ -230,7 +230,7 @@ public class RedeployPublisher extends Recorder {
                 }
 
                 String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
-                if (globalSettingsConfigId != null) {
+                if (!StringUtils.isBlank(globalSettingsConfigId)) {
                     Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
