@@ -88,6 +88,7 @@ import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.management.ThreadInfo;
@@ -1352,8 +1353,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
         if(!e.hasMoreElements())    return; // nope
 
-        final URL hpl = e.nextElement();
-
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
@@ -1382,36 +1381,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
                             String version = tokens[1];
-                            File dependencyJar=null;
-                            // need to search multiple group IDs
-                            // TODO: extend manifest to include groupID:artifactID:version
-                            Exception resolutionError=null;
-                            for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
-
-                                // first try to find it on the classpath.
-                                // this takes advantage of Maven POM located in POM
-                                URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
-                                if (dependencyPomResource != null) {
-                                    // found it
-                                    dependencyJar = Which.jarFile(dependencyPomResource);
-                                    break;
-                                } else {
-                                    Artifact a;
-                                    a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                                    try {
-                                        embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                                        dependencyJar = a.getFile();
-                                    } catch (AbstractArtifactResolutionException x) {
-                                        // could be a wrong groupId
-                                        resolutionError = x;
-                                    }
-                                }
-                            }
-                            if(dependencyJar==null) {
-                                if (dep.contains("resolution:=optional"))
-                                    continue;   // optional dependency
-                                throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
-                            }
+                            File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
 
                             File dst = new File(home, "plugins/" + artifactId + ".hpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
@@ -1420,6 +1390,46 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                         }
                     }
                 }
+            }
+
+            private File resolveDependencyJar(MavenEmbedder embedder, String artifactId, String version) throws Exception {
+                // try to locate it from manifest
+                Enumeration<URL> manifests = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+                while (manifests.hasMoreElements()) {
+                    URL manifest = manifests.nextElement();
+                    InputStream is = manifest.openStream();
+                    Manifest m = new Manifest(is);
+                    is.close();
+
+                    if (artifactId.equals(m.getMainAttributes().getValue("Short-Name")))
+                        return Which.jarFile(manifest);
+                }
+
+                // need to search multiple group IDs
+                // TODO: extend manifest to include groupID:artifactID:version
+                Exception resolutionError=null;
+                for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+
+                    // first try to find it on the classpath.
+                    // this takes advantage of Maven POM located in POM
+                    URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
+                    if (dependencyPomResource != null) {
+                        // found it
+                        return Which.jarFile(dependencyPomResource);
+                    } else {
+                        Artifact a;
+                        a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
+                        try {
+                            embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                            return a.getFile();
+                        } catch (AbstractArtifactResolutionException x) {
+                            // could be a wrong groupId
+                            resolutionError = x;
+                        }
+                    }
+                }
+
+                throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
         });
     }

@@ -25,11 +25,11 @@ package jenkins.security.ApiTokenProperty;
 
 f=namespace(lib.FormTagLib)
 
-f.advanced(title:"Show API Token", align:"left") {
+f.advanced(title:_("Show API Token"), align:"left") {
     f.entry(title:_("API Token"), field:"apiToken") {
         f.readOnlyTextbox(id:"apiToken") // TODO: need to figure out the way to do this without using ID.
     }
-    f.validateButton(title:"Change API Token",method:"changeToken")
+    f.validateButton(title:_("Change API Token"),method:"changeToken")
 }
 
 //f.entry(title:_("API Token"),field:"apiToken") {

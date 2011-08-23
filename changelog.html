@@ -55,23 +55,43 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class='major bug'>
-    Maven builds failing with NullPointerException at the end.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10715">issue 10715</a>)
   <li class=bug>
-    Link "Started by user XXX" broken on build status page if user name modified.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10698">issue 10698</a>)
-
+    CLI clients should be able to see plugin classes
+    <a href="http://jenkins.361315.n4.nabble.com/channel-example-and-plugin-classes-gives-ClassNotFoundException-tp3756092p3756092.html">report</a>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.427>What's new in 1.427</a> <!--=DATE=--></h3>
+<h3><a name=v1.428>What's new in 1.428</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    CLI jar download was making the browser prefer a wrong file name.
+  <li class=bug>
+    Link "Started by user XXX" broken on build status page if user name modified.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10698">issue 10698</a>)
+  <li class=bug>
+    404 error when clicking "Build History" link on MyView.
+  <li class=bug>
+    Add a DefaultViewsTabBar config.jelly to avoid jelly exception
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10640">issue 10640</a>)
+  <li class=rfe>
+    go back to view page when job is deleted.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10510">issue 10510</a>)
+  <li class=rfe>
+    A Global Environment variable with an empty key would fail maven builds since 1.424. Ignore these variables instead of failing the build.
+    (<a href="https://groups.google.com/forum/#!searchin/jenkinsci-users/timp/jenkinsci-users/YThhsdGBVwM/7_7GMYIYiRIJ">report</a>)
+
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.427>What's new in 1.427</a> (2011/08/19)</h3>
 <ul class=image>
   <li class='major bug'>
     Builds failing while archiving test result if build is running in different VM (e.g. IBM J9) than Jenkins is
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10030">issue 10030</a>)
+  <li class='major bug'>
+    Maven builds failing with NullPointerException at the end.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10715">issue 10715</a>)
   <li class=bug>
     Jenkins self-restart causes process name to change from java to exe
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9206">issue 9206</a>)
@@ -122,7 +142,6 @@ Upcoming changes</a>
     Fixed unclear text for Tabs with no jobs
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9330">issue 9330</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.426>What's new in 1.426</a> (2011/08/15)</h3>
 <ul class=image>
   <li class=bug>
@@ -182,6 +201,11 @@ Upcoming changes</a>
   <li class='major rfe'>
     Updated JDK installer to reflect changes in Oracle download server
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10511">issue 10511</a>)
+  <li class='major bug'>
+    Fixed memory leak in the master/slave communication.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10424">issue 10424</a>)
+  <li class='bug'>
+    Fixed a problem in the core that prevents CLI users from authenticating with Crowd plugin (and others like it.)
 </ul>
 <h3><a name=v1.423>What's new in 1.423</a> (2011/07/25)</h3>
 <ul class=image>

@@ -1350,7 +1350,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return names;
     }
 
-    public synchronized View getView(String name) {
+    public View getView(String name) {
         return viewGroupMixIn.getView(name);
     }
 
@@ -2791,7 +2791,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
-        return new Slave.JnlpJar(req.getRestOfPath());
+        return new Slave.JnlpJar(req.getRestOfPath().substring(1));
     }
 
     /**

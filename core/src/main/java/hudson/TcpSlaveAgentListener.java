@@ -216,7 +216,7 @@ public final class TcpSlaveAgentListener extends Thread {
             Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
                     Computer.threadPoolForRemoting, Mode.BINARY,
                     new BufferedInputStream(new SocketInputStream(this.s)),
-                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
+                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
