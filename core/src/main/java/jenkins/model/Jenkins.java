@@ -1350,7 +1350,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return names;
     }
 
-    public synchronized View getView(String name) {
+    public View getView(String name) {
         return viewGroupMixIn.getView(name);
     }
 
