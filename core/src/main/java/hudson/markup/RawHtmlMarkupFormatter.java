@@ -46,5 +46,5 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
         }
     }
 
-    public static MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter(false);
+    public static final MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter(false);
 }
