@@ -74,7 +74,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
     public long getInitialDelay() {
-        return Math.abs(new Random().nextLong())%getRecurrencePeriod();
+        return Math.abs(RANDOM.nextLong())%getRecurrencePeriod();
     }
 
     @Override
@@ -92,4 +92,5 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         return Jenkins.getInstance().getExtensionList(AperiodicWork.class);
     }
 
+    private static final Random RANDOM = new Random();
 }

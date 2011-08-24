@@ -59,7 +59,7 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
-    private final Channel channel;
+    private transient final Channel channel;
 
     public CliManagerImpl(Channel channel) {
         this.channel = channel;

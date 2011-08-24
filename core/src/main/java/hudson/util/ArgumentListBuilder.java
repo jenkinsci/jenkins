@@ -43,7 +43,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArgumentListBuilder implements Serializable {
+public class ArgumentListBuilder implements Serializable, Cloneable {
     private final List<String> args = new ArrayList<String>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)

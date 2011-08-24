@@ -68,8 +68,7 @@ import java.util.List;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Recorder implements Serializable,
-		MatrixAggregatable {
+public class JUnitResultArchiver extends Recorder implements MatrixAggregatable {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
