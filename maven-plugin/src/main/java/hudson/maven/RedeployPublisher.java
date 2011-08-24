@@ -28,24 +28,32 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
+import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.settings.GlobalMavenSettingsProvider;
 import hudson.maven.settings.MavenSettingsProvider;
 import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import net.sf.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -56,17 +64,15 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.Authentication;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.cli.ConsoleMavenTransferListener;
+import org.apache.maven.cli.BatchModeMavenTransferListener;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -285,7 +291,7 @@ public class RedeployPublisher extends Recorder {
                 mavenEmbedderRequest.setGlobalSettings( remoteGlobalSettingsFromConfig );
             }
 
-            mavenEmbedderRequest.setTransferListener(new ConsoleMavenTransferListener(listener.getLogger()));
+            mavenEmbedderRequest.setTransferListener(new BatchModeMavenTransferListener(listener.getLogger()));
 
             return MavenUtil.createEmbedder(mavenEmbedderRequest);
         } finally {
