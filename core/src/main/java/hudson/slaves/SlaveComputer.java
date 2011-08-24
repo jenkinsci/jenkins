@@ -197,7 +197,6 @@ public class SlaveComputer extends Computer {
                             cl.preLaunch(SlaveComputer.this, taskListener);
 
                         launcher.launch(SlaveComputer.this, taskListener);
-                        return null;
                     } catch (AbortException e) {
                         taskListener.error(e.getMessage());
                         throw e;
@@ -216,6 +215,10 @@ public class SlaveComputer extends Computer {
                             cl.onLaunchFailure(SlaveComputer.this, taskListener);
                     }
                 }
+
+                if (channel==null)
+                    throw new IOException("Slave failed to connect, even though the launcher didn't report it. See the log output for details.");
+                return null;
             }
         });
     }
