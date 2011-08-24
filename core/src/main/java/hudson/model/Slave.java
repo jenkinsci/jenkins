@@ -336,7 +336,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Invoked by XStream when this object is read into memory.
      */
-    private Object readResolve() {
+    protected Object readResolve() {
         // convert the old format to the new one
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)

@@ -58,6 +58,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     public PluginServletFilter() {
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void init(FilterConfig filterConfig) throws ServletException {
     	PluginServletFilter.filterConfig = filterConfig;
     	synchronized (LIST)  {

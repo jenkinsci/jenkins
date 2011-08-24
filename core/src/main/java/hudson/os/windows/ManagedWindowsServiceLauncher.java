@@ -351,7 +351,9 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
 
+    private static final Logger JINTEROP_LOGGER = Logger.getLogger("org.jinterop");
+
     static {
-        Logger.getLogger("org.jinterop").setLevel(Level.WARNING);
+        JINTEROP_LOGGER.setLevel(Level.WARNING);
     }
 }

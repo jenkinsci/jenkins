@@ -48,12 +48,10 @@ import org.jvnet.solaris.libzfs.ZFSFileSystem;
  * @author Kohsuke Kawaguchi
  */
 public class ZFSProvisioner extends FileSystemProvisioner implements Serializable {
-    private final LibZFS libzfs = new LibZFS();
-    private final Node node;
+    private static final LibZFS libzfs = new LibZFS();
     private final String rootDataset;
 
     public ZFSProvisioner(Node node) throws IOException, InterruptedException {
-        this.node = node;
         rootDataset = node.getRootPath().act(new FileCallable<String>() {
             public String invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);

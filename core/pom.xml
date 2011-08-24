@@ -510,6 +510,13 @@ THE SOFTWARE.
       <version>1.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
@@ -751,7 +758,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- run FindBugs for better error detection -->
+      <!-- run FindBugs for better error detection. run as "mvn -Pfindbugs install site" -->
       <id>findbugs</id>
       <reporting>
         <plugins>
@@ -761,8 +768,7 @@ THE SOFTWARE.
             <version>2.3.2</version>
             <configuration>
               <effort>Max</effort>
-              <threshold>Normal</threshold>
-              <onlyAnalyze>hudson.-</onlyAnalyze>
+              <threshold>High</threshold>
               <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
             </configuration>
           </plugin>

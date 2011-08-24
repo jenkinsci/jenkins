@@ -153,7 +153,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Invoked by XStream when this object is read into memory.
      */
-    private Object readResolve() {
+    protected Object readResolve() {
         if(properties==null)
             properties = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
         for (ToolProperty<?> p : properties)

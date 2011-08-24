@@ -75,7 +75,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
     public long getInitialDelay() {
-        return Math.abs(new Random().nextLong())%getRecurrencePeriod();
+        return Math.abs(RANDOM.nextLong())%getRecurrencePeriod();
     }
 
     /**
@@ -89,4 +89,6 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     protected static final long MIN = 1000*60;
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;
+
+    private static final Random RANDOM = new Random();
 }
