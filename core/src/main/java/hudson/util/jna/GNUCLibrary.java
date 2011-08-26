@@ -72,6 +72,10 @@ public interface GNUCLibrary extends Library {
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
 
+    int dup(int old);
+    int dup2(int old, int _new);
+    int close(int fd);
+
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
     int rename(String oldname, String newname);
 
