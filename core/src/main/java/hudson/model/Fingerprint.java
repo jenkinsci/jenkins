@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,13 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.Extension;
+import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.PersistedList;
+import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
@@ -77,7 +80,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     @ExportedBean(defaultVisibility=2)
     public static class BuildPtr {
-        final String name;
+        String name;
         final int number;
 
         public BuildPtr(String name, int number) {
@@ -101,6 +104,10 @@ public class Fingerprint implements ModelObject, Saveable {
             return name;
         }
 
+        void setName(String newName) {
+            name = newName;
+        }
+        
         /**
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
@@ -524,6 +531,31 @@ public class Fingerprint implements ModelObject, Saveable {
         }
     }
 
+    @Extension
+    public static final class ProjectRenameListener extends ItemListener {
+        @Override
+        public void onRenamed(Item item, String oldName, String newName) {
+            if (item instanceof AbstractProject) {
+                AbstractProject p = Hudson.getInstance().getItemByFullName(newName, AbstractProject.class);
+                if (p != null) {
+                    RunList builds = p.getBuilds();
+                    for (Object build : builds) {
+                        if (build instanceof AbstractBuild) {
+                            Collection<Fingerprint> fingerprints = ((AbstractBuild)build).getBuildFingerprints();
+                            for (Fingerprint f : fingerprints) {
+                                try {
+                                    f.rename(oldName, newName);
+                                } catch (IOException e) {
+                                    logger.log(Level.WARNING, "Failed to update fingerprint record " + f.getFileName() + " when " + oldName + " was renamed to " + newName, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private final Date timestamp;
 
     /**
@@ -813,6 +845,32 @@ public class Fingerprint implements ModelObject, Saveable {
             logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
     }
 
+    /**
+     * Update references to a renamed job in the fingerprint
+     */
+    public synchronized void rename(String oldName, String newName) throws IOException {
+        boolean touched = false;
+        if (original != null) {
+            if (original.getName().equals(oldName)) {
+                original.setName(newName);
+                touched = true;
+            }
+        }
+        
+        if (usages != null) {
+            RangeSet r = usages.get(oldName);
+            if (r != null) {
+                usages.put(newName, r);
+                usages.remove(oldName);
+                touched = true;
+            }
+        }
+        
+        if (touched) {
+            save();
+        }
+    }
+    
     public Api getApi() {
         return new Api(this);
     }
