@@ -46,7 +46,7 @@ THE SOFTWARE.
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.11</aetherVersion>
     <sisuInjectVersion>2.2.0</sisuInjectVersion>
-    <wagonVersion>1.0-beta-7</wagonVersion>    
+    <wagonVersion>1.0</wagonVersion>    
     <slf4jVersion>1.6.1</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
@@ -210,20 +210,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency> 
     
+    <!-- JENKINS-10819 : This wagon is safer and more configurable to provide http(s) support -->
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-http-lightweight</artifactId>
+      <artifactId>wagon-http</artifactId>
       <version>${wagonVersion}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>nekohtml</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>xercesMinimal</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
