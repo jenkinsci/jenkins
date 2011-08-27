@@ -8,6 +8,6 @@ tmpA=/tmp/svg2pngA$$
 tmpB=/tmp/svg2pngB$$
 
 cat > $tmpA
-inkscape -z -e "$tmpB" "$@" "$tmpA" 1>&2
+/Applications/Inkscape.app/Contents/Resources/bin/inkscape -z -e "$tmpB" "$@" "$tmpA" 1>&2
 cat $tmpB
 rm $tmpA $tmpB
