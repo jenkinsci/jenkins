@@ -76,6 +76,7 @@ THE SOFTWARE.
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build.type>private</build.type>
+    <version.remoting>2.5</version.remoting>
   </properties>
 
   <repositories>
@@ -133,7 +134,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.5</version>
+        <version>${version.remoting}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

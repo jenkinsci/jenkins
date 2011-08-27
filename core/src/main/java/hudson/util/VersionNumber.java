@@ -305,12 +305,12 @@ public class VersionNumber implements Comparable<VersionNumber> {
                     return 1; // 1-1 > 1-sp
 
                 case LIST_ITEM:
-                    Iterator left = iterator();
-                    Iterator right = ((ListItem) item).iterator();
+                    Iterator<Item> left = iterator();
+                    Iterator<Item> right = ((ListItem) item).iterator();
 
                     while (left.hasNext() || right.hasNext()) {
-                        Item l = left.hasNext() ? (Item) left.next() : null;
-                        Item r = right.hasNext() ? (Item) right.next() : null;
+                        Item l = left.hasNext() ? left.next() : null;
+                        Item r = right.hasNext() ? right.next() : null;
 
                         // if this is shorter, then invert the compare and mul with -1
                         int result = l == null ? -1 * r.compareTo(l) : l.compareTo(r);
@@ -464,8 +464,8 @@ public class VersionNumber implements Comparable<VersionNumber> {
     }
 
     public int digit(int idx) {
-        Iterator i = items.iterator();
-        Item item = (Item) i.next();
+        Iterator<Item> i = items.iterator();
+        Item item = i.next();
         while (idx > 0 && i.hasNext()) {
             if (item instanceof IntegerItem) {
                 idx--;

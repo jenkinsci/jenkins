@@ -3512,14 +3512,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     private static void computeVersion(ServletContext context) {
         // set the version
-        Properties props = new Properties();
-        try {
-            InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
-            if(is!=null)
-                props.load(is);
-        } catch (IOException e) {
-            e.printStackTrace(); // if the version properties is missing, that's OK.
-        }
+        Properties props = loadVersionProperties();
         String ver = props.getProperty("version");
         if(ver==null)   ver="?";
         VERSION = ver;
@@ -3534,10 +3527,32 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         VIEW_RESOURCE_PATH = "/resources/"+ VERSION_HASH;
     }
 
+    private static VersionNumber computeRemotingVersion() {
+        Properties props = loadVersionProperties();
+        String ver = props.getProperty("version.remoting");
+        if (ver==null) return null;
+        
+        return new VersionNumber(ver);
+    }
+    
+    private static Properties loadVersionProperties() {
+        Properties props = new Properties();
+        try {
+            InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        return props;
+    }
+
     /**
      * Version number of this Hudson.
      */
     public static String VERSION="?";
+    
+    public static final VersionNumber EXPECTED_REMOTING_VERSION = computeRemotingVersion();
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
