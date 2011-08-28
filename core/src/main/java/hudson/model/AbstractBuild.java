@@ -186,6 +186,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Set the name of the slave that the build was performed on.
+     * @param builtOn
+     * @since 1.429
+     */
+    public void setBuiltOnStr( String builtOn )
+    {
+        this.builtOn = builtOn;
+    }
+
+    /**
      * Gets the nearest ancestor {@link AbstractBuild} that belongs to
      * {@linkplain AbstractProject#getRootProject() the root project of getProject()} that
      * dominates/governs/encompasses this build.
