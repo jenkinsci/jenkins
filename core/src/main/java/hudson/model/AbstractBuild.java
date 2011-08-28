@@ -186,12 +186,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Set the name of the slave that the build was performed on.
-     * @param builtOn
+     * Allows subtypes to set the value of {@link #builtOn}.
+     * This is used for those implementations where an {@link AbstractBuild} is made 'built' without
+     * actually running its {@link #run()} method.
+     *
      * @since 1.429
      */
-    public void setBuiltOnStr( String builtOn )
-    {
+    protected void setBuiltOnStr( String builtOn ) {
         this.builtOn = builtOn;
     }
 

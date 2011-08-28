@@ -286,6 +286,12 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         return super.getParent();
     }
 
+    // allow MavenModuleSetBuild to set this.
+    @Override
+    protected void setBuiltOnStr(String builtOn) {
+        super.setBuiltOnStr(builtOn);
+    }
+
     /**
      * Runs Maven and builds the project.
      */
