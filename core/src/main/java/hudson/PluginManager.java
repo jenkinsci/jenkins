@@ -348,7 +348,7 @@ public abstract class PluginManager extends AbstractModelObject {
     /**
      * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
      */
-    private PluginStrategy createPluginStrategy() {
+    protected PluginStrategy createPluginStrategy() {
 		String strategyName = System.getProperty(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
