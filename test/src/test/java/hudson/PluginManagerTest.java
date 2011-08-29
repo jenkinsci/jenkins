@@ -25,13 +25,18 @@ package hudson;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.PluginManager.UberClassLoader;
+import hudson.model.Hudson;
 import hudson.scm.SubversionSCM;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -122,6 +127,33 @@ public class PluginManagerTest extends HudsonTestCase {
                     super.startPlugin(plugin);
                 }
             };
+        }
+    }
+
+
+    /**
+     * Makes sure that thread context classloader isn't used by {@link UberClassLoader}, or else
+     * infinite cycle ensues.
+     */
+    @Url("http://jenkins.361315.n4.nabble.com/channel-example-and-plugin-classes-gives-ClassNotFoundException-td3756092.html")
+    public void testUberClassLoaderDoesntUseContextClassLoader() throws Exception {
+        Thread t = Thread.currentThread();
+
+        URLClassLoader ucl = new URLClassLoader(new URL[0],hudson.pluginManager.uberClassLoader);
+
+        ClassLoader old = t.getContextClassLoader();
+        t.setContextClassLoader(ucl);
+        try {
+            try {
+                ucl.loadClass("No such class");
+                fail();
+            } catch (ClassNotFoundException e) {
+                // as expected
+            }
+
+            ucl.loadClass(Hudson.class.getName());
+        } finally {
+            t.setContextClassLoader(old);
         }
     }
 }
