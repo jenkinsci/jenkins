@@ -25,9 +25,11 @@ package hudson;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.scm.SubversionSCM;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.WithPlugin;
+import org.jvnet.hudson.test.recipes.WithPluginManager;
 
 import java.io.File;
 
@@ -37,7 +39,7 @@ import java.io.File;
 public class PluginManagerTest extends HudsonTestCase {
     @Override
     protected void setUp() throws Exception {
-        useLocalPluginManager = true;
+        setPluginManager(null); // use a fresh instance
         super.setUp();
     }
 
@@ -83,5 +85,43 @@ public class PluginManagerTest extends HudsonTestCase {
         // I thought test harness is loading the maven classes by itself.
         // TODO: write a separate test that tests the optional dependency loading
         tasks.classLoader.loadClass(hudson.maven.agent.AbortException.class.getName());
+    }
+
+    /**
+     * Verifies that by the time {@link Plugin#start()} is called, uber classloader is fully functioning.
+     * This is necessary as plugin start method can engage in XStream loading activities, and they should
+     * resolve all the classes in the system (for example, a plugin X can define an extension point
+     * other plugins implement, so when X loads its config it better sees all the implementations defined elsewhere)
+     */
+    @WithPlugin("tasks.hpi")
+    @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
+    public void testUberClassLoaderIsAvailableDuringStart() {
+        assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart)hudson.pluginManager).tested);
+    }
+
+    public class PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart extends LocalPluginManager {
+        boolean tested;
+
+        public PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart(File rootDir) {
+            super(rootDir);
+        }
+
+        @Override
+        protected PluginStrategy createPluginStrategy() {
+            return new ClassicPluginStrategy(this) {
+                @Override
+                public void startPlugin(PluginWrapper plugin) throws Exception {
+                    tested = true;
+
+                    // plugins should be already visible in the UberClassLoader
+                    assertTrue(!activePlugins.isEmpty());
+
+                    uberClassLoader.loadClass(SubversionSCM.class.getName());
+                    uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
+
+                    super.startPlugin(plugin);
+                }
+            };
+        }
     }
 }
