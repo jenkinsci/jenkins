@@ -110,7 +110,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.management.ThreadInfo;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -124,11 +123,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.jar.Manifest;
@@ -258,11 +255,20 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * This will cause a fresh {@link PluginManager} to be created for this test.
      * Leaving this to false enables the test harness to use a pre-loaded plugin manager,
      * which runs faster.
+     *
+     * @deprecated
+     *      Use {@link #pluginManager}
      */
     public boolean useLocalPluginManager;
 
-    public ComputerConnectorTester computerConnectorTester = new ComputerConnectorTester(this);
+    /**
+     * Set the plugin manager to be passed to {@link Jenkins} constructor.
+     *
+     * For historical reasons, {@link #useLocalPluginManager}==true will take the precedence.
+     */
+    private PluginManager pluginManager = TestPluginManager.INSTANCE;
 
+    public ComputerConnectorTester computerConnectorTester = new ComputerConnectorTester(this);
 
     protected HudsonTestCase(String name) {
         super(name);
@@ -326,6 +332,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
     }
+
+
 
     /**
      * Configures the update center setting for the test.
@@ -425,7 +433,20 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         File home = homeLoader.allocate();
         for (Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, createWebServer(), useLocalPluginManager ? null : TestPluginManager.INSTANCE);
+        return new Hudson(home, createWebServer(), useLocalPluginManager ? null : pluginManager);
+    }
+
+    /**
+     * Sets the {@link PluginManager} to be used when creating a new {@link Jenkins} instance.
+     *
+     * @param pluginManager
+     *      null to let Jenkins create a new instance of default plugin manager, like it normally does when running as a webapp outside the test.
+     */
+    public void setPluginManager(PluginManager pluginManager) {
+        this.useLocalPluginManager = false;
+        this.pluginManager = pluginManager;
+        if (hudson!=null)
+            throw new IllegalStateException("Too late to override the plugin manager");
     }
 
     /**
