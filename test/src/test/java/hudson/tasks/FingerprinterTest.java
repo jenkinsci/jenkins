@@ -72,6 +72,124 @@ public class FingerprinterTest extends HudsonTestCase {
     private static final String renamedProject1 = "renamed project 1";
     private static final String renamedProject2 = "renamed project 2";
 
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        Fingerprinter.enableFingerprintsInDependencyGraph = true;
+    }
+    
+    public void testFingerprintDependencies() throws Exception {
+        FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+
+        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+
+        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
+        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+
+        assertEquals(1, downstreamProjects.size());
+        assertEquals(1, upstreamProjects.size());
+        assertTrue(upstreamProjects.contains(upstream));
+        assertTrue(downstreamProjects.contains(downstream));
+    }
+
+    public void testMultipleUpstreamDependencies() throws Exception {
+        FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleProject upstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
+        FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
+
+        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        FreeStyleBuild upstreamBuild2 = assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
+        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+
+        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
+        List<AbstractProject> downstreamProjects2 = upstream2.getDownstreamProjects();
+        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+
+        assertEquals(1, downstreamProjects.size());
+        assertEquals(1, downstreamProjects2.size());
+        assertEquals(2, upstreamProjects.size());
+        assertTrue(upstreamProjects.contains(upstream));
+        assertTrue(upstreamProjects.contains(upstream2));
+        assertTrue(downstreamProjects.contains(downstream));
+    }
+
+    public void testMultipleDownstreamDependencies() throws Exception {
+        FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
+        FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
+
+        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        FreeStyleBuild downstreamBuild2 = assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
+
+        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
+        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+        List<AbstractProject> upstreamProjects2 = downstream2.getUpstreamProjects();
+
+        assertEquals(2, downstreamProjects.size());
+        assertEquals(1, upstreamProjects.size());
+        assertEquals(1, upstreamProjects2.size());
+        assertTrue(upstreamProjects.contains(upstream));
+        assertTrue(upstreamProjects2.contains(upstream));
+        assertTrue(downstreamProjects.contains(downstream));
+        assertTrue(downstreamProjects.contains(downstream2));
+    }
+
+    public void testDependencyExclusion() throws Exception {
+        FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+
+        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+
+        upstreamBuild.delete();
+
+        Hudson.getInstance().rebuildDependencyGraph();
+
+        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
+
+        assertEquals(0, upstreamProjects.size());
+        assertEquals(0, downstreamProjects.size());
+    }
+
+    public void testCircularDependency() throws Exception {
+        FreeStyleProject p = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        
+        FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        
+        List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
+        List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
+        
+        assertEquals(0, upstreamProjects.size());
+        assertEquals(0, downstreamProjects.size());
+    }
+    
+    public void testMatrixDependency() throws Exception {
+        MatrixProject matrixProject = createMatrixProject();
+        matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
+        FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        addFingerprinterToProject(matrixProject, singleContents, singleFiles);
+
+        hudson.rebuildDependencyGraph();
+
+        buildAndAssertSuccess(matrixProject);
+        buildAndAssertSuccess(freestyleProject);
+        waitUntilNoActivity();
+
+        RunList<FreeStyleBuild> builds = freestyleProject.getBuilds();
+        assertEquals("There should only be one FreestyleBuild", 1, builds.size());
+        FreeStyleBuild build = builds.iterator().next();
+        assertEquals(Result.SUCCESS, build.getResult());
+        List<AbstractProject> downstream = hudson.getDependencyGraph().getDownstream(matrixProject);
+        assertTrue(downstream.contains(freestyleProject));        
+        List<AbstractProject> upstream = hudson.getDependencyGraph().getUpstream(freestyleProject);
+        assertTrue(upstream.contains(matrixProject));
+    }
+
     public void testProjectRename() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
