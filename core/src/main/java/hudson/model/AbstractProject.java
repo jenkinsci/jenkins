@@ -1761,6 +1761,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = b!=null ? b.getWorkspace() : null;
         if (ws!=null && getScm().processWorkspaceBeforeDeletion(this, ws, b.getBuiltOn())) {
             ws.deleteRecursive();
+            for (WorkspaceListener wl : WorkspaceListener.all()) {
+                wl.afterDelete(this);
+            }
             return new HttpRedirect(".");
         } else {
             // If we get here, that means the SCM blocked the workspace deletion.

@@ -186,6 +186,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Allows subtypes to set the value of {@link #builtOn}.
+     * This is used for those implementations where an {@link AbstractBuild} is made 'built' without
+     * actually running its {@link #run()} method.
+     *
+     * @since 1.429
+     */
+    protected void setBuiltOnStr( String builtOn ) {
+        this.builtOn = builtOn;
+    }
+
+    /**
      * Gets the nearest ancestor {@link AbstractBuild} that belongs to
      * {@linkplain AbstractProject#getRootProject() the root project of getProject()} that
      * dominates/governs/encompasses this build.

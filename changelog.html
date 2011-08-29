@@ -56,6 +56,9 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    maven submodule build fails doing mkdir on master.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10831">issue 10831</a>)
+  <li class=bug>
     CLI clients should be able to see plugin classes
     <a href="http://jenkins.361315.n4.nabble.com/channel-example-and-plugin-classes-gives-ClassNotFoundException-tp3756092p3756092.html">report</a>
   <li class=bug>
@@ -76,12 +79,18 @@ Upcoming changes</a>
   <li class=bug>
     Project names in fingerprint records weren't updated when a project is renamed.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10330">issue 10330</a>)
+  <li class=rfe>
+    External job submision now supports &ly;displayName> and &lt;description> elements
+    (<a href="https://github.com/jenkinsci/jenkins/pull/215">pull 215</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.428>What's new in 1.428</a> <!--=DATE=--></h3>
+<h3><a name=v1.429>What's new in 1.429</a> <!--=DATE=--></h3>
+<!--=RC-CHANGES=-->
+</div><!--=END=-->
+<h3><a name=v1.428>What's new in 1.428</a> (2011/08/29)</h3>
 <ul class=image>
   <li class=bug>
     CLI jar download was making the browser prefer a wrong file name.
@@ -101,7 +110,6 @@ Upcoming changes</a>
     (<a href="https://groups.google.com/forum/#!searchin/jenkinsci-users/timp/jenkinsci-users/YThhsdGBVwM/7_7GMYIYiRIJ">report</a>)
 
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.427>What's new in 1.427</a> (2011/08/19)</h3>
 <ul class=image>
   <li class='major bug'>

@@ -130,11 +130,20 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
 
                 Result r = Integer.parseInt(elementText(p))==0?Result.SUCCESS:Result.FAILURE;
 
-                p.nextTag();  // get to <duration> (optional)
-                if(p.getEventType()== START_ELEMENT
-                && p.getLocalName().equals("duration")) {
-                    duration[0] = Long.parseLong(elementText(p));
-                }
+                do {
+                    p.nextTag();
+                    if(p.getEventType()== START_ELEMENT){
+                        if(p.getLocalName().equals("duration")) {
+                            duration[0] = Long.parseLong(elementText(p));
+                        }
+                        else if(p.getLocalName().equals("displayName")) {
+                            setDisplayName(p.getElementText());
+                        }
+                        else if(p.getLocalName().equals("description")) {
+                            setDescription(p.getElementText());
+                        }
+                    }
+                } while(!(p.getEventType() == END_ELEMENT && p.getLocalName().equals("run")));
 
                 return r;
             }

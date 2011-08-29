@@ -95,13 +95,6 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      * @since 1.98.
      */
     private List<ExecutedMojo> executedMojos;
-
-    /**
-     * Name of the slave this project was built on.
-     * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
-     * @since 1.394
-     */
-    private String builtOn;    
     
     public MavenBuild(MavenModule job) throws IOException {
         super(job);
@@ -293,25 +286,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         return super.getParent();
     }
 
-    /**
-     * @see hudson.model.AbstractBuild#getBuiltOn()
-     * @since 1.394
-     */
-    public Node getBuiltOn() {
-        if(builtOn==null || builtOn.equals(""))
-            return Jenkins.getInstance();
-        else
-            return Jenkins.getInstance().getNode(builtOn);
+    // allow MavenModuleSetBuild to set this.
+    @Override
+    protected void setBuiltOnStr(String builtOn) {
+        super.setBuiltOnStr(builtOn);
     }
-
-    /**
-     * @param builtOn
-     * @since 1.394
-     */
-    public void setBuiltOnStr( String builtOn )
-    {
-        this.builtOn = builtOn;
-    }    
 
     /**
      * Runs Maven and builds the project.
