@@ -666,6 +666,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("SC_START_IN_CTOR") // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
     	// As hudson is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
@@ -2852,6 +2853,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     /**
      * For debugging. Expose URL to perform GC.
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("DM_GC")
     public void doGc(StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         System.gc();

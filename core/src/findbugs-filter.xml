@@ -1,139 +1,20 @@
-<!--
-The MIT License
-
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--->
-
 <FindBugsFilter>
   <Match>
-    <!-- elimination of certain bug patterns by policy -->
     <Or>
-      <!-- It's hard to imagine a scenario where Hudson is granted higher privilege but called by a lower privileged client. -->
-      <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
-
-      <!-- exposing internal data structure via array is considered OK in Hudson. Hudson really doesn't try to defend against the malicious code -->
-      <Bug pattern="EI_EXPOSE_REP" />
-      <Bug pattern="EI_EXPOSE_REP2" />
-
-      <!-- FindBugs detect false positives. -->
-      <Bug pattern="SBSC_USE_STRINGBUFFER_CONCATENATION" />
-
-      <!-- Hudson defines mutable static field throughout the code so that debug features can be selectively made on and off at runtime -->
-      <Bug pattern="MS_SHOULD_BE_FINAL" />
-      <Bug pattern="MS_CANNOT_BE_FINAL" />
-
-      <!-- Hudson depends on singletons in many places. I actually think this is bad, but we can't fix this in one day. -->
-      <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+      <!-- Used for backward compatibility and extending utility classes -->
+      <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
+      <!-- Various debug probes have non final static fields -->
+      <Bug pattern="MS_SHOULD_BE_FINAL"/>
+      <!-- Groovy generates this -->
+      <Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS"/>
     </Or>
   </Match>
 
+  <!-- exclude medium and low priorities -->
   <Match>
-    <!-- generated class -->
-    <Or>
-      <Class name="hudson.scheduler.CrontabParser" />
-      <Class name="hudson.scheduler.CrontabLexer" />
-    </Or>
+    <Priority value="2"/>
   </Match>
-
   <Match>
-    <!-- fields left for backward compatibility -->
-    <Or>
-      <Class name="hudson.model.FingerprintMap" />
-      <Class name="hudson.scm.CVSSCM$DescriptorImpl" />
-      <Class name="hudson.scm.CVSSCM$DescriptorImpl$RepositoryBrowser" />
-      <Class name="hudson.tasks.Mailer" />
-    </Or>
-    <Or>
-      <Bug pattern="UUF_UNUSED_FIELD" />
-      <Bug pattern="URF_UNREAD_FIELD" />
-    </Or>
+    <Priority value="3"/>
   </Match>
-
-  <Match>
-    <!-- this class is not serialized -->
-    <Or>
-      <Class name="hudson.maven.MavenProbeAction" />
-      <Class name="hudson.maven.SplittableBuildListener" />
-      <Class name="hudson.maven.MavenBuild$ProxyImpl" />
-      <Class name="hudson.maven.MavenBuild$ProxyImpl2" />
-      <Class name="hudson.maven.MavenProcessFactory$SocketHandler$AcceptorImpl" />
-      <Class name="hudson.util.StreamTaskListener" />
-      <Class name="hudson.model.StreamBuildListener" />
-      <Class name="hudson.security.ContainerAuthentication" />
-      <Class name="hudson.scm.SubversionSCM$DescriptorImpl$RemotableSVNAuthenticationProviderImpl" />
-    </Or>
-    <Or>
-      <Bug code="SE_NO_SERIALVERSIONID" />
-      <Bug code="Se" />
-    </Or>
-  </Match>
-
-
-<!-- individual exclusions -->
-  <Match>
-    <!-- archiveReader.readLine() may never return null since it's the first invocation -->
-    <Class name="hudson.PluginWrapper"/>
-    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
-  </Match>
-
-  <Match>
-    <!-- PrintWriter doesn't carry any resource, so let it GC-ed is harmless. -->
-    <Class name="hudson.TcpSlaveAgentListener$ConnectionHandler" />
-    <Bug pattern="OS_OPEN_STREAM" />
-  </Match>
-
-  <Match>
-    <!-- FindBugs fail to take the writeObject method into account. -->
-    <Class name="hudson.maven.MavenProcessFactory$Connection" />
-    <Bug code="Se" />
-  </Match>
-
-  <Match>
-    <Class name="hudson.util.ProcessTreeKiller$Unix$UnixSystem" />
-    <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
-  </Match>
-
-  <Match>
-    <!-- Can't change this for backward compatibility -->
-    <Or>
-      <Class name="hudson.scm.CVSSCM$DescriptorImpl$RepositoryBrowser" />
-      <Class name="hudson.tasks.BuildWrapper$Environment" />
-    </Or>
-    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC" />
-  </Match>
-
-  <Match>
-    <Class name="hudson.org.apache.tools.ant..+" />
-  </Match>
-
-  <Match>
-    <!-- just a diagnostics method -->
-    <Class name="jenkins.model.Jenkins" />
-    <Bug pattern="DM_GC" />
-  </Match>
-
-  <Match>
-    <!-- TODO: this is actually bad but I can't think of how to fix this while preserving the order -->
-    <Class name="hudson.tasks.BuildStep" />
-    <Bug pattern="IC_SUPERCLASS_USES_SUBCLASS_DURING_INITIALIZATION" />
-  </Match>
-
 </FindBugsFilter>

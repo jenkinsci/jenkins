@@ -43,11 +43,8 @@ import java.util.logging.Logger;
  */
 @Extension
 public class WorkspaceCleanupThread extends AsyncPeriodicWork {
-    private static WorkspaceCleanupThread theInstance;
-
     public WorkspaceCleanupThread() {
         super("Workspace clean-up");
-        theInstance = this;
     }
 
     public long getRecurrencePeriod() {
@@ -55,7 +52,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     }
 
     public static void invoke() {
-        theInstance.run();
+        Jenkins.getInstance().getExtensionList(AsyncPeriodicWork.class).get(WorkspaceCleanupThread.class).run();
     }
 
     // so that this can be easily accessed from sub-routine.

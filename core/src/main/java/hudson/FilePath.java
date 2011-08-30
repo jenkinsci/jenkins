@@ -1392,13 +1392,14 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Copies this file to the specified target, with file permissions intact.
+     * Copies this file to the specified target, with file permissions and other meta attributes intact.
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
         copyTo(target);
         // copy file permission
         target.chmod(mode());
+        target.touch(lastModified());
     }
 
     /**

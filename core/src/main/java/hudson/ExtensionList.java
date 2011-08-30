@@ -80,7 +80,7 @@ public class ExtensionList<T> extends AbstractList<T> {
     private volatile List<ExtensionComponent<T>> extensions;
 
     /**
-     * Place to store manually registered instances with the per-Jenkins scope.
+     * Place to store manually registered instances with the per-Hudson scope.
      * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
      */
     private final CopyOnWriteArrayList<ExtensionComponent<T>> legacyInstances;

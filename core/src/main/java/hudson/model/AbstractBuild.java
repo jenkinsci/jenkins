@@ -186,6 +186,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * Allows subtypes to set the value of {@link #builtOn}.
+     * This is used for those implementations where an {@link AbstractBuild} is made 'built' without
+     * actually running its {@link #run()} method.
+     *
+     * @since 1.429
+     */
+    protected void setBuiltOnStr( String builtOn ) {
+        this.builtOn = builtOn;
+    }
+
+    /**
      * Gets the nearest ancestor {@link AbstractBuild} that belongs to
      * {@linkplain AbstractProject#getRootProject() the root project of getProject()} that
      * dominates/governs/encompasses this build.
@@ -719,6 +730,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
+     * get the fingerprints associated with this build
+     *
+     * @return never null
+     */
+    @Exported(name = "fingerprint", inline = true, visibility = -1)
+    public Collection<Fingerprint> getBuildFingerprints() {
+        FingerprintAction fingerprintAction = getAction(FingerprintAction.class);
+        if (fingerprintAction != null) {
+            return fingerprintAction.getFingerprints().values();
+        }
+        return Collections.<Fingerprint>emptyList();
+    }
+
+    /**
      * Gets the changes incorporated into this build.
      *
      * @return never null.
@@ -1096,8 +1121,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         FingerprintAction o = from.getAction(FingerprintAction.class);
         if (n==null || o==null)     return Collections.emptyMap();
 
-        Map<AbstractProject,Integer> ndep = n.getDependencies();
-        Map<AbstractProject,Integer> odep = o.getDependencies();
+        Map<AbstractProject,Integer> ndep = n.getDependencies(true);
+        Map<AbstractProject,Integer> odep = o.getDependencies(true);
 
         Map<AbstractProject,DependencyChange> r = new HashMap<AbstractProject,DependencyChange>();
 

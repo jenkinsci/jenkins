@@ -154,7 +154,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag also affects the mutual exclusion control between builds and polling.
-     * If this methods returns false, polling will continu asynchronously even
+     * If this methods returns false, polling will continue asynchronously even
      * when a build is in progress, but otherwise the polling activity is blocked
      * if a build is currently using a workspace.
      *
@@ -174,7 +174,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
      *
      * <p>
-     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecesasry.
+     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecessary.
      * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
      * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
      * for all the projects, which will be prohibitive in big Hudson.
@@ -454,7 +454,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * Collaboration between {@link Builder} and {@link SCM} allows
-     * Hudson to find build.xml wihout asking the user to enter "xyz" again.
+     * Hudson to find build.xml without asking the user to enter "xyz" again.
      *
      * <p>
      * This method is for this purpose. It takes the workspace

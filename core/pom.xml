@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.429-SNAPSHOT</version>
+    <version>1.430-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.172</stapler.version>
+    <stapler.version>1.173</stapler.version>
   </properties>
 
   <dependencies>
@@ -510,6 +510,13 @@ THE SOFTWARE.
       <version>1.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
@@ -662,21 +669,6 @@ THE SOFTWARE.
           </archive>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.kohsuke.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -751,7 +743,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- run FindBugs for better error detection -->
+      <!-- run FindBugs for better error detection. run as "mvn -Pfindbugs install site" -->
       <id>findbugs</id>
       <reporting>
         <plugins>
@@ -761,8 +753,7 @@ THE SOFTWARE.
             <version>2.3.2</version>
             <configuration>
               <effort>Max</effort>
-              <threshold>Normal</threshold>
-              <onlyAnalyze>hudson.-</onlyAnalyze>
+              <threshold>High</threshold>
               <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
             </configuration>
           </plugin>

@@ -289,8 +289,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void load(PluginWrapper wrapper) throws IOException {
-        // override the context classloader so that XStream activity in plugin.start()
-        // will be able to resolve classes in this plugin
+        // override the context classloader. This no longer makes sense,
+        // but it is left for the backward compatibility
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(wrapper.classLoader);
         try {
