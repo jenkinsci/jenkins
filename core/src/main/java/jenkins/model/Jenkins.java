@@ -25,6 +25,7 @@
  */
 package jenkins.model;
 
+import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.AbstractCIBase;
 import hudson.model.AbstractProject;
@@ -3125,7 +3126,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        checkPermission(ADMINISTER);
+        checkPermission(EXECUTE_SCRIPT);
 
         String text = req.getParameter("script");
         if (text != null) {
@@ -3621,6 +3622,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
+    public static final Permission EXECUTE_SCRIPT = new Permission(PERMISSIONS, "ExecuteScript", Messages._Hudson_ExecuteScriptPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
     /**
      * {@link Authentication} object that represents the anonymous user.
