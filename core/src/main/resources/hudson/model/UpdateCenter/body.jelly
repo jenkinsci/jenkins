@@ -36,22 +36,22 @@ THE SOFTWARE.
       </j:forEach>
     </table>
     
-    <div id="scheduleRestartBlock">
-      <form method="post" id="scheduleRestart" action="">
-        <p class="info">
-          <j:if test="${app.lifecycle.canRestart()}">
+    <j:if test="${app.lifecycle.canRestart()}">
+      <div id="scheduleRestartBlock">
+        <form method="post" id="scheduleRestart" action="">
+          <p class="info">
             <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
               <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
             </j:if>
             <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
               <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" />
             </j:if>
-          </j:if>
-          <label for="scheduleRestartCheckbox">
-            ${%warning}
-          </label>
-        </p>
-      </form>
-    </div>
+            <label for="scheduleRestartCheckbox">
+              ${%warning}
+            </label>
+          </p>
+        </form>
+      </div>
+    </j:if>
   </l:ajax>
 </j:jelly>
