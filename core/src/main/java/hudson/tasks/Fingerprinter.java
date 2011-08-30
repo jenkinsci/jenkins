@@ -419,7 +419,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependecyDe
          *
          * @param includeMissing true if the original build should be included in
          *  the result, even if it doesn't exist
-         * @since 1.429
+         * @since 1.430
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
