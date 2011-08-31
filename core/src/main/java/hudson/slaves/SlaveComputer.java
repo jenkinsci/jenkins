@@ -33,6 +33,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.Futures;
+import hudson.util.VersionNumber;
 import hudson.FilePath;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
@@ -334,8 +335,7 @@ public class SlaveComputer extends Computer {
         if(listener!=null)
             channel.addListener(listener);
 
-        String slaveVersion = channel.call(new SlaveVersion());
-        log.println("Slave.jar version: " + slaveVersion);
+        checkSlaveHasExpectedVersion(channel, log);
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
@@ -384,6 +384,20 @@ public class SlaveComputer extends Computer {
             cl.onOnline(this,taskListener);
         log.println("Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
+    }
+
+    private void checkSlaveHasExpectedVersion(Channel channel, PrintStream log) throws IOException, InterruptedException {
+        String slaveVersion = channel.call(new SlaveVersion());
+        if (Jenkins.EXPECTED_REMOTING_VERSION != null) {
+            VersionNumber slaveV = new VersionNumber(slaveVersion);
+            if (!Jenkins.EXPECTED_REMOTING_VERSION.equals(slaveV)) {
+                String msg = "Slave version "+slaveV+" doesn't match expected slave version "+Jenkins.EXPECTED_REMOTING_VERSION
+                    +".\nSlave connection refused! Please update your slave.jar to the matching version!";
+                log.println(msg);
+                throw new IOException(msg);
+            }
+        }
+        // else we're running with mvn hudson-dev:run o.s.l.t.
     }
 
     @Override
