@@ -92,7 +92,7 @@ THE SOFTWARE.
       <local:feature icon="terminal.png"    href="cli"         title="${%Jenkins CLI}">
         ${%JenkinsCliText}
       </local:feature>
-      <l:hasPermission permission="${it.EXECUTE_SCRIPT}">
+      <l:hasPermission permission="${it.RUN_SCRIPTS}">
         <local:feature icon="notepad.png"      href="script"      title="${%Script Console}">
           ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
         </local:feature>
