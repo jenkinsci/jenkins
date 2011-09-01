@@ -70,7 +70,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
 
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
-        Jenkins.getInstance().checkPermission(Jenkins.EXECUTE_SCRIPT);
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
