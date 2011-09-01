@@ -138,7 +138,7 @@ public final class ModuleDependency implements Serializable {
     /**
      * Upon reading from the disk, intern strings.
      */
-    public ModuleDependency readResolve() {
+    protected Object readResolve() {
         return new ModuleDependency(groupId,artifactId,version,plugin);
     }
 

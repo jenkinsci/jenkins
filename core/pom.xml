@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.429-SNAPSHOT</version>
+    <version>1.430-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -668,21 +668,6 @@ THE SOFTWARE.
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
