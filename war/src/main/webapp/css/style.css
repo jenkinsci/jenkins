@@ -135,7 +135,7 @@ dt {
 
 a:link {
   text-decoration: underline;
-  color: #204A87;
+  color: #355564;
 }
 
 a:visited {
@@ -874,7 +874,7 @@ DIV.yahooTree td {
   white-space:nowrap;
 }
 #search-box-completion LI.yui-ac-highlight {
-  background: #729FCF;
+  background: #80AFDF;
 }
 #search-box-minWidth {
   position:absolute;

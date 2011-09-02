@@ -1,0 +1,77 @@
+orig pull request: https://github.com/jenkinsci/jenkins/pull/179
+logo pallette: https://wiki.jenkins-ci.org/display/JENKINS/Logo
+tango pallette: http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines
+meeting: http://meetings.jenkins-ci.org/jenkins/2011/jenkins.2011-08-11-18.00.html
+	 http://meetings.jenkins-ci.org/jenkins/2011/jenkins.2011-08-11-18.00.log.html
+
+------------------
+
+new available:
+#F7F1DA (light brown)
+#355564 (blue gray, dark)
+#4D758B (blue gray, mid)
+#80AFDF (blue gray, light)
+#D24939 (red)
+#D9D8D6 (gray, light)
+#757172 (gray)
+#000000 (black)
+
+#333333 (black, from wiki & JIRA)
+
+------------------	 
+	 
+ColorMappings (current -> new):
+
+Dark Blue
+#204A87 -> #355564 (style.css)
+Light Blue
+#729FCF -> #80AFDF (style.css)
+	 
+------------------	 
+	 
+18:35:23 <kohsuke> #topic Kohsuke wanted to discuss this (JENKINS-9488 - align topbar colors): https://github.com/jenkinsci/jenkins/pull/179
+18:35:29 <rtyler> or that one
+18:35:45 <kohsuke> #info so there's a pending request to change the color of the top bar of Jenkins UI
+18:35:58 <jenkins-admin> JENKINS-9488:align color palette used in Jenkins with jenkins-ci.org and issues.jenkins-ci.org (Open) http://jenkins-ci.org/issue/9488
+18:35:59 <aheritier> Funny 9488 : I remember having proposed it a long time ago in the chat.
+18:35:59 <kohsuke> from current blue + orange to black + red, the same colors used in wiki and issues
+18:36:09 <aheritier> +1 from me
+18:36:41 <kohsuke> #info one point I'd like to make is that the current color came from the same palette that's used for all the other icons
+18:36:42 <rtyler> I'm definitely on board, but the colors on the wiki are not pure black -_-
+18:36:45 <aheritier> As it will be more coherent and it will make us a little bit different
+18:37:02 * olamy tested the pull request and like it
+18:37:05 <kohsuke> and the same color palette is used for hyperlinks, trend graphs, blue/red/yellow ball, etc.
+18:37:16 <kohsuke> So I'm bit mixed about the change
+18:37:26 <aheritier> kohsuke: the palette must be documented in the wiki
+18:37:33 <rtyler> olamy: can you post a screenshot?'
+18:37:38 <aheritier> and I agree we need to be sure to use it everywhere
+18:37:56 <olamy> arf I have reverted locally
+18:38:03 <jieryn> does this highlight a larger need for an easier to theme/skin jenkins?
+18:38:38 <aheritier> I'm also interested in skinning capabilities but it is  a larger subject I think
+18:38:38 <rtyler> jieryn: I don't think so, I think this is just a matter of our branding being woefully dated
+18:38:46 <rtyler> (theming is a different can of worms)
+18:39:14 <kohsuke> or does this mean we should look at changing other colors at the same time? The new palette uses different blue & red
+18:39:43 <olamy> ahertiter: some company/organisations like to have their own design
+18:40:14 <rtyler> kohsuke: we do have the color pallette up here: https://wiki.jenkins-ci.org/display/JENKINS/Logo
+18:40:19 <rtyler> IMHO it's definitely time to start using it
+18:40:25 <jieryn> ..this is possibly the first literal bike-shedding in a software project i've ever seen..
+18:40:35 <jieryn> we are literally debating colors
+18:40:38 <rtyler> woot!
+18:40:42 <kohsuke> And this is the one currently in use http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines
+18:41:11 <rtyler> aha
+18:42:22 <kohsuke> I'm fine either way but I was inclined to keep the current one
+18:42:45 <jieryn> i'd prefer to keep the original one unless we're going to wholesale replace the ui for easy theming, via extension or whatever
+18:44:02 <kohsuke> #info screenshot: http://postimage.org/image/2u9iq9v0k/
+18:44:27 <rtyler> that looks good to me
+18:44:42 <aheritier> +1 for me IF everything is updated (links …)
+18:44:48 <kutzi> like it, too
+18:45:15 <kutzi> should we ask the users as they will be using it?
+18:45:16 <rtyler> kohsuke: do you think imod might be open to expanding his commit a bit? :)
+18:45:31 <kohsuke> doesn't hurt to ask
+18:45:36 <rtyler> kutzi: that's an even scarier bike shedding opportunity
+18:45:38 <rtyler> xD
+18:45:52 <kohsuke> OK, let's ask him or others to push this effort bit further then
+18:46:03 <kohsuke> If enough people care to do it and it happens, then we'll swap
+18:46:13 <bap2000> aren't the links the browser default?
+18:46:23 <kohsuke> bap2000: actually, no
+18:46:46 <bap2000> ok - looks like it to me o_O
