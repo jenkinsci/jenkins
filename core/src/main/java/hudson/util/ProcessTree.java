@@ -1059,13 +1059,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             m.skip0();
                             arguments.add(m.readString());
                         }
-                    } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalStateException("Failed to parse arguments: arg0="+args0+", arguments="+arguments+", nargs="+nargs,e);
-                    }
 
-                    // this is how you can read environment variables
-                    while(m.peek()!=0)
-                    envVars.addLine(m.readString());
+                        // this is how you can read environment variables
+                        while(m.peek()!=0)
+                          envVars.addLine(m.readString());
+                    } catch (IndexOutOfBoundsException e) {
+                        for( int i=arguments.size(); i<nargs; i++) {
+                            arguments.add("");
+                        }
+                        LOGGER.log(Level.INFO, "Failed to parse arguments: arg0="+args0+", arguments="+arguments+", nargs="+nargs+". Continuing anyway.");
+                    }
                 } catch (IOException e) {
                     // this happens with insufficient permissions, so just ignore the problem.
                 }
