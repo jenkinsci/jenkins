@@ -81,7 +81,15 @@ public class MavenFingerprinter extends MavenReporter {
      * Mojos perform different dependency resolution, so we need to check this for each mojo.
      */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        record(pom.getArtifacts(),used);
+    	MavenProject parent = pom.getParent();
+    	while (parent != null) { 
+    		// Parent Artifact contains no acual file, so we resolve against the local repository
+    		Artifact parentArtifact = parent.getProjectBuildingRequest().getLocalRepository().find(parent.getArtifact());
+    		record(parentArtifact, used);
+    		parent = parent.getParent();
+    	}
+
+		record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
         record(pom.getAttachedArtifacts(),produced);
         record(pom.getGroupId(),pom.getFile(),produced);
