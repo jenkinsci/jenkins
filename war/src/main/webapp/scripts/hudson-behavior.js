@@ -1944,6 +1944,19 @@ function buildFormTree(form) {
     }
 }
 
+/**
+ * @param {boolean} toggle
+ *      When true, will check all checkboxes in the page. When false, unchecks them all.
+ */
+var toggleCheckboxes = function(toggle) {
+    var inputs = document.getElementsByTagName("input");
+    for(var i=0; i<inputs.length; i++) {
+        if(inputs[i].type === "checkbox") {
+            inputs[i].checked = toggle;
+        }
+    }
+};
+
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
 String.prototype.trim = function() {
     var temp = this;
