@@ -66,6 +66,9 @@ import java.util.StringTokenizer;
 import java.util.List;
 import java.util.Collections;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 /**
  * Build by using Maven.
@@ -413,8 +416,16 @@ public class Maven extends Builder {
                         File[] jars = new File(getHomeDir(),"lib").listFiles();
                         if(jars!=null) { // be defensive
                             for (File jar : jars) {
-                                if (jar.getName().endsWith("-uber.jar") && jar.getName().startsWith("maven-")) {
-                                    return jar.getName();
+                                if (jar.getName().startsWith("maven-")) {
+                                    JarFile jf = null;
+                                    try {
+                                        jf = new JarFile(jar);
+                                        Manifest manifest = jf.getManifest();
+                                        String version = manifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                                        if(version != null) return version;
+                                    } finally {
+                                        if(jf != null) jf.close();
+                                    }
                                 }
                             }
                         }
@@ -424,15 +435,15 @@ public class Maven extends Builder {
 
             if (!mavenVersion.equals("")) {
                 if (mavenReqVersion == MAVEN_20) {
-                    if(mavenVersion.startsWith("maven-2.") || mavenVersion.startsWith("maven-core-2"))
+                    if(mavenVersion.startsWith("2."))
                         return true;
                 }
                 else if (mavenReqVersion == MAVEN_21) {
-                    if(mavenVersion.startsWith("maven-2.") && !mavenVersion.startsWith("maven-2.0"))
+                    if(mavenVersion.startsWith("2.") && !mavenVersion.startsWith("2.0"))
                         return true;
                 }
                 else if (mavenReqVersion == MAVEN_30) {
-                    if(mavenVersion.startsWith("maven-3.") && !mavenVersion.startsWith("maven-2.0"))
+                    if(mavenVersion.startsWith("3.") && !mavenVersion.startsWith("2.0"))
                         return true;
                 }                
             }
