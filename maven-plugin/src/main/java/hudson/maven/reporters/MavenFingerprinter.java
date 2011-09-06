@@ -81,7 +81,8 @@ public class MavenFingerprinter extends MavenReporter {
      * Mojos perform different dependency resolution, so we need to check this for each mojo.
      */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-    	recordParents(pom);
+        // TODO (kutzi, 2011/09/06): it should be perfectly save to move all these records to the
+        // postBuild method as artifacts should only be added by mojos, but never removed/modified.
 		record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
         record(pom.getAttachedArtifacts(),produced);
@@ -94,7 +95,11 @@ public class MavenFingerprinter extends MavenReporter {
      * Sends the collected fingerprints over to the master and record them.
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        
+        recordParents(pom);
+        
         build.executeAsync(new BuildCallable<Void,IOException>() {
+            private static final long serialVersionUID = -1360161848504044869L;
             // record is transient, so needs to make a copy first
             private final Map<String,String> u = used;
             private final Map<String,String> p = produced;
@@ -125,7 +130,7 @@ public class MavenFingerprinter extends MavenReporter {
 		while (parent != null) {
 			File parentFile = parent.getFile();
 			if (parentFile == null) {
-				// Parent Artifact contains no acual file, so we resolve against
+				// Parent artifact contains no actual file, so we resolve against
 				// the local repository
 				parentFile = parent.getProjectBuildingRequest()
 						.getLocalRepository().find(parent.getArtifact())
@@ -161,14 +166,14 @@ public class MavenFingerprinter extends MavenReporter {
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private void record(String groupId, File f, Map<String, String> record) throws IOException, InterruptedException {
+    private void record(String fileNamePrefix, File f, Map<String, String> record) throws IOException, InterruptedException {
         if(f==null || files.contains(f) || !f.isFile())
             return;
 
         // new file
         files.add(f);
         String digest = new FilePath(f).digest();
-        record.put(groupId+':'+f.getName(),digest);
+        record.put(fileNamePrefix+':'+f.getName(),digest);
     }
 
     @Extension
