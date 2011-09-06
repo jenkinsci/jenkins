@@ -81,10 +81,11 @@ public class MavenFingerprinter extends MavenReporter {
      * Mojos perform different dependency resolution, so we need to check this for each mojo.
      */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        record(pom.getArtifacts(),used);
+    	recordParents(pom);
+		record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
         record(pom.getAttachedArtifacts(),produced);
-        record(pom.getGroupId(),pom.getFile(),produced);
+        record(pom.getGroupId() + ":" + pom.getArtifactId(),pom.getFile(),produced);
 
         return true;
     }
@@ -119,6 +120,27 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
+	private void recordParents(MavenProject pom) throws IOException, InterruptedException {
+		MavenProject parent = pom.getParent();
+		while (parent != null) {
+			File parentFile = parent.getFile();
+			if (parentFile == null) {
+				// Parent Artifact contains no acual file, so we resolve against
+				// the local repository
+				parentFile = parent.getProjectBuildingRequest()
+						.getLocalRepository().find(parent.getArtifact())
+						.getFile();
+			}
+			// we need to include the artifact Id for poms as well, otherwise a
+			// project with the same groupId would override its parent's
+			// fingerprint
+			record(parent.getGroupId() + ":" + parent.getArtifactId(),
+					parentFile, used);
+			parent = parent.getParent();
+		}
+	}
+
+    
     private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         for (Artifact a : artifacts)
             record(a,record);
