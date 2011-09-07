@@ -22,6 +22,8 @@ rm $(dirname $0)/jenkins.war.tmp
 cp $1 $(dirname $0)/packages/jenkins/dest_root/Applications/Jenkins/jenkins.war
 # Change the Installer title to match the version
 sed s,"<title>Jenkins CI Server</title>","<title>${PKG_TITLE}</title>", distribution.xml >distribution-title.xml
+# Update the version for the subpackage
+echo -n $version > $(dirname $0)/packages/jenkins/version
 
 # Run pkgbuild for each sub-package
 # To verify each sub-package, run "lsbom `pkgutil --bom child.pkg`".
