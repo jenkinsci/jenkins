@@ -92,9 +92,11 @@ THE SOFTWARE.
       <local:feature icon="terminal.png"    href="cli"         title="${%Jenkins CLI}">
         ${%JenkinsCliText}
       </local:feature>
-      <local:feature icon="notepad.png"      href="script"      title="${%Script Console}">
-        ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
-      </local:feature>
+      <l:hasPermission permission="${it.RUN_SCRIPTS}">
+        <local:feature icon="notepad.png"      href="script"      title="${%Script Console}">
+          ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
+        </local:feature>
+      </l:hasPermission>
       <local:feature icon="network.png"      href="computer/"   title="${%Manage Nodes}">
         ${%Add, remove, control and monitor the various nodes that Jenkins runs jobs on.}
       </local:feature>

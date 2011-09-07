@@ -1216,7 +1216,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("change",h); }
+            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("onchange",h); }
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1943,6 +1943,19 @@ function buildFormTree(form) {
         return false;
     }
 }
+
+/**
+ * @param {boolean} toggle
+ *      When true, will check all checkboxes in the page. When false, unchecks them all.
+ */
+var toggleCheckboxes = function(toggle) {
+    var inputs = document.getElementsByTagName("input");
+    for(var i=0; i<inputs.length; i++) {
+        if(inputs[i].type === "checkbox") {
+            inputs[i].checked = toggle;
+        }
+    }
+};
 
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
 String.prototype.trim = function() {

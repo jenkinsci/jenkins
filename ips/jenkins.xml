@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<service_bundle type="manifest" name="Hudson">
-	<service name="application/hudson" type="service" version="1">
+<service_bundle type="manifest" name="Jenkins">
+	<service name="application/jenkins" type="service" version="1">
 		
 		<create_default_instance enabled="true" />
 		
-		<!-- Only one instance of Hudson should ever run per server -->
+		<!-- Only one instance of Jenkins should ever run per server -->
 		<single_instance />
 		
 		<dependency name="multi-user-server" type="service" grouping="require_all" restart_on="none">
@@ -40,12 +40,12 @@ THE SOFTWARE.
 			<method_credential user='root' group='root' />
 			<method_environment>
 				<envvar name='PATH' value='/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/sbin:/usr/sfw/bin' />
-				<envvar name='HUDSON_HOME' value='/var/lib/hudson' />
+				<envvar name='JENKINS_HOME' value='/var/lib/jenkins' />
 			</method_environment>
 		</method_context>
 
-		<!-- Set the HUDSON_HOME env variable, and run the war file in /apps/hudson/hudson.war -->
-		<exec_method type="method" name="start"	exec="java -Xmx512m -jar /usr/local/bin/hudson.war" timeout_seconds="0"/>
+		<!-- Set the HUDSON_HOME env variable, and run the war file in /apps/jenkins/jenkins.war -->
+		<exec_method type="method" name="start"	exec="java -Xmx512m -jar /usr/local/bin/jenkins.war" timeout_seconds="0"/>
 		<exec_method type="method" name="stop" exec=":kill -TERM" timeout_seconds="30"/>
 
 		<!-- We are going to be kicking off a single child process so we want Wait mode-->
@@ -57,10 +57,10 @@ THE SOFTWARE.
 
 		<template>
 			<common_name>
-				<loctext xml:lang='C'>Hudson Continuous Build Server</loctext>
+				<loctext xml:lang='C'>Jenkins Continuous Build Server</loctext>
 			</common_name>
 			<documentation>
-				<doc_link name='hudson.dev.java.net' uri='https://hudson.dev.java.net/' />
+              <doc_link name='jenkins-ci.org' uri='http://jenkins-ci.org/' />
 			</documentation>
 		</template>
 	</service>

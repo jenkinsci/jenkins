@@ -230,6 +230,7 @@ public class SurefireArchiver extends MavenReporter {
             && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
             && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
             && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
+            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
             return false;
@@ -276,6 +277,11 @@ public class SurefireArchiver extends MavenReporter {
                 }
 	        } else if (mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test")) {
                 Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")) {
+                Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
                 if (((skipTests != null) && (skipTests))) {
                     return false;
                 }
