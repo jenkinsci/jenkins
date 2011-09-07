@@ -15,7 +15,7 @@
 	<string>org.jenkins-ci</string>
 	<key>ProgramArguments</key>
 	<array>
-                <string>/bin/bash</string>
+        <string>/bin/bash</string>
 		<string>/Library/Application Support/Jenkins/jenkins-runner.sh</string>
 	</array>
 	<key>RunAtLoad</key>

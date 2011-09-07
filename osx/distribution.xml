@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <!-- General Package Properties -->
+    <title>Jenkins CI Server</title>
+    <organization>org.jenkins-ci</organization>
+    <domain system="true" />
+    <background file="background.png" scaling="none" alignment="bottomleft" />
+    <welcome file="Welcome.rtf" />
+    <license file="license.txt" />
+    <!-- Define all packages references -->
+    <pkg-ref id="org.jenkins-ci.documentation"/>
+    <pkg-ref id="org.jenkins-ci.jenkins"/>
+    <pkg-ref id="org.jenkins-ci.launchd"/>
+    <!-- Defines the list of choices in the customization screen -->
+    <options customize="both" require-scripts="true" rootVolumeOnly="true" />
+    <choices-outline>
+        <line choice="org.jenkins-ci.jenkins"/>
+        <line choice="org.jenkins-ci.launchd"/>
+        <line choice="org.jenkins-ci.documentation"/>
+    </choices-outline>
+    <!-- Define details for each choice -->
+    <choice
+        id="org.jenkins-ci.jenkins"
+        visible="true"
+        title="Jenkins WAR"
+        description="The jenkins.war file. Installed to /Applications/Jenkins"
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.jenkins"/>
+    </choice>
+    <choice
+        id="org.jenkins-ci.launchd"
+        visible="true"
+        title="Jenkins Launch Daemon"
+        description="A launch daemon to run Jenkins at boot."
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.launchd"/>
+    </choice>
+    <choice
+        id="org.jenkins-ci.documentation"
+        visible="true"
+        title="Daemon Documentation"
+        description="Documentation for the launch daemon. Installed to /Library/Documentation/Jenkins."
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.documentation"/>
+    </choice>
+    <!-- Define where each installer source is coming from -->
+    <pkg-ref id="org.jenkins-ci.jenkins" version="0" onConclusion="none" auth="root">jenkins.pkg</pkg-ref>
+    <pkg-ref id="org.jenkins-ci.launchd" version="0" onConclusion="none" auth="root">launchd.pkg</pkg-ref>
+    <pkg-ref id="org.jenkins-ci.documentation" version="0" onConclusion="none" auth="root">documentation.pkg</pkg-ref>
+</installer-gui-script>
