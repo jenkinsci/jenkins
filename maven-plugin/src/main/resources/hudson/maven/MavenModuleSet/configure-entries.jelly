@@ -38,6 +38,15 @@ THE SOFTWARE.
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
+  <f:section title="${%Pre Steps}">
+    <f:block>
+      <f:hetero-list name="prebuilder" hasHeader="true"
+                     descriptors="${h.getBuilderDescriptors(it)}"
+                     items="${it.prebuilders}"
+                     addCaption="${%Add pre-build step}"/>
+    </f:block>
+  </f:section>
+  
   <f:section title="${%Build}">
     <j:set var="mavens" value="${it.descriptor.mavenDescriptor.installations}" />
     <j:if test="${empty(mavens)}">
@@ -129,12 +138,46 @@ THE SOFTWARE.
     </f:advanced>
   </f:section>
 
+  <f:section title="${%Post Steps}">
+	<f:entry description="${%criteriaDescription}">
+		<f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult =='success'}" />
+		<st:nbsp />
+		<label class="attach-previous">${%runIfStable}</label>
+		<st:nbsp />
+		<f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult =='unstable'}" />
+		<st:nbsp />
+		<label class="attach-previous">${%runIfSuccessful}</label>
+		<st:nbsp />
+		<j:if test="${instance != null}">
+			<j:if test="${instance.runPostStepsIfResult == null}">
+				<f:radio name="post-steps.runIfResult" value="allCases" checked="${true}" />
+			</j:if>
+			<j:if test="${instance.runPostStepsIfResult != null}">
+				<f:radio name="post-steps.runIfResult" value="allCases" checked="${instance.runPostStepsIfResult =='allCases'}" />
+			</j:if>
+		</j:if>
+		<j:if test="${instance == null}">
+			<f:radio name="post-steps.runIfResult" value="allCases" checked="${true}" />
+		</j:if>
+		<st:nbsp />
+		<label class="attach-previous">${%runAlways}</label>
+		<st:nbsp />
+	</f:entry>
+    <f:block>
+      <f:hetero-list name="postbuilder" hasHeader="true"
+                     descriptors="${h.getBuilderDescriptors(it)}"
+                     items="${it.postbuilders}"
+                     addCaption="${%Add post-build step}"/>
+    </f:block>
+  </f:section>
+
   <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
   <j:if test="${!empty(reporters)}">
     <f:descriptorList title="${%Build Settings}"
                       descriptors="${reporters}"
                       instances="${it.reporters.toMap()}" />
   </j:if>
+
 
   <p:config-buildWrappers />
   <p:config-publishers />
