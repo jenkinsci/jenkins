@@ -44,7 +44,7 @@ THE SOFTWARE.
 			</method_environment>
 		</method_context>
 
-		<!-- Set the HUDSON_HOME env variable, and run the war file in /apps/jenkins/jenkins.war -->
+		<!-- Set the JENKINS_HOME env variable, and run the war file in /apps/jenkins/jenkins.war -->
 		<exec_method type="method" name="start"	exec="java -Xmx512m -jar /usr/local/bin/jenkins.war" timeout_seconds="0"/>
 		<exec_method type="method" name="stop" exec=":kill -TERM" timeout_seconds="30"/>
 
