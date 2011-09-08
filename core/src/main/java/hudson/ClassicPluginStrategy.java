@@ -227,8 +227,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (shortName.equals(yourName))   return;
 
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
-            String hudsonVersion = atts.getValue("Hudson-Version");
-            if (hudsonVersion == null || hudsonVersion.equals("null") || new VersionNumber(hudsonVersion).compareTo(splitWhen) <= 0)
+            String jenkinsVersion = atts.getValue("Jenkins-Version");
+            if (jenkinsVersion==null)
+                jenkinsVersion = atts.getValue("Hudson-Version");
+            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0)
                 optionalDependencies.add(new PluginWrapper.Dependency(shortName+':'+requireVersion));
         }
     }
