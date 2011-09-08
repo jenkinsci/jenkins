@@ -271,9 +271,9 @@ THE SOFTWARE.
         </executions>
       </plugin>-->
       <plugin>
-        <groupId>org.codehaus.groovy.maven</groupId>
+        <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.3</version>
         <executions>
           <execution>
             <goals>
@@ -284,6 +284,18 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
+        <configuration>
+           <!-- 1.8 not yet supported by plugin but 1.7 works
+                here so long as we provide explicit version -->
+           <providerSelection>1.7</providerSelection>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-1.7</artifactId>
+            <version>1.3</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
 

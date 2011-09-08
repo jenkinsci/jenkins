@@ -622,7 +622,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.6.0</version>
+      <version>1.8.2</version>
+    </dependency>
+    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>0.9.94</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <!--
