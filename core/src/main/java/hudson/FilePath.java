@@ -63,7 +63,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -94,12 +93,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipInputStream;
 
 import com.sun.jna.Native;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
 
+import org.apache.tools.zip.ZipFile;
+import org.apache.tools.zip.ZipEntry;
+        
 /**
  * {@link File} like object with remoting support.
  *
@@ -418,8 +420,12 @@ public final class FilePath implements Serializable {
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
+
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                unzip(dir,FilePath.this.read());
+                if (FilePath.this.isRemote())
+                    unzip(dir, FilePath.this.read()); // use streams
+                else
+                    unzip(dir, new File(FilePath.this.getRemote())); // shortcut to local file
                 return null;
             }
             private static final long serialVersionUID = 1L;
@@ -466,21 +472,40 @@ public final class FilePath implements Serializable {
     }
 
     private void unzip(File dir, InputStream in) throws IOException {
+        File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
+        try {
+            IOUtils.copy(in, tmpFile);
+            unzip(dir,tmpFile);
+        }
+        finally {
+            tmpFile.delete();
+        }
+    }
+
+    private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-        ZipInputStream zip = new ZipInputStream(new BufferedInputStream(in));
-        java.util.zip.ZipEntry e;
+        ZipFile zip = new ZipFile(zipFile);
+        Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
-            while((e=zip.getNextEntry())!=null) {
-                File f = new File(dir,e.getName());
-                if(e.isDirectory()) {
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                File f = new File(dir, e.getName());
+                if (e.isDirectory()) {
                     f.mkdirs();
                 } else {
                     File p = f.getParentFile();
-                    if(p!=null) p.mkdirs();
-                    IOUtils.copy(zip, f);
+                    if (p != null) {
+                        p.mkdirs();
+                    }
+                    IOUtils.copy(zip.getInputStream(e), f);
                     f.setLastModified(e.getTime());
-                    zip.closeEntry();
+                    try {
+                        FilePath target = new FilePath(f);
+                        target.chmod(e.getUnixMode());
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.WARNING, "unable to set permissions", ex);
+                    }
                 }
             }
         } finally {
