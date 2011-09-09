@@ -23,14 +23,17 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import junit.framework.TestCase;
 import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
+
 import org.jvnet.hudson.test.Bug;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -127,7 +130,6 @@ public class XStream2Test extends TestCase {
         Map<?,?> m;
     }
 
-
     public void testImmutableMap() {
         XStream2 xs = new XStream2();
 
@@ -166,6 +168,54 @@ public class XStream2Test extends TestCase {
 
         assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
         assertEquals(m,a.m);
+    }
+
+    private static class ImmutableListHolder {
+        ImmutableList<?> l;
+    }
+
+    private static class ListHolder {
+        List<?> l;
+    }
+
+    public void testImmutableList() {
+        XStream2 xs = new XStream2();
+
+        roundtripImmutableList(xs, ImmutableList.of());
+        roundtripImmutableList(xs, ImmutableList.of("abc"));
+        roundtripImmutableList(xs, ImmutableList.of("abc", "def"));
+
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of());
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc"));
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc", "def"));
+    }
+
+    /**
+     * Since the field type is {@link ImmutableList}, XML shouldn't contain a reference to the type name.
+     */
+    private void roundtripImmutableList(XStream2 xs, ImmutableList<?> l) {
+        ImmutableListHolder a = new ImmutableListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertFalse("shouldn't contain the class name",xml.contains("google"));
+        assertFalse("shouldn't contain the class name",xml.contains("class"));
+        a = (ImmutableListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
+    }
+
+    private void roundtripImmutableListAsPlainList(XStream2 xs, ImmutableList<?> l) {
+        ListHolder a = new ListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableList.class.getName()+'\"'));
+        a = (ListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
     }
 
     @Bug(8006) // Previously a null entry in an array caused NPE
