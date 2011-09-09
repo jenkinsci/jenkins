@@ -31,7 +31,10 @@ import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
+
+import hudson.util.RobustReflectionConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +64,33 @@ public class ImmutableListConverter extends CollectionConverter {
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-        return ImmutableList.copyOf((List)super.unmarshal(reader, context));
+        String resolvesTo = reader.getAttribute("resolves-to");
+        if ("com.google.common.collect.ImmutableList$SerializedForm".equals(resolvesTo)) {
+            // Skip into the elements element. This has the real children.
+            List items = new ArrayList();
+            if (reader.hasMoreChildren()) {
+                reader.moveDown();
+	            // read the individual items from xml into a list
+	            while (reader.hasMoreChildren()) {
+	                reader.moveDown();
+	                try {
+	                    Object item = readItem(reader, context, items);
+	                    items.add(item);
+	                } catch (CannotResolveClassException e) {
+	                    RobustReflectionConverter.addErrorInContext(context, e);
+	                } catch (LinkageError e) {
+	                    RobustReflectionConverter.addErrorInContext(context, e);
+	                }
+	                reader.moveUp();
+	            }
+
+                // move back up past the elements element.
+                reader.moveUp();
+            }
+            return ImmutableList.copyOf(items);
+        } else {
+            return ImmutableList.copyOf((List)super.unmarshal(reader, context));
+        }
     }
 
     @Override

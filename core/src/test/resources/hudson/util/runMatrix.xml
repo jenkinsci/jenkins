@@ -33,7 +33,6 @@
   <builtOn>amachine</builtOn>
   <workspace>C:\jenkins\slave\workspace\MatrixProject\blah\blah\blah</workspace>
   <hudsonVersion>1.427</hudsonVersion>
-  <scm class="hudson.scm.SubversionChangeLogParser"/>
   <culprits>
     <string>auser</string>
   </culprits>

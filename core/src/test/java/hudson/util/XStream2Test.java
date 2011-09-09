@@ -36,9 +36,12 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.InterruptedBuildAction;
+
 /**
  * Tests for XML serialization of java objects.
- * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder
+ * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder, Richard Mortimer
  */
 public class XStream2Test extends TestCase {
 
@@ -249,6 +252,12 @@ public class XStream2Test extends TestCase {
         MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
         assertNotNull(result);
         assertNotNull(result.getActions());
-        assertEquals(2, result.getActions());
+        assertEquals(2, result.getActions().size());
+        InterruptedBuildAction action = (InterruptedBuildAction) result.getActions().get(1);
+        assertNotNull(action.getCauses());
+        assertEquals(1, action.getCauses().size());
+        CauseOfInterruption.UserInterruption cause =
+            (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
+        assertNotNull(cause);
     }
 }
