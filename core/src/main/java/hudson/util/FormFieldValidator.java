@@ -28,6 +28,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
+import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
@@ -399,7 +400,7 @@ public abstract class FormFieldValidator {
      * the current workspace.
      * @since 1.116
      * @deprecated as of 1.294. Use {@link FilePath#validateRelativeDirectory(String, boolean)}
-     *      (see javadoc plugin for the example)
+     *      (see {@link JavadocArchiver.DescriptorImpl#doCheck(AbstractProject, String)}
      */
     public static class WorkspaceDirectory extends WorkspaceFilePath {
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
