@@ -25,10 +25,12 @@ package hudson.util;
 
 import com.google.common.collect.ImmutableMap;
 import junit.framework.TestCase;
+import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
 import org.jvnet.hudson.test.Bug;
 
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -186,5 +188,17 @@ public class XStream2Test extends TestCase {
 
     public static class Point {
         public int x,y;
+    }
+
+    /**
+     * Unmarshall a matrix build.xml result.
+     * (JENKINS-10903)
+     */
+    public void testUnMarshalRunMatrix() {
+        InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
+        MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
+        assertNotNull(result);
+        assertNotNull(result.getActions());
+        assertEquals(2, result.getActions());
     }
 }
