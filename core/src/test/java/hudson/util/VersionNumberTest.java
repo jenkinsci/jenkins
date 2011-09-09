@@ -31,6 +31,7 @@ import junit.framework.TestCase;
 public class VersionNumberTest extends TestCase {
 
     public void testIsNewerThan() {
+       assertTrue(new VersionNumber("2.0.*").isNewerThan(new VersionNumber("2.0")));
        assertTrue(new VersionNumber("2.0.*").isNewerThan(new VersionNumber("2.0.1")));
        assertTrue(new VersionNumber("2.0.1").isNewerThan(new VersionNumber("2.0.1-SNAPSHOT")));
        assertTrue(new VersionNumber("2.0.1-SNAPSHOT").isNewerThan(new VersionNumber("2.0.0.99")));
