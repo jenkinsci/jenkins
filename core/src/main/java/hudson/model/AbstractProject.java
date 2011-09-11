@@ -1587,7 +1587,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
             // Optional additional cause text when starting via token
             String causeText = req.getParameter("cause");
-            cause = new RemoteCause(req.getRemoteAddr(), causeText);
+            final String xForwardedFor = req.getHeader("X-Forwarded-For");
+            final String remoteAddr;
+            if (xForwardedFor != null) {
+                remoteAddr = xForwardedFor;
+            } else {
+                remoteAddr = req.getRemoteAddr();
+            }
+            cause = new RemoteCause(remoteAddr, causeText);
         } else {
             cause = new UserIdCause();
         }
