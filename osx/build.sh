@@ -19,6 +19,7 @@ PKG_TITLE="Jenkins ${version}"
 rm $(dirname $0)/jenkins.war.tmp
 
 # Stage jenkins.war
+mkdir -p $(dirname $0)/packages/jenkins/dest_root/Applications/Jenkins
 cp $1 $(dirname $0)/packages/jenkins/dest_root/Applications/Jenkins/jenkins.war
 # Change the Installer title to match the version
 sed s,"<title>Jenkins CI Server</title>","<title>${PKG_TITLE}</title>", distribution.xml >distribution-title.xml
