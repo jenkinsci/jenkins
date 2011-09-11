@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.430-SNAPSHOT</version>
+  <version>1.430</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
