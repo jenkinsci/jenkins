@@ -55,6 +55,20 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.431>What's new in 1.431</a> <!--=DATE=--></h3>
+<!--=RC-CHANGES=-->
+</div><!--=END=-->
+<h3><a name=v1.430>What's new in 1.430</a> (2011/09/11)</h3>
+<ul class=image>
+  <li class=bug>
+    Added way to mark all plugins to be updated at once
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10443">issue 10443</a>)
   <li class=bug>
     Fixed a bug in the UI JavaScript behavior with IE
   <li class=bug>
@@ -64,12 +78,11 @@ Upcoming changes</a>
   Bundling <a href="https://wiki.jenkins-ci.org/display/JENKINS/Translation+Assistance+Plugin">the translation assistance plugin</a> in the hope of increasing the contribution.
   <li class=rfe>
   Introduce a fine-grained permission to control who is allowed to run the Groovy Console.
+  <li class=rfe>
+    Add support for maven-android-plugin integration test reports
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10913">issue 10913</a>)    
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.429>What's new in 1.429</a> <!--=DATE=--></h3>
+<h3><a name=v1.429>What's new in 1.429</a> (2011/09/06)</h3>
 <ul class=image>
   <li class=bug>
     maven submodule build fails doing mkdir on master.
@@ -99,7 +112,6 @@ Upcoming changes</a>
     External job submision now supports &ly;displayName> and &lt;description> elements
     (<a href="https://github.com/jenkinsci/jenkins/pull/215">pull 215</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.428>What's new in 1.428</a> (2011/08/29)</h3>
 <ul class=image>
   <li class=bug>

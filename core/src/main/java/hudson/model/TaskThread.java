@@ -80,6 +80,7 @@ public abstract class TaskThread extends Thread {
         this.owner = owner;
         this.text = this.log = output.text;
         this.listener = output.listener;
+        this.isRunning = true;
     }
 
     public Reader readAll() throws IOException {

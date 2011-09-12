@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.430-SNAPSHOT</version>
+    <version>1.431-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -357,9 +357,20 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.jenkins-ci.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.6.0</version>
+      <version>1.8.2-jenkins-1</version>
+    </dependency>
+    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>0.9.94</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <!--

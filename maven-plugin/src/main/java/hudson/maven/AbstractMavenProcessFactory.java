@@ -255,7 +255,7 @@ public abstract class AbstractMavenProcessFactory
 
     public String getMavenOpts() {
         if( this.mavenOpts != null )
-            return this.mavenOpts;
+            return addRunHeadLessOption(this.mavenOpts);
 
         String mavenOpts = mms.getMavenOpts();
 
@@ -277,6 +277,13 @@ public abstract class AbstractMavenProcessFactory
             }
         }
 
+        mavenOpts = addRunHeadLessOption(mavenOpts);
+
+        return envVars.expand(mavenOpts);
+    }
+
+    protected String addRunHeadLessOption(String mavenOpts) {
+
         if (mms.runHeadless()) {
             // Configure headless process
             if (mavenOpts == null) {
@@ -292,8 +299,7 @@ public abstract class AbstractMavenProcessFactory
                 // TODO mavenOpts += " -Xdock:name=Jenkins -Xdock:icon=jenkins.png";
             }
         }
-
-        return envVars.expand(mavenOpts);
+        return mavenOpts;
     }
 
 

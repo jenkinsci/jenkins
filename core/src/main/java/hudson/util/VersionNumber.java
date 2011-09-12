@@ -85,6 +85,8 @@ public class VersionNumber implements Comparable<VersionNumber> {
     private static class WildCardItem implements Item {
 
         public int compareTo(Item item) {
+            if (item==null) // 1.* ( > 1.99) > 1
+                return 1;
             switch (item.getType()) {
                 case INTEGER_ITEM:
                 case LIST_ITEM:
