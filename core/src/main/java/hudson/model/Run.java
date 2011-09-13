@@ -878,7 +878,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
-            String length = sub.isFile() ? String.valueOf(sub.length()) : "0";
+            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (children.length==1 && parent!=null);
             Artifact a;
             if (collapsed) {
