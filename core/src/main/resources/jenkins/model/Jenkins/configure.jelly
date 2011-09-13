@@ -48,7 +48,7 @@ THE SOFTWARE.
       </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" preview="true"/>
       </f:entry>
 
       <!-- global configuration from everyone -->

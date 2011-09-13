@@ -60,6 +60,9 @@ THE SOFTWARE.
       Specifies additional key/value pairs in the JSON format (except the start and end bracket)
       to be passed as CodeMirror option object.
     </st:attribute>
+    <st:attribute name="preview">
+      If specified, this text area has preview feature.
+    </st:attribute>
   </st:documentation>
 
   <f:prepareDatabinding />
@@ -80,4 +83,50 @@ THE SOFTWARE.
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>
+  <j:if test="${attrs['preview']!=null}">
+    <a onclick="previewDescription(this);" href="#">${%Preview}</a>
+    <div class="descriptionPreview" style="text-align:left; background-color: #EEE; padding: 0.5em; display: none;">
+      <a onclick="hidePreview(this);" href="#">${%Hide preview}</a>
+      <hr/>
+      <div><!-- div for preview --></div>
+    </div>
+    <script type="text/javascript">
+    <!--
+      This script can be evaluated in evalInnerHtmlScripts function if used in editableDescription.
+      If evaluated in evalInnerHtmlScripts function:
+        `function functionName(){}`-style declaration becomes a local variable.
+        `var functionName = function(){}`-style declaration becomes a local variable.
+        `functionName = function(){}`-style declaration becomes a global variable.
+      That is why there is no `var`.
+    -->
+    /* var */ previewDescription = function(sender){
+      <!-- Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object. -->
+      var textarea = sender.parentNode.getElementsByTagName("TEXTAREA")[0];
+      var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+      var previewDiv = findNext(sender, function(e){return e.className == "descriptionPreview"});
+      var previewDivBody = previewDiv.getElementsByTagName("DIV")[0];
+
+      new Ajax.Request(rootURL + "/previewDescription", {
+        method: "POST",
+        requestHeaders: "Content-Type: application/x-www-form-urlencoded",
+        parameters: {
+          description: text
+        },
+        onSuccess: function(obj) {
+          $(previewDiv).show();
+          previewDivBody.innerHTML = obj.responseText;
+        },
+        onFailure: function(obj) {
+          $(previewDiv).show();
+          previewDivBody.innerHTML = obj.status + " " + obj.statusText + "<HR/>" + obj.responseText;
+        }
+      });
+      return false;
+    };
+    /* var */ hidePreview = function(sender){
+      var previewDiv = findAncestor(sender, "DIV");
+      $(previewDiv).hide();
+    };
+    </script>
+  </j:if>
 </j:jelly>
