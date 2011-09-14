@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.431-SNAPSHOT</version>
+    <version>1.432-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -55,6 +55,11 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -357,7 +362,7 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.jenkins-ci.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>1.8.2-jenkins-1</version>
     </dependency>
@@ -453,7 +458,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.3.0-jenkins-2</version>
+      <version>3.3.0-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

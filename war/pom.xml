@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.431-SNAPSHOT</version>
+    <version>1.432-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -289,6 +289,8 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
+          <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
+          <attach>true</attach>
           <inlineScript>
             filter {
                 // add Winstone since we are bundling it.
