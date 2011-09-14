@@ -289,6 +289,8 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
+          <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
+          <attach>true</attach>
           <inlineScript>
             filter {
                 // add Winstone since we are bundling it.

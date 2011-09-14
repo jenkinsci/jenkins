@@ -48,7 +48,7 @@ THE SOFTWARE.
           for (var i=min; i<=max; i++) {
             if (!this.loaded[i]) {
               this.loaded[i] = true;
-              new Ajax.Request("timeline/data",{
+              new Ajax.Request("timeline/data/",{
                   method:"POST",
                   parameters: {min: i*interval, max:(i+1)*interval},
                   onSuccess: function(t) {
