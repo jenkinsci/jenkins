@@ -36,7 +36,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <a href="${p.shortUrl}/">
-            <img src="${imagesURL}/24x24/${b.buildStatusUrl}" tooltip="${p.tooltip} ${it.number!=b.number?'- skipped':''}" alt="${p.tooltip}" style="${it.number!=b.number?'opacity:0.5':''}" height="24" width="24"/>
+            <img src="${imagesURL}/24x24/${b.buildStatusUrl}" tooltip="${p.tooltip} ${it.number!=b.number?(it.isBuilding()?'- pending' : '- skipped'):''}" alt="${p.tooltip}" style="${it.number!=b.number?'opacity:0.5':''}" height="24" width="24"/>
             <j:if test="${empty(o.x) and empty(o.y)}">
               ${p.combination.toString(o.z)}
             </j:if>
