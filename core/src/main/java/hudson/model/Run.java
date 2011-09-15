@@ -1622,6 +1622,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(getResult()==Result.ABORTED)
             return new Summary(false, Messages.Run_Summary_Aborted());
 
+        if(getResult()==Result.NOT_BUILT)
+            return new Summary(false, Messages.Run_Summary_NotBuilt());
+
         if(getResult()==Result.UNSTABLE) {
             if(((Run)this) instanceof AbstractBuild) {
                 AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
