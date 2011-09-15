@@ -45,13 +45,13 @@ public class FixedSet implements SearchIndex {
 
     public void find(String token, List<SearchItem> result) {
         for (SearchItem i : items)
-            if(token.equals(i.getSearchName()))
+            if(token.equalsIgnoreCase(i.getSearchName()))
                 result.add(i);
     }
 
     public void suggest(String token, List<SearchItem> result) {
         for (SearchItem i : items)
-            if(i.getSearchName().contains(token))
+            if(i.getSearchName().toLowerCase().contains(token.toLowerCase()))
                 result.add(i);
     }
 }
