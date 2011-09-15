@@ -62,7 +62,7 @@ public final class Result implements Serializable, CustomExportedBean {
      * This status code is used in a multi-stage build (like maven2)
      * where a problem in earlier stage prevented later stages from building.
      */
-    public static final Result NOT_BUILT = new Result("NOT_BUILT",BallColor.GREY,3);
+    public static final Result NOT_BUILT = new Result("NOT_BUILT",BallColor.NOTBUILT,3);
     /**
      * The build was manually aborted.
      *
