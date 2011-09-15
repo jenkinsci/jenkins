@@ -36,7 +36,7 @@ public class RunTest extends TestCase {
         Run<FreeStyleProject,FreeStyleBuild> r = new Run<FreeStyleProject,FreeStyleBuild>(null,new GregorianCalendar()) {};
         Run<FreeStyleProject,FreeStyleBuild>.ArtifactList list = r.new ArtifactList();
         for (String p : paths) {
-            list.add(r.new Artifact(p,p,p,"n"+list.size()));  // Assuming all test inputs don't need urlencoding
+            list.add(r.new Artifact(p,p,p,String.valueOf(p.length()),"n"+list.size()));  // Assuming all test inputs don't need urlencoding
         }
         list.computeDisplayName();
         return list;
