@@ -26,15 +26,18 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
@@ -206,7 +209,12 @@ public class DownloadService extends PageDecorator {
         public JSONObject getData() throws IOException {
             TextFile df = getDataFile();
             if(df.exists())
-                return JSONObject.fromObject(df.read());
+                try {
+                    return JSONObject.fromObject(df.read());
+                } catch (JSONException e) {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                    throw new IOException2("Failed to parse "+df+" into JSON",e);
+                }
             return null;
         }
 

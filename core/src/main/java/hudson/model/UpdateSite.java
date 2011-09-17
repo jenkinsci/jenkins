@@ -36,6 +36,7 @@ import hudson.util.IOUtils;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -264,6 +265,10 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
+            } catch (JSONException e) {
+                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
+                df.delete(); // if we keep this file, it will cause repeated failures
+                return null;
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
