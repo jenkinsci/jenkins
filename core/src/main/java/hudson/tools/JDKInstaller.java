@@ -224,7 +224,7 @@ public class JDKInstaller extends ToolInstaller {
             args.add("/s");
             // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
             // Oh Windows, oh windows, why do you have to be so difficult?
-            args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+            args.add("/v/qn REBOOT=ReallySuppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
 
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
