@@ -414,9 +414,6 @@ public class JDKInstaller extends ToolInstaller {
             throw new IOException("Unable to find the login form in "+html.asXml());
         }
 
-        // TODO: there's awful inefficiency in htmlunit where it loads the whole binary into one big byte array.
-        // needs to modify it to use temporary file or something
-
         // download to a temporary file and rename it in to handle concurrency and failure correctly,
         File tmp = new File(cache.getPath()+".tmp");
         tmp.getParentFile().mkdirs();
