@@ -40,6 +40,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import com.thoughtworks.xstream.XStream;
+import java.io.InputStream;
+import org.jvnet.robust_http_client.RetryableHttpStream;
 
 /**
  * HTTP proxy configuration.
@@ -161,6 +163,30 @@ public final class ProxyConfiguration implements Saveable {
             d.decorate(con);
 
         return con;
+    }
+    
+    public static InputStream getInputStream(URL url) throws IOException {
+        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
+        final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        if (p == null) 
+            return new RetryableHttpStream(url);
+
+        InputStream is = new RetryableHttpStream(url, p.createProxy());
+        if (p.getUserName() != null) {
+            // Add an authenticator which provides the credentials for proxy authentication
+            Authenticator.setDefault(new Authenticator() {
+
+                @Override
+                public PasswordAuthentication getPasswordAuthentication() {
+                    if (getRequestorType() != RequestorType.PROXY) {
+                        return null;
+                    }
+                    return new PasswordAuthentication(p.getUserName(), p.getPassword().toCharArray());
+                }
+            });
+        }
+        
+        return is;
     }
 
     private static final XStream XSTREAM = new XStream2();
