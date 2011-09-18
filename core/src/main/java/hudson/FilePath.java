@@ -655,7 +655,7 @@ public final class FilePath implements Serializable {
                 listener.getLogger().println(message);
 
             // for HTTP downloads, enable automatic retry for added resilience
-            InputStream in = archive.getProtocol().equals("http") ? ProxyConfiguration.getInputStream(archive) : con.getInputStream();
+            InputStream in = archive.getProtocol().startsWith("http") ? ProxyConfiguration.getInputStream(archive) : con.getInputStream();
             CountingInputStream cis = new CountingInputStream(in);
             try {
                 if(archive.toExternalForm().endsWith(".zip"))
