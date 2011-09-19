@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Seiji Sogabe,
  *                          Andrew Bayer
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -169,67 +169,71 @@ public class UpdateSite {
      * Verifies the signature in the update center data file.
      */
     private FormValidation verifySignature(JSONObject o) throws IOException {
-        try {
-            FormValidation warning = null;
+        if(UpdateSite.signatureCheck == true) {
+            try {
+                FormValidation warning = null;
 
-            JSONObject signature = o.getJSONObject("signature");
-            if (signature.isNullObject()) {
-                return FormValidation.error("No signature block found in update center '"+id+"'");
-            }
-            o.remove("signature");
+                JSONObject signature = o.getJSONObject("signature");
+                if (signature.isNullObject()) {
+                    return FormValidation.error("No signature block found in update center '"+id+"'");
+                }
+                o.remove("signature");
 
-            List<X509Certificate> certs = new ArrayList<X509Certificate>();
-            {// load and verify certificates
-                CertificateFactory cf = CertificateFactory.getInstance("X509");
-                for (Object cert : signature.getJSONArray("certificates")) {
-                    X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
-                    try {
-                        c.checkValidity();
-                    } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
-                        warning = FormValidation.warning(e,String.format("Certificate %s has expired in update center '%s'",cert.toString(),id));
-                    } catch (CertificateNotYetValidException e) {
-                        warning = FormValidation.warning(e,String.format("Certificate %s is not yet valid in update center '%s'",cert.toString(),id));
+                List<X509Certificate> certs = new ArrayList<X509Certificate>();
+                {// load and verify certificates
+                    CertificateFactory cf = CertificateFactory.getInstance("X509");
+                    for (Object cert : signature.getJSONArray("certificates")) {
+                        X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
+                        try {
+                            c.checkValidity();
+                        } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
+                            warning = FormValidation.warning(e,String.format("Certificate %s has expired in update center '%s'",cert.toString(),id));
+                        } catch (CertificateNotYetValidException e) {
+                            warning = FormValidation.warning(e,String.format("Certificate %s is not yet valid in update center '%s'",cert.toString(),id));
+                        }
+                        certs.add(c);
                     }
-                    certs.add(c);
+
+                    // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
+                    Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
+                    ServletContext context = Jenkins.getInstance().servletContext;
+                    for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+                        if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                        anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
+                    }
+                    CertificateUtil.validatePath(certs,anchors);
                 }
 
-                // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
-                Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-                ServletContext context = Jenkins.getInstance().servletContext;
-                for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
-                    if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
-                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
+                // this is for computing a digest to check sanity
+                MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+                DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(),sha1);
+
+                // this is for computing a signature
+                Signature sig = Signature.getInstance("SHA1withRSA");
+                sig.initVerify(certs.get(0));
+                SignatureOutputStream sos = new SignatureOutputStream(sig);
+
+                o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
+
+                // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
+                // (which is more likely than someone tampering with update center), we can tell
+                String computedDigest = new String(Base64.encode(sha1.digest()));
+                String providedDigest = signature.getString("digest");
+                if (!computedDigest.equalsIgnoreCase(providedDigest)) {
+                    return FormValidation.error("Digest mismatch: "+computedDigest+" vs "+providedDigest+" in update center '"+id+"'");
                 }
-                CertificateUtil.validatePath(certs,anchors);
+
+                if (!sig.verify(Base64.decode(signature.getString("signature").toCharArray()))) {
+                    return FormValidation.error("Signature in the update center doesn't match with the certificate in update center '"+id+"'");
+                }
+
+                if (warning!=null)  return warning;
+                return FormValidation.ok();
+            } catch (GeneralSecurityException e) {
+                return FormValidation.error(e,"Signature verification failed in the update center '"+id+"'");
             }
-
-            // this is for computing a digest to check sanity
-            MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-            DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(),sha1);
-
-            // this is for computing a signature
-            Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
-            SignatureOutputStream sos = new SignatureOutputStream(sig);
-
-            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
-
-            // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
-            // (which is more likely than someone tampering with update center), we can tell
-            String computedDigest = new String(Base64.encode(sha1.digest()));
-            String providedDigest = signature.getString("digest");
-            if (!computedDigest.equalsIgnoreCase(providedDigest)) {
-                return FormValidation.error("Digest mismatch: "+computedDigest+" vs "+providedDigest+" in update center '"+id+"'");
-            }
-
-            if (!sig.verify(Base64.decode(signature.getString("signature").toCharArray()))) {
-                return FormValidation.error("Signature in the update center doesn't match with the certificate in update center '"+id+"'");
-            }
-
-            if (warning!=null)  return warning;
-            return FormValidation.ok();
-        } catch (GeneralSecurityException e) {
-            return FormValidation.error(e,"Signature verification failed in the update center '"+id+"'");
+        } else {
+            return FormValidation.warning("Update site signature check disabled");
         }
     }
 
@@ -325,7 +329,7 @@ public class UpdateSite {
         return new TextFile(new File(Jenkins.getInstance().getRootDir(),
                                      "updates/" + getId()+".json"));
     }
-    
+
     /**
      * Returns the list of plugins that are updates to currently installed ones.
      *
@@ -335,33 +339,33 @@ public class UpdateSite {
     public List<Plugin> getUpdates() {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
-        
+
         List<Plugin> r = new ArrayList<Plugin>();
         for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             Plugin p = pw.getUpdateInfo();
             if(p!=null) r.add(p);
         }
-        
+
         return r;
     }
-    
+
     /**
      * Does any of the plugin has updates?
      */
     public boolean hasUpdates() {
         Data data = getData();
         if(data==null)      return false;
-        
+
         for (PluginWrapper pw : Jenkins.getInstance().getPluginManager().getPlugins()) {
             if(!pw.isBundled() && pw.getUpdateInfo()!=null)
                 // do not advertize updates to bundled plugins, since we generally want users to get them
-                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins. 
+                // as a part of jenkins.war updates. This also avoids unnecessary pinning of plugins.
                 return true;
         }
         return false;
     }
-    
-    
+
+
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
      * in Javascript.
@@ -534,7 +538,7 @@ public class UpdateSite {
          * Dependencies of this plugin.
          */
         public final Map<String,String> dependencies = new HashMap<String,String>();
-        
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o);
@@ -553,7 +557,7 @@ public class UpdateSite {
                     && get(depObj,"optional").equals("false")) {
                     dependencies.put(get(depObj,"name"), get(depObj,"version"));
                 }
-                
+
             }
 
         }
@@ -608,7 +612,7 @@ public class UpdateSite {
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
                 Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
                 VersionNumber requiredVersion = new VersionNumber(e.getValue());
-                
+
                 // Is the plugin installed already? If not, add it.
                 PluginWrapper current = depPlugin.getInstalled();
 
@@ -624,7 +628,7 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
@@ -692,7 +696,7 @@ public class UpdateSite {
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     /**
-     * Off by default until we know this is reasonably working.
+     * Signature checking can be disabled by setting the system property hudson.model.UpdateCenter.disableSignatureCheck=true
      */
-    public static boolean signatureCheck = true; // Boolean.getBoolean(UpdateCenter.class.getName()+".signatureCheck");
+    public static boolean signatureCheck = !(Boolean.getBoolean(UpdateCenter.class.getName()+".disableSignatureCheck"));
 }
