@@ -17,7 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+LIABILITY
+, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
@@ -51,18 +52,45 @@ THE SOFTWARE.
       <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.clike.clike"/>
       <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
       <script>
-        var w = CodeMirror.fromTextArea(document.getElementById("script"),{
-          mode:"text/x-groovy",
-          lineNumbers: true,
-          onKeyEvent: function(editor, event){
-            if (event.ctrlKey &amp;&amp; event.keyCode == Event.KEY_RETURN) {
-              editor.save();
-              document.form1.submit();
-              Event.stop(event);
+        (function() {
+          var cmdKeyDown = false;
+          
+          var w = CodeMirror.fromTextArea(document.getElementById("script"),{
+            mode:"text/x-groovy",
+            lineNumbers: true,
+            onKeyEvent: function(editor, event){
+              function saveAndSubmit() {
+                editor.save();
+                document.form1.submit();
+                event.stop();
+              }
+              
+              // Mac (Command + Enter)
+              if (navigator.userAgent.indexOf('Mac') > -1) {
+                if (event.type == 'keydown') {
+                  if (event.keyCode == 91 || event.keyCode == 93) {
+                    cmdKeyDown = true;
+                  }
+                }
+                if (event.type == 'keyup') {
+                  if (event.keyCode == 91 || event.keyCode == 93) {
+                    cmdKeyDown = false;
+                  }
+                }
+                if (cmdKeyDown &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                  saveAndSubmit();
+                }
+                
+              // Windows, Linux (Ctrl + Enter)
+              } else {
+                if (event.ctrlKey &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                  saveAndSubmit();
+                }
+              }
             }
-          }
-        }).getWrapperElement();
-        w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+          }).getWrapperElement();
+          w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        })();
       </script>
       <j:if test="${output!=null}">
         <h2>${%Result}</h2>
