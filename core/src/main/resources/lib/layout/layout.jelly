@@ -122,6 +122,7 @@ THE SOFTWARE.
     <l:yui module="menu" />
     <l:yui module="element" />
     <l:yui module="button" />
+    <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
