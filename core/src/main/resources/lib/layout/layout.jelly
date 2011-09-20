@@ -117,9 +117,10 @@ THE SOFTWARE.
     <l:yui module="dragdrop" />
     <l:yui module="container" />
     <l:yui module="connection" />
+    <l:yui module="datasource" />
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
-    <l:yui module="element" suffix="-beta" />
+    <l:yui module="element" />
     <l:yui module="button" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
