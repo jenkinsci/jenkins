@@ -62,6 +62,7 @@ function ts_makeSortable(table) {
         if(initialSortDir!=arrowTable.none)
             cell.firstChild.lastChild.sortdir = initialSortDir;
     }
+    ts_loadDirection(table);
 }
 
 function ts_getInnerText(el) {
@@ -96,14 +97,17 @@ function extractData(x) {
 
 var arrowTable = {
     up: {
+        id: "up",
         text: "&nbsp;&nbsp;&uarr;",
         reorder: function(rows) { rows.reverse(); }
     },
     down: {
+        id: "down",
         text: "&nbsp;&nbsp;&darr;",
         reorder: function() {}
     },
     none: {
+        id: "none",
         text: "&nbsp;&nbsp;&nbsp;"
     },
     lnkRef: null
@@ -171,6 +175,7 @@ function ts_resortTable(lnk) {
     }
 
     span.innerHTML = dir.text;
+    ts_saveDirection(table, column, dir);
 }
 
 function getParent(el, pTagName) {
@@ -228,3 +233,51 @@ function ts_sort_default(a,b) {
     if (a<b) return -1;
     return 1;
 }
+
+function ts_getIndexOfSortableTable(table){
+    var allTables = document.getElementsByTagName("TABLE");
+    var sortableTables = [];
+    for (var i=0; i<allTables.length; i++) {
+        if($(allTables[i]).hasClassName("sortable")){
+            sortableTables.push(allTables[i]);
+        }
+    }
+    return sortableTables.indexOf(table);
+}
+function ts_getStorageKey(table){
+    var uri = document.location;
+    var tableIndex = ts_getIndexOfSortableTable(table);
+    return "ts_direction::" + uri + "::" + tableIndex;
+}
+function ts_saveDirection(table, columnIndex, direction){
+    var key = ts_getStorageKey(table);
+    ts_Storage.setItem(key, columnIndex + ":" + direction.id);
+}
+function ts_loadDirection(table){
+    var key = ts_getStorageKey(table);
+    if(ts_Storage.hasKey(key)){
+        var val = ts_Storage.getItem(key);
+        if(val){
+            var vals = val.split(":");
+            if(vals.length == 2) {
+                var colIndex = parseInt(vals[0]);
+                var direction = arrowTable[vals[1]];
+                var col = table.rows[0].cells[colIndex];
+                var anchor = col.firstChild;
+                var arrow = anchor.lastChild;
+                arrow.sortdir = direction;
+                ts_resortTable(anchor);
+            }
+        }
+    }
+}
+
+var ts_Storage = YAHOO.util.StorageManager.get(
+    YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
+    YAHOO.util.StorageManager.LOCATION_SESSION,
+    {
+        order: [
+            YAHOO.util.StorageEngineGears
+        ]
+    }
+);
