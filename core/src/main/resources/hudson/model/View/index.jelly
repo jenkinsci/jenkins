@@ -40,7 +40,7 @@ THE SOFTWARE.
         </l:main-panel>
         <l:header>
             <!-- for screen resolution detection -->
-            <l:yui module="cookie" suffix="-beta" />
+            <l:yui module="cookie" />
             <script>
               YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height);
             </script>
