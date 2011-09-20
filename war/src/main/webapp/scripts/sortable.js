@@ -167,7 +167,7 @@ function ts_resortTable(lnk) {
     }
 
     // Delete any other arrows there may be showing
-    var allspans = table.getElementsByTagName("span");
+    var allspans = table.rows[0].getElementsByTagName("span");
     for (var ci=0;ci<allspans.length;ci++) {
         if (allspans[ci].className == 'sortarrow') {
             allspans[ci].innerHTML = arrowTable.none.text;
