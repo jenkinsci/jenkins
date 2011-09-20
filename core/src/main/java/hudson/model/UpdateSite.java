@@ -212,7 +212,7 @@ public class UpdateSite {
             sig.initVerify(certs.get(0));
             SignatureOutputStream sos = new SignatureOutputStream(sig);
 
-            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
+            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8")).close();
 
             // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
             // (which is more likely than someone tampering with update center), we can tell
