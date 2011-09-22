@@ -41,6 +41,7 @@ import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.HttpResponses;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
@@ -48,6 +49,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -287,6 +289,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         addJob(job);
         rsp.sendRedirect2(".");
     }
+
+    /**
+     * Invalidates the update center JSON data for all the sites and force re-retrieval.
+     *
+     * @since 1.432
+     */
+    public HttpResponse doInvalidateData() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        for (UpdateSite site : sites) {
+            site.doInvalidateData();
+        }
+
+        return HttpResponses.ok();
+    }
+
 
     /**
      * Schedules a Jenkins restart.
