@@ -86,9 +86,9 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>3.0-rc1</version>
+      <version>3.0</version>
     </dependency>
 
     <dependency>

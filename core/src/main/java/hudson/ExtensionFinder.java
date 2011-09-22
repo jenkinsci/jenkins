@@ -35,6 +35,7 @@ import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.common.collect.ImmutableList;
 import hudson.init.InitMilestone;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
@@ -196,7 +197,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                                 } else
                                     throw new AssertionError();
 
-                                // use arbitrary
+                                // use arbitrary id to make unique key, because Guice wants that.
                                 Key key = Key.get(extType, Names.named(String.valueOf(id)));
                                 annotations.put(key,a);
                                 bind(key).toProvider(new Provider() {
@@ -279,7 +280,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          * and change the value to null.
          *
          * <p>
-         * This is necessary as a failure to load one plugin shouldn't fail the startup of the entire Hudson.
+         * This is necessary as a failure to load one plugin shouldn't fail the startup of the entire Jenkins.
          * Instead, we should just drop the failing plugins.
          */
         public static final Scope FAULT_TOLERANT_SCOPE = new Scope() {

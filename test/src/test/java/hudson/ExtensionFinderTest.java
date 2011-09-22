@@ -39,7 +39,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ExtensionFinderTest extends HudsonTestCase {
     /**
-     * It's OK for some extensions to fail to load. The sytem needs to tolerate that.
+     * It's OK for some extensions to fail to load. The system needs to tolerate that.
      */
     public void testFailingInstance() {
         FailingExtension i = PageDecorator.all().get(FailingExtension.class);
