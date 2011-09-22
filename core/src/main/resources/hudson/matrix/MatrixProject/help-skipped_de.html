@@ -1,0 +1,5 @@
+<div>
+Jenkins baut standardmäßig alle möglichen Kombinationen aller Achsen. Manchmal jedoch ist eine in einer Achse spezifizierte JDK für einen oder mehrere Slave-Knoten nicht verfügbar. In diesem Fall benutzt Jenkins die auf dem Slave-Knoten installierte JDK als Fallback ohne jedoch den Benutzer irgendwie darüber zu informieren. Ein Ergebnis wird präsentiert als Ergebnis der Kombination, obwohl die Fallback-JDK verwendet wurde.
+<p>
+<b>Mit dieser Option können Sie Jenkins daran hindern, Kombinationen, in denen Fallback-JDKs zum Einsatz kommen würden, auszulassen.</b> Damit werden Erfolgsmeldungen für JDKs unterdrückt, die gar nicht benutzt wurden. Weiters verhindert diese Option, dass Kombinationen ausgeführt werden, die aufgrund der Fallback-JDKs redundant sind. Die durch diese Option verhinderten Kombinationen werden als "JDK nicht verfügbar" markiert und beeinflussen das Gesamtergebnis des Jobs nicht.
+</div>
