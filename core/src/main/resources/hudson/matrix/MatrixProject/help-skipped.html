@@ -1,0 +1,5 @@
+<div>
+By default, Jenkins builds all possible combinations of axes from the "Configuration Matrix" exhaustively. Sometimes a JDK specified within the JDK axis may not be available at one or more slaves. In that case Jenkins uses the default fallback JDK (the one locally installed on the slave) silently. A build result for a certain combination is stated which actually is the result gathered using the default fallback JDK.
+<p>
+<b>With this option checked, Jenkins will avoid running combinations for which a default fallback JDK would have been used.</b> This helps avoiding a SUCCESS result for a certain JDK which was actually not used as well as multiple in fact equal builds with default fallback JDKs . The skipped jobs will be marked as "JDK not available" and will not change the overall build result.
+</div>

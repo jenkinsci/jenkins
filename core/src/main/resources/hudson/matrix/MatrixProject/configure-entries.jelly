@@ -61,6 +61,8 @@ THE SOFTWARE.
 
     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
 
+    <f:optionalBlock field="skipped" title="${%Skip combinations which would use the default fallback JDK}" />
+
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
         help="/help/matrix/combinationfilter.html">
 	    <f:entry title="${%Filter}">
