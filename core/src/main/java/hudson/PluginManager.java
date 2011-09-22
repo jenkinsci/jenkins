@@ -580,6 +580,10 @@ public abstract class PluginManager extends AbstractModelObject {
     }
     
     public FormValidation doCheckProxyPort(@QueryParameter String value) {
+        value = Util.fixEmptyAndTrim(value);
+        if (value == null) {
+            return FormValidation.ok();
+        }
         int port;
         try {
             port = Integer.parseInt(value);
