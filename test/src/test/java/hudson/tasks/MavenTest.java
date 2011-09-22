@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
@@ -52,7 +52,6 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -100,7 +99,7 @@ public class MavenTest extends HudsonTestCase {
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);
         hudson.getJDKs().add(varJDK);
-        Hudson.getInstance().getNodeProperties().replaceBy(
+        Jenkins.getInstance().getNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
                                 javaVar))));

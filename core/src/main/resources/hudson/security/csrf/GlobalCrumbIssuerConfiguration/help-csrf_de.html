@@ -1,0 +1,14 @@
+<div>
+  Eine "cross site request forgery" (CSRF/XSRF), zu deutsch etwa "Site-übergreifende Aufruf-Manipulation",
+  ist ein Angriff auf ein Computersystem, bei dem der Angreifer unberechtigt Daten in einer Webanwendung
+  verändert. Im Falle von Jenkins würde dies Unbefugten etwa erlauben, Jobs und Builds zu löschen
+  oder Jenkins Systemkonfiguration zu verändern.
+  
+  <p>
+  Wenn angewählt, wird Jenkins jede Anfrage, die den Server verändern könnte, nach einem
+  speziell generierten Wert ("crumb") überprüfen. Dies beinhaltet alle Formularübermittlungen
+  und Aufrufe der Remote-API.
+
+  <p>
+  Mehr über CSRF-Angriffe finden Sie <a href="http://www.owasp.org/index.php/Cross-Site_Request_Forgery">hier</a>.
+</div>

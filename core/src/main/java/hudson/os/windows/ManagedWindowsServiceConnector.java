@@ -3,7 +3,7 @@ package hudson.os.windows;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerConnectorDescriptor;
@@ -32,16 +32,16 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
     }
 
     @Override
-    public ManagedWindowsServiceLauncher launch(final String host, TaskListener listener) throws IOException, InterruptedException {
+    public ManagedWindowsServiceLauncher launch(final String hostName, TaskListener listener) throws IOException, InterruptedException {
         return new ManagedWindowsServiceLauncher(userName,Secret.toString(password)) {
             @Override
             protected String determineHost(Computer c) throws IOException, InterruptedException {
-                return host;
+                return hostName;
             }
 
             @Override
             public Descriptor<ComputerLauncher> getDescriptor() {
-                return Hudson.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
+                return Jenkins.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
             }
         };
     }

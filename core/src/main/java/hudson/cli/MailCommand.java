@@ -25,7 +25,7 @@ package hudson.cli;
 
 import hudson.tasks.Mailer;
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 
 import javax.mail.internet.MimeMessage;
@@ -42,11 +42,11 @@ import javax.mail.Transport;
 @Extension
 public class MailCommand extends CLICommand {
     public String getShortDescription() {
-        return "Reads stdin and sends that out as an e-mail.";
+        return Messages.MailCommand_ShortDescription();
     }
 
     protected int run() throws Exception {
-        Hudson.getInstance().checkPermission(Item.CONFIGURE);
+        Jenkins.getInstance().checkPermission(Item.CONFIGURE);
         Transport.send(new MimeMessage(Mailer.descriptor().createSession(),stdin));
         return 0;
     }

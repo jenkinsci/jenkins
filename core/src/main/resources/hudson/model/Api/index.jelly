@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<l:layout title="Remote API">
 		<l:main-panel>
       <h1>Remote API</h1>
 
       <p>
-        Many objects of Hudson provides the remote access API. They are available
+        Many objects of Jenkins provide the remote access API. They are available
         at <tt>${rootURL}/.../api/</tt> where "..." portion is the object for
         which you'd like to access.
       </p>
@@ -70,13 +71,13 @@ THE SOFTWARE.
           tree is identical to that of JSON.
 
           However, when you do this, beware of the security implication. If you are connecting
-          to a non-trusted Hudson, the server can send you malicious Python programs. 
+          to a non-trusted Jenkins, the server can send you malicious Python programs. 
         </dd>
       </dl>
 
       <p>
-        For more information about remote API in Hudson, see
-        <a href="http://hudson.gotdns.com/wiki/display/HUDSON/Remote+access+API">the documentation</a>.
+        For more information about remote API in Jenkins, see
+        <a href="http://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API">the documentation</a>.
       </p>
 
       <h2>Controlling the amount of data you fetch</h2>

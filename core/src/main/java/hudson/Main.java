@@ -26,13 +26,12 @@ package hudson;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
+import hudson.util.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
@@ -64,7 +63,7 @@ public class Main {
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home==null) {
-            System.err.println("HUDSON_HOME is not set.");
+            System.err.println("JENKINS_HOME is not set.");
             return -1;
         }
         if (args.length < 2) {
@@ -76,6 +75,8 @@ public class Main {
     }
 
     private static String getHudsonHome() {
+        String home = EnvVars.masterEnvVars.get("JENKINS_HOME");
+        if (home!=null) return home;
         return EnvVars.masterEnvVars.get("HUDSON_HOME");
     }
 
@@ -121,9 +122,7 @@ public class Main {
             HttpURLConnection con = open(new URL(home +
                     "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String line = in.readLine();
-            in.close();
+            String line = IOUtils.readFirstLine(con.getInputStream(),"UTF-8");
             String[] components = line.split(":");
             if (components.length == 2) {
                 crumbField = components[0];

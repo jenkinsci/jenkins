@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout>
-    <l:header title="Hudson">
+    <l:header title="Jenkins">
       <!--meta http-equiv="refresh" content="5" /-->
     </l:header>
     <l:side-panel />
@@ -35,11 +36,11 @@ THE SOFTWARE.
       </p>
       <table>
         <tr>
-          <td>${%This Hudson}:</td>
+          <td>${%This Jenkins}:</td>
           <td>${it.id}</td>
         </tr>
         <tr>
-          <td>${%Other Hudson}:</td>
+          <td>${%Other Jenkins}:</td>
           <td>${it.collidingId}</td>
         </tr>
       </table>

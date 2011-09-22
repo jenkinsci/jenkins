@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.model.RunMap.Constructor;
 import hudson.Extension;
+import hudson.util.AlternativeUiTextProvider;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -42,12 +44,11 @@ import java.io.IOException;
  */
 public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements TopLevelItem {
     public ExternalJob(String name) {
-        super(Hudson.getInstance(),name);
+        this(Jenkins.getInstance(),name);
     }
 
-    @Override
-    public Hudson getParent() {
-        return (Hudson)super.getParent();
+    public ExternalJob(ItemGroup parent, String name) {
+        super(parent,name);
     }
 
     @Override
@@ -111,7 +112,7 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
 
     @Override
     public String getPronoun() {
-        return Messages.ExternalJob_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.ExternalJob_Pronoun());
     }
 
     public static final class DescriptorImpl extends TopLevelItemDescriptor {
@@ -119,8 +120,8 @@ public class ExternalJob extends ViewJob<ExternalJob,ExternalRun> implements Top
             return Messages.ExternalJob_DisplayName();
         }
 
-        public ExternalJob newInstance(String name) {
-            return new ExternalJob(name);
+        public ExternalJob newInstance(ItemGroup parent, String name) {
+            return new ExternalJob(parent,name);
         }
     }
 }

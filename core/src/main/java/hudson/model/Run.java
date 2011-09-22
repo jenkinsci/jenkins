@@ -40,8 +40,11 @@ import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
+import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.PermissionScope;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -93,9 +96,13 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -167,6 +174,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Human-readable description. Can be null.
      */
     protected volatile String description;
+
+    /**
+     * Human-readable name of this build. Can be null.
+     * If non-null, this text is displayed instead of "#NNN", which is the default.
+     * @since 1.390
+     */
+    private volatile String displayName;
 
     /**
      * The current build state.
@@ -255,9 +269,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected Run(JobT project, File buildDir) throws IOException {
         this(project, parseTimestampFromBuildDir(buildDir));
         this.previousBuildInProgress = _this(); // loaded builds are always completed
+        reload();
+    }
+
+    /**
+     * Reloads the build record from disk.
+     *
+     * @since 1.410
+     */
+    public void reload() throws IOException {
         this.state = State.COMPLETED;
         this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
+
+        // not calling onLoad upon reload. partly because we don't want to call that from Run constructor,
+        // and partly because some existing use of onLoad isn't assuming that it can be invoked multiple times.
     }
 
     /**
@@ -371,7 +397,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Otherwise null.
      */
     public Executor getExecutor() {
-        for( Computer c : Hudson.getInstance().getComputers() ) {
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
             for (Executor e : c.getExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;
@@ -594,11 +620,25 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Exported
     public String getFullDisplayName() {
-        return project.getFullDisplayName()+" #"+number;
+        return project.getFullDisplayName()+' '+getDisplayName();
     }
 
     public String getDisplayName() {
-        return "#"+number;
+        return displayName!=null ? displayName : "#"+number;
+    }
+
+    public boolean hasCustomDisplayName() {
+        return displayName!=null;
+    }
+
+    /**
+     * @param value
+     *      Set to null to revert back to the default "#NNN".
+     */
+    public void setDisplayName(String value) throws IOException {
+        checkPermission(UPDATE);
+        this.displayName = value;
+        save();
     }
 
     @Exported(visibility=2)
@@ -748,10 +788,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Obtains the absolute URL to this build.
      *
      * @deprecated
-     *      This method shall <b>NEVER</b> be used during HTML page rendering, as it won't work with
-     *      network set up like Apache reverse proxy.
-     *      This method is only intended for the remote API clients who cannot resolve relative references
-     *      (even this won't work for the same reason, which should be fixed.)
+     *      This method shall <b>NEVER</b> be used during HTML page rendering, as it's too easy for
+     *      misconfiguration to break this value, with network set up like Apache reverse proxy.
+     *      This method is only intended for the remote API clients who cannot resolve relative references.
      */
     @Exported(visibility=2,name="url")
     public final String getAbsoluteUrl() {
@@ -780,7 +819,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public Descriptor getDescriptorByName(String className) {
-        return Hudson.getInstance().getDescriptorByName(className);
+        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     /**
@@ -839,17 +878,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
+            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (children.length==1 && parent!=null);
             Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
                 a = new Artifact(parent.getFileName() + '/' + child, childPath,
-                                 sub.isDirectory() ? null : childHref, parent.getTreeNodeId());
+                                 sub.isDirectory() ? null : childHref, length,
+                                 parent.getTreeNodeId());
                 r.tree.put(a, r.tree.remove(parent));
             } else {
                 // Use null href for a directory:
                 a = new Artifact(child, childPath,
-                                 sub.isDirectory() ? null : childHref, "n" + ++r.idSeq);
+                                 sub.isDirectory() ? null : childHref, length,
+                                 "n" + ++r.idSeq);
                 r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
             }
             if (sub.isDirectory()) {
@@ -857,7 +899,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if (n>=upTo) break;
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
+                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
                 if (++n>=upTo) break;
             }
         }
@@ -992,11 +1034,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         private String treeNodeId;
 
-        /*package for test*/ Artifact(String name, String relativePath, String href, String treeNodeId) {
+        /**
+         *length of this artifact for files.
+         */
+        private String length;
+
+        /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;
             this.relativePath = relativePath;
             this.href = href;
             this.treeNodeId = treeNodeId;
+            this.length = len;
         }
 
         /**
@@ -1021,6 +1069,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public String getHref() {
             return href;
+        }
+
+        public String getLength() {
+            return length;
         }
 
         public String getTreeNodeId() {
@@ -1349,8 +1401,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     LOGGER.log(FINE, "Build "+this+" aborted",e);
                 } catch( InterruptedException e) {
                     // aborted
-                    result = Result.ABORTED;
+                    result = Executor.currentExecutor().abortResult();
                     listener.getLogger().println(Messages.Run_BuildAborted());
+                    Executor.currentExecutor().recordCauseOfInterruption(Run.this,listener);
                     LOGGER.log(Level.INFO,toString()+" aborted",e);
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);
@@ -1576,18 +1629,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if(trP==null) {
                     if(trN!=null && trN.getFailCount()>0)
                         return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
-                    else // ???
-                        return new Summary(false, Messages.Run_Summary_Unstable());
+                } else {
+                    if(trN.getFailCount()!= 0) {
+                        if(trP.getFailCount()==0)
+                            return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
+                        if(trP.getFailCount() < trN.getFailCount())
+                            return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
+                        if(trP.getFailCount() > trN.getFailCount())
+                            return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
+                        
+                        return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
+                    }
                 }
-                if(trP.getFailCount()==0)
-                    return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
-                if(trP.getFailCount() < trN.getFailCount())
-                    return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
-                if(trP.getFailCount() > trN.getFailCount())
-                    return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
-
-                return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
             }
+            
+            return new Summary(false, Messages.Run_Summary_Unstable());
         }
 
         return new Summary(false, Messages.Run_Summary_Unknown());
@@ -1600,7 +1656,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.gif", true);
+        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.png", true);
     }
 
     /**
@@ -1633,7 +1689,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         rsp.setContentType("text/plain;charset=UTF-8");
         // Prevent jelly from flushing stream so Content-Length header can be added afterwards
         FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-        getLogText().writeLogTo(0,out);
+        try{
+        	getLogText().writeLogTo(0,out);
+        } catch (IOException e) {
+			// see comment in writeLogTo() method
+			InputStream input = getLogInputStream();
+			try {
+				IOUtils.copy(input, out);
+			} finally {
+				IOUtils.closeQuietly(input);
+			}
+		}
         out.close();
     }
 
@@ -1695,7 +1761,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Accepts the new description.
      */
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        req.setCharacterEncoding("UTF-8");
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
     }
@@ -1740,25 +1805,33 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         Computer c = Computer.currentComputer();
         if (c!=null)
             env = c.getEnvironment().overrideAll(env);
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl!=null) {
-            env.put("HUDSON_URL", rootUrl);
+            env.put("JENKINS_URL", rootUrl);
+            env.put("HUDSON_URL", rootUrl); // Legacy compatibility
             env.put("BUILD_URL", rootUrl+getUrl());
             env.put("JOB_URL", rootUrl+getParent().getUrl());
         }
         
-        if(!env.containsKey("HUDSON_HOME"))
-            env.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath() );
+        env.put("JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath() );
+        env.put("HUDSON_HOME", Jenkins.getInstance().getRootDir().getPath() );   // legacy compatibility
 
         Thread t = Thread.currentThread();
         if (t instanceof Executor) {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
-            env.put("NODE_NAME",e.getOwner().getName());
+	    if(e.getOwner() instanceof MasterComputer) {
+		env.put("NODE_NAME", "master");
+	    } else {
+	    	env.put("NODE_NAME",e.getOwner().getName());
+	    }
             Node n = e.getOwner().getNode();
             if (n!=null)
                 env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
         }
+
+        for (EnvironmentContributor ec : EnvironmentContributor.all())
+            ec.buildEnvironmentFor(this,env,log);
 
         return env;
     }
@@ -1769,10 +1842,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
-        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+Hudson.getInstance().getSecretKey()));
+        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
+        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
-        env.put("BUILD_TAG","hudson-"+getParent().getName()+"-"+number);
+        env.put("BUILD_TAG","jenkins-"+getParent().getName()+"-"+number);
         env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
@@ -1789,7 +1863,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         String jobName = id.substring(0, hash);
         int number = Integer.parseInt(id.substring(hash + 1));
 
-        Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItem(jobName);
+        Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItem(jobName);
         return job.getBuildByNumber(number);
     }
 
@@ -1805,7 +1879,31 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
+    public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
+        checkPermission(UPDATE);
+        BulkChange bc = new BulkChange(this);
+        try {
+            JSONObject json = req.getSubmittedForm();
+            submit(json);
+            bc.commit();
+        } finally {
+            bc.abort();
+        }
+        return HttpResponses.redirectToDot();
+    }
+
+    protected void submit(JSONObject json) throws IOException {
+        setDisplayName(Util.fixEmptyAndTrim(json.getString("displayName")));
+        setDescription(json.getString("description"));
+    }
+
     public static final XStream XSTREAM = new XStream2();
+
+    /**
+     * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
+     */
+    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
+
     static {
         XSTREAM.alias("build",FreeStyleBuild.class);
         XSTREAM.alias("matrix-build",MatrixBuild.class);
@@ -1859,11 +1957,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Run.class,Messages._Run_Permissions_Title());
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE);
-    public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete",Messages._Run_DeletePermission_Description(),Permission.DELETE, PermissionScope.RUN);
+    public static final Permission UPDATE = new Permission(PERMISSIONS,"Update",Messages._Run_UpdatePermission_Description(),Permission.UPDATE, PermissionScope.RUN);
     /** See {@link hudson.Functions#isArtifactsPermissionEnabled} */
     public static final Permission ARTIFACTS = new Permission(PERMISSIONS,"Artifacts",Messages._Run_ArtifactsPermission_Description(), null,
-                                                              Functions.isArtifactsPermissionEnabled());
+                                                              Functions.isArtifactsPermissionEnabled(), new PermissionScope[]{PermissionScope.RUN});
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {
@@ -1881,8 +1979,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
 
         public String getEntryDescription(Run entry) {
-            // TODO: this could provide some useful details
-            return null;
+            return entry.getDescription();
         }
 
         public Calendar getEntryTimestamp(Run entry) {

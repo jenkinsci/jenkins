@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Side panel for the build view.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:task icon="images/32x32/folder.gif" href="newView" title="${%New View}"  permission="${it.CONFIGURE}" />
+  <l:task icon="images/32x32/folder.png" href="newView" title="${%New View}"  permission="${it.CONFIGURE}" />
 </j:jelly>

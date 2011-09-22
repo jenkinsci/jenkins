@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import hudson.AbortException;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -34,7 +35,6 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
-import hudson.model.Hudson;
 import hudson.model.CheckPoint;
 import hudson.model.Run;
 
@@ -72,6 +72,10 @@ public interface BuildStep {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      */
     boolean prebuild( AbstractBuild<?,?> build, BuildListener listener );
 
@@ -86,6 +90,10 @@ public interface BuildStep {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      *
      * @throws InterruptedException
      *      If the build is interrupted by the user (in an attempt to abort the build.)
@@ -228,7 +236,7 @@ public interface BuildStep {
     public static final class PublisherList extends AbstractList<Descriptor<Publisher>> {
         /**
          * {@link Descriptor}s are actually stored in here.
-         * Since {@link PublisherList} lives longer than {@link Hudson} we cannot directly use {@link ExtensionList}.
+         * Since {@link PublisherList} lives longer than {@link jenkins.model.Jenkins} we cannot directly use {@link ExtensionList}.
          */
         private final DescriptorList<Publisher> core = new DescriptorList<Publisher>(Publisher.class);
 

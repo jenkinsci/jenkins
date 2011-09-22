@@ -27,12 +27,15 @@ import java.io.File;
 import java.util.List;
 import java.net.URISyntaxException;
 
-import junit.framework.TestCase;
-
 import hudson.XmlFile;
+
+import org.jvnet.hudson.test.Bug;
+
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+
+import junit.framework.TestCase;
 
 /**
  * Test cases for parsing JUnit report XML files.
@@ -40,6 +43,7 @@ import java.io.Writer;
  * varied xml files.
  * 
  * @author Erik Ramfelt
+ * @author Christoph Kutzinski
  */
 public class SuiteResultTest extends TestCase {
 
@@ -51,6 +55,10 @@ public class SuiteResultTest extends TestCase {
         List<SuiteResult> results = SuiteResult.parse(file, false);
         assertEquals(1,results.size());
         return results.get(0);
+    }
+    
+    private List<SuiteResult> parseSuites(File file) throws Exception {
+        return SuiteResult.parse(file, false);
     }
 
     /**
@@ -177,4 +185,31 @@ public class SuiteResultTest extends TestCase {
         }
     }
 
+    
+    /**
+     * When the testcase fails to initialize (exception in constructor or @Before)
+     * there is no 'testcase' element at all.
+     */
+    @Bug(6700)
+    public void testErrorInTestInitialization() throws Exception {
+        SuiteResult suiteResult = parseOne(getDataFile("junit-report-6700.xml"));
+        
+        assertEquals(1, suiteResult.getCases().size());
+        
+        CaseResult result = suiteResult.getCases().get(0);
+        assertEquals(1, result.getFailCount());
+        assertTrue(result.getErrorStackTrace() != null);
+    }
+    
+    @Bug(6454)
+    public void testParseNestedTestSuites() throws Exception {
+        // A report with several nested suites
+        // 3 of them have actual some tests - each exactly one
+        List<SuiteResult> results = parseSuites(getDataFile("junit-report-nested-testsuites.xml"));
+        assertEquals(3, results.size());
+        
+        for (SuiteResult result : results) {
+            assertEquals(1, result.getCases().size());
+        }
+    }
 }

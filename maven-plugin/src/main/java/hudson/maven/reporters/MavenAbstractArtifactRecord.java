@@ -25,40 +25,46 @@ package hudson.maven.reporters;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenUtil;
+import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.BallColor;
+import hudson.model.BuildBadgeAction;
 import hudson.model.Result;
 import hudson.model.TaskAction;
 import hudson.model.TaskListener;
 import hudson.model.TaskThread;
-import hudson.model.BuildBadgeAction;
 import hudson.model.TaskThread.ListenerAndText;
-import hudson.security.Permission;
 import hudson.security.ACL;
+import hudson.security.Permission;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
-import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.embedder.MavenEmbedderException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.servlet.ServletException;
+
+import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * UI to redeploy artifacts after the fact.
@@ -70,10 +76,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Kohsuke Kawaguchi
  */
 public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> extends TaskAction implements BuildBadgeAction {
+    @ExportedBean
     public final class Record {
         /**
          * Repository URL that artifacts were deployed.
          */
+        @Exported
         public final String url;
 
         /**
@@ -104,26 +112,32 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         /**
          * Result of the deployment. During the build, this value is null.
          */
+        @Exported
         public Result getResult() {
             return result;
         }
 
+        @Exported
         public int getNumber() {
             return records.indexOf(this);
         }
 
+        @Exported
         public boolean isBuilding() {
             return result==null;
         }
 
+        @Exported
         public Calendar getTimestamp() {
             return (Calendar) timeStamp.clone();
         }
 
+        @Exported
         public String getBuildStatusUrl() {
             return getIconColor().getImage();
         }
 
+        @Exported
         public BallColor getIconColor() {
             if(result==null)
                 return BallColor.GREY_ANIME;
@@ -141,6 +155,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     /**
      * Records of a deployment.
      */
+    @Exported
     public final CopyOnWriteArrayList<Record> records = new CopyOnWriteArrayList<Record>();
 
     /**
@@ -166,6 +181,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
 
     protected Permission getPermission() {
         return REDEPLOY;
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     public boolean hasBadge() {
@@ -204,16 +223,15 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
                 try {
                     MavenEmbedder embedder = MavenUtil.createEmbedder(listener,getBuild());
                     ArtifactRepositoryLayout layout =
-                        (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
+                        (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.class,"default");
                     ArtifactRepositoryFactory factory =
                         (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 
                     ArtifactRepository repository = factory.createDeploymentArtifactRepository(
                             id, repositoryUrl, layout, uniqueVersion);
+                    WrappedArtifactRepository repo = new WrappedArtifactRepository(repository, uniqueVersion);
+                    deploy(embedder,repo,listener);
 
-                    deploy(embedder,repository,listener);
-
-                    embedder.stop();
                     record.result = Result.SUCCESS;
                 } finally {
                     if(record.result==null)

@@ -67,32 +67,29 @@ public abstract class SidACL extends ACL {
     protected Boolean _hasPermission(Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(new PrincipalSid(a),permission);
-        if(b!=null) {
-            if(LOGGER.isLoggable(FINER))
-                LOGGER.finer("hasPermission(PrincipalSID:"+a.getPrincipal()+","+permission+")=>"+b);
+        if(LOGGER.isLoggable(FINER))
+            LOGGER.finer("hasPermission(PrincipalSID:"+a.getPrincipal()+","+permission+")=>"+b);
+        if(b!=null)
             return b;
-        }
 
         // after that, we check if the groups this principal belongs to
         // has any ACL entries.
         // here we are using GrantedAuthority as a group
         for(GrantedAuthority ga : a.getAuthorities()) {
             b = hasPermission(new GrantedAuthoritySid(ga),permission);
-            if(b!=null) {
-                if(LOGGER.isLoggable(FINER))
-                    LOGGER.finer("hasPermission(GroupSID:"+ga.getAuthority()+","+permission+")=>"+b);
+            if(LOGGER.isLoggable(FINER))
+                LOGGER.finer("hasPermission(GroupSID:"+ga.getAuthority()+","+permission+")=>"+b);
+            if(b!=null)
                 return b;
-            }
         }
 
         // permissions granted to 'everyone' and 'anonymous' users are granted to everyone
         for (Sid sid : AUTOMATIC_SIDS) {
             b = hasPermission(sid,permission);
-            if(b!=null) {
-                if(LOGGER.isLoggable(FINER))
-                    LOGGER.finer("hasPermission("+sid+","+permission+")=>"+b);
+            if(LOGGER.isLoggable(FINER))
+                LOGGER.finer("hasPermission("+sid+","+permission+")=>"+b);
+            if(b!=null)
                 return b;
-            }
         }
 
         return null;

@@ -24,8 +24,9 @@
 
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -42,10 +43,12 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class LocalPluginManager extends PluginManager {
-    private final Hudson hudson;
-    public LocalPluginManager(Hudson hudson) {
-        super(hudson.servletContext, new File(hudson.getRootDir(),"plugins"));
-        this.hudson = hudson;
+    public LocalPluginManager(Jenkins jenkins) {
+        super(jenkins.servletContext, new File(jenkins.getRootDir(),"plugins"));
+    }
+
+    public LocalPluginManager(File rootDir) {
+        super(null, new File(rootDir,"plugins"));
     }
 
     /**
@@ -63,7 +66,9 @@ public class LocalPluginManager extends PluginManager {
 
         Set<String> names = new HashSet<String>();
 
-        for( String path : Util.fixNull((Set<String>)hudson.servletContext.getResourcePaths("/WEB-INF/plugins"))) {
+        ServletContext context = Jenkins.getInstance().servletContext;
+
+        for( String path : Util.fixNull((Set<String>)context.getResourcePaths("/WEB-INF/plugins"))) {
             String fileName = path.substring(path.lastIndexOf('/')+1);
             if(fileName.length()==0) {
                 // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
@@ -73,7 +78,7 @@ public class LocalPluginManager extends PluginManager {
             try {
                 names.add(fileName);
 
-                URL url = hudson.servletContext.getResource(path);
+                URL url = context.getResource(path);
                 copyBundledPlugin(url, fileName);
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);

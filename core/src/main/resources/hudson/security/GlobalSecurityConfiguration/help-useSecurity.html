@@ -1,0 +1,20 @@
+<div>
+  If enabled, you have to login with a username and a password that has the "admin" role
+  before changing the configuration or running a new build (look for the "login" link
+  at the top right portion of the page).
+  Configuration of user accounts is specific to the web container you are using.
+  (For example, in Tomcat, by default, it looks for <tt>$TOMCAT_HOME/conf/tomcat-users.xml</tt>)
+
+  <p>
+  If you are using Jenkins in an intranet (or other "trusted" environment), it's usually
+  desirable to leave this checkbox off, so that each project developer can configure their own
+  project without bothering you.
+
+  <p>
+  If you are exposing Jenkins to the internet, you must turn this on. Jenkins launches
+  processes, so insecure Jenkins is a sure way of being hacked.
+
+  <p>
+  For more information about security and Jenkins, see
+  <a href="http://wiki.jenkins-ci.org/display/JENKINS/Securing+Jenkins">this document</a>.
+</div>

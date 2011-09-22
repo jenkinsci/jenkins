@@ -177,7 +177,6 @@ public class LargeText {
      */
     public void doProgressText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("UTF-8");
         rsp.setStatus(HttpServletResponse.SC_OK);
 
         if(!source.exists()) {

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Manage Old Data}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" it="${app}"/>
@@ -57,7 +58,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${vers.hasNext()}">
         <form action="upgrade" method="POST" name="oldDataUpgrade">
-          ${%Resave data files with structure changes no newer than Hudson}
+          ${%Resave data files with structure changes no newer than Jenkins}
           <select name="thruVer">
             <j:forEach var="ver" items="${vers}">
               <f:option>${ver}</f:option>

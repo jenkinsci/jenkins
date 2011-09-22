@@ -19,7 +19,7 @@
     <dd>Nom du projet de ce build, par exemple "foo"</dd>
 
     <dt>BUILD_TAG</dt>
-    <dd>Le texte "hudson-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>", facile à placer dans
+    <dd>Le texte "jenkins-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>", facile à placer dans
     un fichier de ressource, ou un jar, pour identification future.</dd>
 
     <dt>EXECUTOR_NUMBER</dt>
@@ -40,6 +40,9 @@
     <dt>HUDSON_URL</dt>
     <dd>L'URL complète de Hudson, au format <tt>http://server:port/hudson/</tt></dd>
 
+    <dt>JENKINS_URL</dt>
+    <dd>L'URL complète de Jenkins, au format <tt>http://server:port/jenkins/</tt></dd>
+
     <dt>SVN_REVISION</dt>
     <dd>Pour les projets utilisant Subversion, cette variable contient le numéro de révision du module.</dd>
 
@@ -51,7 +54,7 @@
 
 
 <p>
-Pour comprendre comment les variables d'environnement fournies par Hudson peuvent être utilisées
+Pour comprendre comment les variables d'environnement fournies par Jenkins peuvent être utilisées
 par Ant, consultez le résultat de la target Ant suivante:
 
 <pre><xmp

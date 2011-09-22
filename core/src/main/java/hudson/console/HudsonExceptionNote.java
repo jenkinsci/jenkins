@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2010-2011, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.console;
 
 import hudson.Extension;
@@ -32,7 +55,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
             else
                 return null;    // unexpected format. abort.
         }
-        text.addHyperlink(charPos,end,annotateClassName(line.substring(charPos,end)));
+        text.addHyperlinkLowKey(charPos,end,annotateClassName(line.substring(charPos,end)));
 
         return new ConsoleAnnotator() {
             public ConsoleAnnotator annotate(Object context, MarkupText text) {
@@ -40,7 +63,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
 
                 Matcher m = STACK_TRACE_ELEMENT.matcher(line);
                 if (m.find()) {// allow the match to happen in the middle of a line to cope with prefix. Ant and Maven put them, among many other tools.
-                    text.addHyperlink(m.start()+4,m.end(),annotateMethodName(m.group(1),m.group(2),m.group(3),Integer.parseInt(m.group(4))));
+                    text.addHyperlinkLowKey(m.start()+4,m.end(),annotateMethodName(m.group(1),m.group(2),m.group(3),Integer.parseInt(m.group(4))));
                     return this;
                 }
 
@@ -49,7 +72,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
                     int s = idx + CAUSED_BY.length();
                     int e = line.indexOf(':', s);
                     if (e<0)    e = line.length();
-                    text.addHyperlink(s,e,annotateClassName(line.substring(s,e)));
+                    text.addHyperlinkLowKey(s,e,annotateClassName(line.substring(s,e)));
                     return this;
                 }
 
@@ -65,13 +88,11 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
     // TODO; separate out the annotations and mark up
 
     private String annotateMethodName(String className, String methodName, String sourceFileName, int lineNumber) {
-        // for now
-        return "http://grepcode.com/search/?query="+className+'.'+methodName+"&entity=method";
+        return "http://stacktrace.jenkins-ci.org/search/?query="+className+'.'+methodName+"&entity=method";
     }
 
     private String annotateClassName(String className) {
-        // for now
-        return "http://grepcode.com/search?query="+className;
+        return "http://stacktrace.jenkins-ci.org/search?query="+className;
     }
 
     @Extension
@@ -97,5 +118,5 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
 
     private static final String CAUSED_BY = "Caused by: ";
 
-    private static final Pattern AND_MORE = Pattern.compile("\t... [0-9]+ more");
+    private static final Pattern AND_MORE = Pattern.compile("\t... [0-9]+ more\n");
 }

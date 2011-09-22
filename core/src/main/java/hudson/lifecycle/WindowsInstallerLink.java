@@ -25,7 +25,7 @@ package hudson.lifecycle;
 
 import hudson.Functions;
 import hudson.model.ManagementLink;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
@@ -55,7 +55,7 @@ import java.net.URL;
 public class WindowsInstallerLink extends ManagementLink {
 
     /**
-     * Location of the hudson.war.
+     * Location of the jenkins.war.
      * In general case, we can't determine this value, yet having this is a requirement for the installer.
      */
     private final File hudsonWar;
@@ -65,8 +65,8 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     private volatile File installationDir;
 
-    private WindowsInstallerLink(File hudsonWar) {
-        this.hudsonWar = hudsonWar;
+    private WindowsInstallerLink(File jenkinsWar) {
+        this.hudsonWar = jenkinsWar;
     }
 
     public String getIconFileName() {
@@ -106,7 +106,7 @@ public class WindowsInstallerLink extends ManagementLink {
             return;
         }
         
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         File dir = new File(_dir).getAbsoluteFile();
         dir.mkdirs();
@@ -117,17 +117,17 @@ public class WindowsInstallerLink extends ManagementLink {
 
         try {
             // copy files over there
-            copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.exe"), "hudson.exe");
-            copy(req, rsp, dir, getClass().getResource("/windows-service/hudson.xml"), "hudson.xml");
-            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"hudson.war").getCanonicalFile()))
-                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "hudson.war");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"), "jenkins.exe");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"), "jenkins.xml");
+            if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
+                copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
             int r = WindowsSlaveInstaller.runElevated(
-                    new File(dir, "hudson.exe"), "install", task, dir);
+                    new File(dir, "jenkins.exe"), "install", task, dir);
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -164,10 +164,10 @@ public class WindowsInstallerLink extends ManagementLink {
             rsp.sendRedirect(req.getContextPath()+"/");
             return;
         }
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         rsp.forward(this,"_restart",req);
-        final File oldRoot = Hudson.getInstance().getRootDir();
+        final File oldRoot = Jenkins.getInstance().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
@@ -196,7 +196,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
                                 int r = WindowsSlaveInstaller.runElevated(
-                                        new File(installationDir, "hudson.exe"), "start", task, installationDir);
+                                        new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -231,7 +231,7 @@ public class WindowsInstallerLink extends ManagementLink {
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         req.setAttribute("pre",true);
-        rsp.forward(Hudson.getInstance(),"error",req);
+        rsp.forward(Jenkins.getInstance(),"error",req);
     }
 
     /**
@@ -245,17 +245,17 @@ public class WindowsInstallerLink extends ManagementLink {
         if(Lifecycle.get() instanceof WindowsServiceLifecycle)
             return null; // already installed as Windows service
 
-        // this system property is set by the launcher when we run "java -jar hudson.war"
-        // and this is how we know where is hudson.war.
+        // this system property is set by the launcher when we run "java -jar jenkins.war"
+        // and this is how we know where is jenkins.war.
         String war = System.getProperty("executable-war");
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
-            // in certain situations where we know the user is just trying Hudson (like when Hudson is launched
+            // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
             // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
-                Hudson.getInstance().getActions().add(link);
+                Jenkins.getInstance().getActions().add(link);
 
             return link;
         }

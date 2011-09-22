@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2010, Winston.Prakash@oracle.com
+ * Copyright (c) 2010, Winston.Prakash@oracle.com, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,16 @@
 package hudson.views;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Descriptor.FormException;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import hudson.model.ListView;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Extension point for adding a ViewsTabBar header to Projects {@link ListView}.
@@ -51,11 +56,37 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      * Returns all the registered {@link ViewsTabBar} descriptors.
      */
     public static DescriptorExtensionList<ViewsTabBar, Descriptor<ViewsTabBar>> all() {
-        return Hudson.getInstance().<ViewsTabBar, Descriptor<ViewsTabBar>>getDescriptorList(ViewsTabBar.class);
+        return Jenkins.getInstance().<ViewsTabBar, Descriptor<ViewsTabBar>>getDescriptorList(ViewsTabBar.class);
     }
 
     @Override
     public ViewsTabBarDescriptor getDescriptor() {
         return (ViewsTabBarDescriptor)super.getDescriptor();
+    }
+
+    /**
+     * Configures {@link ViewsTabBar} in the system configuration.
+     *
+     * @author Kohsuke Kawaguchi
+     */
+    @Extension(ordinal=310)
+    public static class GlobalConfigurationImpl extends GlobalConfiguration {
+        public ViewsTabBar getViewsTabBar() {
+            return Jenkins.getInstance().getViewsTabBar();
+        }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            // for compatibility reasons, the actual value is stored in Jenkins
+            Jenkins j = Jenkins.getInstance();
+
+            if (json.has("viewsTabBar")) {
+                j.setViewsTabBar(req.bindJSON(ViewsTabBar.class,json.getJSONObject("viewsTabBar")));
+            } else {
+                j.setViewsTabBar(new DefaultViewsTabBar());
+            }
+
+            return true;
+        }
     }
 }

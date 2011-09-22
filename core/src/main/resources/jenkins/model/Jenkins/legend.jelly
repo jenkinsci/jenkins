@@ -1,0 +1,88 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe,
+Stephen Connolly, id:lecric, Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!-- show the icon legend -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <table cellpadding="5">
+        <tr><td>
+          <img src="images/48x48/grey.png" alt="" height="48" width="48"/>
+          ${%grey}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/grey_anime.gif" alt="" height="48" width="48"/>
+          ${%grey_anime}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/blue.png" alt="" height="48" width="48"/>
+          ${%blue}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/blue_anime.gif" alt="" height="48" width="48"/>
+          ${%blue_anime}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/yellow.png" alt="" height="48" width="48"/>
+          ${%yellow}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/yellow_anime.gif" alt="" height="48" width="48"/>
+          ${%yellow_anime}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/red.png" alt="" height="48" width="48"/>
+          ${%red}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/red_anime.gif" alt="" height="48" width="48"/>
+          ${%red_anime}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-80plus.png" alt="" height="48" width="48"/>
+          ${%health-81plus}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-60to79.png" alt="" height="48" width="48"/>
+          ${%health-61to80}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-40to59.png" alt="" height="48" width="48"/>
+          ${%health-41to60}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-20to39.png" alt="" height="48" width="48"/>
+          ${%health-21to40}
+        </td></tr>
+        <tr><td>
+          <img src="images/48x48/health-00to19.png" alt="" height="48" width="48"/>
+          ${%health-00to20}
+        </td></tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -33,7 +33,8 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
-import hudson.model.Hudson;
+import hudson.util.EditDistance;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
@@ -48,8 +49,10 @@ import org.kohsuke.stapler.export.Exported;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,8 +107,8 @@ public class LabelAtom extends Label implements Saveable {
             // if there's no property descriptor, there's nothing interesting to configure.
             ta.add(new Action() {
                 public String getIconFileName() {
-                    if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
-                        return "setting.gif";
+                    if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
+                        return "setting.png";
                     else
                         return null;
                 }
@@ -144,12 +147,22 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     @Override
+    public <V, P> V accept(LabelVisitor<V, P> visitor, P param) {
+        return visitor.onAtom(this,param);
+    }
+
+    @Override
+    public Set<LabelAtom> listAtoms() {
+        return Collections.singleton(this);
+    }
+
+    @Override
     public LabelOperatorPrecedence precedence() {
         return LabelOperatorPrecedence.ATOM;
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().root, "labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -187,9 +200,9 @@ public class LabelAtom extends Label implements Saveable {
      * Accepts the update to the node configuration.
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        final Hudson app = Hudson.getInstance();
+        final Jenkins app = Jenkins.getInstance();
 
-        app.checkPermission(Hudson.ADMINISTER);
+        app.checkPermission(Jenkins.ADMINISTER);
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
         updateTransientActions();
@@ -203,12 +216,20 @@ public class LabelAtom extends Label implements Saveable {
      * Obtains an atom by its {@linkplain #getName() name}.
      */
     public static LabelAtom get(String l) {
-        return Hudson.getInstance().getLabelAtom(l);
+        return Jenkins.getInstance().getLabelAtom(l);
+    }
+
+    public static LabelAtom findNearest(String name) {
+        List<String> candidates = new ArrayList<String>();
+        for (LabelAtom a : Jenkins.getInstance().getLabelAtoms()) {
+            candidates.add(a.getName());
+        }
+        return get(EditDistance.findNearest(name, candidates));
     }
 
     public static boolean needsEscape(String name) {
         try {
-            Hudson.checkGoodName(name);
+            Jenkins.checkGoodName(name);
             // additional restricted chars
             for( int i=0; i<name.length(); i++ ) {
                 char ch = name.charAt(i);

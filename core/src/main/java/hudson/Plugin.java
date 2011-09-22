@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
@@ -74,7 +74,7 @@ import com.thoughtworks.xstream.XStream;
 public abstract class Plugin implements Saveable {
 
     /**
-     * Set by the {@link PluginManager}.
+     * Set by the {@link PluginManager}, before the {@link #start()} method is called.
      * This points to the {@link PluginWrapper} that wraps
      * this {@link Plugin} object.
      */
@@ -96,11 +96,20 @@ public abstract class Plugin implements Saveable {
     }
 
     /**
+     * Gets the paired {@link PluginWrapper}.
+     *
+     * @since 1.426
+     */
+    public PluginWrapper getWrapper() {
+        return wrapper;
+    }
+
+    /**
      * Called to allow plugins to initialize themselves.
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link Hudson#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
      * although the plugin start up happens relatively early in the initialization
      * stage and not all the data are loaded in Hudson.
      *
@@ -227,8 +236,9 @@ public abstract class Plugin implements Saveable {
      */
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        getConfigXml().write(this);
-        SaveableListener.fireOnChange(this, getConfigXml());
+        XmlFile config = getConfigXml();
+        config.write(this);
+        SaveableListener.fireOnChange(this, config);
     }
 
     /**
@@ -241,8 +251,8 @@ public abstract class Plugin implements Saveable {
      * @since 1.245
      */
     protected XmlFile getConfigXml() {
-        return new XmlFile(Hudson.XSTREAM,
-                new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
+        return new XmlFile(Jenkins.XSTREAM,
+                new File(Jenkins.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 
 

@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Extension;
@@ -47,6 +48,8 @@ import java.util.ArrayList;
  * @author Kohsuke Kawaguchi
  */
 final class PomInfo implements Serializable {
+    
+    public static final String PACKAGING_TYPE_PLUGIN = "maven-plugin";
 
     public final ModuleName name;
 
@@ -94,8 +97,25 @@ final class PomInfo implements Serializable {
      * Parent module.
      */
     public final PomInfo parent;
+    
+    /**
+     * maven groupId
+     */
+    private final String groupId;
+    
+    /**
+     * maven artifactId
+     */    
+    private final String artifactId;
 
     public final Notifier mailNotifier;
+    
+    /**
+     * Packaging type taken from the POM.
+     * 
+     * @since 1.425
+     */
+    public final String packaging;
 
     public PomInfo(MavenProject project, PomInfo parent, String relPath) {
         this.name = new ModuleName(project);
@@ -140,13 +160,17 @@ final class PomInfo implements Serializable {
             this.mailNotifier = mailNotifier;
         } else
             this.mailNotifier = null;
+        
+        this.groupId = project.getGroupId();
+        this.artifactId = project.getArtifactId();
+        this.packaging = project.getPackaging();
     }
-
+    
     /**
      * Creates {@link ModuleDependency} that represents this {@link PomInfo}.
      */
     private ModuleDependency asDependency() {
-        return new ModuleDependency(name,version);
+        return new ModuleDependency(name,version,PACKAGING_TYPE_PLUGIN.equals(this.packaging));
     }
 
     private void addPluginsAsDependencies(List<Plugin> plugins, Set<ModuleDependency> dependencies) {
@@ -189,4 +213,45 @@ final class PomInfo implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 23 + this.groupId == null ? 1 : this.groupId.hashCode();
+        hash += this.artifactId == null ? 1 : this.artifactId.hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof PomInfo)) {
+            return false;
+        }
+        PomInfo pomInfo = (PomInfo) obj;
+        return StringUtils.equals( pomInfo.groupId, this.groupId ) 
+            && StringUtils.equals( pomInfo.artifactId, this.artifactId ); 
+    }
+    
+    /**
+     * Returns if groupId, artifactId and dependencies are the same.
+     */
+    public boolean isSimilar(ModuleName moduleName, Set<ModuleDependency> dependencies) {
+        return StringUtils.equals(this.groupId, moduleName.groupId)
+            && StringUtils.equals(this.artifactId, moduleName.artifactId)
+            && this.dependencies.equals(dependencies);
+    }
+    
+    /**
+     * for debug purpose
+     */
+    public String toString() {
+        return "PomInfo:["+groupId+':'+artifactId+']'+"[relativePath:"+relativePath+']';
+    }    
 }

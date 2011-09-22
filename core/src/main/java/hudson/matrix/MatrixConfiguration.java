@@ -24,13 +24,14 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -194,18 +195,25 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public Label getAssignedLabel() {
         // combine all the label axes by &&.
-        String expr = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
-        return Hudson.getInstance().getLabel(Util.fixEmpty(expr));
+    	String expr;
+        String exprSlave = Util.join(combination.values(getParent().getAxes().subList(LabelAxis.class)), "&&");
+        String exprLabel = Util.join(combination.values(getParent().getAxes().subList(LabelExpAxis.class)), "&&");
+        if(!exprSlave.equals("") && !exprLabel.equals("")){
+        	expr = exprSlave + "&&" + exprLabel;
+        } else{
+        	expr = (exprSlave.equals("")) ? exprLabel : exprSlave;
+        }
+        return Jenkins.getInstance().getLabel(Util.fixEmpty(expr));
     }
 
     @Override
     public String getPronoun() {
-        return Messages.MatrixConfiguration_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MatrixConfiguration_Pronoun());
     }
 
     @Override
     public JDK getJDK() {
-        return Hudson.getInstance().getJDK(combination.get("jdk"));
+        return Jenkins.getInstance().getJDK(combination.get("jdk"));
     }
 
 //
@@ -317,6 +325,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Can be null.
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Hudson.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
     }
 }

@@ -4,15 +4,8 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import hudson.EnvVars;
-import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.util.NullStream;
 import hudson.tasks.Maven.MavenInstallation;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
 
 /**
  * @author Andrew Bayer
@@ -98,6 +91,22 @@ public class MavenOptsTest extends HudsonTestCase {
 
 	assertEquals("Parent build should have Result.UNSTABLE", Result.UNSTABLE, pBuild.getResult());
 	
+    }
+
+    /**
+     * Makes sure that environment variables in MAVEN_OPTS are properly expanded.
+     */
+    public void testEnvironmentVariableExpansion() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+        m.setMavenOpts("$FOO");
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
+        m.setGoals("validate");
+        m.setAssignedLabel(createSlave(new EnvVars("FOO", "-Dhudson.mavenOpt.test=foo -Dhudson.mavenOpt.test2=bar")).getSelfLabel());
+
+        buildAndAssertSuccess(m);
+
+        assertLogContains("[hudson.mavenOpt.test=foo]", m.getLastBuild());
     }
 
 }

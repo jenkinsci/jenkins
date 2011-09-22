@@ -26,6 +26,7 @@ THE SOFTWARE.
 <!--
   Parts of the configuration that applies to Project and MavenModuleSet.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
   <p:config-disableBuild/>
   <j:if test="${app.CONCURRENT_BUILD}">
@@ -51,7 +52,7 @@ THE SOFTWARE.
     <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}"
         help="/help/project-config/slave.html">
       <f:entry title="${%Label Expression}" field="assignedLabelString">
-        <f:textbox autoCompleteDelimiChar=" "/>
+        <f:textbox autoCompleteDelimChar=" "/>
       </f:entry>
     </f:optionalBlock>
   </j:if>
@@ -61,6 +62,7 @@ THE SOFTWARE.
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
+      <p:config-blockWhenDownstreamBuilding />
       <st:include page="configure-advanced.jelly" optional="true" />
     </f:advanced>
   </f:section>

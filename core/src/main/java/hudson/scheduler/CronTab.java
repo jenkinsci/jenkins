@@ -28,6 +28,7 @@ import antlr.ANTLRException;
 import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import static java.util.Calendar.*;
 
@@ -96,25 +97,36 @@ public final class CronTab {
         /**
          * {@link Calendar} field ID.
          */
-        private final int field;
+        final int field;
         /**
          * Lower field is a calendar field whose value needs to be reset when we change the value in this field.
          * For example, if we modify the value in HOUR, MINUTES must be reset.
          */
-        private final CalendarField lowerField;
-        private final int offset;
+        final CalendarField lowerField;
+        /**
+         * Whether this field is 0-origin or 1-origin differs between Crontab and {@link Calendar},
+         * so this field adjusts that. If crontab is 1 origin and calendar is 0 origin,  this field is 1
+         * that is the value is {@code (cronOrigin-calendarOrigin)}
+         */
+        final int offset;
         /**
          * When we reset this field, we set the field to this value.
          * For example, resetting {@link Calendar#DAY_OF_MONTH} means setting it to 1.
          */
-        private final int min;
+        final int min;
         /**
          * If this calendar field has other aliases such that a change in this field
          * modifies other field values, then true.
          */
-        private final boolean redoAdjustmentIfModified;
+        final boolean redoAdjustmentIfModified;
 
-        private CalendarField(int field, int min, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
+        /**
+         * What is this field? Useful for debugging
+         */
+        private final String displayName;
+
+        private CalendarField(String displayName, int field, int min, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
+            this.displayName = displayName;
             this.field = field;
             this.min = min;
             this.redoAdjustmentIfModified= redoAdjustmentIfModified;
@@ -125,19 +137,19 @@ public final class CronTab {
         /**
          * Gets the current value of this field in the given calendar.
          */
-        private int valueOf(Calendar c) {
+        int valueOf(Calendar c) {
             return c.get(field)+offset;
         }
 
-        private void addTo(Calendar c, int i) {
+        void addTo(Calendar c, int i) {
             c.add(field,i);
         }
 
-        private void setTo(Calendar c, int i) {
+        void setTo(Calendar c, int i) {
             c.set(field,i-offset);
         }
 
-        private void clear(Calendar c) {
+        void clear(Calendar c) {
             setTo(c, min);
         }
 
@@ -187,26 +199,43 @@ public final class CronTab {
          */
         abstract void rollUp(Calendar cal, int i);
 
-        private static final CalendarField MINUTE       = new CalendarField(Calendar.MINUTE,        0, 0, false, null) {
+        private static final CalendarField MINUTE       = new CalendarField("minute", Calendar.MINUTE,        0, 0, false, null) {
             long bits(CronTab c) { return c.bits[0]; }
             void rollUp(Calendar cal, int i) { cal.add(Calendar.HOUR_OF_DAY,i); }
         };
-        private static final CalendarField HOUR         = new CalendarField(Calendar.HOUR_OF_DAY,   0, 0, false, MINUTE) {
+        private static final CalendarField HOUR         = new CalendarField("hour", Calendar.HOUR_OF_DAY,   0, 0, false, MINUTE) {
             long bits(CronTab c) { return c.bits[1]; }
             void rollUp(Calendar cal, int i) { cal.add(Calendar.DAY_OF_MONTH,i); }
         };
-        private static final CalendarField DAY_OF_MONTH = new CalendarField(Calendar.DAY_OF_MONTH,  1, 0, true,  HOUR) {
+        private static final CalendarField DAY_OF_MONTH = new CalendarField("day", Calendar.DAY_OF_MONTH,  1, 0, true,  HOUR) {
             long bits(CronTab c) { return c.bits[2]; }
             void rollUp(Calendar cal, int i) { cal.add(Calendar.MONTH,i); }
         };
-        private static final CalendarField MONTH        = new CalendarField(Calendar.MONTH,         1, 1, false, DAY_OF_MONTH) {
+        private static final CalendarField MONTH        = new CalendarField("month", Calendar.MONTH,         1, 1, false, DAY_OF_MONTH) {
             long bits(CronTab c) { return c.bits[3]; }
             void rollUp(Calendar cal, int i) { cal.add(Calendar.YEAR,i); }
         };
-        private static final CalendarField DAY_OF_WEEK  = new CalendarField(Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
+        private static final CalendarField DAY_OF_WEEK  = new CalendarField("dow", Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
             long bits(CronTab c) { return c.dayOfWeek; }
             void rollUp(Calendar cal, int i) {
-                cal.add(Calendar.WEEK_OF_YEAR,i);
+                cal.add(Calendar.DAY_OF_WEEK, 7 * i);
+            }
+
+            @Override
+            void setTo(Calendar c, int i) {
+                int v = i-offset;
+                int was = c.get(field);
+                c.set(field,v);
+                final int firstDayOfWeek = c.getFirstDayOfWeek();
+                if (v < firstDayOfWeek && was >= firstDayOfWeek) {
+                    // in crontab, the first DoW is always Sunday, but in Java, it can be Monday or in theory arbitrary other days.
+                    // When first DoW is 1/2 Monday, calendar points to 1/2 Monday, setting the DoW to Sunday makes
+                    // the calendar moves forward to 1/8 Sunday, instead of 1/1 Sunday. So we need to compensate that effect here.
+                    addTo(c,-7);
+                } else if (was < firstDayOfWeek && firstDayOfWeek <= v) {
+                    // If we wrap the other way around, we need to adjust in the opposite direction of above.
+                    addTo(c, 7);
+                }
             }
         };
 
@@ -230,7 +259,7 @@ public final class CronTab {
      * Note that if t already matches this cron, it's returned as is.
      */
     public Calendar ceil(long t) {
-        Calendar cal = new GregorianCalendar();
+        Calendar cal = new GregorianCalendar(Locale.US);
         cal.setTimeInMillis(t);
         return ceil(cal);
     }
@@ -282,7 +311,7 @@ public final class CronTab {
      * Note that if t already matches this cron, it's returned as is.
      */
     public Calendar floor(long t) {
-        Calendar cal = new GregorianCalendar();
+        Calendar cal = new GregorianCalendar(Locale.US);
         cal.setTimeInMillis(t);
         return floor(cal);
     }

@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.TextPage;
 
 import hudson.util.TextFile;
 import java.io.IOException;
@@ -226,5 +227,16 @@ public class JobTest extends HudsonTestCase {
         assertEquals(3, r.getArtifactsUpTo(3).size());
         assertEquals(2, r.getArtifactsUpTo(2).size());
         assertEquals(1, r.getArtifactsUpTo(1).size());
+    }
+
+    @Bug(10182)
+    public void testEmptyDescriptionReturnsEmptyPage() throws Exception {
+        // A NPE was thrown if a job had a null (empty) description.
+        WebClient wc = createWebClient();
+        FreeStyleProject project = createFreeStyleProject("project");
+        project.setDescription("description");
+        assertEquals("description", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
+        project.setDescription(null);
+        assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
     }
 }

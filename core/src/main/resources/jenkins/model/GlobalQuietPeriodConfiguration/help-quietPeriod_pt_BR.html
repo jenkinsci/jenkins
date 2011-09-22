@@ -1,0 +1,22 @@
+<div>
+  Se informado, uma nova constru&#231;&#227;o agendada aguarda estes quantos segundos informado 
+  antes de ser realmente constru&#237;da.
+  Isto &#233; &#250;til para:
+  <ul>
+    <li>
+      Juntar m&#250;ltiplos e-mails de notifica&#231;&#227;o de mudan&#231;as no CVS em um (alguns scripts
+      de gera&#231;&#227;o de e-mail de mudan&#231;a no log de CVS geram m&#250;ltiplos e-mails
+      em uma r&#225;pida sequ&#234;ncia quam uma submiss&#227;o atravessa pelos diret&#243;rios).
+    </li>
+    <li>
+      Se seu estilo de codifica&#231;&#227;o &#233; tal que voc&#234; submete uma mudan&#231;a l&#243;gica em poucas
+      opera&#231;&#227;o de cvs/svn, ent&#227;o informar um longo per&#237;odo de sil&#234;ncio previniria o Jenkins de
+      constru&#237;-lo prematuramente e relatar uma falha.
+    </li>
+    <li>
+      Suprimir constru&#231;&#245;es. Se sua intala&#231;&#227;o do Jenkins est&#225; muito ocupada com muitas constru&#231;&#245;esi,
+      informar um longo per&#237;odo de sil&#234;ncio pode reduzir o n&#250;mero de constru&#231;&#245;es.
+    </li>
+  </ul>
+  Se n&#227;o expl&#237;citamente informado no n&#237;vel de projeto, o valor padr&#227;o do sistema todo &#233; usado.
+</div>

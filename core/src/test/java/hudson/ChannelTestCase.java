@@ -2,8 +2,6 @@ package hudson;
 
 import junit.framework.TestCase;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Callable;

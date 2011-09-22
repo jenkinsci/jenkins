@@ -32,6 +32,7 @@ THE SOFTWARE.
 
   See MatrixProject/index.jelly and ajaxMatrix.jelly for how to use this tag.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
   <j:choose>
     <j:when test="${rootURL!=null}">

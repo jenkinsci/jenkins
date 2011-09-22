@@ -30,7 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.cli.declarative.OptionHandlerExtension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelProperty;
@@ -51,8 +51,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -61,7 +64,7 @@ import java.util.logging.Logger;
  * <h2>How does a CLI command work</h2>
  * <p>
  * The users starts {@linkplain CLI the "CLI agent"} on a remote system, by specifying arguments, like
- * <tt>"java -jar hudson-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
+ * <tt>"java -jar jenkins-cli.jar command arg1 arg2 arg3"</tt>. The CLI agent creates
  * a remoting channel with the server, and it sends the entire arguments to the server, along with
  * the remoted stdin/out/err.
  *
@@ -70,7 +73,7 @@ import java.util.logging.Logger;
  * calls {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method.
  *
  * <h2>Note for CLI command implementor</h2>
- * Start with <a href="http://wiki.hudson-ci.org/display/HUDSON/Writing+CLI+commands">this document</a>
+ * Start with <a href="http://wiki.jenkins-ci.org/display/JENKINS/Writing+CLI+commands">this document</a>
  * to get the general idea of CLI.
  *
  * <ul>
@@ -170,17 +173,17 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         SecurityContext sc = SecurityContextHolder.getContext();
         Authentication old = sc.getAuthentication();
 
-        CliAuthenticator authenticator = Hudson.getInstance().getSecurityRealm().createCliAuthenticator(this);
+        CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
         new ClassParser().parse(authenticator,p);
 
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
-            if (auth==Hudson.ANONYMOUS)
+            if (auth== Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
             if (!(this instanceof LoginCommand || this instanceof HelpCommand))
-                Hudson.getInstance().checkPermission(Hudson.READ);
+                Jenkins.getInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {
             stderr.println(e.getMessage());
@@ -207,7 +210,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
             e.printStackTrace(stderr);  // recover
-            return Hudson.ANONYMOUS;
+            return Jenkins.ANONYMOUS;
         }
     }
 
@@ -225,10 +228,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @param auth
      *      Always non-null.
      *      If the underlying transport had already performed authentication, this object is something other than
-     *      {@link Hudson#ANONYMOUS}.
+     *      {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     protected boolean shouldPerformAuthentication(Authentication auth) {
-        return auth==Hudson.ANONYMOUS;
+        return auth== Jenkins.ANONYMOUS;
     }
 
     /**
@@ -245,11 +248,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * then this method can return a valid identity of the client.
      *
      * <p>
-     * If the transport doesn't do authentication, this method returns {@link Hudson#ANONYMOUS}.
+     * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     public Authentication getTransportAuthentication() {
         Authentication a = channel.getProperty(TRANSPORT_AUTHENTICATION);
-        if (a==null)    a = Hudson.ANONYMOUS;
+        if (a==null)    a = Jenkins.ANONYMOUS;
         return a;
     }
 
@@ -268,7 +271,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected abstract int run() throws Exception;
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
-        stderr.println("java -jar hudson-cli.jar "+getName()+" args...");
+        stderr.println("java -jar jenkins-cli.jar "+getName()+" args...");
         printUsageSummary(stderr);
         p.printUsage(stderr);
     }
@@ -303,6 +306,45 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         private static final long serialVersionUID = 1L;
     }
 
+    protected Charset getClientCharset() throws IOException, InterruptedException {
+        String charsetName = channel.call(new GetCharset());
+        try {
+            return Charset.forName(charsetName);
+        } catch (UnsupportedCharsetException e) {
+            LOGGER.log(Level.FINE,"Server doesn't have charset "+charsetName);
+            return Charset.defaultCharset();
+        }
+    }
+
+    private static final class GetCharset implements Callable<String, IOException> {
+        public String call() throws IOException {
+            return Charset.defaultCharset().name();
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * Convenience method for subtypes to obtain environment variables of the client.
+     */
+    protected String getClientEnvironmentVariable(String name) throws IOException, InterruptedException {
+        return channel.call(new GetEnvironmentVariable(name));
+    }
+
+    private static final class GetEnvironmentVariable implements Callable<String, IOException> {
+        private final String name;
+
+        private GetEnvironmentVariable(String name) {
+            this.name = name;
+        }
+
+        public String call() throws IOException {
+            return System.getenv(name);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     /**
      * Creates a clone to be used to execute a command.
      */
@@ -321,7 +363,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class,Hudson.getInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getInstance().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }
@@ -334,7 +376,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
-        return Hudson.getInstance().getExtensionList(CLICommand.class);
+        return Jenkins.getInstance().getExtensionList(CLICommand.class);
     }
 
     /**

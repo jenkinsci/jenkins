@@ -32,7 +32,7 @@ public class InitStrategy {
      * Returns the list of *.hpi and *.hpl to expand and load.
      *
      * <p>
-     * Normally we look at {@code $HUDSON_HOME/plugins/*.hpi} and *.hpl.
+     * Normally we look at {@code $JENKINS_HOME/plugins/*.hpi} and *.hpl.
      *
      * @return
      *      never null but can be empty. The list can contain different versions of the same plugin,

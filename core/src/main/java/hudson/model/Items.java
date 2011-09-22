@@ -24,14 +24,15 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
-import hudson.XmlFile;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
+import hudson.XmlFile;
 import hudson.matrix.Axis;
-import hudson.util.XStream2;
 import hudson.util.DescriptorList;
+import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s.
      */
     public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
-        return Hudson.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
+        return Jenkins.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
     }
 
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
@@ -79,16 +80,24 @@ public class Items {
     }
 
     /**
-     * Does the opposite of {@link #toNameList(Collection)}.
+     * @deprecated as of 1.406
+     *      Use {@link #fromNameList(ItemGroup, String, Class)}
      */
     public static <T extends Item> List<T> fromNameList(String list, Class<T> type) {
-        Hudson hudson = Hudson.getInstance();
+        return fromNameList(null,list,type);
+    }
+
+    /**
+     * Does the opposite of {@link #toNameList(Collection)}.
+     */
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, String list, Class<T> type) {
+        Jenkins hudson = Jenkins.getInstance();
 
         List<T> r = new ArrayList<T>();
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            T item = hudson.getItemByFullName(fullName,type);
+            T item = hudson.getItem(fullName, context, type);
             if(item!=null)
                 r.add(item);
         }
@@ -128,6 +137,11 @@ public class Items {
      * that it produces a reasonable XML.
      */
     public static final XStream XSTREAM = new XStream2();
+
+    /**
+     * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
+     */
+    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
 
     static {
         XSTREAM.alias("project",FreeStyleProject.class);

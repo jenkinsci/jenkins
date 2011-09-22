@@ -24,7 +24,6 @@
 package hudson.node_monitors;
 
 import hudson.model.Computer;
-import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.Extension;
 import net.sf.json.JSONObject;

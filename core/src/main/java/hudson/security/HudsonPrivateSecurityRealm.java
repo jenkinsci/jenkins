@@ -28,12 +28,14 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.security.FederatedLoginService.FederatedIdentity;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
@@ -51,6 +53,9 @@ import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -76,7 +81,7 @@ import java.util.List;
  *
  * <p>
  * Implements {@link AccessControlled} to satisfy view rendering, but in reality the access control
- * is done against the {@link Hudson} object.
+ * is done against the {@link jenkins.model.Jenkins} object.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -88,9 +93,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private final boolean disableSignup;
 
-    @DataBoundConstructor
+    /**
+     * If true, captcha will be enabled.
+     */
+    private final boolean enableCaptcha;
+
+    @Deprecated
     public HudsonPrivateSecurityRealm(boolean allowsSignup) {
+        this(allowsSignup, false, (CaptchaSupport) null);
+    }
+
+    @DataBoundConstructor
+    public HudsonPrivateSecurityRealm(boolean allowsSignup, boolean enableCaptcha, CaptchaSupport captchaSupport) {
         this.disableSignup = !allowsSignup;
+        this.enableCaptcha = enableCaptcha;
+        setCaptchaSupport(captchaSupport);
         if(!allowsSignup && !hasSomeUser()) {
             // if Hudson is newly set up with the security realm and there's no user account created yet,
             // insert a filter that asks the user to create one
@@ -105,6 +122,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    /**
+     * Checks if captcha is enabled on user signup.
+     *
+     * @return true if captcha is enabled on signup.
+     */
+    public boolean isEnableCaptcha() {
+        return enableCaptcha;
     }
 
     /**
@@ -148,20 +174,55 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
+     * Show the sign up page with the data from the identity.
+     */
+    @Override
+    public HttpResponse commenceSignup(final FederatedIdentity identity) {
+        // store the identity in the session so that we can use this later
+        Stapler.getCurrentRequest().getSession().setAttribute(FEDERATED_IDENTITY_SESSION_KEY,identity);
+        return new ForwardToView(this,"signupWithFederatedIdentity.jelly") {
+            @Override
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                SignupInfo si = new SignupInfo(identity);
+                si.errorMessage = Messages.HudsonPrivateSecurityRealm_WouldYouLikeToSignUp(identity.getPronoun(),identity.getIdentifier());
+                req.setAttribute("data", si);
+                super.generateResponse(req, rsp, node);
+            }
+        };
+    }
+
+    /**
+     * Creates an account and associates that with the given identity. Used in conjunction
+     * with {@link #commenceSignup(FederatedIdentity)}.
+     */
+    public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
+        if (u!=null)
+            ((FederatedIdentity)req.getSession().getAttribute(FEDERATED_IDENTITY_SESSION_KEY)).addTo(u);
+        return u;
+    }
+
+    private static final String FEDERATED_IDENTITY_SESSION_KEY = HudsonPrivateSecurityRealm.class.getName()+".federatedIdentity";
+
+    /**
      * Creates an user account. Used for self-registration.
      */
-    public void doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!allowsSignup()) {
-            rsp.sendError(SC_UNAUTHORIZED,"User sign up is prohibited");
-            return;
-        }
+    public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        return _doCreateAccount(req, rsp, "signup.jelly");
+    }
+
+    private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
+        if(!allowsSignup())
+            throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
+
         boolean firstUser = !hasSomeUser();
-        User u = createAccount(req, rsp, true, "signup.jelly");
+        User u = createAccount(req, rsp, enableCaptcha, formView);
         if(u!=null) {
             if(firstUser)
                 tryToMakeAdmin(u);  // the first user should be admin, or else there's a risk of lock out
             loginAndTakeBack(req, rsp, u);
         }
+        return u;
     }
 
     /**
@@ -184,7 +245,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * this is someone creating another user.
      */
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(Hudson.ADMINISTER);
+        checkPermission(Jenkins.ADMINISTER);
         if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
             rsp.sendRedirect(".");  // send the user back to the listing page
         }
@@ -212,10 +273,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Try to make this user a super-user
      */
     private void tryToMakeAdmin(User u) {
-        AuthorizationStrategy as = Hudson.getInstance().getAuthorizationStrategy();
+        AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
         if (as instanceof GlobalMatrixAuthorizationStrategy) {
             GlobalMatrixAuthorizationStrategy ma = (GlobalMatrixAuthorizationStrategy) as;
-            ma.add(Hudson.ADMINISTER,u.getId());
+            ma.add(Jenkins.ADMINISTER,u.getId());
         }
     }
 
@@ -225,12 +286,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      *      a valid {@link User} object if the user creation was successful.
      */
     private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-
         // form field validation
         // this pattern needs to be generalized and moved to stapler
-        SignupInfo si = new SignupInfo();
-        req.bindParameters(si);
+        SignupInfo si = new SignupInfo(req);
 
         if(selfRegistration && !validateCaptcha(si.captcha))
             si.errorMessage = "Text didn't match the word shown in the image";
@@ -287,15 +345,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     public ACL getACL() {
-        return Hudson.getInstance().getACL();
+        return Jenkins.getInstance().getACL();
     }
 
     public void checkPermission(Permission permission) {
-        Hudson.getInstance().checkPermission(permission);
+        Jenkins.getInstance().checkPermission(permission);
     }
 
     public boolean hasPermission(Permission permission) {
-        return Hudson.getInstance().hasPermission(permission);
+        return Jenkins.getInstance().hasPermission(permission);
     }
 
 
@@ -330,6 +388,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * To display an error message, set it here.
          */
         public String errorMessage;
+
+        public SignupInfo() {
+        }
+
+        public SignupInfo(StaplerRequest req) {
+            req.bindParameters(this);
+        }
+
+        public SignupInfo(FederatedIdentity i) {
+            this.username = i.getNickname();
+            this.fullname = i.getFullName();
+            this.email = i.getEmailAddress();
+        }
     }
 
     /**
@@ -451,7 +522,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public boolean isEnabled() {
-                return Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
+                return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
             public UserProperty newInstance(User user) {
@@ -467,8 +538,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Extension
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
-            if(Hudson.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
-                return "user.gif";
+            if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
+                return "user.png";
             else
                 return null;    // not applicable now
         }
@@ -557,14 +628,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             HttpServletRequest req = (HttpServletRequest) request;
 
             if(req.getRequestURI().equals(req.getContextPath()+"/")) {
-                if(hasSomeUser()) {// the first user already created. the role of this filter is over.
+                if (needsToCreateFirstUser()) {
+                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
+                } else {// the first user already created. the role of this filter is over.
                     PluginServletFilter.removeFilter(this);
                     chain.doFilter(request,response);
-                } else {
-                    ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
                 }
             } else
                 chain.doFilter(request,response);
+        }
+
+        private boolean needsToCreateFirstUser() {
+            return !hasSomeUser()
+                && Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
         public void destroy() {

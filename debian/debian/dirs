@@ -1,14 +1,13 @@
-usr/bin
-usr/sbin
-
 # moved from rules install
-usr/share/hudson
-var/lib/hudson
+usr/share/jenkins
 
-# Need to create hudson's own directory to track the pid since the daemon is not run as root 
+# this is where JENKINS_HOME is stored, so let's leave it as is for now
+var/lib/jenkins
+
+# Need to create jenkins's own directory to track the pid since the daemon is not run as root 
 # and doesn't have permission to write the pid to /var/run (which would be the preferred location).
-var/run/hudson
+var/run/jenkins
 
-# Store hudson log file in it's own directory since they can become rather large and in the future
+# Store jenkins log file in it's own directory since they can become rather large and in the future
 # rotating logs can be easily added.
-var/log/hudson
+var/log/jenkins

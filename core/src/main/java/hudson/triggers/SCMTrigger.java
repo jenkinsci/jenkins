@@ -31,7 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
@@ -91,7 +91,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
-        if(Hudson.getInstance().isQuietingDown())
+        if(Jenkins.getInstance().isQuietingDown())
             return; // noop
 
         DescriptorImpl d = getDescriptor();
@@ -202,11 +202,6 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return Messages.SCMTrigger_DisplayName();
         }
 
-        @Override
-        public String getHelpFile() {
-            return "/help/project-config/poll-scm.html";
-        }
-
         /**
          * Gets the number of concurrent threads used for polling.
          *
@@ -241,7 +236,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            String t = req.getParameter("poll_scm_threads");
+            String t = json.optString("pollingThreadCount",null);
             if(t==null || t.length()==0)
                 setPollingThreadCount(0);
             else
@@ -253,7 +248,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return true;
         }
 
-        public FormValidation doCheckPoll_scm_threads(@QueryParameter String value) {
+        public FormValidation doCheckPollingThreadCount(@QueryParameter String value) {
             if (value != null && "".equals(value.trim()))
                 return FormValidation.ok();
             return FormValidation.validateNonNegativeInteger(value);
@@ -290,7 +285,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {
@@ -334,7 +329,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {
@@ -514,6 +509,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         @Override
         public void onAddedTo(AbstractBuild build) {
+            BuildAction oldAction = build.getAction(BuildAction.class);
+            if (oldAction != null) {
+                build.getActions().remove(oldAction);
+            }
+            
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);

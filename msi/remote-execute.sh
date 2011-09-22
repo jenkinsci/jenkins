@@ -1,3 +1,3 @@
 #!/bin/bash -ex
-tar cvzf send.tgz FindJava.java build.sh hudson.wxs
-java -jar hudson-cli.jar dist-fork -z send.tgz -l windows -f hudson.war="$1" -Z result.tgz bash build.sh hudson.war
+tar cvzf send.tgz FindJava.java build.sh jenkins.wxs
+java -jar jenkins-cli.jar dist-fork -z send.tgz -l windows -f jenkins.war="$1" -Z result.tgz bash build.sh jenkins.war

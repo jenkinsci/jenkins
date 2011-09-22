@@ -24,7 +24,7 @@
  */
 //
 //
-// JavaScript for Hudson
+// JavaScript for Jenkins
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
 //
@@ -240,7 +240,7 @@ function findFollowingTR(input, className) {
     // then next TR that matches the CSS
     do {
         tr = tr.nextSibling;
-    } while (tr != null && (tr.tagName != "TR" || tr.className != className));
+    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
 
     return tr;
 }
@@ -421,6 +421,85 @@ function isInsideRemovable(e) {
     return Element.ancestors(e).find(function(f){return f.hasClassName("to-be-removed");});
 }
 
+/**
+ * Render the template captured by &lt;l:renderOnDemand> at the element 'e' and replace 'e' by the content.
+ *
+ * @param {HTMLElement} e
+ *      The place holder element to be lazy-rendered.
+ * @param {boolean} noBehaviour
+ *      if specified, skip the application of behaviour rule.
+ */
+function renderOnDemand(e,callback,noBehaviour) {
+    if (!e || !Element.hasClassName(e,"render-on-demand")) return;
+    var proxy = eval(e.getAttribute("proxy"));
+    proxy.render(function (t) {
+        var contextTagName = e.parentNode.tagName;
+        var c;
+        if (contextTagName=="TBODY") {
+            c = document.createElement("DIV");
+            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
+            c = c.firstChild.firstChild;
+        } else {
+            c = document.createElement(contextTagName);
+            c.innerHTML = t.responseText;
+        }
+
+        var elements = [];
+        while (c.firstChild!=null) {
+            var n = c.firstChild;
+            e.parentNode.insertBefore(n,e);
+            if (n.nodeType==1 && !noBehaviour)
+                elements.push(n);
+        }
+        Element.remove(e);
+
+        evalInnerHtmlScripts(t.responseText,function() {
+            Behaviour.applySubtree(elements,true);
+            if (callback)   callback(t);
+        });
+    });
+}
+
+/**
+ * Finds all the script tags 
+ */
+function evalInnerHtmlScripts(text,callback) {
+    var q = [];
+    var matchAll = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'img');
+    var matchOne = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'im');
+    var srcAttr  = new RegExp('src=[\'\"]([^\'\"]+)[\'\"]','i');
+    (text.match(matchAll)||[]).map(function(s) {
+        var m = s.match(srcAttr);
+        if (m) {
+            q.push(function(cont) {
+                loadScript(m[1],cont);
+            });
+        } else {
+            q.push(function(cont) {
+                eval(s.match(matchOne)[2]);
+                cont();
+            });
+        }
+    });
+    q.push(callback);
+    sequencer(q);
+}
+
+/**
+ * Take an array of (typically async) functions and run them in a sequence.
+ * Each of the function in the array takes one 'continuation' parameter, and upon the completion
+ * of the function it needs to invoke "continuation()" to signal the execution of the next function.
+ */
+function sequencer(fs) {
+    var nullFunction = function() {}
+    function next() {
+        if (fs.length>0) {
+            (fs.shift()||nullFunction)(next);
+        }
+    }
+    return next();
+}
+
 var hudsonRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
@@ -448,8 +527,9 @@ var hudsonRules = {
         for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
             var name = n.getAttribute("name");
             var tooltip = n.getAttribute("tooltip");
+            var descriptorId = n.getAttribute("descriptorId");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name, tooltip:tooltip});
+            templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
         }
         Element.remove(prototypes);
 
@@ -463,11 +543,13 @@ var hudsonRules = {
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
             nc.innerHTML = t.html;
-            insertionPoint.parentNode.insertBefore(nc, insertionPoint);
-            if(withDragDrop)    prepareDD(nc);
 
-            hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-            Behaviour.applySubtree(nc);
+            renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
+                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                if(withDragDrop)    prepareDD(nc);
+
+                Behaviour.applySubtree(nc,true);
+            },true);
         });
 
         menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
@@ -605,7 +687,7 @@ var hudsonRules = {
         ac.animSpeed = 0;
         ac.useShadow = true;
         ac.autoSnapContainer = true;
-        ac.delimChar = e.getAttribute("autoCompleteDelimiChar");
+        ac.delimChar = e.getAttribute("autoCompleteDelimChar");
         ac.doBeforeExpandContainer = function(textbox,container) {// adjust the width every time we show it
             container.style.width=textbox.clientWidth+"px";
             var Dom = YAHOO.util.Dom;
@@ -639,6 +721,15 @@ var hudsonRules = {
         };
         e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
+    },
+
+    "TEXTAREA.codemirror" : function(e) {
+        var h = e.clientHeight;
+        var config = e.getAttribute("codemirror-config") || "";
+        config = eval('({'+config+'})');
+        var w = CodeMirror.fromTextArea(e,config).getWrapperElement();
+        w.setAttribute("style","border:1px solid black;");
+        w.style.height = h+"px";
     },
 
 // deferred client-side clickable map.
@@ -760,6 +851,81 @@ var hudsonRules = {
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.firstChild.firstChild;
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
+    },
+
+    // see RowVisibilityGroupTest
+    "TR.rowvg-start" : function(e) {
+        // figure out the corresponding end marker
+        function findEnd(e) {
+            for( var depth=0; ; e=e.nextSibling) {
+                if(Element.hasClassName(e,"rowvg-start"))    depth++;
+                if(Element.hasClassName(e,"rowvg-end"))      depth--;
+                if(depth==0)    return e;
+            }
+        }
+
+        e.rowVisibilityGroup = {
+            outerVisible: true,
+            innerVisible: true,
+            /**
+             * TR that marks the beginning of this visibility group.
+             */
+            start: e,
+            /**
+             * TR that marks the end of this visibility group.
+             */
+            end: findEnd(e),
+
+            /**
+             * Considers the visibility of the row group from the point of view of outside.
+             * If you think of a row group like a logical DOM node, this is akin to its .style.display.
+             */
+            makeOuterVisisble : function(b) {
+                this.outerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
+             * shares the single visibility, this just needs to be one boolean, as opposed to many.
+             *
+             * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
+             */
+            makeInnerVisisble : function(b) {
+                this.innerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
+             */
+            updateVisibility : function() {
+                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+                for (var e=this.start; e!=this.end; e=e.nextSibling) {
+                    if (e.rowVisibilityGroup && e!=this.start) {
+                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+                    } else {
+                        e.style.display = display;
+                    }
+                }
+            },
+
+            /**
+             * Enumerate each row and pass that to the given function.
+             *
+             * @param {boolean} recursive
+             *      If true, this visits all the rows from nested visibility groups.
+             */
+            eachRow : function(recursive,f) {
+                if (recursive) {
+                    for (var e=this.start; e!=this.end; e=e.nextSibling)
+                        f(e);
+                } else {
+                    throw "not implemented yet";
+                }
+            }
+        };
     },
 
     "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
@@ -903,18 +1069,39 @@ var hudsonRules = {
     "SELECT.dropdownList" : function(e) {
         if(isInsideRemovable(e))    return;
 
-        e.subForms = [];
+        var subForms = [];
         var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
         do { start = start.firstChild; } while (start && start.tagName != 'TR');
-        if (start && start.className != 'dropdownList-start')
+
+        if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
         while (start != null) {
-            end = findFollowingTR(start, 'dropdownList-end');
-            e.subForms.push({ 'start': start, 'end': end });
-            start = findFollowingTR(end, 'dropdownList-start');
+            subForms.push(start);
+            start = findFollowingTR(start, 'dropdownList-start');
         }
 
-        updateDropDownList(e);
+        // control visibility
+        function updateDropDownList() {
+            for (var i = 0; i < subForms.length; i++) {
+                var show = e.selectedIndex == i;
+                var f = subForms[i];
+
+                if (show)   renderOnDemand(f.nextSibling);
+                f.rowVisibilityGroup.makeInnerVisisble(show);
+
+                // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+                // so far dropdownList doesn't create such a situation.
+                f.rowVisibilityGroup.eachRow(true, show?function(e) {
+                    e.removeAttribute("field-disabled");
+                } : function(e) {
+                    e.setAttribute("field-disabled","true");
+                });
+            }
+        }
+
+        e.onchange = updateDropDownList;
+
+        updateDropDownList();
     },
 
     // select.jelly
@@ -1029,7 +1216,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("change",h); }
+            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("onchange",h); }
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1054,8 +1241,10 @@ function replaceDescription() {
         {
           onComplete : function(x) {
             d.innerHTML = x.responseText;
-            Behaviour.applySubtree(d);
-            d.getElementsByTagName("TEXTAREA")[0].focus();
+            evalInnerHtmlScripts(x.responseText,function() {
+                Behaviour.applySubtree(d);
+                d.getElementsByTagName("TEXTAREA")[0].focus();
+            });
           }
         }
     );
@@ -1072,6 +1261,7 @@ function applyNameRef(s,e,id) {
     }
 }
 
+
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
@@ -1079,39 +1269,21 @@ function updateOptionalBlock(c,scroll) {
     var s = c;
     while(!Element.hasClassName(s, "optional-block-start"))
         s = s.parentNode;
-    var tbl = s.parentNode;
-    var i = false;
-    var o = false;
+
+    // find the beginning of the rowvg
+    var vg = s;
+    while (!Element.hasClassName(vg,"rowvg-start"))
+        vg = vg.nextSibling;
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
-    var lastRow = null;
 
-    for (var j = 0; tbl.rows[j]; j++) {
-        var n = tbl.rows[j];
-
-        if (i && Element.hasClassName(n, "optional-block-end"))
-            o = true;
-
-        if (i && !o) {
-            if (checked) {
-                n.style.display = "";
-                lastRow = n;
-            } else
-                n.style.display = "none";
-        }
-
-        if (n==s) {
-            if (n.getAttribute('hasHelp') == 'true')
-                j++;
-            i = true;
-        }
-    }
+    vg.rowVisibilityGroup.makeInnerVisisble(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
 
         var r = D.getRegion(s);
-        if(lastRow!=null)   r = r.union(D.getRegion(lastRow));
+        r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
         scrollIntoView(r);
     }
 
@@ -1316,25 +1488,6 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-// used witih <dropdownList> and <dropdownListBlock> to control visibility
-function updateDropDownList(sel) {
-    for (var i = 0; i < sel.subForms.length; i++) {
-        var show = sel.selectedIndex == i;
-        var f = sel.subForms[i];
-        var tr = f.start;
-        while (true) {
-            tr.style.display = (show ? "" : "none");
-            if(show)
-                tr.removeAttribute("field-disabled");
-            else    // buildFormData uses this attribute and ignores the contents
-                tr.setAttribute("field-disabled","true");
-            if (tr == f.end) break;
-            tr = tr.nextSibling;
-        }
-    }
-}
-
-
 // code for supporting repeatable.jelly
 var repeatableSupport = {
     // set by the inherited instance to the insertion point DIV
@@ -1375,8 +1528,7 @@ var repeatableSupport = {
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
 
-        hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-        Behaviour.applySubtree(nc);
+        Behaviour.applySubtree(nc,true);
         this.update();
     },
 
@@ -1404,12 +1556,11 @@ var repeatableSupport = {
 
     // called when 'delete' button is clicked
     onDelete : function(n) {
-        while (!Element.hasClassName(n,"repeated-chunk"))
-            n = n.parentNode;
-
+        n = findAncestorClass(n,"repeated-chunk");
         var p = n.parentNode;
         p.removeChild(n);
-        p.tag.update();
+        if (p.tag)
+            p.tag.update();
     },
 
     // called when 'add' button is clicked
@@ -1472,6 +1623,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
     function updateBuilds() {
         var bh = $('buildHistory');
+        if (bh.headers == null) {
+            // Yahoo.log("Missing headers in buildHistory element");
+        }
         new Ajax.Request(ajaxUrl, {
             requestHeaders: bh.headers,
             onSuccess: function(rsp) {
@@ -1627,7 +1781,7 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null) {
+        if(name!=null && name.length>0) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
@@ -1654,7 +1808,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see http://wiki.hudson-ci.org/display/HUDSON/Structured+Form+Submission
+//   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elemnets as keys
@@ -1789,6 +1943,19 @@ function buildFormTree(form) {
         return false;
     }
 }
+
+/**
+ * @param {boolean} toggle
+ *      When true, will check all checkboxes in the page. When false, unchecks them all.
+ */
+var toggleCheckboxes = function(toggle) {
+    var inputs = document.getElementsByTagName("input");
+    for(var i=0; i<inputs.length; i++) {
+        if(inputs[i].type === "checkbox") {
+            inputs[i].checked = toggle;
+        }
+    }
+};
 
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
 String.prototype.trim = function() {
@@ -1960,10 +2127,43 @@ var DragDrop = function(id, sGroup, config) {
     });
 })();
 
-function loadScript(href) {
-    var s = document.createElement("script");
-    s.setAttribute("src",href);
-    document.getElementsByTagName("HEAD")[0].appendChild(s);
+/**
+ * Loads the script specified by the URL.
+ *
+ * @param href
+ *      The URL of the script to load.
+ * @param callback
+ *      If specified, this function will be invoked after the script is loaded.
+ * @see http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
+ */
+function loadScript(href,callback) {
+    var head = document.getElementsByTagName("head")[0] || document.documentElement;
+    var script = document.createElement("script");
+    script.src = href;
+
+    if (callback) {
+        // Handle Script loading
+        var done = false;
+
+        // Attach handlers for all browsers
+        script.onload = script.onreadystatechange = function() {
+            if ( !done && (!this.readyState ||
+                    this.readyState === "loaded" || this.readyState === "complete") ) {
+                done = true;
+                callback();
+
+                // Handle memory leak in IE
+                script.onload = script.onreadystatechange = null;
+                if ( head && script.parentNode ) {
+                    head.removeChild( script );
+                }
+            }
+        };
+    }
+
+    // Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+    // This arises when a base node is used (#2709 and #4378).
+    head.insertBefore( script, head.firstChild );
 }
 
 var downloadService = {
@@ -2117,9 +2317,9 @@ function createComboBox(idOrField,valueFunction) {
 }
 
 
-if (isRunAsTest) {
-    // during the unit test, make Ajax errors fatal
-    Ajax.Request.prototype.dispatchException = function(e) {
-        throw e;
-    }
+// Exception in code during the AJAX processing should be reported,
+// so that our users can find them more easily.
+Ajax.Request.prototype.dispatchException = function(e) {
+    throw e;
 }
+

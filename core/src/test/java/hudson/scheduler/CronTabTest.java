@@ -27,7 +27,13 @@ import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
+
 import junit.framework.TestCase;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Url;
+
+import static java.util.Calendar.MONDAY;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -66,6 +72,48 @@ public class CronTabTest extends TestCase {
         compare(new GregorianCalendar(2010,7,1,0,0),x.ceil(c));
     }
 
+    /**
+     * Verifies that HUDSON-8656 never crops up again.
+     */
+    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    public void testCeil4() throws ANTLRException {
+        final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
+        cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
+        final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar next = cron.ceil(cal);
+
+        final Calendar expectedDate = Calendar.getInstance();
+        expectedDate.set(2011, 0, 17, 23, 0, 0); // Expected next: Monday, Jan 17th 2011, 23:00
+        assertEquals(expectedDate.get(Calendar.HOUR), next.get(Calendar.HOUR));
+        assertEquals(expectedDate.get(Calendar.MINUTE), next.get(Calendar.MINUTE));
+        assertEquals(expectedDate.get(Calendar.YEAR), next.get(Calendar.YEAR));
+        assertEquals(expectedDate.get(Calendar.MONTH), next.get(Calendar.MONTH));
+        assertEquals(expectedDate.get(Calendar.DAY_OF_MONTH), next.get(Calendar.DAY_OF_MONTH)); // FAILS: is Monday, Jan 10th, 23:00
+    }
+
+    /**
+     * Verifies that HUDSON-8656 never crops up again.
+     */
+    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    public void testCeil5() throws ANTLRException {
+        final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
+        cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
+        final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar next = cron.ceil(cal);
+
+        final Calendar expectedDate = Calendar.getInstance();
+        expectedDate.set(2011, 0, 17, 23, 0, 0); // Expected next: Monday, Jan 17th 2011, 23:00
+        assertEquals(expectedDate.get(Calendar.HOUR), next.get(Calendar.HOUR));
+        assertEquals(expectedDate.get(Calendar.MINUTE), next.get(Calendar.MINUTE));
+        assertEquals(expectedDate.get(Calendar.YEAR), next.get(Calendar.YEAR));
+        assertEquals(expectedDate.get(Calendar.MONTH), next.get(Calendar.MONTH));
+        assertEquals(expectedDate.get(Calendar.DAY_OF_MONTH), next.get(Calendar.DAY_OF_MONTH)); // FAILS: is Monday, Jan 10th, 23:00
+    }
+
     public void testFloor1() throws Exception {
         CronTab x = new CronTab("30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,40);
@@ -89,6 +137,18 @@ public class CronTabTest extends TestCase {
         Calendar c = new GregorianCalendar(2011,0,1,15,55);
         // the last such day in 2010 is Aug 1st
         compare(new GregorianCalendar(2010,7,1,0,0),x.floor(c));
+    }
+
+    @Bug(8401)
+    public void testFloor4() throws Exception {
+        // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
+        CronTab x = new CronTab("0 0 1 * 0");
+        Calendar c = new GregorianCalendar(2011,0,1,15,55);
+        c.setFirstDayOfWeek(MONDAY);
+        // the last such day in 2010 is Aug 1st
+        GregorianCalendar answer = new GregorianCalendar(2010, 7, 1, 0, 0);
+        answer.setFirstDayOfWeek(MONDAY);
+        compare(answer,x.floor(c));
     }
 
     /**

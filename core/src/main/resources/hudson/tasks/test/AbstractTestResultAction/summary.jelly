@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 
   <script type="text/javascript">
@@ -38,7 +39,7 @@ THE SOFTWARE.
   </script>
 
   <!-- summary -->
-  <t:summary icon="clipboard.gif">
+  <t:summary icon="clipboard.png">
     <a href="${it.urlName}/">${it.displayName}</a>
     <st:nbsp/>
     <t:test-result />

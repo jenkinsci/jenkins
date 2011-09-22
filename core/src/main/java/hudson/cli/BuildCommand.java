@@ -30,13 +30,17 @@ import hudson.model.ParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
+import hudson.model.TaskListener;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
 import hudson.util.EditDistance;
+import hudson.scm.PollingResult;
+import hudson.util.StreamTaskListener;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 import java.util.Map;
 import java.util.HashMap;
@@ -54,7 +58,7 @@ import java.io.PrintStream;
 public class BuildCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Builds a job, and optionally waits until its completion.";
+        return Messages.BuildCommand_ShortDescription();
     }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true)
@@ -62,6 +66,9 @@ public class BuildCommand extends CLICommand {
 
     @Option(name="-s",usage="Wait until the completion/abortion of the command")
     public boolean sync = false;
+
+    @Option(name="-c",usage="Check for SCM changes before starting the build, and if there's no change, exit without doing a build")
+    public boolean checkSCM = false;
 
     @Option(name="-p",usage="Specify the build parameters in the key=value format.")
     public Map<String,String> parameters = new HashMap<String, String>();
@@ -89,6 +96,12 @@ public class BuildCommand extends CLICommand {
             a = new ParametersAction(values);
         }
 
+        if (checkSCM) {
+            if (job.poll(new StreamTaskListener(stdout, getClientCharset())) == PollingResult.NO_CHANGES) {
+                return 0;
+            }
+        }
+
         Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(), a);
         if (!sync)  return 0;
 
@@ -104,7 +117,9 @@ public class BuildCommand extends CLICommand {
             "Aside from general scripting use, this command can be\n" +
             "used to invoke another job from within a build of one job.\n" +
             "With the -s option, this command changes the exit code based on\n" +
-            "the outcome of the build (exit code 0 indicates a success.)\n"
+            "the outcome of the build (exit code 0 indicates a success.)\n" +
+            "With the -c option, a build will only run if there has been\n" +
+            "an SCM change"
         );
     }
 

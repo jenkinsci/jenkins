@@ -26,6 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -41,8 +42,6 @@ import hudson.util.HudsonFailedToLoad;
 import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import org.jvnet.localizer.LocaleProvider;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -72,9 +71,11 @@ import java.security.Security;
 public final class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler();
     private static final String APP = "app";
+    private boolean terminated;
+    private Thread initThread;
 
     /**
-     * Creates the sole instance of {@link Hudson} and register it to the {@link ServletContext}.
+     * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         try {
@@ -83,13 +84,7 @@ public final class WebAppMain implements ServletContextListener {
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
                 public Locale get() {
-                    Locale locale=null;
-                    StaplerRequest req = Stapler.getCurrentRequest();
-                    if(req!=null)
-                        locale = req.getLocale();
-                    if(locale==null)
-                        locale = Locale.getDefault();
-                    return locale;
+                    return Functions.getCurrentLocale();
                 }
             });
 
@@ -103,7 +98,7 @@ public final class WebAppMain implements ServletContextListener {
                 return;
             }
 
-            try {// remove Sun PKCS11 provider if present. See http://hudson.gotdns.com/wiki/display/HUDSON/Solaris+Issue+6276483
+            try {// remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
                 Security.removeProvider("SunPKCS11-Solaris");
             } catch (SecurityException e) {
                 // ignore this error.
@@ -111,9 +106,10 @@ public final class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            final File home = getHomeDir(event).getAbsoluteFile();
+            final FileAndDescription describedHomeDir = getHomeDir(event);
+            final File home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
-            System.out.println("hudson home directory: "+home);
+            System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (! home.exists()) {
@@ -132,7 +128,7 @@ public final class WebAppMain implements ServletContextListener {
 //            // make sure JNA works. this can fail if
 //            //    - platform is unsupported
 //            //    - JNA is already loaded in another classloader
-//            // see http://wiki.hudson-ci.org/display/HUDSON/JNA+is+already+loaded
+//            // see http://wiki.jenkins-ci.org/display/JENKINS/JNA+is+already+loaded
 //            // TODO: or shall we instead modify Hudson to work gracefully without JNA?
 //            try {
 //                /*
@@ -213,11 +209,13 @@ public final class WebAppMain implements ServletContextListener {
 
             context.setAttribute(APP,new HudsonIsLoading());
 
-            new Thread("hudson initialization thread") {
+            initThread = new Thread("hudson initialization thread") {
                 @Override
                 public void run() {
+                    boolean success = false;
                     try {
-                        context.setAttribute(APP,new Hudson(home,context));
+                        Jenkins instance = new Hudson(home, context);
+                        context.setAttribute(APP, instance);
 
                         // trigger the loading of changelogs in the background,
                         // but give the system 10 seconds so that the first page
@@ -227,21 +225,30 @@ public final class WebAppMain implements ServletContextListener {
                                 User.getUnknown().getBuilds();
                             }
                         }, 1000*10);
+
+                        // at this point we are open for business and serving requests normally
+                        LOGGER.info("Jenkins is fully up and running");
+                        success = true;
                     } catch (Error e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
                         throw e;
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
                         context.setAttribute(APP,new HudsonFailedToLoad(e));
+                    } finally {
+                        Jenkins instance = Jenkins.getInstance();
+                        if(!success && instance!=null)
+                            instance.cleanUp();
                     }
                 }
-            }.start();
+            };
+            initThread.start();
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Hudson",e);
+            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }
     }
@@ -253,42 +260,67 @@ public final class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     private void installLogger() {
-        Hudson.logRecords = handler.getView();
+        Jenkins.logRecords = handler.getView();
         Logger.getLogger("hudson").addHandler(handler);
+        Logger.getLogger("jenkins").addHandler(handler);
+    }
+
+    /** Add some metadata to a File, allowing to trace setup issues */
+    private static class FileAndDescription {
+        File file;
+        String description;
+        public FileAndDescription(File file,String description) {
+            this.file = file;
+            this.description = description;
+        }
     }
 
     /**
-     * Determines the home directory for Hudson.
+     * Determines the home directory for Jenkins.
      *
+     * <p>
+     * We look for a setting that affects the smallest scope first, then bigger ones later.
+     *
+     * <p>
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
+     * 
+     * <p>
+     * @return the File alongside with some description to help the user troubleshoot issues
      */
-    private File getHomeDir(ServletContextEvent event) {
+    private FileAndDescription getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
-        try {
-            InitialContext iniCtxt = new InitialContext();
-            Context env = (Context) iniCtxt.lookup("java:comp/env");
-            String value = (String) env.lookup("HUDSON_HOME");
-            if(value!=null && value.trim().length()>0)
-                return new File(value.trim());
-            // look at one more place. See issue #1314 
-            value = (String) iniCtxt.lookup("HUDSON_HOME");
-            if(value!=null && value.trim().length()>0)
-                return new File(value.trim());
-        } catch (NamingException e) {
-            // ignore
+        for (String name : HOME_NAMES) {
+            try {
+                InitialContext iniCtxt = new InitialContext();
+                Context env = (Context) iniCtxt.lookup("java:comp/env");
+                String value = (String) env.lookup(name);
+                if(value!=null && value.trim().length()>0)
+                    return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
+                // look at one more place. See issue #1314
+                value = (String) iniCtxt.lookup(name);
+                if(value!=null && value.trim().length()>0)
+                    return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
+            } catch (NamingException e) {
+                // ignore
+            }
         }
 
-        // finally check the system property
-        String sysProp = System.getProperty("HUDSON_HOME");
-        if(sysProp!=null)
-            return new File(sysProp.trim());
-        
+        // next the system property
+        for (String name : HOME_NAMES) {
+            String sysProp = System.getProperty(name);
+            if(sysProp!=null)
+                return new FileAndDescription(new File(sysProp.trim()),"System.getProperty(\""+name+"\")");
+        }
+
         // look at the env var next
-        String env = EnvVars.masterEnvVars.get("HUDSON_HOME");
-        if(env!=null)
-            return new File(env.trim()).getAbsoluteFile();
+        for (String name : HOME_NAMES) {
+            String env = EnvVars.masterEnvVars.get(name);
+            if(env!=null)
+                return new FileAndDescription(new File(env.trim()).getAbsoluteFile(),"EnvVars.masterEnvVars.get(\""+name+"\")");
+        }
 
         // otherwise pick a place by ourselves
 
@@ -299,23 +331,35 @@ public final class WebAppMain implements ServletContextListener {
                 // Hudson <1.42 used to prefer this before ~/.hudson, so
                 // check the existence and if it's there, use it.
                 // otherwise if this is a new installation, prefer ~/.hudson
-                return ws;
+                return new FileAndDescription(ws,"getServletContext().getRealPath(\"/WEB-INF/workspace\")");
         }
 
-        // if for some reason we can't put it within the webapp, use home directory.
-        return new File(new File(System.getProperty("user.home")),".hudson");
+        File legacyHome = new File(new File(System.getProperty("user.home")),".hudson");
+        if (legacyHome.exists()) {
+            return new FileAndDescription(legacyHome,"$user.home/.hudson"); // before rename, this is where it was stored
+        }
+
+        File newHome = new File(new File(System.getProperty("user.home")),".jenkins");
+        return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        Hudson instance = Hudson.getInstance();
+        terminated = true;
+        Jenkins instance = Jenkins.getInstance();
         if(instance!=null)
             instance.cleanUp();
+        Thread t = initThread;
+        if (t!=null)
+            t.interrupt();
 
         // Logger is in the system classloader, so if we don't do this
         // the whole web app will never be undepoyed.
         Logger.getLogger("hudson").removeHandler(handler);
+        Logger.getLogger("jenkins").removeHandler(handler);
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
 
+
+    private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }

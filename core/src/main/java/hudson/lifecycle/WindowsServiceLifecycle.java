@@ -26,11 +26,12 @@ package hudson.lifecycle;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -59,30 +60,35 @@ public class WindowsServiceLifecycle extends Lifecycle {
      */
     private void updateHudsonExeIfNeeded() {
         try {
-            File rootDir = Hudson.getInstance().getRootDir();
+            File rootDir = Jenkins.getInstance().getRootDir();
 
-            URL exe = getClass().getResource("/windows-service/hudson.exe");
+            URL exe = getClass().getResource("/windows-service/jenkins.exe");
             String ourCopy = Util.getDigestOf(exe.openStream());
-            File currentCopy = new File(rootDir,"hudson.exe");
-            if(!currentCopy.exists())   return;
-            String curCopy = new FilePath(currentCopy).digest();
 
-            if(ourCopy.equals(curCopy))
-            return; // identical
+            for (String name : new String[]{"hudson.exe","jenkins.exe"}) {
+                try {
+                    File currentCopy = new File(rootDir,name);
+                    if(!currentCopy.exists())   continue;
+                    String curCopy = new FilePath(currentCopy).digest();
 
-            File stage = new File(rootDir,"hudson.exe.new");
-            FileUtils.copyURLToFile(exe,stage);
-            Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
-            LOGGER.info("Scheduled a replacement of hudson.exe");
+                    if(ourCopy.equals(curCopy))     continue; // identical
+
+                    File stage = new File(rootDir,name+".new");
+                    FileUtils.copyURLToFile(exe,stage);
+                    Kernel32.INSTANCE.MoveFileExA(stage.getAbsolutePath(),currentCopy.getAbsolutePath(),MOVEFILE_DELAY_UNTIL_REBOOT|MOVEFILE_REPLACE_EXISTING);
+                    LOGGER.info("Scheduled a replacement of "+name);
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to replace "+name,e);
+                } catch (InterruptedException e) {
+                }
+            }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
-        } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
         }
     }
 
     /**
-     * On Windows, hudson.war is locked, so we place a new version under a special name,
+     * On Windows, jenkins.war is locked, so we place a new version under a special name,
      * which is picked up by the service wrapper upon restart.
      */
     @Override
@@ -90,16 +96,19 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,
         // but let's be defensive
-        if(dest==null)  throw new IOException("hudson.war location is not known.");
+        if(dest==null)  throw new IOException("jenkins.war location is not known.");
 
-        // backing up the old hudson.war before its lost due to upgrading
-        // unless we are trying to rewrite hudson.war by a backup itself
+        // backing up the old jenkins.war before its lost due to upgrading
+        // unless we are trying to rewrite jenkins.war by a backup itself
         File bak = new File(dest.getPath() + ".bak");
         if (!by.equals(bak))
             FileUtils.copyFile(dest, bak);
 
-        File rootDir = Hudson.getInstance().getRootDir();
-        File copyFiles = new File(rootDir,"hudson.copies");
+        String baseName = dest.getName();
+        baseName = baseName.substring(0,baseName.indexOf('.'));
+
+        File rootDir = Jenkins.getInstance().getRootDir();
+        File copyFiles = new File(rootDir,baseName+".copies");
 
         FileWriter w = new FileWriter(copyFiles, true);
         w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
@@ -114,7 +123,10 @@ public class WindowsServiceLifecycle extends Lifecycle {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        int r = new LocalLauncher(task).launch().cmds(new File(home, "hudson.exe"), "restart")
+        File executable = new File(home, "hudson.exe");
+        if (!executable.exists())   executable = new File(home, "jenkins.exe");
+
+        int r = new LocalLauncher(task).launch().cmds(executable, "restart")
                 .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());

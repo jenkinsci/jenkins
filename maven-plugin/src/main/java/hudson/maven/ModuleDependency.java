@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import java.io.Serializable;
 import hudson.Functions;
 
 /**
- * group id + artifact id + version.
+ * group id + artifact id + version and a flag to know if it's a plugin 
  *
  * @author Kohsuke Kawaguchi
  * @see ModuleName
@@ -42,16 +42,32 @@ public final class ModuleDependency implements Serializable {
     public final String groupId;
     public final String artifactId;
     public final String version;
+    
+    /**
+     * @since 1.395
+     */
+    public final boolean plugin;
 
     public ModuleDependency(String groupId, String artifactId, String version) {
+        this(groupId, artifactId, version, false);
+    }
+    
+    public ModuleDependency(String groupId, String artifactId, String version, boolean plugin) {
         this.groupId = groupId.intern();
         this.artifactId = artifactId.intern();
-        if(version==null)   version=UNKNOWN;
-        this.version = version.intern();
+        if(version==null)
+            this.version = UNKNOWN;
+        else
+            this.version = version.intern();
+        this.plugin = plugin;
     }
 
     public ModuleDependency(ModuleName name, String version) {
-        this(name.groupId,name.artifactId,version);
+        this(name.groupId,name.artifactId,version,false);
+    }
+    
+    public ModuleDependency(ModuleName name, String version, boolean plugin) {
+        this(name.groupId,name.artifactId,version,plugin);
     }
 
     public ModuleDependency(org.apache.maven.model.Dependency dep) {
@@ -63,17 +79,27 @@ public final class ModuleDependency implements Serializable {
     }
 
     public ModuleDependency(Plugin p) {
-        this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE));
+        this(p.getGroupId(),p.getArtifactId(), Functions.defaulted(p.getVersion(),NONE),true);
     }
 
     public ModuleDependency(ReportPlugin p) {
-        this(p.getGroupId(),p.getArtifactId(),p.getVersion());
+        this(p.getGroupId(),p.getArtifactId(),p.getVersion(),true);
     }
 
     public ModuleDependency(Extension ext) {
         this(ext.getGroupId(),ext.getArtifactId(),ext.getVersion());
     }
 
+    private ModuleDependency(String groupId, String artifactId, boolean plugin) {
+        // to be used only by the withUnknownVersion() method
+        // where we know that groupId and artifactId are already interned
+        // and where we want an UNKNOWN version
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = UNKNOWN;
+        this.plugin = plugin;
+    }
+    
     public ModuleName getName() {
         return new ModuleName(groupId,artifactId);
     }
@@ -82,7 +108,10 @@ public final class ModuleDependency implements Serializable {
      * Returns groupId+artifactId plus unknown version.
      */
     public ModuleDependency withUnknownVersion() {
-        return new ModuleDependency(groupId,artifactId,UNKNOWN);
+        if (UNKNOWN.equals(version))
+            return this;
+        else
+            return new ModuleDependency(groupId,artifactId,plugin);
     }
 
     public boolean equals(Object o) {
@@ -93,7 +122,8 @@ public final class ModuleDependency implements Serializable {
 
         return this.artifactId.equals(that.artifactId)
             && this.groupId.equals(that.groupId)
-            && this.version.equals(that.version);
+            && this.version.equals(that.version)
+            && this.plugin == that.plugin;
     }
 
     public int hashCode() {
@@ -101,14 +131,15 @@ public final class ModuleDependency implements Serializable {
         result = groupId.hashCode();
         result = 31 * result + artifactId.hashCode();
         result = 31 * result + version.hashCode();
+        result = 31 * result + (plugin ? 1 : 2);
         return result;
     }
 
     /**
      * Upon reading from the disk, intern strings.
      */
-    public ModuleDependency readResolve() {
-        return new ModuleDependency(groupId,artifactId,version);
+    protected Object readResolve() {
+        return new ModuleDependency(groupId,artifactId,version,plugin);
     }
 
     /**

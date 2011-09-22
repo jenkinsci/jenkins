@@ -25,9 +25,10 @@ THE SOFTWARE.
 <!--
   2nd page in the "new slave" page for displaying the entire configuration entries for the selected job type.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true" permission="${app.ADMINISTER}">
+  <l:layout norefresh="true" permission="${it.CREATE}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <f:form method="post" action="doCreateItem">

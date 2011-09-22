@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Peter Hayes, Red Hat, Inc., Stephen Connolly, id:cactusman
+ * Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +24,81 @@
  */
 package hudson.maven;
 
-import hudson.*;
-import hudson.model.*;
+import static hudson.Util.fixEmpty;
+import static hudson.model.ItemGroupMixIn.loadChildren;
+import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Indenter;
+import hudson.Util;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Executor;
+import hudson.model.TaskListener;
+import jenkins.model.Jenkins;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
+import hudson.model.ResourceActivity;
+import hudson.model.SCMedItem;
+import hudson.model.Saveable;
+import hudson.model.TopLevelItem;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.tasks.*;
+import hudson.tasks.BuildStep;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrappers;
+import hudson.tasks.Fingerprinter;
+import hudson.tasks.JavadocArchiver;
+import hudson.tasks.Mailer;
+import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Publisher;
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.Function1;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.jenkinsci.lib.configprovider.ConfigProvider;
+import org.jenkinsci.lib.configprovider.model.Config;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-
-import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static hudson.Util.fixEmpty;
-import static hudson.model.ItemGroupMixIn.loadChildren;
 
 /**
  * Group of {@link MavenModule}s.
@@ -61,7 +110,7 @@ import static hudson.model.ItemGroupMixIn.loadChildren;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -144,7 +193,47 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
+    
+    /**
+     * parameter for pom parsing by default <code>false</code> to be faster
+     * @since 1.394
+     */
+    private boolean resolveDependencies = false;
+    
+    /**
+     * parameter for pom parsing by default <code>false</code> to be faster
+     * @since 1.394
+     */    
+    private boolean processPlugins = false;
+    
+    /**
+     * parameter for validation level during pom parsing by default the one corresponding
+     * to the maven version used (2 or 3)
+     * @since 1.394
+     */    
+    private int mavenValidationLevel = -1;
 
+    /**
+     * Inform jenkins this build don't use UI code and can run without access to graphical environment. Could be used
+     * later to select a headless-slave from a pool, but first introduced for JENKINS-9785
+     */
+    private boolean runHeadless = false;
+
+    /**
+     * @since 1.426
+     */
+    private String settingConfigId;
+
+    /**
+     * @since 1.426
+     */
+    private String globalSettingConfigId;
+
+    /**
+     * used temporary during maven build to store file path
+     * @since 1.426
+     */
+    protected transient String globalSettingConfigPath;
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
@@ -165,17 +254,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
+    /**
+     * @deprecated
+     *      Use {@link #MavenModuleSet(ItemGroup, String)}
+     */
     public MavenModuleSet(String name) {
-        super(Hudson.getInstance(),name);
+        this(Jenkins.getInstance(),name);
+    }
+
+    public MavenModuleSet(ItemGroup parent, String name) {
+        super(parent,name);
     }
 
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
-    }
-
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     public Collection<MavenModule> getItems() {
@@ -298,6 +391,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         return ignoreUpstremChanges;
     }
 
+    public boolean runHeadless() {
+        return runHeadless;
+    }
+
     public boolean isArchivingDisabled() {
         return archivingDisabled;
     }
@@ -318,8 +415,65 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         this.ignoreUpstremChanges = ignoreUpstremChanges;
     }
 
+    public void setRunHeadless(boolean runHeadless) {
+        this.runHeadless = runHeadless;
+    }
+
     public void setIsArchivingDisabled(boolean archivingDisabled) {
         this.archivingDisabled = archivingDisabled;
+    }
+    
+    public boolean isResolveDependencies()
+    {
+        return resolveDependencies;
+    }
+
+    public void setResolveDependencies( boolean resolveDependencies ) {
+        this.resolveDependencies = resolveDependencies;
+    }
+
+    public boolean isProcessPlugins() {
+        return processPlugins;
+    }
+
+    public void setProcessPlugins( boolean processPlugins ) {
+        this.processPlugins = processPlugins;
+    }    
+
+    public int getMavenValidationLevel() {
+        return mavenValidationLevel;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getSettingConfigId() {
+        return settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param settingConfigId
+     */
+    public void setSettingConfigId( String settingConfigId ) {
+        this.settingConfigId = settingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public String getGlobalSettingConfigId() {
+        return globalSettingConfigId;
+    }
+
+    /**
+     * @since 1.426
+     * @param globalSettingConfigId
+     */
+    public void setGlobalSettingConfigId( String globalSettingConfigId ) {
+        this.globalSettingConfigId = globalSettingConfigId;
     }
 
     /**
@@ -367,6 +521,10 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
 
     public void onRenamed(MavenModule item, String oldName, String newName) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    public void onDeleted(MavenModule item) throws IOException {
+        // noop
     }
 
     public Collection<Job> getAllJobs() {
@@ -494,10 +652,12 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-    	Collection<MavenModule> modules = getModules();
-    	for (MavenModule m : modules) {
-    		m.buildDependencyGraph(graph);
-    	}
+        // the modules are already rebuild by DependencyGraph#init !
+//      Collection<MavenModule> modules = getModules();
+//      for (MavenModule m : modules) {
+//          m.buildDependencyGraph(graph);
+//      }
+        
         publishers.buildDependencyGraph(this,graph);
         buildWrappers.buildDependencyGraph(this,graph);
     }
@@ -624,7 +784,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * Check for "-N" or "--non-recursive" in the Maven goals/options.
      */
     public boolean isNonRecursive() {
-	return checkMavenOption("-N", "--non-recursive");
+        return checkMavenOption("-N", "--non-recursive");
     }
 
     /**
@@ -632,6 +792,11 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      * to be used to launch Maven process.
      *
      * If mavenOpts is null or empty, we'll return the globally-defined MAVEN_OPTS.
+     *
+     * <p>
+     * This method returns a configured value as-is, which can include variabl references.
+     * At runtime, use {@link AbstractMavenBuild#getMavenOpts(TaskListener, EnvVars)} to obtain
+     * a fully resolved value.
      */
     public String getMavenOpts() {
         if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
@@ -646,6 +811,40 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
                 return globalOpts;
             }
         }
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllMavenSettingsConfigs() {
+        List<Config> mavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof MavenSettingsProvider) {
+                    mavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return mavenSettingsConfigs;
+    }
+
+    /**
+     * @since 1.426
+     * @return
+     */
+    public List<Config> getAllGlobalMavenSettingsConfigs() {
+        List<Config> globalMavenSettingsConfigs = new ArrayList<Config>();
+        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+        if (configProviders != null && configProviders.size() > 0) {
+            for (ConfigProvider configProvider : configProviders) {
+                if (configProvider instanceof GlobalMavenSettingsProvider) {
+                    globalMavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
+                }
+            }
+        }
+        return globalMavenSettingsConfigs;
     }
 
     /**
@@ -676,7 +875,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
      */
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
-        for( Queue.Item item : Hudson.getInstance().getQueue().getItems() ) {
+        for( Queue.Item item : Jenkins.getInstance().getQueue().getItems() ) {
             Task t = item.task;
             if((t instanceof MavenModule && ((MavenModule)t).getParent()==this) || t ==this)
                 r.add(item);
@@ -725,22 +924,27 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
         ignoreUpstremChanges = !json.has("triggerByDependency");
+        runHeadless = req.hasParameter("maven.runHeadless");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
-        
+        resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
+        processPlugins = req.hasParameter( "maven.processPlugins" );
+        mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
+        globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
     }
 
     /**
      * Delete all disabled modules.
      */
-    public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
+    public HttpResponse doDoDeleteAllDisabledModules() throws IOException, InterruptedException {
         checkPermission(DELETE);
         for( MavenModule m : getDisabledModules(true))
             m.delete();
-        rsp.sendRedirect2(".");
+        return HttpResponses.redirectToDot();
     }
     
     /**
@@ -766,7 +970,7 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return FormValidation.ok();
         }
         if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-            return FormValidation.error("Alternate settings file must be a relative path.");
+            return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
         }
         
         MavenModuleSetBuild lb = getLastBuild();
@@ -790,10 +994,21 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
          * Globally-defined MAVEN_OPTS.
          */
         private String globalMavenOpts;
+        
+        /**
+         * @since 1.394
+         */
+        private Map<String, Integer> mavenValidationLevels = new LinkedHashMap<String, Integer>();
 
         public DescriptorImpl() {
             super();
             load();
+            mavenValidationLevels.put( "DEFAULT", -1 );
+            mavenValidationLevels.put( "LEVEL_MINIMAL", ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
+            mavenValidationLevels.put( "LEVEL_MAVEN_2_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0 );
+            mavenValidationLevels.put( "LEVEL_MAVEN_3_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+            mavenValidationLevels.put( "LEVEL_MAVEN_3_1", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1 );
+            mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
         }
         
         public String getGlobalMavenOpts() {
@@ -809,12 +1024,20 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             return Messages.MavenModuleSet_DiplayName();
         }
 
-        public MavenModuleSet newInstance(String name) {
-            return new MavenModuleSet(name);
+        public MavenModuleSet newInstance(ItemGroup parent, String name) {
+            return new MavenModuleSet(parent,name);
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {
-            return Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
+            return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
+        }
+        
+        /**
+         * @since 1.394
+         * @return
+         */
+        public Map<String, Integer> getMavenValidationLevels() {
+            return mavenValidationLevels;
         }
 
         @Override
@@ -836,5 +1059,13 @@ public final class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,Ma
             Mailer.class,           // for historical reasons, Maven uses MavenMailer
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
+
+
     }
+
+
+
+
+
+
 }

@@ -27,11 +27,11 @@ import hudson.ExtensionPoint;
 import hudson.Extension;
 
 /**
- * Marker interface for actions that are added to {@link Hudson}.
+ * Marker interface for actions that are added to {@link jenkins.model.Jenkins}.
  *
  * <p>
  * Extend from this interface and put {@link Extension} on your subtype
- * to have them auto-registered to {@link Hudson}.
+ * to have them auto-registered to {@link jenkins.model.Jenkins}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.311

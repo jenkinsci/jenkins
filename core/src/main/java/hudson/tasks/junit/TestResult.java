@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, id:cactusman, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 
 /**
  * Root of all the test results for one build.
@@ -56,7 +55,6 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public final class TestResult extends MetaTabulatedResult {
-    private static final Logger LOGGER = Logger.getLogger(TestResult.class.getName());
 
     /**
      * List of all {@link SuiteResult}s in this test.
@@ -85,16 +83,16 @@ public final class TestResult extends MetaTabulatedResult {
     private transient int totalTests;
 
     private transient int skippedTests;
-    
+
     private float duration;
-    
+
     /**
      * Number of failed/error tests.
      */
     private transient List<CaseResult> failedTests;
 
     private final boolean keepLongStdio;
-    
+
     /**
      * Creates an empty result.
      */
@@ -117,16 +115,16 @@ public final class TestResult extends MetaTabulatedResult {
         this.keepLongStdio = keepLongStdio;
         parse(buildTime, results);
     }
-    
+
     public TestObject getParent() {
     	return parent;
     }
-    
+
     @Override
     public void setParent(TestObject parent) {
         this.parent = parent;
     }
-    
+
     @Override
     public TestResult getTestResult() {
     	return this;
@@ -139,10 +137,20 @@ public final class TestResult extends MetaTabulatedResult {
     public void parse(long buildTime, DirectoryScanner results) throws IOException {
         String[] includedFiles = results.getIncludedFiles();
         File baseDir = results.getBasedir();
+        parse(buildTime,baseDir,includedFiles);
+    }
+        
+    /**
+     * Collect reports from the given report files, while
+     * filtering out all files that were created before the given time.
+     * 
+     * @since 1.426
+     */
+    public void parse(long buildTime, File baseDir, String[] reportFiles) throws IOException {
 
         boolean parsed=false;
 
-        for (String value : includedFiles) {
+        for (String value : reportFiles) {
             File reportFile = new File(baseDir, value);
             // only count files that were actually updated during this build
             if ( (buildTime-3000/*error margin*/ <= reportFile.lastModified()) || !checkTimestamps) {
@@ -167,11 +175,11 @@ public final class TestResult extends MetaTabulatedResult {
                     "I can't figure out what test results are new and what are old.\n" +
                     "Please keep the slave clock in sync with the master.");
 
-            File f = new File(baseDir,includedFiles[0]);
+            File f = new File(baseDir,reportFiles[0]);
             throw new AbortException(
                 String.format(
-                "Test reports were found but none of them are new. Did tests run? \n"+
-                "For example, %s is %s old\n", f,
+                "Test reports were found but none of them are new. Did tests run? %n"+
+                "For example, %s is %s old%n", f,
                 Util.getTimeSpanString(buildTime-f.lastModified())));
         }
     }
@@ -180,7 +188,8 @@ public final class TestResult extends MetaTabulatedResult {
         for (SuiteResult s : suites) {
             // a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
             // see http://www.nabble.com/Problem-with-duplicate-build-execution-td17549182.html for discussion
-            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()))
+            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()) 
+                    && eq(s.getId(),sr.getId()))
                 return; // duplicate
         }
         suites.add(sr);
@@ -198,6 +207,8 @@ public final class TestResult extends MetaTabulatedResult {
         try {
             for (SuiteResult suiteResult : SuiteResult.parse(reportFile, keepLongStdio))
                 add(suiteResult);
+        } catch (InterruptedException e) {
+            throw new IOException2("Failed to read "+reportFile,e);
         } catch (RuntimeException e) {
             throw new IOException2("Failed to read "+reportFile,e);
         } catch (DocumentException e) {
@@ -230,7 +241,7 @@ public final class TestResult extends MetaTabulatedResult {
         if (getId().equals(id) || (id == null)) {
             return this;
         }
-        
+
         String firstElement = null;
         String subId = null;
         int sepIndex = id.indexOf('/');
@@ -250,14 +261,14 @@ public final class TestResult extends MetaTabulatedResult {
             sepIndex = subId.indexOf('/');
             if (sepIndex < 0) {
                 packageName = subId;
-                subId = null; 
+                subId = null;
             } else {
                 packageName = subId.substring(0, sepIndex);
                 subId = subId.substring(sepIndex + 1);
             }
         } else {
             packageName = firstElement;
-            subId = null; 
+            subId = null;
         }
         PackageResult child = byPackage(packageName);
         if (child != null) {
@@ -284,9 +295,9 @@ public final class TestResult extends MetaTabulatedResult {
     @Exported(visibility=999)
     @Override
     public float getDuration() {
-        return duration; 
+        return duration;
     }
-    
+
     @Exported(visibility=999)
     @Override
     public int getPassCount() {
@@ -396,7 +407,7 @@ public final class TestResult extends MetaTabulatedResult {
      */
     @Override
     public String getErrorStackTrace() {
-        return "No error stack traces available at this level. Drill down to individual tests to find stack traces."; 
+        return "No error stack traces available at this level. Drill down to individual tests to find stack traces.";
     }
 
     /**
@@ -425,7 +436,7 @@ public final class TestResult extends MetaTabulatedResult {
      */
     @Override
     public boolean hasChildren() {
-        return !suites.isEmpty(); 
+        return !suites.isEmpty();
     }
 
     @Exported(inline=true,visibility=9)
@@ -444,7 +455,7 @@ public final class TestResult extends MetaTabulatedResult {
         if (token.equals(getId())) {
             return this;
         }
-        
+
         PackageResult result = byPackage(token);
         if (result != null) {
         	return result;
@@ -460,25 +471,25 @@ public final class TestResult extends MetaTabulatedResult {
     public SuiteResult getSuite(String name) {
         return suitesByName.get(name);
     }
-    
+
      @Override
      public void setParentAction(AbstractTestResultAction action) {
         this.parentAction = action;
-        tally(); // I want to be sure to inform our children when we get an action. 
+        tally(); // I want to be sure to inform our children when we get an action.
      }
 
      @Override
      public AbstractTestResultAction getParentAction() {
          return this.parentAction;
      }
-     
+
     /**
      * Recount my children.
      */
     @Override
     public void tally() {
         /// Empty out data structures
-        // TODO: free children? memmory leak? 
+        // TODO: free children? memmory leak?
         suitesByName = new HashMap<String,SuiteResult>();
         failedTests = new ArrayList<CaseResult>();
         byPackages = new TreeMap<String,PackageResult>();
@@ -558,6 +569,6 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     private static final long serialVersionUID = 1L;
-    private static final boolean checkTimestamps = true; // TODO: change to System.getProperty  
+    private static final boolean checkTimestamps = true; // TODO: change to System.getProperty
 
 }

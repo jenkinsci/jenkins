@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Displays the build queue as &lt;l:pane>
@@ -37,7 +38,7 @@ THE SOFTWARE.
     <j:if test="${app.quietingDown}">
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
-          ${%Hudson is going to shut down. No further builds will be performed.}
+          ${%Jenkins is going to shut down. No further builds will be performed.}
           <j:if test="${h.hasPermission(app.ADMINISTER)}">
             <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
           </j:if>
@@ -66,8 +67,8 @@ THE SOFTWARE.
                   </a>
                   <j:if test="${stuck}">
                     &#160;
-                    <a href="http://wiki.hudson-ci.org/display/HUDSON/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif"  />
+                    <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
+                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
                     </a>
                   </j:if>
                 </j:when>
@@ -78,7 +79,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.gif" alt="cancel this build" /></a>
+                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.png" alt="cancel this build" height="16" width="16"/></a>
               </j:if>
              </td>
           </tr>

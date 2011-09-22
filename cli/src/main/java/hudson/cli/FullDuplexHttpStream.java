@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * Creates a capacity-unlimited bi-directional {@link InputStream}/{@link OutputStream} pair over
@@ -38,7 +38,7 @@ public class FullDuplexHttpStream {
 
         String authorization = null;
         if (target.getUserInfo() != null) {
-        	authorization = new BASE64Encoder().encode(target.getUserInfo().getBytes());
+        	authorization = new String(new Base64().encodeBase64(target.getUserInfo().getBytes()));
         }
 
         CrumbData crumbData = new CrumbData();
@@ -61,7 +61,7 @@ public class FullDuplexHttpStream {
         input = con.getInputStream();
         // make sure we hit the right URL
         if(con.getHeaderField("Hudson-Duplex")==null)
-            throw new IOException(target+" doesn't look like Hudson");
+            throw new IOException(target+" doesn't look like Jenkins");
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();

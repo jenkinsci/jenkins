@@ -39,6 +39,7 @@ import hudson.maven.MavenModuleSet;
 
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import junit.framework.Assert;
 
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -102,7 +103,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
@@ -128,7 +129,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testAnt() throws Exception {
         Ant.AntInstallation ant = configureDefaultAnt();
         String antPath = ant.getHome();
-        Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
+        Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
 
         project.setScm(new SingleFileSCM("build.xml", "<project name='foo'/>"));
         project.getBuildersList().add(new Ant("-version", "ant", null,null,null));
@@ -149,7 +150,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testNativeMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         MavenModuleSet project = createMavenProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource(

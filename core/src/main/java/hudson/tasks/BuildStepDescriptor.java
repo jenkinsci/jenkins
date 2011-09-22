@@ -26,7 +26,7 @@ package hudson.tasks;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.AbstractProject.AbstractProjectDescriptor;
 
 import java.util.List;
@@ -72,7 +72,7 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
     public static <T extends BuildStep&Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
         // descriptor of the project
-        Descriptor pd = Hudson.getInstance().getDescriptor((Class) type);
+        Descriptor pd = Jenkins.getInstance().getDescriptor((Class) type);
 
         List<Descriptor<T>> r = new ArrayList<Descriptor<T>>(base.size());
         for (Descriptor<T> d : base) {

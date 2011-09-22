@@ -26,12 +26,9 @@ package hudson.tasks.junit;
 import hudson.FilePath;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.test.TestObject;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -137,11 +134,12 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	}
 
 	private void testSetDescription(String url, TestObject object) throws Exception {
-		HtmlPage page = new WebClient().goTo(url);
-		
+        object.doSubmitDescription("description");
+
+        // test the roundtrip
+        HtmlPage page = new WebClient().goTo(url);
 		page.getAnchorByHref("editDescription").click();
 		HtmlForm form = findForm(page, "submitDescription");
-		form.getTextAreaByName("description").setText("description");
 		submit(form);
 		
 		assertEquals("description", object.getDescription());

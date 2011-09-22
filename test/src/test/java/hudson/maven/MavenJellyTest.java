@@ -23,12 +23,10 @@
  */
 package hudson.maven;
 
-import hudson.model.Hudson;
 import hudson.remoting.Which;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.jvnet.hudson.test.JellyTestSuiteBuilder;
-import java.io.File;
 
 /**
  * Runs Jelly checks on maven-plugin.
@@ -37,6 +35,6 @@ import java.io.File;
  */
 public class MavenJellyTest extends TestCase {
     public static Test suite() throws Exception {
-        return JellyTestSuiteBuilder.build(Which.jarFile(MavenModuleSet.class));
+        return JellyTestSuiteBuilder.build(Which.jarFile(MavenModuleSet.class),true);
     }
 }

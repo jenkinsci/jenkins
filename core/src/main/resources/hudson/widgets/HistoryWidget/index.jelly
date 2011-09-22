@@ -48,25 +48,30 @@ THE SOFTWARE.
       <tr class="build-row">
         <td colspan="3" align="right">
           <script>
+            function replace(a, b) {
+                  var p = a.parentNode;
+                  var next = a.nextSibling;
+                  p.removeChild(a);
+                  p.insertBefore(b,next);
+            }
+
             function loadAllBuildHistory() {
               // first display the "loading..." icon
               var box = $("loadAllBuildHistory");
               box.innerHTML = '<img src="${imagesURL}/spinner.gif" alt=""/>';
 
               // then actually fetch the HTML
-              new Ajax.Request("${it.baseUrl}/buildHistory/all",{
+              new Ajax.Request("${it.baseUrl}/buildHistory/all/",{
                 method: "get",
                 onComplete: function(rsp,_) {
                   <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
                   var hist = $$("buildHistory");
-                  var p = hist.parentNode;
-                  var next = hist.nextSibling;
-                  p.removeChild(hist);
 
-                  var div = document.createElement('div');
-                  div.innerHTML = rsp.responseText;
+                  var newhist = document.createElement('div');
+                  newhist.innerHTML = rsp.responseText;
+                  newhist.headers = hist.headers
 
-                  p.insertBefore(div,next);
+                  replace(hist, newhist);
                 }
             });
             }
@@ -83,9 +88,9 @@ THE SOFTWARE.
     -->
     <tr class="build-row">
       <td colspan="3" align="right">
-        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for all}</a>
+        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for all}</a>
         <st:nbsp/>
-        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed"/> ${%for failures}</a>
+        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for failures}</a>
       </td>
     </tr>
   </l:pane>

@@ -31,12 +31,14 @@ import hudson.tasks.Notifier;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static hudson.model.Result.ABORTED;
 import static hudson.model.Result.FAILURE;
 
 /**
@@ -136,6 +138,10 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
                 if(!build(listener,project.getBuilders()))
                     r = FAILURE;
+            } catch (InterruptedException e) {
+                r = Executor.currentExecutor().abortResult();
+                // not calling Executor.recordCauseOfInterruption here. We do that where this exception is consumed.
+                throw e;
             } finally {
                 if (r != null) setResult(r);
                 // tear down in reverse order
@@ -169,8 +175,10 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps )
-                if(!perform(bs,listener))
+                if(!perform(bs,listener)) {
+                    LOGGER.fine(MessageFormat.format("{0} : {1} failed", Build.this.toString(), bs));
                     return false;
+                }
             return true;
         }
     }

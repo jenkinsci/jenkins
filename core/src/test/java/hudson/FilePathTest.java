@@ -24,11 +24,25 @@
 package hudson;
 
 import hudson.remoting.VirtualChannel;
+import hudson.util.IOException2;
 import hudson.util.NullStream;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -61,6 +75,89 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    /**
+     * As we moved the I/O handling to another thread, there's a race condition in
+     * {@link FilePath#copyTo(OutputStream)} &mdash; this method can return before
+     * all the writes are delivered to {@link OutputStream}.
+     *
+     * <p>
+     * To reproduce that problem, we use a large number of threads, so that we can
+     * maximize the chance of out-of-order execution, and make sure we are
+     * seeing the right byte count at the end.
+     *
+     * Also see JENKINS-7897
+     */
+    @Bug(7871)
+    public void testCopyTo3() throws Exception {
+        final File tmp = File.createTempFile("testCopyTo3","");
+
+        FileOutputStream os = new FileOutputStream(tmp);
+        final int size = 90000;
+        byte[] buf = new byte[size];
+        for (int i=0; i<buf.length; i++)
+            buf[i] = (byte)(i%256);
+        os.write(buf);
+        os.close();
+
+        ExecutorService es = Executors.newFixedThreadPool(100);
+        try {
+            List<java.util.concurrent.Future<Object>> r = new ArrayList<java.util.concurrent.Future<Object>>();
+            for (int i=0; i<100; i++) {
+                r.add(es.submit(new Callable<Object>() {
+                    public Object call() throws Exception {
+                        class Sink extends OutputStream {
+                            private Exception closed;
+                            private volatile int count;
+
+                            private void checkNotClosed() throws IOException2 {
+                                if (closed != null)
+                                    throw new IOException2(closed);
+                            }
+
+                            @Override
+                            public void write(int b) throws IOException {
+                                count++;
+                                checkNotClosed();
+                            }
+
+                            @Override
+                            public void write(byte[] b) throws IOException {
+                                count+=b.length;
+                                checkNotClosed();
+                            }
+
+                            @Override
+                            public void write(byte[] b, int off, int len) throws IOException {
+                                count+=len;
+                                checkNotClosed();
+                            }
+
+                            @Override
+                            public void close() throws IOException {
+                                closed = new Exception();
+                                if (size!=count)
+                                    fail();
+                            }
+                        }
+
+                        FilePath f = new FilePath(french, tmp.getPath());
+                        Sink sink = new Sink();
+                        f.copyTo(sink);
+                        assertEquals(size,sink.count);
+                        return null;
+                    }
+                }));
+            }
+
+            for (java.util.concurrent.Future<Object> f : r)
+                f.get();
+        } finally {
+            es.shutdown();
+        }
+    }
+
+
+
     public void testRepeatCopyRecursiveTo() throws Exception {
         // local->local copy used to return 0 if all files were "up to date"
         // should return number of files processed, whether or not they were copied or already current
@@ -68,7 +165,7 @@ public class FilePathTest extends ChannelTestCase {
         try {
             assertTrue(src.mkdir());
             assertTrue(dst.mkdir());
-            File f = File.createTempFile("foo", ".tmp", src);
+            File.createTempFile("foo", ".tmp", src);
             FilePath fp = new FilePath(src);
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
             // copy again should still report 1
@@ -160,4 +257,44 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals("C:\\", (fp = fp.getParent()).getRemote());
         assertNull(fp.getParent());
     }
+
+    private FilePath createFilePath(final File base, final String... path) throws IOException {
+        File building = base;
+        for (final String component : path) {
+            building = new File(building, component);
+        }
+        FileUtils.touch(building);
+        return new FilePath(building);
+    }
+
+    public void testList() throws Exception {
+        File baseDir = Util.createTempDir();
+        try {
+            final Set<FilePath> expected = new HashSet<FilePath>();
+            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+            expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
+            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+            expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
+            final FilePath[] result = new FilePath(baseDir).list("**");
+            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+        } finally {
+            Util.deleteRecursive(baseDir);
+        }
+    }
+
+    public void testListWithExcludes() throws Exception {
+        File baseDir = Util.createTempDir();
+        try {
+            final Set<FilePath> expected = new HashSet<FilePath>();
+            expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
+            createFilePath(baseDir, "top", "sub", "trace.log");
+            expected.add(createFilePath(baseDir, "top", "db", "db.log"));
+            createFilePath(baseDir, "top", "db", "trace.log");
+            final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
+            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+        } finally {
+            Util.deleteRecursive(baseDir);
+        }
+    }
+
 }

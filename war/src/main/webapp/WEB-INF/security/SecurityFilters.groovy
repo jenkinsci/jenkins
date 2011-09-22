@@ -38,9 +38,12 @@ import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
 import hudson.security.HttpSessionContextIntegrationFilter2
+import hudson.security.SecurityRealm
+import hudson.security.NoopFilter
+import jenkins.security.ApiTokenFilter
 
 // providers that apply to both patterns
-def commonProviders(redirectUrl) {
+def commonProviders() {
     return [
         bean(AnonymousProcessingFilter) {
             key = "anonymous" // must match with the AnonymousProvider
@@ -49,7 +52,7 @@ def commonProviders(redirectUrl) {
         bean(ExceptionTranslationFilter) {
             accessDeniedHandler = new AccessDeniedHandlerImpl()
             authenticationEntryPoint = bean(HudsonAuthenticationEntryPoint) {
-                loginFormUrl = redirectUrl;
+                loginFormUrl = '/'+securityRealm.getLoginUrl()+"?from={0}";
             }
         },
         bean(UnwrapSecurityExceptionFilter)
@@ -61,7 +64,10 @@ filter(ChainedServletFilter) {
         // this persists the authentication across requests by using session
         bean(HttpSessionContextIntegrationFilter2) {
         },
+        bean(ApiTokenFilter),
         // allow clients to submit basic authentication credential
+        // but allow that to be skipped since it can interfere with reverse proxy setup
+        Boolean.getBoolean("jenkins.security.ignoreBasicAuth") ? bean(NoopFilter) :
         bean(BasicProcessingFilter) {
             authenticationManager = securityComponents.manager
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
@@ -69,7 +75,7 @@ filter(ChainedServletFilter) {
             // since users of basic auth tends to be a program and won't see the redirection to the form
             // page as a failure
             authenticationEntryPoint = bean(BasicProcessingFilterEntryPoint) {
-                realmName = "Hudson"
+                realmName = "Jenkins"
             }
         },
         bean(AuthenticationProcessingFilter2) {
@@ -83,7 +89,7 @@ filter(ChainedServletFilter) {
             rememberMeServices = securityComponents.rememberMe
             authenticationManager = securityComponents.manager
         },
-    ] + commonProviders("/login?from={0}")
+    ] + commonProviders()
 }
 
 // this filter set up is used to emulate the legacy Hudson behavior
@@ -91,7 +97,7 @@ filter(ChainedServletFilter) {
 legacy(ChainedServletFilter) {
     filters = [
         bean(BasicAuthenticationFilter)
-    ] + commonProviders("/loginEntry?from={0}")
+    ] + commonProviders()
     // when using container-authentication we can't hit /login directly.
     // we first have to hit protected /loginEntry, then let the container
     // trap that into /login.

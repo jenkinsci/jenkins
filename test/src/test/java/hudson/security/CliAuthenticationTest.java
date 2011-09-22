@@ -2,20 +2,15 @@ package hudson.security;
 
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
-import hudson.cli.CliManagerImpl;
 import hudson.cli.ClientAuthenticationCache;
 import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import junit.framework.Assert;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -33,7 +28,12 @@ public class CliAuthenticationTest extends HudsonTestCase {
     }
 
     private int command(String... args) throws Exception {
-        return new CLI(getURL()).execute(args);
+        CLI cli = new CLI(getURL());
+        try {
+            return cli.execute(args);
+        } finally {
+            cli.close();
+        }
     }
 
     @TestExtension
@@ -45,8 +45,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertNotSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertNotSame(Jenkins.ANONYMOUS,auth);
             Assert.assertEquals("abc", auth.getName());
             return 0;
         }
@@ -61,8 +61,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertSame(Jenkins.ANONYMOUS,auth);
             return 0;
         }
     }

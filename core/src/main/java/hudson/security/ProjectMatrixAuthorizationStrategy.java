@@ -23,7 +23,11 @@
  */
 package hudson.security;
 
+import hudson.model.AbstractItem;
 import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.util.RobustReflectionConverter;
 import hudson.Extension;
@@ -31,6 +35,9 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.core.JVM;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link GlobalMatrixAuthorizationStrategy} plus per-project ACL.
@@ -45,10 +52,35 @@ public class ProjectMatrixAuthorizationStrategy extends GlobalMatrixAuthorizatio
     public ACL getACL(Job<?,?> project) {
         AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
         if (amp != null) {
-            return amp.getACL().newInheritingACL(getRootACL());
+            return amp.getACL().newInheritingACL(getACL(project.getParent()));
         } else {
-            return getRootACL();
+            return getACL(project.getParent());
         }
+    }
+
+    public SidACL getACL(ItemGroup g) {
+        if (g instanceof Item) {
+            Item item = (Item) g;
+            return (SidACL)item.getACL();
+        }
+        return getRootACL();
+    }
+
+    @Override
+    public SidACL getACL(AbstractItem item) {
+        return getACL(item.getParent());
+    }
+
+    @Override
+    public Set<String> getGroups() {
+        Set<String> r = new HashSet<String>();
+        r.addAll(super.getGroups());
+        for (Job<?,?> j : Jenkins.getInstance().getItems(Job.class)) {
+            AuthorizationMatrixProperty amp = j.getProperty(AuthorizationMatrixProperty.class);
+            if (amp != null)
+                r.addAll(amp.getGroups());
+        }
+        return r;
     }
 
     @Extension

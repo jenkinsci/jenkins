@@ -23,8 +23,9 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Computer;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.SocketOutputStream;
@@ -34,7 +35,9 @@ import hudson.remoting.Channel.Listener;
 import hudson.remoting.Channel.Mode;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.CliEntryPoint;
+import hudson.util.IOException2;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,6 +47,12 @@ import java.io.BufferedOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.BindException;
+import java.security.SecureRandom;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +67,7 @@ import java.util.logging.Logger;
  * unauthorized remote slaves.
  *
  * <p>
- * The approach here is to have {@link Hudson#getSecretKey() a secret key} on the master.
+ * The approach here is to have {@link jenkins.model.Jenkins#getSecretKey() a secret key} on the master.
  * This key is sent to the slave inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
  * we use everywhere else in Hudson), and the slave sends this
@@ -107,7 +116,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private String getSecretKey() {
-        return Hudson.getInstance().getSecretKey();
+        return Jenkins.getInstance().getSecretKey();
     }
 
     @Override
@@ -116,6 +125,12 @@ public final class TcpSlaveAgentListener extends Thread {
             // the loop eventually terminates when the socket is closed.
             while (true) {
                 Socket s = serverSocket.accept();
+
+                // this prevents a connection from silently terminated by the router in between or the other peer
+                // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
+                // by default in Linux) that this alone is enough to prevent that.
+                s.setKeepAlive(true);
+
                 new ConnectionHandler(s).start();
             }
         } catch (IOException e) {
@@ -149,6 +164,7 @@ public final class TcpSlaveAgentListener extends Thread {
             synchronized(getClass()) {
                 id = iotaGen++;
             }
+            setName("TCP slave agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
         }
 
         @Override
@@ -165,8 +181,10 @@ public final class TcpSlaveAgentListener extends Thread {
                     String protocol = s.substring(9);
                     if(protocol.equals("JNLP-connect")) {
                         runJnlpConnect(in, out);
+                    } else if(protocol.equals("JNLP2-connect")) {
+                        runJnlp2Connect(in, out);
                     } else if(protocol.equals("CLI-connect")) {
-                            runCliConnect(in, out);
+                        runCliConnect(in, out);
                     } else {
                         error(out, "Unknown protocol:" + s);
                     }
@@ -198,8 +216,8 @@ public final class TcpSlaveAgentListener extends Thread {
             Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
                     Computer.threadPoolForRemoting, Mode.BINARY,
                     new BufferedInputStream(new SocketInputStream(this.s)),
-                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
-            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl());
+                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
+            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
 
@@ -213,7 +231,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
 
             final String nodeName = in.readUTF();
-            SlaveComputer computer = (SlaveComputer) Hudson.getInstance().getComputer(nodeName);
+            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
                 return;
@@ -226,6 +244,75 @@ public final class TcpSlaveAgentListener extends Thread {
 
             out.println(Engine.GREETING_SUCCESS);
 
+            jnlpConnect(computer);
+        }
+
+        /**
+         * Handles JNLP slave agent connection request (v2 protocol)
+         */
+        private void runJnlp2Connect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
+            Properties request = new Properties();
+            request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
+
+            if(!getSecretKey().equals(request.getProperty("Secret-Key"))) {
+                error(out, "Unauthorized access");
+                return;
+            }
+
+            final String nodeName = request.getProperty("Node-Name");
+            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
+            if(computer==null) {
+                error(out, "No such slave: "+nodeName);
+                return;
+            }
+
+            Channel ch = computer.getChannel();
+            if(ch !=null) {
+                String c = request.getProperty("Cookie");
+                if (c!=null && c.equals(ch.getProperty(COOKIE_NAME))) {
+                    // we think we are currently connected, but this request proves that it's from the party
+                    // we are supposed to be communicating to. so let the current one get disconnected
+                    LOGGER.info("Disconnecting "+nodeName+" as we are reconnected from the current peer");
+                    try {
+                        computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
+                    } catch (ExecutionException e) {
+                        throw new IOException2("Failed to disconnect the current client",e);
+                    } catch (TimeoutException e) {
+                        throw new IOException2("Failed to disconnect the current client",e);
+                    }
+                } else {
+                    error(out, nodeName + " is already connected to this master. Rejecting this connection.");
+                    return;
+                }
+            }
+
+            out.println(Engine.GREETING_SUCCESS);
+
+            Properties response = new Properties();
+            String cookie = generateCookie();
+            response.put("Cookie",cookie);
+            writeResponseHeaders(out, response);
+
+            ch = jnlpConnect(computer);
+
+            ch.setProperty(COOKIE_NAME, cookie);
+        }
+
+        private void writeResponseHeaders(PrintWriter out, Properties response) {
+            for (Entry<Object, Object> e : response.entrySet()) {
+                out.println(e.getKey()+": "+e.getValue());
+            }
+            out.println(); // empty line to conclude the response header
+        }
+
+        private String generateCookie() {
+            byte[] cookie = new byte[32];
+            new SecureRandom().nextBytes(cookie);
+            return Util.toHexString(cookie);
+        }
+
+        private Channel jnlpConnect(SlaveComputer computer) throws InterruptedException, IOException {
+            final String nodeName = computer.getName();
             final OutputStream log = computer.openLogFile();
             PrintWriter logw = new PrintWriter(log,true);
             logw.println("JNLP agent connected from "+ this.s.getInetAddress());
@@ -249,12 +336,13 @@ public final class TcpSlaveAgentListener extends Thread {
                             }
                         }
                     });
+                return computer.getChannel();
             } catch (AbortException e) {
                 logw.println(e.getMessage());
                 logw.println("Failed to establish the connection with the slave");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName); 
+                logw.println("Failed to establish the connection with the slave " + nodeName);
                 e.printStackTrace(logw);
                 throw e;
             }
@@ -267,9 +355,20 @@ public final class TcpSlaveAgentListener extends Thread {
         }
     }
 
+    /**
+     * Connection terminated because we are reconnected from the current peer.
+     */
+    public static class ConnectionFromCurrentPeer extends OfflineCause {
+        public String toString() {
+            return "The current peer is reconnecting";
+        }
+    }
+
     private static int iotaGen=1;
 
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
+
+    private static final String COOKIE_NAME = TcpSlaveAgentListener.class.getName()+".cookie";
 }
 
 /*

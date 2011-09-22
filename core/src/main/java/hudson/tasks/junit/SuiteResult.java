@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Xavier Le Vourch, Tom Huybrechts, Yahoo!, Inc., Victor Garcia
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,6 +25,7 @@ package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
 import hudson.util.IOException2;
+import hudson.util.io.ParserConfigurator;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -68,6 +69,8 @@ public final class SuiteResult implements Serializable {
      * AFAICT, this is not a required attribute in XML, so the value may be null.
      */
     private String timestamp;
+    /** Optional ID attribute of a test suite. E.g., Eclipse plug-ins tests always have the name 'tests' but a different id. **/
+    private String id;
 
     /**
      * All test cases.
@@ -83,32 +86,48 @@ public final class SuiteResult implements Serializable {
     }
 
     /**
+     * Passed to {@link ParserConfigurator}.
+     * @since 1.416
+     */
+    public static class SuiteResultParserConfigurationContext {
+        public final File xmlReport;
+
+        SuiteResultParserConfigurationContext(File xmlReport) {
+            this.xmlReport = xmlReport;
+        }
+    }
+
+    /**
      * Parses the JUnit XML file into {@link SuiteResult}s.
      * This method returns a collection, as a single XML may have multiple &lt;testsuite>
      * elements wrapped into the top-level &lt;testsuites>.
      */
-    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException, IOException {
+    static List<SuiteResult> parse(File xmlReport, boolean keepLongStdio) throws DocumentException, IOException, InterruptedException {
         List<SuiteResult> r = new ArrayList<SuiteResult>();
 
         // parse into DOM
         SAXReader saxReader = new SAXReader();
-        // install EntityResolver for resolving DTDs, which are in files created by TestNG.
-        // (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
-        XMLEntityResolver resolver = new XMLEntityResolver();
-        saxReader.setEntityResolver(resolver);
+        ParserConfigurator.applyConfiguration(saxReader,new SuiteResultParserConfigurationContext(xmlReport));
+
         Document result = saxReader.read(xmlReport);
         Element root = result.getRootElement();
 
-        if(root.getName().equals("testsuites")) {
-            // multi-suite file
-            for (Element suite : (List<Element>)root.elements("testsuite"))
-                r.add(new SuiteResult(xmlReport, suite, keepLongStdio));
-        } else {
-            // single suite file
-            r.add(new SuiteResult(xmlReport, root, keepLongStdio));
-        }
+        parseSuite(xmlReport,keepLongStdio,r,root);
 
         return r;
+    }
+
+    private static void parseSuite(File xmlReport, boolean keepLongStdio, List<SuiteResult> r, Element root) throws DocumentException, IOException {
+        // nested test suites
+        @SuppressWarnings("unchecked")
+        List<Element> testSuites = (List<Element>)root.elements("testsuite");
+        for (Element suite : testSuites)
+            parseSuite(xmlReport, keepLongStdio, r, suite);
+
+        // child test cases
+        // FIXME: do this also if no testcases!
+        if (root.element("testcase")!=null || root.element("error")!=null)
+            r.add(new SuiteResult(xmlReport, root, keepLongStdio));
     }
 
     /**
@@ -130,19 +149,22 @@ public final class SuiteResult implements Serializable {
         }
         this.name = TestObject.safe(name);
         this.timestamp = suite.attributeValue("timestamp");
+        this.id = suite.attributeValue("id");
 
         Element ex = suite.element("error");
         if(ex!=null) {
             // according to junit-noframes.xsl l.229, this happens when the test class failed to load
             addCase(new CaseResult(this, suite, "<init>", keepLongStdio));
         }
-
-        for (Element e : (List<Element>)suite.elements("testcase")) {
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 indicates that
+        
+        @SuppressWarnings("unchecked")
+        List<Element> testCases = (List<Element>)suite.elements("testcase");
+        for (Element e : testCases) {
+            // https://issues.jenkins-ci.org/browse/JENKINS-1233 indicates that
             // when <testsuites> is present, we are better off using @classname on the
             // individual testcase class.
 
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1463 indicates that
+            // https://issues.jenkins-ci.org/browse/JENKINS-1463 indicates that
             // @classname may not exist in individual testcase elements. We now
             // also test if the testsuite element has a package name that can be used
             // as the class name instead of the file name which is default.
@@ -151,7 +173,7 @@ public final class SuiteResult implements Serializable {
                 classname = suite.attributeValue("name");
             }
 
-            // https://hudson.dev.java.net/issues/show_bug.cgi?id=1233 and
+            // https://issues.jenkins-ci.org/browse/JENKINS-1233 and
             // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
             // are at odds with each other --- when both are present,
             // one wants to use @name from <testsuite>,
@@ -184,7 +206,7 @@ public final class SuiteResult implements Serializable {
 
     /*package*/ void addCase(CaseResult cr) {
         cases.add(cr);
-        duration += cr.getDuration(); 
+        duration += cr.getDuration();
     }
 
     @Exported(visibility=9)
@@ -194,7 +216,7 @@ public final class SuiteResult implements Serializable {
 
     @Exported(visibility=9)
     public float getDuration() {
-        return duration; 
+        return duration;
     }
 
     /**
@@ -210,7 +232,7 @@ public final class SuiteResult implements Serializable {
 
     /**
      * The stderr of this test.
-     * 
+     *
      * @since 1.281
      * @see CaseResult#getStderr()
      */
@@ -218,7 +240,7 @@ public final class SuiteResult implements Serializable {
     public String getStderr() {
         return stderr;
     }
-    
+
     /**
      * The absolute path to the original test report. OS-dependent.
      */
@@ -233,6 +255,11 @@ public final class SuiteResult implements Serializable {
     @Exported(visibility=9)
     public String getTimestamp() {
         return timestamp;
+    }
+
+    @Exported(visibility=9)
+    public String getId() {
+        return id;
     }
 
     @Exported(inline=true,visibility=9)
@@ -262,7 +289,7 @@ public final class SuiteResult implements Serializable {
         }
         return null;
     }
-    
+
 	public Set<String> getClassNames() {
 		Set<String> result = new HashSet<String>();
 		for (CaseResult c : cases) {
@@ -274,7 +301,7 @@ public final class SuiteResult implements Serializable {
     /** KLUGE. We have to call this to prevent freeze()
      * from calling c.freeze() on all its children,
      * because that in turn calls c.getOwner(),
-     * which requires a non-null parent. 
+     * which requires a non-null parent.
      * @param parent
      */
     void setParent(hudson.tasks.junit.TestResult parent) {

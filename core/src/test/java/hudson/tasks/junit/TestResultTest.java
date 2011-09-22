@@ -25,14 +25,14 @@ package hudson.tasks.junit;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
-import hudson.util.StringConverter2;
+import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
+
 import junit.framework.TestCase;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -43,6 +43,22 @@ public class TestResultTest extends TestCase {
         return new File(TestResultTest.class.getResource(name).toURI());
     }
 
+    /**
+     * Verifies that all suites of an Eclipse Plug-in Test Suite are collected.
+     * These suites don't differ by name (and timestamp), the y differ by 'id'.
+     */
+    public void testIpsTests() throws Exception {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("eclipse-plugin-test-report.xml"));
+
+        Collection<SuiteResult> suites = testResult.getSuites();
+        assertEquals("Wrong number of test suites", 16, suites.size());
+        int testCaseCount = 0;
+        for (SuiteResult suite : suites) {
+            testCaseCount += suite.getCases().size();
+        }
+        assertEquals("Wrong number of test cases", 3366, testCaseCount);
+    }
 
     /**
      * This test verifies compatibility of JUnit test results persisted to
@@ -84,6 +100,6 @@ public class TestResultTest extends TestCase {
         XSTREAM.alias("result",TestResult.class);
         XSTREAM.alias("suite",SuiteResult.class);
         XSTREAM.alias("case",CaseResult.class);
-        XSTREAM.registerConverter(new StringConverter2(),100);
+        XSTREAM.registerConverter(new HeapSpaceStringConverter(),100);
     }
 }

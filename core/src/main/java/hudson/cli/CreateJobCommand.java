@@ -23,7 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
 import org.kohsuke.args4j.Argument;
@@ -37,14 +37,14 @@ import org.kohsuke.args4j.Argument;
 public class CreateJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Creates a new job by reading stdin as a configuration XML file";
+        return Messages.CreateJobCommand_ShortDescription();
     }
 
-    @Argument(metaVar="NAME",usage="Name of the job to create")
+    @Argument(metaVar="NAME",usage="Name of the job to create",required=true)
     public String name;
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         h.checkPermission(Item.CREATE);
 
         if (h.getItem(name)!=null) {

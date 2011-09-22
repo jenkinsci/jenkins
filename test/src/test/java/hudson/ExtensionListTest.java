@@ -1,14 +1,12 @@
 package hudson;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 import hudson.util.DescriptorList;
 
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collection;
 
 /**
@@ -76,7 +74,7 @@ public class ExtensionListTest extends HudsonTestCase {
 
     public static abstract class Fish implements Describable<Fish> {
         public Descriptor<Fish> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(getClass());
+            return Jenkins.getInstance().getDescriptor(getClass());
         }
     }
 

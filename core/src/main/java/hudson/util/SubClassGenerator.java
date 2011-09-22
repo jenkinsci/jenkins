@@ -24,7 +24,7 @@
 package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -76,7 +76,7 @@ public class SubClassGenerator extends ClassLoader {
 
         Class<? extends T> c = defineClass(name, image, 0, image.length).asSubclass(base);
 
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         if (h!=null)    // null only during tests.
             ((UberClassLoader)h.pluginManager.uberClassLoader).addNamedClass(name,c); // can't change the field type as it breaks binary compatibility
         

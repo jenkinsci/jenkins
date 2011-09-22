@@ -33,6 +33,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -110,6 +111,17 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
+    /**
+     * Create a new instance of this parameter definition and use the passed
+     * parameter value as the default value.
+     *
+     * @since 1.405
+     */
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        // By default, just return this again
+        return this;
+    }
+
     @Exported
     public String getType() {
     	return this.getClass().getSimpleName();
@@ -129,7 +141,7 @@ public abstract class ParameterDefinition implements
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -190,7 +202,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Hudson.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
+        return Jenkins.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
     }
 
     /**

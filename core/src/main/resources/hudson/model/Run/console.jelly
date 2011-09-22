@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!--
   Displays the console output
 -->
+<?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.parent.displayName} #${it.number} Console" norefresh="true">
+  <l:layout title="${it.fullDisplayName} Console" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <t:buildCaption>
@@ -34,7 +35,7 @@ THE SOFTWARE.
       </t:buildCaption>
       <l:rightspace>
         <a href="consoleText">
-          <img src="${imagesURL}/24x24/document.gif" alt="" />${%View as plain text}
+          <img src="${imagesURL}/24x24/document.png" alt="" height="24" width="24" />${%View as plain text}
         </a>
       </l:rightspace>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />

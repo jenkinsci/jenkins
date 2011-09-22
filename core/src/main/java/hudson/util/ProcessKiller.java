@@ -26,7 +26,8 @@ package hudson.util;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
+import hudson.util.ProcessTree.OSProcess;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,7 +62,7 @@ public abstract class ProcessKiller implements ExtensionPoint, Serializable {
      * Returns all the registered {@link ProcessKiller} descriptors.
      */
     public static ExtensionList<ProcessKiller> all() {
-        return Hudson.getInstance().getExtensionList(ProcessKiller.class);
+        return Jenkins.getInstance().getExtensionList(ProcessKiller.class);
     }
 
     /**

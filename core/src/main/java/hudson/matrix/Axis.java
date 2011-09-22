@@ -27,7 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.QuotedStringTokenizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -197,6 +197,12 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
     public Object readResolve() {
         if (getClass()!=Axis.class) return this;
 
+        /*
+            This method is necessary only because earlier versions of Jenkins treated
+            axis names "label" and "jdk" differently,
+            plus Axis was a concrete class, and we need to be able to read that back.
+            So this measure is not needed for newly added Axes.
+         */
         if (getName().equals("jdk"))
             return new JDKAxis(getValues());
         if (getName().equals("label"))
@@ -208,7 +214,7 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * Returns all the registered {@link AxisDescriptor}s.
      */
     public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
-        return Hudson.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
+        return Jenkins.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
     }
 
     /**

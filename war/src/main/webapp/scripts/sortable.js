@@ -105,7 +105,8 @@ var arrowTable = {
     },
     none: {
         text: "&nbsp;&nbsp;&nbsp;"
-    }
+    },
+    lnkRef: null
 }
 
 arrowTable.up.next = arrowTable.down;
@@ -139,8 +140,13 @@ function ts_resortTable(lnk) {
     });
 
     var dir = span.sortdir;
-    if(dir==null)   dir=arrowTable.up;
-    dir = dir.next; // new sort direction
+    if (arrowTable.lnkRef != lnk) {
+        if (dir == null) dir = arrowTable.up;
+    } else {
+        dir = dir.next; // new sort direction
+    }
+		
+    arrowTable.lnkRef = lnk; // make column sort down only if column selected is same as last
     dir.reorder(newRows);
     span.sortdir = dir;
 
@@ -174,6 +180,7 @@ function getParent(el, pTagName) {
 	else
 		return getParent(el.parentNode, pTagName);
 }
+
 function ts_sort_date(a,b) {
   function toDt(x) {
     // y2k notes: two digit years less than 50 are treated as 20XX, greater than 50 are treated as 19XX

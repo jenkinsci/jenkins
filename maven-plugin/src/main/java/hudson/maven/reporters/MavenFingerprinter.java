@@ -35,7 +35,7 @@ import hudson.maven.MojoInfo;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
@@ -99,7 +99,7 @@ public class MavenFingerprinter extends MavenReporter {
             private final Map<String,String> p = produced;
 
             public Void call(MavenBuild build) throws IOException, InterruptedException {
-                FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+                FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
 
                 for (Entry<String, String> e : p.entrySet())
                     map.getOrCreate(build, e.getKey(), e.getValue()).add(build);
@@ -126,23 +126,25 @@ public class MavenFingerprinter extends MavenReporter {
 
     /**
      * Records the fingerprint of the given {@link Artifact}.
+     */
+    private void record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
+        File f = a.getFile();
+        record(a.getGroupId(), f, record);
+    }
+
+    /**
+     * Records the fingerprint of the given file.
      *
      * <p>
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private void record(Artifact a, Map<String,String> record) throws IOException, InterruptedException {
-        File f = a.getFile();
-        if(files==null)
-            throw new InternalError();
-        record(a.getGroupId(), f, record);
-    }
-
     private void record(String groupId, File f, Map<String, String> record) throws IOException, InterruptedException {
-        if(f==null || !f.exists() || f.isDirectory() || !files.add(f))
+        if(f==null || files.contains(f) || !f.isFile())
             return;
 
         // new file
+        files.add(f);
         String digest = new FilePath(f).digest();
         record.put(groupId+':'+f.getName(),digest);
     }
@@ -172,7 +174,7 @@ public class MavenFingerprinter extends MavenReporter {
             }
         }
         if(!records.isEmpty()) {
-            FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
             for (Entry<String, String> e : records.entrySet())
                 map.getOrCreate(null, e.getKey(), e.getValue()).add(mmsb);
             mmsb.addAction(new FingerprintAction(mmsb,records));

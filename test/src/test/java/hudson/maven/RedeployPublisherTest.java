@@ -24,6 +24,10 @@
 package hudson.maven;
 
 import hudson.model.Result;
+import hudson.tasks.Maven.MavenInstallation;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -31,6 +35,8 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.Email;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Arrays;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -98,13 +104,134 @@ public class RedeployPublisherTest extends HudsonTestCase {
 
         assertTrue("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
     }
+    
+    public void testTarGzUniqueVersionTrue() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m2 = createMavenProject();
+        File repo = createTmpDir();
+        
+        FileUtils.cleanDirectory( repo );
+        
+        // a fake build
+        m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
+        m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
+
+        MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
+        assertBuildStatus(Result.SUCCESS, b);
+
+        File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
+        String[] files = artifactDir.list( new FilenameFilter()
+        {
+            
+            public boolean accept( File dir, String name )
+            {
+                System.out.print( "deployed file " + name );
+                return name.contains( "-bin.tar.gz" ) || name.endsWith( ".jar" ) || name.endsWith( "-bin.zip" );
+            }
+        });
+        System.out.println("deployed files " + Arrays.asList( files ));
+        assertFalse("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+        assertTrue("tar.gz doesn't exist",!files[0].contains( "SNAPSHOT" ));
+        for (String file : files) {
+            if (file.endsWith( "-bin.tar.gz" )) {
+                String ver = StringUtils.remove( file, "-bin.tar.gz" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals("-bin.tar.gz not ended with 1 , file " + file , "1", ver);
+            }
+            if (file.endsWith( ".jar" )) {
+                String ver = StringUtils.remove( file, ".jar" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals(".jar not ended with 1 , file " + file , "1", ver);
+            }            
+            if (file.endsWith( "-bin.zip" )) {
+                String ver = StringUtils.remove( file, "-bin.zip" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals("-bin.zip not ended with 1 , file " + file , "1", ver);
+            }            
+        }        
+        
+    }    
+    
+    public void testTarGzMaven3() throws Exception {
+        
+        MavenModuleSet m3 = createMavenProject();
+        MavenInstallation mvn = configureMaven3();
+        m3.setMaven( mvn.getName() );
+        File repo = createTmpDir();
+        FileUtils.cleanDirectory( repo );
+        // a fake build
+        m3.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
+        m3.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, false));
+
+        MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
+        assertBuildStatus(Result.SUCCESS, b);
+
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
+        File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
+        String[] files = artifactDir.list( new FilenameFilter()
+        {
+            
+            public boolean accept( File dir, String name )
+            {
+                return name.endsWith( "tar.gz" );
+            }
+        });
+        assertFalse("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+        assertTrue("tar.gz doesn't exist",!files[0].contains( "SNAPSHOT" ));
+    }    
+    
+    public void testTarGzUniqueVersionTrueMaven3() throws Exception {
+        MavenModuleSet m3 = createMavenProject();
+        MavenInstallation mvn = configureMaven3();
+        m3.setMaven( mvn.getName() );        
+        File repo = createTmpDir();
+        FileUtils.cleanDirectory( repo );
+        // a fake build
+        m3.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
+        m3.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
+
+        MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
+        assertBuildStatus(Result.SUCCESS, b);
+        
+        assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
+        
+        File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
+        String[] files = artifactDir.list( new FilenameFilter()
+        {
+            
+            public boolean accept( File dir, String name )
+            {
+                return name.contains( "-bin.tar.gz" ) || name.endsWith( ".jar" ) || name.endsWith( "-bin.zip" );
+            }
+        });
+        System.out.println("deployed files " + Arrays.asList( files ));
+        assertFalse("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
+        assertTrue("tar.gz doesn't exist",!files[0].contains( "SNAPSHOT" ));
+        for (String file : files) {
+            if (file.endsWith( "-bin.tar.gz" )) {
+                String ver = StringUtils.remove( file, "-bin.tar.gz" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals("-bin.tar.gz not ended with 1 , file " + file , "1", ver);
+            }
+            if (file.endsWith( ".jar" )) {
+                String ver = StringUtils.remove( file, ".jar" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals(".jar not ended with 1 , file " + file , "1", ver);
+            }            
+            if (file.endsWith( "-bin.zip" )) {
+                String ver = StringUtils.remove( file, "-bin.zip" );
+                ver = ver.substring( ver.length() - 1, ver.length() );
+                assertEquals("-bin.zip not ended with 1 , file " + file , "1", ver);
+            }            
+        }
+    }    
 
     @Bug(3773)
     public void testDeployUnstable() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m2 = createMavenProject();
         File repo = createTmpDir();
-
+        FileUtils.cleanDirectory( repo );
         // a build with a failing unit tests
         m2.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
         m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, true));

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Foldable block that can be expanded to show more controls by checking the checkbox.
@@ -35,6 +36,10 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="title">
       Human readable text that follows the checkbox.
+
+      If this field is null, the checkbox degrades to a &lt;f:rowSet>, which provides
+      a grouping at JSON level but on the UI there's no checkbox (and you always see
+      the body of it.)
     </st:attribute>
     <st:attribute name="field">
       Used for databinding. TBD. Either this or @name/@title combo is required.
@@ -59,21 +64,32 @@ THE SOFTWARE.
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
 
-  <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-    <td colspan="3">
-      <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
-                  negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
-    </td>
-    <j:if test="${attrs.help!=null}">
-      <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.gif" alt="Help for feature: ${title}" /></a>
-      </td>
-    </j:if>
-  </tr>
-  <j:if test="${attrs.help!=null}">
-    <f:helpArea />
-  </j:if>
-  <d:invokeBody />
-  <!-- end marker -->
-  <tr class="${attrs.inline?'':'row-set-end'} optional-block-end" />
+  <j:choose>
+    <j:when test="${attrs.title!=null}">
+      <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+        <td colspan="3">
+          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+                      negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
+        </td>
+        <j:if test="${attrs.help!=null}">
+          <td>
+            <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
+          </td>
+        </j:if>
+      </tr>
+      <j:if test="${attrs.help!=null}">
+        <f:helpArea />
+      </j:if>
+      <tr class="rowvg-start" />
+      <d:invokeBody />
+      <!-- end marker -->
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
+    </j:when>
+
+    <j:otherwise>
+      <f:rowSet name="${attrs.name}">
+        <d:invokeBody />
+      </f:rowSet>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

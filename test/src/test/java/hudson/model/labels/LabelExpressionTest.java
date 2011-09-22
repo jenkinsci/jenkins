@@ -34,6 +34,7 @@ import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
@@ -41,6 +42,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
@@ -135,6 +137,11 @@ public class LabelExpressionTest extends HudsonTestCase {
         parseAndVerify("!foo<->bar", "!foo <-> bar");
     }
 
+    @Bug(8537)
+    public void testParser2() throws Exception {
+        parseAndVerify("aaa&&bbb&&ccc","aaa&&bbb&&ccc");
+    }
+
     private void parseAndVerify(String expected, String expr) throws ANTLRException {
         assertEquals(expected, LabelExpression.parseExpression(expr).getName());
     }
@@ -201,5 +208,19 @@ public class LabelExpressionTest extends HudsonTestCase {
     }
 
     public void testFormValidation() throws Exception {
+        executeOnServer(new Callable<Object>() {
+            public Object call() throws Exception {
+                Label l = jenkins.getLabel("foo");
+                DumbSlave s = createSlave(l);
+                String msg = FreeStyleProject.DESCRIPTOR.doCheckAssignedLabelString("goo").renderHtml();
+                assertTrue(msg.contains("foo"));
+                assertTrue(msg.contains("goo"));
+
+                msg = FreeStyleProject.DESCRIPTOR.doCheckAssignedLabelString("master && goo").renderHtml();
+                assertTrue(msg.contains("foo"));
+                assertTrue(msg.contains("goo"));
+                return null;
+            }
+        });
     }
 }

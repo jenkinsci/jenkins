@@ -26,6 +26,7 @@ package hudson;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.ViewDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AdaptedIterator;
@@ -38,12 +39,10 @@ import hudson.tasks.Publisher.DescriptorExtensionListImpl;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 
-import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
 
@@ -51,7 +50,7 @@ import net.sf.json.JSONObject;
  * {@link ExtensionList} for holding a set of {@link Descriptor}s, which is a group of descriptors for
  * the same extension point.
  *
- * Use {@link Hudson#getDescriptorList(Class)} to obtain instances.
+ * Use {@link jenkins.model.Jenkins#getDescriptorList(Class)} to obtain instances.
  *
  * @param <D>
  *      Represents the descriptor type. This is {@code Descriptor<T>} normally but often there are subtypes
@@ -69,11 +68,20 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T extends Describable<T>,D extends Descriptor<T>>
-    DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
+    DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
         if (describableType == (Class) Publisher.class) {
-            return (DescriptorExtensionList) new DescriptorExtensionListImpl(hudson);
+            return (DescriptorExtensionList) new DescriptorExtensionListImpl(jenkins);
         }
-        return new DescriptorExtensionList<T,D>(hudson,describableType);
+        return new DescriptorExtensionList<T,D>(jenkins,describableType);
+    }
+
+    /**
+     * @deprecated as of 1.416
+     *      Use {@link #create(Jenkins, Class)}
+     */
+    public static <T extends Describable<T>,D extends Descriptor<T>>
+    DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
+        return createDescriptorList((Jenkins)hudson,describableType);
     }
 
     /**
@@ -81,8 +89,16 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     private final Class<T> describableType;
 
+    /**
+     * @deprecated as of 1.416
+     *      Use {@link #DescriptorExtensionList(Jenkins, Class)}
+     */
     protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
-        super(hudson, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
+        this((Jenkins)hudson,describableType);
+    }
+
+    protected DescriptorExtensionList(Jenkins jenkins, Class<T> describableType) {
+        super(jenkins, (Class)Descriptor.class, (CopyOnWriteArrayList)getLegacyDescriptors(describableType));
         this.describableType = describableType;
     }
 
@@ -124,15 +140,28 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     /**
-     * Finds a descriptor by their {@link Descriptor#clazz}.
+     * Finds a descriptor by their {@link Descriptor#getId()}.
      *
      * If none is found, null is returned.
      */
-    public Descriptor<T> findByName(String fullyQualifiedClassName) {
-        for (Descriptor<T> d : this)
-            if(d.clazz.getName().equals(fullyQualifiedClassName))
+    public D findByName(String id) {
+        for (D d : this)
+            if(d.getId().equals(id))
                 return d;
         return null;
+    }
+
+    @Override
+    public boolean add(D d) {
+        boolean r = super.add(d);
+        hudson.getExtensionList(Descriptor.class).add(d);
+        return r;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        hudson.getExtensionList(Descriptor.class).remove(o);
+        return super.remove(o);
     }
 
     /**
@@ -143,11 +172,6 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         return this;
     }
 
-    @Override
-    protected void scoutLoad() {
-        // no-op, since our load() doesn't by itself do any classloading
-    }
-
     /**
      * Loading the descriptors in this case means filtering the descriptor from the master {@link ExtensionList}.
      */
@@ -156,13 +180,12 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         List<ExtensionComponent<D>> r = new ArrayList<ExtensionComponent<D>>();
         for( ExtensionComponent<Descriptor> c : hudson.getExtensionList(Descriptor.class).getComponents() ) {
             Descriptor d = c.getInstance();
-            Type subTyping = Types.getBaseClass(d.getClass(), Descriptor.class);
-            if (!(subTyping instanceof ParameterizedType)) {
-                LOGGER.severe(d.getClass()+" doesn't extend Descriptor with a type parameter");
-                continue;   // skip this one
+            try {
+                if(d.getT()==describableType)
+                    r.add((ExtensionComponent)c);
+            } catch (IllegalStateException e) {
+                LOGGER.log(Level.SEVERE, d.getClass() + " doesn't extend Descriptor with a type parameter", e); // skip this one
             }
-            if(Types.erasure(Types.getTypeArgument(subTyping,0))==(Class)describableType)
-                r.add((ExtensionComponent)c);
         }
         return r;
     }

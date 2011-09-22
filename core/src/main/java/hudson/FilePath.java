@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder
+ * Eric Lefevre-Ardant, Erik Ramfelt, Michael B. Donohue, Alan Harder,
+ * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +27,7 @@ package hudson;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
@@ -38,6 +39,8 @@ import hudson.remoting.Pipe;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.RemoteInputStream;
+import hudson.remoting.Which;
+import hudson.security.AccessControlled;
 import hudson.util.DirScanner;
 import hudson.util.IOException2;
 import hudson.util.HeadBufferingStream;
@@ -46,7 +49,6 @@ import hudson.util.IOUtils;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.Util.fixEmpty;
 import static hudson.FilePath.TarCompression.GZIP;
-import hudson.os.PosixAPI;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
@@ -61,7 +63,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -84,6 +85,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
@@ -91,10 +93,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipInputStream;
 
 import com.sun.jna.Native;
+import java.util.Enumeration;
+import java.util.logging.Logger;
+import org.apache.tools.ant.taskdefs.Chmod;
 
+import org.apache.tools.zip.ZipFile;
+import org.apache.tools.zip.ZipEntry;
+        
 /**
  * {@link File} like object with remoting support.
  *
@@ -413,8 +420,12 @@ public final class FilePath implements Serializable {
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
+
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
-                unzip(dir,FilePath.this.read());
+                if (FilePath.this.isRemote())
+                    unzip(dir, FilePath.this.read()); // use streams
+                else
+                    unzip(dir, new File(FilePath.this.getRemote())); // shortcut to local file
                 return null;
             }
             private static final long serialVersionUID = 1L;
@@ -461,21 +472,40 @@ public final class FilePath implements Serializable {
     }
 
     private void unzip(File dir, InputStream in) throws IOException {
+        File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
+        try {
+            IOUtils.copy(in, tmpFile);
+            unzip(dir,tmpFile);
+        }
+        finally {
+            tmpFile.delete();
+        }
+    }
+
+    private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-        ZipInputStream zip = new ZipInputStream(new BufferedInputStream(in));
-        java.util.zip.ZipEntry e;
+        ZipFile zip = new ZipFile(zipFile);
+        Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
-            while((e=zip.getNextEntry())!=null) {
-                File f = new File(dir,e.getName());
-                if(e.isDirectory()) {
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                File f = new File(dir, e.getName());
+                if (e.isDirectory()) {
                     f.mkdirs();
                 } else {
                     File p = f.getParentFile();
-                    if(p!=null) p.mkdirs();
-                    IOUtils.copy(zip, f);
+                    if (p != null) {
+                        p.mkdirs();
+                    }
+                    IOUtils.copy(zip.getInputStream(e), f);
                     f.setLastModified(e.getTime());
-                    zip.closeEntry();
+                    try {
+                        FilePath target = new FilePath(f);
+                        target.chmod(e.getUnixMode());
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.WARNING, "unable to set permissions", ex);
+                    }
                 }
             }
         } finally {
@@ -625,7 +655,7 @@ public final class FilePath implements Serializable {
                 listener.getLogger().println(message);
 
             // for HTTP downloads, enable automatic retry for added resilience
-            InputStream in = archive.getProtocol().equals("http") ? new RetryableHttpStream(archive) : con.getInputStream();
+            InputStream in = archive.getProtocol().startsWith("http") ? ProxyConfiguration.getInputStream(archive) : con.getInputStream();
             CountingInputStream cis = new CountingInputStream(in);
             try {
                 if(archive.toExternalForm().endsWith(".zip"))
@@ -750,7 +780,7 @@ public final class FilePath implements Serializable {
             }
         } else {
             // the file is on the local machine.
-            return callable.invoke(new File(remote), Hudson.MasterComputer.localChannel);
+            return callable.invoke(new File(remote), Jenkins.MasterComputer.localChannel);
         }
     }
 
@@ -760,7 +790,7 @@ public final class FilePath implements Serializable {
      */
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
-            return (channel!=null ? channel : Hudson.MasterComputer.localChannel)
+            return (channel!=null ? channel : Jenkins.MasterComputer.localChannel)
                 .callAsync(new FileCallableWrapper<T>(callable));
         } catch (IOException e) {
             // wrap it into a new IOException so that we get the caller's stack trace as well.
@@ -1078,12 +1108,43 @@ public final class FilePath implements Serializable {
         if(!isUnix() || mask==-1)   return;
         act(new FileCallable<Void>() {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                if(File.separatorChar=='/' && LIBC.chmod(f.getAbsolutePath(),mask)!=0)
-                    throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+                _chmod(f, mask);
+
                 return null;
             }
         });
     }
+
+    /**
+     * Run chmod via libc if we can, otherwise fall back to Ant.
+     */
+    private static void _chmod(File f, int mask) throws IOException {
+        if (Functions.isWindows())  return; // noop
+
+        try {
+            if(LIBC.chmod(f.getAbsolutePath(),mask)!=0) {
+                throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
+            }
+        } catch(NoClassDefFoundError e) {  // cf. https://groups.google.com/group/hudson-dev/browse_thread/thread/6d16c3e8ea0dbc9?hl=fr
+            _chmodAnt(f, mask);
+        } catch(UnsatisfiedLinkError e2) { // HUDSON-8155: use Ant's chmod task on non-GNU C systems
+            _chmodAnt(f, mask);
+        }
+    }
+
+    private static void _chmodAnt(File f, int mask) {
+        if (!CHMOD_WARNED) { // only warn this once to avoid flooding the log
+            CHMOD_WARNED = true;
+            LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
+        }
+        Chmod chmodTask = new Chmod();
+        chmodTask.setProject(new Project());
+        chmodTask.setFile(f);
+        chmodTask.setPerm(Integer.toOctalString(mask));
+        chmodTask.execute();
+    }
+
+    private static boolean CHMOD_WARNED = false;
 
     /**
      * Gets the file permission bit mask.
@@ -1097,7 +1158,7 @@ public final class FilePath implements Serializable {
         if(!isUnix())   return -1;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                return PosixAPI.get().stat(f.getPath()).mode();
+                return IOUtils.mode(f);
             }
         });
     }
@@ -1164,9 +1225,23 @@ public final class FilePath implements Serializable {
      *      can be empty but always non-null.
      */
     public FilePath[] list(final String includes) throws IOException, InterruptedException {
+        return list(includes, null);
+    }
+
+    /**
+     * List up files in this directory that matches the given Ant-style filter.
+     *
+     * @param includes
+     * @param excludes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
+     * @return
+     *      can be empty but always non-null.
+     * @since 1.407
+     */
+    public FilePath[] list(final String includes, final String excludes) throws IOException, InterruptedException {
         return act(new FileCallable<FilePath[]>() {
             public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
-                String[] files = glob(f,includes);
+                String[] files = glob(f,includes,excludes);
 
                 FilePath[] r = new FilePath[files.length];
                 for( int i=0; i<r.length; i++ )
@@ -1183,10 +1258,10 @@ public final class FilePath implements Serializable {
      * @return
      *      A set of relative file names from the base directory.
      */
-    private static String[] glob(File dir, String includes) throws IOException {
+    private static String[] glob(File dir, String includes, String excludes) throws IOException {
         if(isAbsolute(includes))
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
-        FileSet fs = Util.createFileSet(dir,includes);
+        FileSet fs = Util.createFileSet(dir,includes,excludes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
         return files;
@@ -1342,13 +1417,14 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Copies this file to the specified target, with file permissions intact.
+     * Copies this file to the specified target, with file permissions and other meta attributes intact.
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
         copyTo(target);
         // copy file permission
         target.chmod(mode());
+        target.touch(lastModified());
     }
 
     /**
@@ -1370,6 +1446,31 @@ public final class FilePath implements Serializable {
                 }
             }
         });
+
+        // make sure the write fully happens before we return.
+        syncIO();
+    }
+
+    private void syncIO() throws InterruptedException {
+        try {
+            if (channel!=null)
+                _syncIO();
+        } catch (AbstractMethodError e) {
+            // legacy slave.jar. Handle this gracefully
+            try {
+                LOGGER.log(Level.WARNING,"Looks like an old slave.jar. Please update "+ Which.jarFile(Channel.class)+" to the new version",e);
+            } catch (IOException _) {
+                // really ignore this time
+            }
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private void _syncIO() throws InterruptedException {
+        channel.syncLocalIO();
     }
 
     /**
@@ -1389,12 +1490,26 @@ public final class FilePath implements Serializable {
 
     /**
      * Copies the contents of this directory recursively into the specified target directory.
+     * 
+     * @return
+     *      the number of files copied.
      * @since 1.312 
      */
     public int copyRecursiveTo(FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo("**/*",target);
     }
 
+    /**
+     * Copies the files that match the given file mask to the specified target node.
+     *
+     * @param fileMask
+     *      Ant GLOB pattern.
+     *      String like "foo/bar/*.xml" Multiple patterns can be separated
+     *      by ',', and whitespace can surround ',' (so that you can write
+     *      "abc, def" and "abc,def" to mean the same thing.
+     * @return
+     *      the number of files copied.
+     */
     public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {
         return copyRecursiveTo(fileMask,null,target);
     }
@@ -1566,11 +1681,7 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Functions.isWindows()) // be defensive
-                        try {
-                            LIBC.chmod(f.getPath(),mode);
-                        } catch (NoClassDefFoundError e) {
-                            // be defensive. see http://www.nabble.com/-3.0.6--Site-copy-problem%3A-hudson.util.IOException2%3A--java.lang.NoClassDefFoundError%3A-Could-not-initialize-class--hudson.util.jna.GNUCLibrary-td23588879.html
-                        }
+                        _chmod(f,mode);
                 }
             }
         } catch(IOException e) {
@@ -1747,12 +1858,12 @@ public final class FilePath implements Serializable {
 
     /**
      * Checks the GLOB-style file mask. See {@link #validateAntFileMask(String)}.
-     * Requires configure permission on ancestor AbstractProject object in request.
+     * Requires configure permission on ancestor AbstractProject object in request,
+     * or admin permission if no such ancestor is found.
      * @since 1.294
      */
     public FormValidation validateFileMask(String value, boolean errorIfNotExist) throws IOException {
-        AbstractProject subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
-        subject.checkPermission(Item.CONFIGURE);
+        checkPermissionForValidate();
 
         value = fixEmpty(value);
         if(value==null)
@@ -1772,7 +1883,8 @@ public final class FilePath implements Serializable {
 
     /**
      * Validates a relative file path from this {@link FilePath}.
-     * Requires configure permission on ancestor AbstractProject object in request.
+     * Requires configure permission on ancestor AbstractProject object in request,
+     * or admin permission if no such ancestor is found.
      *
      * @param value
      *      The relative path being validated.
@@ -1783,13 +1895,12 @@ public final class FilePath implements Serializable {
      *      Otherwise, the relative path is expected to be pointing to a directory.
      */
     public FormValidation validateRelativePath(String value, boolean errorIfNotExist, boolean expectingFile) throws IOException {
-        AbstractProject subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
-        subject.checkPermission(Item.CONFIGURE);
+        checkPermissionForValidate();
 
         value = fixEmpty(value);
 
         // none entered yet, or something is seriously wrong
-        if(value==null || (AbstractProject<?,?>)subject ==null) return FormValidation.ok();
+        if(value==null) return FormValidation.ok();
 
         // a common mistake is to use wildcard
         if(value.contains("*")) return FormValidation.error(Messages.FilePath_validateRelativePath_wildcardNotAllowed());
@@ -1822,6 +1933,14 @@ public final class FilePath implements Serializable {
         }
     }
 
+    private static void checkPermissionForValidate() {
+        AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
+        if (subject == null)
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        else
+            subject.checkPermission(Item.CONFIGURE);
+    }
+
     /**
      * A convenience method over {@link #validateRelativePath(String, boolean, boolean)}.
      */
@@ -1841,7 +1960,7 @@ public final class FilePath implements Serializable {
 
     public VirtualChannel getChannel() {
         if(channel!=null)   return channel;
-        else                return Hudson.MasterComputer.localChannel;
+        else                return Jenkins.MasterComputer.localChannel;
     }
 
     /**
@@ -1876,6 +1995,8 @@ public final class FilePath implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static int SIDE_BUFFER_SIZE = 1024;
+
+    private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());
 
     /**
      * Adapts {@link FileCallable} to {@link Callable}.

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <l:layout title="${it.name}">
     <st:include page="sidepanel.jelly" />
@@ -30,7 +31,8 @@ THE SOFTWARE.
       <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription permission="${it.CONFIGURE}"/>
 
-      <j:if test="${it.disabled}">
+      <j:choose>
+      <j:when test="${it.disabled}">
         <div class="warning">
           <form method="post" action="enable">
             ${%This project is currently disabled}
@@ -39,7 +41,17 @@ THE SOFTWARE.
             </l:hasPermission>
           </form>
         </div>
-      </j:if>
+      </j:when>
+      <j:otherwise>
+           <div align="right">
+            <form method="post" action="disable">
+              <l:hasPermission permission="${it.CONFIGURE}">
+                <f:submit value="${%Disable Project}" />
+              </l:hasPermission>
+            </form>
+            </div>
+      </j:otherwise>
+      </j:choose>
 
       <p:projectActionFloatingBox />
 
@@ -66,12 +78,13 @@ THE SOFTWARE.
         <j:if test="${tr!=null}">
           <t:summary icon="clipboard.gif">
             <a href="lastBuild/testReport/">${%Latest Test Result}</a>
+            <st:nbsp/>
             <t:test-result it="${tr}" />
           </t:summary>
         </j:if>
       </table>
 
-      <st:include page="jobpropertysummaries.jelly" />  
+      <st:include page="jobpropertysummaries.jelly" />
 
       <!-- merge fragments from the actions -->
       <j:forEach var="a" items="${it.actions}">

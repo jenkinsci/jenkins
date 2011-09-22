@@ -23,13 +23,15 @@
  */
 package hudson.model;
 
-import static hudson.model.Hudson.checkGoodName;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Indenter;
 import hudson.Util;
+import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
+import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -37,10 +39,22 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
+import hudson.util.AlternativeUiTextProvider;
+import hudson.util.AlternativeUiTextProvider.Message;
+import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.RunList;
+import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,16 +68,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
+import static jenkins.model.Jenkins.*;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
- * that {@link Hudson} owns.
+ * that {@link Jenkins} owns.
  *
  * <p>
  * This is an extension point in Hudson, allowing different kind of
@@ -82,7 +91,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -111,6 +120,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     protected transient List<Action> transientActions;
 
+    /**
+     * List of {@link ViewProperty}s configured for this view.
+     * @since 1.406
+     */
+    private volatile DescribableList<ViewProperty,ViewPropertyDescriptor> properties = new PropertyList(this);
+
     protected View(String name) {
         this.name = name;
     }
@@ -130,7 +145,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the {@link TopLevelItem} of the given name.
      */
     public TopLevelItem getItem(String name) {
-        return Hudson.getInstance().getItem(name);
+        return getOwnerItemGroup().getItem(name);
     }
 
     /**
@@ -176,6 +191,49 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Backward-compatible way of getting {@code getOwner().getItemGroup()}
+     */
+    public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
+        try {
+            return _getOwnerItemGroup();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance();
+        }
+    }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
+        return owner.getItemGroup();
+    }
+
+    public View getOwnerPrimaryView() {
+        try {
+            return _getOwnerPrimaryView();
+        } catch (AbstractMethodError e) {
+            return null;
+        }
+    }
+
+    private View _getOwnerPrimaryView() {
+        return owner.getPrimaryView();
+    }
+
+    public List<Action> getOwnerViewActions() {
+        try {
+            return _getOwnerViewActions();
+        } catch (AbstractMethodError e) {
+            return Hudson.getInstance().getActions();
+        }
+    }
+
+    private List<Action> _getOwnerViewActions() {
+        return owner.getViewActions();
+    }
+
+    /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
@@ -183,12 +241,67 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return description;
     }
 
+    /**
+     * Gets the view properties configured for this view.
+     * @since 1.406
+     */
+    public DescribableList<ViewProperty,ViewPropertyDescriptor> getProperties() {
+        // readResolve was the best place to do this, but for compatibility reasons,
+        // this class can no longer have readResolve() (the mechanism itself isn't suitable for class hierarchy)
+        // see JENKINS-9431
+        //
+        // until we have that, putting this logic here.
+        synchronized (this) {
+            if (properties == null) {
+                properties = new PropertyList(this);
+            } else {
+                properties.setOwner(this);
+            }
+        }
+
+        return properties;
+    }
+
+    /**
+     * Returns all the {@link LabelAtomPropertyDescriptor}s that can be potentially configured
+     * on this label.
+     */
+    public List<ViewPropertyDescriptor> getApplicablePropertyDescriptors() {
+        List<ViewPropertyDescriptor> r = new ArrayList<ViewPropertyDescriptor>();
+        for (ViewPropertyDescriptor pd : ViewProperty.all()) {
+            if (pd.isEnabledFor(this))
+                r.add(pd);
+        }
+        return r;
+    }
+
+    public void save() throws IOException {
+        // persistence is a part of the owner
+        // due to initialization timing issue, it can be null when this method is called
+        if (owner != null) {
+            owner.save();
+        }
+    }
+
+    /**
+     * List of all {@link ViewProperty}s exposed primarily for the remoting API.
+     * @since 1.406
+     */
+    @Exported(name="property",inline=true)
+    public List<ViewProperty> getAllProperties() {
+        return getProperties().toList();
+    }
+
     public ViewDescriptor getDescriptor() {
-        return (ViewDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ViewDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     public String getDisplayName() {
         return getViewName();
+    }
+
+    public String getNewPronoun() {
+        return AlternativeUiTextProvider.get(NEW_PRONOUN, this, Messages.AbstractItem_Pronoun());
     }
 
     /**
@@ -223,18 +336,33 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * For now, this just returns the widgets registered to Hudson.
      */
     public List<Widget> getWidgets() {
-        return Collections.unmodifiableList(Hudson.getInstance().getWidgets());
+        return Collections.unmodifiableList(Jenkins.getInstance().getWidgets());
+    }
+
+    /**
+     * If this view uses &lt;t:projectView> for rendering, this method returns columns to be displayed.
+     */
+    public Iterable<? extends ListViewColumn> getColumns() {
+        return ListViewColumn.createDefaultInitialColumnList();
+    }
+
+    /**
+     * If this view uses &lt;t:projectView> for rendering, this method returns the indenter used
+     * to indent each row.
+     */
+    public Indenter getIndenter() {
+        return null;
     }
 
     /**
      * If true, this is a view that renders the top page of Hudson.
      */
     public boolean isDefault() {
-        return Hudson.getInstance().getPrimaryView()==this;
+        return getOwnerPrimaryView()==this;
     }
     
     public List<Computer> getComputers() {
-    	Computer[] computers = Hudson.getInstance().getComputers();
+    	Computer[] computers = Jenkins.getInstance().getComputers();
     	
     	if (!isFilterExecutors()) {
     		return Arrays.asList(computers);
@@ -270,12 +398,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public List<Queue.Item> getQueueItems() {
     	if (!isFilterQueue()) {
-    		return Arrays.asList(Hudson.getInstance().getQueue().getItems());
+    		return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
     	}
     	
     	Collection<TopLevelItem> items = getItems(); 
     	List<Queue.Item> result = new ArrayList<Queue.Item>();
-    	for (Queue.Item qi: Hudson.getInstance().getQueue().getItems()) {
+    	for (Queue.Item qi: Jenkins.getInstance().getQueue().getItems()) {
     		if (items.contains(qi.task)) {
     			result.add(qi);
     		}
@@ -290,7 +418,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * empty string when this is the default view).
      */
     public String getUrl() {
-        return isDefault() ? "" : getViewUrl();
+        return isDefault() ? (owner!=null ? owner.getUrl() : "") : getViewUrl();
     }
 
     /**
@@ -312,11 +440,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If views don't want to show top-level actions, this method
      * can be overridden to return different objects.
      *
-     * @see Hudson#getActions()
+     * @see Jenkins#getActions()
      */
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
-    	result.addAll(Hudson.getInstance().getActions());
+    	result.addAll(getOwnerViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
     			transientActions = TransientViewActionFactory.createAllFor(this); 
@@ -338,7 +466,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(visibility=2,name="url")
     public String getAbsoluteUrl() {
-        return Hudson.getInstance().getRootUrl()+getUrl();
+        return Jenkins.getInstance().getRootUrl()+getUrl();
     }
 
     public Api getApi() {
@@ -359,7 +487,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission p) {
@@ -468,7 +596,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public final Object parent;
 
-        public People(Hudson parent) {
+        public People(Jenkins parent) {
             this.parent = parent;
             // for Hudson, really load all users
             Map<User,UserInfo> users = getUserInfo(parent.getItems());
@@ -558,9 +686,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
         description = req.getParameter("description");
-        owner.save();
+        save();
         rsp.sendRedirect(".");  // go to the top page
     }
 
@@ -572,8 +699,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
-
         submit(req);
 
         description = Util.nullify(req.getParameter("description"));
@@ -582,7 +707,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         rename(req.getParameter("name"));
 
-        owner.save();
+        JSONObject json = req.getSubmittedForm();
+
+        getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+
+        save();
 
         rsp.sendRedirect2("../"+name);
     }
@@ -611,7 +740,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Creates a new {@link Item} in this collection.
      *
      * <p>
-     * This method should call {@link Hudson#doCreateItem(StaplerRequest, StaplerResponse)}
+     * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
      * 
      * @return
@@ -664,7 +793,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns all the registered {@link ViewDescriptor}s.
      */
     public static DescriptorExtensionList<View,ViewDescriptor> all() {
-        return Hudson.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+        return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
+    }
+
+    public static List<ViewDescriptor> allInstantiable() {
+        List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
+        for (ViewDescriptor d : all())
+            if(d.isInstantiable())
+                r.add(d);
+        return r;
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
@@ -675,11 +812,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(View.class,Messages._View_Permissions_Title());
     /**
-     * Permission to create new jobs.
+     * Permission to create new views.
      */
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._View_CreatePermission_Description(), Permission.CREATE);
-    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE);
-    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE);
+    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._View_CreatePermission_Description(), Permission.CREATE, PermissionScope.ITEM_GROUP);
+    public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE, PermissionScope.ITEM_GROUP);
+    public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
@@ -688,8 +825,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
-        req.setCharacterEncoding("UTF-8");
-
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
@@ -708,4 +843,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         return v;
     }
+
+    public static class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {
+        private PropertyList(View owner) {
+            super(owner);
+        }
+
+        public PropertyList() {// needed for XStream deserialization
+        }
+
+        public View getOwner() {
+            return (View)owner;
+        }
+
+        @Override
+        protected void onModified() throws IOException {
+            for (ViewProperty p : this)
+                p.setView(getOwner());
+        }
+    }
+
+    /**
+     * "Job" in "New Job". When a view is used in a context that restricts the child type,
+     * It might be useful to override this.
+     */
+    public static final Message<View> NEW_PRONOUN = new Message<View>();
 }

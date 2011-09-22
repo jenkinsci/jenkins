@@ -26,7 +26,7 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.Functions;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Util;
 import hudson.Extension;
 import hudson.os.PosixAPI;
@@ -57,6 +57,7 @@ import org.jruby.ext.posix.Passwd;
 import org.jruby.ext.posix.Group;
 
 import java.util.Set;
+import java.util.logging.Logger;
 import java.io.File;
 
 /**
@@ -65,7 +66,7 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  * @since 1.282
  */
-public class PAMSecurityRealm extends SecurityRealm {
+public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public final String serviceName;
 
     @DataBoundConstructor
@@ -75,56 +76,39 @@ public class PAMSecurityRealm extends SecurityRealm {
         this.serviceName = serviceName;
     }
 
-    public static class PAMAuthenticationProvider implements AuthenticationProvider {
-        private String serviceName;
+    @Override
+    protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        try {
+            UnixUser uu = new PAM(serviceName).authenticate(username, password);
 
-        public PAMAuthenticationProvider(String serviceName) {
-            this.serviceName = serviceName;
-        }
-
-        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-            String username = authentication.getPrincipal().toString();
-            String password = authentication.getCredentials().toString();
-
-            try {
-                UnixUser u = new PAM(serviceName).authenticate(username, password);
-                Set<String> grps = u.getGroups();
-                GrantedAuthority[] groups = new GrantedAuthority[grps.size()];
-                int i=0;
-                for (String g : grps)
-                    groups[i++] = new GrantedAuthorityImpl(g);
-
-                // I never understood why Acegi insists on keeping the password...
-                return new UsernamePasswordAuthenticationToken(username, password, groups);
-            } catch (PAMException e) {
-                throw new BadCredentialsException(e.getMessage(),e);
-            }
-        }
-
-        public boolean supports(Class clazz) {
-            return true;
+            // I never understood why Acegi insists on keeping the password...
+            return new User(username,"",true,true,true,true, toAuthorities(uu));
+        } catch (PAMException e) {
+            throw new BadCredentialsException(e.getMessage(),e);
         }
     }
 
-    public SecurityComponents createSecurityComponents() {
-        Binding binding = new Binding();
-        binding.setVariable("instance", this);
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        if(!UnixUser.exists(username))
+            throw new UsernameNotFoundException("No such Unix user: "+username);
+        try {
+            UnixUser uu = new UnixUser(username);
+            // return some dummy instance
+            return new User(username,"",true,true,true,true, toAuthorities(uu));
+        } catch (PAMException e) {
+            throw new UsernameNotFoundException("Failed to load information about Unix user "+username,e);
+        }
+    }
 
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/PAMSecurityRealm.groovy"),binding);
-        WebApplicationContext context = builder.createApplicationContext();
-        return new SecurityComponents(
-            findBean(AuthenticationManager.class, context),
-            new UserDetailsService() {
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-                    if(!UnixUser.exists(username))
-                        throw new UsernameNotFoundException("No such Unix user: "+username);
-                    // return some dummy instance
-                    return new User(username,"",true,true,true,true,
-                            new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
-                }
-            }
-        );
+    private static GrantedAuthority[] toAuthorities(UnixUser u) {
+        Set<String> grps = u.getGroups();
+        GrantedAuthority[] groups = new GrantedAuthority[grps.size()+1];
+        int i=0;
+        for (String g : grps)
+            groups[i++] = new GrantedAuthorityImpl(g);
+        groups[i++] = AUTHENTICATED_AUTHORITY;
+        return groups;
     }
 
     @Override
@@ -148,7 +132,7 @@ public class PAMSecurityRealm extends SecurityRealm {
             File s = new File("/etc/shadow");
             if(s.exists() && !s.canRead()) {
                 // it looks like shadow password is in use, but we don't have read access
-                System.out.println("Shadow in use");
+                LOGGER.fine("/etc/shadow exists but not readable");
                 POSIX api = PosixAPI.get();
                 FileStat st = api.stat("/etc/shadow");
                 if(st==null)
@@ -185,4 +169,6 @@ public class PAMSecurityRealm extends SecurityRealm {
         if(!Functions.isWindows()) return new DescriptorImpl();
         return null;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(PAMSecurityRealm.class.getName());
 }

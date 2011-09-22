@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
@@ -33,8 +34,8 @@ THE SOFTWARE.
     <st:attribute name="jobBaseUrl" type="String">
       The base URL of all job links. Normally ${rootURL}/
     </st:attribute>
-    <st:attribute name="showViewTabs" use="required" type="boolean">
-      If the caller rendered a view tabes, set this to true so that CSS is adjusted accordingly.
+    <st:attribute name="showViewTabs" use="optional" type="boolean">
+      If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly.
     </st:attribute>
     <st:attribute name="views" type="Collection&lt;View>">
       If non-null, render nested views.
@@ -53,7 +54,7 @@ THE SOFTWARE.
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
-    
+
     <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
       <d:invokeBody/>

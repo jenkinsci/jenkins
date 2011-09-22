@@ -2,20 +2,15 @@ package hudson.tasks;
 
 import hudson.EnvVars;
 import hudson.model.labels.LabelAtom;
-import hudson.tools.ToolProperty;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
-import hudson.model.Label;
 import hudson.model.Result;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
-
-import java.io.File;
-import java.util.Collections;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.jvnet.hudson.test.ExtractResourceSCM;

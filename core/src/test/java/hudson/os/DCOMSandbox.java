@@ -2,12 +2,10 @@ package hudson.os;
 
 import ndr.NdrObject;
 import ndr.NetworkDataRepresentation;
-import org.jinterop.dcom.common.JISystem;
 import org.jinterop.dcom.transport.JIComTransportFactory;
 import rpc.Endpoint;
 import rpc.Stub;
 
-import java.io.IOException;
 import java.util.Properties;
 
 /**

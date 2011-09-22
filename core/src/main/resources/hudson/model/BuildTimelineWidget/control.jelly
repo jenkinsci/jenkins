@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:documentation>
     Show timeline trend image. It takes two builds
@@ -47,7 +48,7 @@ THE SOFTWARE.
           for (var i=min; i<=max; i++) {
             if (!this.loaded[i]) {
               this.loaded[i] = true;
-              new Ajax.Request("timeline/data",{
+              new Ajax.Request("timeline/data/",{
                   method:"POST",
                   parameters: {min: i*interval, max:(i+1)*interval},
                   onSuccess: function(t) {
@@ -70,7 +71,7 @@ THE SOFTWARE.
         theme1.timeline_start = new Date(${it.firstBuild.timeInMillis-24*60*60*1000});
         theme1.timeline_stop  = new Date(${it.lastBuild.timeInMillis+24*60*60*1000});
 
-        var d = theme1.timeline_stop;
+        var d = new Date(${it.lastBuild.timeInMillis});
         var bandInfos = [
             // the bar that shows outline
             Timeline.createBandInfo({
@@ -78,7 +79,6 @@ THE SOFTWARE.
                 intervalUnit:   Timeline.DateTime.DAY,
                 intervalPixels: 200,
                 eventSource:    eventSource1,
-                date:           d,
                 timeZone:       tz,
                 theme:          theme1,
                 layout:         'overview'  // original, overview, detailed

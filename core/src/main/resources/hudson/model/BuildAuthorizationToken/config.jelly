@@ -27,6 +27,7 @@ THE SOFTWARE.
   Pseudo trigger configuration.
   Note that it is the object that owns BuildAuthorizationToken
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${app.useSecurity}">
     <f:optionalBlock name="pseudoRemoteTrigger"
@@ -36,7 +37,7 @@ THE SOFTWARE.
       <f:entry title="${%Authentication Token}">
         <f:textbox name="authToken" value="${it.authToken.token}" />
         ${%Use the following URL to trigger build remotely:}
-        <tt>HUDSON_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
+        <tt>JENKINS_URL</tt>/${it.url}build?token=<tt>TOKEN_NAME</tt>
         ${%or}
         /buildWithParameters?token=<tt>TOKEN_NAME</tt>
         <br/>

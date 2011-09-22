@@ -70,6 +70,8 @@ public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
     }
 
     private boolean isActive(TestEnvironment env, Class<?> extType) {
+        if (env == null || env.testCase == null)
+            return false;
         for (Class<?> outer = extType; outer!=null; outer=outer.getEnclosingClass())
             if (outer.isInstance(env.testCase))
                 return true;      // enclosed

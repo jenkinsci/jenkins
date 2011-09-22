@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
     displays a caption for build/externalRun.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<h1>
 	  <j:if test="${it.building}">
@@ -36,7 +37,7 @@ THE SOFTWARE.
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <j:if test="${it.parent.hasAbortPermission()}">
-              <a href="stop"><img src="${imagesURL}/16x16/stop.gif" alt="[${%cancel}]" /></a>
+              <a href="stop"><img src="${imagesURL}/16x16/stop.png" alt="[${%cancel}]" height="16" width="16" /></a>
             </j:if>
 	        </td>
 	      </tr></table>

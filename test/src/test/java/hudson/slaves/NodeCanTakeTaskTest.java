@@ -33,8 +33,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Messages;
 import hudson.model.Node;
-import hudson.model.Node.Mode;
-import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Task;

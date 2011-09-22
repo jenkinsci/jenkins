@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Bruce Chapman, Erik Ramfelt, Jean-Baptiste Quenot, Luca Domenico Milanesio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,24 +30,21 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.RestrictedSince;
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import hudson.util.XStream2;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -92,13 +89,6 @@ public class Mailer extends Notifier {
      * If true, individuals will receive e-mails regarding who broke the build.
      */
     public boolean sendToIndividuals;
-
-    // TODO: left so that XStream won't get angry. figure out how to set the error handling behavior
-    // in XStream.  Deprecated since 2005-04-23.
-    private transient String from;
-    private transient String subject;
-    private transient boolean failureOnly;
-    private transient String charset;
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -150,7 +140,7 @@ public class Mailer extends Notifier {
     public static DescriptorImpl DESCRIPTOR;
 
     public static DescriptorImpl descriptor() {
-        return Hudson.getInstance().getDescriptorByType(Mailer.DescriptorImpl.class);
+        return Jenkins.getInstance().getDescriptorByType(Mailer.DescriptorImpl.class);
     }
 
     @Extension
@@ -455,16 +445,15 @@ public class Mailer extends Notifier {
                 
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
                 msg.setSubject("Test email #" + ++testEmailCount);
-                msg.setContent("This is test email #" + testEmailCount + " sent from Hudson Continuous Integration server.", "text/plain");
+                msg.setContent("This is test email #" + testEmailCount + " sent from " + Jenkins.getInstance().getDisplayName(), "text/plain");
                 msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
 
-                Transport.send(msg);
-                
-                return FormValidation.ok("Email was successfully sent");
+                Transport.send(msg);                
+                return FormValidation.ok(Messages.Mailer_EmailSentSuccessfully());
             } catch (MessagingException e) {
-                return FormValidation.errorWithMarkup("<p>Failed to send out e-mail</p><pre>"+Util.escape(Functions.printThrowable(e))+"</pre>");
+                return FormValidation.errorWithMarkup("<p>"+Messages.Mailer_FailedToSendEmail()+"</p><pre>"+Util.escape(Functions.printThrowable(e))+"</pre>");
             }
         }
 
@@ -489,7 +478,7 @@ public class Mailer extends Notifier {
 
         @Exported
         public String getAddress() {
-            if(emailAddress!=null)
+            if(Util.fixEmptyAndTrim(emailAddress)!=null)
                 return emailAddress;
 
             // try the inference logic
@@ -517,12 +506,4 @@ public class Mailer extends Notifier {
      * Debug probe point to be activated by the scripting console.
      */
     public static boolean debug = false;
-
-    public static class ConverterImpl extends XStream2.PassthruConverter<Mailer> {
-        public ConverterImpl(XStream2 xstream) { super(xstream); }
-        @Override protected void callback(Mailer m, UnmarshallingContext context) {
-            if (m.from != null || m.subject != null || m.failureOnly || m.charset != null)
-                OldDataMonitor.report(context, "1.10");
-        }
-    }
 }

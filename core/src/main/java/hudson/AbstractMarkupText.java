@@ -87,6 +87,23 @@ public abstract class AbstractMarkupText {
     }
 
     /**
+     * Inserts an A tag that surrounds the given position.
+     * But this hyperlink is less visible.
+     *
+     * @since 1.395
+     */
+    public void addHyperlinkLowKey( int startPos, int endPos, String url ) {
+        addMarkup(startPos,endPos,"<a class='lowkey' href='"+url+"'>","</a>");
+    }
+
+    /**
+     * Hides the given text.
+     */
+    public void hide( int startPos, int endPos ) {
+        addMarkup(startPos,endPos,"<span style='display:none'>","</span>");
+    }
+
+    /**
      * Adds a start tag and end tag around the entire text
      */
     public final void wrapBy(String startTag, String endTag) {

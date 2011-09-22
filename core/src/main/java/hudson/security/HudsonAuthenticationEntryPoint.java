@@ -91,6 +91,10 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<body style='background-color:white; color:white;'>" +
                 "Authentication required</body></html>", loginForm
             );
+            // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
+            // See http://support.microsoft.com/kb/294807
+            for (int i=0; i < 10; i++)
+                out.print("                              ");
             out.flush();
         }
     }

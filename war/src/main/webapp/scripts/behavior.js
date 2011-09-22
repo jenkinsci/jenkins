@@ -54,11 +54,30 @@ var Behaviour = {
         this.applySubtree(document);
     },
 
-    applySubtree : function(startNode) {
+    /**
+     * Applies behaviour rules to a subtree/subforest.
+     *
+     * @param {HTMLElement|HTMLElement[]} startNode
+     *      Subtree/forest to apply rules.
+     *
+     *      Within a single subtree, rules are the outer loop and the nodes in the tree are the inner loop,
+     *      and sometimes the behaviour rules rely on this ordering to work correctly. When you pass a forest,
+     *      this semantics is preserved.
+     */
+    applySubtree : function(startNode,includeSelf) {
         Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
-                var list = findElementsBySelector(startNode,selector);
-                list._each(sheet[selector]);
+                function apply(n) {
+                    var list = findElementsBySelector(n,selector,includeSelf);
+                    if (list.length>0)  // just to simplify setting of a breakpoint.
+                        list._each(sheet[selector]);
+                }
+
+                if (startNode instanceof Array) {
+                    startNode._each(apply)
+                } else {
+                    apply(startNode);
+                }
             }
         });
     },
@@ -101,24 +120,57 @@ Behaviour.start();
    -- Opera 7 fails
 */
 
-function getAllChildren(e) {
-  // Returns all children of element. Workaround required for IE5/Windows. Ugh.
-  return e.all ? e.all : e.getElementsByTagName('*');
-}
+function findElementsBySelector(startNode,selector,includeSelf) {
+    function getAllChildren(e) {
+      // Returns all children of element. Workaround required for IE5/Windows. Ugh.
+      return e.all ? e.all : e.getElementsByTagName('*');
+    }
 
-function isAncestor(p,c) {
-  while(true) {
-    if(p==c)      return true;
-    if(c==null)   return false;
-    c = c.parentNode;
-  }
-}
+    /**
+     * Returns true if 'p' is an ancestor of 'c'.
+     * If includeSelf==true, p==c is allowed. Otherwise not.
+     */
+    function isAncestor(p,c) {
+      if (!includeSelf) c = c.parentNode;
 
-function findElementsBySelector(startNode,selector) {
+      while(true) {
+        if(p==c)      return true;
+        if(c==null)   return false;
+        c = c.parentNode;
+      }
+    }
+
+    /**
+     * Finds descendant elements of the given tag name under the current context
+     * (including the current context, if includeSelf==true)
+     */
+    function getMatchingElements(tagName) {
+        if (!tagName)   tagName = '*';
+
+        var found = [];
+        for (var h = 0; h < currentContext.length; h++) {
+          var c = currentContext[h];
+          var elements;
+          if (tagName == '*') {
+              elements = getAllChildren(c);
+              includeSelf && found.push(c);
+          } else {
+              elements = c.getElementsByTagName(tagName);
+              includeSelf && c.nodeName==tagName.toUpperCase() && found.push(c);
+          }
+          for (var j = 0; j < elements.length; j++) {
+            found.push(elements[j]);
+          }
+        }
+        return found;
+    }
+
   // Split selector in to tokens
   var tokens = selector.replace(/^\s+/,'').replace(/\s+$/,'').split(' ');
   var currentContext = new Array(startNode);
   for (var i = 0; i < tokens.length; i++) {
+    if (i>0)    includeSelf=false;
+
     var token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');
     if (token.indexOf('#') > -1) {
       // Token is an ID selector
@@ -126,7 +178,7 @@ function findElementsBySelector(startNode,selector) {
       var tagName = bits[0];
       var id = bits[1];
       var element = document.getElementById(id);
-      if (tagName && element.nodeName.toLowerCase() != tagName) {
+      if (tagName && element.nodeName != tagName.toUpperCase()) {
         // tag with that ID not found, return false
         return [];
       }
@@ -144,22 +196,8 @@ function findElementsBySelector(startNode,selector) {
       var bits = token.split('.');
       var tagName = bits[0];
       var className = new RegExp('\\b'+bits[1]+'\\b');
-      if (!tagName) {
-        tagName = '*';
-      }
       // Get elements matching tag, filter them for class selector
-      var found = [];
-      for (var h = 0; h < currentContext.length; h++) {
-        var elements;
-        if (tagName == '*') {
-            elements = getAllChildren(currentContext[h]);
-        } else {
-            elements = currentContext[h].getElementsByTagName(tagName);
-        }
-        for (var j = 0; j < elements.length; j++) {
-          found.push(elements[j]);
-        }
-      }
+      var found = getMatchingElements(tagName);
 
       currentContext = [];
       for (var k = 0; k < found.length; k++) {
@@ -176,23 +214,8 @@ function findElementsBySelector(startNode,selector) {
       var attrName = bits[2];
       var attrOperator = bits[3];
       var attrValue = bits[4];
-      if (!tagName) {
-        tagName = '*';
-      }
       // Grab all of the tagName elements within current context
-      var found = new Array;
-      var foundCount = 0;
-      for (var h = 0; h < currentContext.length; h++) {
-        var elements;
-        if (tagName == '*') {
-            elements = getAllChildren(currentContext[h]);
-        } else {
-            elements = currentContext[h].getElementsByTagName(tagName);
-        }
-        for (var j = 0; j < elements.length; j++) {
-          found.push(elements[j]);
-        }
-      }
+      var found = getMatchingElements(tagName);
 
       var checkFunction; // This function will be used to filter the elements
       switch (attrOperator) {
@@ -229,15 +252,7 @@ function findElementsBySelector(startNode,selector) {
     }
 
     // If we get here, token is JUST an element (not a class or ID selector)
-    tagName = token;
-    var found = new Array;
-    for (var h = 0; h < currentContext.length; h++) {
-      var elements = currentContext[h].getElementsByTagName(tagName);
-      for (var j = 0; j < elements.length; j++) {
-        found.push(elements[j]);
-      }
-    }
-    currentContext = found;
+    currentContext = getMatchingElements(token);
   }
   return currentContext;
 }

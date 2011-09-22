@@ -27,9 +27,13 @@ import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.StringConverter;
 
 /**
- * The default {@link StringConverter} in XStream
- * uses {@link String#intern()}, which stresses the
+ * Up to XStream 1.3 the default {@link StringConverter} in XStream
+ * used {@link String#intern()}, which stressed the
  * (rather limited) PermGen space with a large XML file.
+ * 
+ * Since XStream 1.3 it use a WeakHashMap cache to always use the same String instances, but
+ * this has also major problems with a single long living XStream instance (as we have in Jenkins)
+ * See http://jira.codehaus.org/browse/XSTR-604
  *
  * <p>
  * Use this to avoid that (instead those strings will

@@ -28,12 +28,13 @@ THE SOFTWARE.
   Some jobs cannot be deleted by the user, so this view is not necessarily
   applicable to all jobs.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout>
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
 		  <form method="post" action="doDelete">
-		    ${%Are you sure about deleting the job?}
+		    ${%blurb(it.pronoun, it.displayName)}
         <f:submit value="${%Yes}" />
 		  </form>
 		</l:main-panel>

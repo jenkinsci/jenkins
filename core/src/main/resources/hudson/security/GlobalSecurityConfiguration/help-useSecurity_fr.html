@@ -1,0 +1,22 @@
+﻿<div>
+  Si cette option est activée, vous devrez vous connecter avec un nom d'utilisateur
+  et un mot de passe qui ont le rôle "admin" pour pouvoir changer la configuration ou
+  lancer un nouveau build (utiliser le lien "login" en haut à droite de cette page).
+  La configuration des comptes utilisateurs est spécifique au conteneur web que vous
+  utilisez. Par exemple, par défaut, Tomcat utilise 
+  <tt>$TOMCAT_HOME/conf/tomcat-users.xml</tt>).
+
+  <p>
+  Si vous utilisez Jenkins sur un intranet (ou d'autres environnements "de confiance"),
+  il est souvent préférable de laisser cette case décochée, ce qui permet à chaque
+  développeur de configurer son propre projet sans vous déranger.
+
+  <p>
+  Si vous exposez Jenkins sur internet, vous devez activer cette option. Jenkins lance des
+  processes, donc une installation non-sécurisée de Jenkins est un bon moyen d'attirer
+  les hackers.
+
+  <p>
+  Pour plus d'informations sur la sécurité dans Jenkins, voir 
+  <a href="http://wiki.jenkins-ci.org/display/JENKINS/Securing+Jenkins">ce document</a>.
+</div>

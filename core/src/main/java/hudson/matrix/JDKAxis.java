@@ -24,7 +24,7 @@
 package hudson.matrix;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Arrays;
@@ -66,7 +66,7 @@ public class JDKAxis extends Axis {
          */
         @Override
         public boolean isInstantiable() {
-            return !Hudson.getInstance().getJDKs().isEmpty();
+            return !Jenkins.getInstance().getJDKs().isEmpty();
         }
     }
 }

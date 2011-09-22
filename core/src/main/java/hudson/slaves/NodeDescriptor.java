@@ -28,11 +28,12 @@ import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.Node;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
 import hudson.DescriptorExtensionList;
 import hudson.Util;
+import hudson.model.Failure;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,17 +97,22 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     }
 
     public FormValidation doCheckName(@QueryParameter String value ) {
-        if(Util.fixEmptyAndTrim(value)==null)
-            return FormValidation.error("Name is mandatory");
-        else
-            return FormValidation.ok();
+        String name = Util.fixEmptyAndTrim(value);
+        if(name==null)
+            return FormValidation.error(Messages.NodeDescripter_CheckName_Mandatory());
+        try {
+            Jenkins.checkGoodName(name);
+        } catch (Failure f) {
+            return FormValidation.error(f.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     /**
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
     public static DescriptorExtensionList<Node,NodeDescriptor> all() {
-        return Hudson.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
+        return Jenkins.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
     }
 
     /**

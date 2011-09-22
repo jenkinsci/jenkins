@@ -29,7 +29,7 @@ import static hudson.Util.fixNull;
 import static hudson.Util.fixEmptyAndTrim;
 import static hudson.Util.fixEmpty;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.tasks.MailAddressResolver;
 import hudson.util.FormValidation;
@@ -39,6 +39,7 @@ import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapDataAccessException;
 import org.acegisecurity.ldap.LdapTemplate;
@@ -53,6 +54,7 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.userdetails.ldap.LdapUserDetails;
 import org.acegisecurity.userdetails.ldap.LdapUserDetailsImpl;
 import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.io.input.AutoCloseInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.springframework.dao.DataAccessException;
@@ -65,11 +67,15 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.logging.Level;
@@ -220,6 +226,12 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public final String rootDN;
 
     /**
+     * Allow the rootDN to be inferred? Default is false.
+     * If true, allow rootDN to be blank.
+     */
+    public final boolean inhibitInferRootDN;
+
+    /**
      * Specifies the relative DN from {@link #rootDN the root DN}.
      * This is used to narrow down the search space when doing user search.
      *
@@ -278,11 +290,12 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     private transient LdapTemplate ldapTemplate;
 
     @DataBoundConstructor
-    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword) {
+    public LDAPSecurityRealm(String server, String rootDN, String userSearchBase, String userSearch, String groupSearchBase, String managerDN, String managerPassword, boolean inhibitInferRootDN) {
         this.server = server.trim();
         this.managerDN = fixEmpty(managerDN);
         this.managerPassword = Scrambler.scramble(fixEmpty(managerPassword));
-        if(fixEmptyAndTrim(rootDN)==null)    rootDN= fixNull(inferRootDN(server));
+        this.inhibitInferRootDN = inhibitInferRootDN;
+        if(!inhibitInferRootDN && fixEmptyAndTrim(rootDN)==null) rootDN= fixNull(inferRootDN(server));
         this.rootDN = rootDN.trim();
         this.userSearchBase = fixNull(userSearchBase).trim();
         userSearch = fixEmptyAndTrim(userSearch);
@@ -340,7 +353,15 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         binding.setVariable("instance", this);
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/LDAPBindSecurityRealm.groovy"),binding);
+        String fileName = "LDAPBindSecurityRealm.groovy";
+        try {
+            File override = new File(Jenkins.getInstance().getRootDir(), fileName);
+            builder.parse(
+                    override.exists() ? new AutoCloseInputStream(new FileInputStream(override)) :
+                    Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/"+ fileName),binding);
+        } catch (FileNotFoundException e) {
+            throw new Error("Failed to load "+fileName,e);
+        }
         WebApplicationContext appContext = builder.createApplicationContext();
 
         ldapTemplate = new LdapTemplate(findBean(InitialDirContextFactory.class, appContext));
@@ -367,29 +388,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
-    /**
-     * Lookup a group; given input must match the configured syntax for group names
-     * in WEB-INF/security/LDAPBindSecurityRealm.groovy's authoritiesPopulator entry.
-     * The defaults are a prefix of "ROLE_" and using all uppercase.  This method will
-     * not return any data if the given name lacks the proper prefix and/or case. 
-     */
     @Override
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
-        // Check proper syntax based on acegi configuration
-        String prefix = "";
-        boolean onlyUpperCase = false;
-        try {
-            AuthoritiesPopulatorImpl api = (AuthoritiesPopulatorImpl)
-              ((LDAPUserDetailsService)getSecurityComponents().userDetails).authoritiesPopulator;
-            prefix = api.rolePrefix;
-            onlyUpperCase = api.convertToUpperCase;
-        } catch (Exception ignore) { }
-        if (onlyUpperCase && !groupname.equals(groupname.toUpperCase()))
-            throw new UsernameNotFoundException(groupname + " should be all uppercase");
-        if (!groupname.startsWith(prefix))
-            throw new UsernameNotFoundException(groupname + " is missing prefix: " + prefix);
-        groupname = groupname.substring(prefix.length());
-
         // TODO: obtain a DN instead so that we can obtain multiple attributes later
         String searchBase = groupSearchBase != null ? groupSearchBase : "";
         final Set<String> groups = (Set<String>)ldapTemplate.searchForSingleAttributeValues(searchBase, GROUP_SEARCH,
@@ -436,9 +436,11 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     // intern attributes
                     Attributes v = ldapUser.getAttributes();
                     if (v instanceof BasicAttributes) {// BasicAttributes.equals is what makes the interning possible
-                        Attributes vv = (Attributes)attributesCache.get(v);
-                        if (vv==null)   attributesCache.put(v,vv=v);
-                        user.setAttributes(vv);
+                        synchronized (attributesCache) {
+                            Attributes vv = (Attributes)attributesCache.get(v);
+                            if (vv==null)   attributesCache.put(v,vv=v);
+                            user.setAttributes(vv);
+                        }
                     }
 
                     GrantedAuthority[] extraAuthorities = authoritiesPopulator.getGrantedAuthorities(ldapUser);
@@ -462,7 +464,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     public static final class MailAdressResolverImpl extends MailAddressResolver {
         public String findMailAddressFor(User u) {
             // LDAP not active
-            SecurityRealm realm = Hudson.getInstance().getSecurityRealm();
+            SecurityRealm realm = Jenkins.getInstance().getSecurityRealm();
             if(!(realm instanceof LDAPSecurityRealm))
                 return null;
             try {
@@ -491,13 +493,14 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
      */
     public static final class AuthoritiesPopulatorImpl extends DefaultLdapAuthoritiesPopulator {
         // Make these available (private in parent class and no get methods!)
-        String rolePrefix;
-        boolean convertToUpperCase;
+        String rolePrefix = "ROLE_";
+        boolean convertToUpperCase = true;
+
         public AuthoritiesPopulatorImpl(InitialDirContextFactory initialDirContextFactory, String groupSearchBase) {
             super(initialDirContextFactory, fixNull(groupSearchBase));
-            // These match the defaults in acegi 1.0.5; set again to store in non-private fields:
-            setRolePrefix("ROLE_");
-            setConvertToUpperCase(true);
+
+            super.setRolePrefix("");
+            super.setConvertToUpperCase(false);
         }
 
         @Override
@@ -507,14 +510,40 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
         @Override
         public void setRolePrefix(String rolePrefix) {
-            super.setRolePrefix(rolePrefix);
+//            super.setRolePrefix(rolePrefix);
             this.rolePrefix = rolePrefix;
         }
 
         @Override
         public void setConvertToUpperCase(boolean convertToUpperCase) {
-            super.setConvertToUpperCase(convertToUpperCase);
+//            super.setConvertToUpperCase(convertToUpperCase);
             this.convertToUpperCase = convertToUpperCase;
+        }
+
+        /**
+         * Retrieves the group membership in two ways.
+         *
+         * We'd like to retain the original name, but we historically used to do "ROLE_GROUPNAME".
+         * So to remain backward compatible, we make the super class pass the unmodified "groupName",
+         * then do the backward compatible translation here, so that the user gets both "ROLE_GROUPNAME" and "groupName".
+         */
+        @Override
+        public Set getGroupMembershipRoles(String userDn, String username) {
+            Set<GrantedAuthority> names = super.getGroupMembershipRoles(userDn,username);
+
+            Set<GrantedAuthority> r = new HashSet<GrantedAuthority>(names.size()*2);
+            r.addAll(names);
+
+            for (GrantedAuthority ga : names) {
+                String role = ga.getAuthority();
+
+                // backward compatible name mangling
+                if (convertToUpperCase)
+                    role = role.toUpperCase();
+                r.add(new GrantedAuthorityImpl(rolePrefix + role));
+            }
+
+            return r;
         }
     }
 
@@ -529,7 +558,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         		@QueryParameter final String managerDN,
         		@QueryParameter final String managerPassword) {
 
-            if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+            if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                 return FormValidation.ok();
 
             try {

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Martin Eigenbrodt
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,33 +23,37 @@
  */
 package hudson.tasks;
 
-import hudson.Launcher;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
-import hudson.security.AccessControlled;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Items;
+import hudson.model.Job;
 import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.Cause.UpstreamCause;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
+import hudson.security.AccessControlled;
 import hudson.tasks.BuildTrigger.DescriptorImpl.ItemListenerImpl;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -67,7 +71,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * Despite what the name suggests, this class doesn't actually trigger other jobs
- * as a part of {@link #perform} method. Its main job is to simply augument
+ * as a part of {@link #perform} method. Its main job is to simply augment
  * {@link DependencyGraph}. Jobs are responsible for triggering downstream jobs
  * on its own, because dependencies may come from other sources.
  *
@@ -92,9 +96,13 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
      */
     private final Result threshold;
 
-    @DataBoundConstructor
     public BuildTrigger(String childProjects, boolean evenIfUnstable) {
         this(childProjects,evenIfUnstable ? Result.UNSTABLE : Result.SUCCESS);
+    }
+
+    @DataBoundConstructor
+    public BuildTrigger(String childProjects, String threshold) {
+        this(childProjects, Result.fromString(StringUtils.defaultString(threshold, Result.SUCCESS.toString())));
     }
 
     public BuildTrigger(String childProjects, Result threshold) {
@@ -123,20 +131,40 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             return threshold;
     }
 
+    /**
+     * @deprecated as of 1.406
+     *      Use {@link #getChildProjects(ItemGroup)}
+     */
     public List<AbstractProject> getChildProjects() {
-        return Items.fromNameList(childProjects,AbstractProject.class);
+        return getChildProjects(Jenkins.getInstance());
+    }
+
+    public List<AbstractProject> getChildProjects(AbstractProject owner) {
+        return getChildProjects(owner==null?null:owner.getParent());
+    }
+
+    public List<AbstractProject> getChildProjects(ItemGroup base) {
+        return Items.fromNameList(base,childProjects,AbstractProject.class);
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
-    
+
     /**
      * Checks if this trigger has the exact same set of children as the given list.
      */
-    public boolean hasSame(Collection<? extends AbstractProject> projects) {
-        List<AbstractProject> children = getChildProjects();
+    public boolean hasSame(AbstractProject owner, Collection<? extends AbstractProject> projects) {
+        List<AbstractProject> children = getChildProjects(owner);
         return children.size()==projects.size() && children.containsAll(projects);
+    }
+
+    /**
+     * @deprecated as of 1.406
+     *      Use {@link #hasSame(AbstractProject, Collection)}
+     */
+    public boolean hasSame(Collection<? extends AbstractProject> projects) {
+        return hasSame(null,projects);
     }
 
     @Override
@@ -163,7 +191,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
-        final DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         List<Dependency> downstreamProjects = new ArrayList<Dependency>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
@@ -198,7 +226,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
     }
 
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-        for (AbstractProject p : getChildProjects())
+        for (AbstractProject p : getChildProjects(owner))
             graph.addDependency(new Dependency(owner, p) {
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
@@ -268,9 +296,13 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
 
         @Override
         public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            String childProjectsString = formData.getString("childProjects").trim();
+            if (childProjectsString.endsWith(",")) {
+                childProjectsString = childProjectsString.substring(0, childProjectsString.length() - 1).trim();
+            }
             return new BuildTrigger(
-                formData.getString("childProjects"),
-                formData.has("evenIfUnstable") && formData.getBoolean("evenIfUnstable"));
+                childProjectsString,
+                formData.optString("threshold", Result.SUCCESS.toString()));
         }
 
         @Override
@@ -279,28 +311,49 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
         }
 
         public boolean showEvenIfUnstableOption(Class<? extends AbstractProject> jobType) {
-            // UGLY: for promotion process, this option doesn't make sense. 
+            // UGLY: for promotion process, this option doesn't make sense.
             return !jobType.getName().contains("PromotionProcess");
         }
 
         /**
          * Form validation method.
          */
-        public FormValidation doCheck(@AncestorInPath AccessControlled subject, @QueryParameter String value ) {
+        public FormValidation doCheck(@AncestorInPath Item project, @QueryParameter String value ) {
             // Require CONFIGURE permission on this project
-            if(!subject.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
+            if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
             StringTokenizer tokens = new StringTokenizer(Util.fixNull(value),",");
+            boolean hasProjects = false;
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
-                Item item = Hudson.getInstance().getItemByFullName(projectName,Item.class);
-                if(item==null)
-                    return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,AbstractProject.findNearest(projectName).getName()));
-                if(!(item instanceof AbstractProject))
-                    return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
+                if (StringUtils.isNotBlank(projectName)) {
+                    Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
+                    if(item==null)
+                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,
+                                AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
+                    if(!(item instanceof AbstractProject))
+                        return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
+                    hasProjects = true;
+                }
+            }
+            if (!hasProjects) {
+                return FormValidation.error(Messages.BuildTrigger_NoProjectSpecified());
             }
 
             return FormValidation.ok();
+        }
+
+        public AutoCompletionCandidates doAutoCompleteChildProjects(@QueryParameter String value) {
+            AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+            List<Job> jobs = Jenkins.getInstance().getItems(Job.class);
+            for (Job job: jobs) {
+                if (job.getFullName().startsWith(value)) {
+                    if (job.hasPermission(Item.READ)) {
+                        candidates.add(job.getFullName());
+                    }
+                }
+            }
+            return candidates;
         }
 
         @Extension
@@ -309,7 +362,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             public void onRenamed(Item item, String oldName, String newName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Hudson.getInstance().getProjects() ) {
+                for( Project<?,?> p : Jenkins.getInstance().getProjects() ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
                         if(t.onJobRenamed(oldName,newName)) {

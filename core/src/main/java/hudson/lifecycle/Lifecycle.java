@@ -26,7 +26,7 @@ package hudson.lifecycle;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public abstract class Lifecycle implements ExtensionPoint {
             String p = System.getProperty("hudson.lifecycle");
             if(p!=null) {
                 try {
-                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+                    ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
                     instance = (Lifecycle)cl.loadClass(p).newInstance();
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());
@@ -111,7 +111,7 @@ public abstract class Lifecycle implements ExtensionPoint {
     }
 
     /**
-     * If the location of <tt>hudson.war</tt> is known in this life cycle,
+     * If the location of <tt>jenkins.war</tt> is known in this life cycle,
      * return it location. Otherwise return null to indicate that it is unknown.
      *
      * <p>
@@ -126,22 +126,22 @@ public abstract class Lifecycle implements ExtensionPoint {
     }
 
     /**
-     * Replaces hudson.war by the given file.
+     * Replaces jenkins.war by the given file.
      *
      * <p>
      * On some system, most notably Windows, a file being in use cannot be changed,
-     * so rewriting <tt>hudson.war</tt> requires some special trick. Override this method
+     * so rewriting <tt>jenkins.war</tt> requires some special trick. Override this method
      * to do so.
      */
     public void rewriteHudsonWar(File by) throws IOException {
         File dest = getHudsonWar();
         // this should be impossible given the canRewriteHudsonWar method,
         // but let's be defensive
-        if(dest==null)  throw new IOException("hudson.war location is not known.");
+        if(dest==null)  throw new IOException("jenkins.war location is not known.");
 
-        // backing up the old hudson.war before it gets lost due to upgrading
-        // (newly downloaded hudson.war and 'backup' (hudson.war.tmp) are the same files
-        // unless we are trying to rewrite hudson.war by a backup itself
+        // backing up the old jenkins.war before it gets lost due to upgrading
+        // (newly downloaded jenkins.war and 'backup' (jenkins.war.tmp) are the same files
+        // unless we are trying to rewrite jenkins.war by a backup itself
         File bak = new File(dest.getPath() + ".bak");
         if (!by.equals(bak))
             FileUtils.copyFile(dest, bak);
@@ -156,7 +156,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * Can {@link #rewriteHudsonWar(File)} work?
      */
     public boolean canRewriteHudsonWar() {
-        // if we don't know where hudson.war is, it's impossible to replace.
+        // if we don't know where jenkins.war is, it's impossible to replace.
         File f = getHudsonWar();
         return f!=null && f.canWrite();
     }

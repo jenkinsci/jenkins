@@ -23,7 +23,6 @@
  */
 package hudson.pages;
 
-import static com.gargoylesoftware.htmlunit.WebAssert.assertElementPresent;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.PageDecorator;
@@ -65,10 +64,6 @@ public class SystemConfigurationTestCase extends HudsonTestCase {
      */
     private static class PageDecoratorImpl extends PageDecorator {
         private String decoratorId;
-
-        protected PageDecoratorImpl() {
-            super(PageDecoratorImpl.class);
-        }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {

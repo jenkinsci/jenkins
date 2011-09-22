@@ -2,7 +2,6 @@ package hudson.init;
 
 import org.jvnet.hudson.reactor.ReactorListener;
 import org.kohsuke.MetaInfServices;
-import hudson.model.Hudson;
 
 /**
  * {@link ReactorListener}s that get notified of the Hudson initialization process.
@@ -16,7 +15,7 @@ import hudson.model.Hudson;
  * To register, put {@link MetaInfServices} on your implementation.
  *
  * @author Kohsuke Kawaguchi
- * @see Hudson#buildReactorListener()
+ * @see jenkins.model.Jenkins#buildReactorListener()
  */
 public interface InitReactorListener extends ReactorListener {
 }

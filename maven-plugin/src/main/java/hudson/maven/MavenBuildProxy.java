@@ -170,6 +170,8 @@ public interface MavenBuildProxy {
         V call(MavenBuild build) throws T, IOException, InterruptedException;
     }
 
+    MavenBuildInformation getMavenBuildInformation();
+    
     /**
      * Filter for {@link MavenBuildProxy}.
      *

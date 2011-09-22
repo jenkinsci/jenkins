@@ -53,10 +53,21 @@ public class CommandInstaller extends ToolInstaller {
     @DataBoundConstructor
     public CommandInstaller(String label, String command, String toolHome) {
         super(label);
-        this.command = command;
+        this.command = fixCrLf(command);
         this.toolHome = toolHome;
     }
 
+    /**
+     * Fix CR/LF and always make it Unix style.
+     */
+    private static String fixCrLf(String s) {
+        // eliminate CR
+        int idx;
+        while((idx=s.indexOf("\r\n"))!=-1)
+            s = s.substring(0,idx)+s.substring(idx+1);
+        return s;
+    }
+    
     public String getCommand() {
         return command;
     }

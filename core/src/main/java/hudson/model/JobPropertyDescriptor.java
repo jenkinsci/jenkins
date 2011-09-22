@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.jvnet.tiger_types.Types;
 
@@ -105,6 +106,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     public static Collection<JobPropertyDescriptor> all() {
-        return (Collection)Hudson.getInstance().getDescriptorList(JobProperty.class);
+        return (Collection) Jenkins.getInstance().getDescriptorList(JobProperty.class);
     }
 }

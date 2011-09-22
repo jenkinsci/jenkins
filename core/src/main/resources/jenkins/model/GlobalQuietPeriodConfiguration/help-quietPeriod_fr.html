@@ -1,0 +1,27 @@
+﻿<div>
+  Si cette option est activée, un build attendra le nombre de secondes 
+  indiqué avant de réellement s'exécuter.
+  Cela est utile pour&nbsp;:
+  <ul>
+    <li>
+      Agréger de multiples emails de notification de changements CVS dans
+      un seul (certains scripts de génération d'email relatif aux
+      changements dans CVS génèrent de nombreux messages en rafale,
+      lorsqu'un commit concerne plusieurs répertoires).
+    </li>
+    <li>
+      Selon vos habitudes de codage, vous introduisez peut-être une erreur de
+      logique dans certaines opérations cvs/svn. Dans ce cas, une période
+      d'attente plus longue évitera que Jenkins lance un build
+      prématurement et indique un échec.
+    </li>
+    <li>
+      La gestion des ressources. Si votre installation de Jenkins est
+      surchargée par de nombreux builds, une période d'attente plus longue
+      pourra réduire ce nombre.
+    </li>
+  </ul>
+  Si cette valeur n'est pas positionnée explicitement au niveau du projet,
+  une valeur par défaut pour toute l'installation de Jenkins sera
+  utilisée.
+</div>

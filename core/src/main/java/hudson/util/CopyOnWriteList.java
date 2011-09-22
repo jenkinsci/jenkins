@@ -162,6 +162,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         return core.size();
     }
 
+    public boolean contains(Object item) {
+        return core.contains(item);
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */

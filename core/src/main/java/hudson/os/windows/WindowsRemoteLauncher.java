@@ -14,6 +14,7 @@ import org.jvnet.hudson.remcom.WindowsRemoteProcessLauncher;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
@@ -88,6 +89,21 @@ public class WindowsRemoteLauncher extends Launcher {
                 } finally {
                     proc.destroy();
                 }
+            }
+
+            @Override
+            public InputStream getStdout() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public InputStream getStderr() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public OutputStream getStdin() {
+                throw new UnsupportedOperationException();
             }
         };
     }

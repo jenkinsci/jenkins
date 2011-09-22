@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${app.items.size()>10}">
     <!--
@@ -29,11 +30,8 @@ THE SOFTWARE.
       so let's hide this option for new users to avoid confusing them.
     -->
     <f:section title="${%SCM Polling}">
-      <f:entry title="${%Max # of concurrent polling}"
-               help="/help/triggers/SCMTrigger/concurrency.html">
-        <f:textbox name="poll_scm_threads"
-          checkUrl="'descriptorByName/SCMTrigger/checkPoll_scm_threads?value='+encodeURIComponent(this.value)"
-          value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
+      <f:entry title="${%Max # of concurrent polling}" field="pollingThreadCount">
+        <f:textbox value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
       </f:entry>
     </f:section>
   </j:if>

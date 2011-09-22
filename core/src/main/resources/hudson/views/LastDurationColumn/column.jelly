@@ -22,7 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+      <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
+      <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
       <td data="${lsBuild.duration ?: lfBuild.duration ?: '0'}">
           <j:choose>
               <j:when test="${lsBuild!=null}">

@@ -31,8 +31,6 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.w3c.dom.NodeList;
 
-import java.net.URL;
-
 /**
  * @author Kohsuke Kawaguchi
  */

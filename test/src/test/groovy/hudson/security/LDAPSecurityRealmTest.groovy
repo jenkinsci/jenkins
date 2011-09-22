@@ -42,7 +42,7 @@ public class LDAPSecurityRealmTest extends HudsonTestCase {
      * basic syntax errors and such.
      */
     void testGroovyBeanDef() {
-        hudson.securityRealm = new LDAPSecurityRealm("ldap.itd.umich.edu",null,null,null,null,null,null);
+        hudson.securityRealm = new LDAPSecurityRealm("ldap.itd.umich.edu",null,null,null,null,null,null,false);
         println hudson.securityRealm.securityComponents // force the component creation
     }
 

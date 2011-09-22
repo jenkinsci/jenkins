@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Matthew R. Harrah, Red Hat, Inc., Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Matthew R. Harrah, Red Hat, Inc., Stephen Connolly, Tom Huybrechts, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,16 @@
  */
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.ExtensionPoint;
-import hudson.XmlFile;
-import hudson.PermalinkList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.PermalinkList;
+import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
-import hudson.model.PermalinkProjectAction.Permalink;
-import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Fingerprint.Range;
+import hudson.model.Fingerprint.RangeSet;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -43,46 +40,24 @@ import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
-import hudson.util.AtomicFileWriter;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
 import hudson.util.DataSetBuilder;
+import hudson.util.DescribableList;
+import hudson.util.Graph;
 import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
 import hudson.util.TextFile;
-import hudson.util.Graph;
 import hudson.widgets.HistoryWidget;
-import hudson.widgets.Widget;
 import hudson.widgets.HistoryWidget.Adapter;
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.PrintWriter;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.LinkedList;
-
-import javax.servlet.ServletException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import net.sf.json.JSONObject;
+import hudson.widgets.Widget;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
-
+import net.sf.json.JSONObject;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -94,13 +69,29 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
+
+import javax.servlet.ServletException;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+
+import static javax.servlet.http.HttpServletResponse.*;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -147,6 +138,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * List of {@link UserProperty}s configured for this project.
      */
+    // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
 
     protected Job(ItemGroup parent, String name) {
@@ -248,12 +240,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return b!=null && b.isBuilding();
     }
 
-    /**
-     * Get the term used in the UI to represent this kind of
-     * {@link AbstractProject}. Must start with a capital letter.
-     */
+    @Override
     public String getPronoun() {
-        return Messages.Job_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.Job_Pronoun());
     }
 
     /**
@@ -428,6 +417,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Bind {@link JobProperty}s to URL spaces.
+     *
+     * @since 1.403
+     */
+    public JobProperty getProperty(String className) {
+        for (JobProperty p : properties)
+            if (p.getClass().getName().equals(className))
+                return p;
+        return null;
+    }
+
+    /**
      * Overrides from job properties.
      */
     public Collection<?> getOverrides() {
@@ -478,6 +479,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Renames a job.
      */
+    @Override
     public void renameTo(String newName) throws IOException {
         super.renameTo(newName);
     }
@@ -629,7 +631,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     protected File getBuildDir() {
-        return new File(getRootDir(), "builds");
+        return Jenkins.getInstance().getBuildDirFor(this);
     }
 
     /**
@@ -940,32 +942,24 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
-        req.setCharacterEncoding("UTF-8");
-
         description = req.getParameter("description");
 
         keepDependencies = req.getParameter("keepDependencies") != null;
 
         try {
-            properties.clear();
-
             JSONObject json = req.getSubmittedForm();
 
             if (req.getParameter("logrotate") != null)
                 logRotator = LogRotator.DESCRIPTOR.newInstance(req,json.getJSONObject("logrotate"));
             else
                 logRotator = null;
-            
-            int i = 0;
-            for (JobPropertyDescriptor d : JobPropertyDescriptor
-                    .getPropertyDescriptors(Job.this.getClass())) {
-                String name = "jobProperty" + (i++);
-                JSONObject config = json.getJSONObject(name);
-                JobProperty prop = d.newInstance(req, config);
-                if (prop != null) {
-                    prop.setOwner(this);
-                    properties.add(prop);
-                }
+
+            DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
+            t.rebuild(req,json.optJSONObject("properties"),JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+            properties.clear();
+            for (JobProperty p : t) {
+                p.setOwner(this);
+                properties.add(p);
             }
 
             submit(req, rsp);
@@ -975,7 +969,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             String newName = req.getParameter("name");
             if (newName != null && !newName.equals(name)) {
                 // check this error early to avoid HTTP response splitting.
-                Hudson.checkGoodName(newName);
+                Jenkins.checkGoodName(newName);
                 rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
                 rsp.sendRedirect(".");
@@ -994,54 +988,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Accepts <tt>config.xml</tt> submission, as well as serve it.
-     */
-    @WebMethod(name = "config.xml")
-    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
-        if (req.getMethod().equals("GET")) {
-            // read
-            checkPermission(EXTENDED_READ);
-            rsp.setContentType("application/xml;charset=UTF-8");
-            getConfigFile().writeRawTo(rsp.getWriter());
-            return;
-        }
-        if (req.getMethod().equals("POST")) {
-            // submission
-            checkPermission(CONFIGURE);
-            XmlFile configXmlFile = getConfigFile();
-            AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
-            try {
-                try {
-                    // this allows us to use UTF-8 for storing data,
-                    // plus it checks any well-formedness issue in the submitted
-                    // data
-                    Transformer t = TransformerFactory.newInstance()
-                            .newTransformer();
-                    t.transform(new StreamSource(req.getReader()),
-                            new StreamResult(out));
-                    out.close();
-                } catch (TransformerException e) {
-                    throw new IOException2("Failed to persist configuration.xml", e);
-                }
-
-                // try to reflect the changes by reloading
-                new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-                onLoad(getParent(), getRootDir().getName());
-
-                // if everything went well, commit this new version
-                out.commit();
-            } finally {
-                out.abort(); // don't leave anything behind
-            }
-            return;
-        }
-
-        // huh?
-        rsp.sendError(SC_BAD_REQUEST);
-    }
-
-    /**
      * Derived class can override this to perform additional config submission
      * work.
      */
@@ -1057,7 +1003,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (req.getMethod().equals("GET")) {
             //read
             rsp.setContentType("text/plain;charset=UTF-8");
-            rsp.getWriter().write(this.getDescription());
+            rsp.getWriter().write(Util.fixNull(this.getDescription()));
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -1234,7 +1180,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         checkPermission(DELETE);
 
         String newName = req.getParameter("newName");
-        Hudson.checkGoodName(newName);
+        Jenkins.checkGoodName(newName);
 
         if (isBuilding()) {
             // redirect to page explaining that we can't rename now
@@ -1273,7 +1219,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public BuildTimelineWidget getTimeline() {

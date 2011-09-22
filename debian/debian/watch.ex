@@ -8,15 +8,15 @@ version=3
 
 # Uncomment to examine a Webpage 
 # <Webpage URL> <string match>
-#http://www.example.com/downloads.php hudson-(.*)\.tar\.gz
+#http://www.example.com/downloads.php jenkins-(.*)\.tar\.gz
 
 # Uncomment to examine a Webserver directory
-#http://www.example.com/pub/hudson-(.*)\.tar\.gz
+#http://www.example.com/pub/jenkins-(.*)\.tar\.gz
 
 # Uncommment to examine a FTP server
-#ftp://ftp.example.com/pub/hudson-(.*)\.tar\.gz debian uupdate
+#ftp://ftp.example.com/pub/jenkins-(.*)\.tar\.gz debian uupdate
 
 # Uncomment to find new files on sourceforge, for debscripts >= 2.9
-# http://sf.net/hudson/hudson-(.*)\.tar\.gz
+# http://sf.net/jenkins/jenkins-(.*)\.tar\.gz
 
 

@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.QueryParameter;
+
 /**
  * {@link Descriptor} for {@link View}.
  *
@@ -57,5 +60,32 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     }
 
     protected ViewDescriptor() {
+    }
+
+    /**
+     * Auto-completion for the "copy from" field in the new job page.
+     */
+    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
+        final AutoCompletionCandidates r = new AutoCompletionCandidates();
+
+        new ItemVisitor() {
+            @Override
+            public void onItemGroup(ItemGroup<?> group) {
+                // only dig deep when the path matches what's typed.
+                // for example, if 'foo/bar' is typed, we want to show 'foo/barcode'
+                if (value.startsWith(group.getFullName()))
+                    super.onItemGroup(group);
+            }
+
+            @Override
+            public void onItem(Item i) {
+                if (i.getFullName().startsWith(value)) {
+                    r.add((i.getFullName()));
+                    super.onItem(i);
+                }
+            }
+        }.onItemGroup(Jenkins.getInstance());
+
+        return r;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,11 @@ import java.util.concurrent.TimeoutException
 import hudson.model.JDK
 import hudson.model.Slave
 import hudson.Functions
+import hudson.model.ParametersDefinitionProperty
+import hudson.model.FileParameterDefinition
+import hudson.model.Cause.LegacyCodeCause
+import hudson.model.ParametersAction
+import hudson.model.FileParameterValue
 
 /**
  *
@@ -122,7 +127,7 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         p.getBuildersList().add(new UnstableBuilder());
         build = p.scheduleBuild2(0).get();
-        assertEquals(2, build.getRuns().size());
+        assertEquals(2, build.exactRuns.size());
     }
 
     @Override
@@ -278,5 +283,37 @@ public class MatrixProjectTest extends HudsonTestCase {
         } catch (TimeoutException e) {
             // expected
         }        
+    }
+
+    @Bug(9009)
+    void testTrickyNodeName() {
+        def names = [ createSlave("Sean's Workstation",null), createSlave("John\"s Workstation",null) ]*.nodeName;
+        def p = createMatrixProject();
+        p.setAxes(new AxisList([new LabelAxis("label",names)]));
+        configRoundtrip(p);
+
+        LabelAxis a = p.axes.find("label");
+        assertEquals(a.values as Set,names as Set);
+    }
+
+    @Bug(10108)
+    void testTwoFileParams() {
+        def p = createMatrixProject();
+        p.axes = new AxisList(new TextAxis("foo","1","2","3","4"));
+        p.addProperty(new ParametersDefinitionProperty(
+            new FileParameterDefinition("a.txt",""),
+            new FileParameterDefinition("b.txt",""),
+        ));
+
+        def dir = createTmpDir()
+        def f = p.scheduleBuild2(0,new LegacyCodeCause(),new ParametersAction(
+            ["aaa","bbb"].collect { it ->
+                def v = new FileParameterValue(it+".txt",File.createTempFile(it,"", dir),it)
+                v.setLocation(it)
+                return v;
+            }
+        ))
+        
+        assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
     }
 }

@@ -6,7 +6,7 @@
   <p>
   Laissez ce champ vide si vous souhaitez lancer les esclaves par JNLP.
   Avec cette configuration, la page d'information sur les esclaves
-  (hudson/computer/***/) aura une icône de lancement JNLP. Vous pouvez
+  (jenkins/computer/***/) aura une icône de lancement JNLP. Vous pouvez
   cliquer sur ce lien pour lancer un agent esclave par JNLP.
   <p>
   Ce mode est utile pour les esclaves Windows qui n'ont généralement pas
@@ -15,7 +15,7 @@
   <h3>Les agents esclaves ssh/rsh</h3>
   <p>
   Quand une commande est spécifiée dans ce champ, elle est exécutée
-  sur le maître et Hudson suppose que le programme exécuté lance le
+  sur le maître et Jenkins suppose que le programme exécuté lance le
   programme <tt>slave.jar</tt> sur la bonne machine esclave.
 
   <p>
@@ -47,7 +47,7 @@ exec java -jar ~/bin/slave.jar
   Dans un déploiement à plus grande échelle, on peut envisager de charger
   <tt>slave.jar</tt> à partir d'une location commune montée par NFS, afin
   de ne pas nécessiter la mise à jour de ce fichier à chaque mise à jour
-  de Hudson.
+  de Jenkins.
 
   <p>
   Mettre la valeur "ssh -v <i>hostname</i>" dans ce champ peut être

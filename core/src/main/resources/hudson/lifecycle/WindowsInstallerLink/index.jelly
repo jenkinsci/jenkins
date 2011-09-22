@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%Install as Windows Service}">
     <st:include it="${app}" page="sidepanel.jelly" />
@@ -29,7 +30,7 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${!it.installed}">
           <h1>
-            <img src="${imagesURL}/48x48/installer.gif" alt=""/>
+            <img src="${imagesURL}/48x48/installer.png" alt="" height="48" width="48"/>
             ${%Install as Windows Service}
           </h1>
 
@@ -50,7 +51,7 @@ THE SOFTWARE.
         <!-- already installed -->
         <j:otherwise>
           <h1>
-            <img src="${imagesURL}/48x48/blue.gif" alt=""/>
+            <img src="${imagesURL}/48x48/blue.png" alt="" height="48" width="48"/>
             ${%Installation Complete}
           </h1>
 

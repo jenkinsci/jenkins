@@ -23,7 +23,7 @@ import java.util.List;
 public class ListChangesCommand extends AbstractBuildRangeCommand {
     @Override
     public String getShortDescription() {
-        return "Dumps the changelog for the specified build(s)";
+        return Messages.ListChangesCommand_ShortDescription();
     }
 
 //    @Override
@@ -60,7 +60,7 @@ public class ListChangesCommand extends AbstractBuildRangeCommand {
             for (AbstractBuild build : builds) {
                 ChangeLogSet<?> cs = build.getChangeSet();
                 for (Entry e : cs) {
-                    stdout.printf("%s,%s\n",
+                    stdout.printf("%s,%s%n",
                             QuotedStringTokenizer.quote(e.getAuthor().getId()),
                             QuotedStringTokenizer.quote(e.getMsg()));
                 }
@@ -70,7 +70,7 @@ public class ListChangesCommand extends AbstractBuildRangeCommand {
             for (AbstractBuild build : builds) {
                 ChangeLogSet<?> cs = build.getChangeSet();
                 for (Entry e : cs) {
-                    stdout.printf("%s\t%s\n",e.getAuthor(),e.getMsg());
+                    stdout.printf("%s\t%s%n",e.getAuthor(),e.getMsg());
                     for (String p : e.getAffectedPaths())
                         stdout.println("  "+p);
                 }

@@ -31,7 +31,7 @@ import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
 import hudson.model.Node;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
@@ -80,7 +80,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     public AbstractNodeMonitorDescriptor<?> getDescriptor() {
-        return (AbstractNodeMonitorDescriptor<?>)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (AbstractNodeMonitorDescriptor<?>) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     public Object data(Computer c) {
@@ -141,6 +141,6 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * Returns all the registered {@link NodeMonitor} descriptors.
      */
     public static DescriptorExtensionList<NodeMonitor,Descriptor<NodeMonitor>> all() {
-        return Hudson.getInstance().<NodeMonitor,Descriptor<NodeMonitor>>getDescriptorList(NodeMonitor.class);
+        return Jenkins.getInstance().<NodeMonitor,Descriptor<NodeMonitor>>getDescriptorList(NodeMonitor.class);
     }
 }

@@ -29,8 +29,9 @@ THE SOFTWARE.
      list: variable to contain List<Plugin>
      page: page name to be passed to local:tabBar
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <script type="text/javascript">// &lt;![CDATA[
@@ -98,7 +99,7 @@ THE SOFTWARE.
                         <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
                       </div>
                       <j:if test="${p.excerpt!=null}">
-                        <div class="excerpt">${p.excerpt}</div>
+                        <div class="excerpt"><j:out value="${p.excerpt}" /></div>
                       </j:if>
                       <j:if test="${!p.isCompatibleWithInstalledVersion()}">
                         <div class="compatWarning">${%compatWarning}</div>
@@ -135,7 +136,7 @@ THE SOFTWARE.
         </table>
 
         <j:if test="${!empty(list)}">
-          <div style="float:right; margin-top:1em">
+          <div style="margin-top:1em">
             <f:submit value="${%Install}" />
           </div>
         </j:if>

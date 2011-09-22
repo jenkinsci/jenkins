@@ -24,17 +24,27 @@
 package hudson.views;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Descriptor.FormException;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.ListView;
+import hudson.model.View;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Extension point for adding a column to {@link ListView}.
+ * Extension point for adding a column to a table rendering of {@link Item}s, such as {@link ListView}.
  *
  * <p>
  * This object must have the <tt>column.jelly</tt>. This view
@@ -44,11 +54,17 @@ import org.kohsuke.stapler.export.Exported;
  *
  * <p>
  * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
- * will render ColumnCaption.
+ * will render {@link #getColumnCaption()}.
  *
  * <p>
- * There also must be a default constructor, which is invoked to create a list view column in
+ * If you opt to {@linkplain ListViewColumnDescriptor#shownByDefault() be shown by default},
+ * there also must be a default constructor, which is invoked to create a list view column in
  * the default configuration.
+ *
+ * <p>
+ * Originally, this extension point was designed for {@link ListView}, but since then
+ * it has grown to be applicable to other {@link View}s and {@link ItemGroup}s that render
+ * a collection of {@link Item}s in a tabular format.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.279
@@ -70,7 +86,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all() {
-        return Hudson.getInstance().<ListViewColumn, Descriptor<ListViewColumn>>getDescriptorList(ListViewColumn.class);
+        return Jenkins.getInstance().<ListViewColumn, Descriptor<ListViewColumn>>getDescriptorList(ListViewColumn.class);
     }
 
     /**
@@ -97,6 +113,60 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * and instead return a plain {@link Descriptor} instance.
      */
     public Descriptor<ListViewColumn> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
+
+    /**
+     * Creates the list of {@link ListViewColumn}s to be used for newly created {@link ListView}s and their likes.
+     * @since 1.391
+     */
+    public static List<ListViewColumn> createDefaultInitialColumnList() {
+        // OK, set up default list of columns:
+        // create all instances
+        ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
+        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
+        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>(all);
+
+        for (Class<? extends ListViewColumn> d: DEFAULT_COLUMNS) {
+            Descriptor<ListViewColumn> des = all.find(d);
+            if (des  != null) {
+                try {
+                    r.add(des.newInstance(null, null));
+                    left.remove(des);
+                } catch (FormException e) {
+                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
+                }
+            }
+        }
+        for (Descriptor<ListViewColumn> d : left)
+            try {
+                if (d instanceof ListViewColumnDescriptor) {
+                    ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
+                    if (!ld.shownByDefault())       continue;   // skip this
+                }
+                ListViewColumn lvc = d.newInstance(null, null);
+                if (!lvc.shownByDefault())      continue; // skip this
+
+                r.add(lvc);
+            } catch (FormException e) {
+                LOGGER.log(Level.WARNING, "Failed to instantiate "+d.clazz,e);
+            }
+
+        return r;
+    }
+
+    /**
+     * Traditional column layout before the {@link ListViewColumn} becomes extensible.
+     */
+    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS =  Arrays.asList(
+        StatusColumn.class,
+        WeatherColumn.class,
+        JobColumn.class,
+        LastSuccessColumn.class,
+        LastFailureColumn.class,
+        LastDurationColumn.class,
+        BuildButtonColumn.class
+    );
+
+    private static final Logger LOGGER = Logger.getLogger(ListViewColumn.class.getName());
 }

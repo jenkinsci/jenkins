@@ -36,6 +36,13 @@ THE SOFTWARE.
         <include>**/*</include>
       </includes>
       <excludes>
+        <exclude>*.build</exclude>
+        <exclude>*.changes</exclude>
+        <exclude>*.pkg</exclude>
+        <exclude>*.zip</exclude>
+        <exclude>*.log</exclude>
+        <exclude>.repository</exclude>
+        <exclude>.repository/**/*</exclude>
         <exclude>**/target</exclude>
         <exclude>**/target/**/*</exclude>
         <exclude>**/work</exclude>

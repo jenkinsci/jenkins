@@ -1,5 +1,5 @@
 #!/bin/sh
-# prerm script for hudson
+# prerm script for jenkins
 #
 # see: dh_installdeb(1)
 

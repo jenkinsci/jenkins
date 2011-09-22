@@ -34,7 +34,6 @@ import java.lang.annotation.Annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
-import hudson.model.Hudson;
 
 
 /**
@@ -68,7 +67,7 @@ public @interface Recipe {
         public void setup(HudsonTestCase testCase, T recipe) throws Exception {}
 
         /**
-         * Called right before {@link Hudson#Hudson(File, ServletContext)} is invoked
+         * Called right before {@link jenkins.model.Jenkins#Hudson(File, ServletContext)} is invoked
          * to decorate the hudson home directory.
          */
         public void decorateHome(HudsonTestCase testCase, File home) throws Exception {}

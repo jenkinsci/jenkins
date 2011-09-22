@@ -24,15 +24,14 @@
 package hudson.maven;
 
 import hudson.CopyOnWrite;
-import hudson.Util;
 import hudson.Functions;
+import hudson.Util;
 import hudson.maven.reporters.MavenMailer;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -42,32 +41,38 @@ import hudson.model.Node;
 import hudson.model.Resource;
 import hudson.model.Saveable;
 import hudson.tasks.LogRotator;
-import hudson.tasks.Publisher;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Publisher;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
+import jenkins.model.Jenkins;
+
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * {@link Job} that builds projects based on Maven2.
  * 
  * @author Kohsuke Kawaguchi
  */
-public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
+public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
     private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
         new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
 
@@ -78,16 +83,30 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     private String displayName;
 
     /**
-     * Version number of this module as of fhe last build, taken from {@link MavenProject#getVersion()}.
+     * Version number of this module as of the last build, taken from {@link MavenProject#getVersion()}.
      *
-     * This field can be null if Hudson loaded old data
+     * This field can be null if Jenkins loaded old data
      * that didn't record this information, so that situation
      * needs to be handled gracefully.
+     * 
+     * @since 1.199
      */
     private String version;
+    
+    /**
+     * Packaging type of the module.
+     * 
+     * pom, jar, maven-plugin, ejb, war, ear, rar, par or other custom types.
+     * 
+     * @since 1.425
+     */
+    private String packaging;
 
     private transient ModuleName moduleName;
 
+    /**
+     * @see documentation in {@link PomInfo#relativePath}
+     */
     private String relativePath;
 
     /**
@@ -106,7 +125,9 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * List of child modules as defined by &lt;module> POM element.
      * Used to determine parent/child relationship of modules.
      * <p>
-     * For compatibility reason, this field may be null when loading data from old hudson. 
+     * For compatibility reason, this field may be null when loading data from old hudson.
+     * 
+     * @since 1.133
      */
     @CopyOnWrite
     private volatile List<ModuleName> children;
@@ -176,6 +197,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     /*package*/ void reconfigure(PomInfo pom) {
         this.displayName = pom.displayName;
         this.version = pom.version;
+        this.packaging = pom.packaging;
         this.relativePath = pom.relativePath;
         this.dependencies = pom.dependencies;
         this.children = pom.children;
@@ -193,6 +215,15 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
                 }
             }
         }
+    }
+    
+    /**
+     * Returns if the given POM likely describes the same module with the same dependencies.
+     * Implementation needs not be 100% accurate in the true case, but it MUST return false
+     * if is not the same.
+     */
+    public boolean isSameModule(PomInfo pom) {
+        return pom.isSimilar(this.moduleName, this.dependencies);
     }
 
     @Override
@@ -212,11 +243,11 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         else {
             // Until 1.207, we used to have ModuleName in dependencies. So convert.
             Set<ModuleDependency> deps = new HashSet<ModuleDependency>(dependencies.size());
-            for (Object d : (Set)dependencies) {
+            for (Object d : (Set<?>)dependencies) {
                 if (d instanceof ModuleDependency) {
                     deps.add((ModuleDependency) d);
                 } else {
-                    deps.add(new ModuleDependency((ModuleName)d, ModuleDependency.UNKNOWN));
+                    deps.add(new ModuleDependency((ModuleName)d, ModuleDependency.UNKNOWN, false));
                 }
             }
             dependencies = deps;
@@ -237,9 +268,10 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets the version number in Maven POM as of the last build.
      *
      * @return
-     *      This method can return null if Hudson loaded old data
+     *      This method can return null if Jenkins loaded old data
      *      that didn't record this information, so that situation
      *      needs to be handled gracefully.
+     * @since 1.199
      */
     public String getVersion() {
         return version;
@@ -295,7 +327,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * Gets groupId+artifactId+version as {@link ModuleDependency}.
      */
     public ModuleDependency asDependency() {
-        return new ModuleDependency(moduleName,Functions.defaulted(version,ModuleDependency.UNKNOWN));
+        return new ModuleDependency(moduleName,Functions.defaulted(version,ModuleDependency.UNKNOWN),
+                PomInfo.PACKAGING_TYPE_PLUGIN.equals(this.packaging));
     }
 
     @Override
@@ -311,7 +344,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
     @Override
     public String getPronoun() {
-        return Messages.MavenModule_Pronoun();
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModule_Pronoun());
     }
 
     @Override
@@ -329,6 +362,8 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
      * <p>
      * This method returns null if this information is not recorded. This happens
      * for compatibility reason.
+     * 
+     * @since 1.133
      */
     public List<MavenModule> getChildren() {
         List<ModuleName> l = children;    // take a snapshot
@@ -378,41 +413,176 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        if(isDisabled() || getParent().ignoreUpstremChanges())        return;
+        if(!isBuildable() || getParent().ignoreUpstremChanges())        return;
 
-        Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
+        MavenDependencyComputationData data = graph.getComputationalData(MavenDependencyComputationData.class);
 
-        // when we load old data that doesn't record version in dependency, we'd like
-        // to emulate the old behavior that it tries to identify the upstream by ignoring the version.
-        // do this by always putting groupId:artifactId:UNKNOWN to the modules list.
+        // Build a map of all Maven modules in this Jenkins instance as dependencies.
 
-        for (MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class)) {
-            if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
+        // When we load old data that doesn't record version in dependency, we'd like
+        // to emulate the old behavior that tries to identify the upstream by ignoring the version.
+        // Do this by putting groupId:artifactId:UNKNOWN to the modules list, but
+        // ONLY if we find a such an old MavenModule in this Jenkins instance.
+        boolean hasDependenciesWithUnknownVersion = hasDependenciesWithUnknownVersion();
+        if (data == null) {
+            Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
+    
+            for (MavenModule m : getAllMavenModules()) {
+                if(!m.isBuildable())  continue;
+                ModuleDependency moduleDependency = m.asDependency();
+                MavenModule old = modules.get(moduleDependency);
+                MavenModule relevant = chooseMoreRelevantModule(old, m, moduleDependency);
+                modules.put(moduleDependency, relevant);
+                if (hasDependenciesWithUnknownVersion) {
+                    modules.put(moduleDependency.withUnknownVersion(),relevant);
+                }
+            }
+            data = new MavenDependencyComputationData(modules);
+            data.withUnknownVersions = hasDependenciesWithUnknownVersion;
+            graph.putComputationalData(MavenDependencyComputationData.class, data);
+        } else {
+            if (hasDependenciesWithUnknownVersion && !data.withUnknownVersions) {
+                // found 'old' MavenModule: add dependencies with unknown versions now
+                for (MavenModule m : getAllMavenModules()) {
+                    if(m.isDisabled())  continue;
+                    ModuleDependency moduleDependency = m.asDependency().withUnknownVersion();
+                    data.allModules.put(moduleDependency,m);
+                }
+                data.withUnknownVersions = true;
+            }
         }
 
-        // in case two modules with the same name is defined, modules in the same MavenModuleSet
-        // takes precedence.
-
-        for (MavenModule m : getParent().getModules()) {
-            if(m.isDisabled())  continue;
-            modules.put(m.asDependency(),m);
-            modules.put(m.asDependency().withUnknownVersion(),m);
-        }
+        // In case two modules with the same name are defined, modules in the same MavenModuleSet
+        // take precedence.
+        
+        // Can lead to OOME, if remembered in the computational data and there are lot big multi-module projects
+        // TODO: try to use soft references to clean the heap when needed
+        Map<ModuleDependency,MavenModule> myParentsModules; // = data.modulesPerParent.get(getParent());
+        
+        //if (myParentsModules == null) {
+            myParentsModules = new HashMap<ModuleDependency, MavenModule>();
+            
+            for (MavenModule m : getParent().getModules()) {
+                if(m.isDisabled())  continue;
+                ModuleDependency moduleDependency = m.asDependency();
+                myParentsModules.put(moduleDependency,m);
+                if (hasDependenciesWithUnknownVersion) {
+                    myParentsModules.put(moduleDependency.withUnknownVersion(),m);
+                }
+            }
+            
+            //data.modulesPerParent.put(getParent(), myParentsModules);
+        //}
 
         // if the build style is the aggregator build, define dependencies against project,
         // not module.
-        AbstractProject dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
+        AbstractProject<?, ?> dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
         for (ModuleDependency d : dependencies) {
-            MavenModule src = modules.get(d);
+            MavenModule src = myParentsModules.get(d);
+            if (src==null) {
+                src = data.allModules.get(d);
+            }
+            
             if(src!=null) {
                 DependencyGraph.Dependency dep = new MavenModuleDependency(
                         src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
                 if (!dep.pointsItself())
                     graph.addDependency(dep);
             }
+        }
+    }
+    
+    /**
+     * Returns all Maven modules in this Jenkins instance.
+     */
+    protected Collection<MavenModule> getAllMavenModules() {
+        return Jenkins.getInstance().getAllItems(MavenModule.class);
+    }
+    
+    /**
+     * Check if this module has dependencies recorded without a concrete version -
+     * which shouldn't happen for any module which was at least build once with Jenkins >= 1.207. 
+     */
+    private boolean hasDependenciesWithUnknownVersion() {
+        for (ModuleDependency dep : dependencies) {
+            if (ModuleDependency.UNKNOWN.equals(dep.version)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private MavenModule chooseMoreRelevantModule(MavenModule mm1, MavenModule mm2, ModuleDependency moduleDependency) {
+        
+        if (mm1 == null) {
+            return mm2;
+        }
+        if (mm2 == null) {
+            return mm1;
+        }
+        
+        final MavenModule moreRelevant;
+        final MavenModule lessRelevant;
+        int relevancy1 = getDependencyRelevancy(mm1);
+        int relevancy2 = getDependencyRelevancy(mm2);
+        
+        if (relevancy1 > relevancy2) {
+            moreRelevant = mm1;
+            lessRelevant = mm2;
+        } else if (relevancy2 > relevancy1) {
+            moreRelevant = mm2;
+            lessRelevant = mm1;
+        } else {
+            // arbitrary, but reproduceable
+            if (mm1.getParent().getName().compareTo(mm2.getParent().getName()) < 0) {
+                moreRelevant = mm2;
+                lessRelevant = mm1;
+            } else { // should always mean > 0 as name is unique
+                moreRelevant = mm1;
+                lessRelevant = mm2;
+            }
+        }
+        
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer("Choosing " + moreRelevant.getParent().getName() + " over " + lessRelevant.getParent().getName()
+                    + " for module " + moduleDependency.getName() + ". Relevancies: " + relevancy1 + ", " + relevancy2); 
+        }
+        return moreRelevant;
+    }
+
+    private int getDependencyRelevancy(MavenModule mm) {
+        
+        int relevancy = 0;
+        
+        for (String goal : Util.tokenize(mm.getGoals())) {
+            if ("deploy".equals(goal) || "deploy:deploy".equals(goal)) {
+                return 2;
+            }
+            
+            if ("install".equals(goal)) {
+                relevancy = 1;
+            }
+        }
+        
+        for (Publisher publisher : mm.getParent().getPublishers()) {
+            if (publisher instanceof RedeployPublisher) {
+                return 2;
+            }
+        }
+        
+        return relevancy;
+    }
+
+    private static class MavenDependencyComputationData {
+        boolean withUnknownVersions = false;
+        Map<ModuleDependency,MavenModule> allModules;
+        
+        //Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();
+        
+        public MavenDependencyComputationData(
+                Map<ModuleDependency, MavenModule> modules) {
+            this.allModules = modules;
         }
     }
 
@@ -453,7 +623,7 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 
         // dependency setting might have been changed by the user, so rebuild.
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
     }
 
     @Override
@@ -481,6 +651,14 @@ public final class MavenModule extends AbstractMavenProject<MavenModule,MavenBui
 
         return reporterList;
     }
+    
+    /**
+     * for debug purpose
+     */
+    public String toString() {
+        return super.toString()+'['+getFullName()+']'+"[relativePath:"+getRelativePath()+']';
+    }
 
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
+    
 }

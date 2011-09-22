@@ -30,6 +30,7 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
@@ -77,7 +78,7 @@ public class MavenSiteArchiver extends MavenReporter {
             // store at MavenModuleSet level and moduleName
             final FilePath target = build.getModuleSetRootDir().child("site").child(moduleName);
             try {
-                listener.getLogger().printf("[HUDSON] Archiving site from %s to %s\n", destDir, target);
+                listener.getLogger().printf("[JENKINS] Archiving site from %s to %s\n", destDir, target);
                 new FilePath(destDir).copyRecursiveTo("**/*",target);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
@@ -99,19 +100,21 @@ public class MavenSiteArchiver extends MavenReporter {
      *
      * @return the relative path component to copy sites of multi module builds.
      * @throws IOException
+     * @throws InterruptedException 
      */
-    private String getModuleName(MavenBuildProxy build, MavenProject pom) throws IOException {
-        final String moduleRoot;
-        try {
-            moduleRoot = build.execute(new BuildCallable<String, IOException>() {
-                //@Override
-                public String call(MavenBuild mavenBuild) throws IOException, InterruptedException {
-                    return mavenBuild.getParentBuild().getModuleRoot().getRemote();
-                }
-            });
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    private String getModuleName(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
+        String moduleRoot = build.execute(new BuildCallable<String, IOException>() {
+            private static final long serialVersionUID = 1L;
+
+            //@Override
+            public String call(MavenBuild mavenBuild) throws IOException, InterruptedException {
+                 MavenModuleSetBuild moduleSetBuild = mavenBuild.getModuleSetBuild();
+                 if (moduleSetBuild == null) {
+                     throw new IOException("Parent build not found!"); 
+                 }
+                 return moduleSetBuild.getModuleRoot().getRemote();
+            }
+        });
         final File pomBaseDir = pom.getBasedir();
         final File remoteWorkspaceDir = new File(moduleRoot);
         if (pomBaseDir.equals(remoteWorkspaceDir)) {

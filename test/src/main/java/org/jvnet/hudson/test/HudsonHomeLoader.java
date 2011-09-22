@@ -33,13 +33,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Controls how a {@link HudsonTestCase} initializes <tt>HUDSON_HOME</tt>.
+ * Controls how a {@link HudsonTestCase} initializes <tt>JENKINS_HOME</tt>.
  *
  * @author Kohsuke Kawaguchi
  */
 public interface HudsonHomeLoader {
     /** 
-     * Returns a directory to be used as <tt>HUDSON_HOME</tt>
+     * Returns a directory to be used as <tt>JENKINS_HOME</tt>
      *
      * @throws Exception
      *      to cause a test to fail.

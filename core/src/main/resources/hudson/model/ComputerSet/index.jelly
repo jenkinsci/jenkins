@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!--
   Entrance to the configuration page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="Nodes">
+<l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:header>
     <style><!-- create some spaces between cells -->
@@ -66,9 +67,9 @@ THE SOFTWARE.
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.CONFIGURE)}">
               <a href="${rootURL}/${c.url}configure">
-                <img src="${imagesURL}/32x32/setting.gif"
+                <img src="${imagesURL}/32x32/setting.png"
                      title="${%Configure}" alt="${%Configure}"
-                     border="0"/>
+                     height="32" width="32" border="0"/>
               </a>
             </j:if>
           </td>

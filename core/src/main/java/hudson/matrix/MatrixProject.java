@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Red Hat, Inc., id:cactusman
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Jorg Heymans, Red Hat, Inc., id:cactusman
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +34,7 @@ import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -55,11 +56,14 @@ import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.TokenList;
+import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -78,8 +82,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.Util.*;
-
 /**
  * {@link Job} that allows you to run multiple different configurations
  * from a single setting.
@@ -93,7 +95,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private volatile AxisList axes = new AxisList();
     
     /**
-     * The filter that is applied to combinatios. It is a Groovy if condition.
+     * The filter that is applied to combinations. It is a Groovy if condition.
      * This can be null, which means "true".
      *
      * @see #getCombinationFilter()
@@ -142,13 +144,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     private Result touchStoneResultCondition;
 
-    /**
-     * See {@link #setCustomWorkspace(String)}.
-     */
-    private String customWorkspace;
-    
     public MatrixProject(String name) {
-        super(Hudson.getInstance(), name);
+        this(Jenkins.getInstance(), name);
+    }
+
+    public MatrixProject(ItemGroup parent, String name) {
+        super(parent, name);
     }
 
     public AxisList getAxes() {
@@ -224,28 +225,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.touchStoneResultCondition = touchStoneResultCondition;
     }
 
-    public String getCustomWorkspace() {
-      return customWorkspace;
-    }
-    
-    /**
-     * User-specified workspace directory, or null if it's up to Hudson.
-     *
-     * <p>
-     * Normally a matrix project uses the workspace location assigned by its parent container,
-     * but sometimes people have builds that have hard-coded paths.
-     *
-     * <p>
-     * This is not {@link File} because it may have to hold a path representation on another OS.
-     *
-     * <p>
-     * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
-     * is prepared.
-     */
-    public void setCustomWorkspace(String customWorkspace) throws IOException {
-        this.customWorkspace= customWorkspace;
-    }
-    
     @Override
     protected List<Action> createTransientActions() {
         List<Action> r = super.createTransientActions();
@@ -425,6 +404,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * In contract, inactive configurations are those that are left for archival purpose
      * and no longer built when a new {@link MatrixBuild} is executed.
      */
+    @Exported
     public Collection<MatrixConfiguration> getActiveConfigurations() {
         return activeConfigurations;
     }
@@ -460,17 +440,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         throw new UnsupportedOperationException();
     }
 
+    public void onDeleted(MatrixConfiguration item) throws IOException {
+        // noop
+    }
+
     public File getRootDirFor(Combination combination) {
         File f = getConfigurationsDir();
         for (Entry<String, String> e : combination.entrySet())
             f = new File(f,"axis-"+e.getKey()+'/'+Util.rawEncode(e.getValue()));
         f.getParentFile().mkdirs();
         return f;
-    }
-
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
     }
 
     /**
@@ -490,7 +469,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         if(a==null)  return Collections.emptySet();
         Set<JDK> r = new HashSet<JDK>();
         for (String j : a) {
-            JDK jdk = Hudson.getInstance().getJDK(j);
+            JDK jdk = Jenkins.getInstance().getJDK(j);
             if(jdk!=null)
                 r.add(jdk);
         }
@@ -504,7 +483,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public Set<Label> getLabels() {
         Set<Label> r = new HashSet<Label>();
         for (Combination c : axes.subList(LabelAxis.class).list())
-            r.add(Hudson.getInstance().getLabel(Util.join(c.values(),"&&")));
+            r.add(Jenkins.getInstance().getLabel(Util.join(c.values(),"&&")));
         return r;
     }
 
@@ -590,12 +569,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             this.touchStoneCombinationFilter = null;
         }
 
-        if(req.hasParameter("customWorkspace")) {
-            customWorkspace = req.getParameter("customWorkspace.directory");
-        } else {
-            customWorkspace = null;        
-        }
-        
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
@@ -617,7 +590,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private void checkAxisNames(Iterable<Axis> newAxes) throws FormException {
         HashSet<String> axisNames = new HashSet<String>();
         for (Axis a : newAxes) {
-            a.getDescriptor().doCheckName(a.getName());
+            FormValidation fv = a.getDescriptor().doCheckName(a.getName());
+            if (fv.kind!=Kind.OK)
+                throw new FormException(Messages.MatrixProject_DuplicateAxisName(),fv,"axis.name");
+
             if (axisNames.contains(a.getName()))
                 throw new FormException(Messages.MatrixProject_DuplicateAxisName(),"axis.name");
             axisNames.add(a.getName());
@@ -648,8 +624,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return Messages.MatrixProject_DisplayName();
         }
 
-        public MatrixProject newInstance(String name) {
-            return new MatrixProject(name);
+        public MatrixProject newInstance(ItemGroup parent, String name) {
+            return new MatrixProject(parent,name);
         }
 
         /**

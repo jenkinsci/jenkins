@@ -19,7 +19,7 @@
     <dd>Naam van het project dat gebouwd wordt door deze bouwpoging, v.b. "foo"</dd>
 
     <dt>BUILD_TAG</dt>
-    <dd>Het label :"hudson-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>". Dit label is typisch handig om
+    <dd>Het label :"jenkins-<i>${JOB_NAME}</i>-<i>${BUILD_NUMBER}</i>". Dit label is typisch handig om
         ter identificatie op te nemen in een "resource"-bestand, archieven (zoals jar,war,ear,...), ... .
     </dd>
 
@@ -42,7 +42,10 @@
     <dt>HUDSON_URL</dt>
     <dd>Volledige URL voor Hudson, v.b. <tt>http://server:port/hudson/</tt></dd>
 
-    <dt>SVN_REVISION</dt>
+    <dt>JENKINS_URL</dt>
+    <dd>Volledige URL voor Jenkins, v.b. <tt>http://server:port/jenkins/</tt></dd>
+
+<dt>SVN_REVISION</dt>
     <dd>Voor Suversion gebaseerde projecten, bevat deze parameter het versienummer van de module.</dd>
 
     <dt>CVS_BRANCH</dt>

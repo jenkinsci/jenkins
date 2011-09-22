@@ -30,7 +30,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
@@ -124,8 +124,8 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
      */
     /*package*/ static boolean migrateHudson2324(Map<Permission,Set<String>> grantedPermissions) {
         boolean result = false;
-        if(Hudson.getInstance().isUpgradedFromBefore(new VersionNumber("1.300.*"))) {
-            Set<String> f = grantedPermissions.get(Hudson.READ);
+        if(Jenkins.getInstance().isUpgradedFromBefore(new VersionNumber("1.300.*"))) {
+            Set<String> f = grantedPermissions.get(Jenkins.READ);
             if (f!=null) {
                 Set<String> t = grantedPermissions.get(Item.READ);
                 if (t!=null)
@@ -284,23 +284,23 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
         }
 
         public FormValidation doCheckName(@QueryParameter String value ) throws IOException, ServletException {
-            return doCheckName(value, Hudson.getInstance(), Hudson.ADMINISTER);
+            return doCheckName_(value, Jenkins.getInstance(), Jenkins.ADMINISTER);
         }
 
-        FormValidation doCheckName(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
+        public FormValidation doCheckName_(String value, AccessControlled subject, Permission permission) throws IOException, ServletException {
             if(!subject.hasPermission(permission))  return FormValidation.ok(); // can't check
 
             final String v = value.substring(1,value.length()-1);
-            SecurityRealm sr = Hudson.getInstance().getSecurityRealm();
+            SecurityRealm sr = Jenkins.getInstance().getSecurityRealm();
             String ev = Functions.escape(v);
 
             if(v.equals("authenticated"))
                 // system reserved group
-                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
+                return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
 
             try {
                 sr.loadUserByUsername(v);
-                return FormValidation.respond(Kind.OK, makeImg("person.gif")+ev);
+                return FormValidation.respond(Kind.OK, makeImg("person.png")+ev);
             } catch (UserMayOrMayNotExistException e) {
                 // undecidable, meaning the user may exist
                 return FormValidation.respond(Kind.OK, ev);
@@ -312,7 +312,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
 
             try {
                 sr.loadGroupByGroupname(v);
-                return FormValidation.respond(Kind.OK, makeImg("user.gif") +ev);
+                return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
             } catch (UserMayOrMayNotExistException e) {
                 // undecidable, meaning the group may exist
                 return FormValidation.respond(Kind.OK, ev);
@@ -323,11 +323,11 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             }
 
             // couldn't find it. it doesn't exist
-            return FormValidation.respond(Kind.ERROR, makeImg("error.gif") +ev);
+            return FormValidation.respond(Kind.ERROR, makeImg("error.png") +ev);
         }
 
         private String makeImg(String gif) {
-            return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Stapler.getCurrentRequest().getContextPath(), Hudson.RESOURCE_PATH, gif);
+            return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Stapler.getCurrentRequest().getContextPath(), Jenkins.RESOURCE_PATH, gif);
         }
     }
 }

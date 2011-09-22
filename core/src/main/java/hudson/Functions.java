@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Romain Seguy
+ * Yahoo! Inc., Stephen Connolly, Tom Huybrechts, Alan Harder, Manufacture
+ * Francaise des Pneumatiques Michelin, Romain Seguy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +25,17 @@
  */
 package hudson;
 
+import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Items;
-import hudson.model.Job;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.ModelObject;
-import hudson.model.Node;
-import hudson.model.PageDecorator;
-import hudson.model.ParameterDefinition;
+import hudson.model.*;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
-import hudson.model.Project;
-import hudson.model.Run;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
-import hudson.model.JDK;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
@@ -69,6 +54,9 @@ import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
+import hudson.widgets.RenderOnDemandClosure;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -82,7 +70,9 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
+import javax.management.modelmbean.DescriptorSupport;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -112,6 +102,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -120,6 +111,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility functions used in views.
@@ -182,7 +174,7 @@ public class Functions {
     }
 
     public JDK.DescriptorImpl getJDKDescriptor() {
-        return Hudson.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
+        return Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
     }
 
     /**
@@ -286,7 +278,7 @@ public class Functions {
      * </pre>
      *
      * <p>
-     * The head portion is the part of the URL from the {@link Hudson}
+     * The head portion is the part of the URL from the {@link jenkins.model.Jenkins}
      * object to the first {@link Run} subtype. When "next/prev build"
      * is chosen, this part remains intact.
      *
@@ -371,7 +363,7 @@ public class Functions {
     }
 
     public static List<LogRecord> getLogRecords() {
-        return Hudson.logRecords;
+        return Jenkins.logRecords;
     }
 
     public static String printLogRecord(LogRecord r) {
@@ -535,8 +527,36 @@ public class Functions {
         return Util.xmlEscape(s);
     }
 
+    public static String xmlUnescape(String s) {
+        return s.replace("&lt;","<").replace("&gt;",">").replace("&amp;","&");
+    }
+
+    public static String htmlAttributeEscape(String text) {
+        StringBuilder buf = new StringBuilder(text.length()+64);
+        for( int i=0; i<text.length(); i++ ) {
+            char ch = text.charAt(i);
+            if(ch=='<')
+                buf.append("&lt;");
+            else
+            if(ch=='>')
+                buf.append("&gt;");
+            else
+            if(ch=='&')
+                buf.append("&amp;");
+            else
+            if(ch=='"')
+                buf.append("&quot;");
+            else
+            if(ch=='\'')
+                buf.append("&#39;");
+            else
+                buf.append(ch);
+        }
+        return buf.toString();
+    }
+
     public static void checkPermission(Permission permission) throws IOException, ServletException {
-        checkPermission(Hudson.getInstance(),permission);
+        checkPermission(Jenkins.getInstance(),permission);
     }
 
     public static void checkPermission(AccessControlled object, Permission permission) throws IOException, ServletException {
@@ -565,7 +585,7 @@ public class Functions {
                     return;
                 }
             }
-            checkPermission(Hudson.getInstance(),permission);
+            checkPermission(Jenkins.getInstance(),permission);
         }
     }
 
@@ -576,7 +596,7 @@ public class Functions {
      *      If null, returns true. This defaulting is convenient in making the use of this method terse.
      */
     public static boolean hasPermission(Permission permission) throws IOException, ServletException {
-        return hasPermission(Hudson.getInstance(),permission);
+        return hasPermission(Jenkins.getInstance(),permission);
     }
 
     /**
@@ -596,14 +616,14 @@ public class Functions {
                     return ((AccessControlled)o).hasPermission(permission);
                 }
             }
-            return Hudson.getInstance().hasPermission(permission);
+            return Jenkins.getInstance().hasPermission(permission);
         }
     }
 
     public static void adminCheck(StaplerRequest req, StaplerResponse rsp, Object required, Permission permission) throws IOException, ServletException {
         // this is legacy --- all views should be eventually converted to
         // the permission based model.
-        if(required!=null && !Hudson.adminCheck(req,rsp)) {
+        if(required!=null && !Hudson.adminCheck(req, rsp)) {
             // check failed. commit the FORBIDDEN response, then abort.
             rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             rsp.getOutputStream().close();
@@ -619,7 +639,7 @@ public class Functions {
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl !=null)
             // prefer the one explicitly configured, to work with load-balancer, frontend, etc.
             return rootUrl;
@@ -631,6 +651,20 @@ public class Functions {
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
     }
+
+    /**
+     * Returns the link to be displayed in the footer of the UI.
+     */
+    public static String getFooterURL() {
+        if(footerURL == null) {
+            footerURL = System.getProperty("hudson.footerURL");
+            if(StringUtils.isBlank(footerURL)) {
+                footerURL = "http://jenkins-ci.org/";
+            }
+        }
+        return footerURL;
+    }
+    private static String footerURL = null;
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
@@ -661,7 +695,7 @@ public class Functions {
     }
 
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Hudson.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
@@ -670,6 +704,10 @@ public class Functions {
 
     public static List<ParameterDescriptor> getParameterDescriptors() {
         return ParameterDefinition.all();
+    }
+
+    public static List<Descriptor<CaptchaSupport>> getCaptchaSupportDescriptors() {
+        return CaptchaSupport.all();
     }
 
     public static List<Descriptor<ViewsTabBar>> getViewsTabBarDescriptors() {
@@ -682,7 +720,7 @@ public class Functions {
 
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
-        Collection<NodePropertyDescriptor> list = (Collection) Hudson.getInstance().getDescriptorList(NodeProperty.class);
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
         for (NodePropertyDescriptor npd : list) {
             if (npd.isApplicable(clazz)) {
                 result.add(npd);
@@ -694,21 +732,58 @@ public class Functions {
     /**
      * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
      * so that descriptors of similar types come nearby.
+     *
+     * <p>
+     * We sort them by {@link Extension#ordinal()} but only for {@link GlobalConfiguration}s,
+     * as the value is normally used to compare similar kinds of extensions, and we needed
+     * {@link GlobalConfiguration}s to be able to position themselves in a layer above.
+     * This however creates some asymmetry between regular {@link Descriptor}s and {@link GlobalConfiguration}s.
+     * Perhaps it is better to introduce another annotation element? But then,
+     * extensions shouldn't normally concern themselves about ordering too much, and the only reason
+     * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        Map<String,Descriptor> r = new TreeMap<String, Descriptor>();
-        for (Descriptor<?> d : Hudson.getInstance().getExtensionList(Descriptor.class)) {
-            if (d.getGlobalConfigPage()==null)  continue;
-            r.put(buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString(),d);
+        class Tag implements Comparable<Tag> {
+            double ordinal;
+            String hierarchy;
+            Descriptor d;
+
+            Tag(double ordinal, Descriptor d) {
+                this.ordinal = ordinal;
+                this.d = d;
+                this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
+            }
+
+            private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+                Class sc = c.getSuperclass();
+                if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+                return buf.append(c.getName());
+            }
+
+            public int compareTo(Tag that) {
+                int r = Double.compare(this.ordinal, that.ordinal);
+                if (r!=0)   return -r; // descending for ordinal
+                return this.hierarchy.compareTo(that.hierarchy);
+            }
         }
-        return r.values();
+
+        ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
+        List<Tag> r = new ArrayList<Tag>(exts.size());
+
+        for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
+            Descriptor d = c.getInstance();
+            if (d.getGlobalConfigPage()==null)  continue;
+
+            r.add(new Tag(d instanceof GlobalConfiguration ? c.ordinal() : 0, d));
+        }
+        Collections.sort(r);
+
+        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
+        for (Tag d : r) answer.add(d.d);
+
+        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
-    private static StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
-        Class sc = c.getSuperclass();
-        if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
-        return buf.append(c.getName());
-    }
 
     /**
      * Computes the path to the icon of the given action
@@ -754,7 +829,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig==Hudson.getInstance()) {
+            if(ig== Jenkins.getInstance()) {
                 assert i instanceof TopLevelItem;
                 if(view!=null && view.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
@@ -954,14 +1029,14 @@ public class Functions {
     }
 
     public static String getVersion() {
-        return Hudson.VERSION;
+        return Jenkins.VERSION;
     }
 
     /**
      * Resoruce path prefix.
      */
     public static String getResourcePath() {
-        return Hudson.RESOURCE_PATH;
+        return Jenkins.RESOURCE_PATH;
     }
 
     public static String getViewResource(Object it, String path) {
@@ -973,7 +1048,7 @@ public class Functions {
             clazz = ((Descriptor)it).clazz;
 
         StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
-        buf.append(Hudson.VIEW_RESOURCE_PATH).append('/');
+        buf.append(Jenkins.VIEW_RESOURCE_PATH).append('/');
         buf.append(clazz.getName().replace('.','/').replace('$','/'));
         buf.append('/').append(path);
 
@@ -1049,7 +1124,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Hudson.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
     }
 
     /**
@@ -1093,7 +1168,6 @@ public class Functions {
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-
         if(SCHEME.matcher(urlName).matches())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
@@ -1137,7 +1211,7 @@ public class Functions {
     public String getServerName() {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
-        String url = Hudson.getInstance().getRootUrl();
+        String url = Jenkins.getInstance().getRootUrl();
         try {
             if(url!=null) {
                 String host = new URL(url).getHost();
@@ -1187,7 +1261,7 @@ public class Functions {
      */
     public static List<PageDecorator> getPageDecorators() {
         // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
-        if(Hudson.getInstance()==null)  return Collections.emptyList();
+        if(Jenkins.getInstance()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
     
@@ -1209,19 +1283,29 @@ public class Functions {
     }
 
     public static String getCrumb(StaplerRequest req) {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getCrumb(req) : "";
     }
 
     public static String getCrumbRequestField() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
     }
 
     public static Date getCurrentTime() {
         return new Date();
+    }
+
+    public static Locale getCurrentLocale() {
+        Locale locale=null;
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if(req!=null)
+            locale = req.getLocale();
+        if(locale==null)
+            locale = Locale.getDefault();
+        return locale;
     }
 
     /**
@@ -1273,6 +1357,10 @@ public class Functions {
         if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
         return o.toString();
     }
+
+    public List filterDescriptors(Object context, Iterable descriptors) {
+        return DescriptorVisibilityFilter.apply(context,descriptors);
+    }
     
     private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
 
@@ -1288,14 +1376,74 @@ public class Functions {
      * {@code false} otherwise.
      *
      * <p>When the {@link Run#ARTIFACTS} permission is not turned on using the
-     * {@code hudson.security.ArtifactsPermission}, this permission must not be
-     * considered to be set to {@code false} for every user. It must rather be
-     * like if the permission doesn't exist at all (which means that every user
-     * has to have an access to the artifacts but the permission can't be
-     * configured in the security screen). Got it?</p>
+     * {@code hudson.security.ArtifactsPermission} system property, this
+     * permission must not be considered to be set to {@code false} for every
+     * user. It must rather be like if the permission doesn't exist at all
+     * (which means that every user has to have an access to the artifacts but
+     * the permission can't be configured in the security screen). Got it?</p>
      */
     public static boolean isArtifactsPermissionEnabled() {
         return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+    }
+
+    /**
+     * Returns {@code true} if the {@link Item#WIPEOUT} permission is enabled,
+     * {@code false} otherwise.
+     *
+     * <p>The "Wipe Out Workspace" action available on jobs is controlled by the
+     * {@link Item#BUILD} permission. For some specific projects, however, it is
+     * not acceptable to let users have this possibility, even it they can
+     * trigger builds. As such, when enabling the {@code hudson.security.WipeOutPermission}
+     * system property, a new "WipeOut" permission will allow to have greater
+     * control on the "Wipe Out Workspace" action.</p>
+     */
+    public static boolean isWipeOutPermissionEnabled() {
+        return Boolean.getBoolean("hudson.security.WipeOutPermission");
+    }
+
+    public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context,attributesToCapture));
+    }
+
+    public static String getCurrentDescriptorByNameUrl() {
+        return Descriptor.getCurrentDescriptorByNameUrl();
+    }
+    
+    public static String setCurrentDescriptorByNameUrl(String value) {
+        String o = getCurrentDescriptorByNameUrl();
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", value);
+
+        return o;
+    }
+
+    public static void restoreCurrentDescriptorByNameUrl(String old) {
+        Stapler.getCurrentRequest().setAttribute("currentDescriptorByNameUrl", old);
+    }
+
+    public static List<String> getRequestHeaders(String name) {
+        List<String> r = new ArrayList<String>();
+        Enumeration e = Stapler.getCurrentRequest().getHeaders(name);
+        while (e.hasMoreElements()) {
+            r.add(e.nextElement().toString());
+        }
+        return r;
+    }
+
+    /**
+     * Used for arguments to internationalized expressions to avoid escape
+     */
+    public static Object rawHtml(Object o) {
+        return o==null ? null : new RawHtmlArgument(o);
+    }
+
+    public static ArrayList<CLICommand> getCLICommands() {
+        ArrayList<CLICommand> all = new ArrayList<CLICommand>(CLICommand.all());
+        Collections.sort(all, new Comparator<CLICommand>() {
+            public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
+                return cliCommand.getName().compareTo(cliCommand1.getName());
+            }
+        });
+        return all;
     }
 
 }

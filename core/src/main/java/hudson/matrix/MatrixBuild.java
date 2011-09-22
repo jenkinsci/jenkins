@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc., Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Red Hat, Inc., Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +25,18 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JobProperty;
-import hudson.model.Node;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Cause.UpstreamCause;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.Publisher;
 
 import java.io.File;
@@ -51,6 +50,7 @@ import java.util.List;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Build of {@link MatrixProject}.
@@ -59,6 +59,12 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     private AxisList axes;
+
+    /**
+     * If non-null, the {@link MatrixBuild} originates from the given build number.
+     */
+    private Integer baseBuild;
+
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -97,7 +103,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         public String getTooltip() {
             MatrixRun r = getRun();
             if(r!=null) return r.getIconColor().getDescription();
-            Queue.Item item = Hudson.getInstance().getQueue().getItem(getParent().getItem(combination));
+            Queue.Item item = Jenkins.getInstance().getQueue().getItem(getParent().getItem(combination));
             if(item!=null)
                 return item.getWhy();
             return null;    // fall back
@@ -114,25 +120,87 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     }
 
     /**
+     * Sets the base build from which this build is derived.
+     * @since 1.416
+     */
+    public void setBaseBuild(MatrixBuild baseBuild) {
+    	this.baseBuild = (baseBuild==null || baseBuild==getPreviousBuild()) ? null : baseBuild.getNumber();
+    }
+
+    /**
+     * Returns the base {@link MatrixBuild} that this build originates from.
+     * <p>
+     * If this build is a partial build, unexecuted {@link MatrixRun}s are delegated to this build number.
+     */
+    public MatrixBuild getBaseBuild() {
+        return baseBuild==null ? getPreviousBuild() : getParent().getBuildByNumber(baseBuild);
+    }
+
+    /**
      * Gets the {@link MatrixRun} in this build that corresponds
      * to the given combination.
      */
     public MatrixRun getRun(Combination c) {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
-        return config.getBuildByNumber(getNumber());
+        return getRunForConfiguration(config);
     }
-
+    
     /**
      * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
      */
+    @Exported
     public List<MatrixRun> getRuns() {
+        List<MatrixRun> r = new ArrayList<MatrixRun>();
+        for(MatrixConfiguration c : getParent().getItems()) {
+            MatrixRun b = getRunForConfiguration(c);
+            if (b != null) r.add(b);
+        }
+        return r;
+    }
+    
+    private MatrixRun getRunForConfiguration(MatrixConfiguration c) {
+        for (MatrixBuild b=this; b!=null; b=b.getBaseBuild()) {
+            MatrixRun r = c.getBuildByNumber(b.getNumber());
+            if (r!=null)    return r;
+        }
+        return null;
+    }
+
+    /**
+     * Returns all {@link MatrixRun}s for exactly this {@link MatrixBuild}.
+     * <p>
+     * Unlike {@link #getRuns()}, this method excludes those runs
+     * that didn't run and got inherited.
+     * @since 1.413
+     */
+    public List<MatrixRun> getExactRuns() {
         List<MatrixRun> r = new ArrayList<MatrixRun>();
         for(MatrixConfiguration c : getParent().getItems()) {
             MatrixRun b = c.getBuildByNumber(getNumber());
             if (b != null) r.add(b);
         }
         return r;
+    }
+
+    @Override
+    public String getWhyKeepLog() {
+        MatrixBuild b = getNextBuild();
+        if (b!=null && b.isPartial())
+            return b.getDisplayName()+" depends on this";
+        return super.getWhyKeepLog();
+    }
+
+    /**
+     * True if this build didn't do a full build and it is depending on the result of the previous build.
+     */
+    public boolean isPartial() {
+        for(MatrixConfiguration c : getParent().getActiveConfigurations()) {
+            MatrixRun b = c.getNearestOldBuild(getNumber());
+            if (b != null && b.getNumber()!=getNumber())
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -168,24 +236,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             PrintStream logger = listener.getLogger();
 
             // list up aggregators
-            for (Publisher pub : p.getPublishers().values()) {
-                if (pub instanceof MatrixAggregatable) {
-                    MatrixAggregatable ma = (MatrixAggregatable) pub;
-                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
-                    if(a!=null)
-                        aggregators.add(a);
-                }
-            }
-
-            //let properties do their job
-            for (JobProperty prop : p.getProperties().values()) {
-                if (prop instanceof MatrixAggregatable) {
-                    MatrixAggregatable ma = (MatrixAggregatable) prop;
-                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
-                    if(a!=null)
-                        aggregators.add(a);
-                }
-            }
+            listUpAggregators(listener, p.getPublishers().values());
+            listUpAggregators(listener, p.getProperties().values());
+            listUpAggregators(listener, p.getBuildWrappers().values());
 
             axes = p.getAxes();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
@@ -195,6 +248,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
             Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
             for (MatrixConfiguration c: activeConfigurations) {
+                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
+                    continue; // skip rebuild
                 if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
                     touchStoneConfigurations.add(c);
                 } else {
@@ -220,7 +275,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
                 
                 if (p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
-                    logger.printf("Touchstone configurations resulted in %s, so aborting...\n", r);
+                    logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
                     return r;
                 }
                 
@@ -238,13 +293,15 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 return r;
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
-                return Result.ABORTED;
+                Executor x = Executor.currentExecutor();
+                x.recordCauseOfInterruption(MatrixBuild.this, listener);
+                return x.abortResult();
             } catch (AggregatorFailureException e) {
                 return Result.FAILURE;
             }
             finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
-                Queue q = Hudson.getInstance().getQueue();
+                Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))
@@ -261,7 +318,18 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 }
             }
         }
-        
+
+        private void listUpAggregators(BuildListener listener, Collection<?> values) {
+            for (Object v : values) {
+                if (v instanceof MatrixAggregatable) {
+                    MatrixAggregatable ma = (MatrixAggregatable) v;
+                    MatrixAggregator a = ma.createAggregator(MatrixBuild.this, launcher, listener);
+                    if(a!=null)
+                        aggregators.add(a);
+                }
+            }
+        }
+
         private Result waitForCompletion(BuildListener listener, MatrixConfiguration c) throws InterruptedException, IOException, AggregatorFailureException {
             String whyInQueue = "";
             long startTime = System.currentTimeMillis();
@@ -323,17 +391,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
-        
-        @Override
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws IOException, InterruptedException {
-            String customWorkspace = getProject().getCustomWorkspace();
-            if (customWorkspace != null) {
-                // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
-            }
-            return super.decideWorkspace(n,wsl);
-        }
-      
     }
 
     /**

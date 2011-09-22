@@ -32,6 +32,7 @@ THE SOFTWARE.
 	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
 	<%@attribute name="startOffset" required="false" description="Skip this many bytes rather than showing from start of data" %>
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<!--
 	  script code
@@ -66,7 +67,10 @@ THE SOFTWARE.
                 e.appendChild(p); // Needs to be first for IE
                 // Use "outerHTML" for IE; workaround for:
                 // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
-                if (p.outerHTML) p.outerHTML = '<pre>'+text+'</pre>';
+                if (p.outerHTML) {
+                  p.outerHTML = '<pre>'+text+'</pre>';
+                  p = e.lastChild;
+                }
                 else p.innerHTML = text;
                 Behaviour.applySubtree(p);
                 if(stickToBottom) scroller.scrollToBottom();

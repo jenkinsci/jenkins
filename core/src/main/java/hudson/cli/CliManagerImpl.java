@@ -23,8 +23,11 @@
  */
 package hudson.cli;
 
+import hudson.model.User;
 import hudson.remoting.Channel;
-import hudson.model.Hudson;
+import hudson.remoting.Pipe;
+import hudson.util.IOUtils;
+import jenkins.model.Jenkins;
 import org.apache.commons.discovery.resource.ClassLoaders;
 import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
@@ -34,6 +37,10 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.CmdLineParser;
 import org.jvnet.tiger_types.Types;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Locale;
 import java.util.Collections;
@@ -41,6 +48,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
@@ -48,7 +59,10 @@ import java.io.Serializable;
  * @author Kohsuke Kawaguchi
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
-    public CliManagerImpl() {
+    private transient final Channel channel;
+
+    public CliManagerImpl(Channel channel) {
+        this.channel = channel;
     }
 
     public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -76,6 +90,21 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         return -1;
     }
 
+    public void authenticate(final String protocol, final Pipe c2s, final Pipe s2c) {
+        for (final CliTransportAuthenticator cta : CliTransportAuthenticator.all()) {
+            if (cta.supportsProtocol(protocol)) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        cta.authenticate(protocol,channel,new Connection(c2s.getIn(), s2c.getOut()));
+                    }
+                }.start();
+                return;
+            }
+        }
+        throw new UnsupportedOperationException("Unsupported authentication protocol: "+protocol);
+    }
+
     public boolean hasCommand(String name) {
         return CLICommand.clone(name)!=null;
     }
@@ -91,7 +120,7 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        cls.put(Hudson.getInstance().getPluginManager().uberClassLoader);
+        cls.put(Jenkins.getInstance().getPluginManager().uberClassLoader);
 
         ResourceNameIterator servicesIter =
             new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
@@ -104,4 +133,6 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
             CmdLineParser.registerHandler(c,h);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CliManagerImpl.class.getName());
 }

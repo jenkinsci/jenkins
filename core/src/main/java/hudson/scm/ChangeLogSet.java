@@ -32,6 +32,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,6 +108,37 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          */
         protected void setParent(ChangeLogSet parent) {
             this.parent = parent;
+        }
+
+        /**
+         * Returns a human readable display name of the commit number, revision number, and such thing
+         * that identifies this entry.
+         *
+         * <p>
+         * This method is primarily intended for visualization of the data.
+         *
+         * @return
+         *      null if such a concept doesn't make sense for the implementation. For example,
+         *      in CVS there's no single identifier for commits. Each file gets a different revision number.
+         * @since 1.405
+         */
+        public String getCommitId() {
+            return null;
+        }
+
+        /**
+         * Returns the timestamp of this commit in the {@link Date#getTime()} format.
+         *
+         * <p>
+         * This method is primarily intended for visualization of the data.
+         *
+         * @return
+         *      -1 if the implementation doesn't support it (for example, in CVS a commit
+         *      spreads over time between multiple changes on multiple files, so there's no single timestamp.)
+         * @since 1.405
+         */
+        public long getTimestamp() {
+            return -1;
         }
 
         /**

@@ -25,12 +25,15 @@ package hudson.util;
 
 import hudson.EnvVars;
 import hudson.Functions;
+import hudson.Launcher;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.tasks.Builder;
 import static hudson.Util.fixEmpty;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -179,8 +182,10 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if (e==null)    return _errorWithMarkup(Util.escape(message),kind);
 
         return _errorWithMarkup(Util.escape(message)+
-            " <a href='#' class='showDetails'>(show details)</a><pre style='display:none'>"
-                  + Functions.printThrowable(e) +
+            " <a href='#' class='showDetails'>"
+            + Messages.FormValidation_Error_Details()
+            + "</a><pre style='display:none'>"
+            + Functions.printThrowable(e) +
             "</pre>",kind
         );
     }
@@ -225,7 +230,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
                 return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
-                        Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
         };
@@ -278,7 +283,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
+        if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,16 @@
  */
 package hudson;
 
+import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
+import hudson.remoting.Channel;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.IOException2;
+import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
+import org.apache.commons.io.input.NullInputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +76,10 @@ public abstract class Proc {
     public abstract void kill() throws IOException, InterruptedException;
 
     /**
-     * Waits for the completion of the process and until we finish reading everything that the process has produced
+     * Waits for the completion of the process.
+     *
+     * Unless the caller opts to pump the streams via {@link #getStdout()} etc.,
+     * this method also blocks until we finish reading everything that the process has produced
      * to stdout/stderr.
      *
      * <p>
@@ -84,7 +93,47 @@ public abstract class Proc {
      */
     public abstract int join() throws IOException, InterruptedException;
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    /**
+     * Returns an {@link InputStream} to read from {@code stdout} of the child process.
+     * <p>
+     * When this method returns null, {@link Proc} will internally pump the output from
+     * the child process to your {@link OutputStream} of choosing.
+     *
+     * @return
+     *      null unless {@link ProcStarter#readStdout()} is used to indicate
+     *      that the caller intends to pump the stream by itself.
+     * @since 1.399
+     */
+    public abstract InputStream getStdout();
+
+    /**
+     * Returns an {@link InputStream} to read from {@code stderr} of the child process.
+     * <p>
+     * When this method returns null, {@link Proc} will internally pump the output from
+     * the child process to your {@link OutputStream} of choosing.
+     *
+     * @return
+     *      null unless {@link ProcStarter#readStderr()} is used to indicate
+     *      that the caller intends to pump the stream by itself.
+     * @since 1.399
+     */
+    public abstract InputStream getStderr();
+
+    /**
+     * Returns an {@link OutputStream} to write to {@code stdin} of the child process.
+     * <p>
+     * When this method returns null, {@link Proc} will internally pump the {@link InputStream}
+     * of your choosing to the child process.
+     *
+     * @return
+     *      null unless {@link ProcStarter#writeStdin()} is used to indicate
+     *      that the caller intends to pump the stream by itself.
+     * @since 1.399
+     */
+    public abstract OutputStream getStdin();
+
+    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    
     /**
      * Like {@link #join} but can be given a maximum time to wait.
      * @param timeout number of time units
@@ -108,11 +157,11 @@ public abstract class Proc {
                             kill();
                         }
                     } catch (InterruptedException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     } catch (IOException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     } catch (RuntimeException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     }
                 }
             });
@@ -131,6 +180,9 @@ public abstract class Proc {
         private final OutputStream out;
         private final EnvVars cookie;
         private final String name;
+
+        private final InputStream stdout,stderr;
+        private final OutputStream stdin;
 
         public LocalProc(String cmd, Map<String,String> env, OutputStream out, File workDir) throws IOException {
             this(cmd,Util.mapToEnv(env),out,workDir);
@@ -162,12 +214,12 @@ public abstract class Proc {
          */
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
             this( calcName(cmd),
-                  stderr(environment(new ProcessBuilder(cmd),env).directory(workDir),err),
+                  stderr(environment(new ProcessBuilder(cmd),env).directory(workDir), err==null || err== SELFPUMP_OUTPUT),
                   in, out, err );
         }
 
-        private static ProcessBuilder stderr(ProcessBuilder pb, OutputStream stderr) {
-            if(stderr==null)    pb.redirectErrorStream(true);
+        private static ProcessBuilder stderr(ProcessBuilder pb, boolean redirectError) {
+            if(redirectError)    pb.redirectErrorStream(true);
             return pb;
         }
 
@@ -190,18 +242,63 @@ public abstract class Proc {
             this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
             this.proc = procBuilder.start();
-            copier = new StreamCopyThread(name+": stdout copier", proc.getInputStream(), out);
-            copier.start();
-            if(in!=null)
-                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
-            else
-                proc.getOutputStream().close();
-            if(err!=null) {
-                copier2 = new StreamCopyThread(name+": stderr copier", proc.getErrorStream(), err);
-                copier2.start();
+
+            InputStream procInputStream = proc.getInputStream();
+            if (out==SELFPUMP_OUTPUT) {
+                stdout = procInputStream;
+                copier = null;
             } else {
-                copier2 = null;
+                copier = new StreamCopyThread(name+": stdout copier", procInputStream, out);
+                copier.start();
+                stdout = null;
             }
+
+            if (in == null) {
+                // nothing to feed to stdin
+                stdin = null;
+                proc.getOutputStream().close();
+            } else
+            if (in==SELFPUMP_INPUT) {
+                stdin = proc.getOutputStream();
+            } else {
+                new StdinCopyThread(name+": stdin copier",in,proc.getOutputStream()).start();
+                stdin = null;
+            }
+
+            InputStream procErrorStream = proc.getErrorStream();
+            if(err!=null) {
+                if (err==SELFPUMP_OUTPUT) {
+                    stderr = procErrorStream;
+                    copier2 = null;
+                } else {
+                    stderr = null;
+                    copier2 = new StreamCopyThread(name+": stderr copier", procErrorStream, err);
+                    copier2.start();
+                }
+            } else {
+                // the javadoc is unclear about what getErrorStream() returns when ProcessBuilder.redirectErrorStream(true),
+                //
+                // according to the source code, Sun JREs still still returns a distinct reader end of a pipe that needs to be closed.
+                // but apparently at least on some IBM JDK5, returned input and error streams are the same.
+                // so try to close them smartly
+                if (procErrorStream!=procInputStream) {
+                    procErrorStream.close();
+                }
+                copier2 = null;
+                stderr = null;
+            }
+        }
+
+        public InputStream getStdout() {
+            return stdout;
+        }
+
+        public InputStream getStderr() {
+            return stderr;
+        }
+
+        public OutputStream getStdin() {
+            return stdin;
         }
 
         /**
@@ -220,15 +317,15 @@ public abstract class Proc {
 
             try {
                 int r = proc.waitFor();
-                // see http://hudson.gotdns.com/wiki/display/HUDSON/Spawning+processes+from+build
+                // see http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                copier.join(10*1000);
+                if (copier!=null)   copier.join(10*1000);
                 if(copier2!=null)   copier2.join(10*1000);
-                if(copier.isAlive() || (copier2!=null && copier2.isAlive())) {
+                if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://wiki.hudson-ci.org/display/HUDSON/Spawning+processes+from+build for more information";
+                    String msg = "Process leaked file descriptors. See http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 
@@ -324,10 +421,15 @@ public abstract class Proc {
             }
             return buf.toString();
         }
+
+        public static final InputStream SELFPUMP_INPUT = new NullInputStream(0);
+        public static final OutputStream SELFPUMP_OUTPUT = new NullStream();
     }
 
     /**
-     * Retemoly launched process via {@link Channel}.
+     * Remotely launched process via {@link Channel}.
+     *
+     * @deprecated as of 1.399
      */
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;
@@ -361,6 +463,21 @@ public abstract class Proc {
         @Override
         public boolean isAlive() throws IOException, InterruptedException {
             return !process.isDone();
+        }
+
+        @Override
+        public InputStream getStdout() {
+            return null;
+        }
+
+        @Override
+        public InputStream getStderr() {
+            return null;
+        }
+
+        @Override
+        public OutputStream getStdin() {
+            return null;
         }
     }
 

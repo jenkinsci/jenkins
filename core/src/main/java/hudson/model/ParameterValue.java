@@ -26,6 +26,8 @@ package hudson.model;
 
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.model.queue.SubTask;
+import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
@@ -33,7 +35,9 @@ import hudson.util.VariableResolver;
 import java.io.Serializable;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
 
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -49,7 +53,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Instances of {@link ParameterValue}s are persisted into build's <tt>build.xml</tt>
  * through XStream (via {@link ParametersAction}), so instances need to be persistable.
  *
- * <h2>Assocaited Views</h2>
+ * <h2>Associated Views</h2>
  * <h4>value.jelly</h4>
  * The <tt>value.jelly</tt> view contributes a UI fragment to display the parameter
  * values used for a build.
@@ -62,6 +66,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *     {@link ParameterDefinition} is.
  * </ol>
  * @see ParameterDefinition
+ * @see ParametersAction
  */
 @ExportedBean(defaultVisibility=3)
 public abstract class ParameterValue implements Serializable {
@@ -245,11 +250,18 @@ public abstract class ParameterValue implements Serializable {
      * provided by this object should be masked in output.
      *
      * <p>
-     * Subclasses can override this to control the returne value.
+     * Subclasses can override this to control the return value.
      *
      * @since 1.378
      */
     public boolean isSensitive() {
         return false;
-}
+    }
+
+    /**
+     * @since 1.414
+     */
+    public Label getAssignedLabel(SubTask task) {
+        return null;
+    }
 }

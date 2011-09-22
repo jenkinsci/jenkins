@@ -1,5 +1,5 @@
 #!/bin/sh
-# preinst script for hudson
+# preinst script for jenkins
 #
 # see: dh_installdeb(1)
 

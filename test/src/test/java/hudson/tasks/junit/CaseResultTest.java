@@ -153,7 +153,7 @@ public class CaseResultTest extends HudsonTestCase {
     private static final String[] REDUCED_VISIBILITY_FIELDS = { "stdout", "stderr", "errorStackTrace", "errorDetails" };
     private static final String[] OTHER_FIELDS = { "duration", "className", "failedSince", "age", "skipped", "status" };
 
-    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    @Email("http://jenkins.361315.n4.nabble.com/Change-remote-API-visibility-for-CaseResult-getStdout-getStderr-td395102.html")
     public void testRemoteApiDefaultVisibility() throws Exception {
         FreeStyleBuild b = configureTestBuild("test-remoteapi");
 
@@ -171,7 +171,7 @@ public class CaseResultTest extends HudsonTestCase {
         assertTrue("Should have found an element, but found " + found, found > 0);
     }
     
-    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    @Email("http://jenkins.361315.n4.nabble.com/Change-remote-API-visibility-for-CaseResult-getStdout-getStderr-td395102.html")
     public void testRemoteApiNoDetails() throws Exception {
         FreeStyleBuild b = configureTestBuild("test-remoteapi");
 
@@ -189,7 +189,7 @@ public class CaseResultTest extends HudsonTestCase {
         assertTrue("Should have found an element, but found " + found, found > 0);
    }
     
-    @Email("http://www.nabble.com/Change-remote-API-visibility-for-CaseResult.getStdout-getStderr-td25619046.html")
+    @Email("http://jenkins.361315.n4.nabble.com/Change-remote-API-visibility-for-CaseResult-getStdout-getStderr-td395102.html")
     public void testRemoteApiNameOnly() throws Exception {
         FreeStyleBuild b = configureTestBuild("test-remoteapi");
 

@@ -67,8 +67,14 @@ public class ResponseTimeMonitor extends NodeMonitor {
                 d = new Data(old,-1L);
             }
 
-            if(d.hasTooManyTimeouts() && markOffline(c,d))
+            if(d.hasTooManyTimeouts() && !isIgnored()) {
+                // unlike other monitors whose failure still allow us to communicate with the slave,
+                // the failure in this monitor indicates that we are just unable to make any requests
+                // to this slave. So we should severe the connection, as opposed to marking it temporarily
+                // off line, which still keeps the underlying channel open.
+                c.disconnect(d);
                 LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
+            }
             return d;
         }
 

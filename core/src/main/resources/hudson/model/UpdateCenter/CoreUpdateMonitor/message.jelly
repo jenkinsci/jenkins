@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="warning">
     <j:set var="ucData" value="${it.data}" />
     <j:set var="upJob" value="${app.updateCenter.hudsonJob}" />
     <j:choose>
       <j:when test="${upJob.status.success}">
-        ${%UpgradeComplete(ucData.core.version)}
+        ${%UpgradeComplete(ucData.core.version,rootURL)}
       </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}

@@ -25,15 +25,14 @@ package hudson.slaves;
 
 import hudson.ExtensionPoint;
 import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Computer;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -64,10 +63,13 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * Launches the slave agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Listener)}
+     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
+     * Also note that the normal return of this method call does not necessarily signify a successful launch.
+     * If someone programmatically calls this method and wants to find out if the launch was a success,
+     * use {@link SlaveComputer#isOnline()} at the end.
      *
      * <p>
      * This method must operate synchronously. Asynchrony is provided by {@link Computer#connect(boolean)} and
@@ -154,7 +156,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *
      * @deprecated as of 1.281
      *      Use {@link Extension} for registration, and use
-     *      {@link Hudson#getDescriptorList(Class)} for read access.
+     *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
 }

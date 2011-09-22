@@ -41,14 +41,16 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
 import hudson.util.xstream.ImmutableMapConverter;
+import hudson.util.xstream.MapperDelegate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -57,7 +59,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class XStream2 extends XStream {
     private Converter reflectionConverter;
-    private ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
+
+    /**
+     * Hook to insert {@link Mapper}s after they are created.
+     */
+    private MapperInjectionPoint mapperInjectionPoint;
 
     public XStream2() {
         init();
@@ -72,7 +81,7 @@ public class XStream2 extends XStream {
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
@@ -93,7 +102,7 @@ public class XStream2 extends XStream {
     }
 
     private void init() {
-        // list up types that should be marshalled out like a value, without referencial integrity tracking.
+        // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
@@ -105,7 +114,7 @@ public class XStream2 extends XStream {
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
-        registerConverter(new AssociatedConverterImpl(this),-10);
+        registerConverter(new AssociatedConverterImpl(this), -10);
     }
 
     @Override
@@ -121,7 +130,59 @@ public class XStream2 extends XStream {
         });
         AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getClassLoader(), getReflectionProvider(), getJvm());
         a.autodetectAnnotations(true);
-        return a;
+
+        mapperInjectionPoint = new MapperInjectionPoint(a);
+
+        return mapperInjectionPoint;
+    }
+
+    public Mapper getMapperInjectionPoint() {
+        return mapperInjectionPoint.getDelegate();
+    }
+
+    /**
+     * This method allows one to insert additional mappers after {@link XStream2} was created,
+     * but because of the way XStream works internally, this needs to be done carefully.
+     * Namely,
+     *
+     * <ol>
+     * <li>You need to {@link #getMapperInjectionPoint()} wrap it, then put that back into {@link #setMapper(Mapper)}.
+     * <li>The whole sequence needs to be synchronized against this object to avoid a concurrency issue.
+     * </ol>
+     */
+    public void setMapper(Mapper m) {
+        mapperInjectionPoint.setDelegate(m);
+    }
+
+    final class MapperInjectionPoint extends MapperDelegate {
+        public MapperInjectionPoint(Mapper wrapped) {
+            super(wrapped);
+        }
+
+        public Mapper getDelegate() {
+            return delegate;
+        }
+
+        public void setDelegate(Mapper m) {
+            delegate = m;
+        }
+    }
+
+    /**
+     * Adds an alias in case class names change.
+     *
+     * Unlike {@link #alias(String, Class)}, which uses the registered alias name for writing XML,
+     * this method registers an alias to be used only for the sake of reading from XML. This makes
+     * this method usable for the situation when class names change.
+     *
+     * @param oldClassName
+     *      Fully qualified name of the old class name.
+     * @param newClass
+     *      New class that's field-compatible with the given old class name.
+     * @since 1.416
+     */
+    public void addCompatibilityAlias(String oldClassName, Class newClass) {
+        compatibilityAliases.put(oldClassName,newClass);
     }
 
     /**
@@ -138,6 +199,9 @@ public class XStream2 extends XStream {
 
         @Override
         public Class realClass(String elementName) {
+            Class s = compatibilityAliases.get(elementName);
+            if (s!=null)    return s;
+
             try {
                 return super.realClass(elementName);
             } catch (CannotResolveClassException e) {
@@ -159,14 +223,14 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class,Converter> cache =
-                new ConcurrentHashMap<Class,Converter>();
+        private final ConcurrentHashMap<Class<?>,Converter> cache =
+                new ConcurrentHashMap<Class<?>,Converter>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class t) {
+        private Converter findConverter(Class<?> t) {
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null

@@ -5,26 +5,34 @@ work
 *.iml
 *.iws
 *.ipr
+.idea
+out
 
 # eclipse project file
 .settings
 .classpath
 .project
+build
+
+# vim
+*~
 
 war/images/16x16
 war/images/24x24
 war/images/32x32
 war/images/48x48
-hudson.war
+jenkins.war
 RPMS
 SRPMS
 debian/binary
-debian/debian/hudson
-debian/debian/hudson.substvars
+debian/debian/jenkins
+debian/debian/jenkins.substvars
 debian/debian/files
 debian/build-stamp
 debian/configure-stamp
 *.debhelper
 *.debhelper.log
-hudson_*.build
-hudson_*.changes
+jenkins_*.build
+jenkins_*.changes
+*.deb
+push-build.sh

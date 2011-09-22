@@ -25,10 +25,12 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
@@ -37,9 +39,11 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
+import hudson.slaves.OfflineCause;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
@@ -47,12 +51,18 @@ import hudson.util.TagCloud;
 import hudson.util.TagCloud.WeightFunction;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.logging.Logger;
 
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
@@ -60,14 +70,17 @@ import org.kohsuke.stapler.export.Exported;
  * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
  *
  * <p>
- * As a special case, {@link Hudson} extends from here.
+ * As a special case, {@link Jenkins} extends from here.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
  * @see NodeDescriptor
  */
 @ExportedBean
-public abstract class Node extends AbstractModelObject implements Describable<Node>, ExtensionPoint, AccessControlled {
+public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled {
+
+    private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
+
     /**
      * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
      * is saved once.
@@ -146,7 +159,8 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      *      such as when this node has no executors at all.
      */
     public final Computer toComputer() {
-        return Hudson.getInstance().getComputer(this);
+        AbstractCIBase ciBase = Jenkins.getInstance();
+        return ciBase.getComputer(this);
     }
 
     /**
@@ -161,9 +175,44 @@ public abstract class Node extends AbstractModelObject implements Describable<No
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
-     * Nobody but {@link Hudson#updateComputerList()} should call this method.
+     * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
+
+    /**
+     * Let Nodes be aware of the lifecycle of their own {@link Computer}.
+     */
+    @Extension
+    public static class InternalComputerListener extends ComputerListener {
+        @Override
+        public void onOnline(Computer c, TaskListener listener) {
+            Node node = c.getNode();
+
+            // At startup, we need to restore any previously in-effect temp offline cause.
+            // We wait until the computer is started rather than getting the data to it sooner
+            // so that the normal computer start up processing works as expected.
+            if (node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
+                c.setTemporarilyOffline(true, node.temporaryOfflineCause);
+            }
+        }
+    }
+
+    private OfflineCause temporaryOfflineCause;
+
+    /**
+     * Enable a {@link Computer} to inform its node when it is taken
+     * temporarily offline.
+     */
+    void setTemporaryOfflineCause(OfflineCause cause) {
+        try {
+            if (temporaryOfflineCause != cause) {
+                temporaryOfflineCause = cause;
+                Jenkins.getInstance().save(); // Gotta be a better way to do this
+            }
+        } catch (java.io.IOException e) {
+            LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
+        }
+    }
 
     /**
      * Return the possibly empty tag cloud for the labels of this node.
@@ -238,9 +287,25 @@ public abstract class Node extends AbstractModelObject implements Describable<No
      * task cannot be run.
      *
      * @since 1.360
+     * @deprecated as of 1.413
+     *      Use {@link #canTake(Queue.BuildableItem)}
      */
     public CauseOfBlockage canTake(Task task) {
-        Label l = task.getAssignedLabel();
+        return null;
+    }
+
+    /**
+     * Called by the {@link Queue} to determine whether or not this node can
+     * take the given task. The default checks include whether or not this node
+     * is part of the task's assigned label, whether this node is in
+     * {@link Mode#EXCLUSIVE} mode if it is not in the task's assigned label,
+     * and whether or not any of this node's {@link NodeProperty}s say that the
+     * task cannot be run.
+     *
+     * @since 1.413
+     */
+    public CauseOfBlockage canTake(Queue.BuildableItem item) {
+        Label l = item.getAssignedLabel();
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
@@ -250,7 +315,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
-            CauseOfBlockage c = prop.canTake(task);
+            CauseOfBlockage c = prop.canTake(item);
             if (c!=null)    return c;
         }
 
@@ -309,7 +374,7 @@ public abstract class Node extends AbstractModelObject implements Describable<No
     }
     
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
     
     public final void checkPermission(Permission permission) {
@@ -318,6 +383,34 @@ public abstract class Node extends AbstractModelObject implements Describable<No
 
     public final boolean hasPermission(Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
+        if (form==null)     return null;
+
+        final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
+        BindInterceptor old = req.setBindListener(new BindInterceptor() {
+            @Override
+            public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
+                if (jsonForProperties!=jsonSource)  return DEFAULT;
+
+                try {
+                    DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
+                    tmp.rebuild(req, jsonForProperties, NodeProperty.all());
+                    return tmp.toList();
+                } catch (FormException e) {
+                    throw new IllegalArgumentException(e);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        });
+
+        try {
+            return getDescriptor().newInstance(req, form);
+        } finally {
+            req.setBindListener(old);
+        }
     }
 
     public abstract NodeDescriptor getDescriptor();

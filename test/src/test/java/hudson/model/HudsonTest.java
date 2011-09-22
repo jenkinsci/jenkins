@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -56,7 +57,13 @@ public class HudsonTest extends HudsonTestCase {
      * Tests the basic UI sanity and HtmlUnit set up.
      */
     public void testGlobalConfigRoundtrip() throws Exception {
-        submit(createWebClient().goTo("configure").getFormByName("config"));
+        jenkins.setQuietPeriod(10);
+        jenkins.setScmCheckoutRetryCount(9);
+        jenkins.setNumExecutors(8);
+        configRoundtrip();
+        assertEquals(10,jenkins.getQuietPeriod());
+        assertEquals(9,jenkins.getScmCheckoutRetryCount());
+        assertEquals(8,jenkins.getNumExecutors());
     }
 
     /**
@@ -178,7 +185,7 @@ public class HudsonTest extends HudsonTestCase {
      */
     @Bug(6938)
     public void testInvalidPrimaryView() throws Exception {
-        Field pv = Hudson.class.getDeclaredField("primaryView");
+        Field pv = Jenkins.class.getDeclaredField("primaryView");
         pv.setAccessible(true);
         String value = null;
         pv.set(hudson, value);

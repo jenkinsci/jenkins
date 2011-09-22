@@ -2,7 +2,8 @@
 The MIT License
 
 Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Seiji Sogabe, Tom Huybrechts
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,7 @@ THE SOFTWARE.
   <st:documentation>
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
-    to form Hudson's basic HTML layout.
+    to form Jenkins's basic HTML layout.
 
     <st:attribute name="title" use="required">
       Title of the HTML page. Rendered into &lt;title> tag.
@@ -58,21 +59,34 @@ THE SOFTWARE.
 <!-- The path starts with a "/" character but does not end with a "/" character. -->
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+<j:set var="_" value="${request.getSession()}"/><!-- depending on what tags are used, we can later end up discovering that we needed a session, but it's too late because the headers are already committed. so ensure we always have a session -->
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 <!--
   load static resources from the path dedicated to a specific version.
   This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
   the same thing as "/abc/def.ghi", but this avoids the stale cache
-  problem when the user upgrades to new Hudson. Stapler also sets a long
+  problem when the user upgrades to new Jenkins. Stapler also sets a long
   future expiration dates for such static resources.
 -->
 <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
 <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
-<html>
+  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+    <st:header name="X-Hudson" value="1.395"/>
+    <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
+    <j:if test="${app.tcpSlaveAgentListener!=null}">
+      <!-- advertise the CLI TCP port -->
+      <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+    </j:if>
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
+  </j:if>
+  <html>
   <head>
     ${h.checkPermission(it,permission)}
 
-    <title>${h.appendIfNotNull(title, ' [Hudson]', 'Hudson')}</title>
+    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
@@ -83,9 +97,13 @@ THE SOFTWARE.
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}";</script>
 
-    <script src="${resURL}/scripts/prototype.js" type="text/javascript"></script>
-    <script src="${resURL}/scripts/behavior.js" type="text/javascript"></script>
-    <script src="${resURL}/scripts/sortable.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
+    <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
+
+    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
+    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
+                includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
@@ -118,7 +136,7 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Hudson" />
+    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
@@ -146,9 +164,9 @@ THE SOFTWARE.
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                  <input name="q" value="search" id="search-box" class="has-default-text defaulted" />
+                  <input name="q" value="${%search}" id="search-box" class="has-default-text defaulted" />
                   <st:nbsp />
-                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" /></a>
+                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
                   <div id="search-box-completion" />
                   <script>createSearchBox("${searchURL}");</script>
                 </div>
@@ -209,7 +227,7 @@ THE SOFTWARE.
       </tr>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${imagesURL}/hudson.png);
+        style="background-image: url(${imagesURL}/jenkins.png);
                background-repeat: no-repeat; background-position: bottom left;">
       <tr>
         <td id="side-panel" width="20%">
@@ -242,11 +260,9 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
-        <a href="http://hudson-ci.org/">Hudson ver. ${h.version}</a>
+        <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
       </td></tr>
     </table>
-    <!-- during the loading 'app' object is not Hudson, so it may not have update center -->
-    <st:include it="${app.updateCenter}" page="main.jelly" optional="true" />
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="footer.jelly" optional="true" />
     </j:forEach>

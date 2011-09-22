@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Seiji Sogabe
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Seiji Sogabe, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,56 @@
  */
 package hudson.maven;
 
-import hudson.Launcher;
 import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
+import hudson.maven.reporters.MavenArtifactRecord;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Node;
 import hudson.model.Result;
+import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.tasks.BuildStepMonitor;
-import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
+import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.Authentication;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.embedder.MavenEmbedderException;
+import org.apache.maven.cli.BatchModeMavenTransferListener;
+import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
-import org.kohsuke.stapler.QueryParameter;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -71,6 +96,7 @@ public class RedeployPublisher extends Recorder {
     /**
      * For backward compatibility
      */
+    @Deprecated
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
     	this(id, url, uniqueVersion, false);
     }
@@ -86,38 +112,52 @@ public class RedeployPublisher extends Recorder {
         this.evenIfUnstable = evenIfUnstable;
     }
 
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if(build.getResult().isWorseThan(getTreshold()))
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        if (build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
 
-        if (url==null) {
-            listener.getLogger().println("No Repository URL is specified.");
+        List<MavenAbstractArtifactRecord> mavenAbstractArtifactRecords = getActions(build, listener);
+        if (mavenAbstractArtifactRecords == null || mavenAbstractArtifactRecords.isEmpty()) {
+            listener.getLogger().println("[ERROR] No artifacts are recorded. Is this a Maven project?");
             build.setResult(Result.FAILURE);
             return true;
         }
 
-        MavenAbstractArtifactRecord mar = getAction(build);
-        if(mar==null) {
-            listener.getLogger().println("No artifacts are recorded. Is this a Maven project?");
-            build.setResult(Result.FAILURE);
-            return true;
+
+        if(build instanceof MavenModuleSetBuild && ((MavenModuleSetBuild)build).getParent().isArchivingDisabled()){
+          listener.getLogger().println("[ERROR] You cannot use the \"Deploy artifacts to Maven repository\" feature if you " +
+                                           "disabled automatic artifact archiving");
+          build.setResult(Result.FAILURE);
+          return true;
         }
 
-        listener.getLogger().println("Deploying artifacts to "+url);
+        long startupTime = Calendar.getInstance().getTimeInMillis();
+
         try {
-            
-            MavenEmbedder embedder = MavenUtil.createEmbedder(listener,build);
+            MavenEmbedder embedder = createEmbedder(listener, build);
             ArtifactRepositoryLayout layout =
-                (ArtifactRepositoryLayout) embedder.getContainer().lookup( ArtifactRepositoryLayout.ROLE,"default");
+                    (ArtifactRepositoryLayout) embedder.lookup(ArtifactRepositoryLayout.ROLE, "default");
             ArtifactRepositoryFactory factory =
-                (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
-
-            ArtifactRepository repository = factory.createDeploymentArtifactRepository(
-                    id, url, layout, uniqueVersion);
-
-            mar.deploy(embedder,repository,listener);
-
-            embedder.stop();
+                    (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
+            ArtifactRepository artifactRepository = null;
+            if (url != null) {
+                // By default we try to get the repository definition from the job configuration
+                artifactRepository = getDeploymentRepository(factory, layout, id, url);
+            }
+            for (MavenAbstractArtifactRecord mavenAbstractArtifactRecord : mavenAbstractArtifactRecords) {
+                if (artifactRepository == null && mavenAbstractArtifactRecord instanceof MavenArtifactRecord) {
+                    // If no repository definition is set on the job level we try to take it from the POM
+                    MavenArtifactRecord mavenArtifactRecord = (MavenArtifactRecord) mavenAbstractArtifactRecord;
+                    artifactRepository = getDeploymentRepository(factory, layout, mavenArtifactRecord.repositoryId, mavenArtifactRecord.repositoryUrl);
+                }
+                if (artifactRepository == null) {
+                    listener.getLogger().println("[ERROR] No Repository settings defined in the job configuration or distributionManagement of the module.");
+                    build.setResult(Result.FAILURE);
+                    return true;
+                }
+                mavenAbstractArtifactRecord.deploy(embedder, artifactRepository, listener);
+            }
+            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));
@@ -128,9 +168,150 @@ public class RedeployPublisher extends Recorder {
         }
         // failed
         build.setResult(Result.FAILURE);
+        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
         return true;
     }
 
+    private ArtifactRepository getDeploymentRepository(ArtifactRepositoryFactory factory, ArtifactRepositoryLayout layout, String repositoryId, String repositoryUrl) throws ComponentLookupException {
+        if (repositoryUrl == null) return null;
+        final ArtifactRepository repository = factory.createDeploymentArtifactRepository(
+                repositoryId, repositoryUrl, layout, uniqueVersion);
+        return new WrappedArtifactRepository(repository, uniqueVersion);
+    }
+
+    /**
+     * 
+     * copy from MavenUtil but here we have to ignore localRepo path and setting as thoses paths comes
+     * from the remote node and can not exist in master see http://issues.jenkins-ci.org/browse/JENKINS-8711
+     * 
+     */
+    private MavenEmbedder createEmbedder(TaskListener listener, AbstractBuild<?,?> build) throws MavenEmbedderException, IOException, InterruptedException {
+        MavenInstallation m=null;
+        File settingsLoc = null, remoteGlobalSettingsFromConfig = null;
+        String profiles = null;
+        Properties systemProperties = null;
+        String privateRepository = null;
+        FilePath remoteSettingsFromConfig = null;
+        
+        File tmpSettings = File.createTempFile( "jenkins", "temp-settings.xml" );
+        try {
+            AbstractProject project = build.getProject();
+            
+            if (project instanceof MavenModuleSet) {
+                MavenModuleSet mavenModuleSet = ((MavenModuleSet) project);
+                profiles = mavenModuleSet.getProfiles();
+                systemProperties = mavenModuleSet.getMavenProperties();
+                
+                // olamy see  
+                // we have to take about the settings use for the project
+                // order tru configuration 
+                // TODO maybe in goals with -s,--settings last wins but not done in during pom parsing
+                // or -Dmaven.repo.local
+                // if not we must get ~/.m2/settings.xml then $M2_HOME/conf/settings.xml
+                
+                // TODO check if the remoteSettings has a localRepository configured and disabled it
+
+                String settingsConfigId = mavenModuleSet.getSettingConfigId();
+                String altSettingsPath = null;
+
+                if (!StringUtils.isBlank(settingsConfigId)) {
+                    Config config = SettingsProviderUtils.findConfig( settingsConfigId,
+                                                                      MavenSettingsProvider.class );
+                    if (config == null) {
+                        listener.getLogger().println(
+                            " your Apache Maven build is setup to use a config with id " + settingsConfigId
+                                + " but cannot find the config" );
+                    } else {
+                        listener.getLogger().println( "redeploy publisher using settings config with name " + config.name );
+                        String settingsContent = config.content;
+                        if (config.content != null ) {
+                            remoteSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFilePath( config, build.getWorkspace() );
+                            altSettingsPath = remoteSettingsFromConfig.getRemote();
+                        }
+                    }
+                }
+
+                if (mavenModuleSet.getAlternateSettings() != null ) {
+                    altSettingsPath = mavenModuleSet.getAlternateSettings();
+                }
+
+                String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
+                if (!StringUtils.isBlank(globalSettingsConfigId)) {
+                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
+                    if (config == null) {
+                        listener.getLogger().println(
+                            " your Apache Maven build is setup to use a global settings config with id "
+                                + globalSettingsConfigId + " but cannot find the config" );
+                    } else {
+                        listener.getLogger().println( "redeploy publisher using global settings config with name " + config.name );
+                        if (config.content != null ) {
+                            remoteGlobalSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFile( config );
+                        }
+                    }
+                }
+                Node buildNode = build.getBuiltOn();
+                
+                if(buildNode == null) {
+                    // assume that build was made on master
+                    buildNode = Jenkins.getInstance();
+                }
+
+                if (StringUtils.isBlank( altSettingsPath ) ) {
+                    // get userHome from the node where job has been executed
+                    String remoteUserHome = build.getWorkspace().act( new GetUserHome() );
+                    altSettingsPath = remoteUserHome + "/.m2/settings.xml";
+                }
+                
+                // we copy this file in the master in a  temporary file 
+                FilePath filePath = new FilePath( tmpSettings );
+                FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
+                if (!remoteSettings.exists()) {
+                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
+                    
+                    String mavenHome = 
+                        ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
+                    String settingsPath = mavenHome + "/conf/settings.xml";
+                    remoteSettings = build.getWorkspace().child( settingsPath);
+                }
+                listener.getLogger().println( "Maven RedeployPublished use remote " + (buildNode != null ? buildNode.getNodeName() : "local" )  
+                                              + " maven settings from : " + remoteSettings.getRemote() );
+                remoteSettings.copyTo( filePath );
+                settingsLoc = tmpSettings;
+                
+            }
+
+            MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest(listener,
+                                  m!=null?m.getHomeDir():null,
+                                  profiles,
+                                  systemProperties,
+                                  privateRepository,
+                                  settingsLoc );
+
+            if (remoteGlobalSettingsFromConfig != null) {
+                mavenEmbedderRequest.setGlobalSettings( remoteGlobalSettingsFromConfig );
+            }
+
+            mavenEmbedderRequest.setTransferListener(new BatchModeMavenTransferListener(listener.getLogger()));
+
+            return MavenUtil.createEmbedder(mavenEmbedderRequest);
+        } finally {
+            if (tmpSettings != null) {
+                tmpSettings.delete();
+            }
+            if (remoteSettingsFromConfig != null) {
+                remoteSettingsFromConfig.delete();
+            }
+            FileUtils.deleteQuietly(remoteGlobalSettingsFromConfig);
+        }
+    }
+    
+    private static final class GetUserHome implements Callable<String,IOException> {
+        public String call() throws IOException {
+            return System.getProperty("user.home");
+        }
+    }
+    
+    
     /**
      * Obtains the {@link MavenAbstractArtifactRecord} that we'll work on.
      * <p>
@@ -138,6 +319,23 @@ public class RedeployPublisher extends Recorder {
      */
     protected MavenAbstractArtifactRecord getAction(AbstractBuild<?, ?> build) {
         return build.getAction(MavenAbstractArtifactRecord.class);
+    }
+    
+    protected List<MavenAbstractArtifactRecord> getActions(AbstractBuild<?, ?> build, BuildListener listener) {
+        List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
+        if (!(build instanceof MavenModuleSetBuild)) {
+            return actions;
+        }
+        for (Entry<MavenModule, MavenBuild> e : ((MavenModuleSetBuild)build).getModuleLastBuilds().entrySet()) {
+            MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
+            if (a == null) {
+                listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
+            } else {
+                actions.add( a );    
+            }
+            
+        }
+        return actions;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -182,12 +380,136 @@ public class RedeployPublisher extends Recorder {
             return true;
         }
 
-        public FormValidation doCheckUrl(@QueryParameter String url) {
-            String fixedUrl = hudson.Util.fixEmptyAndTrim(url);
-            if (fixedUrl==null)
-                return FormValidation.error(Messages.RedeployPublisher_RepositoryURL_Mandatory());
-
-            return FormValidation.ok();
-        }
     }
+    
+    //---------------------------------------------
+    
+    
+    public static class WrappedArtifactRepository implements ArtifactRepository {
+        private ArtifactRepository artifactRepository;
+        private boolean uniqueVersion;
+        public WrappedArtifactRepository (ArtifactRepository artifactRepository, boolean uniqueVersion)
+        {
+            this.artifactRepository = artifactRepository;
+            this.uniqueVersion = uniqueVersion;
+        }
+        public String pathOf( Artifact artifact )
+        {
+            return artifactRepository.pathOf( artifact );
+        }
+        public String pathOfRemoteRepositoryMetadata( ArtifactMetadata artifactMetadata )
+        {
+            return artifactRepository.pathOfRemoteRepositoryMetadata( artifactMetadata );
+        }
+        public String pathOfLocalRepositoryMetadata( ArtifactMetadata metadata, ArtifactRepository repository )
+        {
+            return artifactRepository.pathOfLocalRepositoryMetadata( metadata, repository );
+        }
+        public String getUrl()
+        {
+            return artifactRepository.getUrl();
+        }
+        public void setUrl( String url )
+        {
+            artifactRepository.setUrl( url );
+        }
+        public String getBasedir()
+        {
+            return artifactRepository.getBasedir();
+        }
+        public String getProtocol()
+        {
+            return artifactRepository.getProtocol();
+        }
+        public String getId()
+        {
+            return artifactRepository.getId();
+        }
+        public void setId( String id )
+        {
+            artifactRepository.setId( id );
+        }
+        public ArtifactRepositoryPolicy getSnapshots()
+        {
+            return artifactRepository.getSnapshots();
+        }
+        public void setSnapshotUpdatePolicy( ArtifactRepositoryPolicy policy )
+        {
+            artifactRepository.setSnapshotUpdatePolicy( policy );
+        }
+        public ArtifactRepositoryPolicy getReleases()
+        {
+            return artifactRepository.getReleases();
+        }
+        public void setReleaseUpdatePolicy( ArtifactRepositoryPolicy policy )
+        {
+            artifactRepository.setReleaseUpdatePolicy( policy );
+        }
+        public ArtifactRepositoryLayout getLayout()
+        {
+            return artifactRepository.getLayout();
+        }
+        public void setLayout( ArtifactRepositoryLayout layout )
+        {
+            artifactRepository.setLayout( layout );
+        }
+        public String getKey()
+        {
+            return artifactRepository.getKey();
+        }
+        public boolean isUniqueVersion()
+        {
+            return this.uniqueVersion;
+        }
+        
+        public void setUniqueVersion(boolean uniqueVersion) {
+            this.uniqueVersion = uniqueVersion;
+        }
+        
+        public boolean isBlacklisted()
+        {
+            return artifactRepository.isBlacklisted();
+        }
+        public void setBlacklisted( boolean blackListed )
+        {
+            artifactRepository.setBlacklisted( blackListed );
+        }
+        public Artifact find( Artifact artifact )
+        {
+            return artifactRepository.find( artifact );
+        }
+        public List<String> findVersions( Artifact artifact )
+        {
+            return artifactRepository.findVersions( artifact );
+        }
+        public boolean isProjectAware()
+        {
+            return artifactRepository.isProjectAware();
+        }
+        public void setAuthentication( Authentication authentication )
+        {
+            artifactRepository.setAuthentication( authentication );
+        }
+        public Authentication getAuthentication()
+        {
+            return artifactRepository.getAuthentication();
+        }
+        public void setProxy( Proxy proxy )
+        {
+            artifactRepository.setProxy( proxy );
+        }
+        public Proxy getProxy()
+        {
+            return artifactRepository.getProxy();
+        }
+        public List<ArtifactRepository> getMirroredRepositories()
+        {
+            return Collections.emptyList();
+        }
+        public void setMirroredRepositories( List<ArtifactRepository> arg0 )
+        {
+            // noop            
+        }
+    }    
+    
 }

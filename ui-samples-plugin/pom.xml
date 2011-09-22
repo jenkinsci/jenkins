@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +25,35 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
-    <groupId>org.jvnet.hudson.main</groupId>
+    <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.390-SNAPSHOT</version>
+    <version>1.433-SNAPSHOT</version>
   </parent>
 
   <artifactId>ui-samples-plugin</artifactId>
   <packaging>hpi</packaging>
-  <name>Hudson UI sample plugin</name>
+
+  <name>Jenkins UI sample plugin</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>hudson-core</artifactId>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
       <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
       <dependency>
-        <groupId>org.jvnet.hudson.main</groupId>
-        <artifactId>hudson-test-harness</artifactId>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-test-harness</artifactId>
         <version>${project.version}</version>
         <scope>test</scope>
       </dependency>
         <dependency>
-            <groupId>org.jvnet.hudson.main</groupId>
-            <artifactId>hudson-war</artifactId>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>jenkins-war</artifactId>
             <type>war</type>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -80,9 +83,9 @@ THE SOFTWARE.
     </resources>
     <plugins>
       <plugin>
-        <groupId>org.jvnet.hudson.tools</groupId>
+        <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.54</version>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -91,13 +94,13 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.15</version>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -112,4 +115,5 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
+
 </project>

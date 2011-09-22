@@ -22,9 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="" help="/help/security/private-realm/allow-signup.html">
-	  <f:checkbox name="privateRealm.allowsSignup" checked="${h.defaultToTrue(instance.allowsSignup())}"
-            title="${%Allow users to sign up}"/>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
+  xmlns:f="/lib/form">
+  <f:entry title="" help="/help/security/private-realm/allow-signup.html">
+    <f:checkbox name="privateRealm.allowsSignup" checked="${h.defaultToTrue(instance.allowsSignup())}" title="${%Allow users to sign up}" />
   </f:entry>
+  <j:if test="${size(h.captchaSupportDescriptors) gt 0}">
+    <f:entry>
+      <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}"
+        title="${%Enable captcha on sign up}" />
+    </f:entry>
+    <f:dropdownList name="privateRealm.captchaSupport" title="${%Captcha Support}">
+      <!-- Loop through available Captcha Support Descriptors -->
+      <j:forEach var="descriptor" items="${h.captchaSupportDescriptors}" varStatus="loop">
+        <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"
+          selected="${descriptor==instance.captchaSupport.descriptor}" staplerClass="${descriptor.clazz.name}">
+          <!-- Include config.jelly for this Captcha Support -->
+          <st:include page="${descriptor.configPage}" from="${descriptor}" optional="true" />
+        </f:dropdownListBlock>
+      </j:forEach>
+    </f:dropdownList>
+  </j:if>
 </j:jelly>

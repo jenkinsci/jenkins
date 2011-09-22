@@ -25,14 +25,15 @@ THE SOFTWARE.
 <!--
   Side panel for the log recorder
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.gif" href=".." title="${%Back to Loggers}" />
-      <l:task icon="images/24x24/notepad.gif" href="." title="${%Log records}" />
-      <l:task icon="images/24x24/setting.gif" href="configure" title="${%Configure}" />
-      <l:task icon="images/24x24/edit-delete.gif" href="delete" title="${%Delete}" />
+      <l:task icon="images/24x24/up.png" href=".." title="${%Back to Loggers}" />
+      <l:task icon="images/24x24/notepad.png" href="." title="${%Log records}" />
+      <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" />
+      <l:task icon="images/24x24/edit-delete.png" href="delete" title="${%Delete}" />
     </l:tasks>
   </l:side-panel>
 </j:jelly>
