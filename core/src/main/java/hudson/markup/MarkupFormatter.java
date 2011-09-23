@@ -25,7 +25,10 @@ package hudson.markup;
 
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -100,9 +103,9 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
      * Generate HTML for preview, using markup formatter.
      * Can be called from other views.
      */
-    public void doPreviewDescription( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        String desc = req.getParameter("description");
-        rsp.setContentType("text/html; charset=UTF-8"); // UTF-8 required by XHR
-        translate(desc, rsp.getWriter());
+    public HttpResponse doPreviewDescription(@QueryParameter String description) throws IOException {
+        StringWriter w = new StringWriter();
+        translate(description, w);
+        return HttpResponses.html(w.toString());
     }
 }
