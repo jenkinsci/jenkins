@@ -83,7 +83,7 @@ THE SOFTWARE.
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>
-  <j:if test="${attrs['preview']!=null}">
+  <j:if test="${attrs.preview}">
     <a onclick="previewDescription(this);" href="#">${%Preview}</a>
     <div class="descriptionPreview" style="text-align:left; background-color: #EEE; padding: 0.5em; display: none;">
       <a onclick="hidePreview(this);" href="#">${%Hide preview}</a>
@@ -106,7 +106,7 @@ THE SOFTWARE.
       var previewDiv = findNext(sender, function(e){return e.className == "descriptionPreview"});
       var previewDivBody = previewDiv.getElementsByTagName("DIV")[0];
 
-      new Ajax.Request(rootURL + "/previewDescription", {
+      new Ajax.Request(rootURL + "/markupFormatter/previewDescription", {
         method: "POST",
         requestHeaders: "Content-Type: application/x-www-form-urlencoded",
         parameters: {

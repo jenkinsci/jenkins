@@ -90,16 +90,6 @@ public class AllView extends View {
         rsp.sendRedirect(".");
     }
 
-    /**
-     * Generate HTML for preview, using markup formatter.
-     * Can be called from other views.
-     */
-    public void doPreviewDescription( StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        String desc = req.getParameter("description");
-        rsp.setContentType("text/html; charset=UTF-8"); // UTF-8 required by XHR
-        Jenkins.getInstance().getMarkupFormatter().translate(desc, rsp.getWriter());
-    }
-
     @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
