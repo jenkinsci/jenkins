@@ -1194,6 +1194,44 @@ var hudsonRules = {
 
     ".button-with-dropdown" : function (e) {
         new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+    },
+
+    "DIV.description-preview-container" : function (e) {
+        var previewDiv = findElementsBySelector(e,".description-preview")[0];
+        var showPreview = findElementsBySelector(e,".description-show-preview")[0];
+        var hidePreview = findElementsBySelector(e,".description-hide-preview")[0];
+
+        showPreview.onclick = function() {
+            // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
+            var textarea = showPreview.parentNode.getElementsByTagName("TEXTAREA")[0];
+            var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+
+            new Ajax.Request(rootURL + "/markupFormatter/previewDescription", {
+                method: "POST",
+                requestHeaders: "Content-Type: application/x-www-form-urlencoded",
+                parameters: {
+                    description: text
+                },
+                onSuccess: function(obj) {
+                    this.render(obj.responseText)
+                },
+                render : function(txt) {
+                    $(previewDiv).show();
+                    $(previewDiv).show();
+                    previewDiv.innerHTML = txt;
+                },
+                onFailure: function(obj) {
+                    render(obj.status + " " + obj.statusText + "<HR/>" + obj.responseText)
+                }
+            });
+            return false;
+        }
+
+        /* var */
+        hidePreview.onclick = function(sender) {
+            $(hidePreview).hide();
+            $(previewDiv).hide();
+        };
     }
 };
 
@@ -2357,4 +2395,3 @@ function createComboBox(idOrField,valueFunction) {
 Ajax.Request.prototype.dispatchException = function(e) {
     throw e;
 }
-
