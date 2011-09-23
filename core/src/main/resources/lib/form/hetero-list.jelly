@@ -85,7 +85,7 @@ THE SOFTWARE.
           </div>
         </f:block>
       </table>
-      <input type="hidden" name="kind" value="${descriptor.class.name}" />
+      <input type="hidden" name="kind" value="${descriptor.id}" />
     </d:tag>
   </d:taglib>
 
