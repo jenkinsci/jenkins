@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,11 @@
 package org.jvnet.hudson.test;
 
 import hudson.Extension;
-import hudson.ExtensionComponent;
-import hudson.ExtensionFinder;
-import hudson.model.Hudson;
-import net.java.sezpoz.Index;
-import net.java.sezpoz.IndexItem;
+import hudson.ExtensionFinder.AbstractGuiceFinder;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Loads {@link TestExtension}s.
@@ -45,53 +36,37 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class TestExtensionLoader extends ExtensionFinder {
+public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
+    public TestExtensionLoader() {
+        super(TestExtension.class);
+    }
+
     @Override
-    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+    protected boolean isOptional(TestExtension annotation) {
+        return false;
+    }
+
+    @Override
+    protected double getOrdinal(TestExtension annotation) {
+        return 0;
+    }
+
+    @Override
+    protected boolean isActive(AnnotatedElement e) {
         TestEnvironment env = TestEnvironment.get();
 
-        List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
-
-        if (env==null)  return result;  // not in a test
-
-        ClassLoader cl = hudson.getPluginManager().uberClassLoader;
-        for (IndexItem<TestExtension,Object> item : Index.load(TestExtension.class, Object.class, cl)) {
-            try {
-                AnnotatedElement e = item.element();
-                Class<?> extType;
-                if (e instanceof Class) {
-                    extType = (Class) e;
-                    if (!isActive(env, extType)) continue;
-                } else
-                if (e instanceof Field) {
-                    Field f = (Field) e;
-                    if (!f.getDeclaringClass().isInstance(env.testCase))
-                        continue;      // not executing the enclosing test
-                    extType = f.getType();
-                } else
-                if (e instanceof Method) {
-                    Method m = (Method) e;
-                    if (!m.getDeclaringClass().isInstance(env.testCase))
-                        continue;      // not executing the enclosing test
-                    extType = m.getReturnType();
-                } else
-                    throw new AssertionError();
-
-                String testName = item.annotation().value();
-                if (testName.length()>0 && !env.testCase.getName().equals(testName))
-                    continue;   // doesn't apply to this test
-
-                if(type.isAssignableFrom(extType)) {
-                    Object instance = item.instance();
-                    if(instance!=null)
-                        result.add(new ExtensionComponent<T>(type.cast(instance)));
-                }
-            } catch (InstantiationException e) {
-                LOGGER.log(Level.WARNING, "Failed to load "+item.className(),e);
-            }
+        if (e instanceof Class) {
+            return isActive(env, (Class)e);
         }
-
-        return result;
+        if (e instanceof Field) {
+            Field f = (Field) e;
+            return f.getDeclaringClass().isInstance(env.testCase);
+        }
+        if (e instanceof Method) {
+            Method m = (Method) e;
+            return m.getDeclaringClass().isInstance(env.testCase);
+        }
+        return false;
     }
 
     private boolean isActive(TestEnvironment env, Class<?> extType) {
@@ -102,6 +77,4 @@ public class TestExtensionLoader extends ExtensionFinder {
                 return true;      // enclosed
         return false;
     }
-
-    private static final Logger LOGGER = Logger.getLogger(TestExtensionLoader.class.getName());
 }
