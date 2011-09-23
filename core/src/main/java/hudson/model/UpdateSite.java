@@ -32,16 +32,20 @@ import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import hudson.util.HttpResponses;
 import hudson.util.IOUtils;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.apache.bcel.generic.RETURN;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -211,7 +215,7 @@ public class UpdateSite {
             sig.initVerify(certs.get(0));
             SignatureOutputStream sos = new SignatureOutputStream(sig);
 
-            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8"));
+            o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8")).close();
 
             // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
             // (which is more likely than someone tampering with update center), we can tell
@@ -246,6 +250,17 @@ public class UpdateSite {
     }
 
     /**
+     * Invalidates the cached data and force retrieval.
+     *
+     * @since 1.432
+     */
+    public HttpResponse doInvalidateData() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        dataTimestamp = 0;
+        return HttpResponses.ok();
+    }
+
+    /**
      * Loads the update center data, if any.
      *
      * @return  null if no data is available.
@@ -264,6 +279,10 @@ public class UpdateSite {
         if(df.exists()) {
             try {
                 return JSONObject.fromObject(df.read());
+            } catch (JSONException e) {
+                LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
+                df.delete(); // if we keep this file, it will cause repeated failures
+                return null;
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures

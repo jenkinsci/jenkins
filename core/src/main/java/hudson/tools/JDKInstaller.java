@@ -23,6 +23,9 @@
  */
 package hudson.tools;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
+import com.gargoylesoftware.htmlunit.ProxyConfig;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -31,6 +34,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.ProxyConfiguration;
 import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
@@ -45,6 +49,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -224,7 +229,7 @@ public class JDKInstaller extends ToolInstaller {
             args.add("/s");
             // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
             // Oh Windows, oh windows, why do you have to be so difficult?
-            args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+            args.add("/v/qn REBOOT=ReallySuppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
 
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
@@ -344,6 +349,21 @@ public class JDKInstaller extends ToolInstaller {
         URL src = new URL(primary.filepath);
 
         WebClient wc = new WebClient();
+        // honor jenkins proxy settings in WebClient
+        Jenkins h = Jenkins.getInstance();
+        ProxyConfiguration jpc = h!=null ? h.proxy : null;
+        if(jpc != null) {
+            ProxyConfig pc = new ProxyConfig();
+            pc.setProxyHost(jpc.name);
+            pc.setProxyPort(jpc.port);
+            wc.setProxyConfig(pc);
+            if(jpc.getUserName() != null) {
+                DefaultCredentialsProvider cp = new DefaultCredentialsProvider();
+                cp.addCredentials(jpc.getUserName(), jpc.getPassword(), jpc.name, jpc.port, null);
+                wc.setCredentialsProvider(cp);
+            }
+        }
+        
         wc.setJavaScriptEnabled(false);
         wc.setCssEnabled(false);
         Page page = wc.getPage(src);
@@ -392,9 +412,6 @@ public class JDKInstaller extends ToolInstaller {
 
             throw new IOException("Unable to find the login form in "+html.asXml());
         }
-
-        // TODO: there's awful inefficiency in htmlunit where it loads the whole binary into one big byte array.
-        // needs to modify it to use temporary file or something
 
         // download to a temporary file and rename it in to handle concurrency and failure correctly,
         File tmp = new File(cache.getPath()+".tmp");

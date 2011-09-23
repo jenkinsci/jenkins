@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import hudson.AbortException;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -71,6 +72,10 @@ public interface BuildStep {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      */
     boolean prebuild( AbstractBuild<?,?> build, BuildListener listener );
 
@@ -85,6 +90,10 @@ public interface BuildStep {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      *
      * @throws InterruptedException
      *      If the build is interrupted by the user (in an attempt to abort the build.)

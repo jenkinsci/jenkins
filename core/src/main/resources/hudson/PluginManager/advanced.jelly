@@ -41,7 +41,8 @@ THE SOFTWARE.
                 <f:textbox name="proxy.server" value="${app.proxy.name}" />
               </f:entry>
               <f:entry title="${%Port}" help="/help/update-center/proxy-port.html">
-                <f:textbox name="proxy.port" value="${app.proxy.port}" />
+                <f:textbox name="proxy.port" value="${app.proxy.port}" 
+                           checkUrl="'${rootURL}/pluginManager/checkProxyPort?value='+escape(this.value)" />
               </f:entry>
             </f:block>
             <f:entry title="${%User name}" help="/help/update-center/proxy-username.html">

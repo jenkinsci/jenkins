@@ -55,13 +55,42 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Port on HTTP Proxy Configure accepts characters except the digits
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11068">issue 11068</a>)
+  <li class=bug>
+    Broken link in help text of HTTP Proxy Configuration
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11051">issue 11051</a>)
+  <li class=bug>
+    Broken help button for Log Recorders
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11052">issue 11052</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.431>What's new in 1.431</a> <!--=DATE=--></h3>
+<h3><a name=v1.432>What's new in 1.432</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    JDK auto-installation does not respect proxy settings
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10634">issue 10634</a>)
+  <li class=bug>
+    Tools download does not respect proxy settings
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5271">issue 5271</a>)
+  <li class=bug>
+    Recover from a corrupted JSON update data file automatically
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7034">issue 7034</a>)
+  <li class=bug>
+    Fixed the reported system reboot problem on installing JDK on Windows
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7288">issue 7288</a>)
+  <li class=bug>
+    Fixed the OutOfMemoryError in trying to download/install JDK
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10689">issue 10689</a>)
+  <li class=rfe>
+    Enabled shortcut key on script console
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.431>What's new in 1.431</a> (2011/09/19)</h3>
 <ul class=image>
   <li class=bug>
     Jenkins unable to start if the /tmp/jna catalogue exists and is owned by a different user
@@ -76,7 +105,6 @@ Upcoming changes</a>
     Add "un/check all" buttons on matrix-based security.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7565">issue 7565</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.430>What's new in 1.430</a> (2011/09/11)</h3>
 <ul class=image>
   <li class=bug>
