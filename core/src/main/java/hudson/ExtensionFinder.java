@@ -25,6 +25,7 @@ package hudson;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
+import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -169,61 +170,20 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         public AbstractGuiceFinder(final Class<T> annotationType) {
             List<Module> modules = new ArrayList<Module>();
-            modules.add(new AbstractModule() {
-                @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
-                @Override
-                protected void configure() {
-                    ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
-                    int id=0;
-
-                    for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
-                        id++;
-                        try {
-                            AnnotatedElement e = item.element();
-                            if (!isActive(e))   continue;
-                            T a = item.annotation();
-
-                            if (e instanceof Class) {
-                                Key key = Key.get((Class)e);
-                                annotations.put(key,a);
-                                bind(key).in(FAULT_TOLERANT_SCOPE);
-                            } else {
-                                Class extType;
-                                if (e instanceof Field) {
-                                    extType = ((Field)e).getType();
-                                } else
-                                if (e instanceof Method) {
-                                    extType = ((Method)e).getReturnType();
-                                } else
-                                    throw new AssertionError();
-
-                                // use arbitrary id to make unique key, because Guice wants that.
-                                Key key = Key.get(extType, Names.named(String.valueOf(id)));
-                                annotations.put(key,a);
-                                bind(key).toProvider(new Provider() {
-                                        public Object get() {
-                                            return instantiate(item);
-                                        }
-                                    }).in(FAULT_TOLERANT_SCOPE);
-                            }
-                        } catch (LinkageError e) {
-                            // sometimes the instantiation fails in an indirect classloading failure,
-                            // which results in a LinkageError
-                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                                       "Failed to load "+item.className(), e);
-                        } catch (InstantiationException e) {
-                            LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
-                                       "Failed to load "+item.className(), e);
-                        }
-                    }
-                }
-            });
+            modules.add(new SezpozModule(annotationType,Jenkins.getInstance().getPluginManager().uberClassLoader));
 
             for (ExtensionComponent<Module> ec : new Sezpoz().find(Module.class, Hudson.getInstance())) {
                 modules.add(ec.getInstance());
             }
 
-            container = Guice.createInjector(modules);
+            try {
+                container = Guice.createInjector(modules);
+            } catch (CreationException e) {
+                LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
+                // failing to load all bindings are disastrous, so recover by creating minimum that works
+                // by just including the core
+                container = Guice.createInjector(new SezpozModule(annotationType,Jenkins.class.getClassLoader()));
+            }
         }
 
         protected abstract double getOrdinal(T annotation);
@@ -300,6 +260,91 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         };
 
         private static final Logger LOGGER = Logger.getLogger(GuiceFinder.class.getName());
+
+        private class SezpozModule extends AbstractModule {
+            private final Class<T> annotationType;
+            private final ClassLoader cl;
+
+            public SezpozModule(Class<T> annotationType, ClassLoader cl) {
+                this.annotationType = annotationType;
+                this.cl = cl;
+            }
+
+            /**
+             * Guice performs various reflection operations on the class to figure out the dependency graph,
+             * and that process can cause additional classloading problems, which will fail the injector creation,
+             * which in turn has disastrous effect on the startup.
+             *
+             * <p>
+             * Ultimately I'd like to isolate problems to plugins and selectively disable them, allowing
+             * Jenkins to start with plugins that work, but I haven't figured out how.
+             *
+             * So this is an attempt to detect subset of problems eagerly, by invoking various reflection
+             * operations and try to find non-existent classes early.
+             */
+            private void resolve(Class c) {
+                try {
+                    c.getGenericSuperclass();
+                    c.getGenericInterfaces();
+                    ClassLoader ecl = c.getClassLoader();
+                    Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
+                    m.setAccessible(true);
+                    m.invoke(ecl, c);
+                } catch (Exception x) {
+                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                }
+            }
+
+            @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
+            @Override
+            protected void configure() {
+                int id=0;
+
+                for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
+                    id++;
+                    try {
+                        AnnotatedElement e = item.element();
+                        if (!isActive(e))   continue;
+                        T a = item.annotation();
+
+                        if (e instanceof Class) {
+                            Key key = Key.get((Class)e);
+                            resolve((Class)e);
+                            annotations.put(key,a);
+                            bind(key).in(FAULT_TOLERANT_SCOPE);
+                        } else {
+                            Class extType;
+                            if (e instanceof Field) {
+                                extType = ((Field)e).getType();
+                            } else
+                            if (e instanceof Method) {
+                                extType = ((Method)e).getReturnType();
+                            } else
+                                throw new AssertionError();
+
+                            resolve(extType);
+
+                            // use arbitrary id to make unique key, because Guice wants that.
+                            Key key = Key.get(extType, Names.named(String.valueOf(id)));
+                            annotations.put(key,a);
+                            bind(key).toProvider(new Provider() {
+                                    public Object get() {
+                                        return instantiate(item);
+                                    }
+                                }).in(FAULT_TOLERANT_SCOPE);
+                        }
+                    } catch (LinkageError e) {
+                        // sometimes the instantiation fails in an indirect classloading failure,
+                        // which results in a LinkageError
+                        LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                                   "Failed to load "+item.className(), e);
+                    } catch (InstantiationException e) {
+                        LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                                   "Failed to load "+item.className(), e);
+                    }
+                }
+            }
+        }
     }
 
     /**

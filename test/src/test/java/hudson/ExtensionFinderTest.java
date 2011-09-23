@@ -97,4 +97,24 @@ public class ExtensionFinderTest extends HudsonTestCase {
             }
         }
     }
+
+
+    /**
+     * Tests the error recovery behaviour.
+     *
+     * One failure in binding definition shouldn't prevent Jenkins from booting.
+     */
+    public void testErrorRecovery() {
+        BrokenExtension i = PageDecorator.all().get(BrokenExtension.class);
+        assertNull(i);
+    }
+
+    @TestExtension("testErrorRecovery")
+    public static class BrokenExtension extends PageDecorator {
+        @Inject Comparable c;
+        
+        public BrokenExtension() {
+            super(InjectingExtension.class);
+        }
+    }
 }
