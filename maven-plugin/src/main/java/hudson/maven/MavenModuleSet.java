@@ -310,7 +310,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 	public Result getRunPostStepsIfResult() {
 		return Functions.defaulted(runPostStepsIfResult,Result.FAILURE);
 	}
-	
+
+    public void setRunPostStepsIfResult(Result v) {
+        this.runPostStepsIfResult = Functions.defaulted(v,Result.FAILURE);
+    }
+
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
