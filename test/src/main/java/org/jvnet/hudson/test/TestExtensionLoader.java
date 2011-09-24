@@ -55,6 +55,10 @@ public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
     protected boolean isActive(AnnotatedElement e) {
         TestEnvironment env = TestEnvironment.get();
 
+        String testName = e.getAnnotation(TestExtension.class).value();
+        if (testName.length()>0 && !env.testCase.getName().equals(testName))
+            return false;   // doesn't apply to this test
+
         if (e instanceof Class) {
             return isActive(env, (Class)e);
         }
