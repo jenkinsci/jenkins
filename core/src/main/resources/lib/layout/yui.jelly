@@ -29,9 +29,12 @@ THE SOFTWARE.
     <st:attribute name="module" use="required">
       YUI module name to load.
     </st:attribute>
-    <st:attribute name="suffix">
-      if loading beta module, use suffix='-beta'
-    </st:attribute>
   </st:documentation>
-  <script src="${resURL}/scripts/yui/${module}/${module}${attrs.suffix}-${yuiSuffix}.js" />
+  <!--
+    We used to take @suffix as '-beta' to loa beta modules, but as of YUI 2.9 there's no beta module.
+    I don't think YUI2 will get new beta modules in the future, but if we do, we need to compute them
+    from the module name, since older plugins specify suffix="-beta" for modules that have graduated
+    beta since then.
+  -->
+  <script src="${resURL}/scripts/yui/${module}/${module}-${yuiSuffix}.js" />
 </j:jelly>
