@@ -60,7 +60,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Fingerprinter;
-import hudson.tasks.JavadocArchiver;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
@@ -281,12 +280,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         super(parent,name);
     }
 
-	public List<Builder> getPrebuilders() {
-        return prebuilders.toList();
+    /**
+     * Builders that are run before the main Maven execution.
+     *
+     * @since 1.433
+     */
+	public DescribableList<Builder,Descriptor<Builder>> getPrebuilders() {
+        return prebuilders;
     }
 	
-	public List<Builder> getPostbuilders() {
-        return postbuilders.toList();
+    /**
+     * Builders that are run after the main Maven execution.
+     *
+     * @since 1.433
+     */
+	public DescribableList<Builder,Descriptor<Builder>> getPostbuilders() {
+        return postbuilders;
     }
 	
 	/**

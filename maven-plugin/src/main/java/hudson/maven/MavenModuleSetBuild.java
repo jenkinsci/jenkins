@@ -591,17 +591,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 } else {
                     // do builds here
                     try {
-                    	// run pre build steps
-                    	if(!preBuild(listener,project.getPrebuilders())){
-                    		r = FAILURE;
-                            return r;
-                    	}
-                    	if(!build(listener,project.getPrebuilders())){
-                    		r = FAILURE;
-                            return r;
-            			}
-                    	
-                    	
                         List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>();
                         for (BuildWrapper w : project.getBuildWrappersList())
                             wrappers.add(w);
@@ -617,11 +606,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
 
+                    	// run pre build steps
+                    	if(!preBuild(listener,project.getPrebuilders())){
+                    		r = FAILURE;
+                            return r;
+                    	}
                         if(!preBuild(listener, project.getPublishers())){
                         	r = FAILURE;
                             return r;
                         }
 
+                    	if(!build(listener,project.getPrebuilders().toList())){
+                    		r = FAILURE;
+                            return r;
+            			}
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (!StringUtils.isBlank(settingsConfigId)) {
@@ -805,7 +803,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             					proceedPostSteps = false;
             				} 
             				if(proceedPostSteps){
-            			    	if(!build(listener,project.getPostbuilders())){
+            			    	if(!build(listener,project.getPostbuilders().toList())){
             			            r = FAILURE;
             					}
             				}
