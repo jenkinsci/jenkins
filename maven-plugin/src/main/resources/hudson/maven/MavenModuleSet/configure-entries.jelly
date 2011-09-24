@@ -140,25 +140,15 @@ THE SOFTWARE.
 
   <f:section title="${%Post Steps}">
 	<f:entry description="${%criteriaDescription}">
-		<f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult =='success'}" />
+		<f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult.toString() =='SUCCESS'}" />
 		<st:nbsp />
 		<label class="attach-previous">${%runIfStable}</label>
 		<st:nbsp />
-		<f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult =='unstable'}" />
+		<f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult.toString() =='UNSTABLE'}" />
 		<st:nbsp />
 		<label class="attach-previous">${%runIfSuccessful}</label>
 		<st:nbsp />
-		<j:if test="${instance != null}">
-			<j:if test="${instance.runPostStepsIfResult == null}">
-				<f:radio name="post-steps.runIfResult" value="allCases" checked="${true}" />
-			</j:if>
-			<j:if test="${instance.runPostStepsIfResult != null}">
-				<f:radio name="post-steps.runIfResult" value="allCases" checked="${instance.runPostStepsIfResult =='allCases'}" />
-			</j:if>
-		</j:if>
-		<j:if test="${instance == null}">
-			<f:radio name="post-steps.runIfResult" value="allCases" checked="${true}" />
-		</j:if>
+    <f:radio name="post-steps.runIfResult" value="failure" checked="${instance==null || instance.runPostStepsIfResult.toString() =='FAILURE'}" />
 		<st:nbsp />
 		<label class="attach-previous">${%runAlways}</label>
 		<st:nbsp />
