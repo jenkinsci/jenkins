@@ -611,6 +611,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     		r = FAILURE;
                             return r;
                     	}
+                        if(!preBuild(listener,project.getPostbuilders())){
+                            r = FAILURE;
+                            return r;
+                        }
                         if(!preBuild(listener, project.getPublishers())){
                         	r = FAILURE;
                             return r;
