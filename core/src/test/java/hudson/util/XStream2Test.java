@@ -245,8 +245,8 @@ public class XStream2Test extends TestCase {
 
     /**
      * Unmarshall a matrix build.xml result.
-     * (JENKINS-10903)
      */
+    @Bug(10903)
     public void testUnMarshalRunMatrix() {
         InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
         MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
