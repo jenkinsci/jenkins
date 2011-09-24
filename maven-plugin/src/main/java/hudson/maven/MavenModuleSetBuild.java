@@ -795,21 +795,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     } finally {
             			// only run post build steps if requested...
             			if(shouldPostStepsRun(r, project.getRunPostStepsIfResult())){
-            				boolean proceedPostSteps = true;
-            				if(!preBuild(listener,project.getPostbuilders())){
-            					r = FAILURE;
-            					proceedPostSteps = false;
-            				} 
-            				if(proceedPostSteps){
-            			    	if(!build(listener,project.getPostbuilders().toList())){
-            			            r = FAILURE;
-            					}
+                            if(!build(listener,project.getPostbuilders().toList())){
+                                r = FAILURE;
             				}
             			}
             			
                         if (r != null) {
                             setResult(r);
                         }
+
                         // tear down in reverse order
                         boolean failed=false;
                         for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
