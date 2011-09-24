@@ -272,12 +272,22 @@ function ts_loadDirection(table){
     }
 }
 
-var ts_Storage = YAHOO.util.StorageManager.get(
-    YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
-    YAHOO.util.StorageManager.LOCATION_SESSION,
-    {
-        order: [
-            YAHOO.util.StorageEngineGears
-        ]
-    }
-);
+var ts_Storage;
+try {
+    ts_Storage = YAHOO.util.StorageManager.get(
+        YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
+        YAHOO.util.StorageManager.LOCATION_SESSION,
+        {
+            order: [
+                YAHOO.util.StorageEngineGears
+            ]
+        }
+    );
+} catch(e) {
+    // no storage available
+    ts_Storage = {
+        setItem : function() {},
+        getItem : function() { return null; },
+        hasKey : function() { return false; }
+    };
+}
