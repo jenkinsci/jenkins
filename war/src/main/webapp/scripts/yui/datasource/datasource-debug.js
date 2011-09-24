@@ -717,7 +717,7 @@ cloneBeforeCaching : false,
  * @return {String} Unique name of the DataSource instance.
  */
 toString : function() {
-    return this._sName;
+    return this._sName || "";
 },
 
 /**
