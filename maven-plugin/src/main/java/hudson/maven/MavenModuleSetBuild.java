@@ -794,7 +794,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         throw e;
                     } finally {
             			// only run post build steps if requested...
-            			if(shouldPostStepsRun(r, project.getRunPostStepsIfResult())){
+                        if (r==null || r.isBetterOrEqualTo(project.getRunPostStepsIfResult())) {
                             if(!build(listener,project.getPostbuilders().toList())){
                                 r = FAILURE;
             				}
@@ -864,29 +864,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             return true;
         }
 
-        private boolean shouldPostStepsRun(Result buildResult, String runIfResult) {
-            // If runIfResult is null, set it to "allCases".
-            if (runIfResult == null) {
-            	runIfResult = "allCases";
-            }
-            // If runIfResult is "allCases", we're running regardless.
-            if (runIfResult.equals("allCases")) {
-                return true;
-            }
-            else {
-                // Otherwise, we're going to need to compare against the build result.
-                
-                if (runIfResult.equals("success")) {
-                    return ((buildResult==null) || (buildResult.isBetterOrEqualTo(Result.SUCCESS)));
-                }
-                else if (runIfResult.equals("unstable")) {
-                    return ((buildResult==null) || (buildResult.isBetterOrEqualTo(Result.UNSTABLE)));
-                }
-            }
-
-            // If we get down here, something weird's going on. Return false.
-            return false;
-        }
         /**
          * Returns the modules which have not been build since the last successful aggregator build
          * though they should be because they had SCM changes.

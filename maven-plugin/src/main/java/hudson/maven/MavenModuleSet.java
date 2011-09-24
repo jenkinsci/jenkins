@@ -31,6 +31,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
 import hudson.maven.settings.GlobalMavenSettingsProvider;
@@ -38,6 +39,7 @@ import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.Result;
 import hudson.tasks.Builder;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -265,7 +267,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     private DescribableList<Builder,Descriptor<Builder>> postbuilders =
             new DescribableList<Builder,Descriptor<Builder>>(this);
 	
-    private String runPostStepsIfResult;
+    private Result runPostStepsIfResult;
     
    
     /**
@@ -299,10 +301,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 	
 	/**
-	 * @return Returns the runIfResult value.
+     * {@link #postbuilders} are run if the result is better or equal to this threshold.
+     *
+     * @return
+     *      never null
+     * @since 1.433
 	 */
-	public String getRunPostStepsIfResult() {
-		return runPostStepsIfResult;
+	public Result getRunPostStepsIfResult() {
+		return Functions.defaulted(runPostStepsIfResult,Result.FAILURE);
 	}
 	
     public String getUrlChildPrefix() {
@@ -729,7 +735,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(publishers,ResourceActivity.class));
-        activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
+        activities.addAll(Util.filter(buildWrappers, ResourceActivity.class));
         activities.addAll(Util.filter(prebuilders,ResourceActivity.class));
         activities.addAll(Util.filter(postbuilders,ResourceActivity.class));
 
@@ -990,7 +996,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
         globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
 
-        runPostStepsIfResult = req.getParameter( "post-steps.runIfResult" );
+        runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
         prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");
         postbuilders.rebuildHetero(req,json, Builder.all(), "postbuilder");
     }
