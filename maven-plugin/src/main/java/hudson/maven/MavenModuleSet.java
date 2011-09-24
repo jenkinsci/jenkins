@@ -38,12 +38,11 @@ import hudson.maven.settings.MavenSettingsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.tasks.Builder;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
-import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
@@ -52,6 +51,7 @@ import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -87,6 +87,7 @@ import java.util.Stack;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.math.NumberUtils;
@@ -111,6 +112,8 @@ import org.kohsuke.stapler.export.Exported;
  * @author Kohsuke Kawaguchi
  */
 public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+	
+
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -254,6 +257,18 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
+	/**
+     * List of active {@link Builder}s configured for this project.
+     */
+    private DescribableList<Builder,Descriptor<Builder>> prebuilders =
+            new DescribableList<Builder,Descriptor<Builder>>(this);
+    
+    private DescribableList<Builder,Descriptor<Builder>> postbuilders =
+            new DescribableList<Builder,Descriptor<Builder>>(this);
+	
+    private String runPostStepsIfResult;
+    
+   
     /**
      * @deprecated
      *      Use {@link #MavenModuleSet(ItemGroup, String)}
@@ -266,6 +281,21 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         super(parent,name);
     }
 
+	public List<Builder> getPrebuilders() {
+        return prebuilders.toList();
+    }
+	
+	public List<Builder> getPostbuilders() {
+        return postbuilders.toList();
+    }
+	
+	/**
+	 * @return Returns the runIfResult value.
+	 */
+	public String getRunPostStepsIfResult() {
+		return runPostStepsIfResult;
+	}
+	
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
@@ -595,16 +625,27 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             this.sortedActiveModules = getDisabledModules(false);
         }
 
-        if(reporters==null)
+        if(reporters==null){
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
+        }
         reporters.setOwner(this);
-        if(publishers==null)
+        if(publishers==null){
             publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+        }
         publishers.setOwner(this);
-        if(buildWrappers==null)
+        if(buildWrappers==null){
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+        }
         buildWrappers.setOwner(this);
-
+        if(prebuilders==null){
+        	prebuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
+        }
+        prebuilders.setOwner(this);
+        if(postbuilders==null){
+        	postbuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
+        }
+        postbuilders.setOwner(this);
+        
         updateTransientActions();
     }
 
@@ -660,6 +701,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         
         publishers.buildDependencyGraph(this,graph);
         buildWrappers.buildDependencyGraph(this,graph);
+        prebuilders.buildDependencyGraph(this,graph);
+        postbuilders.buildDependencyGraph(this,graph);
     }
 
     public MavenModule getRootModule() {
@@ -678,6 +721,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(publishers,ResourceActivity.class));
         activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
+        activities.addAll(Util.filter(prebuilders,ResourceActivity.class));
+        activities.addAll(Util.filter(postbuilders,ResourceActivity.class));
 
         return activities;
     }
@@ -935,6 +980,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
         settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
         globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
+
+        runPostStepsIfResult = req.getParameter( "post-steps.runIfResult" );
+        prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");
+        postbuilders.rebuildHetero(req,json, Builder.all(), "postbuilder");
     }
 
     /**
