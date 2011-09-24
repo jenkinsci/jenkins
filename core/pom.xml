@@ -173,6 +173,16 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.6-jenkins-6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
