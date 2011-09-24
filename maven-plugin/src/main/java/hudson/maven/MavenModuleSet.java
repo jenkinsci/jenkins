@@ -62,6 +62,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Fingerprinter;
+import hudson.tasks.JavadocArchiver;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
@@ -1127,13 +1128,5 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             Mailer.class,           // for historical reasons, Maven uses MavenMailer
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
-
-
     }
-
-
-
-
-
-
 }
