@@ -47,7 +47,6 @@ import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import jenkins.model.Jenkins;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -58,6 +57,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
+import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -84,6 +85,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jenkins.model.Jenkins;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -123,6 +126,7 @@ import org.sonatype.aether.transfer.TransferListener;
  * @author Kohsuke Kawaguchi
  */
 public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,MavenModuleSetBuild> {
+	
     /**
      * {@link MavenReporter}s that will contribute project actions.
      * Can be null if there's none.
@@ -555,12 +559,13 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private Map<ModuleName,MavenBuild.ProxyImpl2> proxies;
 
         protected Result doRun(final BuildListener listener) throws Exception {
-            PrintStream logger = listener.getLogger();
-            Result r = null;
+
+        	Result r = null;
+        	PrintStream logger = listener.getLogger();
             FilePath remoteSettings = null, remoteGlobalSettings = null;
 
             try {
-                
+            	
                 EnvVars envVars = getEnvironment(listener);
                 MavenInstallation mvn = project.getMaven();
                 if(mvn==null)
@@ -601,9 +606,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
 
-                        if(!preBuild(listener, project.getPublishers()))
-                            return Result.FAILURE;
+                    	// run pre build steps
+                    	if(!preBuild(listener,project.getPrebuilders())
+                        || !preBuild(listener,project.getPostbuilders())
+                        || !preBuild(listener,project.getPublishers())){
+                    		r = FAILURE;
+                            return r;
+                    	}
 
+                    	if(!build(listener,project.getPrebuilders().toList())){
+                    		r = FAILURE;
+                            return r;
+            			}
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (!StringUtils.isBlank(settingsConfigId)) {
@@ -779,9 +793,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         r = Executor.currentExecutor().abortResult();
                         throw e;
                     } finally {
+            			// only run post build steps if requested...
+                        if (r==null || r.isBetterOrEqualTo(project.getRunPostStepsIfResult())) {
+                            if(!build(listener,project.getPostbuilders().toList())){
+                                r = FAILURE;
+            				}
+            			}
+            			
                         if (r != null) {
                             setResult(r);
                         }
+
                         // tear down in reverse order
                         boolean failed=false;
                         for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
@@ -793,6 +815,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if (failed) return Result.FAILURE;
                     }
                 }
+                
                 
                 return r;
             } catch (AbortException e) {
@@ -828,6 +851,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     remoteGlobalSettings.delete();
                 }
             }
+        }
+
+        
+        private boolean build(BuildListener listener, Collection<hudson.tasks.Builder> steps) throws IOException, InterruptedException {
+            for( BuildStep bs : steps ){
+                if(!perform(bs,listener)) {
+                	LOGGER.fine(MessageFormat.format("{1} failed", bs));
+                    return false;
+                }
+            }
+            return true;
         }
 
         /**
