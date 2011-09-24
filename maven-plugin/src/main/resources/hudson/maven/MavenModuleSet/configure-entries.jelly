@@ -139,20 +139,13 @@ THE SOFTWARE.
   </f:section>
 
   <f:section title="${%Post Steps}">
-	<f:entry description="${%criteriaDescription}">
-		<f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult.toString() =='SUCCESS'}" />
-		<st:nbsp />
-		<label class="attach-previous">${%runIfStable}</label>
-		<st:nbsp />
-		<f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult.toString() =='UNSTABLE'}" />
-		<st:nbsp />
-		<label class="attach-previous">${%runIfSuccessful}</label>
-		<st:nbsp />
-    <f:radio name="post-steps.runIfResult" value="failure" checked="${instance==null || instance.runPostStepsIfResult.toString() =='FAILURE'}" />
-		<st:nbsp />
-		<label class="attach-previous">${%runAlways}</label>
-		<st:nbsp />
-	</f:entry>
+    <f:entry description="${%criteriaDescription}">
+      <f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult.toString() =='SUCCESS'}" title="${%runIfStable}"/>
+      <st:nbsp />
+      <f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult.toString() =='UNSTABLE'}" title="${%runIfSuccessful}"/>
+      <st:nbsp />
+      <f:radio name="post-steps.runIfResult" value="failure" checked="${instance==null || instance.runPostStepsIfResult.toString() =='FAILURE'}" title="${%runAlways}"/>
+    </f:entry>
     <f:block>
       <f:hetero-list name="postbuilder" hasHeader="true"
                      descriptors="${h.getBuilderDescriptors(it)}"
