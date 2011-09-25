@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 
 /**
  * Establish a periodic ping to keep connections between {@link Slave slaves}
@@ -102,18 +102,20 @@ public class ChannelPinger extends ComputerListener {
     private static void setUpPingForChannel(final Channel channel, int interval) {
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, interval * 60 * 1000) {
-            protected void onDead() {
+            protected void onDead(Throwable cause) {
                 try {
                     if (isInClosed.get()) {
-                        LOGGER.fine("Ping failed after the channel is already partially closed");
-                    }
-                    else {
-                        LOGGER.info("Ping failed. Terminating the channel.");
-                        channel.close();
+                        LOGGER.log(FINE,"Ping failed after the channel is already partially closed",cause);
+                    } else {
+                        LOGGER.log(INFO,"Ping failed. Terminating the channel.",cause);
+                        channel.close(cause);
                     }
                 } catch (IOException e) {
                     LOGGER.log(SEVERE,"Failed to terminate the channel: ",e);
                 }
+            }
+            protected void onDead() {
+                onDead(null);
             }
         };
 
