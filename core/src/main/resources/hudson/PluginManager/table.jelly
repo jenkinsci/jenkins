@@ -110,7 +110,7 @@ THE SOFTWARE.
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${isUpdates}">
-                      <td>
+                      <td class="pane">
                         <j:choose><j:when test="${p.installed.active}">
                           <st:out value="${p.installed.version}" />
                         </j:when><j:otherwise>
