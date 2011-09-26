@@ -136,7 +136,6 @@ public class MavenFingerprinter extends MavenReporter {
 		while (parent != null) {
 			File parentFile = parent.getFile();
 
-			// Maven 2.0 has no getProjectBuildingRequest() Method
 			if (parentFile == null) {
 				String mavenVersion = build.getMavenBuildInformation().getMavenVersion();
 				
