@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import hudson.model.queue.CauseOfBlockage;
 
 /**
  * Free-style software project.
@@ -55,6 +56,28 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
 
     @Extension(ordinal=1000)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    @Override
+    public CauseOfBlockage canRunOnNode(Node node) {
+        try {
+            JDK jdk = this.getJDK();
+            // jdk == null in case no JDK is specified
+            if(null != jdk) {
+                String jdkhome = jdk.forNode(node, TaskListener.NULL).getHome();
+                // if JAVA_HOME is empty or null, the required JDK is not available on this node
+                if("".equals(jdkhome))
+                    return new CauseOfBlockage.BecauseNodeIsBusy(node);   // this node is reserved for tasks that are tied to it
+            }
+        } catch (Exception ex) {
+            /**
+             * FIXME: how should we react?
+             * for now we fall back to the historical behavior
+             */ 
+            return null;
+        }
+
+        return null;
+    }
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
         public String getDisplayName() {
