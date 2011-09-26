@@ -60,8 +60,9 @@ THE SOFTWARE.
       Specifies additional key/value pairs in the JSON format (except the start and end bracket)
       to be passed as CodeMirror option object.
     </st:attribute>
-    <st:attribute name="preview">
+    <st:attribute name="previewEndpoint">
       If specified, this text area has preview feature.
+      The previewEndpoint is used to obtain formatted html.
     </st:attribute>
   </st:documentation>
 
@@ -83,12 +84,12 @@ THE SOFTWARE.
   </textarea>
   <!-- resize handle -->
   <div class="textarea-handle"/>
-  <j:if test="${attrs.preview}">
-    <div class="description-preview-container">
-      <a href="#" class="description-show-preview">${%Preview}</a>
+  <j:if test="${attrs.previewEndpoint!=null}">
+    <div class="textarea-preview-container">
+      <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
       <st:nbsp/>
-      <a href="#" class="description-hide-preview">${%Hide preview}</a>
-      <div class="description-preview">
+      <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
+      <div class="textarea-preview">
         <!-- div for preview -->
       </div>
     </div>

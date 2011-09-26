@@ -103,9 +103,9 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
      * Generate HTML for preview, using markup formatter.
      * Can be called from other views.
      */
-    public HttpResponse doPreviewDescription(@QueryParameter String description) throws IOException {
+    public HttpResponse doPreviewDescription(@QueryParameter String text) throws IOException {
         StringWriter w = new StringWriter();
-        translate(description, w);
+        translate(text, w);
         return HttpResponses.html(w.toString());
     }
 }

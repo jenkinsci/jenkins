@@ -1196,10 +1196,10 @@ var hudsonRules = {
         new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
     },
 
-    "DIV.description-preview-container" : function (e) {
-        var previewDiv = findElementsBySelector(e,".description-preview")[0];
-        var showPreview = findElementsBySelector(e,".description-show-preview")[0];
-        var hidePreview = findElementsBySelector(e,".description-hide-preview")[0];
+    "DIV.textarea-preview-container" : function (e) {
+        var previewDiv = findElementsBySelector(e,".textarea-preview")[0];
+        var showPreview = findElementsBySelector(e,".textarea-show-preview")[0];
+        var hidePreview = findElementsBySelector(e,".textarea-hide-preview")[0];
         $(hidePreview).hide();
         $(previewDiv).hide();
 
@@ -1213,11 +1213,11 @@ var hudsonRules = {
                 previewDiv.innerHTML = txt;
             };
 
-            new Ajax.Request(rootURL + "/markupFormatter/previewDescription", {
+            new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
                 method: "POST",
                 requestHeaders: "Content-Type: application/x-www-form-urlencoded",
                 parameters: {
-                    description: text
+                    text: text
                 },
                 onSuccess: function(obj) {
                     render(obj.responseText)
