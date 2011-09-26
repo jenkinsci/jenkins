@@ -31,6 +31,7 @@ import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.model.User;
 
 /**
@@ -96,7 +97,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
             LOGGER.warning(String.format("Could not split up the avatar size (%s) into a width and height.", avatarSize));
         }
 
-        return "/images/" + avatarSize + "/user.png";
+        return Jenkins.getInstance().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
     }
 
     /**
