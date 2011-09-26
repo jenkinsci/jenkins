@@ -38,10 +38,14 @@ import hudson.model.FingerprintMap;
 import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilderConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +53,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -96,7 +102,7 @@ public class MavenFingerprinter extends MavenReporter {
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         
-        recordParents(pom);
+        recordParents(build, pom);
         
         build.executeAsync(new BuildCallable<Void,IOException>() {
             private static final long serialVersionUID = -1360161848504044869L;
@@ -125,16 +131,23 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-	private void recordParents(MavenProject pom) throws IOException, InterruptedException {
+	private void recordParents(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
 		MavenProject parent = pom.getParent();
 		while (parent != null) {
 			File parentFile = parent.getFile();
+
+			// Maven 2.0 has no getProjectBuildingRequest() Method
 			if (parentFile == null) {
+				String mavenVersion = build.getMavenBuildInformation().getMavenVersion();
+				
 				// Parent artifact contains no actual file, so we resolve against
 				// the local repository
-				parentFile = parent.getProjectBuildingRequest()
-						.getLocalRepository().find(parent.getArtifact())
-						.getFile();
+				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent);
+				if (localRepository != null) {
+					// Don't use file, for compatibility with M2
+					parentFile = new File(localRepository.getBasedir(), 
+							localRepository.pathOf(parent.getArtifact()));
+				}
 			}
 			// we need to include the artifact Id for poms as well, otherwise a
 			// project with the same groupId would override its parent's
@@ -145,8 +158,34 @@ public class MavenFingerprinter extends MavenReporter {
 		}
 	}
 
+	private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent) {
+		if (mavenVersion.startsWith("2.0")) return null;
+		
+		if (mavenVersion.startsWith("2.")) {
+			return getMaven22LocalRepository(parent);
+		}
+		
+		// Maven 3
+		return parent.getProjectBuildingRequest()
+				.getLocalRepository();
+	}
+
     
-    private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
+    private ArtifactRepository getMaven22LocalRepository(MavenProject parent) {
+    	ProjectBuilderConfiguration projectBuilderConfiguration;
+		try {
+			// Since maven-plugin is compiled against maven-core-3x, we need to retrieve 
+			// this maven 2 object via reflection
+			Method method = MavenProject.class.getMethod("getProjectBuilderConfiguration");
+			projectBuilderConfiguration = (ProjectBuilderConfiguration) method.invoke(parent);
+			return projectBuilderConfiguration.getLocalRepository();
+		} catch (Exception e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, "Could not retrieve BuilderConfigration", e);
+			return null;
+		}
+	}
+
+	private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         for (Artifact a : artifacts)
             record(a,record);
     }
