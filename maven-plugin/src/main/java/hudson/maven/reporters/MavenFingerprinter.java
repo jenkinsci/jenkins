@@ -160,30 +160,11 @@ public class MavenFingerprinter extends MavenReporter {
 	}
 
 	private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent) {
-		if (mavenVersion.startsWith("2.0")) return null;
-		
-		if (mavenVersion.startsWith("2.")) {
-			return getMaven22LocalRepository(parent);
-		}
+		if (mavenVersion.startsWith("2.")) return null;
 		
 		// Maven 3
 		return parent.getProjectBuildingRequest()
 				.getLocalRepository();
-	}
-
-    
-    private ArtifactRepository getMaven22LocalRepository(MavenProject parent) {
-    	ProjectBuilderConfiguration projectBuilderConfiguration;
-		try {
-			// Since maven-plugin is compiled against maven-core-3x, we need to retrieve 
-			// this maven 2 object via reflection
-			Method method = MavenProject.class.getMethod("getProjectBuilderConfiguration");
-			projectBuilderConfiguration = (ProjectBuilderConfiguration) method.invoke(parent);
-			return projectBuilderConfiguration.getLocalRepository();
-		} catch (Exception e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, "Could not retrieve BuilderConfigration", e);
-			return null;
-		}
 	}
 
 	private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
