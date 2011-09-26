@@ -5,7 +5,7 @@ def f=namespace(lib.FormTagLib)
 f.entry(title:_("# of executors"), field:"numExecutors") {
     f.textbox()
 }
-if (!app.slaves.isEmpty()) {
+if (!app.slaves.isEmpty() || !app.clouds.isEmpty()) {
     f.entry(title:_("Labels"),field:"labelString") {
         f.textbox()
     }

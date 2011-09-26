@@ -23,17 +23,25 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import junit.framework.TestCase;
+import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
+
 import org.jvnet.hudson.test.Bug;
 
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.InterruptedBuildAction;
 
 /**
  * Tests for XML serialization of java objects.
- * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder
+ * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder, Richard Mortimer
  */
 public class XStream2Test extends TestCase {
 
@@ -125,7 +133,6 @@ public class XStream2Test extends TestCase {
         Map<?,?> m;
     }
 
-
     public void testImmutableMap() {
         XStream2 xs = new XStream2();
 
@@ -166,6 +173,54 @@ public class XStream2Test extends TestCase {
         assertEquals(m,a.m);
     }
 
+    private static class ImmutableListHolder {
+        ImmutableList<?> l;
+    }
+
+    private static class ListHolder {
+        List<?> l;
+    }
+
+    public void testImmutableList() {
+        XStream2 xs = new XStream2();
+
+        roundtripImmutableList(xs, ImmutableList.of());
+        roundtripImmutableList(xs, ImmutableList.of("abc"));
+        roundtripImmutableList(xs, ImmutableList.of("abc", "def"));
+
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of());
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc"));
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc", "def"));
+    }
+
+    /**
+     * Since the field type is {@link ImmutableList}, XML shouldn't contain a reference to the type name.
+     */
+    private void roundtripImmutableList(XStream2 xs, ImmutableList<?> l) {
+        ImmutableListHolder a = new ImmutableListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertFalse("shouldn't contain the class name",xml.contains("google"));
+        assertFalse("shouldn't contain the class name",xml.contains("class"));
+        a = (ImmutableListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
+    }
+
+    private void roundtripImmutableListAsPlainList(XStream2 xs, ImmutableList<?> l) {
+        ListHolder a = new ListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableList.class.getName()+'\"'));
+        a = (ListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
+    }
+
     @Bug(8006) // Previously a null entry in an array caused NPE
     public void testEmptyStack() {
         assertEquals("<object-array><null/><null/></object-array>",
@@ -186,5 +241,23 @@ public class XStream2Test extends TestCase {
 
     public static class Point {
         public int x,y;
+    }
+
+    /**
+     * Unmarshall a matrix build.xml result.
+     */
+    @Bug(10903)
+    public void testUnMarshalRunMatrix() {
+        InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
+        MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
+        assertNotNull(result);
+        assertNotNull(result.getActions());
+        assertEquals(2, result.getActions().size());
+        InterruptedBuildAction action = (InterruptedBuildAction) result.getActions().get(1);
+        assertNotNull(action.getCauses());
+        assertEquals(1, action.getCauses().size());
+        CauseOfInterruption.UserInterruption cause =
+            (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
+        assertNotNull(cause);
     }
 }

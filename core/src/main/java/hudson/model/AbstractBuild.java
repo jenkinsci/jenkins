@@ -1203,6 +1203,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public synchronized void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Executor e = getExecutor();
+        if (e==null)
+            e = getOneOffExecutor();
         if (e!=null)
             e.doStop(req,rsp);
         else

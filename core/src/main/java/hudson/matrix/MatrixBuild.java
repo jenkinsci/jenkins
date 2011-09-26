@@ -287,6 +287,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     if(p.isRunSequentially())
                         scheduleConfigurationBuild(logger, c);
                     Result buildResult = waitForCompletion(listener, c);
+                    logger.println(Messages.MatrixBuild_Completed(c.getDisplayName(), buildResult));
                     r = r.combine(buildResult);
                 }
 

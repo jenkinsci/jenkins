@@ -40,7 +40,7 @@ THE SOFTWARE.
           return values.include(v) ? 'checked="checked" ' : "";
         }
         <j:forEach var="l" items="${app.labelAtoms}">
-          new YAHOO.widget.TextNode(<j:out value="${descriptor.buildLabelCheckBox(l,instance)}"/>, ${l.isSelfLabel()?'machines':'labels'}, false);
+          new YAHOO.widget.HTMLNode(<j:out value="${descriptor.buildLabelCheckBox(l,instance)}"/>, ${l.isSelfLabel()?'machines':'labels'}, false);
         </j:forEach>
 
         tree.draw();
@@ -50,6 +50,16 @@ THE SOFTWARE.
          -->
         tree.expandAll();
         tree.collapseAll();
+
+        <!--
+          cancel the event.
+
+          from http://yuilibrary.com/forum/viewtopic.php?f=89&t=8209&p=26239&hilit=HTMLNode#p26239
+          "To prevent toggling and allow the link to work, add a listener to the clickEvent on that tree and simply return false"
+        -->
+        tree.subscribe("clickEvent", function(node) {
+            return false;
+        });
       };
     </script>
   </f:entry>

@@ -138,7 +138,7 @@ public class MailSender {
         do {
             b=b.getPreviousBuild();
             if(b==null) return null;
-        } while(b.getResult()==Result.ABORTED);
+        } while((b.getResult()==Result.ABORTED) || (b.getResult()==Result.NOT_BUILT));
         return b.getResult();
     }
 

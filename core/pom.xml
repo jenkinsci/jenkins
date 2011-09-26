@@ -85,6 +85,21 @@ THE SOFTWARE.
       <optional>true</optional>
     </dependency>
 
+    <!--
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+    -->
+    <dependency>
+      <!-- we'd like to use stock Guice, but that breaks Maven embedder
+           because it uses a modified Guice called Sisu -->
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-guice</artifactId>
+      <version>3.0.3</version>
+    </dependency>
+
     <dependency>
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
@@ -157,7 +172,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-5</version>
+      <version>2.6-jenkins-6</version>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>

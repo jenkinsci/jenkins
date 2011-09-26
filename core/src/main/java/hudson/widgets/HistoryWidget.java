@@ -191,7 +191,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    private static final int THRESHOLD = 30;
+    private static final int THRESHOLD = Integer.getInteger(HistoryWidget.class.getName()+".threshold",30);
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;
