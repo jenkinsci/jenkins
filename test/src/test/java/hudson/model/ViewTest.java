@@ -129,4 +129,12 @@ public class ViewTest extends HudsonTestCase {
         System.out.println(v.getProperties());
         assertNotNull(v.getProperties());
     }
+
+    @Bug(9367)
+    public void testAllImagesCanBeLoaded() throws Exception {
+        User.get("user", true);
+        WebClient webClient = new WebClient();
+        webClient.setJavaScriptEnabled(false);
+        assertAllImageLoadSuccessfully(webClient.goTo("people"));
+    }
 }
