@@ -312,6 +312,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if(l==null && getMode()== Mode.EXCLUSIVE)
             return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
 
+        /**
+         * check if requested JDK is available on this node.
+         */
+        if(item.task instanceof Project) {
+            CauseOfBlockage c = ((Project)item.task).canRunOnNode(this);
+            if(c!=null) return c;
+        }
+
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {
