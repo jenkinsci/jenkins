@@ -1200,11 +1200,18 @@ var hudsonRules = {
         var previewDiv = findElementsBySelector(e,".description-preview")[0];
         var showPreview = findElementsBySelector(e,".description-show-preview")[0];
         var hidePreview = findElementsBySelector(e,".description-hide-preview")[0];
+        $(hidePreview).hide();
+        $(previewDiv).hide();
 
         showPreview.onclick = function() {
             // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
-            var textarea = showPreview.parentNode.getElementsByTagName("TEXTAREA")[0];
+            var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
             var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            var render = function(txt) {
+                $(hidePreview).show();
+                $(previewDiv).show();
+                previewDiv.innerHTML = txt;
+            };
 
             new Ajax.Request(rootURL + "/markupFormatter/previewDescription", {
                 method: "POST",
@@ -1213,12 +1220,7 @@ var hudsonRules = {
                     description: text
                 },
                 onSuccess: function(obj) {
-                    this.render(obj.responseText)
-                },
-                render : function(txt) {
-                    $(previewDiv).show();
-                    $(previewDiv).show();
-                    previewDiv.innerHTML = txt;
+                    render(obj.responseText)
                 },
                 onFailure: function(obj) {
                     render(obj.status + " " + obj.statusText + "<HR/>" + obj.responseText)
@@ -1227,8 +1229,7 @@ var hudsonRules = {
             return false;
         }
 
-        /* var */
-        hidePreview.onclick = function(sender) {
+        hidePreview.onclick = function() {
             $(hidePreview).hide();
             $(previewDiv).hide();
         };

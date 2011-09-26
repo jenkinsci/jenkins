@@ -1006,4 +1006,10 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= textarea.jelly ================== */
 
-style="text-align:left; background-color: #EEE; padding: 0.5em; display: none;"
+.description-preview-container {
+    text-align:left;
+}
+.description-preview {
+    background-color: #F0F0F0;
+    padding: 0.5em;
+}
