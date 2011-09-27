@@ -409,6 +409,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the one off {@link Executor} building this job, if it's being built.
      * Otherwise null.
+     * @since 1.433 
      */
     public Executor getOneOffExecutor() {
         for( Computer c : Jenkins.getInstance().getComputers() ) {
