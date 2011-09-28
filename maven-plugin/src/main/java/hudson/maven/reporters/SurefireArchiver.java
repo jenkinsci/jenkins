@@ -285,8 +285,10 @@ public class SurefireArchiver extends MavenReporter {
                 if (((skipTests != null) && (skipTests))) {
                     return false;
                 }
+            } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
+                    // gwt-maven-plugin < 1.2 does not implement required Surefire option
+                    return false;
             }
-
         } catch (ComponentConfigurationException e) {
             return false;
         }
