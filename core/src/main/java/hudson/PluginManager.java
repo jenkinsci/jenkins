@@ -27,6 +27,8 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import static hudson.init.InitMilestone.PLUGINS_LISTED;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
@@ -276,6 +278,8 @@ public abstract class PluginManager extends AbstractModelObject {
                 public void run(Reactor session) throws Exception {
                     Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
+
+                    Jenkins.getInstance().lookup.set(Injector.class,Guice.createInjector());
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {

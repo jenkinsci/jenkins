@@ -542,6 +542,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
             // if everything went well, commit this new version
             out.commit();
+            SaveableListener.fireOnChange(this, getConfigFile());
         } finally {
             out.abort(); // don't leave anything behind
         }

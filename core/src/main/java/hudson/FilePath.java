@@ -502,7 +502,9 @@ public final class FilePath implements Serializable {
                     f.setLastModified(e.getTime());
                     try {
                         FilePath target = new FilePath(f);
-                        target.chmod(e.getUnixMode());
+                        int mode = e.getUnixMode();
+                        if (mode!=0)    // Ant returns 0 if the archive doesn't record the access mode
+                            target.chmod(mode);
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }

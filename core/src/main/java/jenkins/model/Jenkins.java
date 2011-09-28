@@ -25,6 +25,7 @@
  */
 package jenkins.model;
 
+import com.google.inject.Injector;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.AbstractCIBase;
@@ -1937,6 +1938,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
+    }
+
+    /**
+     * Gets the dependency injection container that hosts all the extension implementations and other
+     * components in Jenkins.
+     *
+     * @since 1.GUICE
+     */
+    public Injector getInjector() {
+        return lookup(Injector.class);
     }
 
     /**

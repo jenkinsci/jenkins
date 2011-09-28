@@ -407,6 +407,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Gets the one off {@link Executor} building this job, if it's being built.
+     * Otherwise null.
+     * @since 1.433 
+     */
+    public Executor getOneOffExecutor() {
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
+            for (Executor e : c.getOneOffExecutors()) {
+                if(e.getCurrentExecutable()==this)
+                    return e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets the charset in which the log file is written.
      * @return never null.
      * @since 1.257
@@ -1621,6 +1636,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         if(getResult()==Result.ABORTED)
             return new Summary(false, Messages.Run_Summary_Aborted());
+
+        if(getResult()==Result.NOT_BUILT)
+            return new Summary(false, Messages.Run_Summary_NotBuilt());
 
         if(getResult()==Result.UNSTABLE) {
             if(((Run)this) instanceof AbstractBuild) {

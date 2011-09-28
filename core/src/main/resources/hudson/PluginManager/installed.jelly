@@ -72,7 +72,7 @@ THE SOFTWARE.
                     ${p.version}
                   </a>
                 </td>
-                <td>
+                <td class="pane">
                   <j:if test="${p.downgradable}">
                     <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
                       <s:submit value="${%downgradeTo(p.backupVersion)}"/>

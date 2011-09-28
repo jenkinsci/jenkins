@@ -55,6 +55,17 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Added a way to show avatar images on user pages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7494">issue 7494</a>)
+
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.433>What's new in 1.433</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
     Port on HTTP Proxy Configure accepts characters except the digits
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11068">issue 11068</a>)
@@ -64,12 +75,36 @@ Upcoming changes</a>
   <li class=bug>
     Broken help button for Log Recorders
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11052">issue 11052</a>)
+  <li class=bug>
+    Fatal exception apparently within Xalan code on AIX
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10851">issue 10851</a>) 
+  <li class=bug>
+    NOT_BUILT &amp; other build status are reported inconsistently
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11013">issue 11013</a>)
+  <li class=bug>
+    Canceling a parent multi-config build produces non-deserializable build.xml
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10903">issue 10903</a>)
+  <li class=bug>
+    Label of the master should be editable if cloud is set up.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11100">issue 11100</a>)
+  <li class=rfe>
+    Improved the error diagnosis by ping-driven connection termination.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11097">issue 11097</a>)
+  <li class=rfe>
+    YUI updated to 2.9
+  <li class=rfe>
+    Concurrent build is no longer beta
+  <li class=rfe>  
+    Permission check added when viewing configuration of computer set.
+  <li class='major rfe'>  
+    Maven project now supports arbitrary build steps
+    (<a href="https://github.com/jenkinsci/jenkins/pull/233">pull #233</a>) 
+  <li class='major rfe'>  
+    Jenkins internally started using Guice for loading extensions
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8751">issue 8751</a>) 
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.432>What's new in 1.432</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.432>What's new in 1.432</a> (2011/09/25)</h3>
 <ul class=image>
   <li class=bug>
     JDK auto-installation does not respect proxy settings
@@ -88,8 +123,10 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10689">issue 10689</a>)
   <li class=rfe>
     Enabled shortcut key on script console
+  <li class=rfe>
+    Remember sortable table state into local storage
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-203">issue 203</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.431>What's new in 1.431</a> (2011/09/19)</h3>
 <ul class=image>
   <li class=bug>

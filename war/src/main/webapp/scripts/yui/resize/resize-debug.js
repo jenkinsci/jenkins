@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /**
  * @description <p>Makes an element resizable</p>
@@ -10,7 +10,6 @@ version: 2.5.1
  * @requires yahoo, dom, dragdrop, element, event
  * @optional animation
  * @module resize
- * @beta
  */
 (function() {
 var D = YAHOO.util.Dom,
@@ -159,6 +158,13 @@ var D = YAHOO.util.Dom,
         browser: YAHOO.env.ua,
         /** 
         * @private
+        * @property _locked
+        * @description A flag to show if the resize is locked
+        * @type Boolean
+        */
+        _locked: null,
+        /** 
+        * @private
         * @property _positioned
         * @description A flag to show if the element is absolutely positioned
         * @type Boolean
@@ -247,23 +253,28 @@ var D = YAHOO.util.Dom,
             YAHOO.log('Create the wrap element', 'info', 'Resize');
             this._positioned = false;
             //Force wrap for elements that can't have children 
-            switch (this.get('element').tagName.toLowerCase()) {
-                case 'img':
-                case 'textarea':
-                case 'input':
-                case 'iframe':
-                case 'select':
-                    this.set('wrap', true);
-                    YAHOO.log('Auto-wrapping the element (' + this.get('element').tagName.toLowerCase() + ')', 'warn', 'Resize');
-                    break;
+            if (this.get('wrap') === false) {
+                switch (this.get('element').tagName.toLowerCase()) {
+                    case 'img':
+                    case 'textarea':
+                    case 'input':
+                    case 'iframe':
+                    case 'select':
+                        YAHOO.log('Auto-wrapping the element (' + this.get('element').tagName.toLowerCase() + ')', 'warn', 'Resize');
+                        this.set('wrap', true);
+                        break;
+                }
             }
-            if (this.get('wrap')) {
+            if (this.get('wrap') === true) {
                 YAHOO.log('Creating the wrap element', 'info', 'Resize');
                 this._wrap = document.createElement('div');
                 this._wrap.id = this.get('element').id + '_wrap';
                 this._wrap.className = this.CSS_WRAP;
-                D.setStyle(this._wrap, 'width', this.get('width'));
-                D.setStyle(this._wrap, 'height', this.get('height'));
+                if (this.get('element').tagName.toLowerCase() == 'textarea') {
+                    D.addClass(this._wrap, 'yui-resize-textarea');
+                }
+                D.setStyle(this._wrap, 'width', this.get('width') + 'px');
+                D.setStyle(this._wrap, 'height', this.get('height') + 'px');
                 D.setStyle(this._wrap, 'z-index', this.getStyle('z-index'));
                 this.setStyle('z-index', 0);
                 var pos = D.getStyle(this.get('element'), 'position');
@@ -308,7 +319,7 @@ var D = YAHOO.util.Dom,
         _setupDragDrop: function() {
             YAHOO.log('Setting up the dragdrop instance on the element', 'info', 'Resize');
             D.addClass(this._wrap, this.CSS_DRAG);
-            this.dd = new YAHOO.util.DD(this._wrap, this.get('id') + '-resize', { dragOnly: true });
+            this.dd = new YAHOO.util.DD(this._wrap, this.get('id') + '-resize', { dragOnly: true, useShim: this.get('useShim') });
             this.dd.on('dragEvent', function() {
                 this.fireEvent('dragEvent', arguments);
             }, this, true);
@@ -334,7 +345,7 @@ var D = YAHOO.util.Dom,
                 this._wrap.appendChild(this._handles[h[i]]);
                 Event.on(this._handles[h[i]], 'mouseover', this._handleMouseOver, this, true);
                 Event.on(this._handles[h[i]], 'mouseout', this._handleMouseOut, this, true);
-                this._dds[h[i]] = new YAHOO.util.DragDrop(this._handles[h[i]], this.get('id') + '-handle-' + h);
+                this._dds[h[i]] = new YAHOO.util.DragDrop(this._handles[h[i]], this.get('id') + '-handle-' + h, { useShim: this.get('useShim') });
                 this._dds[h[i]].setPadding(15, 15, 15, 15);
                 this._dds[h[i]].on('startDragEvent', this._handleStartDrag, this._dds[h[i]], this);
                 this._dds[h[i]].on('mouseDownEvent', this._handleMouseDown, this._dds[h[i]], this);
@@ -384,6 +395,10 @@ var D = YAHOO.util.Dom,
         * @description This method preps the autoRatio on MouseDown.
         */
         _handleMouseDown: function(ev) {
+            if (this._locked) {
+                YAHOO.log('Resize Locked', 'info', 'Resize');
+                return false;
+            }
             if (D.getStyle(this._wrap, 'position') == 'absolute') {
                 this._positioned = true;
             }
@@ -402,8 +417,12 @@ var D = YAHOO.util.Dom,
         * @description Adds CSS class names to the handles
         */
         _handleMouseOver: function(ev) {
-            //Internet Explorer needs this
+            if (this._locked) {
+                YAHOO.log('Resize Locked', 'info', 'Resize');
+                return false;
+            }
             D.removeClass(this._wrap, this.CSS_RESIZE);
+
             if (this.get('hover')) {
                 D.removeClass(this._wrap, this.CSS_HOVER);
             }
@@ -423,7 +442,6 @@ var D = YAHOO.util.Dom,
                 }
             }
 
-            //Internet Explorer needs this
             D.addClass(this._wrap, this.CSS_RESIZE);
         },
         /** 
@@ -433,7 +451,6 @@ var D = YAHOO.util.Dom,
         * @description Removes CSS class names to the handles
         */
         _handleMouseOut: function(ev) {
-            //Internet Explorer needs this
             D.removeClass(this._wrap, this.CSS_RESIZE);
             if (this.get('hover') && !this._active) {
                 D.addClass(this._wrap, this.CSS_HOVER);
@@ -453,7 +470,6 @@ var D = YAHOO.util.Dom,
                     }
                 }
             }
-            //Internet Explorer needs this
             D.addClass(this._wrap, this.CSS_RESIZE);
         },
         /** 
@@ -598,6 +614,14 @@ var D = YAHOO.util.Dom,
 
             this._resizeEvent = null;
             this._currentHandle = null;
+            
+            if (!this.get('animate')) {
+                this.set('height', this._cache.height, true);
+                this.set('width', this._cache.width, true);
+            }
+
+            YAHOO.log('Firing endResize Event', 'info', 'Resize');
+            this.fireEvent('endResize', { ev: 'endResize', target: this, height: this._cache.height, width: this._cache.width, top: this._cache.top, left: this._cache.left });
         },
         /** 
         * @private
@@ -696,10 +720,6 @@ var D = YAHOO.util.Dom,
         _updateStatus: function(h, w, t, l) {
             if (this._resizeEvent && (!Lang.isString(this._resizeEvent))) {
                 YAHOO.log('Updating Status Box', 'info', 'Resize');
-                if (this.get('status')) {
-                    YAHOO.log('Showing Status Box', 'info', 'Resize');
-                    D.setStyle(this._status, 'display', 'inline');
-                }
                 h = ((h === 0) ? this._cache.start.height : h);
                 w = ((w === 0) ? this._cache.start.width : w);
                 var h1 = parseInt(this.get('height'), 10),
@@ -715,9 +735,50 @@ var D = YAHOO.util.Dom,
                 var diffW = (parseInt(w, 10) - w1);
                 this._cache.offsetHeight = diffH;
                 this._cache.offsetWidth = diffW;
-                this._status.innerHTML = '<strong>' + parseInt(h, 10) + ' x ' + parseInt(w, 10) + '</strong><em>' + ((diffH > 0) ? '+' : '') + diffH + ' x ' + ((diffW > 0) ? '+' : '') + diffW + '</em>';
-                D.setXY(this._status, [Event.getPageX(this._resizeEvent) + 12, Event.getPageY(this._resizeEvent) + 12]);
+                if (this.get('status')) {
+                    YAHOO.log('Showing Status Box', 'info', 'Resize');
+                    D.setStyle(this._status, 'display', 'inline');
+                    //This will cause IE8 to crash if the status box is hidden..
+                    this._status.innerHTML = '<strong>' + parseInt(h, 10) + ' x ' + parseInt(w, 10) + '</strong><em>' + ((diffH > 0) ? '+' : '') + diffH + ' x ' + ((diffW > 0) ? '+' : '') + diffW + '</em>';
+                    D.setXY(this._status, [Event.getPageX(this._resizeEvent) + 12, Event.getPageY(this._resizeEvent) + 12]);
+                }
             }
+        },
+        /** 
+        * @method lock
+        * @description Lock the resize so it can't be resized
+        * @param {Boolean} dd If the draggable config is set, lock it too
+        * @return {<a href="YAHOO.util.Resize.html">YAHOO.util.Resize</a>} The Resize instance
+        */
+        lock: function(dd) {
+            this._locked = true;
+            if (dd && this.dd) {
+                D.removeClass(this._wrap, 'yui-draggable');
+                this.dd.lock();
+            }
+            return this;
+        },
+        /** 
+        * @method unlock
+        * @description Unlock the resize so it can be resized
+        * @param {Boolean} dd If the draggable config is set, unlock it too
+        * @return {<a href="YAHOO.util.Resize.html">YAHOO.util.Resize</a>} The Resize instance
+        */
+        unlock: function(dd) {
+            this._locked = false;
+            if (dd && this.dd) {
+                D.addClass(this._wrap, 'yui-draggable');
+                this.dd.unlock();
+            }
+            return this;
+        },
+        /** 
+        * @method isLocked
+        * @description Check the locked status of the resize instance
+        * @return {Boolean}
+        */
+        isLocked: function() {
+            return this._locked;
         },
         /** 
         * @method reset
@@ -730,6 +791,7 @@ var D = YAHOO.util.Dom,
             return this;
         },
         /** 
+        * @private
         * @method resize
         * @param {Event} ev The mouse event.
         * @param {Number} h The new height setting.
@@ -742,6 +804,10 @@ var D = YAHOO.util.Dom,
         * @return {<a href="YAHOO.util.Resize.html">YAHOO.util.Resize</a>} The Resize instance
         */
         resize: function(ev, h, w, t, l, force, silent) {
+            if (this._locked) {
+                YAHOO.log('Resize Locked', 'info', 'Resize');
+                return false;
+            }
             YAHOO.log('Resize: ' + h + ',' + w + ',' + t + ',' + l, 'info', 'Resize');
             this._resizeEvent = ev;
             var el = this._wrap, anim = this.get('animate'), set = true;
@@ -756,13 +822,14 @@ var D = YAHOO.util.Dom,
                     l = this._cache.left - l;
                 }
             }
-
+            
+            
             var ratio = this._setRatio(h, w, t, l);
             h = parseInt(ratio[0], 10);
             w = parseInt(ratio[1], 10);
             t = parseInt(ratio[2], 10);
             l = parseInt(ratio[3], 10);
-
+            
             if (t == 0) {
                 //No Offset, get from cache
                 t = D.getY(el);
@@ -825,6 +892,7 @@ var D = YAHOO.util.Dom,
 
             this._updateStatus(h, w, t, l);
 
+
             if (this._positioned) {
                 if (this._proxy && force) {
                     //Do nothing
@@ -848,11 +916,6 @@ var D = YAHOO.util.Dom,
                         }
                     }
                     if (set) {
-                        if (this.browser.ie > 6) {
-                            if (h === this._cache.height) {
-                                h = h + 1;
-                            }
-                        }
                         el.style.height = h + 'px';
                     }
                     if ((this._proxy && force) || !this._proxy) {
@@ -942,7 +1005,7 @@ var D = YAHOO.util.Dom,
             YAHOO.log('Handle BR', 'info', 'Resize');
             var newW = this._setWidth(args.e);
             var newH = this._setHeight(args.e);
-            this.resize(args.e, (newH + 1), newW, 0, 0);
+            this.resize(args.e, newH, newW, 0, 0);
         },
         /** 
         * @private
@@ -1053,7 +1116,7 @@ var D = YAHOO.util.Dom,
                     nw = (xy - x) + parseInt(this.get('width'), 10);
                 }
                 
-                nw = this._snapTick(nw, this.get('yTicks'));
+                nw = this._snapTick(nw, this.get('xTicks'));
                 nw = this._checkWidth(nw);
             return nw;
         },
@@ -1121,7 +1184,7 @@ var D = YAHOO.util.Dom,
                 if (flip) {
                     nh = (xy - y) + parseInt(this.get('height'), 10);
                 }
-                nh = this._snapTick(nh, this.get('xTicks'));
+                nh = this._snapTick(nh, this.get('yTicks'));
                 nh = this._checkHeight(nh);
                 
             return nh;
@@ -1157,6 +1220,7 @@ var D = YAHOO.util.Dom,
         */        
         init: function(p_oElement, p_oAttributes) {
             YAHOO.log('init', 'info', 'Resize');
+            this._locked = false;
             this._cache = {
                 xy: [],
                 height: 0,
@@ -1179,9 +1243,19 @@ var D = YAHOO.util.Dom,
 
             if (p_oAttributes.height) {
                 this.set('height', parseInt(p_oAttributes.height, 10));
+            } else {
+                var h = this.getStyle('height');
+                if (h == 'auto') {
+                    this.set('height', parseInt(this.get('element').offsetHeight, 10));
+                }
             }
             if (p_oAttributes.width) {
                 this.set('width', parseInt(p_oAttributes.width, 10));
+            } else {
+                var w = this.getStyle('width');
+                if (w == 'auto') {
+                    this.set('width', parseInt(this.get('element').offsetWidth, 10));
+                }
             }
             
             var id = p_oElement;
@@ -1247,6 +1321,26 @@ var D = YAHOO.util.Dom,
         initAttributes: function(attr) {
             Resize.superclass.initAttributes.call(this, attr);
 
+            /**
+            * @attribute useShim
+            * @description This setting will be passed to the DragDrop instances on the resize handles and for the draggable property.
+            * This property should be used if you want the resize handles to work over iframe and other elements.
+            * @type Boolean
+            */
+            this.setAttributeConfig('useShim', {
+                value: ((attr.useShim === true) ? true : false),
+                validator: YAHOO.lang.isBoolean,
+                method: function(u) {
+                    for (var i in this._dds) {
+                        if (Lang.hasOwnProperty(this._dds, i)) {
+                            this._dds[i].useShim = u;
+                        }
+                    }
+                    if (this.dd) {
+                        this.dd.useShim = u;
+                    }
+                }
+            });
             /**
             * @attribute setSize
             * @description Set the size of the resized element, if set to false the element will not be auto resized,
@@ -1430,9 +1524,9 @@ var D = YAHOO.util.Dom,
             this.setAttributeConfig('animateEasing', {
                 value: attr.animateEasing || function() {
                     var easing = false;
-                    try {
+                    if (YAHOO.util.Easing && YAHOO.util.Easing.easeOut) {
                         easing = YAHOO.util.Easing.easeOut;
-                    } catch (e) {}
+                    }
                     return easing;
                 }()
             });
@@ -1485,12 +1579,18 @@ var D = YAHOO.util.Dom,
                 value: attr.draggable || false,
                 validator: YAHOO.lang.isBoolean,
                 method: function(dd) {
-                    if (dd && this._wrap) {
+                    if (dd && this._wrap && !this.dd) {
                         this._setupDragDrop();
                     } else {
                         if (this.dd) {
-                            D.removeClass(this._wrap, this.CSS_DRAG);
-                            this.dd.unreg();
+                            if (dd) {
+                                //activating an old DD instance..
+                                D.addClass(this._wrap, this.CSS_DRAG);
+                                this.dd.DDM.regDragDrop(this.dd, "default");
+                            } else {
+                                D.removeClass(this._wrap, this.CSS_DRAG);
+                                this.dd.unreg();
+                            }
                         }
                     }
                 }
@@ -1588,9 +1688,9 @@ var D = YAHOO.util.Dom,
                 D.removeClass(this._wrap, this.CSS_DRAG);
             }
             if (this._wrap != this.get('element')) {
-                this.setStyle('position', '');
-                this.setStyle('top', '');
-                this.setStyle('left', '');
+                this.setStyle('position', (this._positioned ? 'absolute' : 'relative'));
+                this.setStyle('top', D.getStyle(this._wrap, 'top'));
+                this.setStyle('left',D.getStyle(this._wrap, 'left'));
                 this._wrap.parentNode.replaceChild(this.get('element'), this._wrap);
             }
             this.removeClass(this.CSS_RESIZE);
@@ -1626,7 +1726,12 @@ var D = YAHOO.util.Dom,
 */
 /**
 * @event startResize
-* @description Fires when when a resize action is started.
+* @description Fires when a resize action is started.
+* @type YAHOO.util.CustomEvent
+*/
+/**
+* @event endResize
+* @description Fires when the mouseUp event from the Drag Instance fires.
 * @type YAHOO.util.CustomEvent
 */
 /**
@@ -1647,4 +1752,4 @@ var D = YAHOO.util.Dom,
 
 })();
 
-YAHOO.register("resize", YAHOO.util.Resize, {version: "2.5.1", build: "984"});
+YAHOO.register("resize", YAHOO.util.Resize, {version: "2.9.0", build: "2800"});

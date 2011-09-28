@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc.
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., InfraDNA, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,20 @@
  */
 package hudson;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Binding;
+import com.google.inject.CreationException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.Scope;
+import com.google.inject.Scopes;
+import com.google.inject.name.Names;
 import com.google.common.collect.ImmutableList;
 import hudson.init.InitMilestone;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
@@ -32,7 +44,11 @@ import net.java.sezpoz.IndexItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -127,13 +143,216 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     public void scout(Class extensionType, Hudson hudson) {
     }
 
+    @Extension
+    public static final class GuiceFinder extends AbstractGuiceFinder<Extension> {
+        public GuiceFinder() {
+            super(Extension.class);
+        }
+
+        @Override
+        protected boolean isOptional(Extension annotation) {
+            return annotation.optional();
+        }
+
+        @Override
+        protected double getOrdinal(Extension annotation) {
+            return annotation.ordinal();
+        }
+    }
+
     /**
-     * The default implementation that looks for the {@link Extension} marker.
+     * Discovers components via sezpoz but instantiates them by using Guice.
+     */
+    public static abstract class AbstractGuiceFinder<T extends Annotation> extends ExtensionFinder {
+        private Injector container;
+
+        private final Map<Key,T> annotations = new HashMap<Key,T>();
+
+        public AbstractGuiceFinder(final Class<T> annotationType) {
+            List<Module> modules = new ArrayList<Module>();
+            modules.add(new SezpozModule(annotationType,Jenkins.getInstance().getPluginManager().uberClassLoader));
+
+            for (ExtensionComponent<Module> ec : new Sezpoz().find(Module.class, Hudson.getInstance())) {
+                modules.add(ec.getInstance());
+            }
+
+            try {
+                container = Guice.createInjector(modules);
+            } catch (CreationException e) {
+                LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
+                // failing to load all bindings are disastrous, so recover by creating minimum that works
+                // by just including the core
+                container = Guice.createInjector(new SezpozModule(annotationType,Jenkins.class.getClassLoader()));
+            }
+        }
+
+        protected abstract double getOrdinal(T annotation);
+
+        /**
+         * Hook to enable subtypes to control which ones to pick up and which ones to ignore.
+         */
+        protected boolean isActive(AnnotatedElement e) {
+            return true;
+        }
+
+        protected abstract boolean isOptional(T annotation);
+
+        private Object instantiate(IndexItem<T,Object> item) {
+            try {
+                return item.instance();
+            } catch (LinkageError e) {
+                // sometimes the instantiation fails in an indirect classloading failure,
+                // which results in a LinkageError
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            } catch (InstantiationException e) {
+                LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                           "Failed to load "+item.className(), e);
+            }
+            return null;
+        }
+
+        public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson hudson) {
+            List<ExtensionComponent<U>> result = new ArrayList<ExtensionComponent<U>>();
+
+            for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
+                if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
+                    T a = annotations.get(e.getKey());
+                    Object o = e.getValue().getProvider().get();
+                    if (o!=null)
+                        result.add(new ExtensionComponent<U>(type.cast(o),a!=null?getOrdinal(a):0));
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * TODO: need to learn more about concurrent access to {@link Injector} and how it interacts
+         * with classloading.
+         */
+        @Override
+        public void scout(Class extensionType, Hudson hudson) {
+        }
+
+        /**
+         * {@link Scope} that allows a failure to create a component,
+         * and change the value to null.
+         *
+         * <p>
+         * This is necessary as a failure to load one plugin shouldn't fail the startup of the entire Jenkins.
+         * Instead, we should just drop the failing plugins.
+         */
+        public static final Scope FAULT_TOLERANT_SCOPE = new Scope() {
+            public <T> Provider<T> scope(Key<T> key, Provider<T> unscoped) {
+                final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
+                return new Provider<T>() {
+                    public T get() {
+                        try {
+                            return base.get();
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING,"Failed to instantiate",e);
+                            return null;
+                        }
+                    }
+                };
+            }
+        };
+
+        private static final Logger LOGGER = Logger.getLogger(GuiceFinder.class.getName());
+
+        private class SezpozModule extends AbstractModule {
+            private final Class<T> annotationType;
+            private final ClassLoader cl;
+
+            public SezpozModule(Class<T> annotationType, ClassLoader cl) {
+                this.annotationType = annotationType;
+                this.cl = cl;
+            }
+
+            /**
+             * Guice performs various reflection operations on the class to figure out the dependency graph,
+             * and that process can cause additional classloading problems, which will fail the injector creation,
+             * which in turn has disastrous effect on the startup.
+             *
+             * <p>
+             * Ultimately I'd like to isolate problems to plugins and selectively disable them, allowing
+             * Jenkins to start with plugins that work, but I haven't figured out how.
+             *
+             * So this is an attempt to detect subset of problems eagerly, by invoking various reflection
+             * operations and try to find non-existent classes early.
+             */
+            private void resolve(Class c) {
+                try {
+                    c.getGenericSuperclass();
+                    c.getGenericInterfaces();
+                    ClassLoader ecl = c.getClassLoader();
+                    Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
+                    m.setAccessible(true);
+                    m.invoke(ecl, c);
+                } catch (Exception x) {
+                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                }
+            }
+
+            @SuppressWarnings({"unchecked", "ChainOfInstanceofChecks"})
+            @Override
+            protected void configure() {
+                int id=0;
+
+                for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
+                    id++;
+                    try {
+                        AnnotatedElement e = item.element();
+                        if (!isActive(e))   continue;
+                        T a = item.annotation();
+
+                        if (e instanceof Class) {
+                            Key key = Key.get((Class)e);
+                            resolve((Class)e);
+                            annotations.put(key,a);
+                            bind(key).in(FAULT_TOLERANT_SCOPE);
+                        } else {
+                            Class extType;
+                            if (e instanceof Field) {
+                                extType = ((Field)e).getType();
+                            } else
+                            if (e instanceof Method) {
+                                extType = ((Method)e).getReturnType();
+                            } else
+                                throw new AssertionError();
+
+                            resolve(extType);
+
+                            // use arbitrary id to make unique key, because Guice wants that.
+                            Key key = Key.get(extType, Names.named(String.valueOf(id)));
+                            annotations.put(key,a);
+                            bind(key).toProvider(new Provider() {
+                                    public Object get() {
+                                        return instantiate(item);
+                                    }
+                                }).in(FAULT_TOLERANT_SCOPE);
+                        }
+                    } catch (LinkageError e) {
+                        // sometimes the instantiation fails in an indirect classloading failure,
+                        // which results in a LinkageError
+                        LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                                   "Failed to load "+item.className(), e);
+                    } catch (InstantiationException e) {
+                        LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
+                                   "Failed to load "+item.className(), e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The bootstrap implementation that looks for the {@link Extension} marker.
      *
      * <p>
      * Uses Sezpoz as the underlying mechanism.
      */
-    @Extension
     public static final class Sezpoz extends ExtensionFinder {
 
         private volatile List<IndexItem<Extension,Object>> indices;
@@ -230,6 +449,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return item.annotation().optional() ? Level.FINE : Level.WARNING;
         }
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(ExtensionFinder.class.getName());
 }
