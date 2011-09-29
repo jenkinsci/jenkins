@@ -499,7 +499,6 @@ public final class FilePath implements Serializable {
                         p.mkdirs();
                     }
                     IOUtils.copy(zip.getInputStream(e), f);
-                    f.setLastModified(e.getTime());
                     try {
                         FilePath target = new FilePath(f);
                         int mode = e.getUnixMode();
@@ -508,6 +507,7 @@ public final class FilePath implements Serializable {
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.WARNING, "unable to set permissions", ex);
                     }
+                    f.setLastModified(e.getTime());
                 }
             }
         } finally {
