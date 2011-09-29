@@ -96,7 +96,10 @@ complete {
     }
            
 
-
+    match("nekohtml:xercesMinimal:1.9.6.2") {
+        if (dependency.licenses.isEmpty())
+            rewriteLicense([], apacheLicense)
+    }    
 
     //
     // Choose from multi-licensed modules
@@ -105,4 +108,5 @@ complete {
     match("*:jna-posix") {
         accept("GNU Lesser General Public License Version 2.1")
     }
+
 }
