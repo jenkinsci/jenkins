@@ -144,7 +144,7 @@ public class MavenFingerprinter extends MavenReporter {
 				// the local repository
 				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent);
 				if (localRepository != null) {
-					// Don't use file, for compatibility with M2
+					// Don't use ArtifactRepository.find(), for compatibility with M2
 					parentFile = new File(localRepository.getBasedir(), 
 							localRepository.pathOf(parent.getArtifact()));
 				}
@@ -159,6 +159,8 @@ public class MavenFingerprinter extends MavenReporter {
 	}
 
 	private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent) {
+		// Maven 2.0 has no corresponding mechanism
+		// Maven 2.1,2.2 has a projectBuildConfiguration, however it is null, need to further look into this
 		if (mavenVersion.startsWith("2.")) return null;
 		
 		// Maven 3
