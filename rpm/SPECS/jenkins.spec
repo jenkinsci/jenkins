@@ -140,4 +140,5 @@ exit 0
 /usr/sbin/rc%{name}
 
 %changelog
-* See [http://jenkins-ci.org/changelog] for complete details
+* Wed Sep 28 2011 kk@kohsuke.org
+- See [http://jenkins-ci.org/changelog] for complete details

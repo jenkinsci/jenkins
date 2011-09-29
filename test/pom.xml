@@ -213,7 +213,7 @@ THE SOFTWARE.
                 <configuration>
                   <fork>true</fork>
                   <concurrency>${concurrency}</concurrency>
-                  <argLine>-Dfile.encoding=UTF-8</argLine>
+                  <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
                   <timeout>300</timeout>
                   <systemProperties>
                     <property>
