@@ -53,6 +53,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -214,17 +215,36 @@ public class UpdateSite {
             sig.initVerify(certs.get(0));
             SignatureOutputStream sos = new SignatureOutputStream(sig);
 
+            // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
+            // that only covers the earlier portion of the file. This was caused by the lack of close() call
+            // in the canonical writing, which apparently leave some bytes somewhere that's not flushed to
+            // the digest output stream. This affects Jenkins [1.424,1,431].
+            // Jenkins 1.432 shipped with the "fix" (1eb0c64abb3794edce29cbb1de50c93fa03a8229) that made it
+            // compute the correct digest, but it breaks all the existing UC json metadata out there. We then
+            // quickly discovered ourselves in the catch-22 situation. If we generate UC with the correct signature,
+            // it'll cut off [1.424,1.431] from the UC. But if we don't, we'll cut off [1.432,*).
+            //
+            // In 1.433, we revisited 1eb0c64abb3794edce29cbb1de50c93fa03a8229 so that the original "digest"/"signature"
+            // pair continues to be generated in a buggy form, while "correct_digest"/"correct_signature" are generated
+            // correctly.
+            //
+            // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
+            // the attacker to inject a fragment at the end of the json.
             o.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos),"UTF-8")).close();
 
             // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
             // (which is more likely than someone tampering with update center), we can tell
             String computedDigest = new String(Base64.encode(sha1.digest()));
-            String providedDigest = signature.getString("digest");
+            String providedDigest = signature.optString("correct_digest");
+            if (providedDigest==null) {
+                return FormValidation.error("No correct_digest parameter in update center '"+id+"'. This metadata appears to be old.");
+            }
             if (!computedDigest.equalsIgnoreCase(providedDigest)) {
                 return FormValidation.error("Digest mismatch: "+computedDigest+" vs "+providedDigest+" in update center '"+id+"'");
             }
 
-            if (!sig.verify(Base64.decode(signature.getString("signature").toCharArray()))) {
+            String providedSignature = signature.getString("correct_signature");
+            if (!sig.verify(Base64.decode(providedSignature.toCharArray()))) {
                 return FormValidation.error("Signature in the update center doesn't match with the certificate in update center '"+id+"'");
             }
 

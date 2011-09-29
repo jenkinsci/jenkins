@@ -39,7 +39,7 @@ public class GetJobCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-        return "Dumps the job definition XML to stdout";
+        return Messages.GetJobCommand_ShortDescription();
     }
 
     protected int run() throws Exception {

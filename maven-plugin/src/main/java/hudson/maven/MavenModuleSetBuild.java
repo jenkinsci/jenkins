@@ -620,7 +620,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             			}
 
                         String settingsConfigId = project.getSettingConfigId();
-                        if (!StringUtils.isBlank(settingsConfigId)) {
+                        if (StringUtils.isNotBlank(settingsConfigId)) {
                             Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
@@ -636,7 +636,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
-                        if (!StringUtils.isBlank(globalSettingsConfigId)) {
+                        if (StringUtils.isNotBlank(globalSettingsConfigId)) {
                             Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
                             if (config == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
@@ -838,7 +838,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
             } finally {
-                if (project.getSettingConfigId() != null) {
+                if (StringUtils.isNotBlank(project.getSettingConfigId())) {
                     // restore to null if as was modified
                     project.setAlternateSettings( null );
                     project.save();

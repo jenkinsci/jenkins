@@ -15,7 +15,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
 
     @Override
     public String getShortDescription() {
-        return "Sets the displayName of a build";
+        return Messages.SetBuildDisplayNameCommand_ShortDescription();
     }
 
     @Argument(metaVar="JOB", usage="Name of the job to build", required=true, index=0)
