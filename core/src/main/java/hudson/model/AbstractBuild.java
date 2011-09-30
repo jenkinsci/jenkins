@@ -125,7 +125,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Changes in this build.
      */
-     volatile transient WeakReference<ChangeLogSet<? extends Entry>> changeSet;
+    private volatile transient WeakReference<ChangeLogSet<? extends Entry>> changeSet;
 
     /**
      * Cumulative list of people who contributed to the build problem.
