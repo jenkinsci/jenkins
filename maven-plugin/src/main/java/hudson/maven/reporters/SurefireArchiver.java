@@ -231,6 +231,7 @@ public class SurefireArchiver extends MavenReporter {
             && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
             && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
             && (!mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test"))
+            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
             return false;
@@ -280,10 +281,20 @@ public class SurefireArchiver extends MavenReporter {
                 if (((skipTests != null) && (skipTests))) {
                     return false;
                 }
-            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")) {
+            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test")) {
                 Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
                 if (((skipTests != null) && (skipTests))) {
                     return false;
+                }
+            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")) {
+                if (mojo.pluginName.version.compareTo("3.0.0-alpha-6") < 0) {
+                    // Earlier versions do not support tests
+                    return false;
+                } else {
+                    Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
+                    if (((skipTests != null) && (skipTests))) {
+                        return false;
+                    }
                 }
             } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
                     // gwt-maven-plugin < 1.2 does not implement required Surefire option
