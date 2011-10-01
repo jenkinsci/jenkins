@@ -727,9 +727,17 @@ var hudsonRules = {
         var h = e.clientHeight;
         var config = e.getAttribute("codemirror-config") || "";
         config = eval('({'+config+'})');
-        var w = CodeMirror.fromTextArea(e,config).getWrapperElement();
-        w.setAttribute("style","border:1px solid black;");
-        w.style.height = h+"px";
+        var codemirror = CodeMirror.fromTextArea(e,config);
+        e.codemirrorObject = codemirror;
+        if(typeof(codemirror.getScrollerElement) !== "function") {
+            // Maybe older versions of CodeMirror do not provide getScrollerElement method.
+            codemirror.getScrollerElement = function(){
+                return findElementsBySelector(codemirror.getWrapperElement(), ".CodeMirror-scroll")[0];
+            };
+        }
+        var scroller = codemirror.getScrollerElement();
+        scroller.setAttribute("style","border:1px solid black;");
+        scroller.style.height = h+"px";
     },
 
 // deferred client-side clickable map.
@@ -786,30 +794,39 @@ var hudsonRules = {
             return;
         }
 
-        var handle = textarea.nextSibling;
-        if(handle==null || handle.className!="textarea-handle") return;
+        // CodeMirror inserts a wrapper element next to the textarea.
+        // textarea.nextSibling may not be the handle.
+        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
+        if(handles.length != 1) return;
+        var handle = handles[0];
 
         var Event = YAHOO.util.Event;
 
+        function getCodemirrorScrollerOrTextarea(){
+            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
+        }
         handle.onmousedown = function(ev) {
             ev = Event.getEvent(ev);
-            var offset = textarea.offsetHeight-Event.getPageY(ev);
-            textarea.style.opacity = 0.5;
+            var s = getCodemirrorScrollerOrTextarea();
+            var offset = s.offsetHeight-Event.getPageY(ev);
+            s.style.opacity = 0.5;
             document.onmousemove = function(ev) {
                 ev = Event.getEvent(ev);
                 function max(a,b) { if(a<b) return b; else return a; }
-                textarea.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
+                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
                 return false;
             };
             document.onmouseup = function() {
                 document.onmousemove = null;
                 document.onmouseup = null;
-                textarea.style.opacity = 1;
+                var s = getCodemirrorScrollerOrTextarea();
+                s.style.opacity = 1;
             }
         };
         handle.ondblclick = function() {
-            textarea.style.height = "";
-            textarea.rows = textarea.value.split("\n").length;
+            var s = getCodemirrorScrollerOrTextarea();
+            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
+            s.style.height = s.scrollHeight + 'px';
         }
     },
 
