@@ -5,7 +5,6 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.remoting.Channel;
-import hudson.util.MaskingClassLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -171,10 +170,4 @@ final class Maven2Builder extends MavenBuilder {
     
 
     private static final long serialVersionUID = 1L;
-
-    @Override
-    public ClassLoader getClassLoader()
-    {
-        return new MaskingClassLoader( super.getClassLoader() );
-    }
 }
