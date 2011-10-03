@@ -23,8 +23,6 @@
  */
 package hudson.maven;
 
-import hudson.maven.MavenBuildProxy.BuildCallable;
-import hudson.maven.MavenBuildProxy.Filter.AsyncInvoker;
 import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
 import hudson.model.Result;

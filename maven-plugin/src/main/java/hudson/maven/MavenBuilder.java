@@ -83,12 +83,6 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
      */
     private final boolean profile = MavenProcessFactory.profile;
 
-    /**
-     * Record all asynchronous executions as they are scheduled,
-     * to make sure they are all completed before we finish.
-     */
-    protected transient /*final*/ List<Future<?>> futures;
-
     protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         super( listener, goals, systemProps );
     }
