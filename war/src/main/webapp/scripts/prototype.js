@@ -1206,6 +1206,22 @@ Array.from = $A;
     intersect: intersect,
     clone:     clone,
     toArray:   clone,
+    // patch: No need to define custom toJSON, but stapler's bind.js is assuming that Array has custom toJSON method.
+    // TODO: Remove the custom toJSON implementation after `[].toJSON` is changed to `Object.toJSON([])` in stapler's bind.js.
+    toJSON:    function() {
+      if (arguments.callee.caller === Object.toJSON || (window.JSON && arguments.callee.caller === window.JSON.stringify)) {
+        // Called from parent object.
+        // Return an array itself and leave stringification to the parent.
+        return this;
+      } else {
+        var results = [];
+        this.each(function(object) {
+          var value = Object.toJSON(object);
+          if (value !== undefined) results.push(value);
+        });
+        return '[' + results.join(',') + ']';
+      }
+    },
     size:      size,
     inspect:   inspect
   });
