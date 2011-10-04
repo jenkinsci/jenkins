@@ -121,140 +121,18 @@ Behaviour.start();
 */
 
 function findElementsBySelector(startNode,selector,includeSelf) {
-    function getAllChildren(e) {
-      // Returns all children of element. Workaround required for IE5/Windows. Ugh.
-      return e.all ? e.all : e.getElementsByTagName('*');
-    }
-
-    /**
-     * Returns true if 'p' is an ancestor of 'c'.
-     * If includeSelf==true, p==c is allowed. Otherwise not.
-     */
-    function isAncestor(p,c) {
-      if (!includeSelf && c!=null) c = c.parentNode;
-
-      while(true) {
-        if(p==c)      return true;
-        if(c==null)   return false;
-        c = c.parentNode;
-      }
-    }
-
-    /**
-     * Finds descendant elements of the given tag name under the current context
-     * (including the current context, if includeSelf==true)
-     */
-    function getMatchingElements(tagName) {
-        if (!tagName)   tagName = '*';
-
-        var found = [];
-        for (var h = 0; h < currentContext.length; h++) {
-          var c = currentContext[h];
-          var elements;
-          if (tagName == '*') {
-              elements = getAllChildren(c);
-              includeSelf && found.push(c);
-          } else {
-              elements = c.getElementsByTagName(tagName);
-              includeSelf && c.nodeName==tagName.toUpperCase() && found.push(c);
-          }
-          for (var j = 0; j < elements.length; j++) {
-            found.push(elements[j]);
+    if(includeSelf) {
+        function isSelfOrChild(c) {
+          while(true) {
+              if(startNode == c) return true;
+              if(c == null) return false;
+              c = c.parentNode;
           }
         }
-        return found;
+        return Prototype.Selector.select(selector, startNode.parentNode).filter(isSelfOrChild);
+    } else {
+        return Prototype.Selector.select(selector, startNode);
     }
-
-  // Split selector in to tokens
-  var tokens = selector.replace(/^\s+/,'').replace(/\s+$/,'').split(' ');
-  var currentContext = new Array(startNode);
-  for (var i = 0; i < tokens.length; i++) {
-    if (i>0)    includeSelf=false;
-
-    var token = tokens[i].replace(/^\s+/,'').replace(/\s+$/,'');
-    if (token.indexOf('#') > -1) {
-      // Token is an ID selector
-      var bits = token.split('#');
-      var tagName = bits[0];
-      var id = bits[1];
-      var element = document.getElementById(id);
-      if (tagName && element.nodeName != tagName.toUpperCase()) {
-        // tag with that ID not found, return false
-        return [];
-      }
-
-      // make sure this node is a descendant of the current context
-      if(currentContext.find(function(n) {return isAncestor(n,element)})==null)
-        return []; // not a descendant
-
-      // Set currentContext to contain just this element
-      currentContext = [element];
-      continue; // Skip to next token
-    }
-    if (token.indexOf('.') > -1) {
-      // Token contains a class selector
-      var bits = token.split('.');
-      var tagName = bits[0];
-      var className = new RegExp('(\\s|^)'+bits[1]+'(\\s|$)');
-      // Get elements matching tag, filter them for class selector
-      var found = getMatchingElements(tagName);
-
-      currentContext = [];
-      for (var k = 0; k < found.length; k++) {
-        if (found[k].className && found[k].className.match(className)) {
-          currentContext.push(found[k]);
-        }
-      }
-      continue; // Skip to next token
-    }
-    // Code to deal with attribute selectors
-    bits = /^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/.exec(token);
-    if (bits!=null) {
-      var tagName = bits[1];
-      var attrName = bits[2];
-      var attrOperator = bits[3];
-      var attrValue = bits[4];
-      // Grab all of the tagName elements within current context
-      var found = getMatchingElements(tagName);
-
-      var checkFunction; // This function will be used to filter the elements
-      switch (attrOperator) {
-        case '=': // Equality
-          checkFunction = function(e) { return (e.getAttribute(attrName) == attrValue); };
-          break;
-        case '~': // Match one of space seperated words
-          checkFunction = function(e) { return (e.getAttribute(attrName).match(new RegExp('\\b'+attrValue+'\\b'))); };
-          break;
-        case '|': // Match start with value followed by optional hyphen
-          checkFunction = function(e) { return (e.getAttribute(attrName).match(new RegExp('^'+attrValue+'-?'))); };
-          break;
-        case '^': // Match starts with value
-          checkFunction = function(e) { return (e.getAttribute(attrName).indexOf(attrValue) == 0); };
-          break;
-        case '$': // Match ends with value - fails with "Warning" in Opera 7
-          checkFunction = function(e) { return (e.getAttribute(attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length); };
-          break;
-        case '*': // Match ends with value
-          checkFunction = function(e) { return (e.getAttribute(attrName).indexOf(attrValue) > -1); };
-          break;
-        default :
-          // Just test for existence of attribute
-          checkFunction = function(e) { return e.getAttribute(attrName); };
-      }
-
-      currentContext = found.findAll(checkFunction);
-      // alert('Attribute Selector: '+tagName+' '+attrName+' '+attrOperator+' '+attrValue);
-      continue; // Skip to next token
-    }
-
-    if (!currentContext[0]){
-    	return [];
-    }
-
-    // If we get here, token is JUST an element (not a class or ID selector)
-    currentContext = getMatchingElements(token);
-  }
-  return currentContext;
 }
 
 document.getElementsBySelector = function(selector) {
