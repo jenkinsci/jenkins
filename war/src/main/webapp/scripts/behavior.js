@@ -121,6 +121,17 @@ Behaviour.start();
 */
 
 function findElementsBySelector(startNode,selector,includeSelf) {
+    // Use native selector API if possible
+    if(typeof(startNode.querySelectorAll) === "function" && !includeSelf) {
+        var list = startNode.querySelectorAll(selector);
+        // Some callers assumes that this funciton returns an array.
+        var arr = new Array(list.length);
+        for(var i=0; i<list.length; i++){
+            arr[i] = list[i];
+        }
+        return arr;
+    }
+
     function getAllChildren(e) {
       // Returns all children of element. Workaround required for IE5/Windows. Ugh.
       return e.all ? e.all : e.getElementsByTagName('*');
