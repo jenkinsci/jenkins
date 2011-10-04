@@ -215,8 +215,8 @@ var Class = (function() {
   function Str(key, holder, stack) {
     var value = holder[key],
         type = typeof value;
-
-    if (Type(value) === OBJECT_TYPE && typeof value.toJSON === 'function') {
+    // "|| value.toJSON" below is workaround for Opera 10.52/53 bug, see HUDSON-6424
+    if (Type(value) === OBJECT_TYPE && typeof value.toJSON === 'function' || value.toJSON || value.toJSON) {
       value = value.toJSON(key);
     }
 
@@ -1484,6 +1484,14 @@ Ajax.Base = Class.create({
 
     if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
+
+    // KK patch -- handle crumb for POST automatically by adding a header
+    if(this.options.method=="post") {
+        if(this.options.requestHeaders==undefined)
+            this.options.requestHeaders = {};
+        crumb.wrap(this.options.requestHeaders);
+    }
+    // KK patch until here
   }
 });
 Ajax.Request = Class.create(Ajax.Base, {
@@ -1604,11 +1612,11 @@ Ajax.Request = Class.create(Ajax.Base, {
         this.dispatchException(e);
       }
 
-      var contentType = response.getHeader('Content-type');
-      if (this.options.evalJS == 'force'
-          || (this.options.evalJS && this.isSameOrigin() && contentType
-          && contentType.match(/^\s*(text|application)\/(x-)?(java|ecma)script(;.*)?\s*$/i)))
-        this.evalResponse();
+//      var contentType = response.getHeader('Content-type');
+//      if (this.options.evalJS == 'force'
+//          || (this.options.evalJS && this.isSameOrigin() && contentType
+//          && contentType.match(/^\s*(text|application)\/(x-)?(java|ecma)script(;.*)?\s*$/i)))
+//        this.evalResponse();
     }
 
     try {
@@ -1640,7 +1648,7 @@ Ajax.Request = Class.create(Ajax.Base, {
 
   evalResponse: function() {
     try {
-      return eval((this.transport.responseText || '').unfilterJSON());
+      return eval('('+(this.transport.responseText || '').unfilterJSON()+')');
     } catch (e) {
       this.dispatchException(e);
     }
@@ -2301,6 +2309,7 @@ Element.Methods = {
   hasClassName: function(element, className) {
     if (!(element = $(element))) return;
     var elementClassName = element.className;
+    if (!elementClassName) return false;
     return (elementClassName.length > 0 && (elementClassName == className ||
       new RegExp("(^|\\s)" + className + "(\\s|$)").test(elementClassName)));
   },
@@ -5024,15 +5033,24 @@ Form.Methods = {
   getInputs: function(form, typeName, name) {
     form = $(form);
     var inputs = form.getElementsByTagName('input');
+    // KK patch
+    var textareas = form.getElementsByTagName('textarea');
+    var selects = form.getElementsByTagName('select');
 
-    if (!typeName && !name) return $A(inputs).map(Element.extend);
+    if (!typeName && !name) return $A(inputs).concat($A(textareas)).concat($A(selects)).map(Element.extend);
 
-    for (var i = 0, matchingInputs = [], length = inputs.length; i < length; i++) {
-      var input = inputs[i];
-      if ((typeName && input.type != typeName) || (name && input.name != name))
-        continue;
-      matchingInputs.push(Element.extend(input));
-    }
+    var matchingInputs = [];
+    var f = function(inputs) {
+      for (var i = 0, length = inputs.length; i < length; i++) {
+        var input = inputs[i];
+        if ((typeName && input.type != typeName) || (name && input.name != name))
+          continue;
+        matchingInputs.push(Element.extend(input));
+      }
+    };
+    f(inputs);
+    f(textareas);
+    f(selects);
 
     return matchingInputs;
   },
