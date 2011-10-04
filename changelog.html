@@ -55,23 +55,38 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.434>What's new in 1.434</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Made build SCM change set a weak reference to reduce heap usage
+  <li class=bug>
+    Add support for android-maven-plugin integration test reports and fix an error with 2.x maven-android-plugin
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10913">issue 10913</a>)    
   <li class=rfe>
     Added a way to show avatar images on user pages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7494">issue 7494</a>)
   <li class=bug>
     HTTPS on port 80 makes Jenkins infer his URI incorrectly
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11151">issue 11151</a>)
-
-</ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.433>What's new in 1.433</a> <!--=DATE=--></h3>
-<ul class=image>
+  <li class=bug>
+    Resizable textarea handle does not work if CodeMirror is enabled
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11132">issue 11132</a>)
   <li class=bug>
     "Alternate settings file" build parameter is getting cleaned after job execution
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10955">issue 10955</a>)
+  <li class=rfe>
+    upgrade Apache Maven Wagon to 2.0.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11164">issue 11164</a>)    
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.433>What's new in 1.433</a> (2011/10/01)</h3>
+<ul class=image>
   <li class=bug>
     Port on HTTP Proxy Configure accepts characters except the digits
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11068">issue 11068</a>)
@@ -102,9 +117,6 @@ Upcoming changes</a>
     Concurrent build is no longer beta
   <li class=rfe>  
     Permission check added when viewing configuration of computer set.
-  <li class=rfe>
-    upgrade Apache Maven Wagon to 2.0.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11164">issue 11164</a>)
   <li class='major rfe'>  
     Maven project now supports arbitrary build steps
     (<a href="https://github.com/jenkinsci/jenkins/pull/233">pull #233</a>) 
@@ -112,7 +124,6 @@ Upcoming changes</a>
     Jenkins internally started using Guice for loading extensions
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8751">issue 8751</a>) 
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.432>What's new in 1.432</a> (2011/09/25)</h3>
 <ul class=image>
   <li class=bug>

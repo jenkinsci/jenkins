@@ -380,7 +380,7 @@ public class JDKInstaller extends ToolInstaller {
             Secret p = getDescriptor().getPassword();
             if (u==null || p==null) {
                 log.hyperlink(getCredentialPageUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.\n");
-                throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
+                throw new AbortException("Unable to install JDK unless a valid Oracle account username/password is provided in the system configuration.");
             }
 
             if (totalPageCount++>16) // looping too much
