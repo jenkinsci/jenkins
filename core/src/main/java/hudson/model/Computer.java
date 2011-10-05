@@ -305,7 +305,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="connect-node")
     public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(CONNECT);
         connect(force).get();
     }
 
@@ -361,7 +361,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="disconnect-node")
     public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(DISCONNECT);
         disconnect(new ByCLI(cause)).get();
     }
 
@@ -370,13 +370,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIMethod(name="offline-node")
     public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(DISCONNECT);
         setTemporarilyOffline(true,new ByCLI(cause));
     }
 
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(CONNECT);
         setTemporarilyOffline(false,null);
     }
 
@@ -963,14 +963,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
-        checkPermission(Jenkins.ADMINISTER);
         if(!temporarilyOffline) {
+            checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
                     OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
                         Jenkins.getAuthentication().getName(),
                         offlineMessage!=null ? " : " + offlineMessage : "")));
         } else {
+            checkPermission(CONNECT);
             setTemporarilyOffline(!temporarilyOffline,null);
         }
         return HttpResponses.redirectToDot();
@@ -1158,6 +1159,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.COMPUTER);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE);
+    public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
+    public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }
