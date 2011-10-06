@@ -47,6 +47,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.Iterators;
 import hudson.scm.SCM;
@@ -646,7 +647,7 @@ public class Functions {
         StringBuilder buf = new StringBuilder();
         buf.append(req.getScheme()).append("://");
         buf.append(req.getServerName());
-        if(req.getLocalPort()!=80)
+        if(! (req.getScheme().equals("http") && req.getLocalPort()==80 || req.getScheme().equals("https") && req.getLocalPort()==443))
             buf.append(':').append(req.getLocalPort());
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
@@ -1446,4 +1447,15 @@ public class Functions {
         return all;
     }
 
+    /**
+     * Returns an avatar image URL for the specified user and preferred image size
+     * @param user the user
+     * @param avatarSize the preferred size of the avatar image
+     * @return a URL string
+     * @since 1.433
+     */
+    public String getUserAvatar(User user, String avatarSize) {
+        return UserAvatarResolver.resolve(user, avatarSize);
+    }
+    
 }

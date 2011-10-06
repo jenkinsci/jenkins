@@ -39,7 +39,7 @@ THE SOFTWARE.
       <!-- this is where the example goes -->
       <d:invokeBody />
 
-      <form action="script" method="post">
+      <form action="script" method="post" name="form1">
         <textarea id="script" name="script" style="width:100%; height:10em">${request.getParameter('script')}</textarea>
         <div align="right">
           <f:submit  value="${%Run}"/>
@@ -51,11 +51,55 @@ THE SOFTWARE.
       <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.clike.clike"/>
       <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
       <script>
-        var w = CodeMirror.fromTextArea(document.getElementById("script"),{
-          mode:"text/x-groovy",
-          lineNumbers: true
-        }).getWrapperElement();
-        w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        (function() {
+          var cmdKeyDown = false;
+          
+          var w = CodeMirror.fromTextArea(document.getElementById("script"),{
+            mode:"text/x-groovy",
+            lineNumbers: true,
+            onKeyEvent: function(editor, event){
+              function isGeckoCommandKey() {
+                return Prototype.Browser.Gecko &amp;&amp; event.keyCode == 224
+              }
+              function isOperaCommandKey() {
+                return Prototype.Browser.Opera &amp;&amp; event.keyCode == 17
+              }
+              function isWebKitCommandKey() {
+                return Prototype.Browser.WebKit &amp;&amp; (event.keyCode == 91 || event.keyCode == 93)
+              }
+              function isCommandKey() {
+                return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+              }
+              function saveAndSubmit() {
+                editor.save();
+                document.form1.submit();
+                event.stop();
+              }
+              
+              // Mac (Command + Enter)
+              if (navigator.userAgent.indexOf('Mac') > -1) {
+                if (event.type == 'keydown' &amp;&amp; isCommandKey()) {
+                  cmdKeyDown = true;
+                }
+                if (event.type == 'keyup' &amp;&amp; isCommandKey()) {
+                  cmdKeyDown = false;
+                }
+                if (cmdKeyDown &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                  saveAndSubmit();
+                  return true;
+                }
+                
+              // Windows, Linux (Ctrl + Enter)
+              } else {
+                if (event.ctrlKey &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                  saveAndSubmit();
+                  return true;
+                }
+              }
+            }
+          }).getWrapperElement();
+          w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        })();
       </script>
       <j:if test="${output!=null}">
         <h2>${%Result}</h2>

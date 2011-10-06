@@ -407,6 +407,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Gets the one off {@link Executor} building this job, if it's being built.
+     * Otherwise null.
+     * @since 1.433 
+     */
+    public Executor getOneOffExecutor() {
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
+            for (Executor e : c.getOneOffExecutors()) {
+                if(e.getCurrentExecutable()==this)
+                    return e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets the charset in which the log file is written.
      * @return never null.
      * @since 1.257
@@ -878,17 +893,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             File sub = new File(dir, child);
+            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (children.length==1 && parent!=null);
             Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
                 a = new Artifact(parent.getFileName() + '/' + child, childPath,
-                                 sub.isDirectory() ? null : childHref, parent.getTreeNodeId());
+                                 sub.isDirectory() ? null : childHref, length,
+                                 parent.getTreeNodeId());
                 r.tree.put(a, r.tree.remove(parent));
             } else {
                 // Use null href for a directory:
                 a = new Artifact(child, childPath,
-                                 sub.isDirectory() ? null : childHref, "n" + ++r.idSeq);
+                                 sub.isDirectory() ? null : childHref, length,
+                                 "n" + ++r.idSeq);
                 r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
             }
             if (sub.isDirectory()) {
@@ -896,7 +914,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if (n>=upTo) break;
             } else {
                 // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, a.treeNodeId) : a);
+                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
                 if (++n>=upTo) break;
             }
         }
@@ -1031,11 +1049,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         private String treeNodeId;
 
-        /*package for test*/ Artifact(String name, String relativePath, String href, String treeNodeId) {
+        /**
+         *length of this artifact for files.
+         */
+        private String length;
+
+        /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;
             this.relativePath = relativePath;
             this.href = href;
             this.treeNodeId = treeNodeId;
+            this.length = len;
         }
 
         /**
@@ -1060,6 +1084,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public String getHref() {
             return href;
+        }
+
+        public String getLength() {
+            return length;
         }
 
         public String getTreeNodeId() {
@@ -1608,6 +1636,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         if(getResult()==Result.ABORTED)
             return new Summary(false, Messages.Run_Summary_Aborted());
+
+        if(getResult()==Result.NOT_BUILT)
+            return new Summary(false, Messages.Run_Summary_NotBuilt());
 
         if(getResult()==Result.UNSTABLE) {
             if(((Run)this) instanceof AbstractBuild) {

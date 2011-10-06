@@ -47,7 +47,7 @@ complete {
         rewriteLicense([],license("BSD License","http://dom4j.sourceforge.net/dom4j-1.6.1/license.html"))
     }
 
-    match(["org.codehaus.groovy:*"]) {
+    match(["org.codehaus.groovy:*","org.jenkins-ci.groovy:*"]) {
         // see http://groovy.codehaus.org/License+Information
         // see http://jmdns.sourceforge.net/license.html
         rewriteLicense([],apacheLicense)
@@ -96,7 +96,10 @@ complete {
     }
            
 
-
+    match("nekohtml:xercesMinimal:1.9.6.2") {
+        if (dependency.licenses.isEmpty())
+            rewriteLicense([], apacheLicense)
+    }    
 
     //
     // Choose from multi-licensed modules
@@ -105,4 +108,5 @@ complete {
     match("*:jna-posix") {
         accept("GNU Lesser General Public License Version 2.1")
     }
+
 }

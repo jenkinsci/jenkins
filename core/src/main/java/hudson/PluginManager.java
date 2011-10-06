@@ -27,6 +27,8 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import static hudson.init.InitMilestone.PLUGINS_LISTED;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
@@ -37,6 +39,7 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import org.apache.commons.fileupload.FileItem;
@@ -275,6 +278,8 @@ public abstract class PluginManager extends AbstractModelObject {
                 public void run(Reactor session) throws Exception {
                     Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
+
+                    Jenkins.getInstance().lookup.set(Injector.class,Guice.createInjector());
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
@@ -565,14 +570,34 @@ public abstract class PluginManager extends AbstractModelObject {
             hudson.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
         } else try {
-            hudson.proxy = new ProxyConfiguration(server,Integer.parseInt(Util.fixNull(port)),
+            int proxyPort = Integer.parseInt(Util.fixNull(port));
+            if (proxyPort < 0 || proxyPort > 65535) {
+               throw new Failure(Messages.PluginManager_PortNotInRange(0, 65535)); 
+            }
+            hudson.proxy = new ProxyConfiguration(server, proxyPort,
                     Util.fixEmptyAndTrim(userName),Util.fixEmptyAndTrim(password));
             hudson.proxy.save();
         } catch (NumberFormatException nfe) {
-            return HttpResponses.error(StaplerResponse.SC_BAD_REQUEST,
-                    new IllegalArgumentException("Invalid proxy port: " + port, nfe));
+            throw new Failure(Messages.PluginManager_PortNotANumber());
         }
         return new HttpRedirect("advanced");
+    }
+    
+    public FormValidation doCheckProxyPort(@QueryParameter String value) {
+        value = Util.fixEmptyAndTrim(value);
+        if (value == null) {
+            return FormValidation.ok();
+        }
+        int port;
+        try {
+            port = Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return FormValidation.error(Messages.PluginManager_PortNotANumber());
+        }
+        if (port < 0 || port > 65535) {
+            return FormValidation.error(Messages.PluginManager_PortNotInRange(0, 65535));
+        }
+        return FormValidation.ok();
     }
 
     /**

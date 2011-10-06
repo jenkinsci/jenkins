@@ -39,7 +39,7 @@ public class UpdateJobCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-        return "Updates the job definition XML from stdin. The opposite of the get-job command";
+        return Messages.UpdateJobCommand_ShortDescription();
     }
 
     protected int run() throws Exception {

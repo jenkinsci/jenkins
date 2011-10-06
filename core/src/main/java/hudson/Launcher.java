@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
+import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
@@ -158,6 +159,14 @@ public abstract class Launcher {
          * @since 1.399
          */
         protected boolean reverseStdin, reverseStdout, reverseStderr;
+
+        /**
+         * Passes a white-space separated single-string command (like "cat abc def") and parse them
+         * as a command argument. This method also handles quotes.
+         */
+        public ProcStarter cmdAsSingleString(String s) {
+            return cmds(QuotedStringTokenizer.tokenize(s));
+        }
 
         public ProcStarter cmds(String... args) {
             return cmds(Arrays.asList(args));

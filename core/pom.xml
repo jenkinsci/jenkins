@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.431-SNAPSHOT</version>
+    <version>1.435-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.173</stapler.version>
+    <stapler.version>1.174</stapler.version>
   </properties>
 
   <dependencies>
@@ -55,6 +55,11 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -78,6 +83,21 @@ THE SOFTWARE.
       <artifactId>core-annotation-processors</artifactId>
       <version>1.0</version>
       <optional>true</optional>
+    </dependency>
+
+    <!--
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+    -->
+    <dependency>
+      <!-- we'd like to use stock Guice, but that breaks Maven embedder
+           because it uses a modified Guice called Sisu -->
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-guice</artifactId>
+      <version>3.0.3</version>
     </dependency>
 
     <dependency>
@@ -152,11 +172,15 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-4</version>
+      <version>2.6-jenkins-6</version>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xalan</groupId>
+          <artifactId>xalan</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -357,7 +381,7 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
+      <groupId>org.jenkins-ci.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>1.8.2-jenkins-1</version>
     </dependency>
@@ -453,7 +477,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.3.0-jenkins-2</version>
+      <version>3.3.0-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

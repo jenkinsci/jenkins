@@ -74,4 +74,13 @@ public class UserTestCase extends HudsonTestCase {
         HtmlPage page = new WebClient().goTo("user/user-test-case");
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
+
+    /**
+     * Asserts that the default user avatar can be fetched (ie no 404)
+     */
+    public void testDefaultUserAvatarCanBeFetched() throws Exception {
+        User user = User.get("avatar-user", true);
+        HtmlPage page = new WebClient().goTo("user/" + user.getDisplayName());
+        assertAllImageLoadSuccessfully(page);
+    }
 }

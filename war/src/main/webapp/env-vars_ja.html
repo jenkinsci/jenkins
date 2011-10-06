@@ -26,6 +26,12 @@
     <dd>このビルドを実行している現在のエグゼキューターを識別する(同一マシンの中で)ユニークな番号。
             "ビルド実行状態"に表示されている数字ですが、1ではなく0から始まる数字です。
 
+    <dt>NODE_NAME</dt>
+    <dd>ビルドが実行されるスレーブの名称。マスターで実行される場合は"master"。</dd>
+
+    <dt>NODE_LABELS</dt>
+    <dd>ノードに設定されたラベルのリスト（スペース区切り)。<dd>
+    
     <dt>JAVA_HOME</dt>
     <dd>特定のJDKを使用するようにジョブを設定する場合、そのJDKのJAVA_HOMEをこの変数に設定します。
         この変数を設定すると、<tt>PATH</tt>に<tt>$JAVA_HOME/bin</tt>が追加されます。</dd>
@@ -39,7 +45,7 @@
     <dt>JENKINS_URL</dt>
     <dd>JenkinsのURL。例 <tt>http://server:port/jenkins/</tt></dd>
 
-<dt>BUILD_URL</dt>
+    <dt>BUILD_URL</dt>
     <dd>このビルドのURL。 例 <tt>http://server:port/jenkins/job/foo/15/</tt></dd>
 
     <dt>JOB_URL</dt>

@@ -23,6 +23,7 @@
  */
 package hudson.scm;
 
+import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -408,6 +409,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @return
      *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the build.

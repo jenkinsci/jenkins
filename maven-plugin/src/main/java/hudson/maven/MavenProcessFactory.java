@@ -41,7 +41,6 @@ import hudson.util.ArgumentListBuilder;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 
 /**
@@ -213,6 +212,4 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
     }
     
     public static int socketTimeOut = Integer.parseInt( System.getProperty( "hudson.maven.socketTimeOut", Integer.toString( 30*1000 ) ) );
-
-    private static final Logger LOGGER = Logger.getLogger(MavenProcessFactory.class.getName());
 }

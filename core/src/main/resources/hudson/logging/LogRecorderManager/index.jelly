@@ -32,7 +32,7 @@ THE SOFTWARE.
   <l:main-panel xmlns:local="local">
     <h1><img src="${imagesURL}/48x48/clipboard.png" alt="" height="48" width="48"/>
       ${%Log Recorders}
-      <t:help href="http://wiki.jenkins-ci.org/display/JENKINS/Log+Recorders" />
+      <t:help href="https://wiki.jenkins-ci.org/display/JENKINS/Logging" />
     </h1>
 
     <d:taglib uri="local">
