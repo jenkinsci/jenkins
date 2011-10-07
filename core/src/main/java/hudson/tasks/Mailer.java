@@ -441,14 +441,14 @@ public class Mailer extends Notifier {
         public FormValidation doSendTestMail(
                 @QueryParameter String smtpServer, @QueryParameter String adminAddress, @QueryParameter boolean useSMTPAuth,
                 @QueryParameter String smtpAuthUserName, @QueryParameter String smtpAuthPassword,
-                @QueryParameter boolean useSsl, @QueryParameter String smtpPort,
+                @QueryParameter boolean useSsl, @QueryParameter String smtpPort, @QueryParameter String charset,
                 @QueryParameter String sendTestMailTo) throws IOException, ServletException, InterruptedException {
             try {
                 if (!useSMTPAuth)   smtpAuthUserName = smtpAuthPassword = null;
                 
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
-                msg.setSubject("Test email #" + ++testEmailCount);
-                msg.setContent("This is test email #" + testEmailCount + " sent from " + Jenkins.getInstance().getDisplayName(), "text/plain");
+                msg.setSubject(Messages.Mailer_TestMail_Subject(++testEmailCount), charset);
+                msg.setText(Messages.Mailer_TestMail_Content(testEmailCount, Jenkins.getInstance().getDisplayName()), charset);
                 msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(sendTestMailTo));
