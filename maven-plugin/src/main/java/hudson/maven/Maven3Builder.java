@@ -28,7 +28,6 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -78,12 +77,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
      * the setting at master.
      */
     private final boolean profile = MavenProcessFactory.profile;
-    
-    /**
-     * Record all asynchronous executions as they are scheduled,
-     * to make sure they are all completed before we finish.
-     */
-    protected transient /*final*/ List<Future<?>> futures;
     
     HudsonMavenExecutionResult mavenExecutionResult;    
     
@@ -190,12 +183,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
     }
 
-    // since reporters might be from plugins, use the uberjar to resolve them.
-    public ClassLoader getClassLoader() {
-        return Jenkins.getInstance().getPluginManager().uberClassLoader;
-    }
-    
-    
     /**
      * Invoked after the maven has finished running, and in the master, not in the maven process.
      */
@@ -212,33 +199,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
     }      
 
-    private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
-        
-        private MavenBuildInformation mavenBuildInformation;
-
-        private Channel channel;
-        
-        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
-            super(core);
-            this.mavenBuildInformation = mavenBuildInformation;
-            this.channel = channel;
-        }
-
-        @Override
-        public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            futures.add(channel.callAsync(new AsyncInvoker(core,program)));
-        }
-
-        private static final long serialVersionUID = 1L;
-
-        public MavenBuildInformation getMavenBuildInformation()
-        {
-            return mavenBuildInformation;
-        }
-    }    
-    
-    
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
+
+        private static final long serialVersionUID = 4942789836756366116L;
 
         private final Maven3Builder maven3Builder;
        
