@@ -29,7 +29,6 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
-import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
@@ -54,7 +53,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
-import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStep;
@@ -63,14 +61,12 @@ import hudson.tasks.MailSender;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.IOUtils;
-import hudson.util.MaskingClassLoader;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -90,13 +86,8 @@ import jenkins.model.Jenkins;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.maven.BuildFailureException;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.execution.ReactorManager;
-import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.monitor.event.EventDispatcher;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
@@ -775,8 +766,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             
                         } else {
                          
-                            Builder builder = 
-                                new Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
+                            Maven2Builder builder = 
+                                new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);
@@ -1013,184 +1004,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             super.cleanUp(listener);
         }
 
-    }
-
-    /**
-     * Runs Maven and builds the project.
-     *
-     * This is only used for
-     * {@link MavenModuleSet#isAggregatorStyleBuild() the aggregator style build}.
-     */
-    private static final class Builder extends MavenBuilder {
-        private final Map<ModuleName,MavenBuildProxy2> proxies;
-        private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
-        private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
-        private long mojoStartTime;
-
-        private MavenBuildProxy2 lastProxy;
-
-        /**
-         * Kept so that we can finalize them in the end method.
-         */
-        private final transient Map<ModuleName,ProxyImpl2> sourceProxies;
-
-        public Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps,  MavenBuildInformation mavenBuildInformation) {
-            super(listener,goals,systemProps);
-            this.sourceProxies = proxies;
-            this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
-            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-                e.setValue(new FilterImpl(e.getValue(), mavenBuildInformation));
-
-            for (MavenModule m : modules)
-                reporters.put(m.getModuleName(),m.createReporters());
-        }
-
-        private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
-            
-            private MavenBuildInformation mavenBuildInformation;
-            
-            public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
-                super(core);
-                this.mavenBuildInformation = mavenBuildInformation;
-            }
-
-            @Override
-            public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-                futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
-            }
-
-            public MavenBuildInformation getMavenBuildInformation() {
-                return mavenBuildInformation;
-            }            
-            
-            private static final long serialVersionUID = 1L;
-
-
-        }
-
-        /**
-         * Invoked after the maven has finished running, and in the master, not in the maven process.
-         */
-        void end(Launcher launcher) throws IOException, InterruptedException {
-            for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
-                ProxyImpl2 p = e.getValue();
-                for (MavenReporter r : reporters.get(e.getKey())) {
-                    // we'd love to do this when the module build ends, but doing so requires
-                    // we know how many task segments are in the current build.
-                    r.end(p.owner(),launcher,listener);
-                    p.appendLastLog();
-                }
-                p.close();
-            }
-        }
-
-        @Override
-        public Result call() throws IOException {
-            try {
-                if (debug) {
-                    listener.getLogger().println("Builder extends MavenBuilder in call " + Thread.currentThread().getContextClassLoader());
-                }
-                return super.call();
-            } finally {
-                if(lastProxy!=null)
-                    lastProxy.appendLastLog();
-            }
-        }
-
-
-        @Override
-        void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
-            // set all modules which are not actually being build (in incremental builds) to NOT_BUILD
-            
-            List<MavenProject> projects = rm.getSortedProjects();
-            Set<ModuleName> buildingProjects = new HashSet<ModuleName>();
-            for (MavenProject p : projects) {
-                buildingProjects.add(new ModuleName(p));
-            }
-            
-            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
-                if (! buildingProjects.contains(e.getKey())) {
-                    MavenBuildProxy2 proxy = e.getValue();
-                    proxy.start();
-                    proxy.setResult(Result.NOT_BUILT);
-                    proxy.end();
-                }
-            }
-        }
-
-        void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
-            // TODO
-        }
-
-        void preModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
-            ModuleName name = new ModuleName(project);
-            MavenBuildProxy2 proxy = proxies.get(name);
-            listener.getLogger().flush();   // make sure the data until here are all written
-            proxy.start();
-            for (MavenReporter r : reporters.get(name))
-                if(!r.preBuild(proxy,project,listener))
-                    throw new hudson.maven.agent.AbortException(r+" failed");
-        }
-
-        void postModule(MavenProject project) throws InterruptedException, IOException, hudson.maven.agent.AbortException {
-            ModuleName name = new ModuleName(project);
-            MavenBuildProxy2 proxy = proxies.get(name);
-            List<MavenReporter> rs = reporters.get(name);
-            if(rs==null) { // probe for issue #906
-                throw new AssertionError("reporters.get("+name+")==null. reporters="+reporters+" proxies="+proxies);
-            }
-            for (MavenReporter r : rs)
-                if(!r.postBuild(proxy,project,listener))
-                    throw new hudson.maven.agent.AbortException(r+" failed");
-            proxy.setExecutedMojos(executedMojos.get(name));
-            listener.getLogger().flush();   // make sure the data until here are all written
-            proxy.end();
-            lastProxy = proxy;
-        }
-
-        void preExecute(MavenProject project, MojoInfo mojoInfo) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
-            ModuleName name = new ModuleName(project);
-            MavenBuildProxy proxy = proxies.get(name);
-            for (MavenReporter r : reporters.get(name))
-                if(!r.preExecute(proxy,project,mojoInfo,listener))
-                    throw new hudson.maven.agent.AbortException(r+" failed");
-
-            mojoStartTime = System.currentTimeMillis();
-        }
-
-        void postExecute(MavenProject project, MojoInfo mojoInfo, Exception exception) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
-            ModuleName name = new ModuleName(project);
-
-            List<ExecutedMojo> mojoList = executedMojos.get(name);
-            if(mojoList==null)
-                executedMojos.put(name,mojoList=new ArrayList<ExecutedMojo>());
-            mojoList.add(new ExecutedMojo(mojoInfo,System.currentTimeMillis()-mojoStartTime));
-
-            MavenBuildProxy2 proxy = proxies.get(name);
-            for (MavenReporter r : reporters.get(name))
-                if(!r.postExecute(proxy,project,mojoInfo,listener,exception))
-                    throw new hudson.maven.agent.AbortException(r+" failed");
-            if(exception!=null)
-                proxy.setResult(Result.FAILURE);
-        }
-
-        void onReportGenerated(MavenProject project, MavenReportInfo report) throws IOException, InterruptedException, hudson.maven.agent.AbortException {
-            ModuleName name = new ModuleName(project);
-            MavenBuildProxy proxy = proxies.get(name);
-            for (MavenReporter r : reporters.get(name))
-                if(!r.reportGenerated(proxy,project,report,listener))
-                    throw new hudson.maven.agent.AbortException(r+" failed");
-        }
-        
-        
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public ClassLoader getClassLoader()
-        {
-            return new MaskingClassLoader( super.getClassLoader() );
-        }
     }
 
     /**

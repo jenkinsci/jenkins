@@ -26,9 +26,12 @@ package hudson.maven;
 import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
 import hudson.model.Result;
+import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.Future;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,7 @@ import java.util.Map;
  */
 public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
     
+    private static final long serialVersionUID = -2687215937784908860L;
     /**
      * Goals to be executed in this Maven execution.
      */
@@ -52,6 +56,12 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
      * Where error messages and so on are sent.
      */
     protected final BuildListener listener;
+    
+    /**
+     * Record all asynchronous executions as they are scheduled,
+     * to make sure they are all completed before we finish.
+     */
+    protected transient /*final*/ List<Future<?>> futures;
     
     protected AbstractMavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
@@ -97,6 +107,31 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
         return Jenkins.getInstance().getPluginManager().uberClassLoader;
+    }    
+    
+    protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
+        
+        private MavenBuildInformation mavenBuildInformation;
+
+        private Channel channel;
+        
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
+            super(core);
+            this.mavenBuildInformation = mavenBuildInformation;
+            this.channel = channel;
+        }
+
+        @Override
+        public void executeAsync(final BuildCallable<?,?> program) throws IOException {
+            futures.add(channel.callAsync(new AsyncInvoker(core,program)));
+        }
+
+        private static final long serialVersionUID = 1L;
+
+        public MavenBuildInformation getMavenBuildInformation()
+        {
+            return mavenBuildInformation;
+        }
     }    
     
 }
