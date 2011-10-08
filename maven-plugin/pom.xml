@@ -47,21 +47,26 @@ THE SOFTWARE.
     <aetherVersion>1.11</aetherVersion>
     <sisuInjectVersion>2.2.0</sisuInjectVersion>
     <wagonVersion>2.0</wagonVersion>
+    <slf4jVersion>1.6.1</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
   <dependencyManagement>
     <dependencies>
-      <!-- < 1.6.x version didn't specify the license (MIT) -->
       <!-- SLF4J is used by wagon-webdav-jackrabbit dep --> 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.6.1</version>
+        <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-nop</artifactId>
-        <version>1.6.1</version>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4jVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -315,7 +320,7 @@ THE SOFTWARE.
       <version>${wagonVersion}</version>
     </dependency>
 
-      <dependency>
+    <dependency>
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
       <version>1.9.13</version>
@@ -359,6 +364,11 @@ THE SOFTWARE.
       <version>1.4.9</version>
       <scope>test</scope>
    </dependency>
+   <dependency>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-jdk14</artifactId>
+     <scope>test</scope>
+  </dependency>
 
   </dependencies>
 
