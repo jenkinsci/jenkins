@@ -51,6 +51,7 @@ import org.apache.maven.project.MavenProject;
  * This is only used for
  * {@link MavenModuleSet#isAggregatorStyleBuild() the aggregator style build}.
  */
+@SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x, we cannot avoid deprecations
 final class Maven2Builder extends MavenBuilder {
     private final Map<ModuleName,MavenBuildProxy2> proxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();

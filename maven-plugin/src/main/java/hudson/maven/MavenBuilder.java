@@ -69,6 +69,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
  * @author Kohsuke Kawaguchi
  * @since 1.133
  */
+@SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x we cannot avoid deprecations
 public abstract class MavenBuilder extends AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
 
 

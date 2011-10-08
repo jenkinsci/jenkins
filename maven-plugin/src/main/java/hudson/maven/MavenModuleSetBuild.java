@@ -472,7 +472,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     @Override
-    public Fingerprint.RangeSet getDownstreamRelationship(AbstractProject that) {
+    public Fingerprint.RangeSet getDownstreamRelationship(@SuppressWarnings("rawtypes") AbstractProject that) {
         Fingerprint.RangeSet rs = super.getDownstreamRelationship(that);
         for(List<MavenBuild> builds : getModuleBuilds().values())
             for (MavenBuild b : builds)
@@ -619,7 +619,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                    + " but cannot find the config");
                             } else {
                                 logger.println("using settings config with name " + config.name);
-                                String settingsContent = config.content;
                                 if (config.content != null ) {
                                     remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
                                     project.setAlternateSettings( remoteSettings.getRemote() );
