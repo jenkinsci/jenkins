@@ -199,6 +199,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     /*package*/ List<ChangeLogSet.Entry> getChangeSetFor(final MavenModule mod) {
         return new ArrayList<ChangeLogSet.Entry>() {
+            private static final long serialVersionUID = 5572368347535713298L;
             {
                 // modules that are under 'mod'. lazily computed
                 List<MavenModule> subsidiaries = null;

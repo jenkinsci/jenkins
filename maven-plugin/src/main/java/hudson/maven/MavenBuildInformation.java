@@ -28,6 +28,7 @@ import java.io.Serializable;
  */
 public class MavenBuildInformation implements Serializable {
 
+    private static final long serialVersionUID = -3719709179508200057L;
     private String mavenVersion;
     
     public MavenBuildInformation(String mavenVersion) {

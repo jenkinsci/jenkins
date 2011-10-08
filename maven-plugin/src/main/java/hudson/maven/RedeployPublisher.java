@@ -306,6 +306,8 @@ public class RedeployPublisher extends Recorder {
     }
     
     private static final class GetUserHome implements Callable<String,IOException> {
+        private static final long serialVersionUID = -8755705771716056636L;
+
         public String call() throws IOException {
             return System.getProperty("user.home");
         }
