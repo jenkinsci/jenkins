@@ -24,7 +24,7 @@
 package hudson.maven;
 
 import hudson.model.BuildListener;
-import jenkins.model.Jenkins;
+import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -35,6 +35,10 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+
+import jenkins.model.Jenkins;
 
 /**
  * @author Olivier Lamy
@@ -61,7 +65,7 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
      * Record all asynchronous executions as they are scheduled,
      * to make sure they are all completed before we finish.
      */
-    protected transient /*final*/ List<Future<?>> futures;
+    private transient /*final*/ List<Future<?>> futures;
     
     protected AbstractMavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
@@ -109,8 +113,51 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
         return Jenkins.getInstance().getPluginManager().uberClassLoader;
     }
     
+    /**
+     * Initialize the collection of the asynchronous executions.
+     * The method must be called in the Maven jail process i.e. inside the call method!
+     */
+    protected void initializeAsynchronousExecutions() {
+        futures = new CopyOnWriteArrayList<Future<?>>();
+    }
+    
+    /**
+     * Records a new asynchronous exection.
+     */
     protected void recordAsynchronousExecution(Future<?> future) {
         futures.add(future);
+    }
+    
+    /**
+     * Waits until all asynchronous executions are finished.
+     * 
+     * @return null in success case; returns an ABORT result if we were interrupted while waiting
+     */
+    protected Result waitForAsynchronousExecutions() {
+        try {
+            boolean messageReported = false;
+            
+            for (Future<?> f : futures) {
+                try {
+                    if(!f.isDone() && !messageReported) {
+                        messageReported = true;
+                        listener.getLogger().println(Messages.MavenBuilder_Waiting());
+                    }
+                    f.get();
+                } catch (InterruptedException e) {
+                    // attempt to cancel all asynchronous tasks
+                    for (Future<?> g : futures)
+                        g.cancel(true);
+                    listener.getLogger().println(Messages.MavenBuilder_Aborted());
+                    return Executor.currentExecutor().abortResult();
+                } catch (ExecutionException e) {
+                    e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
+                }
+            }
+            return null;
+        } finally {
+            futures.clear();
+        }
     }
     
     protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {

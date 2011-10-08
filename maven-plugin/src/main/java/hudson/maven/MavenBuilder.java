@@ -29,12 +29,10 @@ import hudson.maven.agent.Main;
 import hudson.maven.agent.PluginManagerListener;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.model.BuildListener;
-import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
-import hudson.remoting.Future;
 import hudson.util.IOException2;
 
 import java.io.IOException;
@@ -42,11 +40,8 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
@@ -137,7 +132,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         
         try {
 
-            futures = new ArrayList<Future<?>>();
+            initializeAsynchronousExecutions();
             Adapter a = new Adapter(this);
             callSetListenerWithReflectOnInterceptors( a, mavenJailProcessClassLoader );
             
@@ -154,27 +149,14 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
             int r = Main.launch(goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
-            boolean messageReported = false;
             long startTime = System.nanoTime();
-            for (Future<?> f : futures) {
-                try {
-                    if(!f.isDone() && !messageReported) {
-                        messageReported = true;
-                        listener.getLogger().println(Messages.MavenBuilder_Waiting());
-                    }
-                    f.get();
-                } catch (InterruptedException e) {
-                    // attempt to cancel all asynchronous tasks
-                    for (Future<?> g : futures)
-                        g.cancel(true);
-                    listener.getLogger().println(Messages.MavenBuilder_Aborted());
-                    return Executor.currentExecutor().abortResult();
-                } catch (ExecutionException e) {
-                    e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
-                }
+            
+            Result waitForAsyncExecutionsResult = waitForAsynchronousExecutions();
+            if (waitForAsyncExecutionsResult != null) {
+                return waitForAsyncExecutionsResult;
             }
+            
             a.overheadTime += System.nanoTime()-startTime;
-            futures.clear();
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();

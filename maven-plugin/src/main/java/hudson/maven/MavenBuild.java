@@ -36,7 +36,6 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Environment;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -319,7 +318,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
             @Override
             public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-                futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+                recordAsynchronousExecution(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
 
             public MavenBuildInformation getMavenBuildInformation()
