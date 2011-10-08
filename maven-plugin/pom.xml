@@ -47,7 +47,7 @@ THE SOFTWARE.
     <aetherVersion>1.11</aetherVersion>
     <sisuInjectVersion>2.2.0</sisuInjectVersion>
     <wagonVersion>2.0</wagonVersion>
-    <slf4jVersion>1.6.1</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
   <dependencyManagement>
@@ -343,7 +343,7 @@ THE SOFTWARE.
     <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.8.2</version>
+        <version>4.10</version>
         <scope>test</scope>
     </dependency>
     <dependency>
@@ -355,13 +355,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
-      <version>1.4.9</version>
+      <version>1.4.10</version>
       <scope>test</scope>
    </dependency>
    <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito</artifactId>
-      <version>1.4.9</version>
+      <version>1.4.10</version>
       <scope>test</scope>
    </dependency>
    <dependency>
