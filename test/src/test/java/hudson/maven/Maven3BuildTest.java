@@ -21,7 +21,6 @@ package hudson.maven;
  */
 
 import hudson.Launcher;
-import hudson.maven.reporters.SurefireReport;
 import hudson.model.*;
 import hudson.tasks.Maven.MavenInstallation;
 
@@ -30,7 +29,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import hudson.tasks.test.AbstractTestResultAction;
-import hudson.tasks.test.TestResult;
 import hudson.tasks.test.TestResultProjectAction;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;

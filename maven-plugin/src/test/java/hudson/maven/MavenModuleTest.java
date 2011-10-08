@@ -32,8 +32,6 @@ import com.google.common.collect.Lists;
 @PrepareForTest( { MavenModuleSet.class, DescriptorImpl.class, AbstractProject.class})
 public class MavenModuleTest {
     
-    private MavenModuleSet parent;
-    
     private MavenModule module;
 
     private MavenProject project;
@@ -73,6 +71,7 @@ public class MavenModuleTest {
                 Lists.<AbstractProject<?,?>>newArrayList(this.module, pluginModule));
         graph.build();
         
+        @SuppressWarnings("rawtypes")
         List<AbstractProject> downstream = graph.getDownstream(pluginModule);
         Assert.assertEquals(1, downstream.size());
         Assert.assertSame(this.module, downstream.get(0));

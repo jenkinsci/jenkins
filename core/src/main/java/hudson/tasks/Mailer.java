@@ -24,28 +24,30 @@
  */
 package hudson.tasks;
 
+import static hudson.Util.fixEmptyAndTrim;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.RestrictedSince;
 import hudson.Util;
-import static hudson.Util.fixEmptyAndTrim;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.User;
 import hudson.model.UserPropertyDescriptor;
-import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.export.Exported;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -56,15 +58,15 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
+import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 /**
@@ -439,16 +441,17 @@ public class Mailer extends Notifier {
         public FormValidation doSendTestMail(
                 @QueryParameter String smtpServer, @QueryParameter String adminAddress, @QueryParameter boolean useSMTPAuth,
                 @QueryParameter String smtpAuthUserName, @QueryParameter String smtpAuthPassword,
-                @QueryParameter boolean useSsl, @QueryParameter String smtpPort) throws IOException, ServletException, InterruptedException {
+                @QueryParameter boolean useSsl, @QueryParameter String smtpPort, @QueryParameter String charset,
+                @QueryParameter String sendTestMailTo) throws IOException, ServletException, InterruptedException {
             try {
                 if (!useSMTPAuth)   smtpAuthUserName = smtpAuthPassword = null;
                 
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
-                msg.setSubject("Test email #" + ++testEmailCount);
-                msg.setContent("This is test email #" + testEmailCount + " sent from " + Jenkins.getInstance().getDisplayName(), "text/plain");
+                msg.setSubject(Messages.Mailer_TestMail_Subject(++testEmailCount), charset);
+                msg.setText(Messages.Mailer_TestMail_Content(testEmailCount, Jenkins.getInstance().getDisplayName()), charset);
                 msg.setFrom(new InternetAddress(adminAddress));
                 msg.setSentDate(new Date());
-                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
+                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(sendTestMailTo));
 
                 Transport.send(msg);                
                 return FormValidation.ok(Messages.Mailer_EmailSentSuccessfully());

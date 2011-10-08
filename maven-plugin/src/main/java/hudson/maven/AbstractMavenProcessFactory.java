@@ -15,6 +15,7 @@ import hudson.model.Executor;
 import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
@@ -38,6 +39,9 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+
+import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.framework.io.IOException2;
 
 /*
@@ -248,10 +252,86 @@ public abstract class AbstractMavenProcessFactory
 
     /**
      * Builds the command line argument list to launch the maven process.
-     *
      */
-    protected abstract ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) 
-        throws IOException, InterruptedException;
+    protected ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
+        MavenInstallation mvn = getMavenInstallation(listener);
+        if(mvn==null) {
+            listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
+            throw new RunnerAbortedException();
+        }
+        if(mvn.getHome()==null) {
+            listener.error("Maven '%s' doesn't have its home set",mvn.getName());
+            throw new RunnerAbortedException();
+        }
+
+        boolean isMaster = getCurrentNode()== Jenkins.getInstance();
+        FilePath slaveRoot=null;
+        if(!isMaster)
+            slaveRoot = getCurrentNode().getRootPath();
+
+        ArgumentListBuilder args = new ArgumentListBuilder();
+        JDK jdk = getJava(listener);
+        if(jdk==null) {
+            args.add("java");
+        } else {
+            args.add(jdk.getHome()+"/bin/java"); // use JDK.getExecutable() here ?
+        }
+
+        if(debugPort!=0)
+            args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
+        if(yjp)
+            args.add("-agentlib:yjpagent=tracing");
+
+        args.addTokenized(getMavenOpts());
+        
+        args.add( "-cp" );
+        args.add(getMavenAgentClassPath(mvn,isMaster,slaveRoot,listener));
+        args.add(getMainClassName());
+
+        // M2_HOME
+        args.add(mvn.getHome());
+
+        // remoting.jar
+        String remotingJar = getLauncher().getChannel().call(new GetRemotingJar());
+        if(remotingJar==null) {// this shouldn't be possible, but there are still reports indicating this, so adding a probe here.
+            listener.error("Failed to determine the location of slave.jar");
+            throw new RunnerAbortedException();
+        }
+        args.add(remotingJar);
+
+        // interceptor.jar
+        args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
+
+        // TCP/IP port to establish the remoting infrastructure
+        args.add(tcpPort);
+        
+        String interceptorOverride = getMavenInterceptorOverride(mvn,isMaster,slaveRoot);
+        if (interceptorOverride!=null) {
+            args.add(interceptorOverride);
+        }
+
+        return args;
+    }
+    
+    /**
+     * Returns the classpath string for the maven-agent jar including classworlds
+     */
+    protected abstract String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException;
+    
+    /**
+     * Returns the classpath string for the maven-interceptor jar
+     */
+    protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    
+    /**
+     * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 
+     */
+    protected abstract String getMavenInterceptorOverride(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    
+    /**
+     * Returns the name of the Maven main class.
+     */
+    protected abstract String getMainClassName();
 
     public String getMavenOpts() {
         if( this.mavenOpts != null )
@@ -349,5 +429,19 @@ public abstract class AbstractMavenProcessFactory
 
     public static final String MAVEN_REMOTE_USEINET_ENV_VAR_NAME = "MAVEN_REMOTE_USEINET";
     
+    /**
+     * If true, launch Maven with YJP offline profiler agent.
+     */
+    public static boolean yjp = Boolean.getBoolean("hudson.maven.yjp");
     
+    /**
+     * If not 0, launch Maven with a debugger port.
+     */
+    public static int debugPort;
+    
+    static {
+        String port = System.getProperty("hudson.maven.debugPort");
+        if(port!=null)
+            debugPort = Integer.parseInt(port);
+    }
 }

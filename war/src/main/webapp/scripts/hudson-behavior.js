@@ -678,11 +678,18 @@ var hudsonRules = {
         e.parentNode.insertBefore(div,e.nextSibling);
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
-        var ds = new YAHOO.widget.DS_XHR(e.getAttribute("autoCompleteUrl"),["suggestions","name"]);
-        ds.scriptQueryParam = "value";
+        var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
+        ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+        ds.responseSchema = {
+            resultsList: "suggestions",
+            fields: ["name"]
+        };
         
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
+        ac.generateRequest = function(query) {
+            return "?value=" + query;
+        };
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
         ac.useShadow = true;
@@ -1725,8 +1732,12 @@ function getStyle(e,a){
 
 // set up logic behind the search box
 function createSearchBox(searchURL) {
-    var ds = new YAHOO.widget.DS_XHR(searchURL+"suggest",["suggestions","name"]);
-    ds.queryMatchCase = false;
+    var ds = new YAHOO.util.XHRDataSource(searchURL+"suggest");
+    ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+    ds.responseSchema = {
+        resultsList: "suggestions",
+        fields: ["name"]
+    };
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
 

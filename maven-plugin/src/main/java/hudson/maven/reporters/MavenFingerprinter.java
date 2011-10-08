@@ -94,6 +94,8 @@ public class MavenFingerprinter extends MavenReporter {
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         build.executeAsync(new BuildCallable<Void,IOException>() {
+            private static final long serialVersionUID = -1360161848504044869L;
+            
             // record is transient, so needs to make a copy first
             private final Map<String,String> u = used;
             private final Map<String,String> p = produced;

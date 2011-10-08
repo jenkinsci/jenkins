@@ -63,6 +63,8 @@ public class BuildInfoRecorder extends MavenReporter {
             // touch <archive><manifestEntries><Build-Numer>#n
 
             Map<String,String> props = build.execute(new BuildCallable<Map<String,String>,IOException>() {
+                private static final long serialVersionUID = 7810179928341972415L;
+
                 public Map<String,String> call(MavenBuild build) throws IOException, InterruptedException {
                     Map<String,String> r = new HashMap<String, String>();
                     // leave Hudson for backward comp

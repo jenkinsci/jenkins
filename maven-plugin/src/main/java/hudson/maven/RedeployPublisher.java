@@ -223,7 +223,6 @@ public class RedeployPublisher extends Recorder {
                                 + " but cannot find the config" );
                     } else {
                         listener.getLogger().println( "redeploy publisher using settings config with name " + config.name );
-                        String settingsContent = config.content;
                         if (config.content != null ) {
                             remoteSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFilePath( config, build.getWorkspace() );
                             altSettingsPath = remoteSettingsFromConfig.getRemote();
@@ -306,6 +305,8 @@ public class RedeployPublisher extends Recorder {
     }
     
     private static final class GetUserHome implements Callable<String,IOException> {
+        private static final long serialVersionUID = -8755705771716056636L;
+
         public String call() throws IOException {
             return System.getProperty("user.home");
         }
@@ -384,7 +385,7 @@ public class RedeployPublisher extends Recorder {
     
     //---------------------------------------------
     
-    
+    @SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x we cannot avoid deprecations
     public static class WrappedArtifactRepository implements ArtifactRepository {
         private ArtifactRepository artifactRepository;
         private boolean uniqueVersion;

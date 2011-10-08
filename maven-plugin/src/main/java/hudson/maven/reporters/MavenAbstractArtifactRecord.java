@@ -105,7 +105,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         /**
          * Returns the log of this deployment record.
          */
-        public AnnotatedLargeText getLog() {
+        public AnnotatedLargeText<Record> getLog() {
             return new AnnotatedLargeText<Record>(new File(getBuild().getRootDir(),fileName), Charset.defaultCharset(), true, this);
         }
 
@@ -218,12 +218,12 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         final Record record = new Record(repositoryUrl, logFile.getName());
         records.add(record);
 
-        new TaskThread(this,ListenerAndText.forFile(logFile)) {
+        new TaskThread(this,ListenerAndText.forFile(logFile,this)) {
             protected void perform(TaskListener listener) throws Exception {
                 try {
                     MavenEmbedder embedder = MavenUtil.createEmbedder(listener,getBuild());
                     ArtifactRepositoryLayout layout =
-                        (ArtifactRepositoryLayout) embedder.lookup( ArtifactRepositoryLayout.class,"default");
+                        embedder.lookup( ArtifactRepositoryLayout.class,"default");
                     ArtifactRepositoryFactory factory =
                         (ArtifactRepositoryFactory) embedder.lookup(ArtifactRepositoryFactory.ROLE);
 

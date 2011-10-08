@@ -27,12 +27,9 @@ import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
-import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
-import hudson.remoting.Future;
 import hudson.util.IOException2;
 
 import java.io.IOException;
@@ -49,7 +46,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import org.apache.maven.cli.PrintStreamLogger;
@@ -79,12 +75,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
      */
     private final boolean profile = MavenProcessFactory.profile;
     
-    /**
-     * Record all asynchronous executions as they are scheduled,
-     * to make sure they are all completed before we finish.
-     */
-    protected transient /*final*/ List<Future<?>> futures;
-    
     HudsonMavenExecutionResult mavenExecutionResult;    
     
     private final Map<ModuleName,MavenBuildProxy2> proxies;
@@ -99,7 +89,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation,Channel.current()));
+            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
 
         this.reporters.putAll( reporters );
     }    
@@ -108,7 +98,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
         try {
-            futures = new CopyOnWriteArrayList<Future<?>>(  );
+            initializeAsynchronousExecutions();
             
             Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
             
@@ -122,27 +112,14 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
-            boolean messageReported = false;
             long startTime = System.nanoTime();
-            for (Future<?> f : futures) {
-                try {
-                    if(!f.isDone() && !messageReported) {
-                        messageReported = true;
-                        listener.getLogger().println(Messages.MavenBuilder_Waiting());
-                    }
-                    f.get();
-                } catch (InterruptedException e) {
-                    // attempt to cancel all asynchronous tasks
-                    for (Future<?> g : futures)
-                        g.cancel(true);
-                    listener.getLogger().println(Messages.MavenBuilder_Aborted());
-                    return Executor.currentExecutor().abortResult();
-                } catch (ExecutionException e) {
-                    e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
-                }
+            
+            Result waitForAsyncExecutionsResult = waitForAsynchronousExecutions();
+            if (waitForAsyncExecutionsResult != null) {
+                return waitForAsyncExecutionsResult;
             }
+            
             mavenExecutionListener.overheadTime += System.nanoTime()-startTime;
-            futures.clear();
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();
@@ -190,12 +167,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
     }
 
-    // since reporters might be from plugins, use the uberjar to resolve them.
-    public ClassLoader getClassLoader() {
-        return Jenkins.getInstance().getPluginManager().uberClassLoader;
-    }
-    
-    
     /**
      * Invoked after the maven has finished running, and in the master, not in the maven process.
      */
@@ -212,33 +183,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
     }      
 
-    private class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
-        
-        private MavenBuildInformation mavenBuildInformation;
-
-        private Channel channel;
-        
-        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
-            super(core);
-            this.mavenBuildInformation = mavenBuildInformation;
-            this.channel = channel;
-        }
-
-        @Override
-        public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            futures.add(channel.callAsync(new AsyncInvoker(core,program)));
-        }
-
-        private static final long serialVersionUID = 1L;
-
-        public MavenBuildInformation getMavenBuildInformation()
-        {
-            return mavenBuildInformation;
-        }
-    }    
-    
-    
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
+
+        private static final long serialVersionUID = 4942789836756366116L;
 
         private final Maven3Builder maven3Builder;
        
@@ -263,7 +210,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             this.proxies = new ConcurrentHashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
-                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation, Channel.current()));
+                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation));
                 executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
             }
             this.reporters.putAll( new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );

@@ -36,7 +36,6 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Environment;
 import hudson.model.Executor;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -81,6 +80,7 @@ import java.util.logging.Logger;
  * 
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x we cannot avoid deprecations
 public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     /**
      * {@link MavenReporter}s that will contribute project actions.
@@ -319,7 +319,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
             @Override
             public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-                futures.add(Channel.current().callAsync(new AsyncInvoker(core,program)));
+                recordAsynchronousExecution(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
 
             public MavenBuildInformation getMavenBuildInformation()
@@ -390,6 +390,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      * {@link MavenBuildProxy} implementation.
      */
     class ProxyImpl implements MavenBuildProxy, Serializable {
+        private static final long serialVersionUID = 8865133776526671879L;
+
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
         }
@@ -465,6 +467,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     }
 
     public class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
+        private static final long serialVersionUID = -3377221864644014218L;
+        
         private final SplittableBuildListener listener;
         long startTime;
         private final OutputStream log;
