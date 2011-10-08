@@ -38,10 +38,14 @@ import hudson.model.FingerprintMap;
 import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilderConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +53,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -81,10 +87,12 @@ public class MavenFingerprinter extends MavenReporter {
      * Mojos perform different dependency resolution, so we need to check this for each mojo.
      */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        record(pom.getArtifacts(),used);
+        // TODO (kutzi, 2011/09/06): it should be perfectly save to move all these records to the
+        // postBuild method as artifacts should only be added by mojos, but never removed/modified.
+		record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
         record(pom.getAttachedArtifacts(),produced);
-        record(pom.getGroupId(),pom.getFile(),produced);
+        record(pom.getGroupId() + ":" + pom.getArtifactId(),pom.getFile(),produced);
 
         return true;
     }
@@ -93,7 +101,11 @@ public class MavenFingerprinter extends MavenReporter {
      * Sends the collected fingerprints over to the master and record them.
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
+        
+        recordParents(build, pom);
+        
         build.executeAsync(new BuildCallable<Void,IOException>() {
+            private static final long serialVersionUID = -1360161848504044869L;
             // record is transient, so needs to make a copy first
             private final Map<String,String> u = used;
             private final Map<String,String> p = produced;
@@ -119,7 +131,43 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-    private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
+	private void recordParents(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
+		MavenProject parent = pom.getParent();
+		while (parent != null) {
+			File parentFile = parent.getFile();
+
+			if (parentFile == null) {
+				String mavenVersion = build.getMavenBuildInformation().getMavenVersion();
+				
+				// Parent artifact contains no actual file, so we resolve against
+				// the local repository
+				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent);
+				if (localRepository != null) {
+					// Don't use ArtifactRepository.find(), for compatibility with M2
+					parentFile = new File(localRepository.getBasedir(), 
+							localRepository.pathOf(parent.getArtifact()));
+				}
+			}
+			// we need to include the artifact Id for poms as well, otherwise a
+			// project with the same groupId would override its parent's
+			// fingerprint
+			record(parent.getGroupId() + ":" + parent.getArtifactId(),
+					parentFile, used);
+			parent = parent.getParent();
+		}
+	}
+
+	private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent) {
+		// Maven 2.0 has no corresponding mechanism
+		// Maven 2.1,2.2 has a projectBuildConfiguration, however it is null, need to further look into this
+		if (mavenVersion.startsWith("2.")) return null;
+		
+		// Maven 3
+		return parent.getProjectBuildingRequest()
+				.getLocalRepository();
+	}
+
+	private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         for (Artifact a : artifacts)
             record(a,record);
     }
@@ -139,14 +187,14 @@ public class MavenFingerprinter extends MavenReporter {
      * This method contains the logic to avoid doubly recording the fingerprint
      * of the same file.
      */
-    private void record(String groupId, File f, Map<String, String> record) throws IOException, InterruptedException {
+    private void record(String fileNamePrefix, File f, Map<String, String> record) throws IOException, InterruptedException {
         if(f==null || files.contains(f) || !f.isFile())
             return;
 
         // new file
         files.add(f);
         String digest = new FilePath(f).digest();
-        record.put(groupId+':'+f.getName(),digest);
+        record.put(fileNamePrefix+':'+f.getName(),digest);
     }
 
     @Extension
