@@ -107,23 +107,26 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
         return Jenkins.getInstance().getPluginManager().uberClassLoader;
-    }    
+    }
+    
+    protected void recordAsynchronousExecution(Future<?> future) {
+        futures.add(future);
+    }
     
     protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;
 
-        private Channel channel;
-        
-        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
-            this.channel = channel;
         }
 
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            futures.add(channel.callAsync(new AsyncInvoker(core,program)));
+            recordAsynchronousExecution(
+                    Channel.current().callAsync(
+                            new AsyncInvoker(core,program)));
         }
 
         private static final long serialVersionUID = 1L;

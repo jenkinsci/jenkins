@@ -28,8 +28,6 @@ import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.remoting.Channel;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +69,7 @@ final class Maven2Builder extends MavenBuilder {
         this.sourceProxies = proxies;
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), mavenBuildInformation, Channel.current()));
+            e.setValue(new FilterImpl(e.getValue(), mavenBuildInformation));
 
         for (MavenModule m : modules)
             reporters.put(m.getModuleName(),m.createReporters());

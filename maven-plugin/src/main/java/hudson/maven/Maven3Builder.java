@@ -92,7 +92,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation,Channel.current()));
+            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
 
         this.reporters.putAll( reporters );
     }    
@@ -226,7 +226,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             this.proxies = new ConcurrentHashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
             for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
             {
-                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation, Channel.current()));
+                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation));
                 executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
             }
             this.reporters.putAll( new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
