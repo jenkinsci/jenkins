@@ -139,7 +139,7 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
             
             for (Future<?> f : futures) {
                 try {
-                    if(!f.isDone() && !messageReported) {
+                    if(!messageReported && !f.isDone()) {
                         messageReported = true;
                         listener.getLogger().println(Messages.MavenBuilder_Waiting());
                     }
