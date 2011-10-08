@@ -34,6 +34,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.ArgumentListBuilder;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -69,15 +70,21 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
 
     @Override
     protected String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+        return isMaster?
+            Which.jarFile(hudson.maven.agent.AbortException.class).getAbsolutePath():
+            slaveRoot.child("maven-interceptor.jar").getRemote();
+    }
+    
+    @Override
+    protected String getMavenInterceptorOverride(MavenInstallation mvn,
+            boolean isMaster, FilePath slaveRoot) throws IOException,
+            InterruptedException {
         if(mvn.isMaven2_1(getLauncher())) {
             return isMaster?
                 Which.jarFile(Maven21Interceptor.class).getAbsolutePath():
                 slaveRoot.child("maven2.1-interceptor.jar").getRemote();
-        } else {
-            return isMaster?
-                Which.jarFile(hudson.maven.agent.AbortException.class).getAbsolutePath():
-                slaveRoot.child("maven-interceptor.jar").getRemote();
         }
+        return null;
     }
 
     /**

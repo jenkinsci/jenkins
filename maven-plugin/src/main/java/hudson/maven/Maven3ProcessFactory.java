@@ -32,6 +32,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.util.ArgumentListBuilder;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -69,6 +70,13 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
         return isMaster?
                 Which.jarFile(Maven3Launcher.class).getAbsolutePath():
                 slaveRoot.child("maven3-interceptor.jar").getRemote();
+    }
+
+    @Override
+    protected String getMavenInterceptorOverride(MavenInstallation mvn,
+            boolean isMaster, FilePath slaveRoot) throws IOException,
+            InterruptedException {
+        return null;
     }
 
     /**
