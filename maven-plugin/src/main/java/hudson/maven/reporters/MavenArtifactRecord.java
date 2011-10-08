@@ -27,12 +27,10 @@ import hudson.maven.*;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
-import hudson.model.Api;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -48,11 +46,6 @@ import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.Map;
 
 /**
  * {@link Action} that remembers {@link MavenArtifact artifact}s that are built.

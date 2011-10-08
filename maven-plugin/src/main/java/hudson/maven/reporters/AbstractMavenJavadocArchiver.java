@@ -24,7 +24,6 @@
  */
 package hudson.maven.reporters;
 
-import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.*;
@@ -38,9 +37,7 @@ import org.codehaus.plexus.component.configurator.ComponentConfigurationExceptio
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Records the javadoc and archives it.

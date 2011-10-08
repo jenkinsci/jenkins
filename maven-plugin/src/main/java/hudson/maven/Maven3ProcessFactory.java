@@ -32,7 +32,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.util.ArgumentListBuilder;
 
 import java.io.File;
 import java.io.FilenameFilter;
