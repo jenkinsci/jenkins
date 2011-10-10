@@ -131,7 +131,7 @@ exit 0
 %config(noreplace) /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
 %config(noreplace) /etc/sysconfig/%{name}
-/etc/zypp/repos.d/jenkins.repo
+%config(noreplace) /etc/zypp/repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 
 %changelog
