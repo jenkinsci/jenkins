@@ -247,7 +247,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Computes the classloader that takes the class masking into account.
      *
      * <p>
-     * This mechanism allows plugins to have their own verions for libraries that core bundles.
+     * This mechanism allows plugins to have their own versions for libraries that core bundles.
      */
     private ClassLoader getBaseClassLoader(Attributes atts) {
         ClassLoader base = getClass().getClassLoader();
