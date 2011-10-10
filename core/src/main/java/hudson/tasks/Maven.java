@@ -533,11 +533,15 @@ public class Maven extends Builder {
                 return Collections.singletonList(new MavenInstaller(null));
             }
 
+            // overriding them for backward compatibility.
+            // newer code need not do this
             @Override
             public MavenInstallation[] getInstallations() {
                 return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
             }
 
+            // overriding them for backward compatibility.
+            // newer code need not do this
             @Override
             public void setInstallations(MavenInstallation... installations) {
                 Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
