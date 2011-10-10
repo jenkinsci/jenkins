@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,6 +55,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -423,7 +425,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
-                this.dependencies = dependencies;
+            this.dependencies = dependencies;
         }
 
         private List<PluginWrapper> getTransitiveDependencies() {
@@ -550,8 +552,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
      */
     private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
+        private final Vector pathComponents;
+
         private AntClassLoader2(ClassLoader parent) {
             super(parent,true);
+
+            try {
+                Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
+                $pathComponents.setAccessible(true);
+                pathComponents = (Vector)$pathComponents.get(this);
+            } catch (NoSuchFieldException e) {
+                throw new Error(e);
+            } catch (IllegalAccessException e) {
+                throw new Error(e);
+            }
         }
 
         public void addPathFiles(Collection<File> paths) throws IOException {
@@ -561,6 +575,28 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         public void close() throws IOException {
             cleanup();
+        }
+
+        /**
+         * As of 1.8.0, {@link AntClassLoader} doesn't implement {@link #findResource(String)}
+         * in any meaningful way, which breaks fast lookup. Implement it properly.
+         */
+        @Override
+        protected URL findResource(String name) {
+            URL url = null;
+
+            // try and load from this loader if the parent either didn't find
+            // it or wasn't consulted.
+            Enumeration e = pathComponents.elements();
+            while (e.hasMoreElements() && url == null) {
+                File pathComponent = (File) e.nextElement();
+                url = getResourceURL(pathComponent, name);
+                if (url != null) {
+                    log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
+                }
+            }
+
+            return url;
         }
     }
 
