@@ -197,7 +197,7 @@
             <goals>
               <goal>process</goal>
             </goals>
-            <phase>compile</phase>
+            <phase>prepare-package</phase>
             <configuration>
               <!--requireCompleteLicenseInfo>true</requireCompleteLicenseInfo-->
               <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
