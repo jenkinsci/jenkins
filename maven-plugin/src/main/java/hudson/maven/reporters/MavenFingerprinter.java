@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,9 +77,9 @@ public class MavenFingerprinter extends MavenReporter {
     private transient Map<String,String> produced;
 
     public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
-        files = Collections.unmodifiableSet(new HashSet<File>());
-        used = Collections.unmodifiableMap(new HashMap<String,String>());
-        produced = Collections.unmodifiableMap(new HashMap<String,String>());
+        files = new HashSet<File>();
+        used = new HashMap<String,String>();
+        produced = new HashMap<String,String>();
         return true;
     }
 
@@ -189,15 +188,11 @@ public class MavenFingerprinter extends MavenReporter {
      * of the same file.
      */
     private void record(String fileNamePrefix, File f, Map<String, String> record) throws IOException, InterruptedException {
-
-    	if(f==null || !f.isFile())
+        if(f==null || files.contains(f) || !f.isFile())
             return;
 
-        // One step checkAndSet so synchronization takes effect
-        if (!files.add(f))
-    		return;
-        
-        // new File
+        // new file
+        files.add(f);
         String digest = new FilePath(f).digest();
         record.put(fileNamePrefix+':'+f.getName(),digest);
     }
