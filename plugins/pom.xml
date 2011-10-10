@@ -244,6 +244,10 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <configuration>
             <buildOutputDirectory>target/eclipse-classes</buildOutputDirectory>
+            <additionalProjectnatures>
+              <!-- enable Groovy nature by default for DSLD support  -->
+              <projectnature>org.eclipse.jdt.groovy.core.groovyNature</projectnature>
+            </additionalProjectnatures>
           </configuration>
         </plugin>
       </plugins>
