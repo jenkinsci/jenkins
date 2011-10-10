@@ -55,6 +55,9 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Fixed a plugin boot problem that causes Jenkins to startup gracefully when some optional plugin dependencies aren't met (such as ivy to nant)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11279">issue 11279</a>)
   <li class=rfe>
     Improved the classloading performance
 </ul>

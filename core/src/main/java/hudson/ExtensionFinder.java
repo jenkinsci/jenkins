@@ -290,6 +290,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
                     m.setAccessible(true);
                     m.invoke(ecl, c);
+                    c.getMethods();
+                    c.getFields();
                 } catch (Exception x) {
                     throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
                 }
