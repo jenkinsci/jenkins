@@ -34,6 +34,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
@@ -645,26 +646,10 @@ public abstract class PluginManager extends AbstractModelObject {
          */
         private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
 
-        /**
-         * ClassLoader.findClass(String) for a call that bypasses access modifier.
-         */
-        private final Method FIND_CLASS, FIND_LOADED_CLASS, FIND_RESOURCE, FIND_RESOURCES;
+        private ClassLoaderReflectionToolkit clt = new ClassLoaderReflectionToolkit();
 
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
-
-            try {
-                FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
-                FIND_CLASS.setAccessible(true);
-                FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass",String.class);
-                FIND_LOADED_CLASS.setAccessible(true);
-                FIND_RESOURCE = ClassLoader.class.getDeclaredMethod("findResource",String.class);
-                FIND_RESOURCE.setAccessible(true);
-                FIND_RESOURCES = ClassLoader.class.getDeclaredMethod("findResources",String.class);
-                FIND_RESOURCES.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                throw new AssertionError(e);
-            }
         }
 
         public void addNamedClass(String className, Class c) {
@@ -683,14 +668,12 @@ public abstract class PluginManager extends AbstractModelObject {
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
-                        Class c = (Class)FIND_LOADED_CLASS.invoke(p.classLoader,name);
+                        Class c = clt.findLoadedClass(p.classLoader,name);
                         if (c!=null)    return c;
                         // calling findClass twice appears to cause LinkageError: duplicate class def
-                        return (Class)FIND_CLASS.invoke(p.classLoader,name);
+                        return clt.findClass(p.classLoader,name);
                     } catch (InvocationTargetException e) {
                         //not found. try next
-                    } catch (IllegalAccessException e) {
-                        throw (Error)new IllegalAccessError().initCause(e);
                     }
                 }
             } else {
@@ -711,12 +694,10 @@ public abstract class PluginManager extends AbstractModelObject {
             if (FAST_LOOKUP) {
                 try {
                     for (PluginWrapper p : activePlugins) {
-                        URL url = (URL)FIND_RESOURCE.invoke(p.classLoader,name);
+                        URL url = clt.findResource(p.classLoader,name);
                         if(url!=null)
                             return url;
                     }
-                } catch (IllegalAccessException e) {
-                    throw new Error(e);
                 } catch (InvocationTargetException e) {
                     throw new Error(e);
                 }
@@ -736,10 +717,8 @@ public abstract class PluginManager extends AbstractModelObject {
             if (FAST_LOOKUP) {
                 try {
                     for (PluginWrapper p : activePlugins) {
-                        resources.addAll(Collections.list((Enumeration)FIND_RESOURCES.invoke(p.classLoader, name)));
+                        resources.addAll(Collections.list(clt.findResources(p.classLoader, name)));
                     }
-                } catch (IllegalAccessException e) {
-                    throw new Error(e);
                 } catch (InvocationTargetException e) {
                     throw new Error(e);
                 }
@@ -760,7 +739,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
 
-    public static boolean FAST_LOOKUP = Boolean.getBoolean("fastLookup");
+    public static boolean FAST_LOOKUP = !Boolean.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     /**
      * Remembers why a plugin failed to deploy.
