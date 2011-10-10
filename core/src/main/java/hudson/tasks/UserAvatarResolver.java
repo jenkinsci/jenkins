@@ -49,7 +49,7 @@ import hudson.model.User;
  * </pre>
  *
  * @author Erik Ramfelt
- * @since 1.433
+ * @since 1.434
  */
 public abstract class UserAvatarResolver implements ExtensionPoint {
 
