@@ -64,6 +64,8 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -94,7 +96,7 @@ public abstract class PluginManager extends AbstractModelObject {
     protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
 
     /**
-     * All active plugins.
+     * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
      */
     protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
 
@@ -643,8 +645,26 @@ public abstract class PluginManager extends AbstractModelObject {
          */
         private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
 
+        /**
+         * ClassLoader.findClass(String) for a call that bypasses access modifier.
+         */
+        private final Method FIND_CLASS, FIND_LOADED_CLASS, FIND_RESOURCE, FIND_RESOURCES;
+
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
+
+            try {
+                FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
+                FIND_CLASS.setAccessible(true);
+                FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass",String.class);
+                FIND_LOADED_CLASS.setAccessible(true);
+                FIND_RESOURCE = ClassLoader.class.getDeclaredMethod("findResource",String.class);
+                FIND_RESOURCE.setAccessible(true);
+                FIND_RESOURCES = ClassLoader.class.getDeclaredMethod("findResources",String.class);
+                FIND_RESOURCES.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(e);
+            }
         }
 
         public void addNamedClass(String className, Class c) {
@@ -660,11 +680,26 @@ public abstract class PluginManager extends AbstractModelObject {
                 else            generatedClasses.remove(name,wc);
             }
 
-            for (PluginWrapper p : activePlugins) {
-                try {
-                    return p.classLoader.loadClass(name);
-                } catch (ClassNotFoundException e) {
-                    //not found. try next
+            if (FAST_LOOKUP) {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        Class c = (Class)FIND_LOADED_CLASS.invoke(p.classLoader,name);
+                        if (c!=null)    return c;
+                        // calling findClass twice appears to cause LinkageError: duplicate class def
+                        return (Class)FIND_CLASS.invoke(p.classLoader,name);
+                    } catch (InvocationTargetException e) {
+                        //not found. try next
+                    } catch (IllegalAccessException e) {
+                        throw (Error)new IllegalAccessError().initCause(e);
+                    }
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        return p.classLoader.loadClass(name);
+                    } catch (ClassNotFoundException e) {
+                        //not found. try next
+                    }
                 }
             }
             // not found in any of the classloader. delegate.
@@ -673,10 +708,24 @@ public abstract class PluginManager extends AbstractModelObject {
 
         @Override
         protected URL findResource(String name) {
-            for (PluginWrapper p : activePlugins) {
-                URL url = p.classLoader.getResource(name);
-                if(url!=null)
-                    return url;
+            if (FAST_LOOKUP) {
+                try {
+                    for (PluginWrapper p : activePlugins) {
+                        URL url = (URL)FIND_RESOURCE.invoke(p.classLoader,name);
+                        if(url!=null)
+                            return url;
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new Error(e);
+                } catch (InvocationTargetException e) {
+                    throw new Error(e);
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    URL url = p.classLoader.getResource(name);
+                    if(url!=null)
+                        return url;
+                }
             }
             return null;
         }
@@ -684,21 +733,34 @@ public abstract class PluginManager extends AbstractModelObject {
         @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             List<URL> resources = new ArrayList<URL>();
-            for (PluginWrapper p : activePlugins) {
-                resources.addAll(Collections.list(p.classLoader.getResources(name)));
+            if (FAST_LOOKUP) {
+                try {
+                    for (PluginWrapper p : activePlugins) {
+                        resources.addAll(Collections.list((Enumeration)FIND_RESOURCES.invoke(p.classLoader, name)));
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new Error(e);
+                } catch (InvocationTargetException e) {
+                    throw new Error(e);
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    resources.addAll(Collections.list(p.classLoader.getResources(name)));
+                }
             }
             return Collections.enumeration(resources);
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
         }
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
+
+    public static boolean FAST_LOOKUP = Boolean.getBoolean("fastLookup");
 
     /**
      * Remembers why a plugin failed to deploy.

@@ -416,7 +416,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
-            this.dependencies = dependencies;
+                this.dependencies = dependencies;
         }
 
         @Override
