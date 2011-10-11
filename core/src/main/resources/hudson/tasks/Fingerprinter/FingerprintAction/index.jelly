@@ -62,7 +62,7 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
             </td>
-            <td>
+            <td data="${-f.timestamp.time}">
               ${f.timestampString} old
             </td>
             <td>
