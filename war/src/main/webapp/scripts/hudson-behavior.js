@@ -435,10 +435,15 @@ function renderOnDemand(e,callback,noBehaviour) {
     proxy.render(function (t) {
         var contextTagName = e.parentNode.tagName;
         var c;
-        if (contextTagName=="TBODY") {
-            c = document.createElement("DIV");
-            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c.firstChild.firstChild;
+
+        if ( contextTagName=="TBODY" ) {
+          c = document.createElement("DIV");
+          var tableHead = document.createElement("TABLE");
+          c.appendChild( tableHead );
+          var tableBody = document.createElement("TBODY");
+          tableHead.appendChild(tableBody);
+          tableBody.innerHTML = t.responseText;
+          c = c.firstChild.firstChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
