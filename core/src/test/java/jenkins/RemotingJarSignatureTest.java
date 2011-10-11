@@ -38,6 +38,7 @@ public class RemotingJarSignatureTest {
             if (name.equals("META-INF/MANIFEST.MF")) continue;
             if (name.startsWith("META-INF/") && name.endsWith(".SF")) continue;
             if (name.startsWith("META-INF/") && name.endsWith(".RSA")) continue;
+            if (name.startsWith("META-INF/") && name.endsWith(".DSA")) continue;
 
             // make sure bits are signed
             IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
