@@ -154,6 +154,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         setNode(node);
     }
 
+     /**
+     * Returns list of all boxes {@link ComputerPanelBox}s.
+     */
+    public List<ComputerPanelBox> getComputerPanelBoxs(){
+        return ComputerPanelBox.all(this);
+    }
+    
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
