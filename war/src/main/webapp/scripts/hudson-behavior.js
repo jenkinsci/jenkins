@@ -1355,7 +1355,7 @@ function AutoScroller(scrollContainer) {
             if (scrollDiv.scrollHeight > 0)
                 return scrollDiv.scrollHeight;
             else
-                if (objDiv.offsetHeight > 0)
+                if (scrollDiv.offsetHeight > 0)
                     return scrollDiv.offsetHeight;
 
             return null; // huh?
