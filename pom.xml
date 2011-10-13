@@ -485,7 +485,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <goals>
@@ -495,8 +495,11 @@ THE SOFTWARE.
               <rules>
                 <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
                 <requireJavaVersion>
-                  <version>[1.6.0,]</version>
+                  <version>1.6.0-18</version>
                 </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>3.0</version>
+                </requireMavenVersion>
               </rules>
             </configuration>
           </execution>
