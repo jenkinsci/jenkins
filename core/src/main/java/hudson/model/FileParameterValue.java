@@ -23,27 +23,29 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.tasks.BuildWrapper;
+import hudson.util.VariableResolver;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import javax.servlet.ServletException;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-
-import hudson.tasks.BuildWrapper;
-import hudson.Launcher;
-import hudson.FilePath;
-
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.io.OutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import javax.servlet.ServletException;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
@@ -84,6 +86,24 @@ public class FileParameterValue extends ParameterValue {
     // post initialization hook
     /*package*/ void setLocation(String location) {
         this.location = location;
+    }
+
+
+    /**
+     * Exposes the originalFileName as an environment variable.
+     */
+    @Override
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        env.put(name,originalFileName);
+    }
+
+    @Override
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
+        return new VariableResolver<String>() {
+            public String resolve(String name) {
+                return FileParameterValue.this.name.equals(name) ? originalFileName : null;
+            }
+        };
     }
 
     /**
