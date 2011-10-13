@@ -40,6 +40,9 @@ THE SOFTWARE.
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />
     </l:tasks>
+     <j:forEach var="box" items="${it.computerPanelBoxs}">
+        <st:include it="${box}" page="box.jelly" />
+    </j:forEach>
     <t:executors computers="${h.singletonList(it)}" />
   </l:side-panel>
 </j:jelly>
