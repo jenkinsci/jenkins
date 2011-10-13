@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.435-SNAPSHOT</version>
+    <version>1.436-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -423,7 +423,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->

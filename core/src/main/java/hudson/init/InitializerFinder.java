@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -85,16 +86,19 @@ public class InitializerFinder extends TaskBuilder {
      * Obtains the display name of the given initialization task
      */
     protected String getDisplayNameOf(Method e, Initializer i) {
+        Class<?> c = e.getDeclaringClass();
+        String key = i.displayName();
+        if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
         try {
-            Class<?> c = e.getDeclaringClass();
-            ResourceBundleHolder rb = ResourceBundleHolder.get(c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
-
-            String key = i.displayName();
-            if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
+            ResourceBundleHolder rb = ResourceBundleHolder.get(
+                    c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
             return rb.format(key);
         } catch (ClassNotFoundException x) {
             LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+e.toString(),x);
-            return "";
+            return key;
+        } catch (MissingResourceException x) {
+            LOGGER.log(WARNING, "Could not find key '" + key + "' in " + c.getPackage().getName() + ".Messages", x);
+            return key;
         }
     }
 

@@ -34,6 +34,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
@@ -64,6 +65,8 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -94,7 +97,7 @@ public abstract class PluginManager extends AbstractModelObject {
     protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
 
     /**
-     * All active plugins.
+     * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
      */
     protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
 
@@ -643,6 +646,8 @@ public abstract class PluginManager extends AbstractModelObject {
          */
         private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
 
+        private ClassLoaderReflectionToolkit clt = new ClassLoaderReflectionToolkit();
+
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
         }
@@ -660,11 +665,24 @@ public abstract class PluginManager extends AbstractModelObject {
                 else            generatedClasses.remove(name,wc);
             }
 
-            for (PluginWrapper p : activePlugins) {
-                try {
-                    return p.classLoader.loadClass(name);
-                } catch (ClassNotFoundException e) {
-                    //not found. try next
+            if (FAST_LOOKUP) {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        Class c = clt.findLoadedClass(p.classLoader,name);
+                        if (c!=null)    return c;
+                        // calling findClass twice appears to cause LinkageError: duplicate class def
+                        return clt.findClass(p.classLoader,name);
+                    } catch (InvocationTargetException e) {
+                        //not found. try next
+                    }
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    try {
+                        return p.classLoader.loadClass(name);
+                    } catch (ClassNotFoundException e) {
+                        //not found. try next
+                    }
                 }
             }
             // not found in any of the classloader. delegate.
@@ -673,10 +691,22 @@ public abstract class PluginManager extends AbstractModelObject {
 
         @Override
         protected URL findResource(String name) {
-            for (PluginWrapper p : activePlugins) {
-                URL url = p.classLoader.getResource(name);
-                if(url!=null)
-                    return url;
+            if (FAST_LOOKUP) {
+                try {
+                    for (PluginWrapper p : activePlugins) {
+                        URL url = clt.findResource(p.classLoader,name);
+                        if(url!=null)
+                            return url;
+                    }
+                } catch (InvocationTargetException e) {
+                    throw new Error(e);
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    URL url = p.classLoader.getResource(name);
+                    if(url!=null)
+                        return url;
+                }
             }
             return null;
         }
@@ -684,21 +714,32 @@ public abstract class PluginManager extends AbstractModelObject {
         @Override
         protected Enumeration<URL> findResources(String name) throws IOException {
             List<URL> resources = new ArrayList<URL>();
-            for (PluginWrapper p : activePlugins) {
-                resources.addAll(Collections.list(p.classLoader.getResources(name)));
+            if (FAST_LOOKUP) {
+                try {
+                    for (PluginWrapper p : activePlugins) {
+                        resources.addAll(Collections.list(clt.findResources(p.classLoader, name)));
+                    }
+                } catch (InvocationTargetException e) {
+                    throw new Error(e);
+                }
+            } else {
+                for (PluginWrapper p : activePlugins) {
+                    resources.addAll(Collections.list(p.classLoader.getResources(name)));
+                }
             }
             return Collections.enumeration(resources);
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             // only for debugging purpose
             return "classLoader " +  getClass().getName();
         }
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
+
+    public static boolean FAST_LOOKUP = !Boolean.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     /**
      * Remembers why a plugin failed to deploy.

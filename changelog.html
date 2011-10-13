@@ -56,17 +56,41 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Fixed a plugin boot problem that causes Jenkins to startup gracefully when some optional plugin dependencies aren't met (such as ivy to nant)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11279">issue 11279</a>)
+  <li class=bug>
+    Avoid overwriting the repository definitions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11229">issue 11229</a>)
+  <li class=bug>
+    "Tailing" the console of an active job broken in 1.434
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11307">issue 11307</a>)
+  <li class=bug>
+    Fingerprint's age should be sorted by its elapsed time
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9210">issue 9210</a>)
+  <li class=rfe>
+    Improved the classloading performance
+  <li class=rfe>
+    Expose original file name as a String parameter on for FileParameters
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11326">issue 11326</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.435>What's new in 1.435</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed the XML encoding sniffing problem in environments that have old JAXP
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-4525">issue 4525</a>)
+  <li class=bug>
     Suggestions for search do not work since 1.433
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11208">issue 11208</a>)
   <li class=rfe>
     "System Admin E-mail Address" is confusing label for notification mail "from"
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11209">issue 11209</a>)    
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.434>What's new in 1.434</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.434>What's new in 1.434</a> (2011/10/09)</h3>
 <ul class=image>
   <li class=bug>
     Add support for android-maven-plugin integration test reports and fix an error with 2.x maven-android-plugin

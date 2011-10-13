@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.tasks.test.TestResultProjectAction;
 
 /**
@@ -80,14 +81,14 @@ public interface Action extends ModelObject {
      *      <p>
      *      If an absolute file name that starts from '/' is returned (like
      *      "/plugin/foo/abc.gif'), then it will be interpreted as a path
-     *      from the context root of Hudson. This is useful to pick up
+     *      from the context root of Jenkins. This is useful to pick up
      *      image files from a plugin.
      *      <p>
      *      Finally, return null to hide it from the task list. This is normally not very useful,
      *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
-     * @see jenkins.model.Jenkins#isAdmin()
+     * @see Functions#isAnonymous()
      */
     String getIconFileName();
 
@@ -116,7 +117,7 @@ public interface Action extends ModelObject {
      *
      * <p>
      * If the returned string starts with '/', like '/foo', then it's assumed to be
-     * relative to the context path of the Hudson webapp. 
+     * relative to the context path of the Jenkins webapp.
      *
      * @return
      *      null if this action object doesn't need to be bound to web

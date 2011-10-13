@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.23</version>
+    <version>1.25</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.435-SNAPSHOT</version>
+  <version>1.436-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -131,7 +131,13 @@ THE SOFTWARE.
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.8.1</version>
+        <version>4.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>1.8.5</version>
       </dependency>
 
       <dependency>
@@ -479,7 +485,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <goals>
@@ -489,8 +495,11 @@ THE SOFTWARE.
               <rules>
                 <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
                 <requireJavaVersion>
-                  <version>[1.6.0,]</version>
+                  <version>1.6.0-18</version>
                 </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>3.0</version>
+                </requireMavenVersion>
               </rules>
             </configuration>
           </execution>

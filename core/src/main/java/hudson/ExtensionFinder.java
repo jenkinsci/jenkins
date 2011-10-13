@@ -178,7 +178,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             try {
                 container = Guice.createInjector(modules);
-            } catch (CreationException e) {
+            } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
                 // by just including the core
@@ -290,6 +290,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
                     m.setAccessible(true);
                     m.invoke(ecl, c);
+                    c.getMethods();
+                    c.getFields();
                 } catch (Exception x) {
                     throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
                 }
