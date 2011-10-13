@@ -6,7 +6,7 @@ JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
 chown root:wheel ${JENKINS_PLIST}
 chmod 644 ${JENKINS_PLIST}
 mkdir -p /Users/Shared/Jenkins
-chown -R daemon:daemon /Users/Shared/Jenkins
+find /Users/Shared/Jenkins -not -user daemon -or -not -group daemon -print0 | xargs -0 chown daemon:daemon
 
 # Load and start the launch daemon
 /bin/launchctl load ${JENKINS_PLIST}
