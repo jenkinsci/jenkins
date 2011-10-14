@@ -33,4 +33,12 @@ THE SOFTWARE.
   <f:entry title="${%Host}" field="host">
     <f:textbox/>
   </f:entry>
+  <f:optionalBlock field="logOn" title="${%Log on using a different account}" checked="${instance.logOn != null}">
+    <f:entry title="${%User name}" field="userName">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%Password}" field="password">
+      <f:password />
+    </f:entry>
+  </f:optionalBlock>
 </j:jelly>
