@@ -89,6 +89,18 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     public final Secret password;
 
+    public final AccountInfo logOn;
+
+    public static class AccountInfo {
+    	public final String userName;
+    	public final Secret password;
+    	@DataBoundConstructor
+    	public AccountInfo(String userName, String password) {
+				this.userName = userName;
+				this.password = Secret.fromString(password);
+    	}
+    }
+
     /**
      * Host name to connect to. For compatibility reasons, null if the same with the slave name.
      * @since 1.419
@@ -98,12 +110,17 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     public ManagedWindowsServiceLauncher(String userName, String password) {
         this (userName, password, null);
     }
-    
-    @DataBoundConstructor
+
     public ManagedWindowsServiceLauncher(String userName, String password, String host) {
+    		this(userName, password, host, null);
+    }
+
+    @DataBoundConstructor
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, AccountInfo logOn) {
         this.userName = userName;
         this.password = Secret.fromString(password);
         this.host = Util.fixEmptyAndTrim(host);
+        this.logOn = logOn;
     }
 
     private JIDefaultAuthInfoImpl createAuth() {
@@ -238,11 +255,27 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
                 Document dom = new SAXReader().read(new StringReader(xml));
                 Win32Service svc = services.Get("Win32_Service").cast(Win32Service.class);
-                int r = svc.Create(
+                int r;
+                if (logOn == null) {
+                	r = svc.Create(
                         id,
                         dom.selectSingleNode("/service/name").getText()+" at "+path,
                         path+"\\jenkins-slave.exe",
                         Win32OwnProcess, 0, "Manual", true);
+                } else {
+                	r = svc.Create(
+                				id,
+                				dom.selectSingleNode("/service/name").getText()+" at "+path,
+                				path+"\\jenkins-slave.exe",
+                				Win32OwnProcess,
+                				0,
+                				"Manual",
+                				false, // When using a different user, it isn't possible to interact
+                				logOn.userName,
+                				Secret.toString(logOn.password),
+                				null, null, null);
+
+                }
                 if(r!=0) {
                     listener.error("Failed to create a service: "+svc.getErrorMessage(r));
                     return;
