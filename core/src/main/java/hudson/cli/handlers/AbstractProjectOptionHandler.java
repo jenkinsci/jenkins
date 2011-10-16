@@ -51,11 +51,11 @@ public class AbstractProjectOptionHandler extends OptionHandler<AbstractProject>
 
         AbstractProject s = h.getItemByFullName(src,AbstractProject.class);
         if (s==null) {
+            String exceptionMessage = "No such job '"+src+"'";
             AbstractProject nearest = AbstractProject.findNearest(src);
             if (nearest!=null)
-                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ nearest +"?");
-            else
-                throw new CmdLineException(owner, "No such job '"+src+"'");
+                exceptionMessage += " perhaps you meant "+nearest.getName()+"?";
+            throw new CmdLineException(owner, exceptionMessage);
         }
         setter.addValue(s);
         return 1;

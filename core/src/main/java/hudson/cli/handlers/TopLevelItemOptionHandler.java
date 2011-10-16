@@ -28,8 +28,13 @@ public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
         String src = params.getParameter(0);
 
         TopLevelItem s = h.getItem(src);
-        if (s==null)
-            throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
+        if (s==null) {
+            String exceptionMessage = "No such job '"+src+"'";
+            AbstractProject nearest = AbstractProject.findNearest(src);
+            if (nearest!=null)
+                exceptionMessage += " perhaps you meant "+nearest.getName()+"?";
+            throw new CmdLineException(owner, exceptionMessage);
+        }
         setter.addValue(s);
         return 1;
     }
