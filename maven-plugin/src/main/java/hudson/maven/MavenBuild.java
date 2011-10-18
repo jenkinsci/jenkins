@@ -675,10 +675,12 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                         getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null ));
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
-            if(mms.usesPrivateRepository())
+            if(mms.usesPrivateRepository()) {
                 // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+                String privateRepository = getPrivateRepository(listener, envVars);
+                margs.add("-Dmaven.repo.local="+getBuiltOn().getRootPath().child(privateRepository).absolutize().getRemote());
+            }
 
             if (mms.getAlternateSettings() != null) {
                 if (IOUtils.isAbsolute(mms.getAlternateSettings())) {
@@ -744,6 +746,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
     public String getMavenOpts(TaskListener listener, EnvVars envVars) {
         return envVars.expand(expandTokens(listener, getProject().getParent().getMavenOpts()));
+    }
+
+    public String getPrivateRepository(TaskListener listener, EnvVars envVars) {
+        return envVars.expand(expandTokens(listener, getProject().getParent().getDescriptor().getPrivateRepository()));
     }
 
     private static final int MAX_PROCESS_CACHE = 5;

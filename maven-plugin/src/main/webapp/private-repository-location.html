@@ -1,0 +1,20 @@
+<div>
+  <p>
+  This field defines the location of the private local repository if you use this option in your jobs.
+  By default, the private repository will be created under the current workspace (<tt>${WORKSPACE}/.repository</tt>)
+  but if you wish, you can override this value.
+  </p>
+
+  <p>
+  For instance, by using <tt>m2repo/${EXECUTOR_NUMBER}</tt>, one private local repository per executor will be created,
+  which will use less storage than having a private repository per job while ensuring only one instance
+  of Maven accesses it.
+  </p>
+  <p>
+  This enables you as well to relocate private local repository to a different storage with more space.
+  </p>
+  <p>
+  You can specify either a path that is relative to the instance home (JENKINS_HOME for master, BASE for slaves) or an absolute path.
+  You also have access to <a href="env-vars.html">environment variables</a> provided by Jenkins.
+  </p>
+</div>

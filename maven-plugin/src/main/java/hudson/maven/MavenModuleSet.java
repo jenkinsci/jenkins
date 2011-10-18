@@ -1063,8 +1063,18 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
          * Globally-defined MAVEN_OPTS.
          */
         private String globalMavenOpts;
-        
+
         /**
+         * Default value for Use private repository
+         */
+        private boolean usePrivateRepository = false;
+
+        /**
+         * Default value for storage location of private repository
+         */
+        private String privateRepository = "${WORKSPACE}/.repository";
+
+				/**
          * @since 1.394
          */
         private Map<String, Integer> mavenValidationLevels = new LinkedHashMap<String, Integer>();
@@ -1086,6 +1096,24 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
         public void setGlobalMavenOpts(String globalMavenOpts) {
             this.globalMavenOpts = globalMavenOpts;
+            save();
+        }
+
+        public boolean usesPrivateRepository() {
+            return usePrivateRepository;
+        }
+
+        public void setUsePrivateRepository(boolean usePrivateRepository) {
+            this.usePrivateRepository = usePrivateRepository;
+            save();
+        }
+
+        public String getPrivateRepository() {
+            return privateRepository;
+        }
+
+        public void setPrivateRepository(String privateRepository) {
+            this.privateRepository = privateRepository;
             save();
         }
 
@@ -1112,6 +1140,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
             globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
+            usePrivateRepository = o.getBoolean("usePrivateRepository");
+            privateRepository = o.getString("privateRepository");
             save();
 
             return true;

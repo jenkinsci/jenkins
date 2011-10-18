@@ -31,5 +31,11 @@ THE SOFTWARE.
     <f:entry title="${%Global MAVEN_OPTS}" help="/plugin/maven-plugin/maven-opts.html">
       <f:expandableTextbox name="globalMavenOpts" value="${descriptor.globalMavenOpts}" />
     </f:entry>
+    <f:entry title="${%Use private repository}" help="/plugin/maven-plugin/private-repository.html">
+      <f:checkbox name="usePrivateRepository" checked="${descriptor.usesPrivateRepository()}"/>
+    </f:entry>
+    <f:entry title="${%Private repository location}" help="/plugin/maven-plugin/private-repository-location.html">
+      <f:textbox name="privateRepository" value="${descriptor.privateRepository}"/>
+    </f:entry>
   </f:section>
 </j:jelly>

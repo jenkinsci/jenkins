@@ -1,0 +1,19 @@
+﻿<div>
+  <p>
+  Ce champ définit l'emplacement du repository local privé si vous activez cette option dans vos jobs.
+  Par défaut, le repository local privé sera créé a l'intérieur de l'espace de travail courant (<tt>${WORKSPACE}/.repository</tt>)
+  mais si vous le souhaitez vous pouvez la surcharger.
+  </p>
+
+  <p>
+  Par exemple, en utilisant <tt>m2repo/${EXECUTOR_NUMBER}</tt>, un repository local privé par exécuteur sera créé,
+  ce qui consommera moins d'espace que d'avoir un repository privé par job tout en assurant qu'un seul process Maven puisse y accéder à la fois.
+  </p>
+  <p>
+  Cela vous permet également de relocaliser le repository local privé à un endroit différent disposant de plus d'espace.
+  </p>
+  <p>
+  Vous pouvez spécifier soit un chemin relatif a la racine l'instance (JENKINS_HOME pour le maître, BASE pour les esclaves) ou bien un chemin absolu.
+  Vous avez également accès aux variables d'environnement fournies par Jenkins.'You also have access to <a href="env-vars.html">environment variables</a> provided by Jenkins.
+  </p>
+</div>
