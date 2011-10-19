@@ -698,6 +698,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
+        requirePOST();
 
         submit(req);
 
