@@ -51,6 +51,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Main;
+import hudson.PluginManager;
 import hudson.Util;
 import hudson.WebAppMain;
 import hudson.matrix.MatrixBuild;
@@ -164,6 +165,7 @@ import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.management.ThreadInfo;
@@ -219,53 +221,78 @@ public class JenkinsRule implements TestRule, RootAction {
 
     private static JenkinsRule CURRENT = null;
 
+    /**
+     * Points to the same object as {@link #jenkins} does.
+     */
+    public Hudson hudson;
+
+    public Jenkins jenkins;
+
+    protected HudsonHomeLoader homeLoader = HudsonHomeLoader.NEW;
+    /**
+     * TCP/IP port that the server is listening on.
+     */
+    protected int localPort;
+    protected Server server;
+
+    /**
+     * Where in the {@link Server} is Hudson deployed?
+     * <p>
+     * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
+     */
+    protected String contextPath = "";
+
+    /**
+     * {@link Runnable}s to be invoked at {@link #after()} .
+     */
+    protected List<LenientRunnable> tearDowns = new ArrayList<LenientRunnable>();
+
+    protected List<JenkinsRecipe.Runner> recipes = new ArrayList<JenkinsRecipe.Runner>();
+
+    /**
+     * Remember {@link WebClient}s that are created, to release them properly.
+     */
+    private List<WebClient> clients = new ArrayList<WebClient>();
+
+    /**
+     * Remember channels that are created, to release them at the end.
+     */
+    private List<Channel> channels = new ArrayList<Channel>();
+
+    /**
+     * JavaScript "debugger" that provides you information about the JavaScript call stack
+     * and the current values of the local variables in those stack frame.
+     *
+     * <p>
+     * Unlike Java debugger, which you as a human interfaces directly and interactively,
+     * this JavaScript debugger is to be interfaced by your program (or through the
+     * expression evaluation capability of your Java debugger.)
+     */
+    protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
+
+    /**
+     * If this test case has additional {@link org.jvnet.hudson.test.recipes.WithPlugin} annotations, set to true.
+     * This will cause a fresh {@link hudson.PluginManager} to be created for this test.
+     * Leaving this to false enables the test harness to use a pre-loaded plugin manager,
+     * which runs faster.
+     *
+     * @deprecated
+     *      Use {@link #pluginManager}
+     */
+    public boolean useLocalPluginManager;
+
+    /**
+     * Set the plugin manager to be passed to {@link Jenkins} constructor.
+     *
+     * For historical reasons, {@link #useLocalPluginManager}==true will take the precedence.
+     */
+    private PluginManager pluginManager = TestPluginManager.INSTANCE;
+
+    public JenkinsComputerConnectorTester computerConnectorTester = new JenkinsComputerConnectorTester(this);
+
     public Jenkins getInstance() {
         return jenkins;
     }
-
-    public Statement apply(final Statement base, final Description description) {
-        return tempFolder.apply(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                testDescription = description;
-                Thread t = Thread.currentThread();
-                String o = t.getName();
-                t.setName("Executing "+ testDescription.getDisplayName());
-                CURRENT = JenkinsRule.this;
-                before();
-                try {
-                    System.out.println("=== Starting " + testDescription.getDisplayName());
-                    // so that test code has all the access to the system
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-                    try {
-                        base.evaluate();
-                    } catch (Throwable th) {
-                        // allow the late attachment of a debugger in case of a failure. Useful
-                        // for diagnosing a rare failure
-                        try {
-                            throw new BreakException();
-                        } catch (BreakException e) {}
-
-                        // dump threads
-                        ThreadInfo[] threadInfos = Functions.getThreadInfos();
-                        Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
-                        for (ThreadInfo ti : threadInfos) {
-                            System.err.println(Functions.dumpThreadInfo(ti, m));
-                        }
-                        throw th;
-                    }
-                } finally {
-                    after();
-                    testDescription = null;
-                    t.setName(o);
-                    CURRENT = null;
-                }
-            }
-        }, description);
-    }
-
-
-    public static class BreakException extends Exception {}
 
     /**
      * Override to set up your specific external resource.
@@ -310,6 +337,22 @@ public class JenkinsRule implements TestRule, RootAction {
         if (desc != null) Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
+    }
+
+    /**
+     * Configures the update center setting for the test.
+     * By default, we load updates from local proxy to avoid network traffic as much as possible.
+     */
+    protected void configureUpdateCenter() throws Exception {
+        final String updateCenterUrl = "http://localhost:"+ JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
+
+        // don't waste bandwidth talking to the update center
+        DownloadService.neverUpdate = true;
+        UpdateSite.neverUpdate = true;
+
+        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
+        sites.clear();
+        sites.add(new UpdateSite("default", updateCenterUrl));
     }
 
     /**
@@ -368,81 +411,48 @@ public class JenkinsRule implements TestRule, RootAction {
         }
     }
 
-    /**
-     * Points to the same object as {@link #jenkins} does.
-     */
-    public Hudson hudson;
+    public Statement apply(final Statement base, final Description description) {
+        return tempFolder.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                testDescription = description;
+                Thread t = Thread.currentThread();
+                String o = t.getName();
+                t.setName("Executing "+ testDescription.getDisplayName());
+                CURRENT = JenkinsRule.this;
+                before();
+                try {
+                    System.out.println("=== Starting " + testDescription.getDisplayName());
+                    // so that test code has all the access to the system
+                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    try {
+                        base.evaluate();
+                    } catch (Throwable th) {
+                        // allow the late attachment of a debugger in case of a failure. Useful
+                        // for diagnosing a rare failure
+                        try {
+                            throw new BreakException();
+                        } catch (BreakException e) {}
 
-    public Jenkins jenkins;
-
-    protected HudsonHomeLoader homeLoader = HudsonHomeLoader.NEW;
-    /**
-     * TCP/IP port that the server is listening on.
-     */
-    protected int localPort;
-    protected Server server;
-
-    /**
-     * Where in the {@link Server} is Hudson deployed?
-     * <p>
-     * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
-     */
-    protected String contextPath = "";
-
-    /**
-     * {@link Runnable}s to be invoked at {@link #after()} .
-     */
-    protected List<LenientRunnable> tearDowns = new ArrayList<LenientRunnable>();
-
-    protected List<JenkinsRecipe.Runner> recipes = new ArrayList<JenkinsRecipe.Runner>();
-
-    /**
-     * Remember {@link WebClient}s that are created, to release them properly.
-     */
-    private List<WebClient> clients = new ArrayList<WebClient>();
-
-    /**
-     * Remember channels that are created, to release them at the end.
-     */
-    private List<Channel> channels = new ArrayList<Channel>();
-
-    /**
-     * JavaScript "debugger" that provides you information about the JavaScript call stack
-     * and the current values of the local variables in those stack frame.
-     *
-     * <p>
-     * Unlike Java debugger, which you as a human interfaces directly and interactively,
-     * this JavaScript debugger is to be interfaced by your program (or through the
-     * expression evaluation capability of your Java debugger.)
-     */
-    protected JavaScriptDebugger jsDebugger = new JavaScriptDebugger();
-
-    /**
-     * If this test case has additional {@link org.jvnet.hudson.test.recipes.WithPlugin} annotations, set to true.
-     * This will cause a fresh {@link hudson.PluginManager} to be created for this test.
-     * Leaving this to false enables the test harness to use a pre-loaded plugin manager,
-     * which runs faster.
-     */
-    public boolean useLocalPluginManager;
-
-    public JenkinsComputerConnectorTester computerConnectorTester = new JenkinsComputerConnectorTester(this);
-
-    /**
-     * Configures the update center setting for the test.
-     * By default, we load updates from local proxy to avoid network traffic as much as possible.
-     */
-    protected void configureUpdateCenter() throws Exception {
-        final String updateCenterUrl = "http://localhost:"+ JavaNetReverseProxy.getInstance().localPort+"/update-center.json";
-
-
-        // don't waste bandwidth talking to the update center
-        DownloadService.neverUpdate = true;
-        UpdateSite.neverUpdate = true;
-
-        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
-        sites.clear();
-        sites.add(new UpdateSite("default", updateCenterUrl));
+                        // dump threads
+                        ThreadInfo[] threadInfos = Functions.getThreadInfos();
+                        Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+                        for (ThreadInfo ti : threadInfos) {
+                            System.err.println(Functions.dumpThreadInfo(ti, m));
+                        }
+                        throw th;
+                    }
+                } finally {
+                    after();
+                    testDescription = null;
+                    t.setName(o);
+                    CURRENT = null;
+                }
+            }
+        }, description);
     }
+
+    public static class BreakException extends Exception {}
 
     public String getIconFileName() {
         return null;
@@ -465,7 +475,20 @@ public class JenkinsRule implements TestRule, RootAction {
         File home = tempFolder.newFolder("jenkins-home-" + testDescription.getDisplayName());
         for (JenkinsRecipe.Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, webServer, useLocalPluginManager ? null : TestPluginManager.INSTANCE);
+        return new Hudson(home, webServer, useLocalPluginManager ? null : pluginManager);
+    }
+
+    /**
+     * Sets the {@link PluginManager} to be used when creating a new {@link Jenkins} instance.
+     *
+     * @param pluginManager
+     *      null to let Jenkins create a new instance of default plugin manager, like it normally does when running as a webapp outside the test.
+     */
+    public void setPluginManager(PluginManager pluginManager) {
+        this.useLocalPluginManager = false;
+        this.pluginManager = pluginManager;
+        if (hudson!=null)
+            throw new IllegalStateException("Too late to override the plugin manager");
     }
 
     public File getWebAppRoot() throws Exception {
@@ -1421,36 +1444,7 @@ public class JenkinsRule implements TestRule, RootAction {
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
                             String version = tokens[1];
-                            File dependencyJar=null;
-                            // need to search multiple group IDs
-                            // TODO: extend manifest to include groupID:artifactID:version
-                            Exception resolutionError=null;
-                            for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
-
-                                // first try to find it on the classpath.
-                                // this takes advantage of Maven POM located in POM
-                                URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
-                                if (dependencyPomResource != null) {
-                                    // found it
-                                    dependencyJar = Which.jarFile(dependencyPomResource);
-                                    break;
-                                } else {
-                                    Artifact a;
-                                    a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                                    try {
-                                        embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                                        dependencyJar = a.getFile();
-                                    } catch (AbstractArtifactResolutionException x) {
-                                        // could be a wrong groupId
-                                        resolutionError = x;
-                                    }
-                                }
-                            }
-                            if(dependencyJar==null) {
-                                if (dep.contains("resolution:=optional"))
-                                    continue;   // optional dependency
-                                throw new Exception("Failed to resolve plugin: "+dep,resolutionError);
-                            }
+                            File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
 
                             File dst = new File(home, "plugins/" + artifactId + ".hpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
@@ -1459,6 +1453,46 @@ public class JenkinsRule implements TestRule, RootAction {
                         }
                     }
                 }
+            }
+
+            private File resolveDependencyJar(MavenEmbedder embedder, String artifactId, String version) throws Exception {
+                // try to locate it from manifest
+                Enumeration<URL> manifests = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+                while (manifests.hasMoreElements()) {
+                    URL manifest = manifests.nextElement();
+                    InputStream is = manifest.openStream();
+                    Manifest m = new Manifest(is);
+                    is.close();
+
+                    if (artifactId.equals(m.getMainAttributes().getValue("Short-Name")))
+                        return Which.jarFile(manifest);
+                }
+
+                // need to search multiple group IDs
+                // TODO: extend manifest to include groupID:artifactID:version
+                Exception resolutionError=null;
+                for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+
+                    // first try to find it on the classpath.
+                    // this takes advantage of Maven POM located in POM
+                    URL dependencyPomResource = getClass().getResource("/META-INF/maven/"+groupId+"/"+artifactId+"/pom.xml");
+                    if (dependencyPomResource != null) {
+                        // found it
+                        return Which.jarFile(dependencyPomResource);
+                    } else {
+                        Artifact a;
+                        a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
+                        try {
+                            embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                            return a.getFile();
+                        } catch (AbstractArtifactResolutionException x) {
+                            // could be a wrong groupId
+                            resolutionError = x;
+                        }
+                    }
+                }
+
+                throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
         });
     }
