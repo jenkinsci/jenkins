@@ -491,6 +491,11 @@ public class JenkinsRule implements TestRule, RootAction {
             throw new IllegalStateException("Too late to override the plugin manager");
     }
 
+    public JenkinsRule with(PluginManager pluginManager) {
+        setPluginManager(pluginManager);
+        return this;
+    }
+
     public File getWebAppRoot() throws Exception {
         return WarExploder.getExplodedDir();
     }
