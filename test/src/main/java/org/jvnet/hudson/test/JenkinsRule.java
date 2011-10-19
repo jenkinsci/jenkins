@@ -412,6 +412,10 @@ public class JenkinsRule implements TestRule, RootAction {
     }
 
     public Statement apply(final Statement base, final Description description) {
+        if (description.getAnnotation(WithoutJenkins.class) != null) {
+            // request has been made to not create the instance for this test method
+            return tempFolder.apply(base, description);
+        }
         return tempFolder.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
