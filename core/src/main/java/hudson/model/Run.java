@@ -1899,6 +1899,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
+        requirePOST();
         BulkChange bc = new BulkChange(this);
         try {
             JSONObject json = req.getSubmittedForm();

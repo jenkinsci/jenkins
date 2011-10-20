@@ -306,6 +306,7 @@ public final class ComputerSet extends AbstractModelObject {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            requirePOST();
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
