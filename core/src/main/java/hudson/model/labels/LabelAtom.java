@@ -203,6 +203,7 @@ public class LabelAtom extends Label implements Saveable {
         final Jenkins app = Jenkins.getInstance();
 
         app.checkPermission(Jenkins.ADMINISTER);
+        requirePOST();
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
         updateTransientActions();

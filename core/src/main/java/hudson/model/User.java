@@ -454,6 +454,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
+        requirePOST();
 
         fullName = req.getParameter("fullName");
         description = req.getParameter("description");
