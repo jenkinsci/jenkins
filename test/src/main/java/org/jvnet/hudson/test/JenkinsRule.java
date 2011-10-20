@@ -479,7 +479,15 @@ public class JenkinsRule implements TestRule, RootAction {
         File home = tempFolder.newFolder("jenkins-home-" + testDescription.getDisplayName());
         for (JenkinsRecipe.Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, webServer, useLocalPluginManager ? null : pluginManager);
+        return new Hudson(home, webServer, getPluginManager());
+    }
+
+    public PluginManager getPluginManager() {
+        if (hudson == null) {
+            return useLocalPluginManager ? null : pluginManager;
+        } else {
+            return hudson.getPluginManager();
+        }
     }
 
     /**
