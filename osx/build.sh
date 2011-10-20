@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# Usage
+# Check Usage
 if [ -z "$1" ]; then
 	echo "Usage: build.sh path/to/jenkins.war"
 	exit 1
 fi
-
-# Set up build tools
-DEV_DIR=`xcode-select \
--print-path`
-PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
 
 # Get the Jenkins version number
 cp "$1" $(dirname $0)/jenkins.war.tmp
@@ -23,20 +18,48 @@ PKG_NAME="jenkins-${version}.pkg"
 PKG_TITLE="Jenkins ${version}"
 rm $(dirname $0)/jenkins.war.tmp
 
-# Fiddle with the package document so it points to the jenkins.war file provided
-PACKAGEMAKER_DOC="$(dirname $0)/JenkinsInstaller.pmdoc"
-mv $PACKAGEMAKER_DOC/01jenkins-contents.xml $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig
-sed s,"pt=\".*\" m=","pt=\"${1}\" m=",g $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig > $PACKAGEMAKER_DOC/01jenkins-contents.xml
-mv $PACKAGEMAKER_DOC/01jenkins.xml $PACKAGEMAKER_DOC/01jenkins.xml.orig
-sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml.orig > $PACKAGEMAKER_DOC/01jenkins.xml
+# Stage jenkins.war
+mkdir -p $(dirname $0)/packages/jenkins/dest_root/Applications/Jenkins
+cp $1 $(dirname $0)/packages/jenkins/dest_root/Applications/Jenkins/jenkins.war
+# Change the Installer title to match the version
+sed s,"<title>Jenkins CI Server</title>","<title>${PKG_TITLE}</title>", distribution.xml >distribution-title.xml
+# Update the version for the subpackage
+echo -n $version > $(dirname $0)/packages/jenkins/version
 
-# Build the package
-${PACKAGEMAKER} \
-	--doc "${PACKAGEMAKER_DOC}" \
-	--out "${PKG_NAME}" \
-	--version "${version}" \
-	--title "${PKG_TITLE}"
+# Run pkgbuild for each sub-package
+# To verify each sub-package, run "lsbom `pkgutil --bom child.pkg`".
+# This will print out the destination for the files in each package along with
+# the permissions for each file
+PACKAGE_PATHS=""
+for CHILD in `ls packages`; do
+	pushd packages/$CHILD > /dev/null
+	COMMANDSTRING=""
+	# If there are package scripts
+	if [ -d ./scripts ]; then
+		COMMANDSTRING="${COMMANDSTRING} --scripts scripts"
+	fi
+	# If we have a specific version for this package
+	if [ -f ./version ]; then
+		PKG_VERSION=`cat ./version`
+		COMMANDSTRING="${COMMANDSTRING} --version ${PKG_VERSION}"
+	fi
+	# Build the package
+	pkgbuild \
+		--root dest_root \
+		--identifier `cat ./identifier` \
+		--ownership recommended \
+		$CHILD.pkg
+	PACKAGE_PATHS="--package-path ${PWD} ${PACKAGE_PATHS}"
+	popd > /dev/null
+done
 
-# Reset the fiddling so git doesn't get confused
-mv $PACKAGEMAKER_DOC/01jenkins.xml.orig $PACKAGEMAKER_DOC/01jenkins.xml
-mv $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig $PACKAGEMAKER_DOC/01jenkins-contents.xml
+# Now build the pretty meta-package
+productbuild \
+	--distribution distribution-title.xml \
+	$PACKAGE_PATHS \
+	--resources resources \
+	--version $version \
+	$PKG_NAME
+
+# Clean up
+rm distribution-title.xml
