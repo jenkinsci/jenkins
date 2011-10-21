@@ -926,6 +926,7 @@ var hudsonRules = {
             updateVisibility : function() {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
                 for (var e=this.start; e!=this.end; e=e.nextSibling) {
+                    if (e.nodeType!=1)  continue;
                     if (e.rowVisibilityGroup && e!=this.start) {
                         e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
@@ -1280,7 +1281,7 @@ function applyNameRef(s,e,id) {
     // s contains the node itself
     for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.getAttribute("nameRef")==null)
+        if(x.nodeType==1 && x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
 }
