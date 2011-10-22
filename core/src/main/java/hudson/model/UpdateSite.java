@@ -51,6 +51,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -196,12 +197,25 @@ public class UpdateSite {
                     certs.add(c);
                 }
 
-                // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
+                // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
+                // which isn't useful at all
                 Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-                ServletContext context = Jenkins.getInstance().servletContext;
-                for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+                Jenkins j = Jenkins.getInstance();
+                for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
                     if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
-                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
+                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(j.servletContext.getResourceAsStream(cert)),null));
+                }
+                File[] cas = new File(j.root, "update-center-rootCAs").listFiles();
+                if (cas!=null) {
+                    for (File cert : cas) {
+                        if (cert.getName().endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                        FileInputStream in = new FileInputStream(cert);
+                        try {
+                            anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(in),null));
+                        } finally {
+                            in.close();
+                        }
+                    }
                 }
                 CertificateUtil.validatePath(certs,anchors);
             }
