@@ -39,6 +39,7 @@ import org.kohsuke.MetaInfServices;
  * @author Kohsuke Kawaguchi
  */
 @MetaInfServices
+@SuppressWarnings("rawtypes")
 public class AbstractProjectOptionHandler extends OptionHandler<AbstractProject> {
     public AbstractProjectOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractProject> setter) {
         super(parser, option, setter);
@@ -53,7 +54,7 @@ public class AbstractProjectOptionHandler extends OptionHandler<AbstractProject>
         if (s==null) {
             AbstractProject nearest = AbstractProject.findNearest(src);
             if (nearest!=null)
-                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ nearest +"?");
+                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant '"+ nearest.getFullName() +"'?");
             else
                 throw new CmdLineException(owner, "No such job '"+src+"'");
         }
