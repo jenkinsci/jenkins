@@ -796,7 +796,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
         if(i!=null)
-            return (Future<R>)i.getFuture();
+            return (Future)i.getFuture();
         return null;
     }
 
