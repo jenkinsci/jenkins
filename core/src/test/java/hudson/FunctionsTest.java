@@ -28,29 +28,20 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import static org.mockito.Mockito.*;
 
 public class FunctionsTest {
     @Test
     @Bug(7725)
     public void testGetActionUrl_mailto(){
         String mailto = "mailto:nobody@example.com";
-        String result = Functions.getActionUrl(null, new MockAction(mailto));
+        String result = Functions.getActionUrl(null, createMockAction(mailto));
         assertEquals(mailto, result);
     }
 
-    private static final class MockAction implements Action {
-        private String url;
-        public MockAction(String url) {
-            this.url = url;
-        }
-        public String getIconFileName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        public String getUrlName() {
-            return url;
-        }
+    private static Action createMockAction(String uri) {
+        Action action = mock(Action.class);
+        when(action.getUrlName()).thenReturn(uri);
+        return action;
     }
 }
