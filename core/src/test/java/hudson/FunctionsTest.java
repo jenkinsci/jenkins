@@ -25,11 +25,16 @@ package hudson;
 
 import hudson.model.Action;
 import static org.junit.Assert.*;
-
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Bug;
-import static org.mockito.Mockito.*;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import static org.powermock.api.mockito.PowerMockito.*;
 
+@RunWith(PowerMockRunner.class)
 public class FunctionsTest {
     @Test
     public void testGetActionUrl_absoluteUriWithAuthority(){
@@ -59,9 +64,51 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    @PrepareForTest(Stapler.class)
+    public void testGetActionUrl_absolutePath() throws Exception{
+        String contextPath = "/jenkins";
+        StaplerRequest req = createMockRequest(contextPath);
+        String[] paths = {
+            "/",
+            "/foo/bar",
+        };
+        mockStatic(Stapler.class);
+        when(Stapler.getCurrentRequest()).thenReturn(req);
+        for(String path : paths) {
+            String result = Functions.getActionUrl(null, createMockAction(path));
+            assertEquals(contextPath + path, result);
+        }
+    }
+
+    @Test
+    @PrepareForTest(Stapler.class)
+    public void testGetActionUrl_relativePath() throws Exception{
+        String contextPath = "/jenkins";
+        String itUrl = "iturl/";
+        StaplerRequest req = createMockRequest(contextPath);
+        String[] paths = {
+            "foo/bar",
+            "./foo/bar",
+            "../foo/bar",
+        };
+        mockStatic(Stapler.class);
+        when(Stapler.getCurrentRequest()).thenReturn(req);
+        for(String path : paths) {
+            String result = Functions.getActionUrl(itUrl, createMockAction(path));
+            assertEquals(contextPath + "/" + itUrl + path, result);
+        }
+    }
+
     private static Action createMockAction(String uri) {
         Action action = mock(Action.class);
         when(action.getUrlName()).thenReturn(uri);
         return action;
+    }
+
+    private static StaplerRequest createMockRequest(String contextPath) {
+        StaplerRequest req = mock(StaplerRequest.class);
+        when(req.getContextPath()).thenReturn(contextPath);
+        return req;
     }
 }
