@@ -32,11 +32,31 @@ import static org.mockito.Mockito.*;
 
 public class FunctionsTest {
     @Test
+    public void testGetActionUrl_absoluteUriWithAuthority(){
+        String[] uris = {
+            "http://example.com/foo/bar",
+            "https://example.com/foo/bar",
+            "ftp://example.com/foo/bar",
+            "svn+ssh://nobody@example.com/foo/bar",
+        };
+        for(String uri : uris) {
+            String result = Functions.getActionUrl(null, createMockAction(uri));
+            assertEquals(uri, result);
+        }
+    }
+
+    @Test
     @Bug(7725)
-    public void testGetActionUrl_mailto(){
-        String mailto = "mailto:nobody@example.com";
-        String result = Functions.getActionUrl(null, createMockAction(mailto));
-        assertEquals(mailto, result);
+    public void testGetActionUrl_absoluteUriWithoutAuthority(){
+        String[] uris = {
+            "mailto:nobody@example.com",
+            "mailto:nobody@example.com?subject=hello",
+            "javascript:alert('hello')",
+        };
+        for(String uri : uris) {
+            String result = Functions.getActionUrl(null, createMockAction(uri));
+            assertEquals(uri, result);
+        }
     }
 
     private static Action createMockAction(String uri) {
