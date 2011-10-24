@@ -235,7 +235,7 @@ THE SOFTWARE.
       <tr>
         <td id="side-panel" width="20%">
           <div style="margin-left: 20px; margin-right: 20px; border-top: 1px solid #bbb"></div>
-          <div id="navigation">
+          <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />
 
