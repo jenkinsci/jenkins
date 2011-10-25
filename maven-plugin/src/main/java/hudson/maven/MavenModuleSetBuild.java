@@ -639,7 +639,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                     project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
                                 }
                             }
-                        } 
+                        } else {
+                        	// make sure the transient field is clean
+                        	project.globalSettingConfigPath = null;
+                        }
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
