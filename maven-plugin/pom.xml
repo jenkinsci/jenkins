@@ -134,9 +134,15 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>config-provider-model</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
-    
+    <!-- the dependency between config-file-provider and maven-plugin should be in the other direction  -->
+<!--     <dependency> -->
+<!-- 	  <groupId>org.jenkins-ci.plugins</groupId> -->
+<!-- 	  <artifactId>config-file-provider</artifactId> -->
+<!-- 	  <version>1.2-SNAPSHOT</version> -->
+<!-- 	  <optional>true</optional> -->
+<!--     </dependency> -->
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>

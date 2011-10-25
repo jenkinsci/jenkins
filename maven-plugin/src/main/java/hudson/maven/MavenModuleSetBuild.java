@@ -613,14 +613,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (StringUtils.isNotBlank(settingsConfigId)) {
-                            Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
-                            if (config == null) {
+                            Config settingsConfig = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
+                            if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
                                                    + " but cannot find the config");
                             } else {
-                                logger.println("using settings config with name " + config.name);
-                                if (config.content != null ) {
-                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                logger.println("using settings config with name " + settingsConfig.name);
+                                if (settingsConfig.content != null ) {
+                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( settingsConfig, getWorkspace() );
                                     project.setAlternateSettings( remoteSettings.getRemote() );
                                 }
                             }
@@ -628,18 +628,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
                         if (StringUtils.isNotBlank(globalSettingsConfigId)) {
-                            Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
-                            if (config == null) {
+                            Config settingsConfig = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
+                            if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");
                             } else {
-                                logger.println("using global settings config with name " + config.name);
-                                if (config.content != null ) {
-                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                logger.println("using global settings config with name " + settingsConfig.name);
+                                if (settingsConfig.content != null ) {
+                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( settingsConfig, getWorkspace() );
                                     project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
                                 }
                             }
-                        }
+                        } 
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);

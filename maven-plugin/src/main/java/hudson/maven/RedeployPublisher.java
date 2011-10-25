@@ -216,7 +216,7 @@ public class RedeployPublisher extends Recorder {
 
                 if (!StringUtils.isBlank(settingsConfigId)) {
                     Config config = SettingsProviderUtils.findConfig( settingsConfigId,
-                                                                      MavenSettingsProvider.class );
+                                                                      MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a config with id " + settingsConfigId
@@ -236,7 +236,7 @@ public class RedeployPublisher extends Recorder {
 
                 String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
                 if (!StringUtils.isBlank(globalSettingsConfigId)) {
-                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
+                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a global settings config with id "
