@@ -20,7 +20,7 @@ import static org.apache.commons.io.IOUtils.copy;
  */
 public abstract class UISample implements ExtensionPoint, Action, Describable<UISample> {
     public String getIconFileName() {
-        return "gear.gif";
+        return "gear.png";
     }
 
     public String getUrlName() {

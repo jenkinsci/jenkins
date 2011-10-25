@@ -56,17 +56,32 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-    "Changes" in Build Summary broken in IE standard mode since 1.434
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11383">issue 11383</a>)
-  <li class=bug>
-    GET request to configSubmit wipes some configuration
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11397">issue 11397</a>, <a href="https://issues.jenkins-ci.org/browse/JENKINS-7847">issue 7847</a>)
+  Repeated ids, expandTextArea() and multiple "Invoke Ant" build steps.
+  (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10989">issue 10989</a>)
+
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.436>What's new in 1.436</a> <!--=DATE=--></h3>
+<h3><a name=v1.437>What's new in 1.437</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Added MIME headers with job name and build result to notification emails.
+  <li class=bug>
+    "Changes" in Build Summary broken in IE standard mode since 1.434
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11383">issue 11383</a>)
+  <li class=bug>
+    GET request to configSubmit wipes some configuration
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11397">issue 11397</a>, <a href="https://issues.jenkins-ci.org/browse/JENKINS-7847">issue 7847</a>)
+  <li class=bug>
+    Jenkins logo headless when server is starting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11444">issue 11444</a>)
+  <li class=rfe>
+    Allow update center CA certificates to be placed in $JENKINS_HOME/update-center-rootCAs
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.436>What's new in 1.436</a> (2011/10/23)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a plugin boot problem that causes Jenkins to startup gracefully when some optional plugin dependencies aren't met (such as ivy to nant)
@@ -89,7 +104,6 @@ Upcoming changes</a>
     Added hyperlinks to build trigger console messages.
     (<a href="https://github.com/jenkinsci/jenkins/pull/291">pull #291</a>) 
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.435>What's new in 1.435</a> (2011/10/17)</h3>
 <ul class=image>
   <li class=bug>

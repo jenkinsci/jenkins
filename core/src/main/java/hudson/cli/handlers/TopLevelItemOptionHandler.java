@@ -23,13 +23,20 @@ public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public int parseArguments(Parameters params) throws CmdLineException {
         Jenkins h = Jenkins.getInstance();
         String src = params.getParameter(0);
 
         TopLevelItem s = h.getItem(src);
-        if (s==null)
-            throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
+        if (s==null) {
+            AbstractProject nearest = AbstractProject.findNearest(src);
+            if (nearest!=null)
+                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant '"+ nearest.getFullName() +"'?");
+            else
+                throw new CmdLineException(owner, "No such job '"+src+"'");
+        }
+            
         setter.addValue(s);
         return 1;
     }

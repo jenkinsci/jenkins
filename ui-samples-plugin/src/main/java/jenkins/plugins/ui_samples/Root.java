@@ -13,7 +13,7 @@ import java.util.List;
 @Extension
 public class Root implements RootAction {
     public String getIconFileName() {
-        return "gear.gif";
+        return "gear.png";
     }
 
     public String getDisplayName() {
