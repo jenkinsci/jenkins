@@ -89,7 +89,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
         for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
+            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation, Channel.current()));
 
         this.reporters.putAll( reporters );
     }    

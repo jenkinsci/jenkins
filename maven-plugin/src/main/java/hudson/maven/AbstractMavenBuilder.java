@@ -163,16 +163,33 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;
+        private Channel channel;
 
         public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
         }
+        
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
+            super(core);
+            this.mavenBuildInformation = mavenBuildInformation;
+            if (channel == null) {
+                throw new NullPointerException("channel must not be null!");
+            }
+            this.channel = channel;
+        }
 
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
+            
+            Channel ch = this.channel != null ? this.channel : Channel.current();
+            
+            if (ch == null) {
+                throw new NullPointerException("current channel not available!");
+            }
+            
             recordAsynchronousExecution(
-                    Channel.current().callAsync(
+                    ch.callAsync(
                             new AsyncInvoker(core,program)));
         }
 
