@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -835,6 +836,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         EnvVars.resolve(env);
 
         return env;
+    }
+
+    /**
+     * During the build, expose the environments contributed by {@link BuildWrapper}s and others.
+     *
+     * @return can be empty list, but never null. Immutable.
+     * @since 1.437
+     */
+    public List<Environment> getEnvironments() {
+        return buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments);
     }
 
     public Calendar due() {
