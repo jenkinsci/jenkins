@@ -23,6 +23,9 @@
  */
 package hudson.maven;
 
+import hudson.matrix.JDKAxis;
+import hudson.matrix.LabelAxis;
+import hudson.matrix.TextAxis;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Result;
@@ -163,13 +166,21 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;
-        private Channel channel;
+
+        /**
+         * Maven can internally use multiple threads to call {@link #executeAsync(BuildCallable)},
+         * making it impossible to rely on {@code Channel#current()} at the point of call, so
+         * instead we capture it when we get deserialized into Maven JVM.
+         * In other cases, we create FilterImpl inside Maven JVM, so we take it as a constructor.
+         * See JENKINS-11458
+         */
+        private transient Channel channel;
 
         public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
         }
-        
+
         public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
@@ -181,24 +192,21 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
 
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            
-            Channel ch = this.channel != null ? this.channel : Channel.current();
-            
-            if (ch == null) {
-                throw new NullPointerException("current channel not available!");
-            }
-            
             recordAsynchronousExecution(
-                    ch.callAsync(
+                    channel.callAsync(
                             new AsyncInvoker(core,program)));
         }
 
-        private static final long serialVersionUID = 1L;
-
-        public MavenBuildInformation getMavenBuildInformation()
-        {
+        public MavenBuildInformation getMavenBuildInformation() {
             return mavenBuildInformation;
         }
-    }    
+
+        public Object readResolve() {
+            channel = Channel.current();
+            return this;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
     
 }

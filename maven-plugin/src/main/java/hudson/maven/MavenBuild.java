@@ -322,13 +322,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 recordAsynchronousExecution(Channel.current().callAsync(new AsyncInvoker(core,program)));
             }
 
-            public MavenBuildInformation getMavenBuildInformation()
-            {
-                return super.core.getMavenBuildInformation();
-            }            
-            
             private static final long serialVersionUID = 1L;
-
         }
 
         @Override

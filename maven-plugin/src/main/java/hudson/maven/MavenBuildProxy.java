@@ -240,6 +240,10 @@ public interface MavenBuildProxy {
             core.setExecutedMojos(executedMojos);
         }
 
+        public MavenBuildInformation getMavenBuildInformation() {
+            return core.getMavenBuildInformation();
+        }
+
         private static final long serialVersionUID = 1L;
 
         /**
