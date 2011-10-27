@@ -844,8 +844,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return can be empty list, but never null. Immutable.
      * @since 1.437
      */
-    public List<Environment> getEnvironments() {
-        return buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments);
+    public EnvironmentList getEnvironments() {
+        return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 
     public Calendar due() {
