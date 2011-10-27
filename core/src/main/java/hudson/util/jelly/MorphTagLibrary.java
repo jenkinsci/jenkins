@@ -83,7 +83,7 @@ public class MorphTagLibrary extends TagLibrary {
                         String key = e.getKey();
                         // @see jelly.impl.DynamicTag.setAttribute() -- ${attrs} has duplicates with "Attr" suffix
                         if (key.endsWith("Attr") && meta.containsKey(key.substring(0, key.length()-4))) continue;
-                        // @see http://github.com/hudson/jelly/commit/4ae67d15957b5b4d32751619997a3cb2a6ad56ed
+                        // @see http://github.com/jenkinsci/jelly/commit/4ae67d15957b5b4d32751619997a3cb2a6ad56ed
                         if (key.equals("ownerTag")) continue;
                         if (!exclusions.contains(key)) {
                             Object v = e.getValue();
