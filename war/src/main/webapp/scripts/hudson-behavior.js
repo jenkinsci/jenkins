@@ -666,10 +666,10 @@ var hudsonRules = {
 // validate required form values
     "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
-// validate form values to be a number
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not a number"); },
+// validate form values to be an integer
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
     "INPUT.positive-number" : function(e) {
-        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive number");
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     },
 
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
