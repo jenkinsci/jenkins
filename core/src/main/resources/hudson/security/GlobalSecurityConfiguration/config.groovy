@@ -14,8 +14,9 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
                 checked:port>0, onclick:"\$('sat.port').disabled=false")
         label("for":"sat.fixed", _("Fixed"))
         text(" : ")
-        input(type:"text", "class":"number", name:"slaveAgentPort", id:"sat.port",
-                value: port>0 ? port : null, disabled: port>0 ? null : "true" )
+        input(type:"number", "class":"number", name:"slaveAgentPort", id:"sat.port",
+                value: port>0 ? port : null, disabled: port>0 ? null : "true",
+                min:0, max:65535, step:1)
 
         raw("&nbsp;") ////////////////////////////
 
