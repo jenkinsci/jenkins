@@ -98,13 +98,11 @@ function extractData(x) {
 var arrowTable = {
     up: {
         id: "up",
-        text: "&nbsp;&nbsp;&uarr;",
-        reorder: function(rows) { rows.reverse(); }
+        text: "&nbsp;&nbsp;&uarr;"
     },
     down: {
         id: "down",
-        text: "&nbsp;&nbsp;&darr;",
-        reorder: function() {}
+        text: "&nbsp;&nbsp;&darr;"
     },
     none: {
         id: "none",
@@ -137,21 +135,24 @@ function ts_resortTable(lnk) {
     for (i=0;i<table.rows[0].length;i++) { firstRow[i] = table.rows[0][i]; }
     for (j=1;j<table.rows.length;j++) { newRows[j-1] = table.rows[j]; }
 
-    newRows.sort(function(a,b) {
-      return sortfn(
-              extractData(a.cells[column]),
-              extractData(b.cells[column]));
-    });
-
     var dir = span.sortdir;
     if (arrowTable.lnkRef != lnk) {
         if (dir == null) dir = arrowTable.up;
     } else {
         dir = dir.next; // new sort direction
     }
-		
+    var sortfn2 = sortfn;
+    if(dir === arrowTable.up) {
+        // ascending
+        sortfn2 = function(a,b){return -sortfn(a,b)};
+    }
+    newRows.sort(function(a,b) {
+        return sortfn2(
+            extractData(a.cells[column]),
+            extractData(b.cells[column]));
+    });
+
     arrowTable.lnkRef = lnk; // make column sort down only if column selected is same as last
-    dir.reorder(newRows);
     span.sortdir = dir;
 
     // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
