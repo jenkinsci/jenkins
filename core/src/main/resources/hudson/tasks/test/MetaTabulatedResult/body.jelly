@@ -73,8 +73,8 @@ THE SOFTWARE.
             </div>
           </td>
           
-          <td class="pane" style="text-align:right;">
-            ${f.duration}
+          <td class="pane" style="text-align:right;" data="${f.duration}">
+            ${f.durationString}
           </td>
           <td class="pane" style="text-align:right;">
             <a href="${rootURL}/${f.failedSinceRun.url}">${f.age}</a>
@@ -110,15 +110,15 @@ THE SOFTWARE.
             </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.failCount-prev.failCount}">
               ${h.getDiffString2(p.failCount-prev.failCount)}
             </td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.skipCount-prev.skipCount}">
               ${h.getDiffString2(p.skipCount-prev.skipCount)}
             </td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.totalCount-prev.totalCount}">
               ${h.getDiffString2(p.totalCount-prev.totalCount)}
             </td>
           </tr>
