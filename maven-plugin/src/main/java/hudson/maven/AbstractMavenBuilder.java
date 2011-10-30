@@ -23,9 +23,6 @@
  */
 package hudson.maven;
 
-import hudson.matrix.JDKAxis;
-import hudson.matrix.LabelAxis;
-import hudson.matrix.TextAxis;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Result;
