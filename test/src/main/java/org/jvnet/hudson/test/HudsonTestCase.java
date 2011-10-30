@@ -66,6 +66,7 @@ import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
@@ -78,7 +79,6 @@ import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
-import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
@@ -188,6 +188,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Points to the same object as {@link #jenkins} does.
@@ -400,6 +401,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
     }
 
+    @SuppressWarnings("serial")
     public static class BreakException extends Exception {}
 
     public String getIconFileName() {
@@ -706,7 +708,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
             DumbSlave slave = new DumbSlave(nodeName, "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env),
+			        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
     		hudson.addNode(slave);
     		return slave;
     	}
@@ -757,6 +760,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Create a new slave on the local host and wait for it to come online
      * before returning
      */
+    @SuppressWarnings("deprecation")
     public DumbSlave createOnlineSlave(Label l, EnvVars env) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         ComputerListener waiter = new ComputerListener() {
@@ -833,6 +837,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Performs a configuration round-trip testing for a builder.
      */
+    @SuppressWarnings("unchecked")
     protected <B extends Builder> B configRoundtrip(B before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(before);
@@ -843,6 +848,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Performs a configuration round-trip testing for a publisher.
      */
+    @SuppressWarnings("unchecked")
     protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(before);
@@ -850,6 +856,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return (P)p.getPublishersList().get(before.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     protected <C extends ComputerConnector> C configRoundtrip(C before) throws Exception {
         computerConnectorTester.connector = before;
         submit(createWebClient().goTo("self/computerConnectorTester/configure").getFormByName("config"));
@@ -861,6 +868,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return u;
     }
         
+    @SuppressWarnings("unchecked")
     protected <N extends Node> N configRoundtrip(N node) throws Exception {
         submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
         return (N)hudson.getNode(node.getNodeName());
@@ -1542,6 +1550,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * for accessing Hudson.
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
+        private static final long serialVersionUID = 5808915989048338267L;
+
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
@@ -1552,6 +1562,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
+                private static final long serialVersionUID = -5844060943564822678L;
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
                     return false;
                 }
@@ -1725,7 +1736,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          *      a website on the internet, there's nothing wrong with using this method.)
          */
         @Override
-        public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
+        public <P extends Page> P getPage(String url) throws IOException, FailingHttpStatusCodeException {
             return super.getPage(url);
         }
 
