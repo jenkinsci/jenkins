@@ -951,6 +951,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Asserts that the console output of the build does not contain the given substring.
+     */
+    public void assertLogNotContains(String substring, Run run) throws Exception {
+        String log = getLog(run);
+        if(!log.contains(substring))
+            return; // good!
+
+        System.out.println(log);
+        fail("Console output of "+run+" contain "+substring);
+    }
+
+    /**
      * Get entire log file (this method is deprecated in hudson.model.Run,
      * but in tests it is OK to load entire log).
      */
