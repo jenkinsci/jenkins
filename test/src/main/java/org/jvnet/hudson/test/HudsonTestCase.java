@@ -1717,8 +1717,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          *      a relative path within the Hudson being tested. (IOW, if you really need to hit
          *      a website on the internet, there's nothing wrong with using this method.)
          */
+        @SuppressWarnings("unchecked")
         @Override
-        public <P extends Page> P getPage(String url) throws IOException, FailingHttpStatusCodeException {
+        public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
             return super.getPage(url);
         }
 
