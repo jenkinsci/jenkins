@@ -181,6 +181,7 @@ THE SOFTWARE.
             <artifactId>ant</artifactId>
             <version>1.8.0</version>
           </dependency>
+          <!-- Usually a dependency of ant, but some people seem to have an incomplete ant POM. See JENKINS-11416 -->
           <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant-launcher</artifactId>
