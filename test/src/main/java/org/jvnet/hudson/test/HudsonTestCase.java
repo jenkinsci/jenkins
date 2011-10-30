@@ -1309,13 +1309,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         int streak = 0;
 
         while (true) {
-            Thread.sleep(10);
+            Thread.sleep(100);
             if (isSomethingHappening())
                 streak=0;
             else
                 streak++;
 
-            if (streak>5)   // the system is quiet for a while
+            if (streak>2)   // the system is quiet for a while
                 return;
 
             if (System.currentTimeMillis()-startTime > timeout) {
