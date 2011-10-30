@@ -151,6 +151,17 @@ THE SOFTWARE.
         <artifactId>mockito-core</artifactId>
         <version>1.8.5</version>
       </dependency>
+      
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-module-junit4</artifactId>
+        <version>1.4.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-api-mockito</artifactId>
+        <version>1.4.10</version>
+      </dependency>
 
       <dependency>
         <groupId>commons-httpclient</groupId>
