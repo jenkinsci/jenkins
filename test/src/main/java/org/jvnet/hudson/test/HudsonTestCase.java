@@ -183,7 +183,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
- * Base class for all Hudson test cases.
+ * Base class for all Jenkins test cases.
  *
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
@@ -291,7 +291,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         try {
             jenkins = hudson = newHudson();
         } catch (Exception e) {
-            // if Hudson instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
+            // if Jenkins instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
             Field f = Jenkins.class.getDeclaredField("theInstance");
             f.setAccessible(true);
             f.set(null,null);
@@ -900,7 +900,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return r;
     }
 
-    /** Determines whether the specifed HTTP status code is generally "good" */
+    /** Determines whether the specified HTTP status code is generally "good" */
     public boolean isGoodHttpStatus(int status) {
         if ((400 <= status) && (status <= 417)) {
             return false;
@@ -911,7 +911,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return true;
     }
 
-    /** Assert that the specifed page can be served with a "good" HTTP status,
+    /** Assert that the specified page can be served with a "good" HTTP status,
      * eg, the page is not missing and can be served without a server error 
      * @param page
      */
@@ -1540,7 +1540,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             // so trying something else, until we discover another problem.
             super(BrowserVersion.FIREFOX_2);
 
-//            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
@@ -1592,11 +1591,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
 
         /**
-         * Logs in to Hudson.
+         * Logs in to Jenkins.
          */
         public WebClient login(String username, String password) throws Exception {
             HtmlPage page = goTo("/login");
-//            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
             form.getInputByName("j_username").setValueAttribute(username);
