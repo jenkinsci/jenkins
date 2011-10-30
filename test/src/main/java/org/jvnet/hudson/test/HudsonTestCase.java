@@ -780,7 +780,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     
     /**
      * Blocks until the ENTER key is hit.
-     * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
+     * This is useful during debugging a test so that one can inspect the state of Jenkins through the web browser.
      */
     public void interactiveBreak() throws Exception {
         System.out.println("Jenkins is running at http://localhost:"+localPort+"/");
@@ -951,11 +951,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public void assertLogContains(String substring, Run run) throws Exception {
         String log = getLog(run);
-        if(log.contains(substring))
-            return; // good!
-
-        System.out.println(log);
-        fail("Console output of "+run+" didn't contain "+substring);
+        assertTrue("Console output of "+run+" didn't contain "+substring+":\n"+log,log.contains(substring));
     }
 
     /**
@@ -963,11 +959,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public void assertLogNotContains(String substring, Run run) throws Exception {
         String log = getLog(run);
-        if(!log.contains(substring))
-            return; // good!
-
-        System.out.println(log);
-        fail("Console output of "+run+" contain "+substring);
+        assertFalse("Console output of "+run+" contains "+substring+":\n"+log,log.contains(substring));
     }
 
     /**
@@ -1050,21 +1042,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 
     public void assertStringContains(String message, String haystack, String needle) {
-        if (haystack.contains(needle)) {
-            // good
-            return;
-        } else {
-            fail(message + " (seeking '" + needle + "')");
-        }
+        assertTrue(message + " (seeking '" + needle + "')",haystack.contains(needle));
     }
 
     public void assertStringContains(String haystack, String needle) {
-        if (haystack.contains(needle)) {
-            // good
-            return;
-        } else {
-            fail("Could not find '" + needle + "'.");
-        }
+        assertTrue("Could not find '" + needle + "'.",haystack.contains(needle));
     }
 
     /**
