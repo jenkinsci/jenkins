@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import java.util.TreeSet;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -260,6 +261,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
                     return Result.FAILURE;
+            
+             MatrixConfigurationSorter sorter = p.getSorter();
+            if(p.getSorter()!=null){
+               touchStoneConfigurations = new TreeSet<MatrixConfiguration>(touchStoneConfigurations);
+               delayedConfigurations = new TreeSet<MatrixConfiguration>(delayedConfigurations);
+            }
 
             try {
                 if(!p.isRunSequentially())
