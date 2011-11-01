@@ -1094,10 +1094,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
-    protected AbstractProject getBuildingDownstream() {
+    public AbstractProject getBuildingDownstream() {
         Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
 
-        for (AbstractProject tup : Jenkins.getInstance().getDependencyGraph().getTransitiveDownstream(this)) {
+        for (AbstractProject tup : getTransitiveDownstreamProjects()) {
 			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
@@ -1111,10 +1111,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
-    protected AbstractProject getBuildingUpstream() {
+    public AbstractProject getBuildingUpstream() {
         Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
 
-        for (AbstractProject tup : Jenkins.getInstance().getDependencyGraph().getTransitiveUpstream(this)) {
+        for (AbstractProject tup : getTransitiveUpstreamProjects()) {
 			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
