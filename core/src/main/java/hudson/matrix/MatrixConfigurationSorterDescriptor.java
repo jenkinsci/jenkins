@@ -5,7 +5,10 @@ import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
 /**
+ * Descriptor for {@link MatrixConfigurationSorter}.
+ *
  * @author Kohsuke Kawaguchi
+ * @since 1.439
  */
 public abstract class MatrixConfigurationSorterDescriptor extends Descriptor<MatrixConfigurationSorter> {
     protected MatrixConfigurationSorterDescriptor(Class<? extends MatrixConfigurationSorter> clazz) {
