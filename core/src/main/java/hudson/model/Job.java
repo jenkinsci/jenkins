@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -78,18 +80,10 @@ import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -166,7 +160,24 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
-                throw new IOException2(f + " doesn't contain a number", e);
+                // try to infer the value of the next build number from the existing build records. See JENKINS-11563
+                File[] folders = this.getBuildDir().listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        return file.isDirectory() && file.getName().matches("[0-9]+");
+                    }
+                });
+
+                if (folders == null || folders.length == 0) {
+                    this.nextBuildNumber = 1;
+                } else {
+                    Collection<Integer> foldersInt = Collections2.transform(Arrays.asList(folders), new Function<File, Integer>() {
+                        public Integer apply(File file) {
+                            return Integer.parseInt(file.getName());
+                        }
+                    });
+                    this.nextBuildNumber = Collections.max(foldersInt) + 1;
+                }
+                saveNextBuildNumber();
             }
         } else {
             // From the old Hudson, or doCreateItem. Create this file now.
