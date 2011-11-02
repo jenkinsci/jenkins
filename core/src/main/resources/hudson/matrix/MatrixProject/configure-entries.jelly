@@ -59,16 +59,9 @@ THE SOFTWARE.
                      addCaption="${%Add axis}"/>
     </f:block>
 
-     <j:if test="${(it.allSorters.size() > 0)}">
-            <f:entry title="Sort axis">
-                <select name="sorter">
-                    <f:option selected="${it.sorter==null}" value="${none}">None</f:option>
-                    <j:forEach var="inst" items="${it.allSorters}">
-                        <f:option selected="${inst.class.isInstance(it.sorter)}" value="${inst.class.name}">${inst.displayName}</f:option>        
-                    </j:forEach>
-                </select>
-            </f:entry>
-        </j:if>
+    <j:if test="${(descriptor.sorterDescriptors().size() > 0)}">
+      <f:dropdownDescriptorSelector title="${%Execution order of builds}" field="sorter" />
+    </j:if>
 
     <f:optionalBlock field="runSequentially" title="${%Run each configuration sequentially}"/>
 

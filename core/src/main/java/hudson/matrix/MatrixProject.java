@@ -158,14 +158,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return sorter;
     }
     
-    public void setSorter(MatrixConfigurationSorter sorter){
+    public void setSorter(MatrixConfigurationSorter sorter) throws IOException {
         this.sorter = sorter;
+        save();
     }
     
-    public List<MatrixConfigurationSorter> getAllSorters(){
-        return MatrixConfigurationSorter.all();
-    }
-
     public AxisList getAxes() {
         return axes;
     }
@@ -590,24 +587,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.axes = new AxisList(newAxes.toList());
         
         // set sorter if any sorter is chosen
-        String sorterClassName = req.getParameter("sorter");
-        for(MatrixConfigurationSorter s: MatrixConfigurationSorter.all()){
-            if(sorterClassName.equals("None")){
-                sorter = null;
-                break;
-            }
-            if(s.getClass().getName().equals(sorterClassName)){
-                if(s.isSortingPossible(axes)){
-                    sorter = s;
-                }
-                else{
-                    sorter = null;
-                    throw new FormException(s.getErrorFormMessage(),"sorter.getDisplayName");
-                }
-                break;
-            }
-        }
-        
+        MatrixConfigurationSorter s = req.bindJSON(MatrixConfigurationSorter.class,json.optJSONObject("sorter"));
+        s.validate(this);
+        setSorter(s);
+
         runSequentially = json.has("runSequentially");
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
@@ -671,6 +654,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
                     r.add(d);
             }
             return r;
+        }
+
+        public List<MatrixConfigurationSorterDescriptor> getSorterDescriptors() {
+            return MatrixConfigurationSorterDescriptor.all();
         }
     }
 
