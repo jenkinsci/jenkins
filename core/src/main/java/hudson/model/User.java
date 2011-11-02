@@ -243,6 +243,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
+     * 
+     * @since 1.419
      */
     public Authentication impersonate() {
         try {
