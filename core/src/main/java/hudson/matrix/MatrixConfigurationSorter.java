@@ -37,7 +37,8 @@ public abstract class MatrixConfigurationSorter extends AbstractDescribableImpl<
      */
     public abstract String getErrorFormMessage();
 
-    public static List<MatrixConfigurationSorter> all() {
-        return Hudson.getInstance().getExtensionList(MatrixConfigurationSorter.class);
+    @Override
+    public MatrixConfigurationSorterDescriptor getDescriptor() {
+        return (MatrixConfigurationSorterDescriptor)super.getDescriptor();
     }
 }
