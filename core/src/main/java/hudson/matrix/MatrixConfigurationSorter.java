@@ -18,16 +18,6 @@ import jenkins.model.Jenkins;
  */
 public abstract class MatrixConfigurationSorter extends AbstractDescribableImpl<MatrixConfigurationSorter> implements ExtensionPoint, Comparator<MatrixConfiguration> {
 
-    /**
-     *
-     * @param matrix configuration1, matrix configuration2
-     *      The configurations that are compared.
-     * @return
-     *     int number for their comparing
-     */
-    public abstract int compare(MatrixConfiguration configuration1, MatrixConfiguration configuration2);
-    
-   
     public abstract String getDisplayName();
     
     /**
