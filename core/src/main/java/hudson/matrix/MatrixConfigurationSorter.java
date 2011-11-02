@@ -2,40 +2,32 @@ package hudson.matrix;
 
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.util.FormValidation;
 
 import java.util.Comparator;
-import java.util.List;
-import jenkins.model.Jenkins;
 
 /**
  * Add sorting for configurations {@link MatrixConfiguration}s of matrix job {@link MatrixProject}
  *
- * @since 1.437
+ * @since 1.439
  * @author Lucie Votypkova
+ * @see MatrixConfigurationSorterDescriptor
  */
 public abstract class MatrixConfigurationSorter extends AbstractDescribableImpl<MatrixConfigurationSorter> implements ExtensionPoint, Comparator<MatrixConfiguration> {
 
-    public abstract String getDisplayName();
-    
     /**
+     * Checks if this sorter is properly configured and applicable for the given project.
      *
-     * @param axes
-     *      list of chosen axes by user
-     * @return
-     *     true if the sorting of this axes by this sorter is possible (for example if the list of axes is not empty or contains axis which is needed for sorting.
-     *     false if the sorting is impossible
+     * <p>
+     * This method is invoked when the configuration is submitted to ensure that the sorter is compatible
+     * with the current project configuration (most probably with its {@link Axis}.)
+     *
+     * @param p
+     *      Project for which this sorter is being used for.
+     * @throws FormValidation
+     *      If you need to report an error to the user and reject the form submission.
      */
-    public abstract boolean isSortingPossible(List<Axis> axes);
-    
-    /**
-     *      
-     * @return String message which will be displayed to user if sorting is impossible (method isSortingPossible(List<Axis> axes) return false)
-     *     
-     */
-    public abstract String getErrorFormMessage();
+    public abstract void validate(MatrixProject p) throws FormValidation;
 
     @Override
     public MatrixConfigurationSorterDescriptor getDescriptor() {
