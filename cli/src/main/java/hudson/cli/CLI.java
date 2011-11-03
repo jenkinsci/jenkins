@@ -122,7 +122,7 @@ public class CLI {
         FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
         Channel ch = new Channel("Chunked connection to "+jenkins,
                 pool,con.getInputStream(),con.getOutputStream());
-        new PingThread(ch,30*1000) {
+        new PingThread(ch,15*1000) {
             protected void onDead() {
                 // noop. the point of ping is to keep the connection alive
                 // as most HTTP servers have a rather short read time out
