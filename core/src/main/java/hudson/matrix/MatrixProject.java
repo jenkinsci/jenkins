@@ -143,6 +143,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * continue with the rest
      */
     private Result touchStoneResultCondition;
+    
+    private MatrixConfigurationSorter sorter;
 
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
@@ -150,6 +152,18 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public MatrixProject(ItemGroup parent, String name) {
         super(parent, name);
+    }
+    
+    public MatrixConfigurationSorter getSorter(){
+        return sorter;
+    }
+    
+    public void setSorter(MatrixConfigurationSorter sorter){
+        this.sorter = sorter;
+    }
+    
+    public List<MatrixConfigurationSorter> getAllSorters(){
+        return MatrixConfigurationSorter.all();
     }
 
     public AxisList getAxes() {
@@ -574,7 +588,26 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
-
+        
+        // set sorter if any sorter is chosen
+        String sorterClassName = req.getParameter("sorter");
+        for(MatrixConfigurationSorter s: MatrixConfigurationSorter.all()){
+            if(sorterClassName.equals("None")){
+                sorter = null;
+                break;
+            }
+            if(s.getClass().getName().equals(sorterClassName)){
+                if(s.isSortingPossible(axes)){
+                    sorter = s;
+                }
+                else{
+                    sorter = null;
+                    throw new FormException(s.getErrorFormMessage(),"sorter.getDisplayName");
+                }
+                break;
+            }
+        }
+        
         runSequentially = json.has("runSequentially");
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
