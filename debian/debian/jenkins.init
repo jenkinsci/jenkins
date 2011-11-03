@@ -205,27 +205,35 @@ case "$1" in
     esac
     ;;
   status)
-      get_daemon_status
-      case "$?" in 
-	 0) echo "$DESC is running with the pid `cat $PIDFILE`";;
-         *) 
-	      get_running
-	      procs=$?
-	      if [ $procs -eq 0 ]; then 
-		  echo -n "$DESC is not running"
-		  if [ -f $PIDFILE ]; then 
-		      echo ", but the pidfile ($PIDFILE) still exists"
-		  else 
-		      echo
-		  fi
-
-	      else 
-		  echo "$procs instances of jenkins are running at the moment"
-		  echo "but the pidfile $PIDFILE is missing"
-	      fi
-	      ;;
-      esac
-    ;;
+	get_daemon_status
+	case "$?" in 
+	 0) 
+		echo "$DESC is running with the pid `cat $PIDFILE`"
+		rc=0
+		;;
+	*) 
+		get_running
+		procs=$?
+		if [ $procs -eq 0 ]; then 
+			echo -n "$DESC is not running"
+			if [ -f $PIDFILE ]; then 
+				echo ", but the pidfile ($PIDFILE) still exists"
+				rc=1
+			else 
+				echo
+				rc=3
+			fi
+		
+		else 
+			echo "$procs instances of jenkins are running at the moment"
+			echo "but the pidfile $PIDFILE is missing"
+			rc=0
+		fi
+		
+		exit $rc
+		;;
+	esac
+	;;
   *)
     echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
     exit 3
