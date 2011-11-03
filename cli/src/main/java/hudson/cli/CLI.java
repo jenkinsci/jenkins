@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
@@ -153,8 +154,35 @@ public class CLI {
             throw (IOException)new IOException("Failed to connect to "+url).initCause(e);
         }
         String p = head.getHeaderField("X-Hudson-CLI-Port");
+        flushURLConnection(head);
         if(p==null) return -1;
         return Integer.parseInt(p);
+    }
+
+    /**
+     * Flush the supplied {@link URLConnection} input and close the
+     * connection nicely.
+     * @param conn the connection to flush/close
+     */
+    private void flushURLConnection(URLConnection conn) {
+        byte[] buf = new byte[1024];
+        try {
+            InputStream is = conn.getInputStream();
+            while (is.read(buf) > 0) {
+                // Ignore
+            }
+            is.close();
+        } catch (IOException e) {
+            try {
+                InputStream es = ((HttpURLConnection)conn).getErrorStream();
+                while (es.read(buf) > 0) {
+                    // Ignore
+                }
+                es.close();
+            } catch (IOException ex) {
+                // Ignore
+            }
+        }
     }
 
     /**
