@@ -227,7 +227,7 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jvnet.hudson.plugins</groupId>
+                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
                   <version>1.6</version>
                   <type>hpi</type>
