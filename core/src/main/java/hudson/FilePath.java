@@ -743,7 +743,7 @@ public final class FilePath implements Serializable {
      *
      * @see FilePath#act(FileCallable)
      */
-    public static interface FileCallable<T> extends Serializable {
+    public interface FileCallable<T> extends Serializable {
         /**
          * Performs the computational task on the node where the data is located.
          *

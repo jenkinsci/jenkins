@@ -28,7 +28,7 @@ public interface FakeLauncher {
     /**
      * Fake {@link Proc} implementation that represents a completed process.
      */
-    public class FinishedProc extends Proc {
+    class FinishedProc extends Proc {
         public final int exitCode;
 
         public FinishedProc(int exitCode) {

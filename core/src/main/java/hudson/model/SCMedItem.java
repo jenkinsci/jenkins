@@ -71,5 +71,5 @@ public interface SCMedItem extends BuildableItem {
      *
      * @since 1.345
      */
-    public PollingResult poll( TaskListener listener );
+    PollingResult poll(TaskListener listener);
 }

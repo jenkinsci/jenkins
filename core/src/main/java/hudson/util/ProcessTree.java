@@ -307,7 +307,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *
      * @see OSProcess#act(ProcessCallable)
      */
-    public static interface ProcessCallable<T> extends Serializable {
+    public interface ProcessCallable<T> extends Serializable {
         /**
          * Performs the computational task on the node where the data is located.
          *

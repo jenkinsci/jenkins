@@ -212,7 +212,7 @@ public interface BuildStep {
      *      Use {@link Builder#all()} for read access, and use
      *      {@link Extension} for registration.
      */
-    public static final List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
+    List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
 
     /**
      * List of all installed publishers.
@@ -228,12 +228,12 @@ public interface BuildStep {
      *      Use {@link Publisher#all()} for read access, and use
      *      {@link Extension} for registration.
      */
-    public static final PublisherList PUBLISHERS = new PublisherList();
+    PublisherList PUBLISHERS = new PublisherList();
 
     /**
      * List of publisher descriptor.
      */
-    public static final class PublisherList extends AbstractList<Descriptor<Publisher>> {
+    final class PublisherList extends AbstractList<Descriptor<Publisher>> {
         /**
          * {@link Descriptor}s are actually stored in here.
          * Since {@link PublisherList} lives longer than {@link jenkins.model.Jenkins} we cannot directly use {@link ExtensionList}.
