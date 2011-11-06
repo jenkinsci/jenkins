@@ -40,7 +40,7 @@ public interface SearchIndex {
     /**
      * Empty set.
      */
-    static final SearchIndex EMPTY = new SearchIndex() {
+    SearchIndex EMPTY = new SearchIndex() {
         public void find(String token, List<SearchItem> result) {
             // no item to contribute
         }

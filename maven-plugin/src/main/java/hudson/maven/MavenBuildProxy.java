@@ -155,7 +155,7 @@ public interface MavenBuildProxy {
      */
     void setExecutedMojos(List<ExecutedMojo> executedMojos);
 
-    public interface BuildCallable<V,T extends Throwable> extends Serializable {
+    interface BuildCallable<V,T extends Throwable> extends Serializable {
         /**
          * Performs computation and returns the result,
          * or throws some exception.
@@ -177,7 +177,7 @@ public interface MavenBuildProxy {
      *
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ static abstract class Filter<CORE extends MavenBuildProxy> implements MavenBuildProxy, Serializable {
+    /*package*/ abstract class Filter<CORE extends MavenBuildProxy> implements MavenBuildProxy, Serializable {
         protected final CORE core;
 
         protected Filter(CORE core) {

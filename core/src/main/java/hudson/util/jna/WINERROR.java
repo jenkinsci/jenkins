@@ -20,9 +20,9 @@ package hudson.util.jna;
  * @author TB
  */
 public interface WINERROR {
-    public final static int ERROR_SUCCESS = 0;
-    public final static int NO_ERROR = 0;
-    public final static int ERROR_FILE_NOT_FOUND = 2;
-    public final static int ERROR_MORE_DATA = 234;
-    public final static int ERROR_NO_MORE_ITEMS = 259;
+    int ERROR_SUCCESS = 0;
+    int NO_ERROR = 0;
+    int ERROR_FILE_NOT_FOUND = 2;
+    int ERROR_MORE_DATA = 234;
+    int ERROR_NO_MORE_ITEMS = 259;
 }

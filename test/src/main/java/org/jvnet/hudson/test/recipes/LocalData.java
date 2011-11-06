@@ -72,7 +72,7 @@ import static java.lang.annotation.ElementType.METHOD;
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface LocalData {
-    public class RunnerImpl extends Recipe.Runner<LocalData> {
+    class RunnerImpl extends Recipe.Runner<LocalData> {
         public void setup(HudsonTestCase testCase, LocalData recipe) throws Exception {
             testCase.with(new Local(testCase.getClass().getMethod(testCase.getName())));
         }

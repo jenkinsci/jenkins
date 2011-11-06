@@ -35,7 +35,7 @@ public @interface JenkinsRecipe {
      * @param <T>
      *      The recipe annotation associated with this runner.
      */
-    public abstract class Runner<T extends Annotation> {
+    abstract class Runner<T extends Annotation> {
         /**
          * Called during {@link TestCase#setUp()} to prepare the test environment.
          */
