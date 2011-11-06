@@ -87,7 +87,7 @@ public class ExtensionFinderTest extends HudsonTestCase {
 
 
     @Retention(RetentionPolicy.RUNTIME) @Qualifier
-    public static @interface LionKing {}
+    public @interface LionKing {}
 
     @Extension
     public static class ModuleImpl extends AbstractModule {

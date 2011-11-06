@@ -50,12 +50,12 @@ public interface VariableResolver<V> {
      *      Object referenced by the name.
      *      Null if not found.
      */
-    public abstract V resolve(String name);
+    V resolve(String name);
 
     /**
      * Empty resolver that always returns null.
      */
-    public static final VariableResolver NONE = new VariableResolver() {
+    VariableResolver NONE = new VariableResolver() {
         public Object resolve(String name) {
             return null;
         }
@@ -64,7 +64,7 @@ public interface VariableResolver<V> {
     /**
      * {@link VariableResolver} backed by a {@link Map}.
      */
-    public static final class ByMap<V> implements VariableResolver<V> {
+    final class ByMap<V> implements VariableResolver<V> {
         private final Map<String,V> data;
 
         public ByMap(Map<String, V> data) {
@@ -79,7 +79,7 @@ public interface VariableResolver<V> {
     /**
      * Union of multiple {@link VariableResolver}.
      */
-    public static final class Union<V> implements VariableResolver<V> {
+    final class Union<V> implements VariableResolver<V> {
         private final VariableResolver<? extends V>[] resolvers;
 
         public Union(VariableResolver<? extends V>... resolvers) {

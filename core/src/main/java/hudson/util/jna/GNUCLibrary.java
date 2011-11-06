@@ -65,9 +65,9 @@ public interface GNUCLibrary extends Library {
     int fcntl(int fd, int command, int flags);
 
     // obtained from Linux. Needs to be checked if these values are portable.
-    static final int F_GETFD = 1;
-    static final int F_SETFD = 2;
-    static final int FD_CLOEXEC = 1;
+    int F_GETFD = 1;
+    int F_SETFD = 2;
+    int FD_CLOEXEC = 1;
 
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
@@ -106,5 +106,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    public static final GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
 }

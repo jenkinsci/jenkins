@@ -52,7 +52,7 @@ public @interface WithPlugin {
      */
     String value();
 
-    public class RunnerImpl extends Recipe.Runner<WithPlugin> {
+    class RunnerImpl extends Recipe.Runner<WithPlugin> {
         private WithPlugin a;
 
         @Override

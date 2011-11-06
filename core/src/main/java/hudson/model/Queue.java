@@ -1353,7 +1353,7 @@ public class Queue extends ResourceController implements Saveable {
     	 * Returns whether the new item should be scheduled. 
     	 * An action should return true if the associated task is 'different enough' to warrant a separate execution.
     	 */
-    	public boolean shouldSchedule(List<Action> actions);
+	    boolean shouldSchedule(List<Action> actions);
     }
 
     /**

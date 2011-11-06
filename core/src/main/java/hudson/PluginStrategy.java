@@ -47,7 +47,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * @param archive
      *      Either a directory that points to a pre-exploded plugin, or an hpi file, or an hpl file.
 	 */
-	public abstract PluginWrapper createPluginWrapper(File archive)
+	PluginWrapper createPluginWrapper(File archive)
 			throws IOException;
 
 	/**
@@ -57,7 +57,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * This should be done after all the classloaders are constructed for all
 	 * the plugins, so that dependencies can be properly loaded by plugins.
 	 */
-	public abstract void load(PluginWrapper wrapper) throws IOException;
+	void load(PluginWrapper wrapper) throws IOException;
 
 	/**
 	 * Optionally start services provided by the plugin. Should be called
@@ -65,7 +65,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * 
 	 * @param plugin
 	 */
-	public abstract void initializeComponents(PluginWrapper plugin);
+	void initializeComponents(PluginWrapper plugin);
 
 	/**
 	 * Find components of the given type using the assigned strategy.
@@ -76,5 +76,5 @@ public interface PluginStrategy extends ExtensionPoint {
      * @return Sequence of components
 	 * @since 1.400
 	 */
-	public abstract <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
+	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
 }

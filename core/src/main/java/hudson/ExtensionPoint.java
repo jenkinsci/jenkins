@@ -53,5 +53,5 @@ public interface ExtensionPoint {
      */
     @Target(TYPE)
     @Retention(RUNTIME)
-    public @interface LegacyInstancesAreScopedToHudson {}
+    @interface LegacyInstancesAreScopedToHudson {}
 }

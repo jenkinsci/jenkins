@@ -55,5 +55,5 @@ public interface MavenProjectActionBuilder {
      *      can be empty but never null.
      * @since 1.341
      */
-    public Collection<? extends Action> getProjectActions(MavenModule module);
+    Collection<? extends Action> getProjectActions(MavenModule module);
 }

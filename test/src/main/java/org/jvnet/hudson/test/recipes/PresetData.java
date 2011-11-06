@@ -48,7 +48,7 @@ public @interface PresetData {
      */
     DataSet value();
 
-    public enum DataSet {
+    enum DataSet {
         /**
          * Secured Hudson that has no anonymous read access.
          * Any logged in user can do anything.
@@ -61,7 +61,7 @@ public @interface PresetData {
         ANONYMOUS_READONLY,
     }
 
-    public class RunnerImpl extends Recipe.Runner<PresetData> {
+    class RunnerImpl extends Recipe.Runner<PresetData> {
         public void setup(HudsonTestCase testCase, PresetData recipe) {
             testCase.withPresetData(recipe.value().name().toLowerCase(Locale.ENGLISH).replace('_','-'));
         }
