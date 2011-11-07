@@ -5,5 +5,6 @@
   <p>
   接頭辞である"ROLE_"と大文字であるか小文字であるかを変更するには、Jenkinsのアーカイブに含まれる<tt>WEB-INF/security/LDAPBindSecurityRealm.groovy</tt>を編集して、
   再起動します。
+  </p>
 </div>
 </l:ajax>
