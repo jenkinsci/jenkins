@@ -153,8 +153,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public MatrixProject(ItemGroup parent, String name) {
         super(parent, name);
     }
-    
-    public MatrixConfigurationSorter getSorter(){
+
+    /**
+     * @return can be null (to indicate that the configurations should be left to their natural order.)
+     */
+    public MatrixConfigurationSorter getSorter() {
         return sorter;
     }
     
@@ -586,12 +589,18 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
         
-        // set sorter if any sorter is chosen
-        MatrixConfigurationSorter s = req.bindJSON(MatrixConfigurationSorter.class,json.optJSONObject("sorter"));
-        s.validate(this);
-        setSorter(s);
+        runSequentially = json.optBoolean("runSequentially");
 
-        runSequentially = json.has("runSequentially");
+        // set sorter if any sorter is chosen
+        if (runSequentially) {
+            MatrixConfigurationSorter s = req.bindJSON(MatrixConfigurationSorter.class,json.optJSONObject("sorter"));
+            if (s!=null)    s.validate(this);
+            if (s instanceof NoopMatrixConfigurationSorter) s=null;
+            setSorter(s);
+        } else {
+            setSorter(null);
+        }
+
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");

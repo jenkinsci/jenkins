@@ -29,15 +29,16 @@ import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import jenkins.model.Jenkins;
-import hudson.model.JobProperty;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
-import hudson.model.Cause.UpstreamCause;
-import hudson.tasks.Publisher;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,13 +46,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.TreeSet;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
 /**
  * Build of {@link MatrixProject}.
@@ -261,11 +259,11 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
                     return Result.FAILURE;
-            
-             MatrixConfigurationSorter sorter = p.getSorter();
-            if(p.getSorter()!=null){
-               touchStoneConfigurations = new TreeSet<MatrixConfiguration>(touchStoneConfigurations);
-               delayedConfigurations = new TreeSet<MatrixConfiguration>(delayedConfigurations);
+
+            MatrixConfigurationSorter sorter = p.getSorter();
+            if (sorter != null) {
+                touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
+                delayedConfigurations    = createTreeSet(delayedConfigurations,sorter);
             }
 
             try {
@@ -399,6 +397,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
+    }
+
+    private <T> TreeSet<T> createTreeSet(Collection<T> items, Comparator<T> sorter) {
+        TreeSet<T> r = new TreeSet<T>(sorter);
+        r.addAll(items);
+        return r;
     }
 
     /**

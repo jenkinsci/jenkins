@@ -56,7 +56,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem, NonBlockingTask, Comparable<MatrixConfiguration> {
+public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> implements SCMedItem, NonBlockingTask {
     /**
      * The actual value combination.
      */
@@ -288,19 +288,6 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public void setLogRotator(LogRotator logRotator) {
         throw new UnsupportedOperationException();
-    }
-
-    public int compareTo(MatrixConfiguration that) {
-        MatrixConfigurationSorter sorter = getParent().getSorter();
-        try {
-            if (sorter != null) {
-                return getParent().getSorter().compare(this, that);
-            } else {
-                return getDisplayName().compareTo(((MatrixConfiguration) that).getDisplayName());
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     /**
