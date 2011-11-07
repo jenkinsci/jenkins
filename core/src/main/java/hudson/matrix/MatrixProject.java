@@ -143,6 +143,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * continue with the rest
      */
     private Result touchStoneResultCondition;
+    
+    private MatrixConfigurationSorter sorter;
 
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
@@ -152,6 +154,18 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super(parent, name);
     }
 
+    /**
+     * @return can be null (to indicate that the configurations should be left to their natural order.)
+     */
+    public MatrixConfigurationSorter getSorter() {
+        return sorter;
+    }
+    
+    public void setSorter(MatrixConfigurationSorter sorter) throws IOException {
+        this.sorter = sorter;
+        save();
+    }
+    
     public AxisList getAxes() {
         return axes;
     }
@@ -574,8 +588,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
+        
+        runSequentially = json.optBoolean("runSequentially");
 
-        runSequentially = json.has("runSequentially");
+        // set sorter if any sorter is chosen
+        if (runSequentially) {
+            MatrixConfigurationSorter s = req.bindJSON(MatrixConfigurationSorter.class,json.optJSONObject("sorter"));
+            if (s!=null)    s.validate(this);
+            if (s instanceof NoopMatrixConfigurationSorter) s=null;
+            setSorter(s);
+        } else {
+            setSorter(null);
+        }
+
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
@@ -638,6 +663,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
                     r.add(d);
             }
             return r;
+        }
+
+        public List<MatrixConfigurationSorterDescriptor> getSorterDescriptors() {
+            return MatrixConfigurationSorterDescriptor.all();
         }
     }
 
