@@ -31,7 +31,8 @@ THE SOFTWARE.
     -->
     <f:section title="${%SCM Polling}">
       <f:entry title="${%Max # of concurrent polling}" field="pollingThreadCount">
-        <f:textbox value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
+        <f:number value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"
+           clazz="positive-number" min="1" step="1"/>
       </f:entry>
     </f:section>
   </j:if>
