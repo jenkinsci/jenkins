@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <l:ajax xmlns:l="/lib/layout">
 <div>
   ユーザー情報の取得先によってグループ名は異なる記法が使われることがあります。
