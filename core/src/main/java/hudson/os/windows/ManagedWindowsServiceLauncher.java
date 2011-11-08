@@ -26,6 +26,7 @@ package hudson.os.windows;
 import hudson.Extension;
 import hudson.Util;
 import hudson.lifecycle.WindowsSlaveInstaller;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -91,7 +92,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
     public final AccountInfo logOn;
 
-    public static class AccountInfo {
+    public static class AccountInfo extends AbstractDescribableImpl<AccountInfo> {
     	public final String userName;
     	public final Secret password;
     	@DataBoundConstructor
@@ -99,6 +100,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 				this.userName = userName;
 				this.password = Secret.fromString(password);
     	}
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<AccountInfo> {
+            @Override
+            public String getDisplayName() {
+                return ""; // unused
+            }
+        }
     }
 
     /**
