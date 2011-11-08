@@ -39,6 +39,9 @@ THE SOFTWARE.
     <f:entry title="${%System Admin E-mail Address}" field="adminAddress">
       <f:textbox />
     </f:entry>
+    <f:entry title="${%Reply-To Address}" field="replyToAddress">
+      <f:textbox />
+    </f:entry>
     <f:advanced>
       <f:optionalBlock name="useSMTPAuth" title="${%Use SMTP Authentication}" checked="${descriptor.smtpAuthUserName!=null}"
           help="/help/tasks/mailer/smtpAuth.html">

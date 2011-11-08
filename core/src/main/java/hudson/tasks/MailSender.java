@@ -38,6 +38,9 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.AddressException;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -308,6 +311,11 @@ public class MailSender {
         msg.setContent("", "text/plain");
         msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
         msg.setSentDate(new Date());
+        
+        String replyTo = Mailer.descriptor().getReplyToAddress();
+        if (StringUtils.isNotBlank(replyTo)) {
+            msg.setHeader("Reply-To", replyTo);
+        }
 
         Set<InternetAddress> rcp = new LinkedHashSet<InternetAddress>();
         StringTokenizer tokens = new StringTokenizer(recipients);

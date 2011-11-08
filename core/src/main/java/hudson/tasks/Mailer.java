@@ -39,6 +39,8 @@ import hudson.model.UserPropertyDescriptor;
 import jenkins.model.Jenkins;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -168,6 +170,20 @@ public class Mailer extends Notifier {
          * Null if not configured.
          */
         private String adminAddress;
+
+        /**
+         * The e-mail address that Hudson puts to "Reply-To" header in outgoing e-mails.
+         * Null if not configured.
+         */
+        private String replyToAddress;
+
+        public String getReplyToAddress() {
+            return replyToAddress;
+        }
+
+        public void setReplyToAddress(String address) {
+            this.replyToAddress = address;
+        }
 
         /**
          * The SMTP server to use for sending e-mail. Null for default to the environment,
@@ -447,6 +463,9 @@ public class Mailer extends Notifier {
                 msg.setSubject("Test email #" + ++testEmailCount);
                 msg.setContent("This is test email #" + testEmailCount + " sent from " + Jenkins.getInstance().getDisplayName(), "text/plain");
                 msg.setFrom(new InternetAddress(adminAddress));
+                if (StringUtils.isNotBlank(replyToAddress)) {
+                    msg.setHeader("Reply-To", replyToAddress);
+                }
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(adminAddress));
 
