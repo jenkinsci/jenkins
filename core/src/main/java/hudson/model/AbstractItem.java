@@ -539,6 +539,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // try to reflect the changes by reloading
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
             onLoad(getParent(), getRootDir().getName());
+            Jenkins.getInstance().rebuildDependencyGraph();
 
             // if everything went well, commit this new version
             out.commit();
