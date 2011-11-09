@@ -404,6 +404,15 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * Returns the number of milli-seconds the currently executing job spent in the queue
+     * waiting for an available executor. This excludes the quiet period time of the job.
+     * @since 1.440
+     */
+    public long getTimeSpentInQueue() {
+        return startTime - workUnit.context.item.buildableStartMilliseconds;
+    }
+
+    /**
      * Gets the string that says how long since this build has started.
      *
      * @return
