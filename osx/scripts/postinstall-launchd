@@ -9,4 +9,4 @@ mkdir -p /Users/Shared/Jenkins
 find /Users/Shared/Jenkins -not -user daemon -or -not -group daemon -print0 | xargs -0 chown daemon:daemon
 
 # Load and start the launch daemon
-/bin/launchctl load ${JENKINS_PLIST}
+/bin/launchctl load -w ${JENKINS_PLIST}
