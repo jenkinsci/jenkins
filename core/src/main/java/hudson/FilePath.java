@@ -61,8 +61,6 @@ import org.apache.tools.tar.TarEntry;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.Stapler;
-import org.jvnet.robust_http_client.RetryableHttpStream;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -1426,7 +1424,17 @@ public final class FilePath implements Serializable {
         copyTo(target);
         // copy file permission
         target.chmod(mode());
-        target.touch(lastModified());
+        
+        try {
+            target.touch(lastModified());
+        } catch (IOException e) {
+            // On Windows this seems to fail often. See JENKINS-11073
+            if (!isUnix()) {
+                LOGGER.warning("Failed to set timestamp on " + target.getRemote());
+            } else { // rethrow
+                throw new IOException2(e);
+            }
+        }
     }
 
     /**
