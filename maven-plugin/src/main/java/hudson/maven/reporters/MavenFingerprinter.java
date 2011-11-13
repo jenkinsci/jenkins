@@ -40,12 +40,8 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilderConfiguration;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,8 +49,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -149,11 +143,14 @@ public class MavenFingerprinter extends MavenReporter {
 							localRepository.pathOf(parent.getArtifact()));
 				}
 			}
-			// we need to include the artifact Id for poms as well, otherwise a
-			// project with the same groupId would override its parent's
-			// fingerprint
-			record(parent.getGroupId() + ":" + parent.getArtifactId(),
-					parentFile, used);
+			
+			if (parentFile != null) {
+    			// we need to include the artifact Id for poms as well, otherwise a
+    			// project with the same groupId would override its parent's
+    			// fingerprint
+    			record(parent.getGroupId() + ":" + parent.getArtifactId(),
+    					parentFile, used);
+			}
 			parent = parent.getParent();
 		}
 	}
