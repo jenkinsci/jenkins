@@ -1,6 +1,8 @@
 package hudson.matrix;
 
+import hudson.model.Item;
 import hudson.util.FormValidation;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -11,13 +13,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class MatrixConfigurationSorterTest extends HudsonTestCase {
     public void testConfigRoundtrip() throws Exception {
         MatrixProject p = createMatrixProject();
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         assertNull(p.getSorter());
 
         SorterImpl before = new SorterImpl();
         p.setSorter(before);
         p.setRunSequentially(true);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         Object after = p.getSorter();
         assertNotSame(before,after);
         assertSame(before.getClass(),after.getClass());
