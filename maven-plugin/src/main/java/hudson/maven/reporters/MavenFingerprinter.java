@@ -23,35 +23,42 @@
  */
 package hudson.maven.reporters;
 
-import hudson.FilePath;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenModule;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
 import hudson.maven.MojoInfo;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import jenkins.model.Jenkins;
 import hudson.tasks.Fingerprinter.FingerprintAction;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilderConfiguration;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 import java.util.Set;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import jenkins.model.Jenkins;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilderConfiguration;
 
 /**
  * Records fingerprints of the builds to keep track of dependencies.
@@ -84,7 +91,7 @@ public class MavenFingerprinter extends MavenReporter {
      * Mojos perform different dependency resolution, so we need to check this for each mojo.
      */
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        // TODO (kutzi, 2011/09/06): it should be perfectly save to move all these records to the
+        // TODO (kutzi, 2011/09/06): it should be perfectly safe to move all these records to the
         // postBuild method as artifacts should only be added by mojos, but never removed/modified.
 		record(pom.getArtifacts(),used);
         record(pom.getArtifact(),produced);
@@ -165,23 +172,21 @@ public class MavenFingerprinter extends MavenReporter {
 	    Artifact art = parent.getArtifact();
 	    if (art == null) {
 	        // happens for Maven 2.x
-	        // TODO: this constructor didn't exist in Maven 2.x:
-	        //art = new DefaultArtifact(parent.getGroupId(), parent.getGroupId(),
-	        //        parent.getVersion(), "compile", "pom", null, null);
+	        DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler("pom");
+	        art = new DefaultArtifact(parent.getGroupId(), parent.getArtifactId(), VersionRange.createFromVersion(parent.getVersion()),
+	                null, "pom", "", artifactHandler);
 	    }
         return art;
     }
 
     private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent, MavenProject pom) {
-		// Maven 2.0 has no corresponding mechanism
-		if (mavenVersion.startsWith("2.0")) {
+		if (mavenVersion.startsWith("2.0") || mavenVersion.startsWith("2.1")) {
+		    // Maven 2.0 has no corresponding mechanism
 		    return null;
-		} else if (mavenVersion.startsWith("2.1") || mavenVersion.startsWith("2.2")) {
-		    //return getArtifactRepositoryMaven21(pom);
-		    // still fails, because of missing artifact later
-		    return null;
+		} else if (mavenVersion.startsWith("2.2")) {
+		    // principally this should also work with Maven 2.1, but it's not tested, so err on the safe side
+		    return getArtifactRepositoryMaven21(pom);
 		} else if (mavenVersion.startsWith("3.") || mavenVersion.startsWith("4.") /* who knows? ;) */) {
-		    // Maven 3+
 		    return parent.getProjectBuildingRequest()
 				.getLocalRepository();
 		} else {
@@ -192,14 +197,15 @@ public class MavenFingerprinter extends MavenReporter {
 
 	@SuppressWarnings("deprecation")
     private ArtifactRepository getArtifactRepositoryMaven21(MavenProject pom) {
-        // Maven 2.1,2.2 has a projectBuildConfiguration in the original project (not parent itself), but no direct accessor
+	    ProjectBuilderConfiguration projectBuilderConfiguration;
         try {
-            Field field = MavenProject.class.getDeclaredField("projectBuilderConfiguration");
-            field.setAccessible(true);
-            ProjectBuilderConfiguration projBuilderConfig = (ProjectBuilderConfiguration) field.get(pom);
-            return projBuilderConfig != null ? projBuilderConfig.getLocalRepository() : null;
-        } catch(Exception e) {
-            LOGGER.warning(e.toString());
+            // Since maven-plugin is compiled against maven-core-3x, we need to retrieve 
+            // this maven 2 object via reflection
+            Method method = MavenProject.class.getMethod("getProjectBuilderConfiguration");
+            projectBuilderConfiguration = (ProjectBuilderConfiguration) method.invoke(pom);
+            return projectBuilderConfiguration.getLocalRepository();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Could not retrieve BuilderConfigration", e);
             return null;
         }
     }
