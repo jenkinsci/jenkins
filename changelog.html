@@ -70,6 +70,9 @@ Upcoming changes</a>
   <li class=bug>
     Dependency wasn't recalculated with CLI "update-job" command.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11636">issue 11636</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Sortable table wasn't "stable" when there are same values in different rows
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11551">issue 11551</a>)
@@ -78,7 +81,10 @@ Upcoming changes</a>
     (<a href="https://github.com/jenkinsci/jenkins/pull/289">pull #289</a>) 
   <li class=rfe>
     Description field now has the preview button to test it inline.
-    (<a href="https://github.com/jenkinsci/jenkins/pull/243">pull #243</a>) 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/243">pull #243</a>)
+  <li class=rfe>
+    Record fingerprints of parent POMs - only working with Maven 3.x.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8383">issue 8383</a>)
   <li class=rfe>
     Maven mojo records can be now sorted
 </ul>
