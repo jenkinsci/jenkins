@@ -40,13 +40,16 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilderConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import java.util.Set;
 import java.util.List;
 
@@ -136,11 +139,14 @@ public class MavenFingerprinter extends MavenReporter {
 				
 				// Parent artifact contains no actual file, so we resolve against
 				// the local repository
-				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent);
+				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent, pom);
 				if (localRepository != null) {
-					// Don't use ArtifactRepository.find(), for compatibility with M2
-					parentFile = new File(localRepository.getBasedir(), 
-							localRepository.pathOf(parent.getArtifact()));
+				    Artifact parentArtifact = getArtifact(parent);
+					// Don't use ArtifactRepository.find(), for compatibility with Maven 2.x
+				    if (parentArtifact != null) {
+				        parentFile = new File(localRepository.getBasedir(),
+							localRepository.pathOf(parentArtifact));
+				    }
 				}
 			}
 			
@@ -155,17 +161,50 @@ public class MavenFingerprinter extends MavenReporter {
 		}
 	}
 
-	private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent) {
+	private Artifact getArtifact(MavenProject parent) {
+	    Artifact art = parent.getArtifact();
+	    if (art == null) {
+	        // happens for Maven 2.x
+	        // TODO: this constructor didn't exist in Maven 2.x:
+	        //art = new DefaultArtifact(parent.getGroupId(), parent.getGroupId(),
+	        //        parent.getVersion(), "compile", "pom", null, null);
+	    }
+        return art;
+    }
+
+    private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent, MavenProject pom) {
 		// Maven 2.0 has no corresponding mechanism
-		// Maven 2.1,2.2 has a projectBuildConfiguration, however it is null, need to further look into this
-		if (mavenVersion.startsWith("2.")) return null;
-		
-		// Maven 3
-		return parent.getProjectBuildingRequest()
+		if (mavenVersion.startsWith("2.0")) {
+		    return null;
+		} else if (mavenVersion.startsWith("2.1") || mavenVersion.startsWith("2.2")) {
+		    //return getArtifactRepositoryMaven21(pom);
+		    // still fails, because of missing artifact later
+		    return null;
+		} else if (mavenVersion.startsWith("3.") || mavenVersion.startsWith("4.") /* who knows? ;) */) {
+		    // Maven 3+
+		    return parent.getProjectBuildingRequest()
 				.getLocalRepository();
+		} else {
+		    LOGGER.warning("Unknown Maven version: "+mavenVersion);
+		    return null;
+		}
 	}
 
-	private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
+	@SuppressWarnings("deprecation")
+    private ArtifactRepository getArtifactRepositoryMaven21(MavenProject pom) {
+        // Maven 2.1,2.2 has a projectBuildConfiguration in the original project (not parent itself), but no direct accessor
+        try {
+            Field field = MavenProject.class.getDeclaredField("projectBuilderConfiguration");
+            field.setAccessible(true);
+            ProjectBuilderConfiguration projBuilderConfig = (ProjectBuilderConfiguration) field.get(pom);
+            return projBuilderConfig != null ? projBuilderConfig.getLocalRepository() : null;
+        } catch(Exception e) {
+            LOGGER.warning(e.toString());
+            return null;
+        }
+    }
+
+    private void record(Collection<Artifact> artifacts, Map<String,String> record) throws IOException, InterruptedException {
         for (Artifact a : artifacts)
             record(a,record);
     }
@@ -228,4 +267,6 @@ public class MavenFingerprinter extends MavenReporter {
     }
 
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger LOGGER = Logger.getLogger(MavenFingerprinter.class.getName());
 }
