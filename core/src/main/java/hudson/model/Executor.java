@@ -58,6 +58,7 @@ import java.lang.reflect.Method;
 
 import static hudson.model.queue.Executables.*;
 import static java.util.Arrays.asList;
+import static java.util.logging.Level.FINE;
 
 
 /**
@@ -205,14 +206,19 @@ public class Executor extends Thread implements ModelObject {
                     synchronized (queue) {
                         workUnit = grabJob();
                         workUnit.setExecutor(this);
+                        if (LOGGER.isLoggable(FINE))
+                            LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                         task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
                     }
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" is going to execute "+executable);
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
                     continue;
                 } catch (InterruptedException e) {
+                    LOGGER.log(FINE, getName()+" interrupted",e);
                     continue;
                 }
 
@@ -227,6 +233,8 @@ public class Executor extends Thread implements ModelObject {
                         }
                     }
                     setName(threadName+" : executing "+executable.toString());
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" is now executing "+executable);
                     queue.execute(executable, task);
                 } catch (Throwable e) {
                     // for some reason the executor died. this is really
@@ -238,6 +246,8 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     setName(threadName);
                     finishTime = System.currentTimeMillis();
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" completed "+executable+" in "+(finishTime-startTime)+"ms");
                     try {
                         workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
                     } catch (InterruptedException e) {
