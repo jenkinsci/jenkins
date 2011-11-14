@@ -113,7 +113,7 @@ import com.thoughtworks.xstream.XStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.*;
 
 /**
  * A particular execution of {@link Job}.
@@ -1494,6 +1494,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // ignore
                 }
             }
+        } else {
+            LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }
     }
 
