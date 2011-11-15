@@ -165,15 +165,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         
         mvn = mvn.forEnvironment(envs);
-        Node node = Computer.currentComputer().getNode();
-        if (node == null) {
-            log.getLogger().println("WARNING: cannot get current node: "+Computer.currentComputer());
-            return envs;
-        }
-        mvn = mvn.forNode(node, log);
         
-        envs.put("M2_HOME", mvn.getHome());
-        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+        Computer computer = Computer.currentComputer();
+        if (computer != null) { // just in case were not in a build
+            Node node = computer.getNode();
+            if (node != null) {
+                mvn = mvn.forNode(node, log);
+                
+                envs.put("M2_HOME", mvn.getHome());
+                envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+            }
+        }
+        
         return envs;
     }
 
