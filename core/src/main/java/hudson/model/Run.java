@@ -1482,6 +1482,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private void handleFatalBuildProblem(BuildListener listener, Throwable e) {
         if(listener!=null) {
+            LOGGER.log(FINE, getDisplayName()+" failed to build",e);
+
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
