@@ -62,6 +62,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -256,6 +257,10 @@ public class CLI {
 
         while(!args.isEmpty()) {
             String head = args.get(0);
+            if (head.equals("-version")) {
+                System.out.println("Version: "+computeVersion());
+                return 0;
+            }
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
                 args = args.subList(2,args.size());
@@ -326,6 +331,18 @@ public class CLI {
         } finally {
             cli.close();
         }
+    }
+
+    private static String computeVersion() {
+        Properties props = new Properties();
+        try {
+            InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        return props.getProperty("version","?");
     }
 
     /**
