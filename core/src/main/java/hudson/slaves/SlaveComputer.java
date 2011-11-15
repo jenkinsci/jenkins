@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.*;
+import hudson.util.IOUtils;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
@@ -470,6 +471,7 @@ public class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
+        IOUtils.closeQuietly(log);
     }
 
     public RetentionStrategy getRetentionStrategy() {
