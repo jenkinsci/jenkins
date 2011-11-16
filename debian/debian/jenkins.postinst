@@ -47,9 +47,11 @@ case "$1" in
         # we don't do "chmod 750" so that the user can choose the pemission for g and o on their own
         chmod u+rwx /var/lib/jenkins /var/log/jenkins
 
-        # make sure jenkins can delete everything in /var/run/jenkins to re-explode war
-        chown -R jenkins:adm /var/run/jenkins
-        chmod -R 750         /var/run/jenkins
+        # make sure jenkins can delete everything in /var/cache/jenkins to
+        # re-explode war. older installations may use /var/run/jenkins
+        # so make sure that they can delete too.
+        chown -R jenkins:adm /var/cache/jenkins /var/run/jenkins
+        chmod -R 750         /var/cache/jenkins /var/run/jenkins
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
