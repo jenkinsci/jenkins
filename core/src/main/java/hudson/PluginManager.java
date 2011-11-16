@@ -335,7 +335,8 @@ public abstract class PluginManager extends AbstractModelObject {
         if (getPlugin(p.getShortName())!=null)
             throw new IllegalArgumentException("Dynamic reloading isn't possible");
 
-        // TODO: check cyclic dependency
+        // there's no need to do cyclic dependency check, because we are deploying one at a time,
+        // so existing plugins can't be depending on this newly deployed one.
 
         plugins.add(p);
         activePlugins.add(p);
