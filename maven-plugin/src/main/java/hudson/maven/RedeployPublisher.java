@@ -314,20 +314,23 @@ public class RedeployPublisher extends Recorder {
     
     
     /**
-     * Obtains the {@link MavenAbstractArtifactRecord} that we'll work on.
+     * Obtains the {@link MavenModuleSetBuild} that we'll work on, or null.
      * <p>
      * This allows promoted-builds plugin to reuse the code for delayed deployment. 
      */
-    protected MavenAbstractArtifactRecord getAction(AbstractBuild<?, ?> build) {
-        return build.getAction(MavenAbstractArtifactRecord.class);
+    protected MavenModuleSetBuild getMavenBuild(AbstractBuild<?, ?> build) {
+        return (build instanceof MavenModuleSetBuild)
+            ? (MavenModuleSetBuild) build
+            : null;
     }
     
     protected List<MavenAbstractArtifactRecord> getActions(AbstractBuild<?, ?> build, BuildListener listener) {
         List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
-        if (!(build instanceof MavenModuleSetBuild)) {
+        MavenModuleSetBuild mavenBuild = getMavenBuild(build);
+        if (mavenBuild == null) {
             return actions;
         }
-        for (Entry<MavenModule, MavenBuild> e : ((MavenModuleSetBuild)build).getModuleLastBuilds().entrySet()) {
+        for (Entry<MavenModule, MavenBuild> e : mavenBuild.getModuleLastBuilds().entrySet()) {
             MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
             if (a == null) {
                 listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
