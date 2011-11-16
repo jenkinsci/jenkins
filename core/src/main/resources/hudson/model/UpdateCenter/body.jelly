@@ -36,9 +36,12 @@ THE SOFTWARE.
       </j:forEach>
     </table>
     
-    <div id="scheduleRestartBlock">
+    <div id="scheduleRestartBlock" style="padding-top:2em">
       <form method="post" id="scheduleRestart" action="">
-        <p class="info">
+        <p class="info" style="font-weight: normal">
+          <a href="${rootURL}/">Go back to the top page</a>
+        </p>
+        <p class="info" style="font-weight: normal">
           <j:if test="${app.lifecycle.canRestart()}">
             <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
               <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
