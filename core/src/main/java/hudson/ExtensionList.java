@@ -252,9 +252,12 @@ public class ExtensionList<T> extends AbstractList<T> {
             if (extensions==null)
                 return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
 
-            List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
-            l.addAll(load(delta));
-            extensions = sort(l);
+            Collection<ExtensionComponent<T>> found = load(delta);
+            if (!found.isEmpty()) {
+                List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
+                l.addAll(found);
+                extensions = sort(l);
+            }
         }
     }
 

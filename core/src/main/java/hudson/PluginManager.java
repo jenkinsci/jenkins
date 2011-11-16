@@ -344,6 +344,8 @@ public abstract class PluginManager extends AbstractModelObject {
             p.resolvePluginDependencies();
             strategy.load(p);
 
+            Jenkins.getInstance().refreshExtensions();
+
             p.getPlugin().postInitialize();
         } catch (Exception e) {
             failedPlugins.add(new FailedPlugin(p.getShortName(), e));
@@ -361,7 +363,6 @@ public abstract class PluginManager extends AbstractModelObject {
             }
         }.discoverTasks(r));
         new InitReactorRunner().run(r);
-        Jenkins.getInstance().refreshExtensions();
     }
 
     /**
