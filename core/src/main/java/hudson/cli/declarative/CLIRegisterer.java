@@ -72,9 +72,9 @@ public class CLIRegisterer extends ExtensionFinder {
         return ExtensionComponentSet.EMPTY;
     }
 
-    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
         if (type==CLICommand.class)
-            return (List)discover(hudson);
+            return (List)discover(jenkins);
         else
             return Collections.emptyList();
     }

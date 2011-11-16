@@ -108,7 +108,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * <p>
      * The behaviour is undefined if {@link #isRefreshable()} is returning false.
      *
-     * @since 1.DynamicExtensionFinder.
+     * @since 1.DynamicExtensionFinder
      * @see #isRefreshable()
      * @return never null
      */
@@ -130,14 +130,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      *      The type of the extension points. This is not bound to {@link ExtensionPoint} because
      *      of {@link Descriptor}, which by itself doesn't implement {@link ExtensionPoint} for
      *      a historical reason.
-     * @param hudson
-     *      Hudson whose behalf this extension finder is performing lookup.
+     * @param jenkins
+     *      Jenkins whose behalf this extension finder is performing lookup.
      * @return
      *      Can be empty but never null.
      * @since 1.356
      *      Older implementations provide {@link #findExtensions(Class,Hudson)}
      */
-    public abstract <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson);
+    public abstract <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins);
 
     /**
      * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
@@ -320,7 +320,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return null;
         }
 
-        public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson hudson) {
+        public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson jenkins) {
             // the find method contract requires us to traverse all known components
             List<ExtensionComponent<U>> result = new ArrayList<ExtensionComponent<U>>();
             for (Injector i=container; i!=null; i=i.getParent()) {
@@ -532,7 +532,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return delta;
         }
 
-        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+        public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
             return _find(type,getIndices());
         }
 
