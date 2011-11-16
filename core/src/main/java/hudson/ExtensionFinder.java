@@ -23,9 +23,9 @@
  */
 package hudson;
 
+import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
-import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
 import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -83,11 +85,45 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     }
 
     /**
+     * Returns true if this extension finder supports the {@link #refresh()} operation.
+     */
+    public boolean isRefreshable() {
+        try {
+            return getClass().getMethod("refresh").getDeclaringClass()!=ExtensionFinder.class;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Rebuilds the internal index, if any, so that future {@link #find(Class, Hudson)} calls
+     * will discover components newly added to {@link PluginManager#uberClassLoader}.
+     *
+     * <p>
+     * The point of the refresh operation is not to disrupt instances of already loaded {@link ExtensionComponent}s,
+     * and only instantiate those that are new. Otherwise this will break the singleton semantics of various
+     * objects, such as {@link Descriptor}s.
+     *
+     * <p>
+     * The behaviour is undefined if {@link #isRefreshable()} is returning false.
+     *
+     * @since 1.DynamicExtensionFinder.
+     * @see #isRefreshable()
+     * @return never null
+     */
+    public abstract ExtensionComponentSet refresh() throws ExtensionRefreshException;
+
+    /**
      * Discover extensions of the given type.
      *
      * <p>
      * This method is called only once per the given type after all the plugins are loaded,
      * so implementations need not worry about caching.
+     *
+     * <p>
+     * This method should return all the known components at the time of the call, including
+     * those that are discovered later via {@link #refresh()}, even though those components
+     * are separately retruend in {@link ExtensionComponentSet}.
      *
      * @param <T>
      *      The type of the extension points. This is not bound to {@link ExtensionPoint} because
@@ -164,15 +200,34 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * Discovers components via sezpoz but instantiates them by using Guice.
      */
     public static abstract class AbstractGuiceFinder<T extends Annotation> extends ExtensionFinder {
+        /**
+         * Injector that we find components from.
+         * <p>
+         * To support refresh when Guice doesn't let us alter the bindings, we'll create
+         * a child container to house newly discovered components. This field points to the
+         * youngest such container.
+         */
         private Injector container;
 
+        /**
+         * Sezpoz index we are currently using in {@link #container} (and its ancestors.)
+         * Needed to compute delta.
+         */
+        private List<IndexItem<T,Object>> sezpozIndex;
+
         private final Map<Key,T> annotations = new HashMap<Key,T>();
+        private final Sezpoz moduleFinder = new Sezpoz();
+        private final Class<T> annotationType;
 
         public AbstractGuiceFinder(final Class<T> annotationType) {
-            List<Module> modules = new ArrayList<Module>();
-            modules.add(new SezpozModule(annotationType,Jenkins.getInstance().getPluginManager().uberClassLoader));
+            this.annotationType = annotationType;
 
-            for (ExtensionComponent<Module> ec : new Sezpoz().find(Module.class, Hudson.getInstance())) {
+            sezpozIndex = ImmutableList.copyOf(Index.load(annotationType, Object.class, Jenkins.getInstance().getPluginManager().uberClassLoader));
+
+            List<Module> modules = new ArrayList<Module>();
+            modules.add(new SezpozModule(sezpozIndex));
+
+            for (ExtensionComponent<Module> ec : moduleFinder.find(Module.class, Hudson.getInstance())) {
                 modules.add(ec.getInstance());
             }
 
@@ -182,7 +237,48 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
                 // by just including the core
-                container = Guice.createInjector(new SezpozModule(annotationType,Jenkins.class.getClassLoader()));
+                container = Guice.createInjector(new SezpozModule(
+                        ImmutableList.copyOf(Index.load(annotationType, Object.class, Jenkins.class.getClassLoader()))));
+            }
+        }
+
+        /**
+         * The basic idea is:
+         *
+         * <ul>
+         *     <li>List up delta as a series of modules
+         *     <li>
+         * </ul>
+         */
+        @Override
+        public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
+            // figure out newly discovered sezpoz components
+            List<IndexItem<T, Object>> delta = Sezpoz.listDelta(annotationType,sezpozIndex);
+            List<IndexItem<T, Object>> l = Lists.newArrayList(sezpozIndex);
+            l.addAll(delta);
+            sezpozIndex = l;
+
+            List<Module> modules = new ArrayList<Module>();
+            modules.add(new SezpozModule(delta));
+            for (ExtensionComponent<Module> ec : moduleFinder.refresh().find(Module.class)) {
+                modules.add(ec.getInstance());
+            }
+
+            try {
+                final Injector child = container.createChildInjector(modules);
+                container = child;
+
+                return new ExtensionComponentSet() {
+                    @Override
+                    public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
+                        List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
+                        _find(type, result, child);
+                        return result;
+                    }
+                };
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Failed to create Guice container from newly added plugins",e);
+                throw new ExtensionRefreshException(e);
             }
         }
 
@@ -213,8 +309,15 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson hudson) {
+            // the find method contract requires us to traverse all known components
             List<ExtensionComponent<U>> result = new ArrayList<ExtensionComponent<U>>();
+            for (Injector i=container; i!=null; i=i.getParent()) {
+                _find(type, result, i);
+            }
+            return result;
+        }
 
+        private <U> void _find(Class<U> type, List<ExtensionComponent<U>> result, Injector container) {
             for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
                 if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
                     T a = annotations.get(e.getKey());
@@ -223,8 +326,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         result.add(new ExtensionComponent<U>(type.cast(o),a!=null?getOrdinal(a):0));
                 }
             }
-
-            return result;
         }
 
         /**
@@ -261,13 +362,16 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         private static final Logger LOGGER = Logger.getLogger(GuiceFinder.class.getName());
 
+        /**
+         * {@link Module} that finds components via sezpoz index.
+         * Instead of using SezPoz to instantiate, we'll instantiate them by using Guice,
+         * so that we can take advantage of dependency injection.
+         */
         private class SezpozModule extends AbstractModule {
-            private final Class<T> annotationType;
-            private final ClassLoader cl;
+            private final List<IndexItem<T,Object>> index;;
 
-            public SezpozModule(Class<T> annotationType, ClassLoader cl) {
-                this.annotationType = annotationType;
-                this.cl = cl;
+            public SezpozModule(List<IndexItem<T,Object>> index) {
+                this.index = index;
             }
 
             /**
@@ -302,7 +406,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             protected void configure() {
                 int id=0;
 
-                for (final IndexItem<T,Object> item : Index.load(annotationType, Object.class, cl)) {
+                for (final IndexItem<T,Object> item : index) {
                     id++;
                     try {
                         AnnotatedElement e = item.element();
@@ -379,10 +483,54 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return indices;
         }
 
+        /**
+         * {@inheritDoc}
+         *
+         * <p>
+         * SezPoz implements value-equality of {@link IndexItem}, so
+         */
+        @Override
+        public synchronized ExtensionComponentSet refresh() {
+            final List<IndexItem<Extension,Object>> old = indices;
+            if (old==null)      return ExtensionComponentSet.EMPTY; // we haven't loaded anything
+
+            final List<IndexItem<Extension, Object>> delta = listDelta(Extension.class,old);
+
+            List<IndexItem<Extension,Object>> r = Lists.newArrayList(old);
+            r.addAll(delta);
+            indices = ImmutableList.copyOf(r);
+
+            return new ExtensionComponentSet() {
+                @Override
+                public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
+                    return _find(type,delta);
+                }
+            };
+        }
+
+        static <T extends Annotation> List<IndexItem<T, Object>> listDelta(Class<T> annotationType, List<IndexItem<T, Object>> old) {
+            // list up newly discovered components
+            final List<IndexItem<T,Object>> delta = Lists.newArrayList();
+            ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
+            for (IndexItem<T,Object> ii : Index.load(annotationType, Object.class, cl)) {
+                if (!old.contains(ii)) {
+                    delta.add(ii);
+                }
+            }
+            return delta;
+        }
+
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+            return _find(type,getIndices());
+        }
+
+        /**
+         * Finds all the matching {@link IndexItem}s that match the given type and instantiate them.
+         */
+        private <T> Collection<ExtensionComponent<T>> _find(Class<T> type, List<IndexItem<Extension,Object>> indices) {
             List<ExtensionComponent<T>> result = new ArrayList<ExtensionComponent<T>>();
 
-            for (IndexItem<Extension,Object> item : getIndices()) {
+            for (IndexItem<Extension,Object> item : indices) {
                 try {
                     AnnotatedElement e = item.element();
                     Class<?> extType;
