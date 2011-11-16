@@ -23,8 +23,10 @@
  */
 package hudson;
 
+import com.google.common.collect.Lists;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
+import jenkins.ExtensionComponentSet;
 import jenkins.model.Jenkins;
 import hudson.util.AdaptedIterator;
 import hudson.util.DescriptorList;
@@ -242,6 +244,21 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     /**
+     * Used during {@link Jenkins#refreshExtensions()} to add new components into existing {@link ExtensionList}s.
+     * Do not call from anywhere else.
+     */
+    public void refresh(ExtensionComponentSet delta) {
+        synchronized (getLoadLock()) {
+            if (extensions==null)
+                return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
+
+            List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
+            l.addAll(load(delta));
+            extensions = sort(l);
+        }
+    }
+
+    /**
      * Loading an {@link ExtensionList} can result in a nested loading of another {@link ExtensionList}.
      * What that means is that we need a single lock that spans across all the {@link ExtensionList}s,
      * or else we can end up in a dead lock.
@@ -257,6 +274,14 @@ public class ExtensionList<T> extends AbstractList<T> {
 
         return jenkins.getPluginManager().getPluginStrategy().findComponents(extensionType, hudson);
     }
+
+    /**
+     * Picks up extensions that we care from the given list.
+     */
+    protected Collection<ExtensionComponent<T>> load(ExtensionComponentSet delta) {
+        return delta.find(extensionType);
+    }
+
 
     /**
      * If the {@link ExtensionList} implementation requires sorting extensions,
