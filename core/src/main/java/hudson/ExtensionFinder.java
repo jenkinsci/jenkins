@@ -40,6 +40,7 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
+import jenkins.ProxyInjector;
 import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -183,6 +184,13 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     public static final class GuiceFinder extends AbstractGuiceFinder<Extension> {
         public GuiceFinder() {
             super(Extension.class);
+
+            // expose Injector via lookup mechanism for interop with non-Guice clients
+            Jenkins.getInstance().lookup.set(Injector.class,new ProxyInjector() {
+                protected Injector resolve() {
+                    return getContainer();
+                }
+            });
         }
 
         @Override
@@ -207,7 +215,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          * a child container to house newly discovered components. This field points to the
          * youngest such container.
          */
-        private Injector container;
+        private volatile Injector container;
 
         /**
          * Sezpoz index we are currently using in {@link #container} (and its ancestors.)
@@ -240,6 +248,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 container = Guice.createInjector(new SezpozModule(
                         ImmutableList.copyOf(Index.load(annotationType, Object.class, Jenkins.class.getClassLoader()))));
             }
+        }
+
+        public Injector getContainer() {
+            return container;
         }
 
         /**
