@@ -36,6 +36,7 @@ import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
+import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
@@ -45,10 +46,12 @@ import hudson.util.HttpResponses;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
+import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -951,6 +954,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
+            } catch (RestartRequiredException e) {
+                status = new SuccessButRequiresRestart(e.message);
+                LOGGER.log(Level.INFO, "Installation successful but restart required: "+getName(), e);
+                onSuccess();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
@@ -958,7 +965,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             }
         }
 
-        protected void _run() throws IOException {
+        protected void _run() throws IOException, RestartRequiredException {
             URL src = getURL();
 
             config.preValidate(this, src);
@@ -1012,6 +1019,23 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         /**
+         * Indicates that the installation was successful but a restart is needed.
+         *
+         * @see
+         */
+        public class SuccessButRequiresRestart extends InstallationStatus {
+            private final Localizable message;
+
+            public SuccessButRequiresRestart(Localizable message) {
+                this.message = message;
+            }
+
+            public String getMessage() {
+                return message.toString();
+            }
+        }
+
+        /**
          * Indicates that the plugin was successfully installed.
          */
         public class Success extends InstallationStatus {
@@ -1052,9 +1076,22 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         private final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
+        /**
+         * True to load the plugin into this Jenkins, false to wait until restart.
+         */
+        private final boolean dynamicLoad;
+
+        /**
+         * @deprecated as of 1.DynamicExtensionFinder
+         */
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
+            this(plugin,site,auth,false);
+        }
+
+        public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth, boolean dynamicLoad) {
             super(site, auth);
             this.plugin = plugin;
+            this.dynamicLoad = dynamicLoad;
         }
 
         protected URL getURL() throws MalformedURLException {
@@ -1071,7 +1108,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         @Override
-        public void _run() throws IOException {
+        public void _run() throws IOException, RestartRequiredException {
             super._run();
 
             // if this is a bundled plugin, make sure it won't get overwritten
@@ -1083,6 +1120,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 } finally {
                     SecurityContextHolder.clearContext();
                 }
+
+            if (dynamicLoad) {
+                try {
+                    pm.dynamicLoad(getDestination());
+                } catch (RestartRequiredException e) {
+                    throw e;    // pass through
+                } catch (Exception e) {
+                    throw new IOException2("Failed to dynamically deploy this plugin",e);
+                }
+            }
         }
 
         protected void onSuccess() {

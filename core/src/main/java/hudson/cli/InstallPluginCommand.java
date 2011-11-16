@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.PluginManager;
 import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
@@ -65,9 +66,13 @@ public class InstallPluginCommand extends CLICommand {
     @Option(name="-restart",usage="Restart Jenkins upon successful installation")
     public boolean restart;
 
+    @Option(name="-deploy",usage="Deploy plugins right away without postponing them until the reboot.")
+    public boolean dynamicLoad;
+
     protected int run() throws Exception {
         Jenkins h = Jenkins.getInstance();
         h.checkPermission(Jenkins.ADMINISTER);
+        PluginManager pm = h.getPluginManager();
 
         for (String source : sources) {
             // is this a file?
@@ -76,7 +81,9 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
                 if (name==null)
                     name = f.getBaseName();
-                f.copyTo(getTargetFile());
+                f.copyTo(getTargetFilePath());
+                if (dynamicLoad)
+                    pm.dynamicLoad(getTargetFile());
                 continue;
             }
 
@@ -91,7 +98,9 @@ public class InstallPluginCommand extends CLICommand {
                     int idx = name.lastIndexOf('.');
                     if (idx>0)  name = name.substring(0,idx);
                 }
-                getTargetFile().copyFrom(u);
+                getTargetFilePath().copyFrom(u);
+                if (dynamicLoad)
+                    pm.dynamicLoad(getTargetFile());
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
@@ -101,7 +110,7 @@ public class InstallPluginCommand extends CLICommand {
             UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
-                Throwable e = p.deploy().get().getError();
+                Throwable e = p.deploy(dynamicLoad).get().getError();
                 if (e!=null)
                     throw new IOException2("Failed to install plugin "+source,e);
                 continue;
@@ -134,7 +143,11 @@ public class InstallPluginCommand extends CLICommand {
         return 0; // all success
     }
 
-    private FilePath getTargetFile() {
-        return new FilePath(new File(Jenkins.getInstance().getPluginManager().rootDir,name+".hpi"));
+    private FilePath getTargetFilePath() {
+        return new FilePath(getTargetFile());
+    }
+
+    private File getTargetFile() {
+        return new File(Jenkins.getInstance().getPluginManager().rootDir,name+".hpi");
     }
 }
