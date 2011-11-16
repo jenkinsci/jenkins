@@ -25,7 +25,9 @@
  */
 package jenkins.model;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Injector;
+import hudson.ExtensionFinder;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.AbstractCIBase;
@@ -184,6 +186,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionRefreshException;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
@@ -1983,6 +1987,30 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     @SuppressWarnings({"unchecked"})
     public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.get(type);
+    }
+
+    /**
+     * TODO: revisit how to expose this
+     */
+    public void refreshExtensions() throws ExtensionRefreshException {
+        ExtensionList<ExtensionFinder> finders = getExtensionList(ExtensionFinder.class);
+        for (ExtensionFinder ef : finders) {
+            if (!ef.isRefreshable())
+                throw new ExtensionRefreshException(ef+" doesn't support refresh");
+        }
+
+        List<ExtensionComponentSet> fragments = Lists.newArrayList();
+        for (ExtensionFinder ef : finders) {
+            fragments.add(ef.refresh());
+        }
+        ExtensionComponentSet delta = ExtensionComponentSet.union(fragments);
+
+        for (ExtensionList el : extensionLists.values()) {
+            el.refresh(delta);
+        }
+        for (ExtensionList el : descriptorLists.values()) {
+            el.refresh(delta);
+        }
     }
 
     /**
