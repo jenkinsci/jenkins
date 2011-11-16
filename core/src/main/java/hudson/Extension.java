@@ -99,6 +99,12 @@ public @interface Extension {
      * The "MayBe" value indicates that there's no such explicit sign-off. So the dynamic loading may or may not
      * work.
      *
+     * <p>
+     * If your plugin contains any extension that has dynamic loadability set to NO, then Jenkins
+     * will prompt the user to restart Jenkins to have the plugin take effect. If every component
+     * is marked as YES, then Jenkins will simply dynamic load the plugin without asking the user.
+     * Otherwise, Jenkins will ask the user if he wants to restart, or go ahead and dynamically deploy.
+     *
      * @since 1.DynamicExtensionFinder
      */
     YesNoMaybe dynamicLoadable() default MAYBE;
