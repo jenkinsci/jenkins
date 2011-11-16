@@ -62,6 +62,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -330,12 +331,13 @@ public abstract class PluginManager extends AbstractModelObject {
      * TODO: revisit where/how to expose this. This is an experiment.
      */
     public void dynamicLoad(File arc) throws Exception {
-        PluginWrapper p = strategy.createPluginWrapper(arc);
+        final PluginWrapper p = strategy.createPluginWrapper(arc);
         if (getPlugin(p.getShortName())!=null)
             throw new IllegalArgumentException("Dynamic reloading isn't possible");
 
         // TODO: check cyclic dependency
 
+        plugins.add(p);
         activePlugins.add(p);
 
         try {
@@ -350,11 +352,16 @@ public abstract class PluginManager extends AbstractModelObject {
             throw e;
         }
 
-        // run initializers
-        // TODO: need to ignore base types
+        // run initializers in the added plugin
         Reactor r = new Reactor(InitMilestone.ordering());
-        r.addAll(new InitializerFinder(p.classLoader).discoverTasks(r));
+        r.addAll(new InitializerFinder(p.classLoader) {
+            @Override
+            protected boolean filter(Method e) {
+                return e.getDeclaringClass().getClassLoader()!=p.classLoader || super.filter(e);
+            }
+        }.discoverTasks(r));
         new InitReactorRunner().run(r);
+        Jenkins.getInstance().refreshExtensions();
     }
 
     /**
