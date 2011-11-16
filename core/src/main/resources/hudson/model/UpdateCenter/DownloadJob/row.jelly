@@ -27,7 +27,7 @@ THE SOFTWARE.
   <tr id="row${it.id}">
     <td style="vertical-align: top; padding-right:1em">${it.name}</td>
     <j:set var="status" value="${it.status}" /><!-- so that two reference to this variable resolve to the same value. -->
-    <td id="status${status.id}">
+    <td id="status${status.id}" style="vertical-align:middle">
       <st:include it="${status}" page="status.jelly" />
     </td>
   </tr>
