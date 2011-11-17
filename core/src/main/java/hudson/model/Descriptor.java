@@ -710,7 +710,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return getViewPage(clazz,pageName,pageName);
     }
 
-    private List<String> getPossibleViewNames(String baseName) {
+    protected List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<String>();
         for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
