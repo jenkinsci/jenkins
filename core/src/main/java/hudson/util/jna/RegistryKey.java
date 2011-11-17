@@ -242,11 +242,12 @@ public class RegistryKey {
         lpType = new IntByReference();
         lpData = new byte[1];
         lpcbData = new IntByReference();
+        lpcbData.setValue(0);
 
         dwIndex = 0;
 
+        OUTER:
         while (true) {
-            lpcbData.setValue(0);
             result = Advapi32.INSTANCE.RegEnumValue(handle, dwIndex, lpValueName, lpcchValueName, null,
                     lpType, lpData, lpcbData);
             switch (result) {
@@ -256,9 +257,9 @@ public class RegistryKey {
             case WINERROR.ERROR_MORE_DATA:
                 lpData = new byte[lpcbData.getValue()];
                 lpcchValueName = new IntByReference(16384);
-                check(Advapi32.INSTANCE.RegEnumValue(handle, dwIndex, lpValueName, lpcchValueName, null,
-                        lpType, lpData, lpcbData));
+                continue OUTER;
 
+            case WINERROR.ERROR_SUCCESS:
                 name = new String(lpValueName, 0, lpcchValueName.getValue());
 
                 switch (lpType.getValue()) {
@@ -277,6 +278,7 @@ public class RegistryKey {
                 check(result);
             }
             dwIndex++;
+            lpcbData.setValue(0);
         }
     }
 
