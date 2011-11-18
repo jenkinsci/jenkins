@@ -61,7 +61,7 @@ public enum ResultTrend {
     STILL_FAILING(Messages._ResultTrend_StillFailing()),
     /**
      * Previous build (if there is one) was {@link Result#SUCCESS} or {@link Result#UNSTABLE}
-     * and current build is {@link Result#UNSTABLE}.
+     * and current build is {@link Result#FAILURE}.
      */
     FAILURE(Messages._ResultTrend_Failure()),
     /**
