@@ -1658,10 +1658,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *   May be null in which case 'worse' is calculated based on the number of failed tests.
      */
     private Summary determineDetailedUnstableSummary(Boolean worseOverride) {
-        Run prev = getPreviousBuild();
-        
         if(((Run)this) instanceof AbstractBuild) {
             AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+            Run prev = getPreviousBuild();
             AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
             if(trP==null) {
                 if(trN!=null && trN.getFailCount()>0)
