@@ -627,7 +627,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return hudson.createProject(MavenModuleSet.class,name);
     }
 
-    private String createUniqueProjectName() {
+    protected String createUniqueProjectName() {
         return "test"+hudson.getItems().size();
     }
 
