@@ -526,7 +526,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             if (mavenReporters != null) {
                 for (MavenReporter mavenReporter : mavenReporters) {
                     try {
-                        mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, null);
+                        mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, getExecutionException(event));
                     } catch ( InterruptedException e ) {
                         e.printStackTrace();
                     }
@@ -587,14 +587,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             if (mavenReporters != null) {
                 for (MavenReporter mavenReporter : mavenReporters) {
                     try {
-                        // http://issues.jenkins-ci.org/browse/HUDSON-8493
-                        // with maven 3.0.2 see http://jira.codehaus.org/browse/MNG-4922
-                        // catch NoSuchMethodError if folks not using 3.0.2+
-                        try {
-                            mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, event.getException() );
-                        } catch (NoSuchMethodError e) {
-                            mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, null );
-                        }
+                        mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, getExecutionException(event) );
                     } catch ( InterruptedException e ) {
                         e.printStackTrace();
                     } catch ( IOException e ) {
@@ -602,7 +595,18 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                     }
                 }
             }            
-        }        
+        }
+        
+        private Exception getExecutionException(ExecutionEvent event) {
+            // http://issues.jenkins-ci.org/browse/JENKINS-8493
+            // with maven 3.0.2 see http://jira.codehaus.org/browse/MNG-4922
+            // catch NoSuchMethodError if folks not using 3.0.2+
+            try {
+                return event.getException();
+            } catch (NoSuchMethodError e) {
+                return null;
+            }
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#forkStarted(org.apache.maven.execution.ExecutionEvent)
