@@ -42,7 +42,12 @@ public class BuildStatusSummaryTest {
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);
         
         Summary summary = this.build.getBuildStatusSummary();
+        assertFalse(summary.isWorse);
+        assertEquals(Messages.Run_Summary_Stable(), summary.message);
         
+        // same if there is no previous build
+        when(this.build.getPreviousBuild()).thenReturn(null);
+        summary = this.build.getBuildStatusSummary();
         assertFalse(summary.isWorse);
         assertEquals(Messages.Run_Summary_Stable(), summary.message);
         
@@ -50,7 +55,6 @@ public class BuildStatusSummaryTest {
         when(this.prevBuild.getResult()).thenReturn(Result.NOT_BUILT);
         
         summary = this.build.getBuildStatusSummary();
-        
         assertFalse(summary.isWorse);
         assertEquals(Messages.Run_Summary_Stable(), summary.message);
         
@@ -59,7 +63,6 @@ public class BuildStatusSummaryTest {
         when(this.prevBuild.getResult()).thenReturn(Result.ABORTED);
         
         summary = this.build.getBuildStatusSummary();
-        
         assertFalse(summary.isWorse);
         assertEquals(Messages.Run_Summary_Stable(), summary.message);
     }
@@ -131,6 +134,17 @@ public class BuildStatusSummaryTest {
         
         assertTrue(summary.isWorse);
         //assertEquals(Messages.Run_Summary_Stable(), summary.message);
+    }
+    
+    @Test
+    public void testUnstableAfterFailure() {
+        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
+        when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
+        
+        Summary summary = this.build.getBuildStatusSummary();
+        
+        assertFalse(summary.isWorse);
+        assertEquals(Messages.Run_Summary_Unstable(), summary.message);
     }
 
     @Test
