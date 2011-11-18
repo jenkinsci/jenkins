@@ -660,7 +660,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
             
 
-            boolean maven3orLater = new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+            boolean maven3orLater = MavenUtil.maven3orLater(mavenVersion);
 
             ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener, maven3orLater
                 ? new Maven3ProcessFactory(
