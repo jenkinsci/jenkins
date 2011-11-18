@@ -2,7 +2,7 @@
 The MIT License
 
 Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts, Olivier Lamy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ THE SOFTWARE.
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
     <mavenVersion>3.0.3</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.11</aetherVersion>
+    <aetherVersion>1.13</aetherVersion>
     <sisuInjectVersion>2.2.0</sisuInjectVersion>
     <wagonVersion>2.0</wagonVersion>
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
