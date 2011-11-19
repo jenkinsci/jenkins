@@ -23,6 +23,8 @@
  */
 package hudson.maven;
 
+import hudson.Launcher;
+import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.model.Result;
@@ -33,6 +35,8 @@ import hudson.remoting.Future;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.NumberFormat;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,6 +46,7 @@ import jenkins.model.Jenkins;
 
 /**
  * @author Olivier Lamy
+ * @author Christoph Kutzinski
  *
  */
 public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
@@ -64,15 +69,42 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
     protected Map<ModuleName,FilterImpl> proxies;
     
     /**
+     * Kept so that we can finalize them in the end method.
+     */
+    protected final transient Map<ModuleName,ProxyImpl2> sourceProxies = new HashMap<ModuleName, MavenBuild.ProxyImpl2>();
+
+    protected final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
+    
+    /**
      * Record all asynchronous executions as they are scheduled,
      * to make sure they are all completed before we finish.
      */
     protected transient /*final*/ List<Future<?>> futures;
     
-    protected AbstractMavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
+    protected AbstractMavenBuilder(BuildListener listener, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
         this.goals = goals;
         this.systemProps = systemProps;
+        
+        for (MavenModule m : modules) {
+            reporters.put(m.getModuleName(),m.createReporters());
+        }
+    }
+    
+    /**
+     * Invoked after the maven has finished running, and in the master, not in the maven process.
+     */
+    void end(Launcher launcher) throws IOException, InterruptedException {
+        for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
+            ProxyImpl2 p = e.getValue();
+            for (MavenReporter r : reporters.get(e.getKey())) {
+                // we'd love to do this when the module build ends, but doing so requires
+                // we know how many task segments are in the current build.
+                r.end(p.owner(),launcher,listener);
+                p.appendLastLog();
+            }
+            p.close();
+        }
     }
     
     protected String formatArgs(List<String> args) {

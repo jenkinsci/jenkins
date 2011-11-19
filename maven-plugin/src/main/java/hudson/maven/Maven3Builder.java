@@ -77,19 +77,13 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     
     HudsonMavenExecutionResult mavenExecutionResult;    
     
-    private final Map<ModuleName,ProxyImpl2> sourceProxies;
-    private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
-    
     protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
-        super( listener, goals, systemProps );
-        sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
+        super( listener, modules, goals, systemProps );
+        this.sourceProxies.putAll(proxies);
         this.proxies = new HashMap<ModuleName, FilterImpl>();
         for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
             this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
         }
-
-        for (MavenModule m : modules)
-            reporters.put(m.getModuleName(),m.createReporters());
     }    
     
     public Result call() throws IOException {
@@ -164,22 +158,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             throw new IOException2(e);
         }
     }
-
-    /**
-     * Invoked after the maven has finished running, and in the master, not in the maven process.
-     */
-    void end(Launcher launcher) throws IOException, InterruptedException {
-        for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
-            ProxyImpl2 p = e.getValue();
-            for (MavenReporter r : reporters.get(e.getKey())) {
-                // we'd love to do this when the module build ends, but doing so requires
-                // we know how many task segments are in the current build.
-                r.end(p.owner(),launcher,listener);
-                p.appendLastLog();
-            }
-            p.close();
-        }
-    }      
 
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
 

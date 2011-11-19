@@ -24,7 +24,6 @@
  */
 package hudson.maven;
 
-import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -53,42 +52,19 @@ import org.apache.maven.project.MavenProject;
  */
 @SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x, we cannot avoid deprecations
 final class Maven2Builder extends MavenBuilder {
-    private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
     private long mojoStartTime;
 
     private MavenBuildProxy2 lastProxy;
 
-    /**
-     * Kept so that we can finalize them in the end method.
-     */
-    private final transient Map<ModuleName,ProxyImpl2> sourceProxies;
+    
 
     public Maven2Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps,  MavenBuildInformation mavenBuildInformation) {
-        super(listener,goals,systemProps);
-        this.sourceProxies = proxies;
+        super(listener,modules,goals,systemProps);
+        this.sourceProxies.putAll(proxies);
         this.proxies = new HashMap<ModuleName, FilterImpl>();
         for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
             this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
-        }
-
-        for (MavenModule m : modules)
-            reporters.put(m.getModuleName(),m.createReporters());
-    }
-
-    /**
-     * Invoked after the maven has finished running, and in the master, not in the maven process.
-     */
-    void end(Launcher launcher) throws IOException, InterruptedException {
-        for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
-            ProxyImpl2 p = e.getValue();
-            for (MavenReporter r : reporters.get(e.getKey())) {
-                // we'd love to do this when the module build ends, but doing so requires
-                // we know how many task segments are in the current build.
-                r.end(p.owner(),launcher,listener);
-                p.appendLastLog();
-            }
-            p.close();
         }
     }
 
