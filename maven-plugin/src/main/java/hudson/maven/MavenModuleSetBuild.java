@@ -780,14 +780,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         if (maven3orLater)
                         {   
-                            
-                            Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName, List<MavenReporter>>(project.sortedActiveModules.size());
-                            for (MavenModule mavenModule : project.sortedActiveModules)
-                            {
-                                reporters.put( mavenModule.getModuleName(), mavenModule.createReporters() );
-                            }
                             Maven3Builder maven3Builder = 
-                                new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
+                                new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
                             MavenProbeAction mpa=null;
                             try {
                                 mpa = new MavenProbeAction(project,process.channel);

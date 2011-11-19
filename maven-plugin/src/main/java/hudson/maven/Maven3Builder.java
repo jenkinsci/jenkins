@@ -24,7 +24,6 @@
 package hudson.maven;
 
 import hudson.Launcher;
-import hudson.maven.AbstractMavenBuilder.FilterImpl;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
@@ -39,7 +38,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,18 +80,16 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private final Map<ModuleName,ProxyImpl2> sourceProxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     
-    private final MavenBuildInformation mavenBuildInformation;
-    
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
         super( listener, goals, systemProps );
-        this.mavenBuildInformation = mavenBuildInformation;
         sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
         this.proxies = new HashMap<ModuleName, FilterImpl>();
         for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
             this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
         }
 
-        this.reporters.putAll( reporters );
+        for (MavenModule m : modules)
+            reporters.put(m.getModuleName(),m.createReporters());
     }    
     
     public Result call() throws IOException {
@@ -201,7 +197,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private final Map<ModuleName,List<ExecutedMojo>> executedMojosPerModule = new ConcurrentHashMap<ModuleName, List<ExecutedMojo>>();
         
-        private final Map<ModuleName,List<MavenReporter>> reporters = new ConcurrentHashMap<ModuleName,List<MavenReporter>>();
+        private final Map<ModuleName,List<MavenReporter>> reporters;
         
         private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
         
@@ -210,12 +206,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         public MavenExecutionListener(Maven3Builder maven3Builder) {
             this.maven3Builder = maven3Builder;
             this.proxies = new ConcurrentHashMap<ModuleName, FilterImpl>(maven3Builder.proxies);
-            for (Entry<ModuleName,FilterImpl> e : this.proxies.entrySet())
-            {
-                e.setValue(new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation, Channel.current()));
-                executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
+            for (ModuleName name : this.proxies.keySet()) {
+                executedMojosPerModule.put( name, new CopyOnWriteArrayList<ExecutedMojo>() );
             }
-            this.reporters.putAll( new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
+            this.reporters = new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters);
             this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
         }
         
@@ -237,7 +231,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }        
         
         private void initMojoStartTime( MavenProject mavenProject) {
-            this.currentMojoStartPerModuleName.put( new ModuleName(mavenProject), new Date().getTime() );
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), Long.valueOf( System.currentTimeMillis() ) );
         }
         
         private Long getMojoStartTime(MavenProject mavenProject) {
