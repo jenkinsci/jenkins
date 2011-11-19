@@ -1,7 +1,0 @@
-<div>
-  注意在添加LDAP权限组的时候需要用特殊语法.默认配置中的所有LDAP组在这里输入的时候都要加上一个前缀"ROLE_"并全部转为大写.
-  例如,一个被叫做"devs"的组在输入时应该是"ROLE_DEVS".要调整这个前缀策略你需要编辑<tt>WEB-INF/security/LDAPBindSecurityRealm.groovy</tt>,这个文件在你Jenkins的部属目录下,然后需要重启Jenkins.
-
-  <p>
-  有一个特殊的组"authenticated"总是可用的,它代表所有已认证(已登录)用户.
-</div>

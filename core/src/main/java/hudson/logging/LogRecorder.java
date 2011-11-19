@@ -157,6 +157,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * Accepts submission from the configuration page.
      */
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        requirePOST();
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";

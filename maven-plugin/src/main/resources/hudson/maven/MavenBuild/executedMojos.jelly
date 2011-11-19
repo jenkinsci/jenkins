@@ -43,7 +43,7 @@ THE SOFTWARE.
         <j:otherwise>
           <j:set var="cache" value="${it.createExecutedMojoCache()}"/>
           
-          <table class="middle-align">
+          <table class="middle-align sortable pane bigtable">
             <tr>
               <th>${%Plugin}</th>
               <th>${%Version}</th>
@@ -68,7 +68,7 @@ THE SOFTWARE.
                   </a>
                 </td>
                 <td align="center">${m.readableExecutionId}</td>
-                <td>${m.durationString}</td>
+                <td data="${m.duration}">${m.durationString}</td>
                 <td align="center">
                   <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="${%fingerprint}" height="16" width="16" /></a>
                 </td>

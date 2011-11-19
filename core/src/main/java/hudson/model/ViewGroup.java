@@ -136,5 +136,5 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @see Actionable#getActions()
      * @since 1.417
      */
-    public List<Action> getViewActions();
+    List<Action> getViewActions();
 }

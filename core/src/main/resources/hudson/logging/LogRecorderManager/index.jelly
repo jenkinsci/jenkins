@@ -63,14 +63,10 @@ THE SOFTWARE.
           </a>
         </local:row>
       </j:forEach>
-      <tr>
-        <td colspan="3" style="height:32px; padding-left: 48px">
-          <form method="get" action="new">
-            <f:submit value="${%Add new log recorder}" />
-          </form>
-        </td>
-      </tr>
     </table>
+    <form method="get" action="new">
+      <f:submit value="${%Add new log recorder}" />
+    </form>
   </l:main-panel>
 </l:layout>
 </j:jelly>

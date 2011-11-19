@@ -222,7 +222,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
             ObjectInputStream ois = new ObjectInputStreamEx(
                     new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
-            return (ConsoleNote) ois.readObject();
+            try {
+                return (ConsoleNote) ois.readObject();
+            } finally {
+                ois.close();
+            }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
             // package that up as IOException so that the caller won't fatally die.

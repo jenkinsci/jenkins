@@ -17,14 +17,15 @@ package hudson.maven.settings;
 
 import hudson.ExtensionList;
 import hudson.FilePath;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.jenkinsci.lib.configprovider.ConfigProvider;
-import org.jenkinsci.lib.configprovider.model.Config;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.jenkinsci.lib.configprovider.ConfigProvider;
+import org.jenkinsci.lib.configprovider.model.Config;
 
 /**
  * @author Olivier Lamy
@@ -32,55 +33,101 @@ import java.io.IOException;
  */
 public class SettingsProviderUtils {
 
-    /**
-     * utility method to retrieve Config of type (MavenSettingsProvider etc..)
-     * @param settingsConfigId
-     * @param type
-     * @return Config
-     */
-    public static Config findConfig(String settingsConfigId, Class<?> type) {
-        ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
-        if (configProviders != null && configProviders.size() > 0) {
-            for (ConfigProvider configProvider : configProviders) {
-                if (type.isAssignableFrom( configProvider.getClass() ) ) {
-                    if ( configProvider.isResponsibleFor( settingsConfigId ) ) {
-                        return configProvider.getConfigById( settingsConfigId );
-                    }
-                }
-            }
-        }
-        return null;
-    }
+	/**
+	 * utility method to retrieve Config of type (MavenSettingsProvider etc..)
+	 * 
+	 * @param settingsConfigId
+	 * @param type
+	 * @return Config
+	 */
+	public static Config findConfig(String settingsConfigId, Class<?>... types) {
+		ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
+		if (configProviders != null && configProviders.size() > 0) {
+			for (ConfigProvider configProvider : configProviders) {
+				for (Class<?> type : types) {
+					
+					if (type.isAssignableFrom(configProvider.getClass())) {
+						if (configProvider.isResponsibleFor(settingsConfigId)) {
+							return configProvider.getConfigById(settingsConfigId);
+						}
+					}
 
-    /**
-     *
-     * @param config
-     * @param workspace
-     */
-    public static FilePath copyConfigContentToFilePath(Config config, FilePath workspace) throws IOException, InterruptedException {
-        File tmpContentFile = null;
-        ByteArrayInputStream bs = null;
+				}
+			}
+		}
+		return null;
+	}
 
-        try {
-            tmpContentFile = File.createTempFile( "config", "tmp" );
-            FilePath filePath = new FilePath( workspace, tmpContentFile.getName() );
-            bs = new ByteArrayInputStream(config.content.getBytes());
-            filePath.copyFrom(bs);
-            return filePath;
-        } finally {
-           FileUtils.deleteQuietly( tmpContentFile );
-           IOUtils.closeQuietly( bs );
-        }
-    }
+	/**
+	 * 
+	 * @param config
+	 * @param workspace
+	 */
+	public static FilePath copyConfigContentToFilePath(Config config, FilePath workspace) throws IOException, InterruptedException {
+		File tmpContentFile = null;
+		ByteArrayInputStream bs = null;
 
-    /**
-     *
-     * @return a temp file which must be deleted after use
-     */
-    public static File copyConfigContentToFile(Config config) throws IOException{
+		try {
+			tmpContentFile = File.createTempFile("config", "tmp");
+			FilePath filePath = new FilePath(workspace, tmpContentFile.getName());
+			bs = new ByteArrayInputStream(config.content.getBytes());
+			filePath.copyFrom(bs);
+			return filePath;
+		} finally {
+			FileUtils.deleteQuietly(tmpContentFile);
+			IOUtils.closeQuietly(bs);
+		}
+	}
 
-        File tmpContentFile = File.createTempFile( "config", "tmp" );
-        FileUtils.writeStringToFile( tmpContentFile, config.content );
-        return tmpContentFile;
-    }
+	/**
+	 * 
+	 * @return a temp file which must be deleted after use
+	 */
+	public static File copyConfigContentToFile(Config config) throws IOException {
+
+		File tmpContentFile = File.createTempFile("config", "tmp");
+		FileUtils.writeStringToFile(tmpContentFile, config.content);
+		return tmpContentFile;
+	}
+
+	/**
+	 * tells whether a config file provider serves global settings configs
+	 * 
+	 * @param configProvider
+	 *            the provider to check
+	 * @return <code>true</code> if it implements one of the supported
+	 *         interfaces
+	 */
+	public static boolean isGlobalMavenSettingsProvider(ConfigProvider configProvider) {
+		// first prio to old implementation
+		if (configProvider instanceof GlobalMavenSettingsProvider) {
+			return true;
+		}
+		// second prio to new impl, only if the plugin is installed
+		if (org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class.isAssignableFrom(configProvider.getClass())) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * tells whether a config file provider serves settings configs
+	 * 
+	 * @param configProvider
+	 *            the provider to check
+	 * @return <code>true</code> if it implements one of the supported
+	 *         interfaces
+	 */
+	public static boolean isMavenSettingsProvider(ConfigProvider configProvider) {
+		// first prio to old implementation
+		if (configProvider instanceof MavenSettingsProvider) {
+			return true;
+		}
+		// second prio to new impl, only if the plugin is installed
+		if (org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class.isAssignableFrom(configProvider.getClass())) {
+			return true;
+		}
+		return false;
+	}
+
 }

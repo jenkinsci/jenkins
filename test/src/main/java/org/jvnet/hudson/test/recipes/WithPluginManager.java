@@ -47,7 +47,7 @@ import static java.lang.annotation.RetentionPolicy.*;
 public @interface WithPluginManager {
     Class<? extends PluginManager> value();
 
-    public class RunnerImpl extends Recipe.Runner<WithPluginManager> {
+    class RunnerImpl extends Recipe.Runner<WithPluginManager> {
         private WithPluginManager recipe;
         @Override
         public void setup(HudsonTestCase testCase, WithPluginManager recipe) throws Exception {

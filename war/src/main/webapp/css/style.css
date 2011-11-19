@@ -1003,3 +1003,13 @@ table.progress-bar.red td.progress-bar-done {
 .tag7 { font-size: 1.70em; }
 .tag8 { font-size: 1.80em; }
 .tag9 { font-size: 1.90em; }
+
+/* ========================= textarea.jelly ================== */
+
+.textarea-preview-container {
+    text-align:left;
+}
+.textarea-preview {
+    background-color: #F0F0F0;
+    padding: 0.5em;
+}

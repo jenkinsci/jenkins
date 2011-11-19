@@ -26,12 +26,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:entry title="${%In demand delay}" help="/help/system-config/master-slave/demand/inDemandDelay.html">
-      <f:textbox clazz="required number"
+      <f:number clazz="required number" min="0"
         name="retentionStrategy.inDemandDelay" value="${instance.inDemandDelay}"
         checkMessage="${%In demand delay is mandatory and must be a number.}"/>
     </f:entry>
     <f:entry title="${%Idle delay}" help="/help/system-config/master-slave/demand/idleDelay.html">
-      <f:textbox clazz="required number"
+      <f:number clazz="required number" min="0"
         name="retentionStrategy.idleDelay" value="${instance.idleDelay}"
         checkMessage="${%Idle delay is mandatory and must be a number.}"/>
     </f:entry>

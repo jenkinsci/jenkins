@@ -46,6 +46,7 @@ import hudson.model.Computer;
 import hudson.model.Environment;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
+import hudson.model.Node;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
@@ -162,10 +163,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         if (mvn == null)
             throw new AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
 
-        mvn = mvn.forEnvironment(envs).forNode(
-                Computer.currentComputer().getNode(), log);
-        envs.put("M2_HOME", mvn.getHome());
-        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+        
+        mvn = mvn.forEnvironment(envs);
+        
+        Computer computer = Computer.currentComputer();
+        if (computer != null) { // just in case were not in a build
+            Node node = computer.getNode();
+            if (node != null) {
+                mvn = mvn.forNode(node, log);
+                
+                envs.put("M2_HOME", mvn.getHome());
+                envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+            }
+        }
+        
         return envs;
     }
 
@@ -613,14 +624,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (StringUtils.isNotBlank(settingsConfigId)) {
-                            Config config = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class );
-                            if (config == null) {
+                            Config settingsConfig = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
+                            if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
                                                    + " but cannot find the config");
                             } else {
-                                logger.println("using settings config with name " + config.name);
-                                if (config.content != null ) {
-                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                logger.println("using settings config with name " + settingsConfig.name);
+                                if (settingsConfig.content != null ) {
+                                    remoteSettings = SettingsProviderUtils.copyConfigContentToFilePath( settingsConfig, getWorkspace() );
                                     project.setAlternateSettings( remoteSettings.getRemote() );
                                 }
                             }
@@ -628,17 +639,20 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
                         if (StringUtils.isNotBlank(globalSettingsConfigId)) {
-                            Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
-                            if (config == null) {
+                            Config settingsConfig = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
+                            if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");
                             } else {
-                                logger.println("using global settings config with name " + config.name);
-                                if (config.content != null ) {
-                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( config, getWorkspace() );
+                                logger.println("using global settings config with name " + settingsConfig.name);
+                                if (settingsConfig.content != null ) {
+                                    remoteGlobalSettings = SettingsProviderUtils.copyConfigContentToFilePath( settingsConfig, getWorkspace() );
                                     project.globalSettingConfigPath = remoteGlobalSettings.getRemote();
                                 }
                             }
+                        } else {
+                        	// make sure the transient field is clean
+                        	project.globalSettingConfigPath = null;
                         }
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
@@ -687,8 +701,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         ProcessCache.MavenProcess process = null;
                         
-                        boolean maven3orLater = MavenUtil.maven3orLater( mavenVersion ); 
-                       
+                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
                         if ( maven3orLater )
                         {
                             LOGGER.fine( "using maven 3 " + mavenVersion );
@@ -1176,7 +1189,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
                 ReactorReader reactorReader = null;
-                boolean maven3OrLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+                boolean maven3OrLater = MavenUtil.maven3orLater(mavenVersion);
                 if (maven3OrLater) {
                     mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
                 } else {

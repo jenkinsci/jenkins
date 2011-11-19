@@ -251,7 +251,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         try {
                             return base.get();
                         } catch (Exception e) {
-                            LOGGER.log(Level.WARNING,"Failed to instantiate",e);
+                            LOGGER.log(Level.WARNING,"Failed to instantiate. Skipping this component",e);
                             return null;
                         }
                     }

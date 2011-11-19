@@ -58,7 +58,7 @@ public class NodeCanTakeTaskTest extends HudsonTestCase {
 
         // First, attempt to run our project before adding the property
         Future<FreeStyleBuild> build = project.scheduleBuild2(0);
-        assertBuildStatus(Result.SUCCESS, build.get(10, TimeUnit.SECONDS));
+        assertBuildStatus(Result.SUCCESS, build.get(20, TimeUnit.SECONDS));
 
         // Add the build-blocker property and try again
         slave.getNodeProperties().add(new RejectAllTasksProperty());

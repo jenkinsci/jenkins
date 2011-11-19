@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
@@ -61,6 +62,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -121,7 +123,7 @@ public class CLI {
         FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
         Channel ch = new Channel("Chunked connection to "+jenkins,
                 pool,con.getInputStream(),con.getOutputStream());
-        new PingThread(ch,30*1000) {
+        new PingThread(ch,15*1000) {
             protected void onDead() {
                 // noop. the point of ping is to keep the connection alive
                 // as most HTTP servers have a rather short read time out
@@ -153,8 +155,35 @@ public class CLI {
             throw (IOException)new IOException("Failed to connect to "+url).initCause(e);
         }
         String p = head.getHeaderField("X-Hudson-CLI-Port");
+        flushURLConnection(head);
         if(p==null) return -1;
         return Integer.parseInt(p);
+    }
+
+    /**
+     * Flush the supplied {@link URLConnection} input and close the
+     * connection nicely.
+     * @param conn the connection to flush/close
+     */
+    private void flushURLConnection(URLConnection conn) {
+        byte[] buf = new byte[1024];
+        try {
+            InputStream is = conn.getInputStream();
+            while (is.read(buf) > 0) {
+                // Ignore
+            }
+            is.close();
+        } catch (IOException e) {
+            try {
+                InputStream es = ((HttpURLConnection)conn).getErrorStream();
+                while (es.read(buf) > 0) {
+                    // Ignore
+                }
+                es.close();
+            } catch (IOException ex) {
+                // Ignore
+            }
+        }
     }
 
     /**
@@ -228,6 +257,10 @@ public class CLI {
 
         while(!args.isEmpty()) {
             String head = args.get(0);
+            if (head.equals("-version")) {
+                System.out.println("Version: "+computeVersion());
+                return 0;
+            }
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
                 args = args.subList(2,args.size());
@@ -298,6 +331,18 @@ public class CLI {
         } finally {
             cli.close();
         }
+    }
+
+    private static String computeVersion() {
+        Properties props = new Properties();
+        try {
+            InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
+            if(is!=null)
+                props.load(is);
+        } catch (IOException e) {
+            e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        return props.getProperty("version","?");
     }
 
     /**

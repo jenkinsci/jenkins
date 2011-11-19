@@ -164,24 +164,46 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
         
         private MavenBuildInformation mavenBuildInformation;
 
+        /**
+         * Maven can internally use multiple threads to call {@link #executeAsync(BuildCallable)},
+         * making it impossible to rely on {@code Channel#current()} at the point of call, so
+         * instead we capture it when we get deserialized into Maven JVM.
+         * In other cases, we create FilterImpl inside Maven JVM, so we take it as a constructor.
+         * See JENKINS-11458
+         */
+        private transient Channel channel;
+
         public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
             this.mavenBuildInformation = mavenBuildInformation;
         }
 
+        public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation, Channel channel) {
+            super(core);
+            this.mavenBuildInformation = mavenBuildInformation;
+            if (channel == null) {
+                throw new NullPointerException("channel must not be null!");
+            }
+            this.channel = channel;
+        }
+
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
             recordAsynchronousExecution(
-                    Channel.current().callAsync(
+                    channel.callAsync(
                             new AsyncInvoker(core,program)));
         }
 
-        private static final long serialVersionUID = 1L;
-
-        public MavenBuildInformation getMavenBuildInformation()
-        {
+        public MavenBuildInformation getMavenBuildInformation() {
             return mavenBuildInformation;
         }
-    }    
+
+        public Object readResolve() {
+            channel = Channel.current();
+            return this;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
     
 }

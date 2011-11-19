@@ -666,10 +666,10 @@ var hudsonRules = {
 // validate required form values
     "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
-// validate form values to be a number
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not a number"); },
+// validate form values to be an integer
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
     "INPUT.positive-number" : function(e) {
-        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive number");
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     },
 
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
@@ -926,6 +926,7 @@ var hudsonRules = {
             updateVisibility : function() {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
                 for (var e=this.start; e!=this.end; e=e.nextSibling) {
+                    if (e.nodeType!=1)  continue;
                     if (e.rowVisibilityGroup && e!=this.start) {
                         e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
@@ -1193,6 +1194,45 @@ var hudsonRules = {
 
     ".button-with-dropdown" : function (e) {
         new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+    },
+
+    "DIV.textarea-preview-container" : function (e) {
+        var previewDiv = findElementsBySelector(e,".textarea-preview")[0];
+        var showPreview = findElementsBySelector(e,".textarea-show-preview")[0];
+        var hidePreview = findElementsBySelector(e,".textarea-hide-preview")[0];
+        $(hidePreview).hide();
+        $(previewDiv).hide();
+
+        showPreview.onclick = function() {
+            // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
+            var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
+            var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            var render = function(txt) {
+                $(hidePreview).show();
+                $(previewDiv).show();
+                previewDiv.innerHTML = txt;
+            };
+
+            new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
+                method: "POST",
+                requestHeaders: "Content-Type: application/x-www-form-urlencoded",
+                parameters: {
+                    text: text
+                },
+                onSuccess: function(obj) {
+                    render(obj.responseText)
+                },
+                onFailure: function(obj) {
+                    render(obj.status + " " + obj.statusText + "<HR/>" + obj.responseText)
+                }
+            });
+            return false;
+        }
+
+        hidePreview.onclick = function() {
+            $(hidePreview).hide();
+            $(previewDiv).hide();
+        };
     }
 };
 
@@ -1280,7 +1320,7 @@ function applyNameRef(s,e,id) {
     // s contains the node itself
     for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.getAttribute("nameRef")==null)
+        if(x.nodeType==1 && x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
 }
@@ -1355,7 +1395,7 @@ function AutoScroller(scrollContainer) {
             if (scrollDiv.scrollHeight > 0)
                 return scrollDiv.scrollHeight;
             else
-                if (objDiv.offsetHeight > 0)
+                if (scrollDiv.offsetHeight > 0)
                     return scrollDiv.offsetHeight;
 
             return null; // huh?
@@ -1370,7 +1410,8 @@ function AutoScroller(scrollContainer) {
             // the element height.
             //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
             var height = getViewportHeight();
-            var diff = currentHeight - scrollDiv.scrollTop - height;
+            var scrollPos = Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop);
+            var diff = currentHeight - scrollPos - height;
             // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
 
             return diff < this.bottomThreshold;
@@ -1378,7 +1419,9 @@ function AutoScroller(scrollContainer) {
 
         scrollToBottom : function() {
             var scrollDiv = $(this.scrollContainer);
-            scrollDiv.scrollTop = this.getCurrentHeight();
+            var currentHeight = this.getCurrentHeight();
+            if(document.documentElement) document.documentElement.scrollTop = currentHeight
+            scrollDiv.scrollTop = currentHeight;
         }
     };
 }
@@ -1409,15 +1452,18 @@ function scrollIntoView(e) {
 // used in expandableTextbox.jelly to change a input field into a text area
 function expandTextArea(button,id) {
     button.style.display="none";
-    var field = document.getElementById(id);
+    var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    var n = field;
-    while(n.tagName!="TABLE")
+    
+    var n = button; 
+    while (n.tagName != "TABLE")
+    {
         n = n.parentNode;
-    n.parentNode.innerHTML =
+    }
+
+    n.parentNode.innerHTML = 
         "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
 }
-
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
@@ -2350,4 +2396,3 @@ function createComboBox(idOrField,valueFunction) {
 Ajax.Request.prototype.dispatchException = function(e) {
     throw e;
 }
-

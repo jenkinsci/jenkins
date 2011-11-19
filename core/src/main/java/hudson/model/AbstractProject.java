@@ -28,7 +28,6 @@
 package hudson.model;
 
 import hudson.Functions;
-import java.util.regex.Pattern;
 import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
@@ -124,6 +123,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  * @see AbstractBuild
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
 
     /**
@@ -780,6 +780,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this collection can contain null, and those will be silently ignored.
      * @since 1.383
      */
+    @SuppressWarnings("unchecked")
     public Future<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         if (!isBuildable())
             return null;
@@ -829,6 +830,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Production code shouldn't be using this, but for tests this is very convenient, so this isn't marked
      * as deprecated.
      */
+    @SuppressWarnings("deprecation")
     public Future<R> scheduleBuild2(int quietPeriod) {
         return scheduleBuild2(quietPeriod, new LegacyCodeCause());
     }
@@ -1092,10 +1094,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
-    protected AbstractProject getBuildingDownstream() {
+    public AbstractProject getBuildingDownstream() {
         Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
 
-        for (AbstractProject tup : Jenkins.getInstance().getDependencyGraph().getTransitiveDownstream(this)) {
+        for (AbstractProject tup : getTransitiveDownstreamProjects()) {
 			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
@@ -1109,10 +1111,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
-    protected AbstractProject getBuildingUpstream() {
+    public AbstractProject getBuildingUpstream() {
         Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
 
-        for (AbstractProject tup : Jenkins.getInstance().getDependencyGraph().getTransitiveUpstream(this)) {
+        for (AbstractProject tup : getTransitiveUpstreamProjects()) {
 			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
                 return tup;
         }
@@ -1419,6 +1421,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized Map<TriggerDescriptor,Trigger> getTriggers() {
         return (Map)Descriptor.toMap(triggers);
     }
@@ -1941,14 +1944,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         static class AutoCompleteSeeder {
             private String source;
-            private Pattern quoteMatcher = Pattern.compile("(\\\"?)(.+?)(\\\"?+)(\\s*)");
 
             AutoCompleteSeeder(String source) {
                 this.source = source;
             }
 
             List<String> getSeeds() {
-                ArrayList<String> terms = new ArrayList();
+                ArrayList<String> terms = new ArrayList<String>();
                 boolean trailingQuote = source.endsWith("\"");
                 boolean leadingQuote = source.startsWith("\"");
                 boolean trailingSpace = source.endsWith(" ");

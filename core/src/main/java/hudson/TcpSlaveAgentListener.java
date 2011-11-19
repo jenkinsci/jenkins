@@ -322,11 +322,6 @@ public final class TcpSlaveAgentListener extends Thread {
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
-                            try {
-                                log.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
                             if(cause!=null)
                                 LOGGER.log(Level.WARNING, "Connection #"+id+" for + " + nodeName + " terminated",cause);
                             try {

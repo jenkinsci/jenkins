@@ -113,7 +113,7 @@ import com.thoughtworks.xstream.XStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.*;
 
 /**
  * A particular execution of {@link Job}.
@@ -1482,6 +1482,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private void handleFatalBuildProblem(BuildListener listener, Throwable e) {
         if(listener!=null) {
+            LOGGER.log(FINE, getDisplayName()+" failed to build",e);
+
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
@@ -1494,6 +1496,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     // ignore
                 }
             }
+        } else {
+            LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }
     }
 
@@ -1816,6 +1820,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
+     * 
+     * @return the map with the environmental variables. Never <code>null</code>.
      * @since 1.305
      */
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
@@ -1899,6 +1905,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
+        requirePOST();
         BulkChange bc = new BulkChange(this);
         try {
             JSONObject json = req.getSubmittedForm();

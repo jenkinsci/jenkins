@@ -121,10 +121,14 @@ public class AnnotatedLargeText<T> extends LargeText {
                 ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
                         new CipherInputStream(new ByteArrayInputStream(Base64.decode(base64.toCharArray())),sym)),
                         Jenkins.getInstance().pluginManager.uberClassLoader);
-                long timestamp = ois.readLong();
-                if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
-                    // don't deserialize something too old to prevent a replay attack
-                    return (ConsoleAnnotator)ois.readObject();
+                try {
+                    long timestamp = ois.readLong();
+                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                        // don't deserialize something too old to prevent a replay attack
+                        return (ConsoleAnnotator)ois.readObject();
+                } finally {
+                    ois.close();
+                }
             }
         } catch (GeneralSecurityException e) {
             throw new IOException2(e);

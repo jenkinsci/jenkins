@@ -52,6 +52,9 @@ public class UnixLifecycle extends Lifecycle {
     public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
+
+            // if we are running as daemon, don't fork into background one more time during restart
+            args.remove("--daemon");
         } catch (UnsupportedOperationException e) {
             // can't restart
             failedToObtainArgs = e;

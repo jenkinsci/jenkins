@@ -36,7 +36,7 @@ THE SOFTWARE.
         <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
         ${%Recorded Fingerprints}
       </h1>
-      <table class="fingerprint-in-build sortable">
+      <table class="fingerprint-in-build sortable bigtable">
         <tr>
           <th initialSortDir="down">${%File}</th>
           <th>${%Original owner}</th>
@@ -62,7 +62,7 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
             </td>
-            <td>
+            <td data="${-f.timestamp.time}">
               ${f.timestampString} old
             </td>
             <td>

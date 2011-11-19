@@ -34,13 +34,10 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.maven.settings.GlobalMavenSettingsProvider;
-import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
-import hudson.model.Result;
-import hudson.tasks.Builder;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -51,6 +48,7 @@ import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
+import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
@@ -61,12 +59,13 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
+import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
-import hudson.tasks.JavadocArchiver;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
+import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
@@ -887,14 +886,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
         if (configProviders != null && configProviders.size() > 0) {
             for (ConfigProvider configProvider : configProviders) {
-                if (configProvider instanceof MavenSettingsProvider) {
+            	if (SettingsProviderUtils.isMavenSettingsProvider( configProvider )){
                     mavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
                 }
             }
         }
         return mavenSettingsConfigs;
     }
-
+    
     /**
      * @since 1.426
      * @return
@@ -904,7 +903,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
         if (configProviders != null && configProviders.size() > 0) {
             for (ConfigProvider configProvider : configProviders) {
-                if (configProvider instanceof GlobalMavenSettingsProvider) {
+                if (SettingsProviderUtils.isGlobalMavenSettingsProvider( configProvider )){
                     globalMavenSettingsConfigs.addAll( configProvider.getAllConfigs() );
                 }
             }

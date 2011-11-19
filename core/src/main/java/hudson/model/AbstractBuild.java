@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -67,6 +68,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
@@ -556,7 +558,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
         
         private void checkout(BuildListener listener) throws Exception {
-            try {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
@@ -577,6 +578,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         }
                     } catch (AbortException e) {
                         listener.error(e.getMessage());
+                    } catch (InterruptedIOException e) {
+                        throw (InterruptedException)new InterruptedException().initCause(e);
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());
@@ -588,11 +591,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     listener.getLogger().println("Retrying after 10 seconds");
                     Thread.sleep(10000);
                 }
-            } catch (InterruptedException e) {
-                listener.getLogger().println(Messages.AbstractProject_ScmAborted());
-                LOGGER.log(Level.INFO, AbstractBuild.this + " aborted", e);
-                throw new RunnerAbortedException();
-            }
         }
 
         /**
@@ -835,6 +833,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         EnvVars.resolve(env);
 
         return env;
+    }
+
+    /**
+     * During the build, expose the environments contributed by {@link BuildWrapper}s and others.
+     *
+     * @return can be empty list, but never null. Immutable.
+     * @since 1.437
+     */
+    public EnvironmentList getEnvironments() {
+        return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 
     public Calendar due() {

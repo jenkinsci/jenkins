@@ -29,7 +29,7 @@ THE SOFTWARE.
       <td align="right" data="-2">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${data.average()}"><j:out value="${data}"/></td>
+      <td align="right" data="${data.average}"><j:out value="${data}"/></td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

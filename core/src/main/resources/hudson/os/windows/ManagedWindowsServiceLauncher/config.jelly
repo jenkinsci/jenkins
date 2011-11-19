@@ -33,4 +33,5 @@ THE SOFTWARE.
   <f:entry title="${%Host}" field="host">
     <f:textbox/>
   </f:entry>
+  <f:optionalProperty field="logOn" title="${%Log on using a different account}" />
 </j:jelly>

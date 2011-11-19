@@ -26,23 +26,23 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="${%Days to keep builds}"
     description="${%if not empty, build records are only kept up to this number of days}">
-    <f:textbox clazz="positive-number"
+    <f:number clazz="positive-number" min="1" step="1"
       name="logrotate_days" value="${it.logRotator.daysToKeepStr}"/>
   </f:entry>
   <f:entry title="${%Max # of builds to keep}"
     description="${%if not empty, only up to this number of build records are kept}">
-    <f:textbox clazz="positive-number"
+    <f:number clazz="positive-number" min="1" step="1"
       name="logrotate_nums" value="${it.logRotator.numToKeepStr}"/>
   </f:entry>
   <f:advanced>
     <f:entry title="${%Days to keep artifacts}"
              description="${%if not empty, artifacts from builds older than this number of days will be deleted, but the logs, history, reports, etc for the build will be kept}">
-      <f:textbox clazz="positive-number"
+      <f:number clazz="positive-number" min="1" step="1"
                  name="logrotate_artifact_days" value="${it.logRotator.artifactDaysToKeepStr}" />
     </f:entry>
     <f:entry title="${%Max # of builds to keep with artifacts}"
              description="${%if not empty, only up to this number of builds have their artifacts retained}">
-      <f:textbox clazz="positive-number"
+      <f:number clazz="positive-number" min="1" step="1"
                  name="logrotate_artifact_nums" value="${it.logRotator.artifactNumToKeepStr}" />
     </f:entry>
   </f:advanced>

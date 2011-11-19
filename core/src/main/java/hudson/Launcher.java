@@ -889,7 +889,7 @@ public abstract class Launcher {
     /**
      * Remoting interface of a remote process
      */
-    public static interface RemoteProcess {
+    public interface RemoteProcess {
         int join() throws InterruptedException, IOException;
         void kill() throws IOException, InterruptedException;
         boolean isAlive() throws IOException, InterruptedException;

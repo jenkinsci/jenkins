@@ -28,11 +28,13 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
 import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.io.File;
@@ -86,8 +88,8 @@ public class JNLPLauncherTest extends HudsonTestCase {
         Proc proc = createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
 
         try {
-            // verify that the connection is established, up to 10 secs
-            for( int i=0; i<100; i++ ) {
+            // verify that the connection is established, up to 20 secs
+            for( int i=0; i<200; i++ ) {
                 Thread.sleep(100);
                 if(!c.isOffline())
                     break;
@@ -123,11 +125,11 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Adds a JNLP {@link Slave} to the system and returns it.
      */
     private Computer addTestSlave() throws Exception {
-        List<Slave> slaves = new ArrayList<Slave>(hudson.getSlaves());
+        List<Node> slaves = new ArrayList<Node>(hudson.getNodes());
         File dir = Util.createTempDir();
         slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
-                new JNLPLauncher(), RetentionStrategy.INSTANCE));
-        hudson.setSlaves(slaves);
+                new JNLPLauncher(), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
+        hudson.setNodes(slaves);
         Computer c = hudson.getComputer("test");
         assertNotNull(c);
         return c;

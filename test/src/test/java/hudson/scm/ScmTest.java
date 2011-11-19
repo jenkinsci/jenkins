@@ -23,10 +23,20 @@
  */
 package hudson.scm;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
+import hudson.model.Result;
+
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -55,5 +65,26 @@ public class ScmTest extends HudsonTestCase {
         p.scheduleBuild2(0).get();
         p.delete();
         assertTrue(callback[0]);
+    }
+    
+    @Bug(4605)
+    public void testAbortDuringCheckoutMarksBuildAsAborted() throws IOException, InterruptedException, ExecutionException {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm(new NullSCM() {
+            @Override
+            public boolean checkout(AbstractBuild<?, ?> build,
+                    Launcher launcher, FilePath remoteDir,
+                    BuildListener listener, File changeLogFile)
+                    throws IOException, InterruptedException {
+                throw new InterruptedException();
+            }
+            
+            private Object writeReplace() { // don't really care about save
+                return new NullSCM();
+            }
+        });
+        
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assertEquals(Result.ABORTED, build.getResult());
     }
 }
