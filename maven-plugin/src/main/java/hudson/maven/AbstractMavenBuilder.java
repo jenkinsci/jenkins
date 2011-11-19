@@ -61,11 +61,13 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
      */
     protected final BuildListener listener;
     
+    protected Map<ModuleName,FilterImpl> proxies;
+    
     /**
      * Record all asynchronous executions as they are scheduled,
      * to make sure they are all completed before we finish.
      */
-    private transient /*final*/ List<Future<?>> futures;
+    protected transient /*final*/ List<Future<?>> futures;
     
     protected AbstractMavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
         this.listener = listener;
@@ -119,6 +121,11 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
      */
     protected void initializeAsynchronousExecutions() {
         futures = new CopyOnWriteArrayList<Future<?>>();
+        if (this.proxies != null) {
+            for(FilterImpl proxy : this.proxies.values()) {
+                proxy.setFutures(futures);
+            }
+        }
     }
     
     /**
@@ -160,7 +167,7 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
         }
     }
     
-    protected class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
+    protected static class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;
 
@@ -172,6 +179,8 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
          * See JENKINS-11458
          */
         private transient Channel channel;
+
+        private transient List<Future<?>> futures;
 
         public FilterImpl(MavenBuildProxy2 core, MavenBuildInformation mavenBuildInformation) {
             super(core);
@@ -189,13 +198,17 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
 
         @Override
         public void executeAsync(final BuildCallable<?,?> program) throws IOException {
-            recordAsynchronousExecution(
+            futures.add(
                     channel.callAsync(
                             new AsyncInvoker(core,program)));
         }
 
         public MavenBuildInformation getMavenBuildInformation() {
             return mavenBuildInformation;
+        }
+        
+        public void setFutures(List<Future<?>> futures) {
+            this.futures = futures;
         }
 
         public Object readResolve() {
