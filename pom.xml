@@ -180,6 +180,14 @@ THE SOFTWARE.
         <artifactId>guava</artifactId>
         <version>10.0.1</version>
       </dependency>
+      
+      <dependency>
+        <!-- we'd like to use stock Guice, but that breaks Maven embedder
+               because it uses a modified Guice called Sisu -->
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-guice</artifactId>
+        <version>3.1.0</version>
+      </dependency>
 
     </dependencies>
   </dependencyManagement>

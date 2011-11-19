@@ -97,7 +97,6 @@ THE SOFTWARE.
            because it uses a modified Guice called Sisu -->
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.0.3</version>
     </dependency>
 
     <dependency>

@@ -216,7 +216,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.1.0</version>
     </dependency>
 
     <dependency>
