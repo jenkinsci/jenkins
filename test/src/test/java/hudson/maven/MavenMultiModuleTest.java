@@ -153,8 +153,8 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 
         
     @Bug(6544)
-    @Ignore // kutzi 10/10/11 ignore test until I can figure out why it fails sometimes
-    public void testEstimatedDurationForIncrementalMultiModMaven()
+    // kutzi 10/10/11 ignore test until I can figure out why it fails sometimes
+    public void ignore_testEstimatedDurationForIncrementalMultiModMaven()
             throws Exception {
         configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = createMavenProject();
