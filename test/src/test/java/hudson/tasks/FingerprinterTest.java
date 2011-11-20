@@ -32,9 +32,7 @@ import hudson.model.Fingerprint;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
-import hudson.model.Project;
 import hudson.model.Result;
-import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.util.RunList;
 
 import java.io.IOException;
@@ -47,6 +45,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  *
  * @author dty
  */
+@SuppressWarnings("rawtypes")
 public class FingerprinterTest extends HudsonTestCase {
     private static final String[] singleContents = {
         "abcdef"
@@ -82,8 +81,8 @@ public class FingerprinterTest extends HudsonTestCase {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -99,9 +98,9 @@ public class FingerprinterTest extends HudsonTestCase {
         FreeStyleProject upstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(doubleContents, doubleFiles);
 
-        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        FreeStyleBuild upstreamBuild2 = assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> downstreamProjects2 = upstream2.getDownstreamProjects();
@@ -120,9 +119,9 @@ public class FingerprinterTest extends HudsonTestCase {
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
 
-        FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild2 = assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -142,7 +141,7 @@ public class FingerprinterTest extends HudsonTestCase {
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
         FreeStyleBuild upstreamBuild = assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        FreeStyleBuild downstreamBuild = assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
 
         upstreamBuild.delete();
 
@@ -158,8 +157,8 @@ public class FingerprinterTest extends HudsonTestCase {
     public void testCircularDependency() throws Exception {
         FreeStyleProject p = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         
-        FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
-        FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
