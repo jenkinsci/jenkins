@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Red Hat, Inc., Victor Glushenkov, Alan Harder, Olivier Lamy
+ * Red Hat, Inc., Victor Glushenkov, Alan Harder, Olivier Lamy, Dominik Bartholdi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -754,7 +754,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
                         }
 
-                        margs.addTokenized(envVars.expand(project.getGoals()));
+						// find the correct maven goals and options, there might by an action overruling the defaults
+                        // only one action is allowed to overwrite the hole "goals and options" string
+						final MavenArgumentInterceptorAction interceptorAction = this.getBuild().getAction(MavenArgumentInterceptorAction.class);
+						final String goals = interceptorAction != null && StringUtils.isNotBlank(interceptorAction.getGoalsAndOptions()) ? interceptorAction
+								.getGoalsAndOptions() : project.getGoals();
+								
+						margs.addTokenized(envVars.expand(goals));
+
+						// enable the interceptors to change the whole command argument list
+						// all available interceptors are allowed to modify the argument list
+						final List<MavenArgumentInterceptorAction> argInterceptors = this.getBuild().getActions(MavenArgumentInterceptorAction.class);
+						for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
+							final ArgumentListBuilder newMargs = mavenArgInterceptor.intercept(margs);
+							if (newMargs != null) {
+								margs = newMargs;
+							}
+						}                        
+                        
                         if (maven3orLater)
                         {   
                             
