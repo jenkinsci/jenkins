@@ -64,6 +64,9 @@ Upcoming changes</a>
   <li class=bug>
     Fixed ConcurrentModificationException in parallel Maven 3 builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     CLI jar now has the version number in the manifest as well as the "-version" option.
   <li class=rfe>
@@ -95,9 +98,6 @@ Upcoming changes</a>
   <li class=bug>
     Dependency wasn't recalculated with CLI "update-job" command.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11636">issue 11636</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Sortable table wasn't "stable" when there are same values in different rows
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11551">issue 11551</a>)
