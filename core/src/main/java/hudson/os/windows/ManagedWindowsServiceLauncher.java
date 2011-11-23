@@ -340,7 +340,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     /**
      * Determines the host name (or the IP address) to connect to.
      */
-    protected String determineHost(Computer c) throws IOException, InterruptedException {
+    protected String determineHost(Computer c) {
         // If host not provided, default to the slave name
         if (StringUtils.isBlank(host)) {
             return c.getName();
@@ -371,7 +371,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
-            SWbemServices services = WMI.connect(session, computer.getName());
+            SWbemServices services = WMI.connect(session, determineHost(computer));
             Win32Service slaveService = services.getService("jenkinsslave");
             if(slaveService!=null) {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
