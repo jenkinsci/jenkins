@@ -45,16 +45,19 @@ public interface MavenArgumentInterceptorAction extends Action {
 	 * This method will be called on one and only one action during a build. If
 	 * there are two actions present in the build, the second will be ignored.
 	 * 
+	 * @param build
+	 *            reference to the current build, might be used for some
+	 *            calculations for the correct arguments
 	 * @return the maven goals and options to start maven with. Result is
 	 *         ignored if <code>null</code> or empty. Variables will be expanded
 	 *         by the caller.
 	 */
-	public String getGoalsAndOptions();
+	public String getGoalsAndOptions(MavenModuleSetBuild build);
 
 	/**
 	 * Change/add arguments to any needs, but special care has to be taken, as
 	 * the list contains every argument needed for the default execution (e.g.
-	 * -f /path/to/pom.xml or -B). <br />
+	 * <code>-f /path/to/pom.xml</code> or <code>-B</code>). <br />
 	 * An easy example would be to add "<code>-DskipTests</code>" to skip the
 	 * test execution on request.
 	 * 
@@ -66,8 +69,11 @@ public interface MavenArgumentInterceptorAction extends Action {
 	 * @param mavenargs
 	 *            the calculated default maven arguments (never
 	 *            <code>null</code>).
+	 * @param build
+	 *            reference to the current build, might be used for some
+	 *            calculations for the correct arguments
 	 * @return the new arguments to be used.
 	 */
-	public ArgumentListBuilder intercept(ArgumentListBuilder mavenargs);
+	public ArgumentListBuilder intercept(ArgumentListBuilder mavenargs, MavenModuleSetBuild build);
 
 }

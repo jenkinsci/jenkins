@@ -760,7 +760,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 						// find the correct maven goals and options, there might by an action overruling the defaults
                         String goals = project.getGoals(); // default
                         for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
-                        	final String goalsAndOptions = mavenArgInterceptor.getGoalsAndOptions();
+                        	final String goalsAndOptions = mavenArgInterceptor.getGoalsAndOptions(this.getBuild());
 							if(StringUtils.isNotBlank(goalsAndOptions)){
                         		goals = goalsAndOptions;
                                 // only one interceptor is allowed to overwrite the whole "goals and options" string
@@ -772,7 +772,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 						// enable the interceptors to change the whole command argument list
 						// all available interceptors are allowed to modify the argument list
 						for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
-							final ArgumentListBuilder newMargs = mavenArgInterceptor.intercept(margs);
+							final ArgumentListBuilder newMargs = mavenArgInterceptor.intercept(margs, this.getBuild());
 							if (newMargs != null) {
 								margs = newMargs;
 							}

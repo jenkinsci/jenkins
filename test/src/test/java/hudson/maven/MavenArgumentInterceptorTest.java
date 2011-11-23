@@ -105,11 +105,11 @@ public class MavenArgumentInterceptorTest extends HudsonTestCase {
 			return null;
 		}
 
-		public String getGoalsAndOptions() {
+		public String getGoalsAndOptions(MavenModuleSetBuild build) {
 			return goalsAndOptions;
 		}
 
-		public ArgumentListBuilder intercept(ArgumentListBuilder mavenargs) {
+		public ArgumentListBuilder intercept(ArgumentListBuilder mavenargs, MavenModuleSetBuild build) {
 			if (args != null) {
 				for (String arg : this.args) {
 					mavenargs.add(arg);
