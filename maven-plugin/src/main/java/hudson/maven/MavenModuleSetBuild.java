@@ -760,8 +760,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 						// find the correct maven goals and options, there might by an action overruling the defaults
                         String goals = project.getGoals(); // default
                         for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
-                        	if(StringUtils.isNotBlank(mavenArgInterceptor.getGoalsAndOptions())){
-                        		goals = mavenArgInterceptor.getGoalsAndOptions();
+                        	final String goalsAndOptions = mavenArgInterceptor.getGoalsAndOptions();
+							if(StringUtils.isNotBlank(goalsAndOptions)){
+                        		goals = goalsAndOptions;
                                 // only one interceptor is allowed to overwrite the whole "goals and options" string
                         		break;
                         	}
