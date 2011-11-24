@@ -35,7 +35,7 @@ THE SOFTWARE.
     <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
     var tz = ${tz.rawOffset / 3600000};
     <![CDATA[
-    window.addEventListener('load', function() {
+    function doLoad() {
         var tl_el = document.getElementById("tl");
         var eventSource1 = new Timeline.DefaultEventSource();
         eventSource1.loaded = {};
@@ -107,14 +107,31 @@ THE SOFTWARE.
 
         // if resized, redo layout
         var resizeTimerID = null;
-        window.addEventListener('resize',function() {
+        function doResize() {
             if (resizeTimerID == null) {
                 resizeTimerID = window.setTimeout(function() {
                     resizeTimerID = null;
                     tl.layout();
                 }, 500);
             }
-        },false);
-    },false);
+        }
+        
+        if (window.addEventListener) { 
+            window.addEventListener( "resize", doResize, false );
+        }else if (window.attachEvent) { 
+            window.attachEvent( "onresize", doResize);
+        }else if (window.onResize) {
+           window.onresize = doResize;
+        }
+        
+    };
+    
+    if (window.addEventListener) { 
+        window.addEventListener( "load", doLoad, false );
+    }else if (window.attachEvent) { 
+        window.attachEvent( "onload", doLoad );
+    }else if (window.onLoad) {
+           window.onload = doLoad;
+    }
   ]]></script>
 </j:jelly>
