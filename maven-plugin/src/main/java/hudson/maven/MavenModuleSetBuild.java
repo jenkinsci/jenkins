@@ -927,7 +927,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars, getWorkspace()));
             } catch (IOException e) {
                 if (project.isIncrementalBuild()) {
                     // If POM parsing failed we should do a full build next time.
@@ -1091,7 +1091,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         String rootPOMRelPrefix;
         
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion,EnvVars envVars) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project, String mavenVersion, EnvVars envVars, FilePath workspace) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
@@ -1116,9 +1116,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             
             this.nonRecursive = project.isNonRecursive();
-            this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
+
+            this.workspaceProper = workspace.getRemote();
+            LOGGER.fine("Workspace is " + workspaceProper);
             if (project.usesPrivateRepository()) {
-                this.privateRepository = project.getLastBuild().getWorkspace().child(".repository").getRemote();
+                this.privateRepository = workspace.child(".repository").getRemote();
             } else {
                 this.privateRepository = null;
             }
@@ -1130,7 +1132,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.processPlugins = project.isProcessPlugins();
             
             this.moduleRootPath = 
-                project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
+                project.getScm().getModuleRoot( workspace, project.getLastBuild() ).getRemote();
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
             this.globalSetings = project.globalSettingConfigPath;
