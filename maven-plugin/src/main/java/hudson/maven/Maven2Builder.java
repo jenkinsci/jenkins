@@ -53,7 +53,6 @@ import org.apache.maven.project.MavenProject;
  */
 @SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x, we cannot avoid deprecations
 final class Maven2Builder extends MavenBuilder {
-    private final Map<ModuleName,MavenBuildProxy2> proxies;
     private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
     private final Map<ModuleName,List<ExecutedMojo>> executedMojos = new HashMap<ModuleName,List<ExecutedMojo>>();
     private long mojoStartTime;
@@ -68,9 +67,10 @@ final class Maven2Builder extends MavenBuilder {
     public Maven2Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps,  MavenBuildInformation mavenBuildInformation) {
         super(listener,goals,systemProps);
         this.sourceProxies = proxies;
-        this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
-        for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), mavenBuildInformation));
+        this.proxies = new HashMap<ModuleName, FilterImpl>();
+        for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
+            this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
+        }
 
         for (MavenModule m : modules)
             reporters.put(m.getModuleName(),m.createReporters());
@@ -116,7 +116,7 @@ final class Maven2Builder extends MavenBuilder {
             buildingProjects.add(new ModuleName(p));
         }
         
-        for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
+        for (Entry<ModuleName,FilterImpl> e : this.proxies.entrySet()) {
             if (! buildingProjects.contains(e.getKey())) {
                 MavenBuildProxy2 proxy = e.getValue();
                 proxy.start();
