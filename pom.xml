@@ -71,12 +71,29 @@ THE SOFTWARE.
     </snapshotRepository>
   </distributionManagement>
 
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+  </issueManagement>
+
   <properties>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build.type>private</build.type>
+
+    <!-- configuration for patch tracker plugin  -->
+    <project.patchManagement.system>github</project.patchManagement.system>
+    <patch.request.organisation>jenkinsci</patch.request.organisation>
+    <patch.request.repository>jenkins</patch.request.repository>
+    <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
+    <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
+    <patch.issueSystem>jira</patch.issueSystem>
+
   </properties>
+
+
+
 
   <repositories>
     <repository>

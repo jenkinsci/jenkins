@@ -50,6 +50,11 @@ THE SOFTWARE.
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15487</url>
+  </issueManagement>
+
   <dependencyManagement>
     <dependencies>
       <!-- SLF4J is used by wagon-webdav-jackrabbit dep --> 
