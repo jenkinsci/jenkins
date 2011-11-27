@@ -88,7 +88,6 @@ THE SOFTWARE.
     <patch.request.repository>jenkins</patch.request.repository>
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
-    <patch.issueSystem>jira</patch.issueSystem>
 
   </properties>
 
