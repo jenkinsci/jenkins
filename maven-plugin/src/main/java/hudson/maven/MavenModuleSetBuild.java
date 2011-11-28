@@ -2,7 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Red Hat, Inc., Victor Glushenkov, Alan Harder, Olivier Lamy
+ * Red Hat, Inc., Victor Glushenkov, Alan Harder, Olivier Lamy, Dominik Bartholdi
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -701,8 +701,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         ProcessCache.MavenProcess process = null;
                         
-                        boolean maven3orLater = MavenUtil.maven3orLater( mavenVersion ); 
-                       
+                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
                         if ( maven3orLater )
                         {
                             LOGGER.fine( "using maven 3 " + mavenVersion );
@@ -755,7 +754,30 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
                         }
 
-                        margs.addTokenized(envVars.expand(project.getGoals()));
+                        
+                        final List<MavenArgumentInterceptorAction> argInterceptors = this.getBuild().getActions(MavenArgumentInterceptorAction.class);
+                        
+						// find the correct maven goals and options, there might by an action overruling the defaults
+                        String goals = project.getGoals(); // default
+                        for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
+                        	final String goalsAndOptions = mavenArgInterceptor.getGoalsAndOptions((MavenModuleSetBuild)this.getBuild());
+							if(StringUtils.isNotBlank(goalsAndOptions)){
+                        		goals = goalsAndOptions;
+                                // only one interceptor is allowed to overwrite the whole "goals and options" string
+                        		break;
+                        	}
+						}
+						margs.addTokenized(envVars.expand(goals));
+
+						// enable the interceptors to change the whole command argument list
+						// all available interceptors are allowed to modify the argument list
+						for (MavenArgumentInterceptorAction mavenArgInterceptor : argInterceptors) {
+							final ArgumentListBuilder newMargs = mavenArgInterceptor.intercept(margs, (MavenModuleSetBuild)this.getBuild());
+							if (newMargs != null) {
+								margs = newMargs;
+							}
+						}                        
+                        
                         if (maven3orLater)
                         {   
                             
@@ -905,7 +927,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars, getWorkspace()));
             } catch (IOException e) {
                 if (project.isIncrementalBuild()) {
                     // If POM parsing failed we should do a full build next time.
@@ -1069,7 +1091,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         String rootPOMRelPrefix;
         
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project,String mavenVersion,EnvVars envVars) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project, String mavenVersion, EnvVars envVars, FilePath workspace) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             this.listener = listener;
             this.mavenHome = mavenHome;
@@ -1094,9 +1116,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             
             this.nonRecursive = project.isNonRecursive();
-            this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
+
+            this.workspaceProper = workspace.getRemote();
+            LOGGER.fine("Workspace is " + workspaceProper);
             if (project.usesPrivateRepository()) {
-                this.privateRepository = project.getLastBuild().getWorkspace().child(".repository").getRemote();
+                this.privateRepository = workspace.child(".repository").getRemote();
             } else {
                 this.privateRepository = null;
             }
@@ -1108,7 +1132,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.processPlugins = project.isProcessPlugins();
             
             this.moduleRootPath = 
-                project.getScm().getModuleRoot( project.getLastBuild().getWorkspace(), project.getLastBuild() ).getRemote();            
+                project.getScm().getModuleRoot( workspace, project.getLastBuild() ).getRemote();
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
             this.globalSetings = project.globalSettingConfigPath;
@@ -1190,7 +1214,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 // FIXME handle 3.1 level when version will be here : no rush :-)
                 // or made something configurable tru the ui ?
                 ReactorReader reactorReader = null;
-                boolean maven3OrLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+                boolean maven3OrLater = MavenUtil.maven3orLater(mavenVersion);
                 if (maven3OrLater) {
                     mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
                 } else {

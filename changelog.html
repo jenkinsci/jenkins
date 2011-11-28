@@ -55,7 +55,22 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Workspaces mixed when launching multiple concurrent builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11825">issue 11825</a>)
+  <li class=bug>
+    Fixed ConcurrentModificationException in parallel Maven 3 builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
+  <li class=rfe>
+    Upgrade aether version to 1.13 and sisu to 2.3.0 .
+  <li class=rfe>
+    add new action type to enable plugins to intercept the maven 'goals and options' 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/316">pull #316</a>)
+  <li class=rfe>
+    Upgrade to Maven Wagon 2.1 which supports preemptive authz for dav deployment.
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -90,9 +105,6 @@ Upcoming changes</a>
   <li class=bug>
     Dependency wasn't recalculated with CLI "update-job" command.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11636">issue 11636</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Sortable table wasn't "stable" when there are same values in different rows
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11551">issue 11551</a>)

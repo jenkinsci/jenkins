@@ -26,6 +26,7 @@ package hudson.maven.reporters;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.maven.MavenBuild;
+import hudson.maven.MavenBuildInformation;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenModule;
@@ -142,11 +143,9 @@ public class MavenFingerprinter extends MavenReporter {
 			File parentFile = parent.getFile();
 
 			if (parentFile == null) {
-				String mavenVersion = build.getMavenBuildInformation().getMavenVersion();
-				
 				// Parent artifact contains no actual file, so we resolve against
 				// the local repository
-				ArtifactRepository localRepository = getLocalRepository(mavenVersion, parent, pom);
+				ArtifactRepository localRepository = getLocalRepository(build.getMavenBuildInformation(), parent, pom);
 				if (localRepository != null) {
 				    Artifact parentArtifact = getArtifact(parent);
 					// Don't use ArtifactRepository.find(), for compatibility with Maven 2.x
@@ -179,18 +178,18 @@ public class MavenFingerprinter extends MavenReporter {
         return art;
     }
 
-    private ArtifactRepository getLocalRepository(String mavenVersion, MavenProject parent, MavenProject pom) {
-		if (mavenVersion.startsWith("2.0") || mavenVersion.startsWith("2.1")) {
-		    // Maven 2.0 has no corresponding mechanism
-		    return null;
-		} else if (mavenVersion.startsWith("2.2")) {
-		    // principally this should also work with Maven 2.1, but it's not tested, so err on the safe side
-		    return getArtifactRepositoryMaven21(pom);
-		} else if (mavenVersion.startsWith("3.") || mavenVersion.startsWith("4.") /* who knows? ;) */) {
-		    return parent.getProjectBuildingRequest()
-				.getLocalRepository();
+    private ArtifactRepository getLocalRepository(MavenBuildInformation mavenBuildInformation, MavenProject parent, MavenProject pom) {
+        
+        if (mavenBuildInformation.isMaven3OrLater()) {
+            return parent.getProjectBuildingRequest().getLocalRepository();
+        } else if (mavenBuildInformation.isAtLeastMavenVersion("2.2")) {
+            // principally this should also work with Maven 2.1, but it's not tested, so err on the safe side
+            return getArtifactRepositoryMaven21(pom);
+        } else if (mavenBuildInformation.isAtLeastMavenVersion("2.0")) {
+         // Maven 2.0 has no corresponding mechanism
+            return null;
 		} else {
-		    LOGGER.warning("Unknown Maven version: "+mavenVersion);
+		    LOGGER.warning("Unknown Maven version: "+mavenBuildInformation.getMavenVersion());
 		    return null;
 		}
 	}

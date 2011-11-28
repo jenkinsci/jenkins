@@ -2,7 +2,7 @@
 The MIT License
 
 Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts, Olivier Lamy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,11 +44,16 @@ THE SOFTWARE.
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
     <mavenVersion>3.0.3</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.11</aetherVersion>
-    <sisuInjectVersion>2.2.0</sisuInjectVersion>
-    <wagonVersion>2.0</wagonVersion>
+    <aetherVersion>1.13</aetherVersion>
+    <sisuInjectVersion>2.3.0</sisuInjectVersion>
+    <wagonVersion>2.1</wagonVersion>
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15487</url>
+  </issueManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -216,7 +221,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>
@@ -286,7 +295,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>lib-jenkins-maven-embedder</artifactId>
-      <version>3.6</version>
+      <version>3.8</version>
       <exclusions>
         <exclusion><!-- we'll add our own patched version. see https://issues.jenkins-ci.org/browse/JENKINS-1680 -->
           <groupId>jtidy</groupId>

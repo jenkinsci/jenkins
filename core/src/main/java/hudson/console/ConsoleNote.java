@@ -44,7 +44,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,9 +189,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
     public String encode() throws IOException {
-        StringWriter sw = new StringWriter();
-        encodeTo(sw);
-        return sw.toString();
+        return encodeToBytes().toString();
     }
 
     /**

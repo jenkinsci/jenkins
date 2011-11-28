@@ -167,6 +167,7 @@ public class Maven extends Builder {
      * name.
      */
     private static final class DecideDefaultMavenCommand implements FileCallable<String> {
+        private static final long serialVersionUID = -2327576423452215146L;
         // command line arguments.
         private final String arguments;
 
@@ -412,6 +413,8 @@ public class Maven extends Builder {
             // FIXME using similar stuff as in the maven plugin could be better 
             // olamy : but will add a dependency on maven in core -> so not so good 
             String mavenVersion = launcher.getChannel().call(new Callable<String,IOException>() {
+                    private static final long serialVersionUID = -4143159957567745621L;
+
                     public String call() throws IOException {
                         File[] jars = new File(getHomeDir(),"lib").listFiles();
                         if(jars!=null) { // be defensive
@@ -443,7 +446,7 @@ public class Maven extends Builder {
                         return true;
                 }
                 else if (mavenReqVersion == MAVEN_30) {
-                    if(mavenVersion.startsWith("3.") && !mavenVersion.startsWith("2.0"))
+                    if(mavenVersion.startsWith("3."))
                         return true;
                 }                
             }
@@ -452,7 +455,7 @@ public class Maven extends Builder {
         }
         
         /**
-         * Is this Maven 2.1.x or later?
+         * Is this Maven 2.1.x or 2.2.x - but not Maven 3.x?
          *
          * @param launcher
          *      Represents the node on which we evaluate the path.
@@ -460,28 +463,19 @@ public class Maven extends Builder {
         public boolean isMaven2_1(Launcher launcher) throws IOException, InterruptedException {
             return meetsMavenReqVersion(launcher, MAVEN_21);
         }
-            /*            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
-                public Boolean call() throws IOException {
-                    File[] jars = new File(getHomeDir(),"lib").listFiles();
-                    if(jars!=null) // be defensive
-                        for (File jar : jars)
-                            if(jar.getName().startsWith("maven-2.") && !jar.getName().startsWith("maven-2.0") && jar.getName().endsWith("-uber.jar"))
-                                return true;
-                    return false;
-                }
-                });
-                } */
 
         /**
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
             return launcher.getChannel().call(new Callable<String,IOException>() {
+                private static final long serialVersionUID = 2373163112639943768L;
+
                 public String call() throws IOException {
-                    File exe = getExeFile("maven");
+                    File exe = getExeFile("mvn");
                     if(exe.exists())
                         return exe.getPath();
-                    exe = getExeFile("mvn");
+                    exe = getExeFile("maven");
                     if(exe.exists())
                         return exe.getPath();
                     return null;
