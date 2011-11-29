@@ -954,10 +954,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
-            } catch (RestartRequiredException e) {
-                status = new SuccessButRequiresRestart(e.message);
-                LOGGER.log(Level.INFO, "Installation successful but restart required: "+getName(), e);
-                onSuccess();
+            } catch (InstallationStatus e) {
+                status = e;
+                if (status.isSuccess()) onSuccess();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
@@ -965,7 +964,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             }
         }
 
-        protected void _run() throws IOException, RestartRequiredException {
+        protected void _run() throws IOException, InstallationStatus {
             URL src = getURL();
 
             config.preValidate(this, src);
@@ -996,7 +995,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * <p>
          * Instances of this class is immutable.
          */
-        public abstract class InstallationStatus {
+        public abstract class InstallationStatus extends Throwable {
             public final int id = iota.incrementAndGet();
             public boolean isSuccess() {
                 return false;
@@ -1013,7 +1012,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 this.problem = problem;
             }
 
-            public String getStackTrace() {
+            public String getProblemStackTrace() {
                 return Functions.printThrowable(problem);
             }
         }
@@ -1023,7 +1022,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          *
          * @see
          */
-        public class SuccessButRequiresRestart extends InstallationStatus {
+        public class SuccessButRequiresRestart extends Success {
             private final Localizable message;
 
             public SuccessButRequiresRestart(Localizable message) {
@@ -1108,7 +1107,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         @Override
-        public void _run() throws IOException, RestartRequiredException {
+        public void _run() throws IOException, InstallationStatus {
             super._run();
 
             // if this is a bundled plugin, make sure it won't get overwritten
@@ -1125,10 +1124,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 try {
                     pm.dynamicLoad(getDestination());
                 } catch (RestartRequiredException e) {
-                    throw e;    // pass through
+                    throw new SuccessButRequiresRestart(e.message);
                 } catch (Exception e) {
                     throw new IOException2("Failed to dynamically deploy this plugin",e);
                 }
+            } else {
+                throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
             }
         }
 
