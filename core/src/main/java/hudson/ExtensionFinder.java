@@ -108,7 +108,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * <p>
      * The behaviour is undefined if {@link #isRefreshable()} is returning false.
      *
-     * @since 1.DynamicExtensionFinder
+     * @since 1.442
      * @see #isRefreshable()
      * @return never null
      */

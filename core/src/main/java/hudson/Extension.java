@@ -105,7 +105,7 @@ public @interface Extension {
      * is marked as YES, then Jenkins will simply dynamic load the plugin without asking the user.
      * Otherwise, Jenkins will ask the user if he wants to restart, or go ahead and dynamically deploy.
      *
-     * @since 1.DynamicExtensionFinder
+     * @since 1.442
      */
     YesNoMaybe dynamicLoadable() default MAYBE;
 }

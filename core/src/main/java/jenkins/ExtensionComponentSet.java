@@ -40,7 +40,7 @@ import java.util.List;
  * Represents the components that's newly discovered during {@link ExtensionFinder#refresh()}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.DynamicExtensionFinder.
+ * @since 1.442
  */
 public abstract class ExtensionComponentSet {
     /**

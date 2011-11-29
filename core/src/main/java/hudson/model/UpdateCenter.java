@@ -1081,7 +1081,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         private final boolean dynamicLoad;
 
         /**
-         * @deprecated as of 1.DynamicExtensionFinder
+         * @deprecated as of 1.442
          */
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
             this(plugin,site,auth,false);
