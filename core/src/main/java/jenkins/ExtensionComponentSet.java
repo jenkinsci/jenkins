@@ -28,7 +28,10 @@ import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +80,22 @@ public abstract class ExtensionComponentSet {
                 for (ExtensionComponentSet d : base)
                     r.addAll(d.find(type));
                 return r;
+            }
+        };
+    }
+
+    public static ExtensionComponentSet union(ExtensionComponentSet... members) {
+        return union(Arrays.asList(members));
+    }
+
+    /**
+     * Wraps {@link ExtensionFinder} into {@link ExtensionComponentSet}.
+     */
+    public static ExtensionComponentSet allOf(final ExtensionFinder f) {
+        return new ExtensionComponentSet() {
+            @Override
+            public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
+                return f.find(type,Hudson.getInstance());
             }
         };
     }

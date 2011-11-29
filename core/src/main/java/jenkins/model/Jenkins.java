@@ -27,6 +27,7 @@ package jenkins.model;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
+import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.model.Messages;
 import hudson.model.Node;
@@ -1950,7 +1951,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * TODO: revisit how to expose this
+     * Refresh {@link ExtensionList}s by adding all the newly discovered extensions.
+     *
+     * Exposed only for {@link PluginManager#dynamicLoad(File)}.
      */
     public void refreshExtensions() throws ExtensionRefreshException {
         ExtensionList<ExtensionFinder> finders = getExtensionList(ExtensionFinder.class);
@@ -1964,6 +1967,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             fragments.add(ef.refresh());
         }
         ExtensionComponentSet delta = ExtensionComponentSet.union(fragments);
+
+        // if we find a new ExtensionFinder, we need it to list up all the extension points as well
+        List<ExtensionComponent<ExtensionFinder>> newFinders = Lists.newArrayList(delta.find(ExtensionFinder.class));
+        while (!newFinders.isEmpty()) {
+            ExtensionFinder f = newFinders.remove(newFinders.size()-1).getInstance();
+
+            ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f);
+            newFinders.addAll(ecs.find(ExtensionFinder.class));
+            delta = ExtensionComponentSet.union(delta, ecs);
+        }
 
         for (ExtensionList el : extensionLists.values()) {
             el.refresh(delta);
