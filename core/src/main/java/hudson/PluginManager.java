@@ -23,26 +23,25 @@
  */
 package hudson;
 
-import static hudson.init.InitMilestone.PLUGINS_PREPARED;
-import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static hudson.init.InitMilestone.PLUGINS_LISTED;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import hudson.PluginWrapper.Dependency;
+import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
-import jenkins.ClassLoaderReflectionToolkit;
-import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
+import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
+import jenkins.ClassLoaderReflectionToolkit;
+import jenkins.InitReactorRunner;
+import jenkins.RestartRequiredException;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -51,6 +50,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.stapler.HttpRedirect;
@@ -72,18 +72,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static hudson.init.InitMilestone.*;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -126,7 +128,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     /**
      * Once plugin is uploaded, this flag becomes true.
-     * This is used to report a message that Hudson needs to be restarted
+     * This is used to report a message that Jenkins needs to be restarted
      * for new plugins to take effect.
      */
     public volatile boolean pluginUploaded = false;
@@ -282,8 +284,6 @@ public abstract class PluginManager extends AbstractModelObject {
                     Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
-                    Jenkins.getInstance().lookup.set(Injector.class,Guice.createInjector());
-
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
                         g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
@@ -329,6 +329,55 @@ public abstract class PluginManager extends AbstractModelObject {
                 }
             });
         }});
+    }
+
+    /**
+     * TODO: revisit where/how to expose this. This is an experiment.
+     */
+    public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
+        LOGGER.info("Attempting to dynamic load "+arc);
+        final PluginWrapper p = strategy.createPluginWrapper(arc);
+        String sn = p.getShortName();
+        if (getPlugin(sn)!=null)
+            throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+
+        if (p.supportsDynamicLoad()== YesNoMaybe.NO)
+            throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
+
+        // there's no need to do cyclic dependency check, because we are deploying one at a time,
+        // so existing plugins can't be depending on this newly deployed one.
+
+        plugins.add(p);
+        activePlugins.add(p);
+
+        try {
+            p.resolvePluginDependencies();
+            strategy.load(p);
+
+            Jenkins.getInstance().refreshExtensions();
+
+            p.getPlugin().postInitialize();
+        } catch (Exception e) {
+            failedPlugins.add(new FailedPlugin(sn, e));
+            activePlugins.remove(p);
+            plugins.remove(p);
+            throw new IOException2("Failed to install "+ sn +" plugin",e);
+        }
+
+        // run initializers in the added plugin
+        Reactor r = new Reactor(InitMilestone.ordering());
+        r.addAll(new InitializerFinder(p.classLoader) {
+            @Override
+            protected boolean filter(Method e) {
+                return e.getDeclaringClass().getClassLoader()!=p.classLoader || super.filter(e);
+            }
+        }.discoverTasks(r));
+        try {
+            new InitReactorRunner().run(r);
+        } catch (ReactorException e) {
+            throw new IOException2("Failed to initialize "+ sn +" plugin",e);
+        }
+        LOGGER.info("Plugin " + sn + " dynamically installed");
     }
 
     /**
@@ -524,6 +573,8 @@ public abstract class PluginManager extends AbstractModelObject {
      * Performs the installation of the plugins.
      */
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        boolean dynamicLoad = req.getParameter("dynamicLoad")!=null;
+
         Enumeration<String> en = req.getParameterNames();
         while (en.hasMoreElements()) {
             String n =  en.nextElement();
@@ -534,7 +585,7 @@ public abstract class PluginManager extends AbstractModelObject {
                     UpdateSite.Plugin p = Jenkins.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
                     if(p==null)
                         throw new Failure("No such plugin: "+n);
-                    p.deploy();
+                    p.deploy(dynamicLoad);
                 }
             }
         }
