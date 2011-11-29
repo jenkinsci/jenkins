@@ -1984,6 +1984,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         for (ExtensionList el : descriptorLists.values()) {
             el.refresh(delta);
         }
+
+        // TODO: we need some generalization here so that extension points can be notified when a refresh happens?
+        for (ExtensionComponent<RootAction> ea : delta.find(RootAction.class)) {
+            Action a = ea.getInstance();
+            if (!actions.contains(a)) actions.add(a);
+        }
     }
 
     /**
