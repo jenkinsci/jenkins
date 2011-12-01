@@ -695,14 +695,15 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             // backward compatibility
             systemProps.put("hudson.build.number",String.valueOf(getNumber()));
 
-            boolean normalExit = false;
             if (maven3orLater)
             { 
                 // FIXME here for maven 3 builds
+                listener.getLogger().println("Building single Maven modules is not implemented for Maven 3, yet!");
                 return Result.ABORTED;
             }
             else
             {
+                boolean normalExit = false;
                 try {
                     Result r = process.call(new Builder(
                         listener,new ProxyImpl(),
