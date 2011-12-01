@@ -45,6 +45,10 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         	if(getDescriptor().markOffline(c,size)) {
         		LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
         	}
+        } else if (c.isTemporarilyOffline()) {
+            if (getDescriptor().markOnline(c)) {
+                LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOnline(c.getName()));
+            }
         }
         return size;
     }
