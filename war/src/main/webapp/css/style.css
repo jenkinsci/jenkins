@@ -1016,27 +1016,24 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border-width: 1px;
-	border-color: #BBBBBB;
-	border-style: solid;
+	border: 1px #BBBBBB solid;
 	border-collapse: collapse;
 }
 tr.matrix-row {
 	background: #f0f0f0;
-	border-bottom: 1px #BBBBBB solid;
 	font-weight: bold;
 }
 td.matrix-header {
+	border: 1px #BBBBBB solid;
 	padding: 3px;
 }
 td#matrix-title {
-	border-right: 1px #BBBBBB solid;
 	padding: 3px;
 }
 td.matrix-leftcolumn {
+	border: 1px #BBBBBB solid;
 	font-weight: bold;
 	background: #f0f0f0;
-	border-right: 1px #BBBBBB solid;
 	padding: 3px;
 }
 td.matrix-cell {
