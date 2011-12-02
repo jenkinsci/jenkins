@@ -354,6 +354,10 @@ THE SOFTWARE.
       <artifactId>wagon-webdav-jackrabbit</artifactId>
       <version>${wagonVersion}</version>
       <exclusions>
+        <exclusion><!-- bundling binding creates a problem with app servers that use different versions of slf4j -->
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
         <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Jenkins -->
         <exclusion>
           <groupId>nekohtml</groupId>
