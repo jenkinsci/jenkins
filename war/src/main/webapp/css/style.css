@@ -1013,3 +1013,33 @@ table.progress-bar.red td.progress-bar-done {
     background-color: #F0F0F0;
     padding: 0.5em;
 }
+
+/* ========================= matrix configuration table ================== */
+table#configuration-matrix {
+	border-width: 1px;
+	border-color: #BBBBBB;
+	border-style: solid;
+	border-collapse: collapse;
+}
+tr.matrix-row {
+	background: #f0f0f0;
+	border-bottom: 1px #BBBBBB solid;
+	font-weight: bold;
+}
+td.matrix-header {
+	padding: 3px;
+}
+td#matrix-title {
+	border-right: 1px #BBBBBB solid;
+	padding: 3px;
+}
+td.matrix-leftcolumn {
+	font-weight: bold;
+	background: #f0f0f0;
+	border-right: 1px #BBBBBB solid;
+	padding: 3px;
+}
+td.matrix-cell {
+	border: 1px #BBBBBB solid;
+	text-align: center;
+}
