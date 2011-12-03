@@ -40,7 +40,7 @@ THE SOFTWARE.
       <form method="post" id="scheduleRestart" action="">
         <p class="info" style="font-weight: normal">
           <a href="${rootURL}/">${%Go back to the top page}</a> <br/>
-          (you can start using the installed plugins right away) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
+          (${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
         </p>
         <p class="info" style="font-weight: normal">
           <j:if test="${app.lifecycle.canRestart()}">
