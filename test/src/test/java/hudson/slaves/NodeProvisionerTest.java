@@ -65,6 +65,8 @@ public class NodeProvisionerTest extends HudsonTestCase {
         NodeProvisionerInvoker.RECURRENCEPERIOD = original;
     }
 
+    public void testDummy() {} // just to make Surefire happy
+
     /**
      * Latch synchronization primitive that waits for N thread to pass the checkpoint.
      * <p>
