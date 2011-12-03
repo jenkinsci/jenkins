@@ -28,6 +28,7 @@ import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
+import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
@@ -611,49 +612,21 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
 
-    public HttpResponse doProxyConfigure(
-            @QueryParameter("proxy.server") String server,
-            @QueryParameter("proxy.port") String port,
-            @QueryParameter("proxy.userName") String userName,
-            @QueryParameter("proxy.password") String password) throws IOException {
-        Jenkins hudson = Jenkins.getInstance();
-        hudson.checkPermission(Jenkins.ADMINISTER);
+    public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
 
-        server = Util.fixEmptyAndTrim(server);
-        if(server==null) {
-            hudson.proxy = null;
+        ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
+        if (pc.name==null) {
+            jenkins.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
-        } else try {
-            int proxyPort = Integer.parseInt(Util.fixNull(port));
-            if (proxyPort < 0 || proxyPort > 65535) {
-               throw new Failure(Messages.PluginManager_PortNotInRange(0, 65535)); 
-            }
-            hudson.proxy = new ProxyConfiguration(server, proxyPort,
-                    Util.fixEmptyAndTrim(userName),Util.fixEmptyAndTrim(password));
-            hudson.proxy.save();
-        } catch (NumberFormatException nfe) {
-            throw new Failure(Messages.PluginManager_PortNotANumber());
+        } else {
+            jenkins.proxy = pc;
+            jenkins.proxy.save();
         }
         return new HttpRedirect("advanced");
     }
     
-    public FormValidation doCheckProxyPort(@QueryParameter String value) {
-        value = Util.fixEmptyAndTrim(value);
-        if (value == null) {
-            return FormValidation.ok();
-        }
-        int port;
-        try {
-            port = Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return FormValidation.error(Messages.PluginManager_PortNotANumber());
-        }
-        if (port < 0 || port > 65535) {
-            return FormValidation.error(Messages.PluginManager_PortNotInRange(0, 65535));
-        }
-        return FormValidation.ok();
-    }
-
     /**
      * Uploads a plugin.
      */
@@ -685,6 +658,10 @@ public abstract class PluginManager extends AbstractModelObject {
         } catch (Exception e) {// grrr. fileItem.write throws this
             throw new ServletException(e);
         }
+    }
+
+    public Descriptor<ProxyConfiguration> getProxyDescriptor() {
+        return Jenkins.getInstance().getDescriptor(ProxyConfiguration.class);
     }
 
     /**
