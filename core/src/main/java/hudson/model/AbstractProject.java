@@ -1193,7 +1193,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         workspace.mkdirs();
         
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
-        calcPollingBaseline(build, launcher, listener);
+        if (r) { // Only calcRevisionsFromBuild is checkout was successful
+            calcPollingBaseline(build, launcher, listener);
+        }
         return r;
     }
 
