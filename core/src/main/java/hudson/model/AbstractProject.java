@@ -1193,7 +1193,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         workspace.mkdirs();
         
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
-        if (r) { // Only calcRevisionsFromBuild is checkout was successful
+        if (r) {
+            // Only calcRevisionsFromBuild if checkout was successful. Note that modern SCM implementations
+            // won't reach this line anyway, as they throw AbortExceptions on checkout failure.
             calcPollingBaseline(build, launcher, listener);
         }
         return r;
@@ -1214,13 +1216,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 build.addAction(baseline);
         }
         pollingBaseline = baseline;
-    }
-
-    /**
-     * For reasons I don't understand, if I inline this method, AbstractMethodError escapes try/catch block.
-     */
-    private SCMRevisionState safeCalcRevisionsFromBuild(AbstractBuild build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        return getScm()._calcRevisionsFromBuild(build, launcher, listener);
     }
 
     /**
