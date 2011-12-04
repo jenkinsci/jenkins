@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.441-SNAPSHOT</version>
+    <version>1.443-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.174</stapler.version>
+    <stapler.version>1.176</stapler.version>
   </properties>
 
   <dependencies>
@@ -97,7 +97,6 @@ THE SOFTWARE.
            because it uses a modified Guice called Sisu -->
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.0.3</version>
     </dependency>
 
     <dependency>
@@ -437,7 +436,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -485,7 +484,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.5</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libpam4j</groupId>

@@ -56,6 +56,75 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Wagon 2.0 upgrade broke the Redeploy task for webdav repositories
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11318">issue 11318</a>)
+  <li class=bug>
+    Self-restart wasn't working with 32bit x86 Solaris
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6629">issue 6629</a>)
+  <li class=bug>
+    Fixed IPv6 handling in Winstone
+    (<a href="https://github.com/jenkinsci/winstone/pull/2">pull request #2</a>)
+  <li class=bug>
+    OS X installer can fail to set the file permissions correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11714">issue 11714</a>)
+  <li class=bug>
+    Build history time line wasn't working for IE8.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7403">issue 7403</a>)
+  <li class=bug>
+    Build history time line should be resizable
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11834">issue 11834</a>)
+  <li class=bug>
+    Fixed a bug in Windows registry enumeration with large data.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11767">issue 11767</a>)
+  <li class=bug>
+    Debian/Ubuntu init script does not wait long enough during stop operation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11744">issue 11744</a>)
+  <li class=bug>
+    Jenkins takes up too much space in /var/run
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11366">issue 11366</a>)
+  <li class=bug>
+    Fixed a <tt>NoSuchMethodError</tt> on JBoss 5.1 EAP
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11960">issue 11960</a>)
+  <li class=bug>
+    Use $JENKINS_USER in Debian postinst script.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5771">issue 5771</a>)
+  <li class=bug>
+    Fixed a bug where Jenkins failed to show localized text for Hebrew, Indonesian, and Yedish.
+  <li class=rfe>
+    Proxy configuration supported "no proxy host" setting to allow some hosts to bypass proxy.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8710">issue 8710</a>)
+  <li class=rfe>
+    Added/improved localization to Arabic, Bulgarian, Catalan, Czech, Danish, German, Greek, Esperanto, Spanish, Estonian, Basque, Finnish, French, Hebrew, Hindi, Hungarian, Indonesian, Icelandic, Italian, Kannada, Korean, Lithuanian, Latvian, Marathi, Norwegian, Dutch, Polish, Portugeese, Romanian, Russian, Slovak, Slovenian, Serbian, Swedish, Telgu, Turkish, Ukrainian, and Chinese. Thanks everyone!
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.442>What's new in 1.442</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Workspaces mixed when launching multiple concurrent builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11825">issue 11825</a>)
+  <li class=bug>
+    Fixed ConcurrentModificationException in parallel Maven 3 builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
+  <li class=rfe>
+    Upgrade aether version to 1.13 and sisu to 2.3.0 .
+  <li class=rfe>
+    add new action type to enable plugins to intercept the maven 'goals and options' 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/316">pull #316</a>)
+  <li class=rfe>
+    Upgrade to Maven Wagon 2.1 which supports preemptive authz for dav deployment.
+  <li class='major rfe'>
+    Plugins can be now installed without taking Jenkins offline.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.441>What's new in 1.441</a> (2011/11/27)</h3>
+<ul class=image>
+  <li class=bug>
     If running as a daemon, don't daemonize one more time during restart.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11742">issue 11742</a>)
   <li class=bug>
@@ -64,11 +133,7 @@ Upcoming changes</a>
   <li class=rfe>
     CLI jar now has the version number in the manifest as well as the "-version" option.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.440>What's new in 1.440</a> <!--=DATE=--></h3>
+<h3><a name=v1.440>What's new in 1.440</a> (2011/11/17)</h3>
 <ul class=image>
   <li class=bug>
     Sorting "diff" in test result requires 2 clicks
@@ -85,9 +150,6 @@ Upcoming changes</a>
   <li class=bug>
     Dependency wasn't recalculated with CLI "update-job" command.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11636">issue 11636</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Sortable table wasn't "stable" when there are same values in different rows
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11551">issue 11551</a>)
@@ -103,7 +165,6 @@ Upcoming changes</a>
   <li class=rfe>
     Maven mojo records can be now sorted
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.439>What's new in 1.439</a> (2011/11/14)</h3>
 <ul class=image>
   <li class=bug>

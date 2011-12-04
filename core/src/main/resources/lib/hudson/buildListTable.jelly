@@ -57,7 +57,7 @@ THE SOFTWARE.
           <st:nbsp/>
           <a href="${jobBaseUrl}${b.url}">${b.displayName}</a>
         </td>
-        <td data="${b.timestampString2}">
+        <td data="${b.timestampString2}" tooltip="${%Click to center timeline on event}" onclick="javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime('${b.timestampString2}'))">
           ${b.timestampString}
         </td>
         <td>

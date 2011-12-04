@@ -660,7 +660,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
             
 
-            boolean maven3orLater = new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+            boolean maven3orLater = MavenUtil.maven3orLater(mavenVersion);
 
             ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener, maven3orLater
                 ? new Maven3ProcessFactory(
@@ -695,14 +695,15 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             // backward compatibility
             systemProps.put("hudson.build.number",String.valueOf(getNumber()));
 
-            boolean normalExit = false;
             if (maven3orLater)
             { 
                 // FIXME here for maven 3 builds
+                listener.getLogger().println("Building single Maven modules is not implemented for Maven 3, yet!");
                 return Result.ABORTED;
             }
             else
             {
+                boolean normalExit = false;
                 try {
                     Result r = process.call(new Builder(
                         listener,new ProxyImpl(),

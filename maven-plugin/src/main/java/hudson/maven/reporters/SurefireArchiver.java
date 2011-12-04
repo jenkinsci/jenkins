@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
+import hudson.maven.MavenBuildInformation;
 import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.maven.MavenBuilder;
@@ -50,8 +51,6 @@ import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.DirectoryScanner;
@@ -65,7 +64,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * @author Kohsuke Kawaguchi
  */
 public class SurefireArchiver extends MavenReporter {
-    private TestResult result;
+    private transient TestResult result;
     
     /**
      * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
@@ -82,7 +81,7 @@ public class SurefireArchiver extends MavenReporter {
                 // note that because of the way Maven works, just updating system property at this point is too late
                 XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
                 if(c!=null && c.getValue() != null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
-                    if (maven3orLater( build.getMavenBuildInformation().getMavenVersion() )) {
+                    if (build.getMavenBuildInformation().isMaven3OrLater()) {
                         String fieldName = "testFailureIgnore";
                         if (mojo.mojoExecution.getConfiguration().getChild( fieldName ) != null) {
                           mojo.mojoExecution.getConfiguration().getChild( fieldName ).setValue( Boolean.TRUE.toString() );
@@ -138,6 +137,9 @@ public class SurefireArchiver extends MavenReporter {
     
                 if(result==null)    result = new TestResult();
                 result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
+                
+                // final reference in order to serialize it:
+                final TestResult r = result;
     
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                         private static final long serialVersionUID = -1023888330720922136L;
@@ -145,29 +147,34 @@ public class SurefireArchiver extends MavenReporter {
                         public Integer call(MavenBuild build) throws IOException, InterruptedException {
                             SurefireReport sr = build.getAction(SurefireReport.class);
                             if(sr==null)
-                                build.getActions().add(new SurefireReport(build, result, listener));
+                                build.getActions().add(new SurefireReport(build, r, listener));
                             else
-                                sr.setResult(result,listener);
-                            if(result.getFailCount()>0)
+                                sr.setResult(r,listener);
+                            if(r.getFailCount()>0)
                                 build.setResult(Result.UNSTABLE);
                             build.registerAsProjectAction(new FactoryImpl());
-                            return result.getFailCount();
+                            return r.getFailCount();
                         }
                     });
                 
                 // if surefire plugin is going to kill maven because of a test failure,
                 // intercept that (or otherwise build will be marked as failure)
-                if(failCount>0 && error instanceof MojoFailureException) {
-                    MavenBuilder.markAsSuccess = true;
-                }
-                // TODO currenlty error is empty : will be here with maven 3.0.2+
                 if(failCount>0) {
-                    Maven3Builder.markAsSuccess = true;
+                    markBuildAsSuccess(error,build.getMavenBuildInformation());
                 }
             }
         }
 
         return true;
+    }
+    
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification="It's okay to write to static fields here, as each Maven build is started in its own VM")
+    private void markBuildAsSuccess(Throwable mojoError, MavenBuildInformation buildInfo) {
+        if(mojoError == null // in the success case we don't get any exception in Maven 3.0.2+; Maven < 3.0.2 returns no exception anyway
+           || mojoError instanceof MojoFailureException) {
+            MavenBuilder.markAsSuccess = true;
+            Maven3Builder.markAsSuccess = true;
+        }
     }
     
     /**
@@ -305,14 +312,6 @@ public class SurefireArchiver extends MavenReporter {
         }
 
         return true;
-    }
-    
-    public boolean maven3orLater(String mavenVersion) {
-        // null or empty so false !
-        if (StringUtils.isBlank( mavenVersion )) {
-            return false;
-        }
-        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
     }
     
     // I'm not sure if SurefireArchiver is actually ever (de-)serialized,

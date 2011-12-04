@@ -11,3 +11,6 @@ var/run/jenkins
 # Store jenkins log file in it's own directory since they can become rather large and in the future
 # rotating logs can be easily added.
 var/log/jenkins
+
+# Cache directory for the unpacked jenkins.war file.
+var/cache/jenkins

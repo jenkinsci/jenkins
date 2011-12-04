@@ -68,8 +68,7 @@ public class InitializerFinder extends TaskBuilder {
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
         List<Task> result = new ArrayList<Task>();
         for (Method e : Index.list(Initializer.class,cl,Method.class)) {
-            if (!discovered.add(e))
-                continue;   // already reported once
+            if (filter(e)) continue;   // already reported once
 
             if (!Modifier.isStatic(e.getModifiers()))
                 throw new IOException(e+" is not a static method");
@@ -80,6 +79,13 @@ public class InitializerFinder extends TaskBuilder {
             result.add(new TaskImpl(i, e));
         }
         return result;
+    }
+
+    /**
+     * Return true to ignore this method.
+     */
+    protected boolean filter(Method e) {
+        return !discovered.add(e);
     }
 
     /**

@@ -36,6 +36,7 @@ import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
+import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
@@ -45,10 +46,12 @@ import hudson.util.HttpResponses;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
+import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -619,37 +622,41 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
-            URLConnection con = connect(job,src);
-            int total = con.getContentLength();
-            CountingInputStream in = new CountingInputStream(con.getInputStream());
-            byte[] buf = new byte[8192];
-            int len;
-
-            File dst = job.getDestination();
-            File tmp = new File(dst.getPath()+".tmp");
-            OutputStream out = new FileOutputStream(tmp);
-
-            LOGGER.info("Downloading "+job.getName());
             try {
-                while((len=in.read(buf))>=0) {
-                    out.write(buf,0,len);
-                    job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
+                URLConnection con = connect(job,src);
+                int total = con.getContentLength();
+                CountingInputStream in = new CountingInputStream(con.getInputStream());
+                byte[] buf = new byte[8192];
+                int len;
+
+                File dst = job.getDestination();
+                File tmp = new File(dst.getPath()+".tmp");
+                OutputStream out = new FileOutputStream(tmp);
+
+                LOGGER.info("Downloading "+job.getName());
+                try {
+                    while((len=in.read(buf))>=0) {
+                        out.write(buf,0,len);
+                        job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
+                    }
+                } catch (IOException e) {
+                    throw new IOException2("Failed to load "+src+" to "+tmp,e);
                 }
+
+                in.close();
+                out.close();
+
+                if (total!=-1 && total!=tmp.length()) {
+                    // don't know exactly how this happens, but report like
+                    // http://www.ashlux.com/wordpress/2009/08/14/hudson-and-the-sonar-plugin-fail-maveninstallation-nosuchmethoderror/
+                    // indicates that this kind of inconsistency can happen. So let's be defensive
+                    throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
+                }
+
+                return tmp;
             } catch (IOException e) {
-                throw new IOException2("Failed to load "+src+" to "+tmp,e);
+                throw new IOException2("Failed to download from "+src,e);
             }
-
-            in.close();
-            out.close();
-
-            if (total!=-1 && total!=tmp.length()) {
-                // don't know exactly how this happens, but report like
-                // http://www.ashlux.com/wordpress/2009/08/14/hudson-and-the-sonar-plugin-fail-maveninstallation-nosuchmethoderror/
-                // indicates that this kind of inconsistency can happen. So let's be defensive
-                throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
-            }
-
-            return tmp;
         }
 
         /**
@@ -951,6 +958,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 LOGGER.info("Installation successful: "+getName());
                 status = new Success();
                 onSuccess();
+            } catch (InstallationStatus e) {
+                status = e;
+                if (status.isSuccess()) onSuccess();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
@@ -958,7 +968,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
             }
         }
 
-        protected void _run() throws IOException {
+        protected void _run() throws IOException, InstallationStatus {
             URL src = getURL();
 
             config.preValidate(this, src);
@@ -989,7 +999,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
          * <p>
          * Instances of this class is immutable.
          */
-        public abstract class InstallationStatus {
+        public abstract class InstallationStatus extends Throwable {
             public final int id = iota.incrementAndGet();
             public boolean isSuccess() {
                 return false;
@@ -1006,8 +1016,25 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 this.problem = problem;
             }
 
-            public String getStackTrace() {
+            public String getProblemStackTrace() {
                 return Functions.printThrowable(problem);
+            }
+        }
+
+        /**
+         * Indicates that the installation was successful but a restart is needed.
+         *
+         * @see
+         */
+        public class SuccessButRequiresRestart extends Success {
+            private final Localizable message;
+
+            public SuccessButRequiresRestart(Localizable message) {
+                this.message = message;
+            }
+
+            public String getMessage() {
+                return message.toString();
             }
         }
 
@@ -1052,9 +1079,22 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         private final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
+        /**
+         * True to load the plugin into this Jenkins, false to wait until restart.
+         */
+        private final boolean dynamicLoad;
+
+        /**
+         * @deprecated as of 1.442
+         */
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
+            this(plugin,site,auth,false);
+        }
+
+        public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth, boolean dynamicLoad) {
             super(site, auth);
             this.plugin = plugin;
+            this.dynamicLoad = dynamicLoad;
         }
 
         protected URL getURL() throws MalformedURLException {
@@ -1071,7 +1111,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         }
 
         @Override
-        public void _run() throws IOException {
+        public void _run() throws IOException, InstallationStatus {
             super._run();
 
             // if this is a bundled plugin, make sure it won't get overwritten
@@ -1083,6 +1123,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
                 } finally {
                     SecurityContextHolder.clearContext();
                 }
+
+            if (dynamicLoad) {
+                try {
+                    pm.dynamicLoad(getDestination());
+                } catch (RestartRequiredException e) {
+                    throw new SuccessButRequiresRestart(e.message);
+                } catch (Exception e) {
+                    throw new IOException2("Failed to dynamically deploy this plugin",e);
+                }
+            } else {
+                throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+            }
         }
 
         protected void onSuccess() {

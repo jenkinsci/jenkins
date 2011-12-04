@@ -25,6 +25,7 @@
 package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
+import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
@@ -288,6 +289,15 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
         return shortName;
+    }
+
+    /**
+     * Does this plugin supports dynamic loading?
+     */
+    public YesNoMaybe supportsDynamicLoad() {
+        String v = manifest.getMainAttributes().getValue("Support-Dynamic-Loading");
+        if (v==null) return YesNoMaybe.MAYBE;
+        return Boolean.parseBoolean(v) ? YesNoMaybe.YES : YesNoMaybe.NO;
     }
 
     /**

@@ -291,7 +291,7 @@ public final class FilePath implements Serializable {
     /**
      * Checks if the remote path is Unix.
      */
-    private boolean isUnix() {
+    boolean isUnix() {
         // if the path represents a local path, there' no need to guess.
         if(!isRemote())
             return File.pathSeparatorChar!=';';
@@ -1429,7 +1429,7 @@ public final class FilePath implements Serializable {
             target.touch(lastModified());
         } catch (IOException e) {
             // On Windows this seems to fail often. See JENKINS-11073
-            if (!isUnix()) {
+            if (!target.isUnix()) {
                 LOGGER.warning("Failed to set timestamp on " + target.getRemote());
             } else { // rethrow
                 throw new IOException2(e);

@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 import hudson.util.NullStream;
@@ -295,6 +296,24 @@ public class FilePathTest extends ChannelTestCase {
         } finally {
             Util.deleteRecursive(baseDir);
         }
+    }
+    
+    @Bug(11073)
+    public void testIsUnix() {
+        FilePath winPath = new FilePath(new LocalChannel(null),
+                " c:\\app\\hudson\\workspace\\3.8-jelly-db\\jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver\\acceptance-tests\\distribution.zip");
+        assertFalse(winPath.isUnix());
+
+        FilePath base = new FilePath(new LocalChannel(null),
+                "c:\\app\\hudson\\workspace\\3.8-jelly-db");
+        FilePath middle = new FilePath(base, "jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver");
+        FilePath full = new FilePath(middle, "acceptance-tests\\distribution.zip");
+        assertFalse(full.isUnix());
+        
+        
+        FilePath unixPath = new FilePath(new LocalChannel(null),
+                "/home/test");
+        assertTrue(unixPath.isUnix());
     }
 
 }
