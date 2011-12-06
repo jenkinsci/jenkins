@@ -55,6 +55,14 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.443>What's new in 1.443</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
     Wagon 2.0 upgrade broke the Redeploy task for webdav repositories
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11318">issue 11318</a>)
@@ -90,17 +98,17 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5771">issue 5771</a>)
   <li class=bug>
     Fixed a bug where Jenkins failed to show localized text for Hebrew, Indonesian, and Yedish.
+  <li class=bug>
+    Canonical name of Maven artifacts may end with "-" if classifier is empty.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11819">issue 11819</a>) 
   <li class=rfe>
     Proxy configuration supported "no proxy host" setting to allow some hosts to bypass proxy.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8710">issue 8710</a>)
   <li class=rfe>
     Added/improved localization to Arabic, Bulgarian, Catalan, Czech, Danish, German, Greek, Esperanto, Spanish, Estonian, Basque, Finnish, French, Hebrew, Hindi, Hungarian, Indonesian, Icelandic, Italian, Kannada, Korean, Lithuanian, Latvian, Marathi, Norwegian, Dutch, Polish, Portugeese, Romanian, Russian, Slovak, Slovenian, Serbian, Swedish, Telgu, Turkish, Ukrainian, and Chinese. Thanks everyone!
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.442>What's new in 1.442</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.442>What's new in 1.442</a> (2011/12/05)</h3>
 <ul class=image>
   <li class=bug>
     Workspaces mixed when launching multiple concurrent builds.
@@ -121,7 +129,6 @@ Upcoming changes</a>
   <li class='major rfe'>
     Plugins can be now installed without taking Jenkins offline.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.441>What's new in 1.441</a> (2011/11/27)</h3>
 <ul class=image>
   <li class=bug>
