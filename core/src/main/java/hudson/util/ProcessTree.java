@@ -580,6 +580,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         /**
          * Method to destroy a process, given pid.
+         *
+         * Looking at the JavaSE source code, this is using SIGTERM (15)
          */
         private static final Method DESTROY_PROCESS;
 
