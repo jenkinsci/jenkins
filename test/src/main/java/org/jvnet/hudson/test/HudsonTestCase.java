@@ -624,7 +624,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * @see #configureDefaultMaven()
      */
     protected MavenModuleSet createMavenProject(String name) throws IOException {
-        return hudson.createProject(MavenModuleSet.class,name);
+        MavenModuleSet mavenModuleSet = hudson.createProject(MavenModuleSet.class,name);
+        mavenModuleSet.setRunHeadless( true );
+        return mavenModuleSet;
     }
 
     protected String createUniqueProjectName() {

@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.441-SNAPSHOT</version>
+    <version>1.444-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -235,6 +235,10 @@ THE SOFTWARE.
                     <property>
                       <name>buildDirectory</name>
                       <value>${project.build.directory}</value>
+                    </property>
+                    <property>
+                      <name>java.awt.headless</name>
+                      <value>true</value>
                     </property>
                   </systemProperties>
                 </configuration>

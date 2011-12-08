@@ -39,6 +39,7 @@ import hudson.util.RobustReflectionConverter;
 import hudson.Functions;
 import hudson.Extension;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.Stapler;
@@ -308,6 +309,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 // fall through next
             } catch (DataAccessException e) {
                 // fall through next
+            } catch (AuthenticationException e) {
+                // other seemingly unexpected error.
+                return FormValidation.error(e,"Failed to test the validity of the user name "+v);
             }
 
             try {
@@ -320,6 +324,9 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 // fall through next
             } catch (DataAccessException e) {
                 // fall through next
+            } catch (AuthenticationException e) {
+                // other seemingly unexpected error.
+                return FormValidation.error(e,"Failed to test the validity of the group name "+v);
             }
 
             // couldn't find it. it doesn't exist
@@ -330,5 +337,7 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
             return String.format("<img src='%s%s/images/16x16/%s' style='margin-right:0.2em'>", Stapler.getCurrentRequest().getContextPath(), Jenkins.RESOURCE_PATH, gif);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(GlobalMatrixAuthorizationStrategy.class.getName());
 }
 

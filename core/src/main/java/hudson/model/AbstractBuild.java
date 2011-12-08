@@ -766,17 +766,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
-        if (changeSet == null || changeSet.get() == null) // cached value
-            try {
-                changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(calcChangeSet());
-            } finally {
-                // defensive check. if the calculation fails (such as through an exception),
-                // set a dummy value so that it'll work the next time. the exception will
-                // be still reported, giving the plugin developer an opportunity to fix it.
-                if (changeSet==null)
-                    changeSet=new WeakReference<ChangeLogSet<? extends Entry>>(ChangeLogSet.createEmpty(this));
-            }
-        return changeSet.get();
+        ChangeLogSet<? extends Entry> cs = null;
+        if (changeSet!=null)
+            cs = changeSet.get();
+
+        if (cs==null)
+            cs = calcChangeSet();
+
+        // defensive check. if the calculation fails (such as through an exception),
+        // set a dummy value so that it'll work the next time. the exception will
+        // be still reported, giving the plugin developer an opportunity to fix it.
+        if (cs==null)
+            cs = ChangeLogSet.createEmpty(this);
+
+        changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
+        return cs;
     }
 
     /**

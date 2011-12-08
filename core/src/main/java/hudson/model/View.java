@@ -454,9 +454,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public Object getDynamic(String token) {
-        for (Action a : getActions())
+        for (Action a : getActions()) {
+            String url = a.getUrlName();
+            if (url==null)  continue;
             if(a.getUrlName().equals(token))
                 return a;
+        }
         return null;
     }
 

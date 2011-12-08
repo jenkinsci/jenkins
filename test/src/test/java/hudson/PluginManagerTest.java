@@ -156,4 +156,14 @@ public class PluginManagerTest extends HudsonTestCase {
             t.setContextClassLoader(old);
         }
     }
+
+    public void testInstallWithoutRestart() throws Exception {
+        URL res = getClass().getClassLoader().getResource("plugins/htmlpublisher.hpi");
+        File f = new File(jenkins.getRootDir(), "plugins/htmlpublisher.hpi");
+        FileUtils.copyURLToFile(res, f);
+        jenkins.pluginManager.dynamicLoad(f);
+
+        Class c = jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
+        assertNotNull(jenkins.getDescriptorByType(c));
+    }
 }

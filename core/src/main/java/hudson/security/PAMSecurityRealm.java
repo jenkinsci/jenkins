@@ -23,42 +23,33 @@
  */
 package hudson.security;
 
-import groovy.lang.Binding;
-import hudson.Functions;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
+import hudson.Util;
+import hudson.model.Descriptor;
 import hudson.os.PosixAPI;
 import hudson.util.FormValidation;
-import hudson.util.spring.BeanBuilder;
-import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.providers.AuthenticationProvider;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.User;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jruby.ext.posix.FileStat;
+import org.jruby.ext.posix.Group;
+import org.jruby.ext.posix.POSIX;
+import org.jruby.ext.posix.Passwd;
 import org.jvnet.libpam.PAM;
 import org.jvnet.libpam.PAMException;
 import org.jvnet.libpam.UnixUser;
 import org.jvnet.libpam.impl.CLibrary;
-import org.springframework.dao.DataAccessException;
-import org.springframework.web.context.WebApplicationContext;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.jruby.ext.posix.POSIX;
-import org.jruby.ext.posix.FileStat;
-import org.jruby.ext.posix.Passwd;
-import org.jruby.ext.posix.Group;
+import org.springframework.dao.DataAccessException;
 
+import java.io.File;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.io.File;
 
 /**
  * {@link SecurityRealm} that uses Unix PAM authentication.
@@ -77,7 +68,7 @@ public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
     }
 
     @Override
-    protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+    protected synchronized UserDetails authenticate(String username, String password) throws AuthenticationException {
         try {
             UnixUser uu = new PAM(serviceName).authenticate(username, password);
 
@@ -149,7 +140,7 @@ public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 else            group=String.valueOf(st.gid());
 
                 if ((st.mode()&FileStat.S_IRGRP)!=0) {
-                    // the file is readable to group. Hudson should be in the right group, then
+                    // the file is readable to group. Jenkins should be in the right group, then
                     return FormValidation.error(Messages.PAMSecurityRealm_BelongToGroup(user, group));
                 } else {
                     Passwd opwd = api.getpwuid(st.uid());

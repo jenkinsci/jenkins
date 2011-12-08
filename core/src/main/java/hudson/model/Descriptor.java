@@ -28,7 +28,6 @@ import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
-import static hudson.Functions.jsStringEscape;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
@@ -42,6 +41,7 @@ import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
+import static hudson.Functions.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
@@ -134,18 +134,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         public final Class clazz;
         public final Type type;
         private volatile Class itemType;
+        public final String displayName;
 
-        PropertyType(Class clazz, Type type) {
+        PropertyType(Class clazz, Type type, String displayName) {
             this.clazz = clazz;
             this.type = type;
+            this.displayName = displayName;
         }
 
         PropertyType(Field f) {
-            this(f.getType(),f.getGenericType());
+            this(f.getType(),f.getGenericType(),f.toString());
         }
 
         PropertyType(Method getter) {
-            this(getter.getReturnType(),getter.getGenericReturnType());
+            this(getter.getReturnType(),getter.getGenericReturnType(),getter.toString());
         }
 
         public Enum[] getEnumConstants() {
@@ -184,7 +186,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
 
         public Descriptor getItemTypeDescriptorOrDie() {
-            return Jenkins.getInstance().getDescriptorOrDie(getItemType());
+            Class it = getItemType();
+            Descriptor d = Jenkins.getInstance().getDescriptor(it);
+            if (d==null)
+                throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://wiki.jenkins-ci.org/display/JENKINS/My+class+is+missing+descriptor");
+            return d;
         }
 
         /**

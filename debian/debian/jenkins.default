@@ -51,4 +51,4 @@ AJP_PORT=-1
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
 # --argumentsRealm.$ADMIN_USER=admin
 # --webroot=~/.jenkins/war
-JENKINS_ARGS="--webroot=/var/run/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT"
+JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT"

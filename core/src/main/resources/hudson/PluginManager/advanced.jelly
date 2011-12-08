@@ -32,25 +32,15 @@ THE SOFTWARE.
   <l:main-panel>
     <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
     <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
-      <tr style="border-top:none">
+      <tr style="border-top:none; white-space: normal">
         <td>
           <h1>${%HTTP Proxy Configuration}</h1>
           <f:form method="post" action="proxyConfigure">
-            <f:block>
-              <f:entry title="${%Server}" help="/help/update-center/proxy-server.html">
-                <f:textbox name="proxy.server" value="${app.proxy.name}" />
-              </f:entry>
-              <f:entry title="${%Port}" help="/help/update-center/proxy-port.html">
-                <f:number name="proxy.port" value="${app.proxy.port}" clazz="number" min="0" max="65535" step="1"
-                           checkUrl="'${rootURL}/pluginManager/checkProxyPort?value='+escape(this.value)" />
-              </f:entry>
-            </f:block>
-            <f:entry title="${%User name}" help="/help/update-center/proxy-username.html">
-              <f:textbox name="proxy.userName" value="${app.proxy.userName}" />
-            </f:entry>
-            <f:entry title="${%Password}">
-              <f:password name="proxy.password" value="${app.proxy.encryptedPassword}" />
-            </f:entry>
+            <j:scope>
+              <j:set var="instance" value="${app.proxy}"/>
+              <j:set var="descriptor" value="${it.proxyDescriptor}"/>
+              <st:include from="${descriptor}" page="${descriptor.configPage}" />
+            </j:scope>
             <f:block>
               <f:submit value="${%Submit}" />
             </f:block>
