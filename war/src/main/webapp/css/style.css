@@ -324,6 +324,9 @@ table.pane {
   border-collapse: collapse;
   border: 1px #bbb solid;
 }
+table.pane > tbody > tr > td:last-child {
+  border-right: 1px #bbb solid;
+}
 
 td.pane {
   border: 1px #bbb solid;
