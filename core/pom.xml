@@ -128,6 +128,10 @@ THE SOFTWARE.
           <artifactId>commons-jexl</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+        <exclusion>
           <!-- we bundle groovy-all -->
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy</artifactId>
@@ -349,9 +353,9 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20090508</version>
+      <version>1.1-jenkins-20111212</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>
