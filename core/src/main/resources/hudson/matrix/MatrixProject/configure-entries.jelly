@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, 
+Stephen Connolly, Yahoo!, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,10 @@ THE SOFTWARE.
       <p:config-blockWhenUpstreamBuilding />
       <p:config-blockWhenDownstreamBuilding />
       <p:config-customWorkspace />
+      <f:entry title="${%Display Name}" help="/help/project-config/displayName.html">
+         <f:textbox name="displayName" value="${it.displayName}" 
+            checkUrl="'${rootURL}/checkDisplayName?displayName='+escape(this.value)+'&amp;jobName=${it.name}'"/>
+      </f:entry>
     </f:advanced>
   </f:section>
 

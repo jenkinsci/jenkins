@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@ package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
+import hudson.Util;
 import hudson.util.EditDistance;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -33,6 +35,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.servlet.ServletException;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
@@ -49,12 +54,17 @@ import org.kohsuke.stapler.export.Flavor;
  * @author Kohsuke Kawaguchi
  */
 public class Search {
+    private final static Logger logger = Logger.getLogger(Search.class.getName());
+    
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
+                if(logger.isLoggable(Level.FINE)){
+                    logger.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
+                }
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
@@ -171,12 +181,49 @@ public class Search {
     }
 
     /**
-     * Performs a search and returns the match, or null if no match was found.
+     * When there are mutiple suggested items, this method can narrow down the resultset
+     * to the SuggestedItem that has a url that contains the query. This is useful is one
+     * job has a display name that matches another job's project name.
+     * @param r A list of Suggested items. It is assumed that there is at least one 
+     * SuggestedItem in r.
+     * @param query A query string
+     * @return Returns the SuggestedItem which has a search url that contains the query.
+     * If no SuggestedItems have a search url which contains the query, then the first
+     * SuggestedItem in the List is returned.
+     */
+    static SuggestedItem findClosestSuggestedItem(List<SuggestedItem> r, String query) {
+        for(SuggestedItem curItem : r) {
+            if(logger.isLoggable(Level.FINE)) {
+                logger.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
+            }
+            if(curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
+                return curItem;
+            }
+        }
+        
+        // couldn't find an item with the query in the url so just
+        // return the first one
+        return r.get(0);        
+    }
+    
+    /**
+     * Performs a search and returns the match, or null if no match was found
+     * or more than one match was found
      */
     public static SuggestedItem find(SearchIndex index, String query) {
         List<SuggestedItem> r = find(Mode.FIND, index, query);
-        if(r.isEmpty()) return null;
-        else            return r.get(0);
+        if(r.isEmpty()){ 
+            return null;
+        }
+        else if(1==r.size()){
+            return r.get(0);
+        }
+        else  {
+            // we have more than one suggested item, so return the item who's url
+            // contains the query as this is probably the job's name
+            return findClosestSuggestedItem(r, query);
+        }
+                    
     }
 
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList) {
@@ -244,6 +291,18 @@ public class Search {
                 }
             };
         }
+        
+        
+        public String toString() {
+            StringBuilder s = new StringBuilder("TokenList{");
+            for(String token : tokens) {
+                s.append(token);
+                s.append(",");
+            }
+            s.append('}');
+            
+            return s.toString();
+        }
     }
 
     private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList) {
@@ -256,14 +315,19 @@ public class Search {
 
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-
+        if(logger.isLoggable(Level.FINE)) {
+            logger.fine("tokens="+tokens.toString());
+        }
+        
         // first token
         int w=1;    // width of token
         for (String token : tokens.subSequence(0)) {
             items.clear();
             m.find(index,token,items);
-            for (SearchItem si : items)
+            for (SearchItem si : items) {
                 paths[w].add(new SuggestedItem(si));
+                logger.info("found search item:"+si.getSearchName());
+            }
             w++;
         }
 
@@ -285,4 +349,5 @@ public class Search {
 
         return paths[tokens.length()];
     }
+    
 }

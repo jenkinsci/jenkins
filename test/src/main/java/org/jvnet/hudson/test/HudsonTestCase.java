@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
  * Yahoo! Inc., Tom Huybrechts, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -354,11 +354,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
             clients.clear();
 
-            for (Channel c : channels)
-                c.close();
-            for (Channel c : channels)
-                c.join();
-            channels.clear();
+            synchronized(channels) {
+                for (Channel c : channels)
+                    c.close();
+                for (Channel c : channels)
+                    c.join();
+                channels.clear();
+            }
 
         } finally {
             server.stop();
@@ -497,11 +499,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
             VirtualChannel ch = c.getChannel();
             if (ch instanceof Channel)
-            TestEnvironment.get().testCase.channels.add((Channel)ch);
+            TestEnvironment.get().testCase.addChannel((Channel)ch);
         }
     }
 
-
+    private void addChannel(Channel ch) {
+        synchronized (channels) {
+            channels.add(ch);
+        }
+    }
+    
 //    /**
 //     * Sets guest credentials to access java.net Subversion repo.
 //     */
