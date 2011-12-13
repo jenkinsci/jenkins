@@ -34,11 +34,17 @@
       <resource relative="true" mod="true" type="welcome">docs/JenkinsWelcomePanel.rtf</resource>
     </locale>
   </resources>
+  <requirements>
+    <requirement id="file" operator="eq" value="true">
+      <file>/System/Library/Frameworks/JavaVM.framework/Versions/A/Commands/java</file>
+      <message-title>Java Runtime Not Found</message-title>
+      <message>You need Java runtime to run Jenkins. Open /Applications/Utilities/Java Preferences, install Java and then run this installer again.</message>
+    </requirement>
+  </requirements>
   <flags/>
   <postinstall>
-    <action id="com.apple.packagemaker.actions.showfile">
-      <value>/Users/Shared/Jenkins/Home</value>
-      <type>absolute-path</type>
+    <action id="com.apple.packagemaker.actions.openurl">
+      <value>http://localhost:8080/</value>
     </action>
   </postinstall>
   <extra-files/>
@@ -48,10 +54,10 @@
   <item type="file">04jenkins.xml</item>
   <mod>description</mod>
   <mod>properties.title</mod>
-  <mod>properties.systemDomain</mod>
+  <mod>properties.anywhereDomain</mod>
   <mod>properties.userDomain</mod>
   <mod>properties.customizeOption</mod>
   <mod>extraFiles</mod>
+  <mod>properties.systemDomain</mod>
   <mod>postinstallActions.actions</mod>
-  <mod>properties.anywhereDomain</mod>
 </pkmkdoc>
