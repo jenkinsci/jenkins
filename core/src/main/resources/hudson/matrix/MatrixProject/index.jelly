@@ -27,7 +27,10 @@ THE SOFTWARE.
   <l:layout title="${it.name}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Project} ${it.name}</h1>
+      <h1>${%Project} ${it.displayName}</h1>
+      <j:if test="${it.name!=it.displayName}">
+        ${%Project name}: ${it.name}
+      </j:if>
       <t:editableDescription permission="${it.CONFIGURE}"/>
 
       <j:choose>

@@ -206,7 +206,7 @@ THE SOFTWARE.
                 <j:if test="${anc.prev!=null}">
                   <j:whitespace> &#187; </j:whitespace>
                 </j:if>
-                <a href="${anc.url}/">
+                <a href="${anc.url}/" tooltip="${anc.object.name}">
                   ${anc.object.displayName}
                 </a>
               </j:if>

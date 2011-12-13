@@ -941,6 +941,21 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return null;
     }
 
+    /**
+     * Takes the displayName request parameter and sets it into the the
+     * displayName member variable. If the displayName request parameter is a 
+     * 0 length string, then set the displayName member variable to null.
+     * @param req
+     * @throws IOException
+     */
+    void setDisplayNameFromRequest(StaplerRequest req) throws IOException {
+        String displayName = req.getParameter("displayName");
+        // if displayName is an empty string, just make it null so that we 
+        // use the project name
+        displayName = Util.nullify(displayName);
+        setDisplayName(displayName);        
+    }
+    
     //
     //
     // actions
@@ -958,6 +973,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         keepDependencies = req.getParameter("keepDependencies") != null;
 
+        setDisplayNameFromRequest(req);
+        
         try {
             JSONObject json = req.getSubmittedForm();
 
