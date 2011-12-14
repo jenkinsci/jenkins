@@ -1,6 +1,5 @@
 package hudson.model;
 
-import java.util.SortedMap;
 
 import junit.framework.Assert;
 
@@ -11,41 +10,7 @@ import org.mockito.Mockito;
 public class JobTest {
 
     private final String DISPLAY_NAME_PARAMETER_NAME = "displayName";
-    private final String DEFAULT_STUB_JOB_NAME = "StubJob";
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private class StubJob extends Job {
-
-        public StubJob() {
-            super(null, DEFAULT_STUB_JOB_NAME);
-        }
-        
-        @Override
-        public boolean isBuildable() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        protected SortedMap _getRuns() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        protected void removeRun(Run run) {
-            // TODO Auto-generated method stub
-            
-        }
-        
-        /**
-         * Override save so that nothig happens when setDisplayName() is called
-         */
-        @Override
-        public void save() {
-            
-        }        
-    }
     
     @Test
     public void testSetDisplayName() throws Exception {
@@ -73,6 +38,6 @@ public class JobTest {
         j.setDisplayNameFromRequest(req);
        
         // make sure the getDisplayName returns the project name
-        Assert.assertEquals(DEFAULT_STUB_JOB_NAME, j.getDisplayName());
+        Assert.assertEquals(StubJob.DEFAULT_STUB_JOB_NAME, j.getDisplayName());
     }
 }
