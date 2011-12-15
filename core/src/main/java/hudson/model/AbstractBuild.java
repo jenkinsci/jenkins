@@ -452,7 +452,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try {
                 workspace = lease.path.getRemote();
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-
+                
+                for (WorkspaceListener wl : WorkspaceListener.all()) {
+                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                }
                 preCheckout(launcher,listener);
                 checkout(listener);
 
