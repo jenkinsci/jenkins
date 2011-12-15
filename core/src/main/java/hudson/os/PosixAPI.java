@@ -25,7 +25,7 @@ public class PosixAPI {
      * Determine if the jna-posix library could not provide native support, and
      * used a fallback java implementation which does not support many operations.
      */
-    public boolean isNative() {
+    public static boolean isNative() {
         return !(posix instanceof JavaPOSIX);
     }
 
