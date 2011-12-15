@@ -852,6 +852,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 
+    /**
+     * Allows you to contribute an environment without going through {@link BuildWrapper}.
+     * <p>
+     * For concurrency, this method is only designed to be called from the executor that's doing a build,
+     * during the build.
+     *
+     * @since 1.444
+     */
+    public void addEnvironment(Environment env) {
+        if (env!=null)
+            buildEnvironments.add(env);
+    }
+
     public Calendar due() {
         return getTimestamp();
     }
