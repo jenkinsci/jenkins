@@ -1233,6 +1233,39 @@ var hudsonRules = {
             $(hidePreview).hide();
             $(previewDiv).hide();
         };
+    },
+
+    /*
+        Use on div tag to make it sticky visible on the bottom of the page.
+        When page scrolls it remains in the bottom of the page
+        Convenient on "OK" button and etc for a long form page
+     */
+    "#bottom-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var topedge = document.createElement("div");
+        topedge.className = "bottom-sticker-top-edge";
+        sticker.insertBefore(topedge,sticker.firstChild);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
     }
 };
 
