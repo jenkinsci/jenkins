@@ -1249,9 +1249,9 @@ var hudsonRules = {
         var shadow = document.createElement("div");
         sticker.parentNode.insertBefore(shadow,sticker);
 
-        var topedge = document.createElement("div");
-        topedge.className = "bottom-sticker-top-edge";
-        sticker.insertBefore(topedge,sticker.firstChild);
+        var edge = document.createElement("div");
+        edge.className = "bottom-sticker-edge";
+        sticker.insertBefore(edge,sticker.firstChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1261,6 +1261,34 @@ var hudsonRules = {
 
             sticker.style.position = "fixed";
             sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
+    },
+
+    "#top-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var edge = document.createElement("div");
+        edge.className = "top-sticker-edge";
+        sticker.insertBefore(edge);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
         }
 
         // react to layout change
