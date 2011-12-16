@@ -38,4 +38,8 @@ public class MavenBuildInformation implements Serializable {
     {
         return mavenVersion;
     }
+    
+    public boolean isMaven3OrLater() {
+    	return MavenUtil.maven3orLater(mavenVersion);
+    }
 }
