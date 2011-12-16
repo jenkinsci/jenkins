@@ -452,7 +452,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try {
                 workspace = lease.path.getRemote();
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-
+                
+                for (WorkspaceListener wl : WorkspaceListener.all()) {
+                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                }
                 preCheckout(launcher,listener);
                 checkout(listener);
 
@@ -841,11 +844,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * During the build, expose the environments contributed by {@link BuildWrapper}s and others.
-     *
+     * 
+     * <p>
+     * Since 1.444, executor thread that's doing the build can access mutable underlying list,
+     * which allows the caller to add/remove environments. The recommended way of adding
+     * environment is through {@link BuildWrapper}, but this might be handy for build steps
+     * who wants to expose additional environment variables to the rest of the build.
+     * 
      * @return can be empty list, but never null. Immutable.
      * @since 1.437
      */
     public EnvironmentList getEnvironments() {
+        Executor e = Executor.currentExecutor();
+        if (e!=null && e.getCurrentExecutable()==this) {
+            if (buildEnvironments==null)    buildEnvironments = new ArrayList<Environment>();
+            return new EnvironmentList(buildEnvironments); 
+        }
+        
         return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 

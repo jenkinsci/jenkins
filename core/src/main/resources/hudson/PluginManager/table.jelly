@@ -136,10 +136,12 @@ THE SOFTWARE.
         </table>
 
         <j:if test="${!empty(list)}">
-          <div style="margin-top:1em">
-            <f:submit value="${%Install without restart}" name="dynamicLoad" />
-            <span style="margin-left:2em;"></span>
-            <f:submit value="${%Download now and install after restart}" />
+          <div id="bottom-sticker" >
+            <div style="background:white; padding:1em">
+              <f:submit value="${%Install without restart}" name="dynamicLoad" />
+              <span style="margin-left:2em;"></span>
+              <f:submit value="${%Download now and install after restart}" />
+            </div>
           </div>
         </j:if>
         <d:invokeBody />

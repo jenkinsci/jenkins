@@ -2,6 +2,7 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 
 public abstract class WorkspaceListener implements ExtensionPoint {
     
@@ -10,6 +11,16 @@ public abstract class WorkspaceListener implements ExtensionPoint {
      * @param project
      */
     public void afterDelete(AbstractProject project) {
+        
+    }
+
+    /**
+     * Called before a build uses a workspace. IE, before any SCM checkout.
+     * @param r
+     * @param workspace
+     * @param listener 
+     */
+    public void beforeUse(AbstractBuild b, FilePath workspace, BuildListener listener) {
         
     }
     
