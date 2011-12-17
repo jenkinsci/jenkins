@@ -494,8 +494,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
         
         private void recordMojoSucceeded(ExecutionEvent event) {
-            Long startTime = getMojoStartTime( event.getProject() );
-            Date endTime = new Date();
             MavenProject mavenProject = event.getProject();
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
 
@@ -505,18 +503,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
                               getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
 
-            try {
-                ExecutedMojo executedMojo =
-                    new ExecutedMojo( mojoInfo, startTime == null ? 0 : endTime.getTime() - startTime.longValue() );
-                this.executedMojosPerModule.get( new ModuleName( mavenProject.getGroupId(),
-                                                                 mavenProject.getArtifactId() ) ).add( executedMojo );
-                
-            } catch ( Exception e ) {
-                // ignoring this
-                maven3Builder.listener.getLogger().println( "ignoring exception during new ExecutedMojo "
-                                                                + e.getMessage() );
-            }
-            
+            recordExecutionTime(event,mojoInfo);
+
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
@@ -529,13 +517,25 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                         mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, getExecutionException(event));
                     } catch ( InterruptedException e ) {
                         e.printStackTrace();
-                    }
-                    catch ( IOException e ) {
+                    } catch ( IOException e ) {
                         e.printStackTrace();
                     }
                 }
             }
-        }        
+        }
+
+        /**
+         * Record how long it took to run this mojo.
+         */
+        private void recordExecutionTime(ExecutionEvent event, MojoInfo mojoInfo) {
+            MavenProject p = event.getProject();
+            List<ExecutedMojo> m = executedMojosPerModule.get(new ModuleName(p));
+            if (m==null)    // defensive check
+                executedMojosPerModule.put(new ModuleName(p), m=new CopyOnWriteArrayList<ExecutedMojo>());
+
+            Long startTime = getMojoStartTime( event.getProject() );
+            m.add(new ExecutedMojo( mojoInfo, startTime == null ? 0 : new Date().getTime() - startTime ));
+        }
 
         /**
          * @see org.apache.maven.execution.ExecutionListener#mojoFailed(org.apache.maven.execution.ExecutionEvent)
@@ -556,8 +556,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
         
         private void recordMojoFailed(ExecutionEvent event) {
-            Long startTime = getMojoStartTime( event.getProject() );
-            Date endTime = new Date();
             MavenProject mavenProject = event.getProject();
             XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
 
@@ -567,17 +565,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
                               getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
 
-            try {
-                ExecutedMojo executedMojo =
-                    new ExecutedMojo( mojoInfo, startTime == null ? 0 : endTime.getTime() - startTime.longValue() );
-                this.executedMojosPerModule.get( new ModuleName( mavenProject.getGroupId(),
-                                                                 mavenProject.getArtifactId() ) ).add( executedMojo );
-            } catch ( Exception e ) {
-                // ignoring this
-                maven3Builder.listener.getLogger().println( "ignoring exception during new ExecutedMojo "
-                                                                + e.getMessage() );
-            }
-            
+            recordExecutionTime(event,mojoInfo);
+
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
