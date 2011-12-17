@@ -29,8 +29,8 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.util.AbstractTaskListener;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -95,7 +95,7 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
         if(os==null) {
             os = unclaimed;
         } else {
-            os.write(unclaimed.toByteArray());
+            unclaimed.writeTo(os);
             unclaimed = new ByteArrayOutputStream();
         }
         this.side = os;
