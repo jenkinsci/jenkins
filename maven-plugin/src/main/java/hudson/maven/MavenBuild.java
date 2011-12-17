@@ -518,7 +518,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
          */
         private void sync() {
             try {
-                Channel.current().syncLocalIO();
+                Channel ch = Channel.current();
+                if (ch!=null)
+                    ch.syncLocalIO();
             } catch (InterruptedException e) {
                 // our signature doesn't allow us to throw InterruptedException, so we process it later
                 Thread.currentThread().interrupt();
