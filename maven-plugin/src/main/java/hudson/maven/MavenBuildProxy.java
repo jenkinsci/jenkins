@@ -36,6 +36,9 @@ import java.util.List;
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
  * during the build.
+ * 
+ * That is, this represents {@link MavenBuild} objects in the master's JVM to code
+ * running inside Maven JVM.
  *
  * @author Kohsuke Kawaguchi
  */
