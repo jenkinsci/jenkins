@@ -50,7 +50,6 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.DescribableList;
 import hudson.util.IOUtils;
 import org.apache.maven.BuildFailureException;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -478,6 +477,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             onStartBuilding();
             startTime = System.currentTimeMillis();
             try {
+                sync();
                 listener.setSideOutputStream(log);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -491,6 +491,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             duration += System.currentTimeMillis()- startTime;
             parentBuild.notifyModuleBuild(MavenBuild.this);
             try {
+                sync();
                 listener.setSideOutputStream(null);
                 save();
             } catch (IOException e) {
@@ -503,6 +504,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
          */
         public void appendLastLog() {
             try {
+                sync();
                 listener.setSideOutputStream(log);
                 listener.setSideOutputStream(null);
             } catch (IOException e) {
@@ -511,10 +513,24 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
 
         /**
+         * Before we touch I/O streams, we need to make sure all the remote I/O operations are locally completed,
+         * or else we end up switching the log traffic at unaligned moments.
+         */
+        private void sync() {
+            try {
+                Channel.current().syncLocalIO();
+            } catch (InterruptedException e) {
+                // our signature doesn't allow us to throw InterruptedException, so we process it later
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        /**
          * Performs final clean up. Invoked after the entire aggregator build is completed.
          */
         protected void close() {
             try {
+                sync();
                 log.close();
             } catch (IOException e) {
                 e.printStackTrace();
