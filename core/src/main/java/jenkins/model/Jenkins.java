@@ -118,7 +118,6 @@ import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
-import hudson.init.InitReactorListener;
 import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
@@ -173,6 +172,7 @@ import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
+import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
@@ -181,7 +181,6 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import hudson.util.Service;
 import hudson.views.DefaultMyViewsTabBar;
 import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
@@ -207,9 +206,7 @@ import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.Task;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
-import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -276,7 +273,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -2827,18 +2823,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         // engage "loading ..." UI and then run the actual task in a separate thread
         servletContext.setAttribute("app", new HudsonIsLoading());
 
-        new Thread("Hudson config reload thread") {
+        new Thread("Jenkins config reload thread") {
             @Override
             public void run() {
                 try {
                     SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
                     reload();
-                } catch (IOException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
-                } catch (ReactorException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
-                } catch (InterruptedException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (Exception e) {
+                    LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
+                    WebApp.get(servletContext).setApp(new JenkinsReloadFailed(e));
                 }
             }
         }.start();
