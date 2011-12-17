@@ -458,11 +458,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             initMojoStartTime( event.getProject() );
             
             MavenProject mavenProject = event.getProject();
-            XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
-
-            MojoInfo mojoInfo =
-                new MojoInfo( event.getMojoExecution(), null, xmlPlexusConfiguration,
-                              getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
+            MojoInfo mojoInfo = new MojoInfo(event);
 
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
@@ -495,13 +491,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private void recordMojoSucceeded(ExecutionEvent event) {
             MavenProject mavenProject = event.getProject();
-            XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
-
-            Mojo mojo = null;//getMojo( event.getMojoExecution(), event.getSession() );
-
-            MojoInfo mojoInfo =
-                new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
-                              getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
+            MojoInfo mojoInfo = new MojoInfo(event);
 
             recordExecutionTime(event,mojoInfo);
 
@@ -557,13 +547,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private void recordMojoFailed(ExecutionEvent event) {
             MavenProject mavenProject = event.getProject();
-            XmlPlexusConfiguration xmlPlexusConfiguration = new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() );
-
-            Mojo mojo = null;//getMojo( event.getMojoExecution(), event.getSession() );
-
-            MojoInfo mojoInfo =
-                new MojoInfo( event.getMojoExecution(), mojo, xmlPlexusConfiguration,
-                              getExpressionEvaluator( event.getSession(), event.getMojoExecution() ) );
+            MojoInfo mojoInfo = new MojoInfo(event);
 
             recordExecutionTime(event,mojoInfo);
 
