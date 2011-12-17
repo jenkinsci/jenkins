@@ -235,14 +235,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }        
         
         private void initMojoStartTime( MavenProject mavenProject) {
-            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject.getGroupId(),
-                                                                    mavenProject.getArtifactId() ),
-                                                    Long.valueOf( new Date().getTime() ) );
+            this.currentMojoStartPerModuleName.put( new ModuleName(mavenProject), new Date().getTime() );
         }
         
         private Long getMojoStartTime(MavenProject mavenProject) {
-            return currentMojoStartPerModuleName.get( new ModuleName( mavenProject.getGroupId(),
-                                                                      mavenProject.getArtifactId() ) );
+            return currentMojoStartPerModuleName.get( new ModuleName(mavenProject) );
         }
         
         /**
@@ -499,7 +496,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
             
-            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
+            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName(event) ) );
             
             if (mavenReporters != null) {
                 for (MavenReporter mavenReporter : mavenReporters) {
@@ -555,7 +552,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             MavenBuildProxy2 mavenBuildProxy2 = getMavenBuildProxy2( mavenProject );
             
-            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName( event.getProject() ) ) );
+            mavenBuildProxy2.setExecutedMojos( this.executedMojosPerModule.get( new ModuleName(event) ) );
             
             if (mavenReporters != null) {
                 for (MavenReporter mavenReporter : mavenReporters) {
