@@ -397,7 +397,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             int r = dirRank(lhs)-dirRank(rhs);
             if(r!=0) return r;
             // otherwise alphabetical
-            return lhs.getName().compareTo(rhs.getName());
+            return lhs.getName().compareToIgnoreCase(rhs.getName());
         }
 
         private int dirRank(File f) {
