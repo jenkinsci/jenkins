@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.FilePath;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ExpandableDetailsNote;
+import hudson.console.HyperlinkNote;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
@@ -445,7 +446,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = createLauncher(listener);
             if (!Jenkins.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
+                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
+                    Messages.AbstractBuild_BuildingRemotely(HyperlinkNote.encodeTo("/computer/"+ builtOn, builtOn)));
 
             final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
