@@ -59,6 +59,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -128,6 +129,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.hamcrest.Matchers;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
@@ -1419,31 +1421,34 @@ public class JenkinsRule implements TestRule, RootAction {
     }
 
     /**
-     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.hpl</tt>
+     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.jpl</tt>
      * and add a recipe to install that to the new Jenkins.
      *
      * <p>
      * This file is created by <tt>maven-hpi-plugin</tt> at the testCompile phase when the current
-     * packaging is <tt>hpi</tt>.
+     * packaging is <tt>jpi</tt>.
      */
     protected void recipeLoadCurrentPlugin() throws Exception {
-        final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
-        if(!e.hasMoreElements())    return; // nope
+    	final Enumeration<URL> jpls = getClass().getClassLoader().getResources("the.jpl");
+        final Enumeration<URL> hpls = getClass().getClassLoader().getResources("the.hpl");
 
-        final URL hpl = e.nextElement();
-
+        final List<URL> all = Collections.list(jpls);
+        all.addAll(Collections.list(hpls));
+        
+        if(all.isEmpty())    return; // nope
+        
         recipes.add(new JenkinsRecipe.Runner() {
             @Override
             public void decorateHome(JenkinsRule testCase, File home) throws Exception {
-                while (e.hasMoreElements()) {
-                    final URL hpl = e.nextElement();
+            	
+            	for (URL hpl : all) {
 
                     // make the plugin itself available
                     Manifest m = new Manifest(hpl.openStream());
                     String shortName = m.getMainAttributes().getValue("Short-Name");
                     if(shortName==null)
                         throw new Error(hpl+" doesn't have the Short-Name attribute");
-                    FileUtils.copyURLToFile(hpl, new File(home, "plugins/" + shortName + ".hpl"));
+                    FileUtils.copyURLToFile(hpl, new File(home, "plugins/" + shortName + ".jpl"));
 
                     // make dependency plugins available
                     // TODO: probably better to read POM, but where to read from?
@@ -1464,7 +1469,7 @@ public class JenkinsRule implements TestRule, RootAction {
                             String version = tokens[1];
                             File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
 
-                            File dst = new File(home, "plugins/" + artifactId + ".hpi");
+                            File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
                                 FileUtils.copyFile(dependencyJar, dst);
                             }
@@ -1498,20 +1503,33 @@ public class JenkinsRule implements TestRule, RootAction {
                         // found it
                         return Which.jarFile(dependencyPomResource);
                     } else {
-                        Artifact a;
-                        a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                        try {
-                            embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                            return a.getFile();
-                        } catch (AbstractArtifactResolutionException x) {
-                            // could be a wrong groupId
-                            resolutionError = x;
-                        }
+
+                    	try {
+                    		// currently the most of the plugins are still hpi
+                            return resolvePluginFile(embedder, artifactId, version, groupId, "hpi");
+                    	} catch(AbstractArtifactResolutionException x){
+                    		try {
+                    			// but also try with the new jpi
+                    		    return resolvePluginFile(embedder, artifactId, version, groupId, "jpi");
+                    		} catch(AbstractArtifactResolutionException x2){
+                                // could be a wrong groupId
+                                resolutionError = x;
+                    		}
+                    	}
+
                     }
                 }
 
                 throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
+            
+            private File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
+					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
+				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
+				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+				return jpi.getFile();
+				
+			}
         });
     }
 
