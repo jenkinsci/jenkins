@@ -52,14 +52,14 @@ public class LocalPluginManager extends PluginManager {
     }
 
     /**
-     * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
+     * If the war file has any "/WEB-INF/plugins/*.jpi", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.hpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.jpi","subvesrion.jpi"}
      */
     @Override
     protected Collection<String> loadBundledPlugins() {
-        // this is used in tests, when we want to override the default bundled plugins with .hpl versions
+        // this is used in tests, when we want to override the default bundled plugins with .jpl (or .hpl) versions
         if (System.getProperty("hudson.bundled.plugins") != null) {
             return Collections.emptySet();
         }

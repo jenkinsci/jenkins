@@ -51,30 +51,54 @@ public class PluginManagerTest extends HudsonTestCase {
     /**
      * Manual submission form.
      */
-    public void testUpload() throws Exception {
+    public void testUploadJpi() throws Exception {
         HtmlPage page = new WebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = env.temporaryDirectoryAllocator.allocate();
-        File plugin = new File(dir, "tasks.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.hpi"),plugin);
+        File plugin = new File(dir, "tasks.jpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.jpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         submit(f);
 
-        assertTrue( new File(hudson.getRootDir(),"plugins/tasks.hpi").exists() );
+        assertTrue( new File(hudson.getRootDir(),"plugins/tasks.jpi").exists() );
     }
 
     /**
+     * Manual submission form.
+     */
+    public void testUploadHpi() throws Exception {
+        HtmlPage page = new WebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        File dir = env.temporaryDirectoryAllocator.allocate();
+        File plugin = new File(dir, "legacy.hpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"),plugin);
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        submit(f);
+
+        // uploaded legacy plugins get renamed to *.jpi
+        assertTrue( new File(hudson.getRootDir(),"plugins/legacy.jpi").exists() );
+    }
+    
+    /**
      * Tests the effect of {@link WithPlugin}.
      */
-    @WithPlugin("tasks.hpi")
-    public void testWithRecipe() throws Exception {
+    @WithPlugin("tasks.jpi")
+    public void testWithRecipeJpi() throws Exception {
         assertNotNull(hudson.getPlugin("tasks"));
+    }
+    
+    /**
+     * Tests the effect of {@link WithPlugin}.
+     */
+    @WithPlugin("legacy.hpi")
+    public void testWithRecipeHpi() throws Exception {
+        assertNotNull(hudson.getPlugin("legacy"));
     }
 
     /**
      * Makes sure that plugins can see Maven2 plugin that's refactored out in 1.296.
      */
-    @WithPlugin("tasks.hpi")
+    @WithPlugin("tasks.jpi")
     public void testOptionalMavenDependency() throws Exception {
         PluginWrapper.Dependency m2=null;
         PluginWrapper tasks = hudson.getPluginManager().getPlugin("tasks");
@@ -98,7 +122,7 @@ public class PluginManagerTest extends HudsonTestCase {
      * resolve all the classes in the system (for example, a plugin X can define an extension point
      * other plugins implement, so when X loads its config it better sees all the implementations defined elsewhere)
      */
-    @WithPlugin("tasks.hpi")
+    @WithPlugin("tasks.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
     public void testUberClassLoaderIsAvailableDuringStart() {
         assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart)hudson.pluginManager).tested);
@@ -158,8 +182,8 @@ public class PluginManagerTest extends HudsonTestCase {
     }
 
     public void testInstallWithoutRestart() throws Exception {
-        URL res = getClass().getClassLoader().getResource("plugins/htmlpublisher.hpi");
-        File f = new File(jenkins.getRootDir(), "plugins/htmlpublisher.hpi");
+        URL res = getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi");
+        File f = new File(jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
         FileUtils.copyURLToFile(res, f);
         jenkins.pluginManager.dynamicLoad(f);
 

@@ -1105,7 +1105,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * every plugin reimplementing the singleton pattern.
      *
      * @param clazz The plugin class (beware class-loader fun, this will probably only work
-     * from within the hpi that defines the plugin class, it may or may not work in other cases)
+     * from within the jpi that defines the plugin class, it may or may not work in other cases)
      *
      * @return The plugin instance.
      */
