@@ -75,15 +75,18 @@ public class TestPluginManager extends PluginManager {
             }
         }
         // If running tests for a plugin, include the plugin being tested
-        URL u = getClass().getClassLoader().getResource("the.hpl");
+        URL u = getClass().getClassLoader().getResource("the.jpl");
+        if(u==null){
+        	u = getClass().getClassLoader().getResource("the.hpl"); // keep backward compatible 
+        }
         if (u!=null) try {
-            names.add("the.hpl");
-            copyBundledPlugin(u, "the.hpl");
+            names.add("the.jpl");
+            copyBundledPlugin(u, "the.jpl");
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to copy the.hpl",e);
+            LOGGER.log(Level.SEVERE, "Failed to copy the.jpl",e);
         }
 
-        // and pick up test dependency *.hpi that are placed by maven-hpi-plugin TestDependencyMojo.
+        // and pick up test dependency *.jpi that are placed by maven-hpi-plugin TestDependencyMojo.
         // and copy them into $JENKINS_HOME/plugins.
         URL index = getClass().getResource("/test-dependencies/index");
         if (index!=null) {// if built with maven-hpi-plugin < 1.52 this file won't exist.
@@ -91,7 +94,13 @@ public class TestPluginManager extends PluginManager {
             try {
                 String line;
                 while ((line=r.readLine())!=null) {
-                    copyBundledPlugin(new URL(index, line + ".hpi"), line + ".hpi");
+                	final URL url = new URL(index, line + ".jpi");
+					File f = new File(url.toURI());
+                	if(f.exists()){
+                		copyBundledPlugin(url, line + ".jpi");
+                	}else{
+                		copyBundledPlugin(new URL(index, line + ".hpi"), line + ".jpi"); // fallback to hpi
+                	}
                 }
             } finally {
                 r.close();

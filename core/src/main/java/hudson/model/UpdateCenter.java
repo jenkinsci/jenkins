@@ -36,7 +36,6 @@ import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
-import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
@@ -1103,6 +1102,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         protected File getDestination() {
             File baseDir = pm.rootDir;
+            return new File(baseDir, plugin.name + ".jpi");
+        }
+        
+        private File getLegacyDestination() {
+            File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".hpi");
         }
 
@@ -1145,6 +1149,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
         public String toString() {
             return super.toString()+"[plugin="+plugin.title+"]";
         }
+        
+        /**
+         * Called when the download is completed to overwrite
+         * the old file with the new file.
+         */
+        @Override
+        protected void replace(File dst, File src) throws IOException {
+        	File bak = Util.changeExtension(dst,".bak");
+        	
+            bak.delete();
+            final File legacy = getLegacyDestination();
+			if(legacy.exists()){
+            	legacy.renameTo(bak);
+            }else{
+            	dst.renameTo(bak);
+            }
+            legacy.delete();
+            dst.delete(); // any failure up to here is no big deal
+            
+            if(!src.renameTo(dst)) {
+                throw new IOException("Failed to rename "+src+" to "+dst);
+            }
+        }
     }
 
     /**
@@ -1169,7 +1196,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
 
         protected File getDestination() {
             File baseDir = pm.rootDir;
-            return new File(baseDir, plugin.name + ".hpi");
+            final File legacy = new File(baseDir, plugin.name + ".hpi");
+            if(legacy.exists()){
+            	return legacy;
+            }
+            return new File(baseDir, plugin.name + ".jpi");
         }
 
         protected File getBackup() {

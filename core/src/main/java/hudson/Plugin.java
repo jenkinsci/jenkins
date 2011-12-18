@@ -54,7 +54,7 @@ import com.thoughtworks.xstream.XStream;
  *
  * <p>
  * A plugin is bound to URL space of Hudson as <tt>${rootURL}/plugin/foo/</tt>,
- * where "foo" is taken from your plugin name "foo.hpi". All your web resources
+ * where "foo" is taken from your plugin name "foo.jpi". All your web resources
  * in src/main/webapp are visible from this URL, and you can also define Jelly
  * views against your Plugin class, and those are visible in this URL, too.
  *

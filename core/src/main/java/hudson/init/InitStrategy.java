@@ -15,10 +15,10 @@ import hudson.PluginManager;
 import hudson.util.Service;
 
 /**
- * Strategy pattern of the various key decision making during the Hudson initialization.
+ * Strategy pattern of the various key decision making during the Jenkins initialization.
  *
  * <p>
- * Because the act of initializing plugins is a part of the Hudson initialization,
+ * Because the act of initializing plugins is a part of the Jenkins initialization,
  * this extension point cannot be implemented in a plugin. You need to place your jar
  * inside {@code WEB-INF/lib} instead.
  *
@@ -29,27 +29,31 @@ import hudson.util.Service;
  */
 public class InitStrategy {
     /**
-     * Returns the list of *.hpi and *.hpl to expand and load.
+     * Returns the list of *.jpi, *.hpi and *.hpl to expand and load.
      *
      * <p>
-     * Normally we look at {@code $JENKINS_HOME/plugins/*.hpi} and *.hpl.
+     * Normally we look at {@code $JENKINS_HOME/plugins/*.jpi} and *.hpi and *.hpl.
      *
      * @return
      *      never null but can be empty. The list can contain different versions of the same plugin,
-     *      and when that happens, Hudson will ignore all but the first one in the list.
+     *      and when that happens, Jenkins will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-        File[] hpi = pm.rootDir.listFiles(new FilterByExtension(".hpi")); // plugin jar file
-        File[] hpl = pm.rootDir.listFiles(new FilterByExtension(".hpl")); // linked plugin. for debugging.
+    	File[] jpi = pm.rootDir.listFiles(new FilterByExtension(".jpi")); // plugin jar file
+        File[] hpi = pm.rootDir.listFiles(new FilterByExtension(".hpi")); // plugin jar file (for backward compatibility)
+        File[] jpl = pm.rootDir.listFiles(new FilterByExtension(".jpl")); // linked plugin. for debugging.
+        File[] hpl = pm.rootDir.listFiles(new FilterByExtension(".hpl")); // linked plugin. for debugging. (for backward compatibility)
         if (hpi==null || hpl==null)
-            throw new IOException("Hudson is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
+            throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
 
         List<File> r = new ArrayList<File>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
-        // for example, while doing "mvn hpi:run" on a plugin that's bundled with Hudson, we want to the
-        // *.hpl file to override the bundled hpi file.
+        // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
+        // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
+        r.addAll(Arrays.asList(jpl));
+        r.addAll(Arrays.asList(jpi));
         r.addAll(Arrays.asList(hpl));
         r.addAll(Arrays.asList(hpi));
 
@@ -109,7 +113,8 @@ public class InitStrategy {
 
         public boolean accept(File dir, String name) {
             return name.endsWith(extension)        // plugin jar file
-                || name.endsWith(".hpl");       // linked plugin. for debugging.
+                || name.endsWith(".hpl")        // linked plugin. for debugging. (for backward compatibility)
+                || name.endsWith(".jpl");       // linked plugin. for debugging.
         }
     }
 }
