@@ -324,6 +324,9 @@ table.pane {
   border-collapse: collapse;
   border: 1px #bbb solid;
 }
+table.pane > tbody > tr > td:last-child {
+  border-right: 1px #bbb solid;
+}
 
 td.pane {
   border: 1px #bbb solid;
@@ -464,6 +467,15 @@ div.behavior-loading {
 
 LABEL.attach-previous {
     margin-left: 0.5em;
+}
+
+#bottom-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+}
+.bottom-sticker-top-edge {
+    height:16px;
+    background-image: url("../images/bottom-sticker-top-edge.png");
+    background-repeat: repeat-x;
 }
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */

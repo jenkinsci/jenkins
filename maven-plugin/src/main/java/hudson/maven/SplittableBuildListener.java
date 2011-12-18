@@ -29,8 +29,8 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.util.AbstractTaskListener;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -55,9 +55,9 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
      * Used to accumulate data when no one is claiming the {@link #side},
      * so that the next one who set the {@link #side} can claim all the data.
      */
-    private ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
 
-    private OutputStream side = unclaimed;
+    private volatile OutputStream side = unclaimed;
 
     /**
      * Constant {@link PrintStream} connected to both {@link #core} and {@link #side}.
@@ -95,8 +95,10 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
         if(os==null) {
             os = unclaimed;
         } else {
-            os.write(unclaimed.toByteArray());
-            unclaimed = new ByteArrayOutputStream();
+            synchronized (unclaimed) {
+                unclaimed.writeTo(os);
+                unclaimed.reset();
+            }
         }
         this.side = os;
     }

@@ -310,14 +310,22 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, in,out, launchLog);
+        setChannel(channel,launchLog,listener);
+    }
+
+    /**
+     * Sets up the connection through an exsting channel.
+     *
+     * @since 1.444
+     */
+    public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
         final TaskListener taskListener = new StreamTaskListener(launchLog);
         PrintStream log = taskListener.getLogger();
 
-        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
-            in,out, launchLog);
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel c, IOException cause) {

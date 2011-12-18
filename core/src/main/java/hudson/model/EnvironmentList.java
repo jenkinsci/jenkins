@@ -56,4 +56,19 @@ public final class EnvironmentList extends AbstractList<Environment> {
         }
         return null;
     }
+
+    @Override
+    public Environment set(int index, Environment element) {
+        return base.set(index, element);
+    }
+
+    @Override
+    public void add(int index, Environment element) {
+        base.add(index, element);
+    }
+
+    @Override
+    public Environment remove(int index) {
+        return base.remove(index);
+    }
 }

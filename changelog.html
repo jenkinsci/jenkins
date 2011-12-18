@@ -56,14 +56,30 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=rfe>
-    Make the matrix configuration table looks like the rest of Jenkins tables.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10251">issue 10251</a>)
+    If reload fails, don't let the partially loaded state running, or risk the user overwriting the configs they have.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11204">issue 11204</a>)
+  <li class=rfe>
+    Update center UI improvement. "Install" button is now always visisble.
+  <li class=bug>
+    Fixed a bug where a large output from Maven can cause module log output to go out of sync with module build log files.
+  <li class=bug>
+    Confusing error message when the --username option is used on the system with the .ssh directory.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11873">issue 11873</a>)
+  <li class=bug>
+    Fixed prematurely re-drawn matrix test result graph.
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.443>What's new in 1.443</a> <!--=DATE=--></h3>
+<h3><a name=v1.444>What's new in 1.444</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Make the matrix configuration table looks like the rest of Jenkins tables.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10251">issue 10251</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.443>What's new in 1.443</a> (2011/12/12)</h3>
 <ul class=image>
   <li class=bug>
     Wagon 2.0 upgrade broke the Redeploy task for webdav repositories
@@ -109,7 +125,6 @@ Upcoming changes</a>
   <li class=rfe>
     Added/improved localization to Arabic, Bulgarian, Catalan, Czech, Danish, German, Greek, Esperanto, Spanish, Estonian, Basque, Finnish, French, Hebrew, Hindi, Hungarian, Indonesian, Icelandic, Italian, Kannada, Korean, Lithuanian, Latvian, Marathi, Norwegian, Dutch, Polish, Portugeese, Romanian, Russian, Slovak, Slovenian, Serbian, Swedish, Telgu, Turkish, Ukrainian, and Chinese. Thanks everyone!
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.442>What's new in 1.442</a> (2011/12/05)</h3>
 <ul class=image>
   <li class=bug>

@@ -84,7 +84,7 @@ public final class ExecutedMojo implements Serializable {
      */
     public final String digest;
 
-    public ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
+    public ExecutedMojo(MojoInfo mojo, long duration) {
         this.groupId = mojo.pluginName.groupId;
         this.artifactId = mojo.pluginName.artifactId;
         this.version = mojo.pluginName.version;
@@ -102,7 +102,7 @@ public final class ExecutedMojo implements Serializable {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
             // perhaps the plugin has failed to load.
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             // Maybe mojo was loaded from a classes dir instead of from a jar (JENKINS-5044)
             LOGGER.log(Level.WARNING, "Failed to caculate digest for "+md.getImplementation(),e);
         }

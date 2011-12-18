@@ -319,8 +319,8 @@ public class CLI {
                         LOGGER.log(FINE,e.getMessage(),e);
                         return -1;
                     }
-                    System.err.println("Failed to authenticate with your SSH keys. Proceeding with anonymous access");
-                    LOGGER.log(FINE,"Failed to authenticate with your SSH keys. Proceeding with anonymous access",e);
+                    System.err.println("Failed to authenticate with your SSH keys.");
+                    LOGGER.log(FINE,"Failed to authenticate with your SSH keys.",e);
                 }
             }
 
