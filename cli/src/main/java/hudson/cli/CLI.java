@@ -35,8 +35,10 @@ import hudson.remoting.SocketOutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -44,9 +46,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
@@ -63,6 +70,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,17 +86,30 @@ public class CLI {
     private final Channel channel;
     private final CliEntryPoint entryPoint;
     private final boolean ownsPool;
+    private final List<Closeable> closables = new ArrayList<Closeable>(); // stuff to close in the close method
+    private final String httpsProxyTunnel;
 
     public CLI(URL jenkins) throws IOException, InterruptedException {
         this(jenkins,null);
     }
 
     public CLI(URL jenkins, ExecutorService exec) throws IOException, InterruptedException {
+        this(jenkins,exec,null);
+    }
+
+    /**
+     *
+     * @param httpsProxyTunnel
+     *      Configures the HTTP proxy that we use for making a plain TCP/IP connection.
+     *      "host:port" that points to an HTTP proxy or null.
+     */
+    public CLI(URL jenkins, ExecutorService exec, String httpsProxyTunnel) throws IOException, InterruptedException {
         String url = jenkins.toExternalForm();
         if(!url.endsWith("/"))  url+='/';
 
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
+        this.httpsProxyTunnel = httpsProxyTunnel;
 
         Channel channel = null;
         InetSocketAddress clip = getCliTcpPort(url);
@@ -132,13 +153,51 @@ public class CLI {
 
     private Channel connectViaCliPort(URL jenkins, InetSocketAddress endpoint) throws IOException {
         LOGGER.fine("Trying to connect directly via TCP/IP to "+endpoint);
-        Socket s = new Socket(endpoint.getHostName(),endpoint.getPort());
+        final Socket s;
+        OutputStream out;
+
+        if (httpsProxyTunnel!=null) {
+            String[] tokens = httpsProxyTunnel.split(":");
+            s = new Socket(tokens[0], Integer.parseInt(tokens[1]));
+            PrintStream o = new PrintStream(s.getOutputStream());
+            o.print("CONNECT " + endpoint.getHostName() + ":" + endpoint.getPort() + " HTTP/1.0\r\n\r\n");
+
+            // read the response from the proxy
+            ByteArrayOutputStream rsp = new ByteArrayOutputStream();
+            while (!rsp.toString().endsWith("\r\n\r\n")) {
+                int ch = s.getInputStream().read();
+                if (ch<0)   throw new IOException("Failed to read the HTTP proxy response: "+rsp);
+                rsp.write(ch);
+            }
+            String head = new BufferedReader(new StringReader(rsp.toString())).readLine();
+            if (!head.startsWith("HTTP/1.0 200 "))
+                throw new IOException("Failed to establish a connection through HTTP proxy: "+rsp);
+
+            // HTTP proxies (at least the one I tried --- squid) doesn't seem to do half-close very well.
+            // So instead of relying on it, we'll just send the close command and then let the server
+            // cut their side, then close the socket after the join.
+            closables.add(new Closeable() {
+                public void close() throws IOException {
+                    s.close();
+                }
+            });
+            out = new SocketOutputStream(s) {
+                @Override
+                public void close() throws IOException {
+                    // ignore
+                }
+            };
+        } else {
+            s = new Socket(endpoint.getHostName(),endpoint.getPort());
+            out = new SocketOutputStream(s);
+        }
+
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
         dos.writeUTF("Protocol:CLI-connect");
 
         return new Channel("CLI connection to "+jenkins, pool,
                 new BufferedInputStream(new SocketInputStream(s)),
-                new BufferedOutputStream(new SocketOutputStream(s)));
+                new BufferedOutputStream(out));
     }
 
     /**
@@ -196,6 +255,8 @@ public class CLI {
         channel.join();
         if(ownsPool)
             pool.shutdown();
+        for (Closeable c : closables)
+            c.close();
     }
 
     public int execute(List<String> args, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -244,6 +305,12 @@ public class CLI {
     }
 
     public static void main(final String[] _args) throws Exception {
+//        Logger l = Logger.getLogger(Channel.class.getName());
+//        l.setLevel(ALL);
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setLevel(ALL);
+//        l.addHandler(h);
+//
         System.exit(_main(_args));
     }
 
@@ -251,6 +318,7 @@ public class CLI {
         List<String> args = Arrays.asList(_args);
         List<KeyPair> candidateKeys = new ArrayList<KeyPair>();
         boolean sshAuthRequestedExplicitly = false;
+        String httpProxy=null;
 
         String url = System.getenv("JENKINS_URL");
 
@@ -285,6 +353,11 @@ public class CLI {
                 sshAuthRequestedExplicitly = true;
                 continue;
             }
+            if(head.equals("-p") && args.size()>=2) {
+                httpProxy = args.get(1);
+                args = args.subList(2,args.size());
+                continue;
+            }
             break;
         }
 
@@ -299,7 +372,7 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
-        CLI cli = new CLI(new URL(url));
+        CLI cli = new CLI(new URL(url),null,httpProxy);
         try {
             if (!candidateKeys.isEmpty()) {
                 try {
