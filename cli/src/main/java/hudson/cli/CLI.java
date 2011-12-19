@@ -23,10 +23,7 @@
  */
 package hudson.cli;
 
-import com.trilead.ssh2.crypto.Base64;
 import com.trilead.ssh2.crypto.PEMDecoder;
-import com.trilead.ssh2.signature.DSASHA1Verify;
-import com.trilead.ssh2.signature.RSASHA1Verify;
 import hudson.cli.client.Messages;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
@@ -48,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
@@ -93,8 +91,8 @@ public class CLI {
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
 
         Channel channel = null;
-        int clip = getCliTcpPort(url);
-        if(clip>=0) {
+        InetSocketAddress clip = getCliTcpPort(url);
+        if(clip!=null) {
             // connect via CLI port
             try {
                 channel = connectViaCliPort(jenkins, url, clip);
@@ -132,10 +130,9 @@ public class CLI {
         return ch;
     }
 
-    private Channel connectViaCliPort(URL jenkins, String url, int clip) throws IOException {
-        String host = new URL(url).getHost();
-        LOGGER.fine("Trying to connect directly via TCP/IP to port "+clip+" of "+host);
-        Socket s = new Socket(host,clip);
+    private Channel connectViaCliPort(URL jenkins, String url, InetSocketAddress endpoint) throws IOException {
+        LOGGER.fine("Trying to connect directly via TCP/IP to "+endpoint);
+        Socket s = new Socket(endpoint.getHostName(),endpoint.getPort());
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
         dos.writeUTF("Protocol:CLI-connect");
 
@@ -145,19 +142,24 @@ public class CLI {
     }
 
     /**
-     * If the server advertises CLI port, returns it.
+     * If the server advertises CLI endpoint, returns its location.
      */
-    private int getCliTcpPort(String url) throws IOException {
+    private InetSocketAddress getCliTcpPort(String url) throws IOException {
         URLConnection head = new URL(url).openConnection();
         try {
             head.connect();
         } catch (IOException e) {
             throw (IOException)new IOException("Failed to connect to "+url).initCause(e);
         }
-        String p = head.getHeaderField("X-Hudson-CLI-Port");
+        String p = head.getHeaderField("X-Jenkins-CLI-Port");
+        if (p==null)    p = head.getHeaderField("X-Hudson-CLI-Port");   // backward compatibility
+        String h = head.getHeaderField("X-Jenkins-CLI-Host");
+        if (h==null)    h = head.getURL().getHost();
+        
         flushURLConnection(head);
-        if(p==null) return -1;
-        return Integer.parseInt(p);
+        if (p==null)     return null;
+        
+        return new InetSocketAddress(h,Integer.parseInt(p));
     }
 
     /**
