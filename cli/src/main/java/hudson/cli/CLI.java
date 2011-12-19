@@ -95,7 +95,7 @@ public class CLI {
         if(clip!=null) {
             // connect via CLI port
             try {
-                channel = connectViaCliPort(jenkins, url, clip);
+                channel = connectViaCliPort(jenkins, clip);
             } catch (IOException e) {
                 LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
             }
@@ -130,7 +130,7 @@ public class CLI {
         return ch;
     }
 
-    private Channel connectViaCliPort(URL jenkins, String url, InetSocketAddress endpoint) throws IOException {
+    private Channel connectViaCliPort(URL jenkins, InetSocketAddress endpoint) throws IOException {
         LOGGER.fine("Trying to connect directly via TCP/IP to "+endpoint);
         Socket s = new Socket(endpoint.getHostName(),endpoint.getPort());
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
