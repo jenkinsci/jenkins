@@ -481,11 +481,18 @@ public class Mailer extends Notifier {
 
         @Exported
         public String getAddress() {
-            if(Util.fixEmptyAndTrim(emailAddress)!=null)
+            if(hasExplicitlyConfiguredAddress())
                 return emailAddress;
 
             // try the inference logic
             return MailAddressResolver.resolve(user);
+        }
+
+        /**
+         * Has the user configured a value explicitly (true), or is it inferred (false)?
+         */
+        public boolean hasExplicitlyConfiguredAddress() {
+            return Util.fixEmptyAndTrim(emailAddress)!=null;
         }
 
         @Extension
