@@ -304,6 +304,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
+        Mailer.descriptor().setHudsonUrl(getURL().toExternalForm());
 
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
