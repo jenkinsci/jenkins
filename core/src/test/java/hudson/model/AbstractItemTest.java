@@ -63,4 +63,30 @@ public class AbstractItemTest {
         
         Assert.assertEquals(i.getName(),  i.getSearchName());        
     }
+    
+    @Test
+    public void testGetDisplayNameOrNull() throws Exception {
+        final String projectName = "projectName";
+        final String displayName = "displayName";
+        StubAbstractItem i = new StubAbstractItem();
+        i.doSetName(projectName);
+        Assert.assertEquals(projectName, i.getName());
+        Assert.assertNull(i.getDisplayNameOrNull());
+        
+        i.setDisplayName(displayName);
+        Assert.assertEquals(displayName, i.getDisplayNameOrNull());
+    }
+
+    @Test
+    public void testSetDisplayNameOrNull() throws Exception {
+        final String projectName = "projectName";
+        final String displayName = "displayName";
+        StubAbstractItem i = new StubAbstractItem();
+        i.doSetName(projectName);
+        Assert.assertNull(i.getDisplayNameOrNull());
+
+        i.setDisplayNameOrNull(displayName);
+        Assert.assertEquals(displayName, i.getDisplayNameOrNull());
+        Assert.assertEquals(displayName, i.getDisplayName());
+    }
 }

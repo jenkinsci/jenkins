@@ -118,12 +118,38 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     @Exported
+    /**
+     * @return The display name of this object, or if it is not set, the name
+     * of the object.
+     */
     public String getDisplayName() {
         if(null!=displayName) {
             return displayName;
         }
         // if the displayName is not set, then return the name as we use to do
         return getName();
+    }
+    
+    @Exported
+    /**
+     * This is intended to be used by the Job configuration pages where
+     * we want to return null if the display name is not set.
+     * @return The display name of this object or null if the display name is not
+     * set
+     */
+    public String getDisplayNameOrNull() {
+        return displayName;
+    }
+    
+    /**
+     * This method exists so that the Job configuration pages can use 
+     * getDisplayNameOrNull so that nothing is shown in the display name text
+     * box if the display name is not set.
+     * @param displayName
+     * @throws IOException
+     */
+    public void setDisplayNameOrNull(String displayName) throws IOException {
+        setDisplayName(displayName);
     }
     
     public void setDisplayName(String displayName) throws IOException {
