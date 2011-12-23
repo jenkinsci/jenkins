@@ -563,7 +563,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
                     // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
-                    AbstractBuild.this.scm = new NullChangeLogParser();
+                    AbstractBuild.this.scm = NullChangeLogParser.INSTANCE;
 
                     try {
                         if (project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml"))) {
