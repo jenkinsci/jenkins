@@ -23,35 +23,17 @@
  */
 package hudson.cli;
 
-import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
-import hudson.util.IOUtils;
-import jenkins.model.Jenkins;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.CmdLineParser;
-import org.jvnet.tiger_types.Types;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.List;
-import java.util.Locale;
-import java.util.Collections;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.logging.Level;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
 
 /**
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
@@ -77,8 +59,10 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         String subCmd = args.get(0);
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
+            cmd.channel = Channel.current();
             final CLICommand old = CLICommand.setCurrent(cmd);
             try {
+                cmd.setTransportAuth(Channel.current().getProperty(CLICommand.TRANSPORT_AUTHENTICATION));
                 return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
             } finally {
                 CLICommand.setCurrent(old);

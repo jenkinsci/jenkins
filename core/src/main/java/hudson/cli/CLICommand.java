@@ -135,6 +135,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public transient Locale locale;
 
+    private transient Authentication transportAuth;
 
     /**
      * Gets the command name.
@@ -170,7 +171,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stdout = stdout;
         this.stderr = stderr;
         this.locale = locale;
-        this.channel = Channel.current();
         registerOptionHandlers();
         CmdLineParser p = new CmdLineParser(this);
 
@@ -184,7 +184,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         try {
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
-            if (auth== Jenkins.ANONYMOUS)
+            if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
             if (!(this instanceof LoginCommand || this instanceof HelpCommand))
@@ -207,16 +207,18 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * Loads the persisted authentication information from {@link ClientAuthenticationCache}.
+     * Loads the persisted authentication information from {@link ClientAuthenticationCache}
+     * if the current transport provides {@link Channel}.
      */
     protected Authentication loadStoredAuthentication() throws InterruptedException {
         try {
-            return new ClientAuthenticationCache(channel).get();
+            if (channel!=null)
+                return new ClientAuthenticationCache(channel).get();
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
             e.printStackTrace(stderr);  // recover
-            return Jenkins.ANONYMOUS;
         }
+        return Jenkins.ANONYMOUS;
     }
 
     /**
@@ -256,9 +258,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS}.
      */
     public Authentication getTransportAuthentication() {
-        Authentication a = channel.getProperty(TRANSPORT_AUTHENTICATION);
+        Authentication a = transportAuth; 
         if (a==null)    a = Jenkins.ANONYMOUS;
         return a;
+    }
+
+    public void setTransportAuth(Authentication transportAuth) {
+        this.transportAuth = transportAuth;
     }
 
     /**
