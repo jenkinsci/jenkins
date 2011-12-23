@@ -39,6 +39,11 @@ import hudson.security.SecurityRealm;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.discovery.ResourceClassIterator;
+import org.apache.commons.discovery.ResourceNameIterator;
+import org.apache.commons.discovery.resource.ClassLoaders;
+import org.apache.commons.discovery.resource.classes.DiscoverClasses;
+import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.args4j.ClassParser;
@@ -144,7 +149,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public String getName() {
         String name = getClass().getName();
-        name = name.substring(name.lastIndexOf('.')+1); // short name
+        name = name.substring(name.lastIndexOf('.') + 1); // short name
         name = name.substring(name.lastIndexOf('$')+1);
         if(name.endsWith("Command"))
             name = name.substring(0,name.length()-7); // trim off the command
@@ -410,5 +415,22 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public static CLICommand getCurrent() {
         return CURRENT_COMMAND.get();
+    }
+
+    static {
+        // register option handlers that are defined
+        ClassLoaders cls = new ClassLoaders();
+        cls.put(Jenkins.getInstance().getPluginManager().uberClassLoader);
+
+        ResourceNameIterator servicesIter =
+            new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
+        final ResourceClassIterator itr =
+            new DiscoverClasses(cls).findResourceClasses(servicesIter);
+
+        while(itr.hasNext()) {
+            Class h = itr.nextResourceClass().loadClass();
+            Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
+            CmdLineParser.registerHandler(c,h);
+        }
     }
 }
