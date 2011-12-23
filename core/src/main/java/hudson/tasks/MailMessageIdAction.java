@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.model.Action;
+import hudson.model.Run;
 
 /**
  * Remembers the message ID of the e-mail that was sent for the build.
@@ -34,6 +35,11 @@ import hudson.model.Action;
  * @author Kohsuke Kawaguchi
  */
 public class MailMessageIdAction implements Action {
+
+    static {
+        Run.XSTREAM.processAnnotations(MailMessageIdAction.class);
+    }
+
     /**
      * Message ID of the e-mail sent for the build.
      */
