@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.markup.MarkupFormatter;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -43,33 +44,25 @@ public class GlobalSecurityConfiguration extends GlobalConfiguration {
         return Jenkins.getInstance().getMarkupFormatter();
     }
     
+    public int getSlaveAgentPort() {
+        return Jenkins.getInstance().getSlaveAgentPort();
+    }
+    
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
 
-        try {
-            String v = req.getParameter("slaveAgentPortType");
-            if(!j.isUseSecurity() || v==null || v.equals("random"))
-                j.setSlaveAgentPort(0);
-            else
-            if(v.equals("disable"))
-                j.setSlaveAgentPort(-1);
-            else {
-                try {
-                    j.setSlaveAgentPort(Integer.parseInt(req.getParameter("slaveAgentPort")));
-                } catch (NumberFormatException e) {
-                    throw new FormException(jenkins.model.Messages.Hudson_BadPortNumber(req.getParameter("slaveAgentPort")),"slaveAgentPort");
-                }
-            }
-        } catch (IOException e) {
-            throw new FormException(e,"slaveAgentPortType");
-        }
-
         if (json.has("useSecurity")) {
             JSONObject security = json.getJSONObject("useSecurity");
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
+
+            try {
+                j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
+            } catch (IOException e) {
+                throw new FormException(e,"slaveAgentPortType");
+            }
 
             if (security.has("markupFormatter")) {
                 j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, security.getJSONObject("markupFormatter")));
