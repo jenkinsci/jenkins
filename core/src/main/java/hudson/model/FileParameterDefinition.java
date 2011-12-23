@@ -75,7 +75,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         // capture the file to the server
-        FilePath src = new FilePath(command.channel,value);
+        FilePath src = new FilePath(command.checkChannel(),value);
         File local = File.createTempFile("hudson","parameter");
         src.copyTo(new FilePath(local));
 

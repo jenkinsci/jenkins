@@ -120,7 +120,6 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stdout = stdout;
                             this.stderr = stderr;
                             this.locale = locale;
-                            this.channel = Channel.current();
 
                             registerOptionHandlers();
                             CmdLineParser parser = new CmdLineParser(null);

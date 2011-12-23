@@ -33,11 +33,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {
-        	description = channel.call(new Callable<String,IOException>() {
-				public String call() throws IOException {
-					return IOUtils.toString(System.in);
-				}
-        	});
+        	description = IOUtils.toString(stdin);
         }
         
         run.setDescription(description);

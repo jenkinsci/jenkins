@@ -173,7 +173,7 @@ public abstract class ParameterDefinition implements
      * Create a parameter value from the string given in the CLI.
      *
      * @param command
-     *      This is the command that got the parameter. You can use its {@link CLICommand#channel}
+     *      This is the command that got the parameter. You can use its {@link CLICommand#checkChannel()}
      *      for interacting with the CLI JVM.
      * @throws AbortException
      *      If the CLI processing should be aborted. Hudson will report the error message

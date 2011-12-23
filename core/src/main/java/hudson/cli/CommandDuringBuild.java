@@ -46,7 +46,7 @@ public abstract class CommandDuringBuild extends CLICommand {
         try {
             CLICommand c = CLICommand.getCurrent();
             if (c==null)    throw new IllegalStateException("Not executing a CLI command");
-            String[] envs = c.channel.call(new GetCharacteristicEnvironmentVariables());
+            String[] envs = c.checkChannel().call(new GetCharacteristicEnvironmentVariables());
 
             if (envs[0]==null || envs[1]==null)
                 throw new CmdLineException("This CLI command works only when invoked from inside a build");

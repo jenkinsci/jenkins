@@ -76,15 +76,17 @@ public class InstallPluginCommand extends CLICommand {
 
         for (String source : sources) {
             // is this a file?
-            FilePath f = new FilePath(channel, source);
-            if (f.exists()) {
-                stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
-                if (name==null)
-                    name = f.getBaseName();
-                f.copyTo(getTargetFilePath());
-                if (dynamicLoad)
-                    pm.dynamicLoad(getTargetFile());
-                continue;
+            if (channel!=null) {
+                FilePath f = new FilePath(channel, source);
+                if (f.exists()) {
+                    stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
+                    if (name==null)
+                        name = f.getBaseName();
+                    f.copyTo(getTargetFilePath());
+                    if (dynamicLoad)
+                        pm.dynamicLoad(getTargetFile());
+                    continue;
+                }
             }
 
             // is this an URL?

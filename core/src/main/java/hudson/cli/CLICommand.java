@@ -131,6 +131,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * Starting 1.445, CLI transports are not required to provide a channel
      * (think of sshd, telnet, etc), so in such a case this field is null.
+     * 
+     * <p>
+     * See {@link #checkChannel()} to get a channel and throw an user-friendly
+     * exception
      */
     public transient Channel channel;
 
@@ -213,6 +217,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } finally {
             sc.setAuthentication(old); // restore
         }
+    }
+    
+    public Channel checkChannel() throws AbortException {
+        if (channel==null)
+            throw new AbortException("This command can only run with Jenkins CLI. See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI");
+        return channel;
     }
 
     /**
@@ -309,7 +319,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Convenience method for subtypes to obtain the system property of the client.
      */
     protected String getClientSystemProperty(String name) throws IOException, InterruptedException {
-        return channel.call(new GetSystemProperty(name));
+        return checkChannel().call(new GetSystemProperty(name));
     }
 
     private static final class GetSystemProperty implements Callable<String, IOException> {
@@ -327,7 +337,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     protected Charset getClientCharset() throws IOException, InterruptedException {
-        String charsetName = channel.call(new GetCharset());
+        String charsetName = checkChannel().call(new GetCharset());
         try {
             return Charset.forName(charsetName);
         } catch (UnsupportedCharsetException e) {
@@ -348,7 +358,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Convenience method for subtypes to obtain environment variables of the client.
      */
     protected String getClientEnvironmentVariable(String name) throws IOException, InterruptedException {
-        return channel.call(new GetEnvironmentVariable(name));
+        return checkChannel().call(new GetEnvironmentVariable(name));
     }
 
     private static final class GetEnvironmentVariable implements Callable<String, IOException> {
