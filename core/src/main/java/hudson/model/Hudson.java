@@ -119,7 +119,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #getNodes()}. Since 1.252.
      */
     public List<Slave> getSlaves() {
-        return (List)Collections.unmodifiableList(slaves);
+        return (List)slaves;
     }
 
     /**

@@ -1563,11 +1563,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public Node getNode(String name) {
-        for (Node s : getNodes()) {
-            if(s.getNodeName().equals(name))
-                return s;
-        }
-        return null;
+        return slaves.getNode(name);
     }
 
     /**
@@ -1586,7 +1582,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * represents the master.
      */
     public List<Node> getNodes() {
-        return Collections.unmodifiableList(slaves);
+        return slaves;
     }
 
     /**
@@ -1614,11 +1610,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     public void setNodes(List<? extends Node> nodes) throws IOException {
-        // make sure that all names are unique
-        Set<String> names = new HashSet<String>();
-        for (Node n : nodes)
-            if(!names.add(n.getNodeName()))
-                throw new IllegalArgumentException(n.getNodeName()+" is defined more than once");
         this.slaves = new NodeList(nodes);
         updateComputerList();
         trimLabels();
