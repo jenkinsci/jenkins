@@ -127,6 +127,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * {@link Channel} that represents the CLI JVM. You can use this to
      * execute {@link Callable} on the CLI JVM, among other things.
+     *
+     * <p>
+     * Starting 1.445, CLI transports are not required to provide a channel
+     * (think of sshd, telnet, etc), so in such a case this field is null.
      */
     public transient Channel channel;
 
@@ -135,6 +139,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public transient Locale locale;
 
+    /**
+     * Set by the caller of the CLI system if the transport already provides
+     * authentication. Due to the compatibility issue, we still allow the user
+     * to use command line switches to authenticate as other users.
+     */
     private transient Authentication transportAuth;
 
     /**
