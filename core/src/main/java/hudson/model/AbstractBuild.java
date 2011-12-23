@@ -68,6 +68,9 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -124,7 +127,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Changes in this build.
      */
-    private volatile transient ChangeLogSet<? extends Entry> changeSet;
+    private volatile transient Reference<ChangeLogSet<? extends Entry>> changeSet;
 
     /**
      * Cumulative list of people who contributed to the build problem.
@@ -280,7 +283,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoots(ws,this);
+        return getParent().getScm().getModuleRoots(ws, this);
     }
 
     /**
@@ -568,10 +571,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             SCM scm = project.getScm();
 
                             AbstractBuild.this.scm = scm.createChangeLogParser();
-                            AbstractBuild.this.changeSet = AbstractBuild.this.calcChangeSet();
+                            ChangeLogSet<? extends Entry> cs = AbstractBuild.this.calcChangeSet();
+                            AbstractBuild.this.changeSet = new SoftReference(cs);
 
                             for (SCMListener l : Jenkins.getInstance().getSCMListeners())
-                                l.onChangeLogParsed(AbstractBuild.this,listener,changeSet);
+                                l.onChangeLogParsed(AbstractBuild.this,listener,cs);
                             return;
                         }
                     } catch (AbortException e) {
@@ -743,6 +747,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return Collections.<Fingerprint>emptyList();
     }
 
+	/*
+     * No need to to lock the entire AbstractBuild on change set calculcation
+     */
+    private transient Object changeSetLock = new Object();
+    
     /**
      * Gets the changes incorporated into this build.
      *
@@ -750,34 +759,40 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     @Exported
     public ChangeLogSet<? extends Entry> getChangeSet() {
-        if (scm==null) {
-            // for historical reason, null means CVS.
-            try {
-                Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
-                scm = (ChangeLogParser)c.newInstance();
-            } catch (ClassNotFoundException e) {
-                // if CVS isn't available, fall back to something non-null.
-                scm = new NullChangeLogParser();
-            } catch (InstantiationException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new InstantiationError().initCause(e);
-            } catch (IllegalAccessException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new IllegalAccessError().initCause(e);
+        synchronized (changeSetLock) {
+            if (scm==null) {
+                // for historical reason, null means CVS.
+                try {
+                    Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
+                    scm = (ChangeLogParser)c.newInstance();
+                } catch (ClassNotFoundException e) {
+                    // if CVS isn't available, fall back to something non-null.
+                    scm = NullChangeLogParser.INSTANCE;
+                } catch (InstantiationException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new InstantiationError().initCause(e);
+                } catch (IllegalAccessException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new IllegalAccessError().initCause(e);
+                }
             }
+    
+            ChangeLogSet result = changeSet != null ? changeSet.get() : null;
+            if (result == null) {
+                try {
+                    result = calcChangeSet();
+                } finally {
+                    // defensive check. if the calculation fails (such as through an exception),
+                    // set a dummy value so that it'll work the next time. the exception will
+                    // be still reported, giving the plugin developer an opportunity to fix it.
+                    if (result == null) {
+                        result = ChangeLogSet.createEmpty(this);
+                    }
+                }
+                changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(result);
+            }
+            return result;
         }
-
-        if (changeSet==null) // cached value
-            try {
-                changeSet = calcChangeSet();
-            } finally {
-                // defensive check. if the calculation fails (such as through an exception),
-                // set a dummy value so that it'll work the next time. the exception will
-                // be still reported, giving the plugin developer an opportunity to fix it.
-                if (changeSet==null)
-                    changeSet=ChangeLogSet.createEmpty(this);
-            }
-        return changeSet;
     }
 
     /**
