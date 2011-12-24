@@ -49,10 +49,17 @@ public class CrumbFilter implements Filter {
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
-        String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if ("POST".equals(httpRequest.getMethod())) {
+            for (CrumbExclusion e : CrumbExclusion.all()) {
+                if (e.process(httpRequest,httpResponse,chain))
+                    return;
+            }
+
+            String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
+            String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
+
             String crumb = httpRequest.getHeader(crumbFieldName);
             boolean valid = false;
             if (crumb == null) {
@@ -78,7 +85,6 @@ public class CrumbFilter implements Filter {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.warning("No valid crumb was included in request for " + httpRequest.getRequestURI() + ".  Returning " + HttpServletResponse.SC_FORBIDDEN + ".");
-                HttpServletResponse httpResponse = (HttpServletResponse) response;
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
