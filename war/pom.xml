@@ -112,6 +112,11 @@ THE SOFTWARE.
       <artifactId>ssh-cli-auth</artifactId>
       <version>1.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>sshd</artifactId>
+      <version>1.0</version>
+    </dependency>
 
     <!-- offline profiler API when we need it -->
     <!--dependency>
