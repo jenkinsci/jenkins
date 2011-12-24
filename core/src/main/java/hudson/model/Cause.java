@@ -251,6 +251,12 @@ public abstract class Cause {
         }
         
         @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                    HyperlinkNote.encodeTo("/user/"+getUserName(), getUserName())));
+        }
+        
+        @Override
         public boolean equals(Object o) {
             return o instanceof UserIdCause && Arrays.equals(new Object[]{userId},
                     new Object[]{((UserIdCause) o).userId});
