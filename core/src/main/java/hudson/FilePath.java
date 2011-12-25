@@ -878,9 +878,9 @@ public final class FilePath implements Serializable {
         return n.substring(0,idx);
     }
     /**
-     * Gets just the file name portion.
+     * Gets just the file name portion without directories.
      *
-     * This method assumes that the file name is the same between local and remote.
+     * For example, "foo.txt" for "../abc/foo.txt"
      */
     public String getName() {
         String r = remote;
