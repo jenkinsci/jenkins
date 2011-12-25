@@ -719,9 +719,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
-                        if(project.usesPrivateRepository())
-                            margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
-
+                        if(project.usesPrivateRepository()) {
+                            FilePath privateRepo = getBuiltOn().getRootPath().child(envVars.expand(expandTokens(listener, project.getDescriptor().getPrivateRepository())));
+                            margs.add("-Dmaven.repo.local=" + privateRepo.absolutize().getRemote());
+                        }
                         if (project.globalSettingConfigPath != null)
                             margs.add("-gs" , project.globalSettingConfigPath);
 

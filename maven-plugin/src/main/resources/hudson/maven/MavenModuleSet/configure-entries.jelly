@@ -97,9 +97,13 @@ THE SOFTWARE.
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
-        checked="${it.usesPrivateRepository()}" />
-      <f:optionalBlock name="maven.resolveDependencies" title="${%Resolve Dependencies during Pom parsing}" 
-        checked="${it.isResolveDependencies()}" /> 
+        checked="${h.defaulted(it.usesPrivateRepository(),descriptor.usesPrivateRepository())}">
+        <f:entry title="">
+          Local repository will be in ${descriptor.privateRepository}
+        </f:entry>
+      </f:optionalBlock>
+      <f:optionalBlock name="maven.resolveDependencies" title="${%Resolve Dependencies during Pom parsing}"
+        checked="${it.isResolveDependencies()}" />
       <f:optionalBlock name="maven.runHeadless" title="${%Run Headless}" help="/plugin/maven-plugin/run-headless.html"
         checked="${it.runHeadless()}" />
       <f:optionalBlock name="maven.processPlugins" title="${%Process Plugins during Pom parsing}"
