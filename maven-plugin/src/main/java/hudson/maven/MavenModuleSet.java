@@ -185,6 +185,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.223
      */
     private boolean usePrivateRepository = false;
+    
+   /**
+    * If true, the build will send a failure e-mail for each failing maven module.
+    * Defaults to <code>true</code> to simulate old behavior. 
+    * <p>
+    * see JENKINS-5695. 
+    */
+    private Boolean perModuleEmail = Boolean.TRUE;
 
     /**
      * If true, do not automatically schedule a build when one of the project dependencies is built.
@@ -436,6 +444,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return usePrivateRepository;
     }
 
+    public boolean isPerModuleEmail() {
+        return perModuleEmail;
+    }
+    
     public boolean ignoreUpstremChanges() {
         return ignoreUpstremChanges;
     }
@@ -664,6 +676,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         	postbuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
         }
         postbuilders.setOwner(this);
+        
+        if(perModuleEmail == null){
+            perModuleEmail = Boolean.TRUE;
+        }
         
         updateTransientActions();
     }
@@ -987,6 +1003,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
+        perModuleEmail = req.hasParameter("maven.perModuleEmail");
         ignoreUpstremChanges = !json.has("triggerByDependency");
         runHeadless = req.hasParameter("maven.runHeadless");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
