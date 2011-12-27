@@ -95,6 +95,14 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
+     * @since 1.446
+     *      Called at the begenning of the orderly shutdown sequence to
+     *      allow plugins to clean up stuff
+     */
+    public void onBeforeShutdown() {
+    }
+
+    /**
      * Registers this instance to Hudson and start getting notifications.
      *
      * @deprecated as of 1.286
