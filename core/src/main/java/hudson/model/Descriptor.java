@@ -37,6 +37,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
+import org.kohsuke.stapler.lang.Klass;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
@@ -48,6 +49,7 @@ import javax.servlet.RequestDispatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -580,6 +582,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Returns the {@link Klass} object used for the purpose of loading resources from this descriptor.
+     *
+     * This hook enables other JVM languages to provide more integrated lookup.
+     */
+    public Klass<?> getKlass() {
+        return Klass.java(clazz);
+    }
+
+    /**
      * Returns the resource path to the help screen HTML, if any.
      *
      * <p>
@@ -608,10 +619,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * locale variations.
      */
     public String getHelpFile(final String fieldName) {
+        return getHelpFile(getKlass(),fieldName);
+    }
+
+    public String getHelpFile(Klass<?> clazz, String fieldName) {
         String v = helpRedirect.get(fieldName);
         if (v!=null)    return v;
 
-        for(Class c=clazz; c!=null; c=c.getSuperclass()) {
+        for (Klass<?> c : clazz.getAncestors()) {
             String page = "/descriptor/" + getId() + "/help";
             String suffix;
             if(fieldName==null) {
@@ -628,13 +643,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 throw new Error(e);
             }
 
-            InputStream in = getHelpStream(c,suffix);
-            IOUtils.closeQuietly(in);
-            if(in!=null)    return page;
+            if(getStaticHelpUrl(c, suffix) !=null)    return page;
         }
         return null;
     }
-
+    
     /**
      * Tells Jenkins that the help file for the field 'fieldName' is defined in the help file for
      * the 'fieldNameToRedirectTo' in the 'owner' class.
@@ -775,43 +788,45 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         path = path.replace('/','-');
 
-        for (Class c=clazz; c!=null; c=c.getSuperclass()) {
+        for (Klass<?> c= getKlass(); c!=null; c=c.getSuperClass()) {
             RequestDispatcher rd = Stapler.getCurrentRequest().getView(c, "help"+path);
-            if(rd!=null) {// Jelly-generated help page
+            if(rd!=null) {// template based help page
                 rd.forward(req,rsp);
                 return;
             }
 
-            InputStream in = getHelpStream(c,path);
-            if(in!=null) {
+            URL url = getStaticHelpUrl(c, path);
+            if(url!=null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
-                String literal = IOUtils.toString(in,"UTF-8");
-                rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-                in.close();
+                InputStream in = url.openStream();
+                try {
+                    String literal = IOUtils.toString(in,"UTF-8");
+                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
                 return;
             }
         }
         rsp.sendError(SC_NOT_FOUND);
     }
 
-    private InputStream getHelpStream(Class c, String suffix) {
+    private URL getStaticHelpUrl(Klass<?> c, String suffix) {
         Locale locale = Stapler.getCurrentRequest().getLocale();
-        String base = c.getName().replace('.', '/').replace('$','/') + "/help"+suffix;
 
-        ClassLoader cl = c.getClassLoader();
-        if(cl==null)    return null;
-        
-        InputStream in;
-        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
-        if(in!=null)    return in;
-        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
-        if(in!=null)    return in;
-        in = cl.getResourceAsStream(base + '_' + locale.getLanguage() + ".html");
-        if(in!=null)    return in;
+        String base = "help"+suffix;
+
+        URL url;
+        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
+        if(url!=null)    return url;
+        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
+        if(url!=null)    return url;
+        url = c.getResource(base + '_' + locale.getLanguage() + ".html");
+        if(url!=null)    return url;
 
         // default
-        return cl.getResourceAsStream(base+".html");
+        return c.getResource(base + ".html");
     }
 
 
