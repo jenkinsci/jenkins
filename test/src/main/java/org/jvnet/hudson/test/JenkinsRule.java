@@ -215,7 +215,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  */
 public class JenkinsRule implements TestRule, RootAction {
 
-    private final TemporaryFolder tempFolder = new TemporaryFolder();
+    private final TestEnvironment env = new TestEnvironment(null);
 
     private Description testDescription;
 
@@ -299,6 +299,7 @@ public class JenkinsRule implements TestRule, RootAction {
      * @throws Throwable if setup fails (which will disable {@code after}
      */
     protected void before() throws Throwable {
+        env.pin();
         recipe();
         AbstractProject.WORKSPACE.toString();
         User.clear();
@@ -414,9 +415,9 @@ public class JenkinsRule implements TestRule, RootAction {
     public Statement apply(final Statement base, final Description description) {
         if (description.getAnnotation(WithoutJenkins.class) != null) {
             // request has been made to not create the instance for this test method
-            return tempFolder.apply(base, description);
+            return base;
         }
-        return tempFolder.apply(new Statement() {
+        return new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 testDescription = description;
@@ -453,7 +454,7 @@ public class JenkinsRule implements TestRule, RootAction {
                     CURRENT = null;
                 }
             }
-        }, description);
+        };
     }
 
     public static class BreakException extends Exception {}
@@ -476,7 +477,7 @@ public class JenkinsRule implements TestRule, RootAction {
      */
     protected Hudson newHudson() throws Exception {
         ServletContext webServer = createWebServer();
-        File home = tempFolder.newFolder("jenkins-home-" + testDescription.getDisplayName());
+        File home = homeLoader.allocate();
         for (JenkinsRecipe.Runner r : recipes)
             r.decorateHome(this,home);
         return new Hudson(home, webServer, getPluginManager());
@@ -715,7 +716,7 @@ public class JenkinsRule implements TestRule, RootAction {
      * Allocates a new temporary directory for the duration of this test.
      */
     public File createTmpDir() throws IOException {
-        return tempFolder.newFolder("jenkins-"+testDescription.getDisplayName());
+        return env.temporaryDirectoryAllocator.allocate();
     }
 
     public DumbSlave createSlave() throws Exception {
@@ -1986,5 +1987,9 @@ public class JenkinsRule implements TestRule, RootAction {
                 return this.getClass().getName();
             }
         }
+    }
+
+    public Description getTestDescription() {
+        return testDescription;
     }
 }
