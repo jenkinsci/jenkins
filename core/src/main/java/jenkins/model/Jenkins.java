@@ -2433,6 +2433,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Called to shut down the system.
      */
     public void cleanUp() {
+        for (ItemListener l : ItemListener.all())
+            l.onBeforeShutdown();
+
         Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
         for( Computer c : computers.values() ) {
