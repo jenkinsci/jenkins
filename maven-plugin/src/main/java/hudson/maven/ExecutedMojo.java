@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.kohsuke.stapler.Stapler;
 
 /**
@@ -97,7 +98,12 @@ public final class ExecutedMojo implements Serializable {
         PluginDescriptor pd = md.getPluginDescriptor();
         try {
             Class<?> clazz = getMojoClass( md, pd );
-            digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
+            if (clazz!=null) {
+                digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));    
+            } else {
+                LOGGER.log(Level.WARNING, "Failed to getClass for "+md.getImplementation());    
+            }
+            
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
@@ -111,10 +117,13 @@ public final class ExecutedMojo implements Serializable {
     
     private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
         try {
-            return pd.getClassRealm().loadClass( md.getImplementation() );
+            ClassRealm classRealm = pd.getClassRealm();
+            return classRealm == null ? null : classRealm.loadClass( md.getImplementation() );
         } catch (NoSuchMethodError e) {
             // maybe we are in maven2 build ClassRealm package has changed
             return getMojoClassForMaven2( md, pd );
+        } catch ( NullPointerException e ) {
+            throw e;
         }
     }
     
@@ -125,6 +134,10 @@ public final class ExecutedMojo implements Serializable {
         org.codehaus.classworlds.ClassRealm cl = 
             (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
         
+        if (cl==null)
+        {
+            return null;
+        }
         Class<?> clazz = cl.loadClass( md.getImplementation() );
         return clazz;
        
