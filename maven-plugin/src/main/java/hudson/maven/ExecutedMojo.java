@@ -122,8 +122,6 @@ public final class ExecutedMojo implements Serializable {
         } catch (NoSuchMethodError e) {
             // maybe we are in maven2 build ClassRealm package has changed
             return getMojoClassForMaven2( md, pd );
-        } catch ( NullPointerException e ) {
-            throw e;
         }
     }
     
