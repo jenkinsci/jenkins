@@ -483,6 +483,7 @@ public final class FilePath implements Serializable {
     private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
+        @SuppressWarnings("unchecked")
         Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
@@ -703,7 +704,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Conveniene method to call {@link FilePath#copyTo(FilePath)}.
+     * Convenience method to call {@link FilePath#copyTo(FilePath)}.
      * 
      * @since 1.311
      */
@@ -1059,6 +1060,7 @@ public final class FilePath implements Serializable {
      */
     public void touch(final long timestamp) throws IOException, InterruptedException {
         act(new FileCallable<Void>() {
+            private static final long serialVersionUID = -5094638816500738429L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(!f.exists())
                     new FileOutputStream(f).close();
@@ -1456,6 +1458,7 @@ public final class FilePath implements Serializable {
         final OutputStream out = new RemoteOutputStream(os);
 
         act(new FileCallable<Void>() {
+            private static final long serialVersionUID = 4088559042349254141L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 FileInputStream fis = null;
                 try {
