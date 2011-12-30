@@ -388,7 +388,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     public void setMavenVersionUsed( String mavenVersionUsed ) throws IOException {
-        this.mavenVersionUsed = mavenVersionUsed;
+        this.mavenVersionUsed = Util.intern(mavenVersionUsed);
         save();
     }
 
@@ -699,7 +699,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             pom = parentLoc;
 
                         
-                        ProcessCache.MavenProcess process = null;
+                        final ProcessCache.MavenProcess process;
                         
                         boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
                         if ( maven3orLater )
@@ -778,44 +778,27 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 							}
 						}                        
                         
-                        if (maven3orLater)
-                        {   
-                            
-                            Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName, List<MavenReporter>>(project.sortedActiveModules.size());
-                            for (MavenModule mavenModule : project.sortedActiveModules)
-                            {
-                                reporters.put( mavenModule.getModuleName(), mavenModule.createReporters() );
-                            }
-                            Maven3Builder maven3Builder = 
-                                new Maven3Builder( slistener, proxies, reporters, margs.toList(), envVars, mavenBuildInformation );
-                            MavenProbeAction mpa=null;
-                            try {
-                                mpa = new MavenProbeAction(project,process.channel);
-                                addAction(mpa);
-                                r = process.call(maven3Builder);
-                                return r;
-                            } finally {
-                                maven3Builder.end(launcher);
-                                getActions().remove(mpa);
-                                process.discard();
-                            }                            
-                            
+                        final AbstractMavenBuilder builder;
+                        if (maven3orLater) {
+                            builder =
+                                new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
                         } else {
-                         
-                            Maven2Builder builder = 
+                            builder = 
                                 new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
-                            MavenProbeAction mpa=null;
-                            try {
-                                mpa = new MavenProbeAction(project,process.channel);
-                                addAction(mpa);
-                                r = process.call(builder);
-                                return r;
-                            } finally {
-                                builder.end(launcher);
-                                getActions().remove(mpa);
-                                process.discard();
-                            }
                         }
+                        
+                        MavenProbeAction mpa=null;
+                        try {
+                            mpa = new MavenProbeAction(project,process.channel);
+                            addAction(mpa);
+                            r = process.call(builder);
+                            return r;
+                        } finally {
+                            builder.end(launcher);
+                            getActions().remove(mpa);
+                            process.discard();
+                        }                            
+                        
                     } catch (InterruptedException e) {
                         r = Executor.currentExecutor().abortResult();
                         throw e;

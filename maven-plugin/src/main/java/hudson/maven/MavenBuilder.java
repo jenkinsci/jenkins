@@ -40,6 +40,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.BuildFailureException;
@@ -79,8 +80,8 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
      */
     private final boolean profile = MavenProcessFactory.profile;
 
-    protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
-        super( listener, goals, systemProps );
+    protected MavenBuilder(BuildListener listener, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps) {
+        super( listener, modules, goals, systemProps );
     }
 
     /**
