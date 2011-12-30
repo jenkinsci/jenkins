@@ -43,6 +43,8 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Chmod;
 import org.jvnet.hudson.test.Bug;
 
 /**
@@ -314,6 +316,44 @@ public class FilePathTest extends ChannelTestCase {
         FilePath unixPath = new FilePath(new LocalChannel(null),
                 "/home/test");
         assertTrue(unixPath.isUnix());
+    }
+    
+    /**
+     * Tests that permissions are kept when using {@link FilePath#copyToWithPermission(FilePath)}.
+     * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
+     * - well at least when running this test on a Windows OS. See JENKINS-11073
+     */
+    public void testCopyToWithPermission() throws IOException, InterruptedException {
+        File tmp = Util.createTempDir();
+        try {
+            File child = new File(tmp,"child");
+            FilePath childP = new FilePath(child);
+            childP.touch(4711);
+            
+            Chmod chmodTask = new Chmod();
+            chmodTask.setProject(new Project());
+            chmodTask.setFile(child);
+            chmodTask.setPerm("0400");
+            chmodTask.execute();
+            
+            FilePath copy = new FilePath(british,tmp.getPath()).child("copy");
+            childP.copyToWithPermission(copy);
+            
+            assertEquals(childP.mode(),copy.mode());
+            if (!Functions.isWindows()) {
+                assertEquals(childP.lastModified(),copy.lastModified());
+            }
+            
+            // JENKINS-11073:
+            // Windows seems to have random failures when setting the timestamp on newly generated
+            // files. So test that:
+            for (int i=0; i<100; i++) {
+                copy = new FilePath(british,tmp.getPath()).child("copy"+i);
+                childP.copyToWithPermission(copy);
+            }
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
     }
 
 }

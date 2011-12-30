@@ -1068,6 +1068,28 @@ public final class FilePath implements Serializable {
             }
         });
     }
+    
+    private void setLastModifiedIfPossible(final long timestamp) throws IOException, InterruptedException {
+        String message = act(new FileCallable<String>() {
+            private static final long serialVersionUID = -828220335793641630L;
+            public String invoke(File f, VirtualChannel channel) throws IOException {
+                if(!f.setLastModified(timestamp)) {
+                    if (Functions.isWindows()) {
+                        // On Windows this seems to fail often. See JENKINS-11073
+                        // Therefore don't fail, but just log a warning
+                        return "Failed to set the timestamp of "+f+" to "+timestamp;
+                    } else {
+                        throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
+                    }
+                }
+                return null;
+            }
+        });
+
+        if (message!=null) {
+            LOGGER.warning(message);
+        }
+    }
 
     /**
      * Checks if the file is a directory.
@@ -1424,17 +1446,7 @@ public final class FilePath implements Serializable {
         copyTo(target);
         // copy file permission
         target.chmod(mode());
-        
-        try {
-            target.touch(lastModified());
-        } catch (IOException e) {
-            // On Windows this seems to fail often. See JENKINS-11073
-            if (!target.isUnix()) {
-                LOGGER.warning("Failed to set timestamp on " + target.getRemote());
-            } else { // rethrow
-                throw new IOException2(e);
-            }
-        }
+        target.setLastModifiedIfPossible(lastModified());
     }
 
     /**
