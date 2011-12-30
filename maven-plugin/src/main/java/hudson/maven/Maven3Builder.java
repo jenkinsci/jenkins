@@ -495,7 +495,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 executedMojosPerModule.put(new ModuleName(p), m=new CopyOnWriteArrayList<ExecutedMojo>());
 
             Long startTime = getMojoStartTime( event.getProject() );
-            m.add(new ExecutedMojo( mojoInfo, startTime == null ? 0 : new Date().getTime() - startTime ));
+            m.add(new ExecutedMojo( mojoInfo, startTime == null ? 0 : System.currentTimeMillis() - startTime ));
         }
 
         /**

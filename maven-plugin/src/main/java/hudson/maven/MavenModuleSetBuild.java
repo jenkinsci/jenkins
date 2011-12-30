@@ -388,7 +388,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     public void setMavenVersionUsed( String mavenVersionUsed ) throws IOException {
-        this.mavenVersionUsed = mavenVersionUsed;
+        this.mavenVersionUsed = Util.intern(mavenVersionUsed);
         save();
     }
 
