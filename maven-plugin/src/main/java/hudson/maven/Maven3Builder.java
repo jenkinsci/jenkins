@@ -37,13 +37,13 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
@@ -77,29 +77,21 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     
     HudsonMavenExecutionResult mavenExecutionResult;    
     
-    private final Map<ModuleName,MavenBuildProxy2> proxies;
-    private final Map<ModuleName,ProxyImpl2> sourceProxies;
-    private final Map<ModuleName,List<MavenReporter>> reporters = new HashMap<ModuleName,List<MavenReporter>>();
-    
-    private final MavenBuildInformation mavenBuildInformation;
-    
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Map<ModuleName,List<MavenReporter>> reporters, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
-        super( listener, goals, systemProps );
-        this.mavenBuildInformation = mavenBuildInformation;
-        sourceProxies = new HashMap<ModuleName, ProxyImpl2>(proxies);
-        this.proxies = new HashMap<ModuleName, MavenBuildProxy2>(proxies);
-        for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            e.setValue(new FilterImpl(e.getValue(), this.mavenBuildInformation));
-
-        this.reporters.putAll( reporters );
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
+        super( listener, modules, goals, systemProps );
+        this.sourceProxies.putAll(proxies);
+        this.proxies = new HashMap<ModuleName, FilterImpl>();
+        for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
+            this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
+        }
     }    
     
     public Result call() throws IOException {
 
-        MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
         try {
             initializeAsynchronousExecutions();
-            
+        
+            MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
             Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
             
             markAsSuccess = false;
@@ -167,22 +159,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
     }
 
-    /**
-     * Invoked after the maven has finished running, and in the master, not in the maven process.
-     */
-    void end(Launcher launcher) throws IOException, InterruptedException {
-        for (Map.Entry<ModuleName,ProxyImpl2> e : sourceProxies.entrySet()) {
-            ProxyImpl2 p = e.getValue();
-            for (MavenReporter r : reporters.get(e.getKey())) {
-                // we'd love to do this when the module build ends, but doing so requires
-                // we know how many task segments are in the current build.
-                r.end(p.owner(),launcher,listener);
-                p.appendLastLog();
-            }
-            p.close();
-        }
-    }      
-
     private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
 
         private static final long serialVersionUID = 4942789836756366116L;
@@ -195,11 +171,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         long overheadTime;
         
        
-        private final Map<ModuleName,MavenBuildProxy2> proxies;
+        private final Map<ModuleName,FilterImpl> proxies;
         
         private final Map<ModuleName,List<ExecutedMojo>> executedMojosPerModule = new ConcurrentHashMap<ModuleName, List<ExecutedMojo>>();
         
-        private final Map<ModuleName,List<MavenReporter>> reporters = new ConcurrentHashMap<ModuleName,List<MavenReporter>>();
+        private final Map<ModuleName,List<MavenReporter>> reporters;
         
         private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
         
@@ -207,18 +183,16 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         public MavenExecutionListener(Maven3Builder maven3Builder) {
             this.maven3Builder = maven3Builder;
-            this.proxies = new ConcurrentHashMap<ModuleName, MavenBuildProxy2>(maven3Builder.proxies);
-            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet())
-            {
-                e.setValue(maven3Builder.new FilterImpl(e.getValue(), maven3Builder.mavenBuildInformation, Channel.current()));
-                executedMojosPerModule.put( e.getKey(), new CopyOnWriteArrayList<ExecutedMojo>() );
+            this.proxies = new ConcurrentHashMap<ModuleName, FilterImpl>(maven3Builder.proxies);
+            for (ModuleName name : this.proxies.keySet()) {
+                executedMojosPerModule.put( name, new CopyOnWriteArrayList<ExecutedMojo>() );
             }
-            this.reporters.putAll( new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters) );
+            this.reporters = new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters);
             this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
         }
         
         private MavenBuildProxy2 getMavenBuildProxy2(MavenProject mavenProject) {
-            for (Entry<ModuleName,MavenBuildProxy2> entry : proxies.entrySet()) {   
+            for (Entry<ModuleName,FilterImpl> entry : proxies.entrySet()) {   
                if (entry.getKey().compareTo( new ModuleName( mavenProject ) ) == 0) {
                    return entry.getValue();
                }
@@ -235,7 +209,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }        
         
         private void initMojoStartTime( MavenProject mavenProject) {
-            this.currentMojoStartPerModuleName.put( new ModuleName(mavenProject), new Date().getTime() );
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), Long.valueOf( System.currentTimeMillis() ) );
         }
         
         private Long getMojoStartTime(MavenProject mavenProject) {
@@ -264,7 +238,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 buildingProjects.add(new ModuleName(p));
             }
             
-            for (Entry<ModuleName,MavenBuildProxy2> e : this.proxies.entrySet()) {
+            for (Entry<ModuleName,FilterImpl> e : this.proxies.entrySet()) {
                 if (! buildingProjects.contains(e.getKey())) {
                     //maven3Builder.listener.getLogger().println("Project " + e.getKey() + " needs not be build");
                     MavenBuildProxy2 proxy = e.getValue();
@@ -521,7 +495,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 executedMojosPerModule.put(new ModuleName(p), m=new CopyOnWriteArrayList<ExecutedMojo>());
 
             Long startTime = getMojoStartTime( event.getProject() );
-            m.add(new ExecutedMojo( mojoInfo, startTime == null ? 0 : new Date().getTime() - startTime ));
+            m.add(new ExecutedMojo( mojoInfo, startTime == null ? 0 : System.currentTimeMillis() - startTime ));
         }
 
         /**
