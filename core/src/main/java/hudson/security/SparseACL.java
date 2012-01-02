@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 
 /**
- * Accses control list.
+ * Access control list.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -51,6 +51,9 @@ public class SparseACL extends SidACL {
     }
 
     private final List<Entry> entries = new ArrayList<Entry>();
+    /**
+     * Parent to delegate to. Can be null.
+     */
     private ACL parent;
 
     public SparseACL(ACL parent) {
