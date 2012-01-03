@@ -23,13 +23,14 @@
  */
 package hudson.os.windows;
 
+import static hudson.Util.copyStreamAndClose;
+import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
 import hudson.Extension;
 import hudson.Util;
 import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
@@ -43,21 +44,6 @@ import hudson.tools.JDKInstaller.Platform;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
-import jcifs.smb.NtlmPasswordAuthentication;
-import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
-import org.apache.commons.lang.StringUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
-import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
-import org.jinterop.dcom.common.JIException;
-import org.jinterop.dcom.core.JISession;
-import org.jvnet.hudson.remcom.WindowsRemoteProcessLauncher;
-import org.jvnet.hudson.wmi.SWbemServices;
-import org.jvnet.hudson.wmi.WMI;
-import org.jvnet.hudson.wmi.Win32Service;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -74,8 +60,23 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.Util.copyStreamAndClose;
-import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
+import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.SmbException;
+import jcifs.smb.SmbFile;
+import jenkins.model.Jenkins;
+
+import org.apache.commons.lang.StringUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
+import org.jinterop.dcom.common.JIException;
+import org.jinterop.dcom.core.JISession;
+import org.jvnet.hudson.remcom.WindowsRemoteProcessLauncher;
+import org.jvnet.hudson.wmi.SWbemServices;
+import org.jvnet.hudson.wmi.WMI;
+import org.jvnet.hudson.wmi.Win32Service;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Windows slave installed/managed as a service entirely remotely
@@ -83,23 +84,42 @@ import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
  * @author Kohsuke Kawaguchi
  */
 public class ManagedWindowsServiceLauncher extends ComputerLauncher {
-    /**
+
+		/**
      * "[DOMAIN\\]USERNAME" to follow the Windows convention.
      */
     public final String userName;
     
     public final Secret password;
+    
+    public final String vmargs;
+    
+    public final String logOnOption;
 
     public final AccountInfo logOn;
+    
+    public static class LogOnOption {
+        public final String value;
+
+        public final AccountInfo logOn;
+
+        @DataBoundConstructor
+        public LogOnOption(String value, AccountInfo logOn) {
+            this.value = value;
+            this.logOn = logOn;
+        }
+    }
 
     public static class AccountInfo extends AbstractDescribableImpl<AccountInfo> {
-    	public final String userName;
-    	public final Secret password;
-    	@DataBoundConstructor
-    	public AccountInfo(String userName, String password) {
-				this.userName = userName;
-				this.password = Secret.fromString(password);
-    	}
+        public final String userName;
+
+        public final Secret password;
+
+        @DataBoundConstructor
+        public AccountInfo(String userName, String password) {
+            this.userName = userName;
+            this.password = Secret.fromString(password);
+        }
 
         @Extension
         public static class DescriptorImpl extends Descriptor<AccountInfo> {
@@ -121,15 +141,17 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     }
 
     public ManagedWindowsServiceLauncher(String userName, String password, String host) {
-    		this(userName, password, host, null);
+    		this(userName, password, host, null, null);
     }
 
     @DataBoundConstructor
-    public ManagedWindowsServiceLauncher(String userName, String password, String host, AccountInfo logOn) {
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, LogOnOption logOnOption, String vmargs) {
         this.userName = userName;
         this.password = Secret.fromString(password);
+        this.logOnOption = Util.fixEmptyAndTrim(logOnOption.value);
+        this.vmargs = Util.fixEmptyAndTrim(vmargs);
         this.host = Util.fixEmptyAndTrim(host);
-        this.logOn = logOn;
+        this.logOn = logOnOption.logOn;
     }
 
     private JIDefaultAuthInfoImpl createAuth() {
@@ -142,6 +164,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private NtlmPasswordAuthentication createSmbAuth() {
         JIDefaultAuthInfoImpl auth = createAuth();
         return new NtlmPasswordAuthentication(auth.getDomain(), auth.getUserName(), auth.getPassword());
+    }
+    
+    private AccountInfo getLogOn() {
+        if ("administrator".equals(this.logOnOption)) {
+            return new AccountInfo(userName, Secret.toString(password));
+        } else {
+            return logOn;
+        }
     }
 
     @Override
@@ -256,33 +286,32 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 copySlaveJar(logger, remoteRoot);
 
                 // copy jenkins-slave.xml
-                logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
-                String xml = WindowsSlaveInstaller.generateSlaveXml(id,"javaw.exe","-tcp %BASE%\\port.txt");
-                copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
+                String xml = createAndCopyJenkinsSlaveXml(id, logger, remoteRoot);
 
                 // install it as a service
                 logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
                 Document dom = new SAXReader().read(new StringReader(xml));
                 Win32Service svc = services.Get("Win32_Service").cast(Win32Service.class);
                 int r;
+                AccountInfo logOn = getLogOn();
                 if (logOn == null) {
-                	r = svc.Create(
+                    r = svc.Create(
                         id,
                         dom.selectSingleNode("/service/name").getText()+" at "+path,
                         path+"\\jenkins-slave.exe",
                         Win32OwnProcess, 0, "Manual", true);
                 } else {
-                	r = svc.Create(
-                				id,
-                				dom.selectSingleNode("/service/name").getText()+" at "+path,
-                				path+"\\jenkins-slave.exe",
-                				Win32OwnProcess,
-                				0,
-                				"Manual",
-                				false, // When using a different user, it isn't possible to interact
-                				logOn.userName,
-                				Secret.toString(logOn.password),
-                				null, null, null);
+                    r = svc.Create(
+                        id,
+                        dom.selectSingleNode("/service/name").getText()+" at "+path,
+                        path+"\\jenkins-slave.exe",
+                        Win32OwnProcess,
+                        0,
+                        "Manual",
+                        false, // When using a different user, it isn't possible to interact
+                        logOn.userName,
+                        Secret.toString(logOn.password),
+                        null, null, null);
 
                 }
                 if(r!=0) {
@@ -291,7 +320,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 }
                 slaveService = services.getService(id);
             } else {
-                copySlaveJar(logger, remoteRoot);                
+                createAndCopyJenkinsSlaveXml(id, logger, remoteRoot);
+                copySlaveJar(logger, remoteRoot);
             }
 
             logger.println(Messages.ManagedWindowsServiceLauncher_StartingService());
@@ -340,7 +370,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     /**
      * Determines the host name (or the IP address) to connect to.
      */
-    protected String determineHost(Computer c) throws IOException, InterruptedException {
+    protected String determineHost(Computer c) {
         // If host not provided, default to the slave name
         if (StringUtils.isBlank(host)) {
             return c.getName();
@@ -348,10 +378,17 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             return host;
         }
     }
+    
+    private String createAndCopyJenkinsSlaveXml(String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
+        logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
+        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,"javaw.exe",vmargs,"-tcp %BASE%\\port.txt");
+        copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
+        return xml;
+    }
 
     private void copySlaveJar(PrintStream logger, SmbFile remoteRoot) throws IOException {
         // copy slave.jar
-        logger.println("Copying slave.jar");
+        logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveJar());
         copyStreamAndClose(Jenkins.getInstance().getJnlpJars("slave.jar").getURL().openStream(), new SmbFile(remoteRoot,"slave.jar").getOutputStream());
     }
 
@@ -371,17 +408,22 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
-            SWbemServices services = WMI.connect(session, computer.getName());
-            Win32Service slaveService = services.getService("jenkinsslave");
+            SWbemServices services = WMI.connect(session, determineHost(computer));
+            String id = WindowsSlaveInstaller.generateServiceId(computer.getNode().getRemoteFS());
+            Win32Service slaveService = services.getService(id);
             if(slaveService!=null) {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
                 slaveService.StopService();
+                listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_UnregisteringService());
+                slaveService.Delete();
             }
             //destroy session to free the socket	
             JISession.destroySession(session);
         } catch (UnknownHostException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         } catch (JIException e) {
+            e.printStackTrace(listener.error(e.getMessage()));
+        } catch (IOException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         }
     }
