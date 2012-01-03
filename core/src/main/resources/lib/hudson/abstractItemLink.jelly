@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+Yahoo!, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +24,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    Generates a link to a job.
-    <st:attribute name="job" type="hudson.model.Job" use="required">
-      Job object to be displayed.
-    </st:attribute>
-  </st:documentation>
-
-<img src="${imagesURL}/16x16/${job.buildStatusUrl}" alt="${job.iconColor.description}" height="16" width="16"/>
-<a href="${h.getRelativeLinkTo(job)}" tooltip="${job.name}">${job.displayName}</a>
+    Displays a link when given an AbstractItem. It is assumed that that Abstract
+    Item is passed in ${it}
+  </st:documentation>  
+  <a href="${it.absoluteUrl}" tooltip="${it.name}">${it.displayName}</a>
 </j:jelly>
