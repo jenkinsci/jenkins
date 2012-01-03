@@ -991,8 +991,7 @@ public class Util {
                 // ignore a failure.
                 new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
-            int r = -1;
-            boolean operationDone = false;
+            Integer r=null;
             if (!SYMLINK_ESCAPEHATCH) {
                 try {
                     r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
@@ -1000,23 +999,21 @@ public class Util {
                         r = Native.getLastError();
                         errmsg = LIBC.strerror(r);
                     }
-                    operationDone = true;
                 } catch (LinkageError e) {
                     // if JNA is unavailable, fall back.
                     // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                    if (PosixAPI.isNative()) {
+                    if (PosixAPI.supportsNative()) {
                         r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
-                        operationDone = true;
                     }
                 }
             }
-            if (!operationDone) {
-                // escape hatch, until we know that the above works well.
+            if (r==null) {
+                // if all else fail, fall back to the most expensive approach of forking a process
                 r = new LocalProc(new String[]{
                     "ln","-s", targetPath, symlinkPath},
                     new String[0],listener.getLogger(), baseDir).join();
             }
-            if(r!=0)
+            if (r!=0)
                 listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
