@@ -32,6 +32,8 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
+import hudson.os.windows.ManagedWindowsServiceAccount.AnotherUser;
+import hudson.os.windows.ManagedWindowsServiceAccount.LocalSystem;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.SocketInputStream;
@@ -42,6 +44,7 @@ import hudson.tools.JDKInstaller;
 import hudson.tools.JDKInstaller.CPU;
 import hudson.tools.JDKInstaller.Platform;
 import hudson.util.IOUtils;
+import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
 
@@ -85,7 +88,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
-		/**
+    /**
      * "[DOMAIN\\]USERNAME" to follow the Windows convention.
      */
     public final String userName;
@@ -93,10 +96,16 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     public final Secret password;
     
     public final String vmargs;
-    
-    public final String logOnOption;
 
-    public final AccountInfo logOn;
+    /**
+     * @deprecated Use {@link #account}
+     */
+    public transient final AccountInfo logOn;
+
+    /**
+     * Specifies the account used to run the service.
+     */
+    private ManagedWindowsServiceAccount account;
     
     public static class LogOnOption {
         public final String value;
@@ -141,17 +150,27 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     }
 
     public ManagedWindowsServiceLauncher(String userName, String password, String host) {
-    		this(userName, password, host, null, null);
+        this(userName, password, host, null, null);
     }
 
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, AccountInfo account) {
+        this(userName,password,host,account==null ? new LocalSystem() : new AnotherUser(account.userName,account.password), null);
+    }
+    
     @DataBoundConstructor
-    public ManagedWindowsServiceLauncher(String userName, String password, String host, LogOnOption logOnOption, String vmargs) {
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, ManagedWindowsServiceAccount account, String vmargs) {
         this.userName = userName;
         this.password = Secret.fromString(password);
-        this.logOnOption = Util.fixEmptyAndTrim(logOnOption.value);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
         this.host = Util.fixEmptyAndTrim(host);
-        this.logOn = logOnOption.logOn;
+        this.account = account==null ? new LocalSystem() : account;
+        this.logOn = null;
+    }
+
+    public Object readResolve() {
+        if (logOn!=null)
+            account = new AnotherUser(logOn.userName,logOn.password);
+        return this;
     }
 
     private JIDefaultAuthInfoImpl createAuth() {
@@ -165,13 +184,14 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         JIDefaultAuthInfoImpl auth = createAuth();
         return new NtlmPasswordAuthentication(auth.getDomain(), auth.getUserName(), auth.getPassword());
     }
-    
+
+    public ManagedWindowsServiceAccount getAccount() {
+        return account;
+    }
+
     private AccountInfo getLogOn() {
-        if ("administrator".equals(this.logOnOption)) {
-            return new AccountInfo(userName, Secret.toString(password));
-        } else {
-            return logOn;
-        }
+        if (account==null)  return null;
+        return account.getAccount(this);
     }
 
     @Override

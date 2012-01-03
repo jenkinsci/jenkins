@@ -33,11 +33,7 @@ THE SOFTWARE.
   <f:entry title="${%Host}" field="host">
     <f:textbox/>
   </f:entry>
-  <f:radioBlock name="logOnOption" value="" checked="${it.launcher.logOnOption eq null}" title="${%Use Local System}"/>
-  <f:radioBlock name="logOnOption" value="administrator" checked="${it.launcher.logOnOption eq 'administrator'}" title="${%Log on using administrator account}"/>
-  <f:radioBlock name="logOnOption" value="custom" checked="${it.launcher.logOnOption eq 'custom'}" title="${%Log on using a different account}">
-    <f:property field="logOn"/>
-  </f:radioBlock>
+  <f:dropdownDescriptorSelector field="account" title="${%Run service as}"/>
   <f:advanced>
     <f:entry title="${%JVM options}" field="vmargs">
       <f:textbox />
