@@ -150,6 +150,6 @@ public class InstallPluginCommand extends CLICommand {
     }
 
     private File getTargetFile() {
-        return new File(Jenkins.getInstance().getPluginManager().rootDir,name+".hpi");
+        return new File(Jenkins.getInstance().getPluginManager().rootDir,name+".jpi");
     }
 }
