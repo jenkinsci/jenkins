@@ -34,12 +34,15 @@ import java.lang.annotation.Annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
+import org.jvnet.hudson.test.JenkinsRecipe;
 
 
 /**
  * Meta-annotation for recipe annotations, which controls
  * the test environment set up.
  *
+ * This is JUnit3 version of {@link JenkinsRecipe}
+ * 
  * @author Kohsuke Kawaguchi
  */
 @Retention(RUNTIME)
