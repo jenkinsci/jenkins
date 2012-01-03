@@ -47,14 +47,17 @@ public class InitStrategy {
         // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
 
-        listPluginFiles(pm, r, ".jpi", ".hpi"); // plugin jar files
-        listPluginFiles(pm, r, ".jpl", ".hpl"); // linked plugin. for debugging.
+        // similarly, we prefer *.jpi over *.hpi
+        listPluginFiles(pm, ".hpi", r); // plugin jar file (for backward compatibility)
+        listPluginFiles(pm, ".jpi", r); // plugin jar file
+        listPluginFiles(pm, ".hpl", r); // linked plugin. for debugging. (for backward compatibility)
+        listPluginFiles(pm, ".jpl", r); // linked plugin. for debugging.
 
         return r;
     }
     
-    private void listPluginFiles(PluginManager pm, Collection<File> all, String... extensions) throws IOException {
-        File[] files = pm.rootDir.listFiles(new FilterByExtension(extensions));
+    private void listPluginFiles(PluginManager pm, String extension, Collection<File> all) throws IOException {
+        File[] files = pm.rootDir.listFiles(new FilterByExtension(extension));
         if (files==null)
             throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
 
