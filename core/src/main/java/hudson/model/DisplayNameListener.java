@@ -26,6 +26,7 @@ package hudson.model;
 
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.Extension;
@@ -53,10 +54,8 @@ public class DisplayNameListener extends ItemListener {
             AbstractItem dest = (AbstractItem)item;
             try {                
                 dest.setDisplayName(null);
-            }
-            catch(IOException ioe) {
-                logger.warning(String.format("onCopied():Exception while trying to clear the displayName for Item.name:%s. Exception:%s", 
-                        item.getName(), ioe.toString()));
+            } catch(IOException ioe) {
+                logger.log(Level.WARNING, String.format("onCopied():Exception while trying to clear the displayName for Item.name:%s",item.getName()), ioe);
             }
         }
     }
@@ -84,8 +83,8 @@ public class DisplayNameListener extends ItemListener {
                     abstractItem.setDisplayName(null);
                 }
                 catch(IOException ioe) {
-                    logger.warning(String.format("onRenamed():Exception while trying to clear the displayName for Item.name:%s. Exception:%s", 
-                            item.getName(), ioe.toString()));                    
+                    logger.log(Level.WARNING, String.format("onRenamed():Exception while trying to clear the displayName for Item.name:%s",
+                            item.getName()), ioe);
                 }
             }
         }
