@@ -6,6 +6,7 @@ import org.jvnet.hudson.reactor.Task;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,25 +40,25 @@ public class InitStrategy {
      *      and when that happens, Jenkins will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-    	File[] jpi = pm.rootDir.listFiles(new FilterByExtension(".jpi")); // plugin jar file
-        File[] hpi = pm.rootDir.listFiles(new FilterByExtension(".hpi")); // plugin jar file (for backward compatibility)
-        File[] jpl = pm.rootDir.listFiles(new FilterByExtension(".jpl")); // linked plugin. for debugging.
-        File[] hpl = pm.rootDir.listFiles(new FilterByExtension(".hpl")); // linked plugin. for debugging. (for backward compatibility)
-        if (hpi==null || hpl==null)
-            throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
-
         List<File> r = new ArrayList<File>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
         // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
         // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
-        r.addAll(Arrays.asList(jpl));
-        r.addAll(Arrays.asList(jpi));
-        r.addAll(Arrays.asList(hpl));
-        r.addAll(Arrays.asList(hpi));
+
+        listPluginFiles(pm, r, ".jpi", ".hpi"); // plugin jar files
+        listPluginFiles(pm, r, ".jpl", ".hpl"); // linked plugin. for debugging.
 
         return r;
+    }
+    
+    private void listPluginFiles(PluginManager pm, Collection<File> all, String... extensions) throws IOException {
+        File[] files = pm.rootDir.listFiles(new FilterByExtension(extensions));
+        if (files==null)
+            throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
+
+        all.addAll(Arrays.asList(files));
     }
 
     /**
@@ -105,16 +106,18 @@ public class InitStrategy {
     private static final Logger LOGGER = Logger.getLogger(InitStrategy.class.getName());
 
     private static class FilterByExtension implements FilenameFilter {
-        private final String extension;
+        private final List<String> extensions;
 
-        public FilterByExtension(String extension) {
-            this.extension = extension;
+        public FilterByExtension(String... extensions) {
+            this.extensions = Arrays.asList(extensions);
         }
 
         public boolean accept(File dir, String name) {
-            return name.endsWith(extension)        // plugin jar file
-                || name.endsWith(".hpl")        // linked plugin. for debugging. (for backward compatibility)
-                || name.endsWith(".jpl");       // linked plugin. for debugging.
+            for (String extension : extensions) {
+                if (name.endsWith(extension))
+                    return true;
+            }
+            return false;
         }
     }
 }
