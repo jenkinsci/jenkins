@@ -54,16 +54,14 @@ import org.kohsuke.stapler.export.Flavor;
  * @author Kohsuke Kawaguchi
  */
 public class Search {
-    private final static Logger logger = Logger.getLogger(Search.class.getName());
-    
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         List<Ancestor> l = req.getAncestors();
         for( int i=l.size()-1; i>=0; i-- ) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
-                if(logger.isLoggable(Level.FINE)){
-                    logger.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
+                if(LOGGER.isLoggable(Level.FINE)){
+                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
                 }
 
                 SearchIndex index = smo.getSearchIndex();
@@ -193,8 +191,8 @@ public class Search {
      */
     static SuggestedItem findClosestSuggestedItem(List<SuggestedItem> r, String query) {
         for(SuggestedItem curItem : r) {
-            if(logger.isLoggable(Level.FINE)) {
-                logger.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
             }
             if(curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
                 return curItem;
@@ -315,8 +313,8 @@ public class Search {
 
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("tokens="+tokens.toString());
+        if(LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("tokens="+tokens.toString());
         }
         
         // first token
@@ -326,7 +324,7 @@ public class Search {
             m.find(index,token,items);
             for (SearchItem si : items) {
                 paths[w].add(new SuggestedItem(si));
-                logger.info("found search item:"+si.getSearchName());
+                LOGGER.info("found search item:" + si.getSearchName());
             }
             w++;
         }
@@ -350,4 +348,5 @@ public class Search {
         return paths[tokens.length()];
     }
     
+    private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

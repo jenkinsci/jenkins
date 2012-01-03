@@ -39,7 +39,7 @@ import hudson.model.listeners.ItemListener;
 @Extension
 public class DisplayNameListener extends ItemListener {
 
-    private final static Logger logger = Logger.getLogger(DisplayNameListener.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(DisplayNameListener.class.getName());
 
     @Override
     /**
@@ -55,7 +55,7 @@ public class DisplayNameListener extends ItemListener {
             try {                
                 dest.setDisplayName(null);
             } catch(IOException ioe) {
-                logger.log(Level.WARNING, String.format("onCopied():Exception while trying to clear the displayName for Item.name:%s",item.getName()), ioe);
+                LOGGER.log(Level.WARNING, String.format("onCopied():Exception while trying to clear the displayName for Item.name:%s", item.getName()), ioe);
             }
         }
     }
@@ -79,11 +79,11 @@ public class DisplayNameListener extends ItemListener {
                 // This means that the displayname was never set, so we want to set it
                 // to null as it was before
                 try {
-                    logger.info(String.format("onRenamed():Setting displayname to null for item.name=%s", item.getName()));
+                    LOGGER.info(String.format("onRenamed():Setting displayname to null for item.name=%s", item.getName()));
                     abstractItem.setDisplayName(null);
                 }
                 catch(IOException ioe) {
-                    logger.log(Level.WARNING, String.format("onRenamed():Exception while trying to clear the displayName for Item.name:%s",
+                    LOGGER.log(Level.WARNING, String.format("onRenamed():Exception while trying to clear the displayName for Item.name:%s",
                             item.getName()), ioe);
                 }
             }

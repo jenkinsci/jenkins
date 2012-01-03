@@ -29,7 +29,6 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
@@ -94,9 +93,7 @@ import static jenkins.model.Jenkins.*;
  */
 @ExportedBean
 public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
-    
-    private final static Logger logger = Logger.getLogger(View.class.getName());
-    
+
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -681,8 +678,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
             
-            if(logger.isLoggable(Level.FINE)) {
-                logger.fine((String.format("Adding url=%s,displayName=%s", 
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName())));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
@@ -895,4 +892,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * It might be useful to override this.
      */
     public static final Message<View> NEW_PRONOUN = new Message<View>();
+
+    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
 }
