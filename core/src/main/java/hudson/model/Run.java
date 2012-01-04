@@ -1616,59 +1616,76 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets an object that computes the single line summary of this build.
+     * Gets an object which represents the single line summary of this build.
      */
     public Summary getBuildStatusSummary() {
-        Run prev = getPreviousBuild();
-
-        if(getResult()==Result.SUCCESS) {
-            if(prev==null || prev.getResult()== Result.SUCCESS)
+        ResultTrend trend = ResultTrend.getResultTrend(this);
+        
+        switch (trend) {
+            case ABORTED : return new Summary(false, Messages.Run_Summary_Aborted());
+            
+            case NOT_BUILT : return new Summary(false, Messages.Run_Summary_NotBuilt());
+            
+            case FAILURE : return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
+            
+            case STILL_FAILING : 
+                RunT since = getPreviousNotFailedBuild();
+                if(since==null)
+                    return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
+                RunT failedBuild = since.getNextBuild();
+                return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
+           
+            case NOW_UNSTABLE:
+                return determineDetailedUnstableSummary(Boolean.FALSE);
+            case UNSTABLE :
+                return determineDetailedUnstableSummary(Boolean.TRUE);
+            case STILL_UNSTABLE :
+                return determineDetailedUnstableSummary(null);
+                
+            case SUCCESS :
                 return new Summary(false, Messages.Run_Summary_Stable());
-            else
+            
+            case FIXED :
                 return new Summary(false, Messages.Run_Summary_BackToNormal());
+                
         }
+        
+        return new Summary(false, Messages.Run_Summary_Unknown());
+    }
 
-        if(getResult()==Result.FAILURE) {
-            RunT since = getPreviousNotFailedBuild();
-            if(since==null)
-                return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
-            if(since==prev)
-                return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
-            RunT failedBuild = since.getNextBuild();
-            return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
-        }
-
-        if(getResult()==Result.ABORTED)
-            return new Summary(false, Messages.Run_Summary_Aborted());
-
-        if(getResult()==Result.NOT_BUILT)
-            return new Summary(false, Messages.Run_Summary_NotBuilt());
-
-        if(getResult()==Result.UNSTABLE) {
-            if(((Run)this) instanceof AbstractBuild) {
-                AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
-                AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
-                if(trP==null) {
-                    if(trN!=null && trN.getFailCount()>0)
-                        return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
-                } else {
-                    if(trN.getFailCount()!= 0) {
-                        if(trP.getFailCount()==0)
-                            return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
-                        if(trP.getFailCount() < trN.getFailCount())
-                            return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
-                        if(trP.getFailCount() > trN.getFailCount())
-                            return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
-                        
-                        return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
-                    }
+    /**
+     * @param worseOverride override the 'worse' parameter to this value.
+     *   May be null in which case 'worse' is calculated based on the number of failed tests.
+     */
+    private Summary determineDetailedUnstableSummary(Boolean worseOverride) {
+        if(((Run)this) instanceof AbstractBuild) {
+            AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+            Run prev = getPreviousBuild();
+            AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
+            if(trP==null) {
+                if(trN!=null && trN.getFailCount()>0)
+                    return new Summary(worseOverride != null ? worseOverride : true,
+                            Messages.Run_Summary_TestFailures(trN.getFailCount()));
+            } else {
+                if(trN.getFailCount()!= 0) {
+                    if(trP.getFailCount()==0)
+                        return new Summary(worseOverride != null ? worseOverride : true,
+                                Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
+                    if(trP.getFailCount() < trN.getFailCount())
+                        return new Summary(worseOverride != null ? worseOverride : true,
+                                Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
+                    if(trP.getFailCount() > trN.getFailCount())
+                        return new Summary(worseOverride != null ? worseOverride : false,
+                                Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
+                    
+                    return new Summary(worseOverride != null ? worseOverride : false,
+                            Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
                 }
             }
-            
-            return new Summary(false, Messages.Run_Summary_Unstable());
         }
-
-        return new Summary(false, Messages.Run_Summary_Unknown());
+        
+        return new Summary(worseOverride != null ? worseOverride : false,
+                Messages.Run_Summary_Unstable());
     }
 
     /**
