@@ -12,12 +12,27 @@
 
 defaults="defaults read /Library/Preferences/org.jenkins-ci"
 
+
 war=`$defaults war` || war="/Applications/Jenkins/jenkins.war"
 
 javaArgs=""
 heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx${heapSize}"
 
 home=`$defaults JENKINS_HOME` && export JENKINS_HOME="$home"
+
+# Prepare and unlock login keychain
+keychain="$home/Library/Keychains/login.keychain"
+if [ -f "$keychain" ]; then
+    unlock=`$defaults unlockPassword`
+    if [ "X$unlock" != "X" ]; then
+	echo "Unlocking Keychain"
+	security list-keychain -s "$keychain"
+	security login-keychain -d user -s "$keychain"
+	security unlock-keychain -p "$unlock" "$keychain" || echo "Failed to unlock Keychain."
+    fi
+fi
+
+exit 0
 
 add_to_args() {
     val=`$defaults $1` && args="$args --${1}=${val}"
