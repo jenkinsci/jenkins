@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
@@ -687,10 +688,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                         getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null ));
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
-            if(mms.usesPrivateRepository())
-                // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
+            FilePath localRepo = mms.getLocalRepository().locate(MavenBuild.this);
+            if(localRepo!=null)
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+                margs.add("-Dmaven.repo.local="+localRepo.getRemote());
 
             if (mms.getAlternateSettings() != null) {
                 if (IOUtils.isAbsolute(mms.getAlternateSettings())) {

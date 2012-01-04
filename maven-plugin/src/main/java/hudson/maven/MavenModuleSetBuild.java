@@ -719,8 +719,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                            pom.getParent() ) );
                         }
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
-                        if(project.usesPrivateRepository())
-                            margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository"));
+                        FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
+                        if(localRepo!=null)
+                            margs.add("-Dmaven.repo.local="+localRepo.getRemote());
 
                         if (project.globalSettingConfigPath != null)
                             margs.add("-gs" , project.globalSettingConfigPath);
@@ -910,7 +911,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, project, mavenVersion, envVars, getWorkspace()));
+                poms = getModuleRoot().act(new PomParser(listener, mvn, mavenVersion, envVars, MavenModuleSetBuild.this));
             } catch (IOException e) {
                 if (project.isIncrementalBuild()) {
                     // If POM parsing failed we should do a full build next time.
@@ -1074,8 +1075,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         String rootPOMRelPrefix;
         
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, MavenModuleSet project, String mavenVersion, EnvVars envVars, FilePath workspace) {
+        public PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
+            MavenModuleSet project = build.getProject();
             this.listener = listener;
             this.mavenHome = mavenHome;
             this.rootPOM = project.getRootPOM();
@@ -1100,10 +1102,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             
             this.nonRecursive = project.isNonRecursive();
 
-            this.workspaceProper = workspace.getRemote();
+            this.workspaceProper = build.getWorkspace().getRemote();
             LOGGER.fine("Workspace is " + workspaceProper);
-            if (project.usesPrivateRepository()) {
-                this.privateRepository = workspace.child(".repository").getRemote();
+            FilePath localRepo = project.getLocalRepository().locate(build);
+            if (localRepo!=null) {
+                this.privateRepository = localRepo.getRemote();
             } else {
                 this.privateRepository = null;
             }
@@ -1115,7 +1118,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.processPlugins = project.isProcessPlugins();
             
             this.moduleRootPath = 
-                project.getScm().getModuleRoot( workspace, project.getLastBuild() ).getRemote();
+                project.getScm().getModuleRoot( build.getWorkspace(), project.getLastBuild() ).getRemote();
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
             this.globalSetings = project.globalSettingConfigPath;
