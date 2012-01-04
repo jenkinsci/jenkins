@@ -55,7 +55,7 @@ import java.util.jar.JarFile;
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".hpi"</tt>,
+ * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatability),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
@@ -115,7 +115,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Short name of the plugin. The artifact Id of the plugin.
      * This is also used in the URL within Jenkins, so it needs
-     * to remain stable even when the *.hpi file name is changed
+     * to remain stable even when the *.jpi file name is changed
      * (like Maven does.)
      */
     private final String shortName;
@@ -165,7 +165,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
     /**
      * @param archive
-     *      A .hpi archive file jar file, or a .hpl linked plugin.
+     *      A .jpi archive file jar file, or a .jpl linked plugin.
      *  @param manifest
      *  	The manifest for the plugin
      *  @param baseResourceURL

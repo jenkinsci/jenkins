@@ -22,13 +22,21 @@ public class PosixAPI {
     }
 
     /**
+     * @deprecated as of 1.448
+     *      Use {@link #supportsNative()}.
+     */
+    public boolean isNative() {
+        return supportsNative();
+    }
+
+    /**
      * Determine if the jna-posix library could not provide native support, and
      * used a fallback java implementation which does not support many operations.
      */
-    public boolean isNative() {
+    public static boolean supportsNative() {
         return !(posix instanceof JavaPOSIX);
     }
-
+    
     private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {
         public void error(ERRORS errors, String s) {
             throw new PosixException(s,errors);

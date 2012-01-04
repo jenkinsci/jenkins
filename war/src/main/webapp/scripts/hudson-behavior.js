@@ -1728,29 +1728,15 @@ var radioBlockSupport = {
 
     // update one block based on the status of the given radio button
     updateSingleButton : function(radio, blockStart, blockEnd) {
-        var tbl = blockStart.parentNode;
-        var i = false;
-        var o = false;
         var show = radio.checked;
-
-        for (var j = 0; tbl.rows[j]; j++) {
-            var n = tbl.rows[j];
-
-            if (n == blockEnd)
-                o = true;
-
-            if (i && !o) {
-                if (show)
-                    n.style.display = "";
-                else
-                    n.style.display = "none";
-            }
-
-            if (n == blockStart) {
-                i = true;
-                if (n.getAttribute('hasHelp') == 'true')
-                    j++;
-            }
+        
+        if (blockStart.getAttribute('hasHelp') == 'true') {
+            n = blockStart.nextSibling;
+        } else {
+            n = blockStart;
+        }
+        while((n = n.nextSibling) != blockEnd) {
+          n.style.display = show ? "" : "none";
         }
     }
 };

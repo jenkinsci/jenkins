@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
@@ -296,19 +297,19 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      */
     private static final class Builder extends MavenBuilder {
         private final MavenBuildProxy buildProxy;
-        private final MavenReporter[] reporters;
 
         /**
          * Records of what was executed.
          */
         private final List<ExecutedMojo> executedMojos = new ArrayList<ExecutedMojo>();
+        private final ModuleName moduleName;
 
         private long startTime;
 
-        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenReporter[] reporters, List<String> goals, Map<String,String> systemProps) {
-            super(listener,goals,systemProps);
+        public Builder(BuildListener listener,MavenBuildProxy buildProxy,MavenModule module, List<String> goals, Map<String,String> systemProps) {
+            super(listener,Collections.singleton(module),goals,systemProps);
             this.buildProxy = new FilterImpl(buildProxy);
-            this.reporters = reporters;
+            this.moduleName = module.getModuleName();
         }
 
         private class FilterImpl extends MavenBuildProxy.Filter<MavenBuildProxy> implements Serializable {
@@ -326,20 +327,20 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         @Override
         void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 r.preBuild(buildProxy,rm.getTopLevelProject(),listener);
         }
 
         @Override
         void postBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
             buildProxy.setExecutedMojos(executedMojos);
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 r.postBuild(buildProxy,rm.getTopLevelProject(),listener);
         }
 
         @Override
         void preExecute(MavenProject project, MojoInfo info) throws IOException, InterruptedException, AbortException {
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 if(!r.preExecute(buildProxy,project,info,listener))
                     throw new AbortException(r+" failed");
 
@@ -350,28 +351,28 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         void postExecute(MavenProject project, MojoInfo info, Exception exception) throws IOException, InterruptedException, AbortException {
             executedMojos.add(new ExecutedMojo(info,System.currentTimeMillis()-startTime));
 
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 if(!r.postExecute(buildProxy,project,info,listener,exception))
                     throw new AbortException(r+" failed");
         }
 
         @Override
         void onReportGenerated(MavenProject project, MavenReportInfo report) throws IOException, InterruptedException, AbortException {
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 if(!r.reportGenerated(buildProxy,project,report,listener))
                     throw new AbortException(r+" failed");
         }
 
         @Override
         void preModule(MavenProject project) throws InterruptedException, IOException, AbortException {
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 if(!r.enterModule(buildProxy,project,listener))
                     throw new AbortException(r+" failed");
         }
 
         @Override
         void postModule(MavenProject project) throws InterruptedException, IOException, AbortException {
-            for (MavenReporter r : reporters)
+            for (MavenReporter r : reporters.get(moduleName))
                 if(!r.leaveModule(buildProxy,project,listener))
                     throw new AbortException(r+" failed");
         }
@@ -687,10 +688,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                         getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null ));
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
-            if(mms.usesPrivateRepository())
-                // use the per-project repository. should it be per-module? But that would cost too much in terms of disk
+            FilePath localRepo = mms.getLocalRepository().locate(MavenBuild.this);
+            if(localRepo!=null)
                 // the workspace must be on this node, so getRemote() is safe.
-                margs.add("-Dmaven.repo.local="+getWorkspace().child(".repository").getRemote());
+                margs.add("-Dmaven.repo.local="+localRepo.getRemote());
 
             if (mms.getAlternateSettings() != null) {
                 if (IOUtils.isAbsolute(mms.getAlternateSettings())) {
@@ -725,7 +726,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 try {
                     Result r = process.call(new Builder(
                         listener,new ProxyImpl(),
-                        reporters.toArray(new MavenReporter[reporters.size()]), margs.toList(), systemProps));
+                        getProject(), margs.toList(), systemProps));
                     normalExit = true;
                     return r;
                 } finally {

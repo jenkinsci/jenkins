@@ -206,7 +206,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
                                     /**
                                      * Inspects duplication. this happens when you run hpi:run on a bundled plugin,
-                                     * as well as putting numbered hpi files, like "cobertura-1.0.hpi" and "cobertura-1.1.hpi"
+                                     * as well as putting numbered jpi files, like "cobertura-1.0.jpi" and "cobertura-1.1.jpi"
                                      */
                                     private boolean isDuplicate(PluginWrapper p) {
                                         String shortName = p.getShortName();
@@ -382,17 +382,17 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
     /**
-     * If the war file has any "/WEB-INF/plugins/*.hpi", extract them into the plugin directory.
+     * If the war file has any "/WEB-INF/plugins/[*.jpi | *.hpi]", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.hpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.jpi"}
      * @throws Exception
      *      Any exception will be reported and halt the startup.
      */
     protected abstract Collection<String> loadBundledPlugins() throws Exception;
 
     /**
-     * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.hpi'),
+     * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.jpi'),
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
@@ -639,16 +639,21 @@ public abstract class PluginManager extends AbstractModelObject {
             // Parse the request
             FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
-            if("".equals(fileName))
+            if("".equals(fileName)){
                 return new HttpRedirect("advanced");
-            if(!fileName.endsWith(".hpi"))
+            }
+            // we allow the upload of the new jpi's and the legacy hpi's  
+            if(!fileName.endsWith(".jpi") && !fileName.endsWith(".hpi")){ 
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
-            fileItem.write(new File(rootDir, fileName));
+            }
+            final String baseName = FilenameUtils.getBaseName(fileName);
+            fileItem.write(new File(rootDir, baseName + ".jpi")); // rename all new plugins to *.jpi
             fileItem.delete();
 
-            PluginWrapper existing = getPlugin(FilenameUtils.getBaseName(fileName));
-            if (existing!=null && existing.isBundled)
+            PluginWrapper existing = getPlugin(baseName);
+            if (existing!=null && existing.isBundled){
                 existing.doPin();
+            }
 
             pluginUploaded = true;
 

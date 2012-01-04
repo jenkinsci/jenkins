@@ -55,15 +55,71 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class='major rfe'>
-    Jenkins now acts as an SSH daemon
-    (<a href="https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+SSH">doc</a>)
+  <li class=bug>
+    Fixed "Deploy artifacts to Maven repository" as a promotion action.
+    Requires promoted-builds plugin 2.5+.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11766">issue 11766</a>)
+  <li class="bug">
+    Fixed a bug in the symlink creation code on BSD platforms.
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-12119">issue 12119</a>
+  <li class="bug">
+    Default e-mail suffix should be used to complete the domain name portion of the recipients list.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/324">pull #324</a>)
+  <li class="bug">
+    Incorrect path delimiter used in ZipArchiver when creating archive on Windows.
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-9942">issue 9942</a>
+  <li class="rfe">
+    <tt>.jpi</tt> is now supported as well as <tt>.hpi</tt> as a plugin extension.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/331">pull #331</a>)
+  <li class="rfe">
+    Windows service slave launcher now supports more generalized user account option.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/328">pull #328</a>)
+  <li class="rfe">
+    OSX installer now checks for the existence of JVM and open the browser in the end.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/329">pull #329</a>)
+  <li class="rfe">
+    Added the Reploy-To header support.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/306">pull #306</a>)
+  <li class="rfe">
+    The location of Maven local repository is now pluggable, and supported per-executor configuration out of the box.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/293">pull #293</a>)
+  <li class="rfe">
+    Jobs now support display name separate from its unique name
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-11762">issue 11762</a>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.445>What's new in 1.445</a> <!--=DATE=--></h3>
+<h3><a name=v1.447>What's new in 1.447</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+  NullPointerException in maven-plugin: Maven3Builder / ExecutedMojo (1.445)
+  (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12259">issue 12259</a>)
+  <li class='rfe'>
+    Reduced overhead of maven jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11883">issue 11883</a>)
+  <li class=bug>
+    Link to user profile from console output should go to the user ID, not the user name
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12279">issue 12279</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.446>What's new in 1.446</a> (2012/01/02)</h3>
+<ul class=image>
+  <li class='major rfe'>
+    Jenkins now acts as an SSH daemon
+    (<a href="https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+SSH">doc</a>)
+  <li class='rfe'>
+    Added hyperlinks to console output
+    (<a href="https://github.com/jenkinsci/jenkins/pull/334">pull #334</a>)
+  <li class='rfe'>
+    Add option to disable mailnotifications for each failed maven module.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5695">issue 5695</a>)
+  <li class='rfe'>
+    Sort workspace file list based on request locale.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12139">issue 12139</a>)
+</ul>
+<h3><a name=v1.445>What's new in 1.445</a> (2011/12/26)</h3>
 <ul class=image>
   <li class=rfe>
     CLI now supports using HTTP proxy for tunneling its TCP/IP connection.
@@ -74,6 +130,8 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11204">issue 11204</a>)
   <li class=rfe>
     Update center UI improvement. "Install" button is now always visisble.
+  <li class=rfe>
+    Configuration UI improvement. "Save" button is always visible.
   <li class=bug>
     Fixed a bug where a large output from Maven can cause module log output to go out of sync with module build log files.
   <li class=bug>
@@ -82,7 +140,6 @@ Upcoming changes</a>
   <li class=bug>
     Fixed prematurely re-drawn matrix test result graph.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.444>What's new in 1.444</a> (2011/12/19)</h3>
 <ul class=image>
   <li class=rfe>

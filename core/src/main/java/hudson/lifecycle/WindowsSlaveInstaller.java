@@ -39,6 +39,7 @@ import hudson.util.jna.Shell32;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -164,7 +165,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
             URL jnlp = new URL(engine.getHudsonUrl(),"computer/"+Util.rawEncode(engine.slaveName)+"/slave-agent.jnlp");
             String xml = generateSlaveXml(
                     generateServiceId(rootDir),
-                    System.getProperty("java.home")+"\\bin\\java.exe", "-jnlpUrl "+jnlp.toExternalForm());
+                    System.getProperty("java.home")+"\\bin\\java.exe", null, "-jnlpUrl "+jnlp.toExternalForm());
             FileUtils.writeStringToFile(new File(dir, "jenkins-slave.xml"),xml,"UTF-8");
 
             // copy slave.jar
@@ -203,7 +204,7 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
                 }
             });
             System.exit(0);
-        } catch (Exception t) {// this runs as a JNLP app, so if we let an exeption go, we'll never find out why it failed 
+        } catch (Exception t) {// this runs as a JNLP app, so if we let an exception go, we'll never find out why it failed 
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
             JOptionPane.showMessageDialog(dialog,sw.toString(),"Error", ERROR_MESSAGE);
@@ -214,10 +215,11 @@ public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, A
         return "jenkinsslave-"+slaveRoot.replace(':','_').replace('\\','_').replace('/','_');
     }
 
-    public static String generateSlaveXml(String id, String java, String args) throws IOException {
+    public static String generateSlaveXml(String id, String java, String vmargs, String args) throws IOException {
         String xml = IOUtils.toString(WindowsSlaveInstaller.class.getResourceAsStream("/windows-service/jenkins-slave.xml"), "UTF-8");
         xml = xml.replace("@ID@", id);
         xml = xml.replace("@JAVA@", java);
+        xml = xml.replace("@VMARGS@", StringUtils.defaultString(vmargs));
         xml = xml.replace("@ARGS@", args);
         return xml;
     }

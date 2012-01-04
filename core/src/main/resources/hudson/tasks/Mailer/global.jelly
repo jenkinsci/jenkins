@@ -55,6 +55,9 @@ THE SOFTWARE.
       <f:entry title="${%SMTP Port}" field="smtpPort">
         <f:textbox />
       </f:entry>
+      <f:entry title="${%Reply-To Address}" field="replyToAddress">
+        <f:textbox />
+      </f:entry>
       <f:entry title="${%Charset}" field="charset">
         <f:textbox />
       </f:entry>

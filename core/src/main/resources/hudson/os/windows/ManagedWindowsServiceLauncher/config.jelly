@@ -33,5 +33,10 @@ THE SOFTWARE.
   <f:entry title="${%Host}" field="host">
     <f:textbox/>
   </f:entry>
-  <f:optionalProperty field="logOn" title="${%Log on using a different account}" />
+  <f:dropdownDescriptorSelector field="account" title="${%Run service as}"/>
+  <f:advanced>
+    <f:entry title="${%JVM options}" field="vmargs">
+      <f:textbox />
+    </f:entry>
+  </f:advanced>
 </j:jelly>

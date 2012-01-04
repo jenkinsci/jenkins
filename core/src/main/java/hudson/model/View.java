@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
+ * Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +29,6 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
@@ -66,6 +66,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static jenkins.model.Jenkins.*;
 
@@ -91,6 +93,7 @@ import static jenkins.model.Jenkins.*;
  */
 @ExportedBean
 public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
+
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -672,14 +675,34 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
     }
 
-
+    void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
+        for(TopLevelItem item : items) {
+            
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName())));
+            }
+            sib.add(item.getSearchUrl(), item.getDisplayName());
+        }        
+    }
+    
     @Override
     public SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add(new CollectionSearchIndex() {// for jobs in the view
+        SearchIndexBuilder sib = super.makeSearchIndex();
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected Collection<TopLevelItem> all() { return getItems(); }                
+                @Override
+                protected String getName(TopLevelItem o) {
+                    // return the name instead of the display for suggestion searching
+                    return o.getName();
+                }
             });
+        
+        // add the display name for each item in the search index
+        addDisplayNamesToSearchIndex(sib, getItems());
+
+        return sib;
     }
 
     /**
@@ -869,4 +892,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * It might be useful to override this.
      */
     public static final Message<View> NEW_PRONOUN = new Message<View>();
+
+    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
 }

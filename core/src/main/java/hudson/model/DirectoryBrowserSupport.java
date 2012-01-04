@@ -43,11 +43,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -227,7 +229,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else
             if(serveDirIndex) {
                 // serve directory index
-                glob = new ChildPathBuilder();
+                glob = new ChildPathBuilder(req.getLocale());
             }
 
             if(glob!=null) {
@@ -392,12 +394,18 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
 
     private static final class FileComparator implements Comparator<File> {
+        private Collator collator;
+
+        public FileComparator(Locale locale) {
+            this.collator = Collator.getInstance(locale);
+        }
+
         public int compare(File lhs, File rhs) {
             // directories first, files next
             int r = dirRank(lhs)-dirRank(rhs);
             if(r!=0) return r;
             // otherwise alphabetical
-            return lhs.getName().compareTo(rhs.getName());
+            return this.collator.compare(lhs.getName(), rhs.getName());
         }
 
         private int dirRank(File f) {
@@ -432,12 +440,18 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * (this mechanism is used to skip empty intermediate directory.)
      */
     private static final class ChildPathBuilder implements FileCallable<List<List<Path>>> {
+        private Locale locale;
+
+        public ChildPathBuilder(Locale locale) {
+            this.locale = locale;
+        }
+
         public List<List<Path>> invoke(File cur, VirtualChannel channel) throws IOException {
             List<List<Path>> r = new ArrayList<List<Path>>();
 
             File[] files = cur.listFiles();
             if (files != null) {
-                Arrays.sort(files,new FileComparator());
+                Arrays.sort(files,new FileComparator(this.locale));
     
                 for( File f : files ) {
                     Path p = new Path(Util.rawEncode(f.getName()),f.getName(),f.isDirectory(),f.length(), f.canRead());

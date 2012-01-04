@@ -86,7 +86,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
-        boolean isLinked = archive.getName().endsWith(".hpl");
+        boolean isLinked = archive.getName().endsWith(".hpl") || archive.getName().endsWith(".jpl");
         if (isLinked) {
             // resolve the .hpl file to the location of the manifest file
             final String firstLine = IOUtils.readFirstLine(new FileInputStream(archive), "UTF-8");

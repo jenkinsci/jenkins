@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -102,8 +103,9 @@ public class MavenUtil {
             settingsLoc = (altSet == null) ? null 
                 : new File(build.getWorkspace().child(altSet).getRemote());
 
-            if (((MavenModuleSet) project).usesPrivateRepository()) {
-                privateRepository = build.getWorkspace().child(".repository").getRemote();
+            FilePath localRepo = ((MavenModuleSet) project).getLocalRepository().locate((MavenModuleSetBuild) build);
+            if (localRepo!=null) {
+                privateRepository = localRepo.getRemote();
             }
 
             profiles = ((MavenModuleSet) project).getProfiles();

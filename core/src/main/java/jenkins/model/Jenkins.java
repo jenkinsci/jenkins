@@ -1,9 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
- * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.,
+ * Yahoo!, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1101,7 +1102,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * every plugin reimplementing the singleton pattern.
      *
      * @param clazz The plugin class (beware class-loader fun, this will probably only work
-     * from within the hpi that defines the plugin class, it may or may not work in other cases)
+     * from within the jpi that defines the plugin class, it may or may not work in other cases)
      *
      * @return The plugin instance.
      */
@@ -2433,6 +2434,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Called to shut down the system.
      */
     public void cleanUp() {
+        for (ItemListener l : ItemListener.all())
+            l.onBeforeShutdown();
+
         Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
         for( Computer c : computers.values() ) {
@@ -3393,6 +3397,85 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return getPrimaryView();
     }
 
+    /**
+     * This method checks all existing jobs to see if displayName is 
+     * unique. It does not check the displayName against the displayName of the
+     * job that the user is configuring though to prevent a validation warning 
+     * if the user sets the displayName to what it currently is.
+     * @param displayName
+     * @param currentJobName
+     * @return
+     */
+    boolean isDisplayNameUnique(String displayName, String currentJobName) {
+        Collection<TopLevelItem> itemCollection = items.values();
+        
+        // if there are a lot of projects, we'll have to store their 
+        // display names in a HashSet or something for a quick check
+        for(TopLevelItem item : itemCollection) {
+            if(item.getName().equals(currentJobName)) {
+                // we won't compare the candidate displayName against the current
+                // item. This is to prevent an validation warning if the user 
+                // sets the displayName to what the existing display name is
+                continue;
+            }
+            else if(displayName.equals(item.getDisplayName())) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * True if there is no item in Jenkins that has this name
+     * @param name The name to test
+     * @param currentJobName The name of the job that the user is configuring
+     * @return
+     */
+    boolean isNameUnique(String name, String currentJobName) {
+        Item item = getItem(name);
+        
+        if(null==item) {
+            // the candidate name didn't return any items so the name is unique
+            return true;
+        }
+        else if(item.getName().equals(currentJobName)) {
+            // the candidate name returned an item, but the item is the item
+            // that the user is configuring so this is ok
+            return true;
+        } 
+        else {
+            // the candidate name returned an item, so it is not unique
+            return false;
+        }
+    }
+    
+    /**
+     * Checks to see if the candidate displayName collides with any 
+     * existing display names or project names
+     * @param displayName The display name to test
+     * @param jobName The name of the job the user is configuring
+     * @return
+     */
+    public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
+            @QueryParameter String jobName) {
+        displayName = displayName.trim();
+        
+        if(LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Current job name is " + jobName);
+        }
+        
+        if(!isNameUnique(displayName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
+        }
+        else if(!isDisplayNameUnique(displayName, jobName)){
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(displayName));
+        }
+        else {
+            return FormValidation.ok();
+        }
+    }
+    
     public static class MasterComputer extends Computer {
         protected MasterComputer() {
             super(Jenkins.getInstance());

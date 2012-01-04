@@ -961,6 +961,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         try {
             JSONObject json = req.getSubmittedForm();
 
+            setDisplayName(json.optString("displayNameOrNull"));
+
             if (req.getParameter("logrotate") != null)
                 logRotator = LogRotator.DESCRIPTOR.newInstance(req,json.getJSONObject("logrotate"));
             else

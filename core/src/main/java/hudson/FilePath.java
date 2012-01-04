@@ -483,6 +483,7 @@ public final class FilePath implements Serializable {
     private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
+        @SuppressWarnings("unchecked")
         Enumeration<ZipEntry> entries = zip.getEntries();
 
         try {
@@ -703,7 +704,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Conveniene method to call {@link FilePath#copyTo(FilePath)}.
+     * Convenience method to call {@link FilePath#copyTo(FilePath)}.
      * 
      * @since 1.311
      */
@@ -1059,6 +1060,7 @@ public final class FilePath implements Serializable {
      */
     public void touch(final long timestamp) throws IOException, InterruptedException {
         act(new FileCallable<Void>() {
+            private static final long serialVersionUID = -5094638816500738429L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(!f.exists())
                     new FileOutputStream(f).close();
@@ -1067,6 +1069,28 @@ public final class FilePath implements Serializable {
                 return null;
             }
         });
+    }
+    
+    private void setLastModifiedIfPossible(final long timestamp) throws IOException, InterruptedException {
+        String message = act(new FileCallable<String>() {
+            private static final long serialVersionUID = -828220335793641630L;
+            public String invoke(File f, VirtualChannel channel) throws IOException {
+                if(!f.setLastModified(timestamp)) {
+                    if (Functions.isWindows()) {
+                        // On Windows this seems to fail often. See JENKINS-11073
+                        // Therefore don't fail, but just log a warning
+                        return "Failed to set the timestamp of "+f+" to "+timestamp;
+                    } else {
+                        throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
+                    }
+                }
+                return null;
+            }
+        });
+
+        if (message!=null) {
+            LOGGER.warning(message);
+        }
     }
 
     /**
@@ -1424,17 +1448,7 @@ public final class FilePath implements Serializable {
         copyTo(target);
         // copy file permission
         target.chmod(mode());
-        
-        try {
-            target.touch(lastModified());
-        } catch (IOException e) {
-            // On Windows this seems to fail often. See JENKINS-11073
-            if (!target.isUnix()) {
-                LOGGER.warning("Failed to set timestamp on " + target.getRemote());
-            } else { // rethrow
-                throw new IOException2(e);
-            }
-        }
+        target.setLastModifiedIfPossible(lastModified());
     }
 
     /**
@@ -1444,6 +1458,7 @@ public final class FilePath implements Serializable {
         final OutputStream out = new RemoteOutputStream(os);
 
         act(new FileCallable<Void>() {
+            private static final long serialVersionUID = 4088559042349254141L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 FileInputStream fis = null;
                 try {
