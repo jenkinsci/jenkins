@@ -295,7 +295,7 @@ public class Mailer extends Notifier {
             // this code is brain dead
             smtpHost = nullify(json.getString("smtpServer"));
             setAdminAddress(json.getString("adminAddress"));
-            setReplyToAddress(json.getString("replyTo"));
+            setReplyToAddress(json.getString("replyToAddress"));
 
             defaultSuffix = nullify(json.getString("defaultSuffix"));
             String url = nullify(json.getString("url"));
