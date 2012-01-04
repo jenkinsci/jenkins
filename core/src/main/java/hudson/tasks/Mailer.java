@@ -180,18 +180,10 @@ public class Mailer extends Notifier {
         private String adminAddress;
 
         /**
-         * The e-mail address that Hudson puts to "Reply-To" header in outgoing e-mails.
+         * The e-mail address that Jenkins puts to "Reply-To" header in outgoing e-mails.
          * Null if not configured.
          */
         private String replyToAddress;
-
-        public String getReplyToAddress() {
-            return replyToAddress;
-        }
-
-        public void setReplyToAddress(String address) {
-            this.replyToAddress = address;
-        }
 
         /**
          * The SMTP server to use for sending e-mail. Null for default to the environment,
@@ -237,6 +229,14 @@ public class Mailer extends Notifier {
 
         public String getDefaultSuffix() {
             return defaultSuffix;
+        }
+
+        public String getReplyToAddress() {
+            return replyToAddress;
+        }
+
+        public void setReplyToAddress(String address) {
+            this.replyToAddress = Util.fixEmpty(address);
         }
 
         /** JavaMail session. */
@@ -295,6 +295,7 @@ public class Mailer extends Notifier {
             // this code is brain dead
             smtpHost = nullify(json.getString("smtpServer"));
             setAdminAddress(json.getString("adminAddress"));
+            setReplyToAddress(json.getString("replyTo"));
 
             defaultSuffix = nullify(json.getString("defaultSuffix"));
             String url = nullify(json.getString("url"));
