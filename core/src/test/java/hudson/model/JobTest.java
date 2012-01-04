@@ -15,13 +15,10 @@ public class JobTest {
     @Test
     public void testSetDisplayName() throws Exception {
        final String displayName = "testSetDisplayName";
-       // create a mock stapler request that returns a display name
-       StaplerRequest req = Mockito.mock(StaplerRequest.class);
-       Mockito.when(req.getParameter(DISPLAY_NAME_PARAMETER_NAME)).thenReturn(displayName);
-       
+
        StubJob j = new StubJob();      
        // call setDisplayNameFromRequest
-       j.setDisplayNameFromRequest(req);
+       j.setDisplayNameOrNull(displayName);
        
        // make sure the displayname has been set
        Assert.assertEquals(displayName, j.getDisplayName());
@@ -29,14 +26,10 @@ public class JobTest {
 
     @Test
     public void testSetDisplayNameZeroLength() throws Exception {
-        // create a mock stapler request that returns a ""
-        StaplerRequest req = Mockito.mock(StaplerRequest.class);
-        Mockito.when(req.getParameter(DISPLAY_NAME_PARAMETER_NAME)).thenReturn("");
-
-        StubJob j = new StubJob();       
+        StubJob j = new StubJob();
         // call setDisplayNameFromRequest
-        j.setDisplayNameFromRequest(req);
-       
+        j.setDisplayNameOrNull("");
+
         // make sure the getDisplayName returns the project name
         Assert.assertEquals(StubJob.DEFAULT_STUB_JOB_NAME, j.getDisplayName());
     }

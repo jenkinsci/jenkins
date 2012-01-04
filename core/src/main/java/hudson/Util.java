@@ -474,8 +474,7 @@ public class Util {
     }
 
     public static String nullify(String v) {
-        if(v!=null && v.length()==0)    v=null;
-        return v;
+        return fixEmpty(v);
     }
 
     public static String removeTrailingSlash(String s) {
