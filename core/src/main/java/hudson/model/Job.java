@@ -793,7 +793,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return result;
     }
     
-    public final long getEstimatedDuration() {
+    public long getEstimatedDuration() {
         List<RunT> builds = getLastBuildsOverThreshold(3, Result.UNSTABLE);
         
         if(builds.isEmpty())     return -1;
