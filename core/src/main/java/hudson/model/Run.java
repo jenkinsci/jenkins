@@ -1616,7 +1616,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets an object which represents the single line summary of this build.
+     * Gets an object which represents the single line summary of the status of this build
+     * (especially in comparison with the previous build.)
      */
     public Summary getBuildStatusSummary() {
         ResultTrend trend = ResultTrend.getResultTrend(this);
