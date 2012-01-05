@@ -160,4 +160,25 @@ public class CronTabTest extends TestCase {
         assertEquals(a,b);
     }
 
+    public void testHash1() throws Exception {
+        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+            public int next(int n) {
+                return n-1;
+            }
+        });
+
+        assertEquals(x.bits[0],1L<<59);
+        assertEquals(x.bits[1],1L<<8);
+    }
+
+    public void testHash2() throws Exception {
+        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+            public int next(int n) {
+                return 1;
+            }
+        });
+
+        assertEquals(x.bits[0],1L<<1);
+        assertEquals(x.bits[1],1L<<6);
+    }
 }

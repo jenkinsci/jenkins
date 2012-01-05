@@ -36,6 +36,7 @@ import hudson.model.AperiodicWork;
 import hudson.model.Build;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
+import hudson.scheduler.Hash;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.PeriodicWork;
@@ -84,6 +85,14 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      */
     public void start(J project, boolean newInstance) {
         this.job = project;
+
+        try {// reparse the tabs with the job as the hash
+            this.tabs = CronTabList.create(spec, HASH ? Hash.from(project.getFullName()) : Hash.zero());
+        } catch (ANTLRException e) {
+            // this shouldn't fail because we've already parsed stuff in the constructor,
+            // so if it fails, use whatever 'tabs' that we already have.
+            LOGGER.log(Level.FINE, "Failed to parse crontab spec: "+spec,e);
+        }
     }
 
     /**
@@ -317,4 +326,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
         return r;
     }
+
+    /**
+     * To be removed. Do not rely on this.
+     * This property hashes tokens in the cron tab syntax like @daily so that they spread evenly.
+     */
+    public static boolean HASH = Boolean.getBoolean(Trigger.class.getName()+".hash");
 }

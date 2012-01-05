@@ -39,6 +39,11 @@ abstract class BaseParser extends LLkParser {
     private static final int[] LOWER_BOUNDS = new int[] {0,0,1,0,0};
     private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 
+    /**
+     * Used to pick a value from within the range
+     */
+    protected Hash hash = Hash.zero();
+    
     protected BaseParser(int i) {
         super(i);
     }
@@ -53,6 +58,11 @@ abstract class BaseParser extends LLkParser {
 
     protected BaseParser(TokenStream tokenStream, int i) {
         super(tokenStream, i);
+    }
+
+    public void setHash(Hash hash) {
+        if (hash==null)     hash = Hash.zero();
+        this.hash = hash;
     }
 
     protected long doRange(int start, int end, int step, int field) throws ANTLRException {
@@ -74,6 +84,20 @@ abstract class BaseParser extends LLkParser {
         return doRange( LOWER_BOUNDS[field], UPPER_BOUNDS[field], step, field );
     }
 
+    /**
+     * Uses {@link Hash} to choose a random (but stable) value from within this field.
+     */
+    protected long doHash( int field ) {
+        int u = UPPER_BOUNDS[field];
+        if (field==2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
+        int h = hash.next(u+1 - LOWER_BOUNDS[field]); // upper bound is inclusive
+        return 1L << (h+LOWER_BOUNDS[field]);
+    }
+
+    protected long doHash( int s, int e ) {
+        return 1L << (s+hash.next(e+1-s));
+    }
+    
     protected void rangeCheck(int value, int field) throws ANTLRException {
         if( value<LOWER_BOUNDS[field] || UPPER_BOUNDS[field]<value ) {
             error(Messages.BaseParser_OutOfRange(value,LOWER_BOUNDS[field],UPPER_BOUNDS[field]));
