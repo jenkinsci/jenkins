@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.20</version>
+      <version>1.25</version>
       <scope>provided</scope>
     </dependency>
 
@@ -99,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-29</version>
+      <version>0.9.10-jenkins-31</version>
       <scope>test</scope>
     </dependency>
     <dependency>
