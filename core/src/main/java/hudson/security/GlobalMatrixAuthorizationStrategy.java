@@ -299,31 +299,43 @@ public class GlobalMatrixAuthorizationStrategy extends AuthorizationStrategy {
                 return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
 
             try {
-                sr.loadUserByUsername(v);
-                return FormValidation.respond(Kind.OK, makeImg("person.png")+ev);
-            } catch (UserMayOrMayNotExistException e) {
-                // undecidable, meaning the user may exist
-                return FormValidation.respond(Kind.OK, ev);
-            } catch (UsernameNotFoundException e) {
-                // fall through next
-            } catch (DataAccessException e) {
-                // fall through next
-            }
+                try {
+                    sr.loadUserByUsername(v);
+                    return FormValidation.respond(Kind.OK, makeImg("person.png")+ev);
+                } catch (UserMayOrMayNotExistException e) {
+                    // undecidable, meaning the user may exist
+                    return FormValidation.respond(Kind.OK, ev);
+                } catch (UsernameNotFoundException e) {
+                    // fall through next
+                } catch (DataAccessException e) {
+                    // fall through next
+                } catch (AuthenticationException e) {
+                    // other seemingly unexpected error.
+                    return FormValidation.error(e,"Failed to test the validity of the user name "+v);
+                }
 
-            try {
-                sr.loadGroupByGroupname(v);
-                return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
-            } catch (UserMayOrMayNotExistException e) {
-                // undecidable, meaning the group may exist
-                return FormValidation.respond(Kind.OK, ev);
-            } catch (UsernameNotFoundException e) {
-                // fall through next
-            } catch (DataAccessException e) {
-                // fall through next
-            }
+                try {
+                    sr.loadGroupByGroupname(v);
+                    return FormValidation.respond(Kind.OK, makeImg("user.png") +ev);
+                } catch (UserMayOrMayNotExistException e) {
+                    // undecidable, meaning the group may exist
+                    return FormValidation.respond(Kind.OK, ev);
+                } catch (UsernameNotFoundException e) {
+                    // fall through next
+                } catch (DataAccessException e) {
+                    // fall through next
+                } catch (AuthenticationException e) {
+                    // other seemingly unexpected error.
+                    return FormValidation.error(e,"Failed to test the validity of the group name "+v);
+                }
 
-            // couldn't find it. it doesn't exist
-            return FormValidation.respond(Kind.ERROR, makeImg("error.png") +ev);
+                // couldn't find it. it doesn't exist
+                return FormValidation.respond(Kind.ERROR, makeImg("error.png") +ev);
+            } catch (Exception e) {
+                // if the check fails miserably, we still want the user to be able to see the name of the user,
+                // so use 'ev' as the message
+                return FormValidation.error(e,ev);
+            }
         }
 
         private String makeImg(String gif) {

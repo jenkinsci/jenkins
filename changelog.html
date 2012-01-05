@@ -58,40 +58,9 @@ Upcoming changes</a>
   <li class=bug>
     Fixed NPE in Subversion polling of Maven jobs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11592">issue 11592</a>)
-</ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.440>What's new in 1.440</a> <!--=DATE=--></h3>
-<ul class=image>
   <li class=bug>
-    Sorting "diff" in test result requires 2 clicks
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5460">issue 5460</a>)
-  <li class=bug>
-    java.io.IOException: Unexpected termination of the channel - SEVERE: I/O error in channel Chunked connection when using jenkins-cli.jar (works on older Hudson version)
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11130">issue 11130</a>)
-  <li class=bug>
-    Debian init script now returns the proper exit code from the 'status' command.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11306">issue 11306</a>)
->>>>>>> e2d7b39... [FIXED JENKINS-11592] NPE in subversion polling of Maven jobs
-  <li class=bug>
-      Fixed a hash DoS vulnerability.
-    (<a href="http://www.ocert.org/advisories/ocert-2011-003.html">SECURITY-22</a>)
-  <li class=bug>
-    Fixed ConcurrentModificationException in parallel Maven 3 builds.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
-  <li class=rfe>
-    add new action type to enable plugins to intercept the maven 'goals and options' (needed for security bug fix)
-  <li class=bug>
-    Fixed random OutOfMemoryError with console annotations
-  (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9349">issue 9349</a>)
-  <li class=bug>
-    Fixed the OutOfMemoryError in trying to download/install JDK
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10689">issue 10689</a>)
-  <li class=bug>
-    If running as a daemon, don't daemonize one more time during restart.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11742">issue 11742</a>)
+    Failure to check the username/groupname in the matrix security shouldn't hide the user name
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9519">issue 9519</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
