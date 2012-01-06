@@ -210,9 +210,9 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <!-- for JRE requirement check annotation -->
-      <groupId>org.jvnet</groupId>
-      <artifactId>animal-sniffer-annotation</artifactId>
-      <version>1.0</version>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>animal-sniffer-annotations</artifactId>
+      <version>1.7</version>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
