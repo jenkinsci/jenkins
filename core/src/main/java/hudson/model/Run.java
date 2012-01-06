@@ -261,6 +261,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.project = job;
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
+		getRootDir().mkdirs();
     }
 
     /**
@@ -828,9 +829,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Files related to this {@link Run} should be stored below this directory.
      */
     public File getRootDir() {
-        File f = new File(project.getBuildDir(),getId());
-        f.mkdirs();
-        return f;
+        return new File(project.getBuildDir(),getId());
     }
 
     /**
