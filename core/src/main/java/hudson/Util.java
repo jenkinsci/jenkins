@@ -42,7 +42,7 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.jruby.ext.posix.FileStat;
 import org.jruby.ext.posix.POSIX;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
