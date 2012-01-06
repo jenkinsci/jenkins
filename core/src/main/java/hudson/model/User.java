@@ -384,7 +384,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
-            for (AbstractBuild<?,?> b : p.getBuilds())
+            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds())
                 if(b.hasParticipant(this))
                     r.add(b);
         return RunList.fromRuns(r);
