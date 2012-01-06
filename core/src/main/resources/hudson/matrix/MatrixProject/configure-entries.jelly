@@ -40,7 +40,7 @@ THE SOFTWARE.
       <p:config-customWorkspace />
       <f:entry title="${%Display Name}" help="/help/project-config/displayName.html">
          <f:textbox name="displayName" value="${it.displayNameOrNull}" 
-            checkUrl="'${rootURL}/checkDisplayName?displayName='+escape(this.value)+'&amp;jobName=${it.name}'"/>
+            checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
       </f:entry>
     </f:advanced>
   </f:section>
