@@ -23,8 +23,10 @@
  */
 package hudson.tasks;
 
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 import hudson.model.Action;
 import hudson.model.Run;
+import hudson.util.xstream.LRUStringConverter;
 
 /**
  * Remembers the message ID of the e-mail that was sent for the build.
@@ -43,6 +45,7 @@ public class MailMessageIdAction implements Action {
     /**
      * Message ID of the e-mail sent for the build.
      */
+    @XStreamConverter(LRUStringConverter.class)
     public final String messageId;
 
     public MailMessageIdAction(String messageId) {
