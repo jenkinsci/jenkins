@@ -550,7 +550,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private volatile CrumbIssuer crumbIssuer;
 
     /**
-     * All labels known to Hudson. This allows us to reuse the same label instances
+     * All labels known to Jenkins. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
@@ -616,7 +616,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         }
 
         /**
-         *send the browser to the config page
+         * Send the browser to the config page.
          * use View to trim view/{default-view} from URL if possible
          */
         @Override
@@ -640,7 +640,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * Secrete key generated once and used for a long time, beyond
+     * Secret key generated once and used for a long time, beyond
      * container start/stop. Persisted outside <tt>config.xml</tt> to avoid
      * accidental exposure.
      */
@@ -673,7 +673,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SC_START_IN_CTOR") // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
-    	// As hudson is starting, grant this process full control
+    	// As Jenkins is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
             this.root = root;
@@ -754,7 +754,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 udpBroadcastThread = new UDPBroadcastThread(this);
                 udpBroadcastThread.start();
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
             }
             dnsMultiCast = new DNSMultiCast(this);
 
