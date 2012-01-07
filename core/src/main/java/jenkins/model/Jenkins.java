@@ -673,6 +673,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SC_START_IN_CTOR") // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+        long start = System.currentTimeMillis();
+        
     	// As Jenkins is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
@@ -767,8 +769,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                         cl.onOnline(c,StreamTaskListener.fromStdout());
             }
 
-            for (ItemListener l : ItemListener.all())
+            for (ItemListener l : ItemListener.all()) {
+                long itemListenerStart = System.currentTimeMillis();
                 l.onLoaded();
+                if (LOG_STARTUP_PERFORMANCE)
+                    LOGGER.info(String.format("Took %dms for item listener %s startup",
+                            System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
+            }
+            
+            if (LOG_STARTUP_PERFORMANCE)
+                LOGGER.info(String.format("Took %dms for complete Jenkins startup",
+                        System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -3687,7 +3698,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
-    public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     /**
      * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
