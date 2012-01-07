@@ -37,7 +37,7 @@ public class UseRecipesWithJenkinsRuleTest {
     }
 
     @Test
-    @WithPlugin("tasks.hpi")
+    @WithPlugin("tasks.jpi")
     public void testWithPlugin() {
         assertNotNull(rule.jenkins.getPlugin("tasks"));
     }
