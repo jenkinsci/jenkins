@@ -38,9 +38,8 @@ THE SOFTWARE.
       <p:config-blockWhenUpstreamBuilding />
       <p:config-blockWhenDownstreamBuilding />
       <p:config-customWorkspace />
-      <f:entry title="${%Display Name}" help="/help/project-config/displayName.html">
-         <f:textbox name="displayName" value="${it.displayNameOrNull}" 
-            checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
+      <f:entry title="${%Display Name}" field="displayNameOrNull">
+         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
       </f:entry>
     </f:advanced>
   </f:section>
