@@ -31,7 +31,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 
+import org.junit.Assume;
 import org.jvnet.hudson.test.Bug;
 
 import hudson.util.StreamTaskListener;
@@ -168,6 +170,46 @@ public class UtilTest extends TestCase {
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
+            
+            
+            // test linking from another directory
+            File anotherDir = new File(d,"anotherDir");
+            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            
+            Util.createSymlink(d,"a","anotherDir/link",l);
+            assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link"),l));
+            
+            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work: 
+            //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
+        } finally {
+            Util.deleteRecursive(d);
+        }
+    }
+    
+    public void testIsSymlink() throws IOException, InterruptedException {
+        Assume.assumeTrue(!Functions.isWindows());
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamTaskListener l = new StreamTaskListener(baos);
+        File d = Util.createTempDir();
+        try {
+            new FilePath(new File(d, "original")).touch(0);
+            assertFalse(Util.isSymlink(new File(d, "original")));
+            Util.createSymlink(d,"original","link", l);
+            
+            assertTrue(Util.isSymlink(new File(d, "link")));
+            
+            // test linking to another directory
+            File dir = new File(d,"dir");
+            assertTrue("Couldn't create "+dir,dir.mkdir());
+            assertFalse(Util.isSymlink(new File(d,"dir")));
+            
+            File anotherDir = new File(d,"anotherDir");
+            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            
+            Util.createSymlink(d,"dir","anotherDir/symlinkDir",l);
+            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
+            // assertTrue(Util.isSymlink(new File(d,"anotherDir/symlinkDir")));
         } finally {
             Util.deleteRecursive(d);
         }
