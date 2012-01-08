@@ -18,17 +18,16 @@ package hudson.maven.settings;
 import hudson.ExtensionList;
 import hudson.FilePath;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.jenkinsci.lib.configprovider.ConfigProvider;
 import org.jenkinsci.lib.configprovider.model.Config;
 
 /**
  * @author Olivier Lamy
+ * @author Dominik Bartholdi (imod)
  * @since 1.426
  */
 public class SettingsProviderUtils {
@@ -64,19 +63,7 @@ public class SettingsProviderUtils {
 	 * @param workspace
 	 */
 	public static FilePath copyConfigContentToFilePath(Config config, FilePath workspace) throws IOException, InterruptedException {
-		File tmpContentFile = null;
-		ByteArrayInputStream bs = null;
-
-		try {
-			tmpContentFile = File.createTempFile("config", "tmp");
-			FilePath filePath = new FilePath(workspace, tmpContentFile.getName());
-			bs = new ByteArrayInputStream(config.content.getBytes());
-			filePath.copyFrom(bs);
-			return filePath;
-		} finally {
-			FileUtils.deleteQuietly(tmpContentFile);
-			IOUtils.closeQuietly(bs);
-		}
+	    return workspace.createTextTempFile("config", ".tmp", config.content, false);
 	}
 
 	/**
