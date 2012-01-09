@@ -446,13 +446,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = createLauncher(listener);
             if (!Jenkins.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
+                listener.getLogger().print(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
                     Messages.AbstractBuild_BuildingRemotely(HyperlinkNote.encodeTo("/computer/"+ builtOn, builtOn)));
+            else
+            	listener.getLogger().print(Messages.AbstractBuild_Building());
             
             final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
             try {
                 workspace = lease.path.getRemote();
+                listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
                 
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
