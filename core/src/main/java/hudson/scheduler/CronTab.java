@@ -89,8 +89,10 @@ public final class CronTab {
         spec = format;
 
         parser.startRule(this);
-        if((dayOfWeek&(1<<7))!=0)
+        if((dayOfWeek&(1<<7))!=0) {
             dayOfWeek |= 1; // copy bit 7 over to bit 0
+            dayOfWeek &= ~(1<<7); // clear bit 7 or CalendarField#ceil will return an invalid value 7
+        }
     }
 
 
