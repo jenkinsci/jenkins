@@ -260,7 +260,7 @@ public class CronTabDayOfWeekLocaleTest {
     }
     
     @Test
-    public void isSundayAndNextRunIsPreviousSunday() throws Exception {
+    public void isSundayAndPreviousRunIsPreviousSunday() throws Exception {
         final Calendar cal = Calendar.getInstance(locale);
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 1 * * 0"; // Sundays @01:00
