@@ -67,7 +67,7 @@ throws ANTLRException
       }
       | "midnight"
       {
-        table.set("H H * * *",hash);
+        table.set("H H(0-2) * * *",hash);
       }
       | "hourly"
       {
