@@ -413,7 +413,7 @@ public final class CronTab {
     public String checkSanity() {
         for( int i=0; i<5; i++ ) {
             long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
-            for( int j=LOWER_BOUNDS[i]; j<=UPPER_BOUNDS[i]; j++ ) {
+            for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
                 if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
@@ -428,8 +428,4 @@ public final class CronTab {
 
         return null;
     }
-
-    // lower/uppser bounds of fields
-    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,0,0};
-    private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 }
