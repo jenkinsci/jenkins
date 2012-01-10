@@ -1,6 +1,8 @@
 package hudson.maven;
 
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
+import hudson.model.Item;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
@@ -9,14 +11,14 @@ import org.jvnet.hudson.test.HudsonTestCase;
 public class MavenModuleSetTest extends HudsonTestCase {
     public void testConfigRoundtripLocalRepository() throws Exception {
         MavenModuleSet p = createMavenProject();
-        configRoundtrip(p);
+        configRoundtrip((Item) p);
         
         assertNull(p.getExplicitLocalRepository());
 
         // make sure it roundtrips
         PerJobLocalRepositoryLocator before = new PerJobLocalRepositoryLocator();
         p.setLocalRepository(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         assertEqualDataBoundBeans(p.getLocalRepository(),before);
         assertTrue(before!=p.getLocalRepository());
     }
