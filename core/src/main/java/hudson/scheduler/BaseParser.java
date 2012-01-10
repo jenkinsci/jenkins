@@ -91,6 +91,7 @@ abstract class BaseParser extends LLkParser {
     protected long doHash( int field ) {
         int u = UPPER_BOUNDS[field];
         if (field==2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
+        if (field==4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
         int h = hash.next(u+1 - LOWER_BOUNDS[field]); // upper bound is inclusive
         return 1L << (h+LOWER_BOUNDS[field]);
     }
