@@ -26,6 +26,7 @@ package hudson.tasks.test;
 import hudson.Launcher;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixRun;
 import hudson.model.BuildListener;
 
@@ -57,4 +58,16 @@ public class TestResultAggregator extends MatrixAggregator {
         if(atr!=null)   result.add(atr);
         return true;
     }
+
+    @Override
+    public boolean endBuild() throws InterruptedException, IOException {
+        for (MatrixConfiguration mc : build.getProject().getActiveConfigurations()) {
+            if (mc.getLastBuild().getNumber() != build.getNumber()) {
+                AbstractTestResultAction atr = mc.getLastCompletedBuild().getAction(AbstractTestResultAction.class);
+                if (atr != null) result.add(atr);
+            }
+        }
+        return true;
+     }
+
 }
