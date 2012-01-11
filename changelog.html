@@ -61,14 +61,18 @@ Upcoming changes</a>
   <li class=bug>
     Fixed an occasional "URI must start with a slash" error when the anonymous user doesn't have the read access.
   <li class="rfe">
-  OS X installer can optionally create a new user &quot;jenkins&quot; and use
-  it. This user has a writable home directory, making it possible to set up ssh for Jenkins.
+    OS X installer can optionally create a new user &quot;jenkins&quot; and use
+    it. This user has a writable home directory, making it possible to set up ssh for Jenkins.
   <li class="rfe">
     No workspace available message includes wiped out workspace as a potential cause.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10432">issue 10432</a>)
   <li class="bug">
-  Stop users being created in memory if they failed to provide all the required registration information correctly.
-   (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7096">issue 7096</a>)
+    Stop users being created in memory if they failed to provide all the required registration information correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7096">issue 7096</a>)
+  <li class=bug>
+    <tt>java -jar jenkins.war</tt> finally detects invalid command line options and report that as an error.
+  <li class=rfe>
+    When run in terminal, warning/error messages are colored.
 </ul>
 </div><!--=TRUNK-END=-->
 
