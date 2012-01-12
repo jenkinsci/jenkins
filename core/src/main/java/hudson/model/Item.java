@@ -119,6 +119,15 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     String getDisplayName();
 
     /**
+     * Gets a fixed length name of this item.
+     *
+     * This method should try to return fixed size human
+     * readable string that describes this item.
+     * The string need not be unique.
+     */
+    String getShortDisplayName();
+
+    /**
      * Works like {@link #getDisplayName()} but return
      * the full path that includes all the display names
      * of the ancestors.
