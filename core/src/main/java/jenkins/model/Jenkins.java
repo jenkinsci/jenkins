@@ -1195,6 +1195,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return "";
     }
 
+    public String getShortDisplayName() {
+        return "";
+    }
+    
     public String getFullDisplayName() {
         return "";
     }

@@ -71,6 +71,10 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getName();
     }
 
+    public String getShortDisplayName() {
+        return base.getShortDisplayName();
+    }
+    
     public String getFullDisplayName() {
         return base.getFullDisplayName();
     }

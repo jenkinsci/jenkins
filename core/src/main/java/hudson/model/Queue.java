@@ -1088,6 +1088,11 @@ public class Queue extends ResourceController implements Saveable {
         String getName();
 
         /**
+         * @see hudson.model.Item#getShortDisplayName()
+         */
+        String getShortDisplayName();
+        
+        /**
          * @see hudson.model.Item#getFullDisplayName()
          */
         String getFullDisplayName();
