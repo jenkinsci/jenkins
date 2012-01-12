@@ -3,7 +3,7 @@ package jenkins.model.MasterBuildConfiguration
 def f=namespace(lib.FormTagLib)
 
 f.entry(title:_("# of executors"), field:"numExecutors") {
-    f.number(clazz:"positive-number", min:1, step:1)
+    f.number(clazz:"number", min:0, step:1)
 }
 if (!app.slaves.isEmpty() || !app.clouds.isEmpty()) {
     f.entry(title:_("Labels"),field:"labelString") {
