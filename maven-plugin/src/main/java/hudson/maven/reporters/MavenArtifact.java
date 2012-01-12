@@ -147,7 +147,7 @@ public final class MavenArtifact implements Serializable {
     }
 
     public boolean isPOM() {
-        return fileName.endsWith(".pom");   // hack
+        return fileName.endsWith(".pom")||"pom.xml".equals(fileName);   // hack
     }
 
     /**
