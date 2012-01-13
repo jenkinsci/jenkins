@@ -42,9 +42,9 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     String getFullName();
 
     /**
-     * @see Item#getShortDisplayName() 
+     * @see Item#getProcessedDisplayName() 
      */
-    String getShortDisplayName();
+    String getProcessedDisplayName();
 
     /**
      * @see Item#getFullDisplayName() 

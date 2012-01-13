@@ -320,17 +320,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         else                return n+'/'+getName();
     }
 
-    public final String getShortDisplayName() {
+    public final String getProcessedDisplayName() {
         String n = getFullDisplayName();
-        if(n.length()> 38) {
+        if (Jenkins.getInstance().isUseShortDisplayName() && n.length() > 38) {
             String p = n.substring(0, 35);
-            p=p.concat("...");
+            p = p.concat("...");
             return p;
-        } 
-        else 
-            return n;
+        }
+        return n;
     }
-
+    
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();
