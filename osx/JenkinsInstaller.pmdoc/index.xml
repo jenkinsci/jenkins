@@ -17,8 +17,11 @@
     <choice title="Jenkins" id="jenkins-war" tooltip="jenkins.war file" description="The jenkins.war file." starts_selected="true" starts_enabled="false" starts_hidden="false">
       <pkgref id="org.jenkins-ci.jenkins.osx.pkg"/>
     </choice>
-    <choice title="Launchd Daemon" id="jenkins-launchd" tooltip="Launchd Daemon for Jenkins" description="Installs a LaunchDaemon for Jenkins so Jenkins will start at boot" starts_selected="true" starts_enabled="true" starts_hidden="false">
+    <choice title="Start at boot as &quot;daemon&quot;" id="jenkins-launchd" tooltip="Run as daemon" description="Install a launchd config file so Jenkins will start at boot. Jenkins will run as user &quot;daemon&quot;." starts_selected="true" starts_enabled="true" starts_hidden="false">
       <pkgref id="org.jenkins-ci.launchd.pkg"/>
+    </choice>
+    <choice title="Start at boot as &quot;jenkins&quot;" id="jenkins-launchd-jenkins" tooltip="Run as jenkins" description="Install a launchd config file so Jenkins will start at boot. Jenkins will run as user &quot;jenkins&quot;. This user has a writable home dir, which makes it possible to set up things like ssh." starts_selected="false" starts_enabled="true" starts_hidden="false">
+      <pkgref id="org.jenkins-ci.launchd-jenkins.pkg"/>
     </choice>
     <choice title="Jenkins Support Files" id="choice6" tooltip="Support files for Jenkins" description="Contains files required by the Launch Daemon." starts_selected="true" starts_enabled="true" starts_hidden="false">
       <pkgref id="org.jenkins-ci.support.pkg"/>
@@ -52,12 +55,13 @@
   <item type="file">02org.xml</item>
   <item type="file">03jenkins.xml</item>
   <item type="file">04jenkins.xml</item>
+  <item type="file">05org.xml</item>
   <mod>description</mod>
   <mod>properties.title</mod>
-  <mod>properties.anywhereDomain</mod>
+  <mod>properties.systemDomain</mod>
   <mod>properties.userDomain</mod>
   <mod>properties.customizeOption</mod>
   <mod>extraFiles</mod>
-  <mod>properties.systemDomain</mod>
   <mod>postinstallActions.actions</mod>
+  <mod>properties.anywhereDomain</mod>
 </pkmkdoc>
