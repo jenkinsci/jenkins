@@ -302,9 +302,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.username==null || si.username.length()==0)
             si.errorMessage = "User name is required";
         else {
-            User user = User.get(si.username);
-            if(user.getProperty(Details.class)!=null)
-                si.errorMessage = "User name is already taken. Did you forget the password?";
+            User user = User.get(si.username, false);
+            if (null != user)
+                si.errorMessage = "User name is already taken";
         }
 
         if(si.fullname==null || si.fullname.length()==0)
