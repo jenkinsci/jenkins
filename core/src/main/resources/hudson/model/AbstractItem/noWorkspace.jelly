@@ -49,6 +49,9 @@ THE SOFTWARE.
             <li>
               ${%li3(it.workspace.local)}
             </li>
+            <li>
+              ${%The workspace was wiped out and no build has been done since then.}
+            </li>
           </ol>
         </j:otherwise>
       </j:choose>
