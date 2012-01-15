@@ -29,7 +29,8 @@ if ! dscl . -list /Users/jenkins; then
 
     dscl . -create /Groups/jenkins PrimaryGroupID $gid
 
-    dscl . -create /Users/jenkins UserShell /bin/bash
+    dscl . -create /Users/jenkins UserShell /usr/bin/false
+    dscl . -create /Users/jenkins Password '*'
     dscl . -create /Users/jenkins UniqueID $uid
     dscl . -create /Users/jenkins PrimaryGroupID $gid
     dscl . -create /Users/jenkins NFSHomeDirectory "$JENKINS_HOMEDIR"
