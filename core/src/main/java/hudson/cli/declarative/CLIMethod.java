@@ -66,4 +66,9 @@ public @interface CLIMethod {
      * CLI command name. Used as {@link CLICommand#getName()} 
      */
     String name();
+
+    /**
+     *
+     */
+    boolean usesChannel() default false;
 }

@@ -25,6 +25,8 @@ package org.jvnet.hudson.test.recipes;
 
 import hudson.PluginManager;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.lang.annotation.Documented;
@@ -42,12 +44,13 @@ import static java.lang.annotation.RetentionPolicy.*;
  */
 @Documented
 @Recipe(WithPluginManager.RunnerImpl.class)
+@JenkinsRecipe(WithPluginManager.RuleRunnerImpl.class)
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface WithPluginManager {
     Class<? extends PluginManager> value();
 
-    public class RunnerImpl extends Recipe.Runner<WithPluginManager> {
+    class RunnerImpl extends Recipe.Runner<WithPluginManager> {
         private WithPluginManager recipe;
         @Override
         public void setup(HudsonTestCase testCase, WithPluginManager recipe) throws Exception {
@@ -78,4 +81,18 @@ public @interface WithPluginManager {
         }
     }
 
+    class RuleRunnerImpl extends JenkinsRecipe.Runner<WithPluginManager> {
+        private WithPluginManager recipe;
+        @Override
+        public void setup(JenkinsRule jenkinsRule, WithPluginManager recipe) throws Exception {
+            this.recipe = recipe;
+        }
+
+        @Override
+        public void decorateHome(JenkinsRule jenkinsRule, File home) throws Exception {
+            Class<? extends PluginManager> c = recipe.value();
+            Constructor ctr = c.getDeclaredConstructor(File.class);
+            jenkinsRule.setPluginManager((PluginManager)ctr.newInstance(home));
+        }
+    }
 }

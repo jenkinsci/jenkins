@@ -34,7 +34,7 @@ import hudson.Extension;
 public class ManageJenkinsAction implements RootAction {
     public String getIconFileName() {
         if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
-            return "setting.gif";
+            return "setting.png";
         else
             return null;
     }

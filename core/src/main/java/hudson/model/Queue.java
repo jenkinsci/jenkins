@@ -1353,7 +1353,7 @@ public class Queue extends ResourceController implements Saveable {
     	 * Returns whether the new item should be scheduled. 
     	 * An action should return true if the associated task is 'different enough' to warrant a separate execution.
     	 */
-    	public boolean shouldSchedule(List<Action> actions);
+	    boolean shouldSchedule(List<Action> actions);
     }
 
     /**
@@ -1365,14 +1365,18 @@ public class Queue extends ResourceController implements Saveable {
      * to the queue, and the task will never get executed. 
      *
      * <p>
-     * This extension point is still a subject to change, as we are seeking more
-     * comprehensive Queue pluggability. See HUDSON-2072.
+     * The other use case is to add additional {@link Action}s to the task
+     * (for example {@link LabelAssignmentAction}) to tasks that are submitted to the queue.
      *
      * @since 1.316
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
     	/**
     	 * Returns whether the new item should be scheduled.
+         *
+         * @param actions
+         *      List of actions that are to be made available as {@link AbstractBuild#getActions()}
+         *      upon the start of the build. This list is live, and can be mutated.
     	 */
     	public abstract boolean shouldSchedule(Task p, List<Action> actions);
     	    	

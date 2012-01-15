@@ -24,6 +24,7 @@
 package hudson.scheduler;
 
 import antlr.ANTLRException;
+import org.codehaus.groovy.ast.expr.SpreadExpression;
 
 import java.io.StringReader;
 import java.util.Calendar;
@@ -56,17 +57,35 @@ public final class CronTab {
     private String spec;
 
     public CronTab(String format) throws ANTLRException {
-        this(format,1);
+        this(format,null);
     }
 
+    public CronTab(String format, Hash hash) throws ANTLRException {
+        this(format,1,hash);
+    }
+    
+    /**
+     * @deprecated as of 1.448
+     *      Use {@link #CronTab(String, int, Hash)}
+     */
     public CronTab(String format, int line) throws ANTLRException {
-        set(format, line);
+        set(format, line, null);
     }
 
-    private void set(String format, int line) throws ANTLRException {
+    /**
+     * @param hash
+     *      Used to spread out token like "@daily". Null to preserve the legacy behaviour
+     *      of not spreading it out at all.
+     */
+    public CronTab(String format, int line, Hash hash) throws ANTLRException {
+        set(format, line, hash);
+    }
+    
+    private void set(String format, int line, Hash hash) throws ANTLRException {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(lexer);
+        parser.setHash(hash);
         spec = format;
 
         parser.startRule(this);
@@ -358,8 +377,8 @@ public final class CronTab {
         }
     }
 
-    void set(String format) throws ANTLRException {
-        set(format,1);
+    void set(String format, Hash hash) throws ANTLRException {
+        set(format,1,hash);
     }
 
     /**

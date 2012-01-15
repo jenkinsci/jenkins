@@ -2,7 +2,7 @@
 The MIT License
 
 Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts
+Daniel Dyer, Erik Ramfelt, Stephen Connolly, Tom Huybrechts, Olivier Lamy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.435-SNAPSHOT</version>
+    <version>1.449-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -44,24 +44,39 @@ THE SOFTWARE.
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
     <mavenVersion>3.0.3</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.11</aetherVersion>
-    <sisuInjectVersion>2.2.0</sisuInjectVersion>
-    <wagonVersion>2.0</wagonVersion>
+    <aetherVersion>1.13</aetherVersion>
+    <sisuInjectVersion>2.3.0</sisuInjectVersion>
+    <wagonVersion>2.2</wagonVersion>
+    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15487</url>
+  </issueManagement>
 
   <dependencyManagement>
     <dependencies>
-      <!-- < 1.6.x version didn't specify the license (MIT) -->
       <!-- SLF4J is used by wagon-webdav-jackrabbit dep --> 
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.6.1</version>
+        <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-nop</artifactId>
-        <version>1.6.1</version>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -129,9 +144,15 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>config-provider-model</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
-    
+    <!-- the dependency between config-file-provider and maven-plugin should be in the other direction  -->
+<!--     <dependency> -->
+<!-- 	  <groupId>org.jenkins-ci.plugins</groupId> -->
+<!-- 	  <artifactId>config-file-provider</artifactId> -->
+<!-- 	  <version>1.2-SNAPSHOT</version> -->
+<!-- 	  <optional>true</optional> -->
+<!--     </dependency> -->
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
@@ -200,7 +221,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>
@@ -221,6 +246,21 @@ THE SOFTWARE.
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http</artifactId>
       <version>${wagonVersion}</version>
+      <classifier>shaded</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven.wagon</groupId>
+          <artifactId>wagon-http-shared4</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
@@ -270,7 +310,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>lib-jenkins-maven-embedder</artifactId>
-      <version>3.4</version>
+      <version>3.9</version>
       <exclusions>
         <exclusion><!-- we'll add our own patched version. see https://issues.jenkins-ci.org/browse/JENKINS-1680 -->
           <groupId>jtidy</groupId>
@@ -313,9 +353,24 @@ THE SOFTWARE.
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-webdav-jackrabbit</artifactId>
       <version>${wagonVersion}</version>
+      <exclusions>
+        <exclusion><!-- bundling binding creates a problem with app servers that use different versions of slf4j -->
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
+        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Jenkins -->
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>nekohtml</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>nekohtml</groupId>
+          <artifactId>xercesMinimal</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
-      <dependency>
+    <dependency>
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
       <version>1.9.13</version>
@@ -336,29 +391,30 @@ THE SOFTWARE.
     </dependency>
     
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.8.2</version>
-        <scope>test</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit-dep</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.8.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
-      <version>1.4.9</version>
       <scope>test</scope>
    </dependency>
    <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito</artifactId>
-      <version>1.4.9</version>
       <scope>test</scope>
    </dependency>
+   <dependency>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-jdk14</artifactId>
+     <scope>test</scope>
+  </dependency>
 
   </dependencies>
 

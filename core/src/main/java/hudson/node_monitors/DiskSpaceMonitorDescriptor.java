@@ -29,7 +29,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.File;
 import java.io.IOException;

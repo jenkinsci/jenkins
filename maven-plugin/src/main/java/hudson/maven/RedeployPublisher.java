@@ -216,14 +216,13 @@ public class RedeployPublisher extends Recorder {
 
                 if (!StringUtils.isBlank(settingsConfigId)) {
                     Config config = SettingsProviderUtils.findConfig( settingsConfigId,
-                                                                      MavenSettingsProvider.class );
+                                                                      MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a config with id " + settingsConfigId
                                 + " but cannot find the config" );
                     } else {
                         listener.getLogger().println( "redeploy publisher using settings config with name " + config.name );
-                        String settingsContent = config.content;
                         if (config.content != null ) {
                             remoteSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFilePath( config, build.getWorkspace() );
                             altSettingsPath = remoteSettingsFromConfig.getRemote();
@@ -237,7 +236,7 @@ public class RedeployPublisher extends Recorder {
 
                 String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
                 if (!StringUtils.isBlank(globalSettingsConfigId)) {
-                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class );
+                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a global settings config with id "
@@ -306,6 +305,8 @@ public class RedeployPublisher extends Recorder {
     }
     
     private static final class GetUserHome implements Callable<String,IOException> {
+        private static final long serialVersionUID = -8755705771716056636L;
+
         public String call() throws IOException {
             return System.getProperty("user.home");
         }
@@ -313,20 +314,23 @@ public class RedeployPublisher extends Recorder {
     
     
     /**
-     * Obtains the {@link MavenAbstractArtifactRecord} that we'll work on.
+     * Obtains the {@link MavenModuleSetBuild} that we'll work on, or null.
      * <p>
      * This allows promoted-builds plugin to reuse the code for delayed deployment. 
      */
-    protected MavenAbstractArtifactRecord getAction(AbstractBuild<?, ?> build) {
-        return build.getAction(MavenAbstractArtifactRecord.class);
+    protected MavenModuleSetBuild getMavenBuild(AbstractBuild<?, ?> build) {
+        return (build instanceof MavenModuleSetBuild)
+            ? (MavenModuleSetBuild) build
+            : null;
     }
     
     protected List<MavenAbstractArtifactRecord> getActions(AbstractBuild<?, ?> build, BuildListener listener) {
         List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
-        if (!(build instanceof MavenModuleSetBuild)) {
+        MavenModuleSetBuild mavenBuild = getMavenBuild(build);
+        if (mavenBuild == null) {
             return actions;
         }
-        for (Entry<MavenModule, MavenBuild> e : ((MavenModuleSetBuild)build).getModuleLastBuilds().entrySet()) {
+        for (Entry<MavenModule, MavenBuild> e : mavenBuild.getModuleLastBuilds().entrySet()) {
             MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
             if (a == null) {
                 listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
@@ -384,7 +388,7 @@ public class RedeployPublisher extends Recorder {
     
     //---------------------------------------------
     
-    
+    @SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x we cannot avoid deprecations
     public static class WrappedArtifactRepository implements ArtifactRepository {
         private ArtifactRepository artifactRepository;
         private boolean uniqueVersion;

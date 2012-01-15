@@ -243,6 +243,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
+     * 
+     * @since 1.419
      */
     public Authentication impersonate() {
         try {
@@ -454,6 +456,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
+        requirePOST();
 
         fullName = req.getParameter("fullName");
         description = req.getParameter("description");

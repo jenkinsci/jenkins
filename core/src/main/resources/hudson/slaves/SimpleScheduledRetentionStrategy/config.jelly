@@ -31,7 +31,7 @@ THE SOFTWARE.
     </f:entry>
     <f:entry title="${%Scheduled Uptime}"
              description="${%uptime.description}">
-        <f:textbox clazz="required number"
+        <f:number clazz="required number" min="0"
                name="retentionStrategy.upTimeMins" value="${instance.upTimeMins}"
                checkMessage="${%Scheduled Uptime is mandatory and must be a number.}"/>
     </f:entry>

@@ -23,9 +23,19 @@
  */
 package hudson.search;
 
+import jenkins.model.Jenkins;
+import hudson.model.FreeStyleProject;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.AlertHandler;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.util.JSONBuilder;
+
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 
@@ -62,5 +72,135 @@ public class SearchTest extends HudsonTestCase {
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(404,e.getResponse().getStatusCode());
         }
+    }
+    
+    public void testSearchByProjectName() throws Exception {
+        final String projectName = "testSearchByProjectName";
+        
+        createFreeStyleProject(projectName);
+        
+        Page result = search(projectName);
+        Assert.assertNotNull(result);
+        assertGoodStatus(result);
+        
+        // make sure we've fetched the testSearchByDisplayName project page
+        String contents = result.getWebResponse().getContentAsString();
+        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+    }
+
+    public void testSearchByDisplayName() throws Exception {
+        final String displayName = "displayName9999999";
+        
+        FreeStyleProject project = createFreeStyleProject("testSearchByDisplayName");
+        project.setDisplayName(displayName);
+        
+        Page result = search(displayName);
+        Assert.assertNotNull(result);
+        assertGoodStatus(result);
+        
+        // make sure we've fetched the testSearchByDisplayName project page
+        String contents = result.getWebResponse().getContentAsString();
+        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+    }
+    
+    public void testSearch2ProjectsWithSameDisplayName() throws Exception {
+        // create 2 freestyle projects with the same display name
+        final String projectName1 = "projectName1";
+        final String projectName2 = "projectName2";
+        final String projectName3 = "projectName3";
+        final String displayName = "displayNameFoo";
+        final String otherDisplayName = "otherDisplayName";
+        
+        FreeStyleProject project1 = createFreeStyleProject(projectName1);
+        project1.setDisplayName(displayName);
+        FreeStyleProject project2 = createFreeStyleProject(projectName2);
+        project2.setDisplayName(displayName);
+        FreeStyleProject project3 = createFreeStyleProject(projectName3);
+        project3.setDisplayName(otherDisplayName);
+
+        // make sure that on search we get back one of the projects, it doesn't
+        // matter which one as long as the one that is returned has displayName
+        // as the display name
+        Page result = search(displayName);
+        Assert.assertNotNull(result);
+        assertGoodStatus(result);
+
+        // make sure we've fetched the testSearchByDisplayName project page
+        String contents = result.getWebResponse().getContentAsString();
+        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        Assert.assertFalse(contents.contains(otherDisplayName));
+    }
+    
+    public void testProjectNamePrecedesDisplayName() throws Exception {
+        final String project1Name = "foo";
+        final String project1DisplayName = "project1DisplayName";
+        final String project2Name = "project2Name";
+        final String project2DisplayName = project1Name;
+        final String project3Name = "project3Name";
+        final String project3DisplayName = "project3DisplayName";
+        
+        // create 1 freestyle project with the name foo
+        FreeStyleProject project1 = createFreeStyleProject(project1Name);
+        project1.setDisplayName(project1DisplayName);
+        
+        // create another with the display name foo
+        FreeStyleProject project2 = createFreeStyleProject(project2Name);
+        project2.setDisplayName(project2DisplayName);
+
+        // create a third project and make sure it's not picked up by search
+        FreeStyleProject project3 = createFreeStyleProject(project3Name);
+        project3.setDisplayName(project3DisplayName);
+        
+        // search for foo
+        Page result = search(project1Name);
+        Assert.assertNotNull(result);
+        assertGoodStatus(result);
+        
+        // make sure we get the project with the name foo
+        String contents = result.getWebResponse().getContentAsString();
+        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
+        // make sure projects 2 and 3 were not picked up
+        Assert.assertFalse(contents.contains(project2Name));
+        Assert.assertFalse(contents.contains(project3Name));
+        Assert.assertFalse(contents.contains(project3DisplayName));
+    }
+    
+    public void testGetSuggestionsHasBothNamesAndDisplayNames() throws Exception {
+        final String projectName = "project name";
+        final String displayName = "display name";
+
+        FreeStyleProject project1 = createFreeStyleProject(projectName);
+        project1.setDisplayName(displayName);
+        
+        WebClient wc = new WebClient();
+        Page result = wc.goTo("search/suggest?query=name", "application/javascript");
+        Assert.assertNotNull(result);
+        assertGoodStatus(result);
+        
+        String content = result.getWebResponse().getContentAsString();
+        System.out.println(content);
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        Assert.assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        Assert.assertNotNull(jsonArray);
+        
+        Assert.assertEquals(2, jsonArray.size());
+        
+        boolean foundProjectName = false;
+        boolean foundDispayName = false;
+        for(Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject)suggestion;
+            
+            String name = (String)jsonSuggestion.get("name");
+            if(projectName.equals(name)) {
+                foundProjectName = true;
+            }
+            else if(displayName.equals(name)) {
+                foundDispayName = true;
+            }
+        }
+        
+        Assert.assertTrue(foundProjectName);
+        Assert.assertTrue(foundDispayName);
     }
 }

@@ -20,7 +20,7 @@ namespace("/lib/samples").sample(title:_("Define View Fragments Elsewhere")) {
 
 // I defined this class here just to make the sample concise.
 // this class can be defined anywhere, and typically you'd do this somewhere in your src/main/groovy
-static class SomeGenerator extends AbstractGroovyViewModule {
+class SomeGenerator extends AbstractGroovyViewModule {
     SomeGenerator(JellyBuilder builder) {
       super(builder)
     }

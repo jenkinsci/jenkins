@@ -142,7 +142,8 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
 		 * @return
 		 *      True if any upstream projects are building or in queue, false otherwise.
 		 */
-		private boolean areUpstreamsBuilding(AbstractProject<?,?> downstreamProject,
+		@SuppressWarnings("rawtypes")
+        private boolean areUpstreamsBuilding(AbstractProject<?,?> downstreamProject,
 				AbstractProject<?,?> excludeProject) {
 			DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
 			Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);

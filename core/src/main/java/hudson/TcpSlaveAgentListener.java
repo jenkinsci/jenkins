@@ -322,11 +322,6 @@ public final class TcpSlaveAgentListener extends Thread {
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
-                            try {
-                                log.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
                             if(cause!=null)
                                 LOGGER.log(Level.WARNING, "Connection #"+id+" for + " + nodeName + " terminated",cause);
                             try {
@@ -369,6 +364,15 @@ public final class TcpSlaveAgentListener extends Thread {
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
 
     private static final String COOKIE_NAME = TcpSlaveAgentListener.class.getName()+".cookie";
+
+    /**
+     * Host name that we advertise the CLI client to connect to.
+     * This is primarily for those who have reverse proxies in place such that the HTTP host name
+     * and the CLI TCP/IP connection host names are different.
+     *
+     * TODO: think about how to expose this (including whether this needs to be exposed at all.)
+     */
+    public static String CLI_HOST_NAME = System.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
 }
 
 /*

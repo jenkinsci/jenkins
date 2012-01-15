@@ -70,6 +70,7 @@ public class GroovyshCommand extends CLICommand {
         return shell.run(args.toArray(new String[args.size()]));
     }
 
+    @SuppressWarnings({"unchecked","rawtypes"})
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
 
@@ -83,6 +84,10 @@ public class GroovyshCommand extends CLICommand {
 
         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Closure registrar = new Closure(null, null) {
+            private static final long serialVersionUID = 1L;
+
+            @SuppressWarnings("unused")
+            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert(args.length == 1);
                 assert(args[0] instanceof Shell);
@@ -102,6 +107,10 @@ public class GroovyshCommand extends CLICommand {
         // channel is closed
         final Closure originalErrorHook = shell.getErrorHook();
         shell.setErrorHook(new Closure(shell, shell) {
+            private static final long serialVersionUID = 1L;
+
+            @SuppressWarnings("unused")
+            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) throws ChannelClosedException {
                 if (args.length == 1 && args[0] instanceof ChannelClosedException) {
                     throw (ChannelClosedException)args[0];

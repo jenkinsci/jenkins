@@ -77,6 +77,7 @@ THE SOFTWARE.
       <!-- advertise the CLI TCP port -->
       <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
       <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:header name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
     </j:if>
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
@@ -206,7 +207,7 @@ THE SOFTWARE.
                 <j:if test="${anc.prev!=null}">
                   <j:whitespace> &#187; </j:whitespace>
                 </j:if>
-                <a href="${anc.url}/">
+                <a href="${anc.url}/" tooltip="${anc.object.name}">
                   ${anc.object.displayName}
                 </a>
               </j:if>
@@ -235,7 +236,7 @@ THE SOFTWARE.
       <tr>
         <td id="side-panel" width="20%">
           <div style="margin-left: 20px; margin-right: 20px; border-top: 1px solid #bbb"></div>
-          <div id="navigation">
+          <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />
 

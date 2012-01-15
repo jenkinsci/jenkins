@@ -48,7 +48,7 @@ THE SOFTWARE.
       </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
 
       <!-- global configuration from everyone -->
@@ -60,7 +60,11 @@ THE SOFTWARE.
       </j:forEach>
 
       <f:block>
-        <f:submit value="${%Save}" />
+        <div id="bottom-sticker" >
+          <div class="bottom-sticker-inner">
+            <f:submit value="${%Save}" />
+          </div>
+        </div>
       </f:block>
     </f:form>
   </l:main-panel>

@@ -154,6 +154,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         setNode(node);
     }
 
+     /**
+     * Returns list of all boxes {@link ComputerPanelBox}s.
+     */
+    public List<ComputerPanelBox> getComputerPanelBoxs(){
+        return ComputerPanelBox.all(this);
+    }
+    
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
@@ -1052,6 +1059,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
+        requirePOST();
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -30,6 +31,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.HyperlinkNote;
 import hudson.console.ExpandableDetailsNote;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.WorkspaceList;
@@ -67,6 +69,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
@@ -443,14 +446,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = createLauncher(listener);
             if (!Jenkins.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
-
+                listener.getLogger().print(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
+                    Messages.AbstractBuild_BuildingRemotely(HyperlinkNote.encodeTo("/computer/"+ builtOn, builtOn)));
+            else
+            	listener.getLogger().print(Messages.AbstractBuild_Building());
+            
             final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
             try {
                 workspace = lease.path.getRemote();
+                listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-
+                
+                for (WorkspaceListener wl : WorkspaceListener.all()) {
+                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                }
                 preCheckout(launcher,listener);
                 checkout(listener);
 
@@ -556,7 +566,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
         
         private void checkout(BuildListener listener) throws Exception {
-            try {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
@@ -577,6 +586,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         }
                     } catch (AbortException e) {
                         listener.error(e.getMessage());
+                    } catch (InterruptedIOException e) {
+                        throw (InterruptedException)new InterruptedException().initCause(e);
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());
@@ -588,11 +599,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     listener.getLogger().println("Retrying after 10 seconds");
                     Thread.sleep(10000);
                 }
-            } catch (InterruptedException e) {
-                listener.getLogger().println(Messages.AbstractProject_ScmAborted());
-                LOGGER.log(Level.INFO, AbstractBuild.this + " aborted", e);
-                throw new RunnerAbortedException();
-            }
         }
 
         /**
@@ -768,17 +774,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
-        if (changeSet == null || changeSet.get() == null) // cached value
-            try {
-                changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(calcChangeSet());
-            } finally {
-                // defensive check. if the calculation fails (such as through an exception),
-                // set a dummy value so that it'll work the next time. the exception will
-                // be still reported, giving the plugin developer an opportunity to fix it.
-                if (changeSet==null)
-                    changeSet=new WeakReference<ChangeLogSet<? extends Entry>>(ChangeLogSet.createEmpty(this));
-            }
-        return changeSet.get();
+        ChangeLogSet<? extends Entry> cs = null;
+        if (changeSet!=null)
+            cs = changeSet.get();
+
+        if (cs==null)
+            cs = calcChangeSet();
+
+        // defensive check. if the calculation fails (such as through an exception),
+        // set a dummy value so that it'll work the next time. the exception will
+        // be still reported, giving the plugin developer an opportunity to fix it.
+        if (cs==null)
+            cs = ChangeLogSet.createEmpty(this);
+
+        changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
+        return cs;
     }
 
     /**
@@ -835,6 +845,28 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         EnvVars.resolve(env);
 
         return env;
+    }
+
+    /**
+     * During the build, expose the environments contributed by {@link BuildWrapper}s and others.
+     * 
+     * <p>
+     * Since 1.444, executor thread that's doing the build can access mutable underlying list,
+     * which allows the caller to add/remove environments. The recommended way of adding
+     * environment is through {@link BuildWrapper}, but this might be handy for build steps
+     * who wants to expose additional environment variables to the rest of the build.
+     * 
+     * @return can be empty list, but never null. Immutable.
+     * @since 1.437
+     */
+    public EnvironmentList getEnvironments() {
+        Executor e = Executor.currentExecutor();
+        if (e!=null && e.getCurrentExecutable()==this) {
+            if (buildEnvironments==null)    buildEnvironments = new ArrayList<Environment>();
+            return new EnvironmentList(buildEnvironments); 
+        }
+        
+        return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 
     public Calendar due() {

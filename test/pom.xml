@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.435-SNAPSHOT</version>
+    <version>1.449-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -89,14 +89,12 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <artifactId>junit-dep</artifactId>
     </dependency>
-    <!--dependency>
-      <groupId>org.openqa.selenium.client-drivers</groupId>
-      <artifactId>selenium-java-client-driver</artifactId>
-      <version>1.0-beta-1</version>
-    </dependency-->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
@@ -134,13 +132,29 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.8.5</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/src/test/junit4</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
@@ -184,6 +198,12 @@ THE SOFTWARE.
             <artifactId>ant</artifactId>
             <version>1.8.0</version>
           </dependency>
+          <!-- Usually a dependency of ant, but some people seem to have an incomplete ant POM. See JENKINS-11416 -->
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-launcher</artifactId>
+            <version>1.8.0</version>
+          </dependency>
         </dependencies>
       </plugin>
     </plugins>
@@ -200,6 +220,17 @@ THE SOFTWARE.
       </activation>
       <build>
         <plugins>
+          <plugin>
+            <!-- JUnit4 test is failed with maven-junit-plugin-->
+            <artifactId>maven-surefire-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <configuration>
+              <skip>false</skip>
+              <includes>
+                <include>**/UseRecipesWithJenkinsRuleTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
           <plugin>
             <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
             <groupId>org.kohsuke</groupId>
@@ -233,7 +264,14 @@ THE SOFTWARE.
                       <name>buildDirectory</name>
                       <value>${project.build.directory}</value>
                     </property>
+                    <property>
+                      <name>java.awt.headless</name>
+                      <value>true</value>
+                    </property>
                   </systemProperties>
+                  <excludes>
+                    <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
+                  </excludes>
                 </configuration>
               </execution>
             </executions>

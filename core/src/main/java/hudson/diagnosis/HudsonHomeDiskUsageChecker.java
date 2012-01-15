@@ -26,7 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import java.util.logging.Logger;
 

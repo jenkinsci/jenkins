@@ -36,7 +36,7 @@ THE SOFTWARE.
     <f:entry title="${%Default user e-mail suffix}" field="defaultSuffix">
       <f:textbox />
     </f:entry>
-    <f:entry title="${%System Admin E-mail Address}" field="adminAddress">
+    <f:entry title="${%Sender E-mail Address}" field="adminAddress">
       <f:textbox />
     </f:entry>
     <f:advanced>
@@ -55,10 +55,18 @@ THE SOFTWARE.
       <f:entry title="${%SMTP Port}" field="smtpPort">
         <f:textbox />
       </f:entry>
+      <f:entry title="${%Reply-To Address}" field="replyToAddress">
+        <f:textbox />
+      </f:entry>
       <f:entry title="${%Charset}" field="charset">
         <f:textbox />
       </f:entry>
     </f:advanced>
-    <f:validateButton method="sendTestMail" title="${%Test configuration by sending e-mail to System Admin Address}" with="smtpServer,adminAddress,useSMTPAuth,smtpAuthUserName,smtpAuthPassword,useSsl,smtpPort,charset" />
+    <f:optionalBlock title="${%Test configuration by sending test e-mail}">
+      <f:entry title="${%Test e-mail recipient}">
+          <f:textbox name="sendTestMailTo"/>
+      </f:entry>
+      <f:validateButton method="sendTestMail" title="${%Test configuration}" with="sendTestMailTo,smtpServer,adminAddress,useSMTPAuth,smtpAuthUserName,smtpAuthPassword,useSsl,smtpPort,charset" />
+    </f:optionalBlock>
   </f:section>
 </j:jelly>

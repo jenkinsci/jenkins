@@ -45,12 +45,14 @@ import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -196,12 +198,25 @@ public class UpdateSite {
                     certs.add(c);
                 }
 
-                // all default root CAs in JVM are trusted, plus certs bundled in Jenkins
+                // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
+                // which isn't useful at all
                 Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-                ServletContext context = Jenkins.getInstance().servletContext;
-                for (String cert : (Set<String>) context.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+                Jenkins j = Jenkins.getInstance();
+                for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
                     if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
-                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(context.getResourceAsStream(cert)),null));
+                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(j.servletContext.getResourceAsStream(cert)),null));
+                }
+                File[] cas = new File(j.root, "update-center-rootCAs").listFiles();
+                if (cas!=null) {
+                    for (File cert : cas) {
+                        if (cert.getName().endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                        FileInputStream in = new FileInputStream(cert);
+                        try {
+                            anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(in),null));
+                        } finally {
+                            in.close();
+                        }
+                    }
                 }
                 CertificateUtil.validatePath(certs,anchors);
             }
@@ -675,21 +690,29 @@ public class UpdateSite {
             deploy();
         }
 
+        public Future<UpdateCenterJob> deploy() {
+            return deploy(false);
+        }
+
         /**
          * Schedules the installation of this plugin.
          *
          * <p>
          * This is mainly intended to be called from the UI. The actual installation work happens
          * asynchronously in another thread.
+         *
+         * @param dynamicLoad
+         *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
+         *      the plugin will only take effect after the reboot.
          */
-        public Future<UpdateCenterJob> deploy() {
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
-                dep.deploy();
+                dep.deploy(dynamicLoad);
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
         }
 
         /**
@@ -703,17 +726,22 @@ public class UpdateSite {
         /**
          * Making the installation web bound.
          */
-        public void doInstall(StaplerResponse rsp) throws IOException {
-            deploy();
-            rsp.sendRedirect2("../..");
+        public HttpResponse doInstall() throws IOException {
+            deploy(false);
+            return HttpResponses.redirectTo("../..");
+        }
+
+        public HttpResponse doInstallNow() throws IOException {
+            deploy(true);
+            return HttpResponses.redirectTo("../..");
         }
 
         /**
          * Performs the downgrade of the plugin.
          */
-        public void doDowngrade(StaplerResponse rsp) throws IOException {
+        public HttpResponse doDowngrade() throws IOException {
             deployBackup();
-            rsp.sendRedirect2("../..");
+            return HttpResponses.redirectTo("../..");
         }
     }
 

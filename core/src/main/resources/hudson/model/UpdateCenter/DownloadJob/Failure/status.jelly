@@ -30,5 +30,5 @@ THE SOFTWARE.
     <a href="" onclick="var n=findNext(this,function(e){return e.tagName=='PRE'});
                n.style.display='block';this.style.display='none';return false">${%Details}</a>
   </div>
-  <pre style="display:none">${it.stackTrace}</pre>
+  <pre style="display:none">${it.problemStackTrace}</pre>
 </j:jelly>

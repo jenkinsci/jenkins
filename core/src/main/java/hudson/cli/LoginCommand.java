@@ -33,7 +33,7 @@ public class LoginCommand extends CLICommand {
         if (a== Jenkins.ANONYMOUS)
             throw new CmdLineException("No credentials specified."); // this causes CLI to show the command line options.
 
-        ClientAuthenticationCache store = new ClientAuthenticationCache(channel);
+        ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
         store.set(a);
 
         return 0;

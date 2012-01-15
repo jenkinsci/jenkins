@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.435-SNAPSHOT</version>
+    <version>1.449-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.24</version>
+      <version>1.25</version>
       <scope>provided</scope>
     </dependency>
 
@@ -99,7 +99,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-28</version>
+      <version>0.9.10-jenkins-32</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -110,7 +110,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>sshd</artifactId>
+      <version>1.2</version>
     </dependency>
 
     <!-- offline profiler API when we need it -->
@@ -217,19 +222,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>0.17</version>
+                  <version>0.21</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>subversion</artifactId>
-                  <version>1.28</version>
+                  <version>1.34</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jvnet.hudson.plugins</groupId>
+                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
-                  <version>1.2</version>
+                  <version>1.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -247,7 +252,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>translation</artifactId>
-                  <version>1.7</version>
+                  <version>1.8</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -368,7 +373,8 @@ THE SOFTWARE.
               <name>hudson.bundled.plugins</name>
               <value>
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/javadoc.hpi
               </value>
             </systemProperty>
             <systemProperty>

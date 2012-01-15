@@ -49,7 +49,7 @@ import hudson.model.User;
  * </pre>
  *
  * @author Erik Ramfelt
- * @since 1.433
+ * @since 1.434
  */
 public abstract class UserAvatarResolver implements ExtensionPoint {
 
@@ -64,7 +64,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      *
      * <p>
      * When multiple resolvers are installed, they are consulted in order and
-     * the search will be over when an avatar is found by someoene.
+     * the search will be over when an avatar is found by someone.
      *
      * <p>
      * Since {@link UserAvatarResolver} is singleton, this method can be invoked concurrently

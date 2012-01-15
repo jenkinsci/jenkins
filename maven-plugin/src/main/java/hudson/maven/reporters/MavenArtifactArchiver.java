@@ -115,7 +115,7 @@ public class MavenArtifactArchiver extends MavenReporter {
 
             // record attached artifacts
             final List<MavenArtifact> attachedArtifacts = new ArrayList<MavenArtifact>();
-            for (Artifact a : (List<Artifact>) pom.getAttachedArtifacts()) {
+            for (Artifact a : pom.getAttachedArtifacts()) {
                 MavenArtifact ma = MavenArtifact.create(a);
                 if (ma != null) {
                     mavenArtifacts.add(a.getFile());
@@ -126,6 +126,8 @@ public class MavenArtifactArchiver extends MavenReporter {
 
             // record the action
             build.executeAsync(new MavenBuildProxy.BuildCallable<Void, IOException>() {
+                private static final long serialVersionUID = -7955474564875700905L;
+
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
                     // if a build forks lifecycles, this method can be called multiple times
                     List<MavenArtifactRecord> old = build.getActions(MavenArtifactRecord.class);

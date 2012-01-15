@@ -131,7 +131,7 @@ function findElementsBySelector(startNode,selector,includeSelf) {
      * If includeSelf==true, p==c is allowed. Otherwise not.
      */
     function isAncestor(p,c) {
-      if (!includeSelf) c = c.parentNode;
+      if (!includeSelf && c!=null) c = c.parentNode;
 
       while(true) {
         if(p==c)      return true;

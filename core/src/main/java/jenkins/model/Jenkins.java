@@ -1,9 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
- * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.
+ * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.,
+ * Yahoo!, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,10 @@
  */
 package jenkins.model;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Injector;
+import hudson.ExtensionComponent;
+import hudson.ExtensionFinder;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.AbstractCIBase;
@@ -115,7 +119,6 @@ import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
-import hudson.init.InitReactorListener;
 import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
@@ -170,6 +173,7 @@ import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
+import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.RemotingDiagnostics;
@@ -178,12 +182,14 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
-import hudson.util.Service;
 import hudson.views.DefaultMyViewsTabBar;
 import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionRefreshException;
+import jenkins.InitReactorRunner;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
@@ -201,9 +207,7 @@ import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.Task;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
-import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -270,7 +274,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -547,7 +550,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private volatile CrumbIssuer crumbIssuer;
 
     /**
-     * All labels known to Hudson. This allows us to reuse the same label instances
+     * All labels known to Jenkins. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
     private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<String,Label>();
@@ -613,7 +616,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         }
 
         /**
-         *send the browser to the config page
+         * Send the browser to the config page.
          * use View to trim view/{default-view} from URL if possible
          */
         @Override
@@ -637,7 +640,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * Secrete key generated once and used for a long time, beyond
+     * Secret key generated once and used for a long time, beyond
      * container start/stop. Persisted outside <tt>config.xml</tt> to avoid
      * accidental exposure.
      */
@@ -670,7 +673,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SC_START_IN_CTOR") // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
-    	// As hudson is starting, grant this process full control
+        long start = System.currentTimeMillis();
+        
+    	// As Jenkins is starting, grant this process full control
     	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
         try {
             this.root = root;
@@ -751,7 +756,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 udpBroadcastThread = new UDPBroadcastThread(this);
                 udpBroadcastThread.start();
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Faild to broadcast over UDP",e);
+                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
             }
             dnsMultiCast = new DNSMultiCast(this);
 
@@ -764,8 +769,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                         cl.onOnline(c,StreamTaskListener.fromStdout());
             }
 
-            for (ItemListener l : ItemListener.all())
+            for (ItemListener l : ItemListener.all()) {
+                long itemListenerStart = System.currentTimeMillis();
                 l.onLoaded();
+                if (LOG_STARTUP_PERFORMANCE)
+                    LOGGER.info(String.format("Took %dms for item listener %s startup",
+                            System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
+            }
+            
+            if (LOG_STARTUP_PERFORMANCE)
+                LOGGER.info(String.format("Took %dms for complete Jenkins startup",
+                        System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -806,55 +820,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             }
         };
 
-        ExecutorService es;
-        if (PARALLEL_LOAD)
-            es = new ThreadPoolExecutor(
-                TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
-        else
-            es = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
-        try {
-            reactor.execute(es,buildReactorListener());
-        } finally {
-            es.shutdownNow();   // upon a successful return the executor queue should be empty. Upon an exception, we want to cancel all pending tasks
-        }
+        new InitReactorRunner() {
+            @Override
+            protected void onInitMilestoneAttained(InitMilestone milestone) {
+                initLevel = milestone;
+            }
+        }.run(reactor);
     }
 
-    /**
-     * Aggregates all the listeners into one and returns it.
-     *
-     * <p>
-     * At this point plugins are not loaded yet, so we fall back to the META-INF/services look up to discover implementations.
-     * As such there's no way for plugins to participate into this process.
-     */
-    private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = (List) Service.loadInstances(Thread.currentThread().getContextClassLoader(), InitReactorListener.class);
-        r.add(new ReactorListener() {
-            final Level level = Level.parse( Configuration.getStringConfigParameter("initLogLevel", "FINE") );
-            public void onTaskStarted(Task t) {
-                LOGGER.log(level,"Started "+t.getDisplayName());
-            }
-
-            public void onTaskCompleted(Task t) {
-                LOGGER.log(level,"Completed "+t.getDisplayName());
-            }
-
-            public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
-            }
-
-            public void onAttained(Milestone milestone) {
-                Level lv = level;
-                String s = "Attained "+milestone.toString();
-                if (milestone instanceof InitMilestone) {
-                    lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
-                    initLevel = (InitMilestone)milestone;
-                    s = initLevel.toString();
-                }
-                LOGGER.log(lv,s);
-            }
-        });
-        return new ReactorListener.Aggregator(r);
-    }
 
     public TcpSlaveAgentListener getTcpSlaveAgentListener() {
         return tcpSlaveAgentListener;
@@ -1140,7 +1113,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * every plugin reimplementing the singleton pattern.
      *
      * @param clazz The plugin class (beware class-loader fun, this will probably only work
-     * from within the hpi that defines the plugin class, it may or may not work in other cases)
+     * from within the jpi that defines the plugin class, it may or may not work in other cases)
      *
      * @return The plugin instance.
      */
@@ -1986,6 +1959,48 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
+     * Refresh {@link ExtensionList}s by adding all the newly discovered extensions.
+     *
+     * Exposed only for {@link PluginManager#dynamicLoad(File)}.
+     */
+    public void refreshExtensions() throws ExtensionRefreshException {
+        ExtensionList<ExtensionFinder> finders = getExtensionList(ExtensionFinder.class);
+        for (ExtensionFinder ef : finders) {
+            if (!ef.isRefreshable())
+                throw new ExtensionRefreshException(ef+" doesn't support refresh");
+        }
+
+        List<ExtensionComponentSet> fragments = Lists.newArrayList();
+        for (ExtensionFinder ef : finders) {
+            fragments.add(ef.refresh());
+        }
+        ExtensionComponentSet delta = ExtensionComponentSet.union(fragments);
+
+        // if we find a new ExtensionFinder, we need it to list up all the extension points as well
+        List<ExtensionComponent<ExtensionFinder>> newFinders = Lists.newArrayList(delta.find(ExtensionFinder.class));
+        while (!newFinders.isEmpty()) {
+            ExtensionFinder f = newFinders.remove(newFinders.size()-1).getInstance();
+
+            ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f);
+            newFinders.addAll(ecs.find(ExtensionFinder.class));
+            delta = ExtensionComponentSet.union(delta, ecs);
+        }
+
+        for (ExtensionList el : extensionLists.values()) {
+            el.refresh(delta);
+        }
+        for (ExtensionList el : descriptorLists.values()) {
+            el.refresh(delta);
+        }
+
+        // TODO: we need some generalization here so that extension points can be notified when a refresh happens?
+        for (ExtensionComponent<RootAction> ea : delta.find(RootAction.class)) {
+            Action a = ea.getInstance();
+            if (!actions.contains(a)) actions.add(a);
+        }
+    }
+
+    /**
      * Returns the root {@link ACL}.
      *
      * @see AuthorizationStrategy#getRootACL()
@@ -2430,6 +2445,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Called to shut down the system.
      */
     public void cleanUp() {
+        for (ItemListener l : ItemListener.all())
+            l.onBeforeShutdown();
+
         Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
         for( Computer c : computers.values() ) {
@@ -2820,18 +2838,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         // engage "loading ..." UI and then run the actual task in a separate thread
         servletContext.setAttribute("app", new HudsonIsLoading());
 
-        new Thread("Hudson config reload thread") {
+        new Thread("Jenkins config reload thread") {
             @Override
             public void run() {
                 try {
                     SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
                     reload();
-                } catch (IOException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
-                } catch (ReactorException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
-                } catch (InterruptedException e) {
-                    LOGGER.log(SEVERE,"Failed to reload Hudson config",e);
+                } catch (Exception e) {
+                    LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
+                    WebApp.get(servletContext).setApp(new JenkinsReloadFailed(e));
                 }
             }
         }.start();
@@ -3393,6 +3408,85 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return getPrimaryView();
     }
 
+    /**
+     * This method checks all existing jobs to see if displayName is 
+     * unique. It does not check the displayName against the displayName of the
+     * job that the user is configuring though to prevent a validation warning 
+     * if the user sets the displayName to what it currently is.
+     * @param displayName
+     * @param currentJobName
+     * @return
+     */
+    boolean isDisplayNameUnique(String displayName, String currentJobName) {
+        Collection<TopLevelItem> itemCollection = items.values();
+        
+        // if there are a lot of projects, we'll have to store their 
+        // display names in a HashSet or something for a quick check
+        for(TopLevelItem item : itemCollection) {
+            if(item.getName().equals(currentJobName)) {
+                // we won't compare the candidate displayName against the current
+                // item. This is to prevent an validation warning if the user 
+                // sets the displayName to what the existing display name is
+                continue;
+            }
+            else if(displayName.equals(item.getDisplayName())) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * True if there is no item in Jenkins that has this name
+     * @param name The name to test
+     * @param currentJobName The name of the job that the user is configuring
+     * @return
+     */
+    boolean isNameUnique(String name, String currentJobName) {
+        Item item = getItem(name);
+        
+        if(null==item) {
+            // the candidate name didn't return any items so the name is unique
+            return true;
+        }
+        else if(item.getName().equals(currentJobName)) {
+            // the candidate name returned an item, but the item is the item
+            // that the user is configuring so this is ok
+            return true;
+        } 
+        else {
+            // the candidate name returned an item, so it is not unique
+            return false;
+        }
+    }
+    
+    /**
+     * Checks to see if the candidate displayName collides with any 
+     * existing display names or project names
+     * @param displayName The display name to test
+     * @param jobName The name of the job the user is configuring
+     * @return
+     */
+    public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
+            @QueryParameter String jobName) {
+        displayName = displayName.trim();
+        
+        if(LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Current job name is " + jobName);
+        }
+        
+        if(!isNameUnique(displayName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
+        }
+        else if(!isDisplayNameUnique(displayName, jobName)){
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(displayName));
+        }
+        else {
+            return FormValidation.ok();
+        }
+    }
+    
     public static class MasterComputer extends Computer {
         protected MasterComputer() {
             super(Jenkins.getInstance());
@@ -3604,7 +3698,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
-    public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
     private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     /**
      * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.

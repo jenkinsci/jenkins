@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -102,8 +103,9 @@ public class MavenUtil {
             settingsLoc = (altSet == null) ? null 
                 : new File(build.getWorkspace().child(altSet).getRemote());
 
-            if (((MavenModuleSet) project).usesPrivateRepository()) {
-                privateRepository = build.getWorkspace().child(".repository").getRemote();
+            FilePath localRepo = ((MavenModuleSet) project).getLocalRepository().locate((MavenModuleSetBuild) build);
+            if (localRepo!=null) {
+                privateRepository = localRepo.getRemote();
             }
 
             profiles = ((MavenModuleSet) project).getProfiles();
@@ -148,8 +150,7 @@ public class MavenUtil {
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
         if(!m2Home.exists())
-            throw new AbortException("Failed to create "+m2Home+
-                "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
+            throw new AbortException("Failed to create "+m2Home);
 
         if (mavenEmbedderRequest.getPrivateRepository()!=null)
             mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );

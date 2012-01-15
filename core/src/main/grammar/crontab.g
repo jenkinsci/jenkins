@@ -47,31 +47,31 @@ throws ANTLRException
       (
         "yearly"
       {
-        table.set("0 0 1 1 *");
+        table.set("H H H H *",hash);
       }
       | "annually"
       {
-        table.set("0 0 1 1 *");
+        table.set("H H H H *",hash);
       }
       | "monthly"
       {
-        table.set("0 0 1 * *");
+        table.set("H H H * *",hash);
       }
       | "weekly"
       {
-        table.set("0 0 * * 0");
+        table.set("H H * * H",hash);
       }
       | "daily"
       {
-        table.set("0 0 * * *");
+        table.set("H H * * *",hash);
       }
       | "midnight"
       {
-        table.set("0 0 * * *");
+        table.set("H H * * *",hash);
       }
       | "hourly"
       {
-        table.set("0 * * * *");
+        table.set("H * * * *",hash);
       }
     )
   )
@@ -108,6 +108,14 @@ throws ANTLRException
   {
     bits = doRange(d,field);
   }
+  | ("H" "(")=> "H" "(" s=token "-" e=token ")"
+  {
+    bits = doHash(s,e);
+  }
+  | "H"
+  {
+    bits = doHash(field);
+  }
   ;
 
 token
@@ -143,6 +151,9 @@ STAR: '*';
 DIV:  '/';
 OR:   ',';
 AT:   '@';
+H:    'H';
+LPAREN: '(';
+RPAREN: ')';
 
 YEARLY: "yearly";
 ANNUALLY: "annually";

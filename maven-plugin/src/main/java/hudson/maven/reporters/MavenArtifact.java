@@ -141,13 +141,13 @@ public final class MavenArtifact implements Serializable {
         File file = a.getFile();
         if(file==null)
             return null; // perhaps build failed and didn't leave an artifact
-        if(!file.exists() || file.isDirectory())
-            return null; // during a build maven sets a class folder instead of a jar file as artifact. ignore.
+        if(!file.isFile())
+            return null; // file doesn't exist or artifact points to a directory
         return new MavenArtifact(a);
     }
 
     public boolean isPOM() {
-        return fileName.endsWith(".pom");   // hack
+        return fileName.endsWith(".pom")||"pom.xml".equals(fileName);   // hack
     }
 
     /**
@@ -180,7 +180,7 @@ public final class MavenArtifact implements Serializable {
      */
     private String getSeed(String extension) {
         String name = artifactId+'-'+version;
-        if(classifier!=null)
+        if(Util.fixEmpty(classifier)!=null)
             name += '-'+classifier;
         name += '.'+extension;
         return name;

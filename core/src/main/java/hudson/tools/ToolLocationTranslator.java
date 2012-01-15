@@ -34,7 +34,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This Hudson-wide extension points can participate in determining the actual node-specific path
+ * This Jenkins-wide extension points can participate in determining the actual node-specific path
  * of the {@link ToolInstallation} for the given {@link Node}.
  *
  * <p>

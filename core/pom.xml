@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.435-SNAPSHOT</version>
+    <version>1.449-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.174</stapler.version>
+    <stapler.version>1.177</stapler.version>
   </properties>
 
   <dependencies>
@@ -97,7 +97,6 @@ THE SOFTWARE.
            because it uses a modified Guice called Sisu -->
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <version>3.0.3</version>
     </dependency>
 
     <dependency>
@@ -126,6 +125,10 @@ THE SOFTWARE.
         </exclusion>
         <exclusion>
           <groupId>commons-jexl</groupId>
+          <artifactId>commons-jexl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
           <artifactId>commons-jexl</artifactId>
         </exclusion>
         <exclusion>
@@ -170,19 +173,8 @@ THE SOFTWARE.
       <version>2.1-rev7</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xalan</groupId>
-          <artifactId>xalan</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
@@ -361,9 +353,9 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-hudson-20090508</version>
+      <version>1.1-jenkins-20111212</version>
     </dependency>
     <dependency>
       <groupId>org.acegisecurity</groupId>
@@ -381,9 +373,9 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.groovy</groupId>
+      <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.8.2-jenkins-1</version>
+      <version>1.8.3</version>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>jline</groupId>
@@ -422,8 +414,22 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.3.1</version>
+      <artifactId>junit-dep</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
@@ -434,7 +440,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -454,7 +460,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.5</version>
+      <version>1.7</version>
     </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
@@ -482,7 +488,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.5</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libpam4j</groupId>

@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.23</version>
+    <version>1.25</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.435-SNAPSHOT</version>
+  <version>1.449-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -33,7 +33,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.435-SNAPSHOT</version>
+        <version>1.449-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -43,31 +43,31 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.435-SNAPSHOT</version>
+      <version>1.449-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.435-SNAPSHOT</version>
+      <version>1.449-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.435-SNAPSHOT</version>
+      <version>1.449-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.435-SNAPSHOT</version>
+      <version>1.449-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <artifactId>junit-dep</artifactId>
+      <version>4.10</version>
       <scope>test</scope>
     </dependency>
     <!--
@@ -197,7 +197,7 @@
             <goals>
               <goal>process</goal>
             </goals>
-            <phase>compile</phase>
+            <phase>prepare-package</phase>
             <configuration>
               <!--requireCompleteLicenseInfo>true</requireCompleteLicenseInfo-->
               <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
@@ -244,6 +244,10 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <configuration>
             <buildOutputDirectory>target/eclipse-classes</buildOutputDirectory>
+            <additionalProjectnatures>
+              <!-- enable Groovy nature by default for DSLD support  -->
+              <projectnature>org.eclipse.jdt.groovy.core.groovyNature</projectnature>
+            </additionalProjectnatures>
           </configuration>
         </plugin>
       </plugins>

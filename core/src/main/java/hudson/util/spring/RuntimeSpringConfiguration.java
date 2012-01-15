@@ -46,9 +46,9 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param clazz The class of the bean
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration addSingletonBean(String name, Class clazz);
+    BeanConfiguration addSingletonBean(String name, Class clazz);
 
-    public WebApplicationContext getUnrefreshedApplicationContext();
+    WebApplicationContext getUnrefreshedApplicationContext();
     /**
      * Adds a prototype bean definition
      *
@@ -56,7 +56,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param clazz The class of the bean
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration addPrototypeBean(String name, Class clazz);
+    BeanConfiguration addPrototypeBean(String name, Class clazz);
 
     /**
      * Retrieves the application context from the current state
@@ -71,7 +71,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      *
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration addSingletonBean(String name);
+    BeanConfiguration addSingletonBean(String name);
 
     /**
      * Adds an empty prototype bean configuration
@@ -79,7 +79,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param name The name of the prototype bean
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration addPrototypeBean(String name);
+    BeanConfiguration addPrototypeBean(String name);
 
     /**
      * Creates a singleton bean configuration. Differs from addSingletonBean in that
@@ -89,7 +89,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param clazz
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration createSingletonBean(Class clazz);
+    BeanConfiguration createSingletonBean(Class clazz);
 
     /**
      * Creates a new singleton bean and adds it to the list of bean references
@@ -99,7 +99,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param args The constructor arguments of the bean
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args);
+    BeanConfiguration addSingletonBean(String name, Class clazz, Collection args);
 
     /**
      * Creates a singleton bean configuration. Differs from addSingletonBean in that
@@ -110,14 +110,14 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param constructorArguments The constructor arguments
      * @return A BeanConfiguration instance
      */
-    public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments);
+    BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments);
 
     /**
      * Sets the servlet context
      *
      * @param context The servlet Context
      */
-    public void setServletContext(ServletContext context);
+    void setServletContext(ServletContext context);
 
     /**
      * Creates a new prototype bean configuration. Differs from addPrototypeBean in that
@@ -128,7 +128,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @return A BeanConfiguration instance
      *
      */
-    public BeanConfiguration createPrototypeBean(String name);
+    BeanConfiguration createPrototypeBean(String name);
 
     /**
      * Creates a new singleton bean configuration. Differs from addSingletonBean in that
@@ -139,7 +139,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @return A BeanConfiguration instance
      *
      */
-    public BeanConfiguration createSingletonBean(String name);
+    BeanConfiguration createSingletonBean(String name);
 
     /**
      * Adds a bean configuration to the list of beans to be created
@@ -154,7 +154,7 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param name The name of the bean
      * @param bd The BeanDefinition instance
      */
-    public void addBeanDefinition(String name, BeanDefinition bd);
+    void addBeanDefinition(String name, BeanDefinition bd);
 
     /**
      * Returns whether the runtime spring config contains the specified bean
@@ -162,13 +162,13 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param name The bean name
      * @return True if it does
      */
-    public boolean containsBean(String name);
+    boolean containsBean(String name);
     /**
      * Returns the BeanConfiguration for the specified name
      * @param name The name of the bean configuration
      * @return The BeanConfiguration
      */
-    public BeanConfiguration getBeanConfig(String name);
+    BeanConfiguration getBeanConfig(String name);
 
     /**
      * Creates and returns the BeanDefinition that is regsitered within the given name or returns null
@@ -176,14 +176,14 @@ interface RuntimeSpringConfiguration extends ServletContextAware {
      * @param name The name of the bean definition
      * @return A BeanDefinition
      */
-    public AbstractBeanDefinition createBeanDefinition(String name);
+    AbstractBeanDefinition createBeanDefinition(String name);
 
     /**
      * Registers a bean factory post processor with the context
      *
      * @param processor The BeanFactoryPostProcessor instance
      */
-    public void registerPostProcessor(BeanFactoryPostProcessor processor);
+    void registerPostProcessor(BeanFactoryPostProcessor processor);
 
     List<String> getBeanNames();
 

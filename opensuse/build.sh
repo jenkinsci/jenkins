@@ -18,5 +18,7 @@ echo Version is $version
 rm -rf BUILD RPMS SRPMS tmp || true
 mkdir -p BUILD RPMS SRPMS
 
+cat SOURCES/jenkins.repo.in | sed -e "s#@URL@#${SUSE_URL}/#g" > SOURCES/jenkins.repo
+
 # real action happens here
 rpmbuild -ba --define="_topdir $PWD" --define="_tmppath $PWD/tmp" --define="ver $version" SPECS/jenkins.spec

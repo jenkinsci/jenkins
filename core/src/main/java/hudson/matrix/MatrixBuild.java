@@ -25,19 +25,21 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.console.HyperlinkNote;
 import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import jenkins.model.Jenkins;
-import hudson.model.JobProperty;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
-import hudson.model.Cause.UpstreamCause;
-import hudson.tasks.Publisher;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,12 +47,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
+import java.util.TreeSet;
 
 /**
  * Build of {@link MatrixProject}.
@@ -261,6 +261,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 if(!a.startBuild())
                     return Result.FAILURE;
 
+            MatrixConfigurationSorter sorter = p.getSorter();
+            if (sorter != null) {
+                touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
+                delayedConfigurations    = createTreeSet(delayedConfigurations,sorter);
+            }
+
             try {
                 if(!p.isRunSequentially())
                     for(MatrixConfiguration c : touchStoneConfigurations)
@@ -287,7 +293,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     if(p.isRunSequentially())
                         scheduleConfigurationBuild(logger, c);
                     Result buildResult = waitForCompletion(listener, c);
-                    logger.println(Messages.MatrixBuild_Completed(c.getDisplayName(), buildResult));
+                    logger.println(Messages.MatrixBuild_Completed(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName()), buildResult));
                     r = r.combine(buildResult);
                 }
 
@@ -306,12 +312,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))
-                            logger.println(Messages.MatrixBuild_Cancelled(c.getDisplayName()));
+                            logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null) {
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
-                                logger.println(Messages.MatrixBuild_Interrupting(b.getDisplayName()));
+                                logger.println(Messages.MatrixBuild_Interrupting(HyperlinkNote.encodeTo('/'+ b.getUrl(),b.getDisplayName())));
                                 exe.interrupt();
                             }
                         }
@@ -359,7 +365,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
                     // because of this, we really make sure that the build is cancelled by doing this 5
                     // times over 5 seconds
-                    listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(c.getDisplayName()));
+                    listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
                     buildResult = Result.ABORTED;
                 }
 
@@ -374,7 +380,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     // if the build seems to be stuck in the queue, display why
                     String why = qi.getWhy();
                     if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
-                        listener.getLogger().println(c.getDisplayName()+" is still in the queue: "+why);
+                        listener.getLogger().println(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())+" is still in the queue: "+why);
                         whyInQueue = why;
                     }
                 }
@@ -384,7 +390,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         }
 
         private void scheduleConfigurationBuild(PrintStream logger, MatrixConfiguration c) {
-            logger.println(Messages.MatrixBuild_Triggering(c.getDisplayName()));
+            logger.println(Messages.MatrixBuild_Triggering(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
             c.scheduleBuild(getAction(ParametersAction.class), new UpstreamCause(MatrixBuild.this));
         }
 
@@ -392,6 +398,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
+    }
+
+    private <T> TreeSet<T> createTreeSet(Collection<T> items, Comparator<T> sorter) {
+        TreeSet<T> r = new TreeSet<T>(sorter);
+        r.addAll(items);
+        return r;
     }
 
     /**

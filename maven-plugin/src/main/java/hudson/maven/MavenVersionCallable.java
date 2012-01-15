@@ -41,6 +41,7 @@ import org.kohsuke.stapler.framework.io.IOException2;
 public class MavenVersionCallable
     implements Callable<MavenInformation, IOException>
 {
+    private static final long serialVersionUID = -2644951622080930034L;
     
     private final String mavenHome;
     

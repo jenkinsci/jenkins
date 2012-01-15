@@ -46,7 +46,7 @@ import java.io.IOException;
 public abstract class TestDataPublisher extends AbstractDescribableImpl<TestDataPublisher> implements ExtensionPoint {
 
     /**
-     * Called after test results are collected by Hudson, to create a resolver for {@link TestAction}s.
+     * Called after test results are collected by Jenkins, to create a resolver for {@link TestAction}s.
      *
      * @return
      *      can be null to indicate that there's nothing to contribute for this test result.

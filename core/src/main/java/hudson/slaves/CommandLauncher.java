@@ -97,6 +97,7 @@ public class CommandLauncher extends ComputerLauncher {
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
+            pb.environment().put("WORKSPACE", computer.getNode().getRemoteFS()); //path for local slave log
 
             {// system defined variables
                 String rootUrl = Jenkins.getInstance().getRootUrl();

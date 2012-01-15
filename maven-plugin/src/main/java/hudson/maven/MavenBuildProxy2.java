@@ -54,7 +54,9 @@ public interface MavenBuildProxy2 extends MavenBuildProxy {
      *
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ static abstract class Filter<CORE extends MavenBuildProxy2> extends MavenBuildProxy.Filter<CORE> implements MavenBuildProxy2 {
+    /*package*/ abstract class Filter<CORE extends MavenBuildProxy2> extends MavenBuildProxy.Filter<CORE> implements MavenBuildProxy2 {
+        private static final long serialVersionUID = -1208416744028858844L;
+
         protected Filter(CORE core) {
             super(core);
         }

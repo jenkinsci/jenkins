@@ -136,7 +136,7 @@ exit 0
 %config /etc/logrotate.d/%{name}
 %config(noreplace) /etc/init.d/%{name}
 %config(noreplace) /etc/sysconfig/%{name}
-/etc/yum.repos.d/jenkins.repo
+%config(noreplace) /etc/yum.repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 
 %changelog

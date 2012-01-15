@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
  * Yahoo! Inc., Tom Huybrechts, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,6 +46,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -66,6 +67,7 @@ import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
@@ -78,7 +80,6 @@ import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
-import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
@@ -137,6 +138,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -183,11 +185,12 @@ import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
- * Base class for all Hudson test cases.
+ * Base class for all Jenkins test cases.
  *
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Points to the same object as {@link #jenkins} does.
@@ -290,7 +293,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         try {
             jenkins = hudson = newHudson();
         } catch (Exception e) {
-            // if Hudson instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
+            // if Jenkins instance fails to initialize, it leaves the instance field non-empty and break all the rest of the tests, so clean that up.
             Field f = Jenkins.class.getDeclaredField("theInstance");
             f.setAccessible(true);
             f.set(null,null);
@@ -303,6 +306,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
+        Mailer.descriptor().setHudsonUrl(getURL().toExternalForm());
 
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
@@ -351,11 +355,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
             clients.clear();
 
-            for (Channel c : channels)
-                c.close();
-            for (Channel c : channels)
-                c.join();
-            channels.clear();
+            synchronized(channels) {
+                for (Channel c : channels)
+                    c.close();
+                for (Channel c : channels)
+                    c.join();
+                channels.clear();
+            }
 
         } finally {
             server.stop();
@@ -400,6 +406,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
     }
 
+    @SuppressWarnings("serial")
     public static class BreakException extends Exception {}
 
     public String getIconFileName() {
@@ -493,11 +500,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
             VirtualChannel ch = c.getChannel();
             if (ch instanceof Channel)
-            TestEnvironment.get().testCase.channels.add((Channel)ch);
+            TestEnvironment.get().testCase.addChannel((Channel)ch);
         }
     }
 
-
+    private void addChannel(Channel ch) {
+        synchronized (channels) {
+            channels.add(ch);
+        }
+    }
+    
 //    /**
 //     * Sets guest credentials to access java.net Subversion repo.
 //     */
@@ -525,9 +537,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Locates Maven2 and configure that as the only Maven in the system.
      */
     protected MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
-        // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
-        // does it exists in the buildDirectory see maven-junit-plugin systemProperties 
-        // buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
+        // Does it exists in the buildDirectory - i.e. already extracted from previous test?
+        // see maven-junit-plugin systemProperties: buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
         String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
         File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
         if (mavenAlreadyInstalled.exists()) {
@@ -535,6 +546,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
+        
+        // Does maven.home point to a Maven installation which satisfies mavenReqVersion?
         String home = System.getProperty("maven.home");
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home, NO_PROPERTIES);
@@ -550,7 +563,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
-        File mvnHome =  new File(buildDirectory);//createTmpDir();
+        File mvnHome =  new File(buildDirectory);
         mvn.unzip(new FilePath(mvnHome));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Functions.isWindows())
@@ -621,10 +634,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * @see #configureDefaultMaven()
      */
     protected MavenModuleSet createMavenProject(String name) throws IOException {
-        return hudson.createProject(MavenModuleSet.class,name);
+        MavenModuleSet mavenModuleSet = hudson.createProject(MavenModuleSet.class,name);
+        mavenModuleSet.setRunHeadless( true );
+        return mavenModuleSet;
     }
 
-    private String createUniqueProjectName() {
+    protected String createUniqueProjectName() {
         return "test"+hudson.getItems().size();
     }
 
@@ -706,7 +721,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
         synchronized (hudson) {
             DumbSlave slave = new DumbSlave(nodeName, "dummy",
-    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+    				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env),
+			        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
     		hudson.addNode(slave);
     		return slave;
     	}
@@ -757,6 +773,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Create a new slave on the local host and wait for it to come online
      * before returning
      */
+    @SuppressWarnings("deprecation")
     public DumbSlave createOnlineSlave(Label l, EnvVars env) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         ComputerListener waiter = new ComputerListener() {
@@ -776,7 +793,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     
     /**
      * Blocks until the ENTER key is hit.
-     * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
+     * This is useful during debugging a test so that one can inspect the state of Jenkins through the web browser.
      */
     public void interactiveBreak() throws Exception {
         System.out.println("Jenkins is running at http://localhost:"+localPort+"/");
@@ -833,6 +850,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Performs a configuration round-trip testing for a builder.
      */
+    @SuppressWarnings("unchecked")
     protected <B extends Builder> B configRoundtrip(B before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(before);
@@ -843,6 +861,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Performs a configuration round-trip testing for a publisher.
      */
+    @SuppressWarnings("unchecked")
     protected <P extends Publisher> P configRoundtrip(P before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(before);
@@ -850,6 +869,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return (P)p.getPublishersList().get(before.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     protected <C extends ComputerConnector> C configRoundtrip(C before) throws Exception {
         computerConnectorTester.connector = before;
         submit(createWebClient().goTo("self/computerConnectorTester/configure").getFormByName("config"));
@@ -861,6 +881,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return u;
     }
         
+    @SuppressWarnings("unchecked")
     protected <N extends Node> N configRoundtrip(N node) throws Exception {
         submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
         return (N)hudson.getNode(node.getNodeName());
@@ -891,7 +912,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return r;
     }
 
-    /** Determines whether the specifed HTTP status code is generally "good" */
+    /** Determines whether the specified HTTP status code is generally "good" */
     public boolean isGoodHttpStatus(int status) {
         if ((400 <= status) && (status <= 417)) {
             return false;
@@ -902,7 +923,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return true;
     }
 
-    /** Assert that the specifed page can be served with a "good" HTTP status,
+    /** Assert that the specified page can be served with a "good" HTTP status,
      * eg, the page is not missing and can be served without a server error 
      * @param page
      */
@@ -943,11 +964,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public void assertLogContains(String substring, Run run) throws Exception {
         String log = getLog(run);
-        if(log.contains(substring))
-            return; // good!
+        assertTrue("Console output of "+run+" didn't contain "+substring+":\n"+log,log.contains(substring));
+    }
 
-        System.out.println(log);
-        fail("Console output of "+run+" didn't contain "+substring);
+    /**
+     * Asserts that the console output of the build does not contain the given substring.
+     */
+    public void assertLogNotContains(String substring, Run run) throws Exception {
+        String log = getLog(run);
+        assertFalse("Console output of "+run+" contains "+substring+":\n"+log,log.contains(substring));
     }
 
     /**
@@ -1030,21 +1055,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
 
     public void assertStringContains(String message, String haystack, String needle) {
-        if (haystack.contains(needle)) {
-            // good
-            return;
-        } else {
-            fail(message + " (seeking '" + needle + "')");
-        }
+        assertTrue(message + " (seeking '" + needle + "')",haystack.contains(needle));
     }
 
     public void assertStringContains(String haystack, String needle) {
-        if (haystack.contains(needle)) {
-            // good
-            return;
-        } else {
-            fail("Could not find '" + needle + "'.");
-        }
+        assertTrue("Could not find '" + needle + "'.",haystack.contains(needle));
     }
 
     /**
@@ -1298,21 +1313,21 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * Waits until Hudson finishes building everything, including those in the queue, or fail the test
-     * if the specified timeout milliseconds is 
+     * Waits until Jenkins finishes building everything, including those builds in the queue, or fail the test
+     * if the specified timeout milliseconds is exceeded.
      */
     protected void waitUntilNoActivityUpTo(int timeout) throws Exception {
         long startTime = System.currentTimeMillis();
         int streak = 0;
 
         while (true) {
-            Thread.sleep(10);
+            Thread.sleep(100);
             if (isSomethingHappening())
                 streak=0;
             else
                 streak++;
 
-            if (streak>5)   // the system is quiet for a while
+            if (streak>2)   // the system is quiet for a while
                 return;
 
             if (System.currentTimeMillis()-startTime > timeout) {
@@ -1323,7 +1338,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                             building.add(e.getCurrentExecutable());
                     }
                 }
-                throw new AssertionError(String.format("Hudson is still doing something after %dms: queue=%s building=%s",
+                throw new AssertionError(String.format("Jenkins is still doing something after %dms: queue=%s building=%s",
                         timeout, Arrays.asList(hudson.getQueue().getItems()), building));
             }
         }
@@ -1366,7 +1381,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.hpl</tt>
+     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.jpl</tt>
      * and add a recipe to install that to the new Jenkins.
      *
      * <p>
@@ -1374,21 +1389,26 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * packaging is <tt>hpi</tt>.
      */
     protected void recipeLoadCurrentPlugin() throws Exception {
-        final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
-        if(!e.hasMoreElements())    return; // nope
+    	final Enumeration<URL> jpls = getClass().getClassLoader().getResources("the.jpl");
+        final Enumeration<URL> hpls = getClass().getClassLoader().getResources("the.hpl");
+
+        final List<URL> all = Collections.list(jpls);
+        all.addAll(Collections.list(hpls));
+        
+        if(all.isEmpty())    return; // nope
 
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-                while (e.hasMoreElements()) {
-                    final URL hpl = e.nextElement();
-
+            	
+            	for (URL hpl : all) {
+					
                     // make the plugin itself available
                     Manifest m = new Manifest(hpl.openStream());
                     String shortName = m.getMainAttributes().getValue("Short-Name");
                     if(shortName==null)
                         throw new Error(hpl+" doesn't have the Short-Name attribute");
-                    FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
+                    FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".jpl"));
 
                     // make dependency plugins available
                     // TODO: probably better to read POM, but where to read from?
@@ -1407,7 +1427,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                             String version = tokens[1];
                             File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
 
-                            File dst = new File(home, "plugins/" + artifactId + ".hpi");
+                            File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
                                 FileUtils.copyFile(dependencyJar, dst);
                             }
@@ -1441,20 +1461,33 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                         // found it
                         return Which.jarFile(dependencyPomResource);
                     } else {
-                        Artifact a;
-                        a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                        try {
-                            embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                            return a.getFile();
-                        } catch (AbstractArtifactResolutionException x) {
-                            // could be a wrong groupId
-                            resolutionError = x;
-                        }
+                    	
+                    	try {
+                    		// currently the most of the plugins are still hpi
+                            return resolvePluginFile(embedder, artifactId, version, groupId, "hpi");
+                    	} catch(AbstractArtifactResolutionException x){
+                    		try {
+                    			// but also try with the new jpi
+                    		    return resolvePluginFile(embedder, artifactId, version, groupId, "jpi");
+                    		} catch(AbstractArtifactResolutionException x2){
+                                // could be a wrong groupId
+                                resolutionError = x;
+                    		}
+                    	}
+                    	
                     }
                 }
 
-                throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
+                throw new Exception("Failed to resolve plugin (tryied with types: 'jpi' and 'hpi'): "+artifactId+" version "+version, resolutionError);
             }
+
+			private File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
+					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
+				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
+				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+				return jpi.getFile();
+				
+			}
         });
     }
 
@@ -1530,16 +1563,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * for accessing Hudson.
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
+        private static final long serialVersionUID = 5808915989048338267L;
+
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
             super(BrowserVersion.FIREFOX_2);
 
-//            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
+                private static final long serialVersionUID = -5844060943564822678L;
                 public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
                     return false;
                 }
@@ -1586,11 +1621,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
 
         /**
-         * Logs in to Hudson.
+         * Logs in to Jenkins.
          */
         public WebClient login(String username, String password) throws Exception {
             HtmlPage page = goTo("/login");
-//            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
             form.getInputByName("j_username").setValueAttribute(username);
@@ -1712,6 +1746,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          *      a relative path within the Hudson being tested. (IOW, if you really need to hit
          *      a website on the internet, there's nothing wrong with using this method.)
          */
+        @SuppressWarnings("unchecked")
         @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
             return super.getPage(url);

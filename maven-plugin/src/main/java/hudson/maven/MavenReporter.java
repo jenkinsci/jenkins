@@ -96,6 +96,9 @@ import java.util.Collections;
  * @see MavenReporters
  */
 public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable, MavenProjectActionBuilder {
+
+    private static final long serialVersionUID = 7987776766278437534L;
+
     /**
      * Called before the actual maven2 execution begins.
      *

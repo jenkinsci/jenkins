@@ -65,7 +65,7 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -1169,7 +1169,7 @@ public class Functions {
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-        if(SCHEME.matcher(urlName).matches())
+        if(SCHEME.matcher(urlName).find())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
             return Stapler.getCurrentRequest().getContextPath()+urlName;
@@ -1363,7 +1363,7 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(context,descriptors);
     }
     
-    private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
+    private static final Pattern SCHEME = Pattern.compile("^([a-zA-Z][a-zA-Z0-9+.-]*):");
 
     /**
      * Returns true if we are running unit tests.

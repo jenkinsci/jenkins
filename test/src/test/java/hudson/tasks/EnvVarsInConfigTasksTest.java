@@ -4,6 +4,7 @@ import hudson.EnvVars;
 import hudson.model.labels.LabelAtom;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
@@ -72,7 +73,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 		assertBuildStatusSuccess(build);
 
-		String buildLogRegular = build.getLog();
+		String buildLogRegular = getBuildLog(build);
 		System.out.println(buildLogRegular);
 		assertTrue(buildLogRegular.contains(DUMMY_LOCATION_VARNAME));
 
@@ -84,7 +85,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		assertBuildStatusSuccess(build);
 
 		// Check variable was expanded
-		String buildLogEnv = build.getLog();
+		String buildLogEnv = getBuildLog(build);
 		System.out.println(buildLogEnv);
 		assertFalse(buildLogEnv.contains(DUMMY_LOCATION_VARNAME));
 	}
@@ -112,7 +113,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 		assertBuildStatus(Result.FAILURE, build);
 
-		String buildLogRegular = build.getLog();
+		String buildLogRegular = getBuildLog(build);
 		assertTrue(buildLogRegular.contains(Messages
 				.Ant_ExecutableNotFound("varAnt")));
 
@@ -124,7 +125,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		assertBuildStatusSuccess(build);
 
 		// Check variable was expanded
-		String buildLogEnv = build.getLog();
+		String buildLogEnv = getBuildLog(build);
 		System.out.println(buildLogEnv);
 		assertTrue(buildLogEnv.contains("Ant home: "));
 		assertTrue(buildLogEnv.contains("Test property: correct"));
@@ -152,7 +153,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 		assertBuildStatus(Result.FAILURE, build);
 
-		String buildLogRegular = build.getLog();
+		String buildLogRegular = getBuildLog(build);
 		System.out.println(buildLogRegular);
 		assertTrue(buildLogRegular.contains(DUMMY_LOCATION_VARNAME));
 
@@ -164,7 +165,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		assertBuildStatusSuccess(build);
 
 		// Check variable was expanded
-		String buildLogEnv = build.getLog();
+		String buildLogEnv = getBuildLog(build);
 		System.out.println(buildLogEnv);
 		assertFalse(buildLogEnv.contains(DUMMY_LOCATION_VARNAME));
 	}
@@ -185,7 +186,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
         assertBuildStatus(Result.FAILURE, build);
 
-        String buildLogRegular = build.getLog();
+        String buildLogRegular = getBuildLog(build);
         System.out.println(buildLogRegular);
 
         // test the slave with prepared environment
@@ -196,8 +197,13 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
         assertBuildStatusSuccess(build);
 
         // Check variable was expanded
-        String buildLogEnv = build.getLog();
+        String buildLogEnv = getBuildLog(build);
         System.out.println(buildLogEnv);
         assertFalse(buildLogEnv.contains(DUMMY_LOCATION_VARNAME));
+    }
+    
+    @SuppressWarnings("deprecation") // it's  okay to use it in tests
+    private String getBuildLog(AbstractBuild<?,?> build) throws Exception {
+        return build.getLog();
     }
 }

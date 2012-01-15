@@ -36,6 +36,9 @@ import java.util.List;
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
  * during the build.
+ * 
+ * That is, this represents {@link MavenBuild} objects in the master's JVM to code
+ * running inside Maven JVM.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -155,7 +158,7 @@ public interface MavenBuildProxy {
      */
     void setExecutedMojos(List<ExecutedMojo> executedMojos);
 
-    public interface BuildCallable<V,T extends Throwable> extends Serializable {
+    interface BuildCallable<V,T extends Throwable> extends Serializable {
         /**
          * Performs computation and returns the result,
          * or throws some exception.
@@ -177,7 +180,7 @@ public interface MavenBuildProxy {
      *
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ static abstract class Filter<CORE extends MavenBuildProxy> implements MavenBuildProxy, Serializable {
+    /*package*/ abstract class Filter<CORE extends MavenBuildProxy> implements MavenBuildProxy, Serializable {
         protected final CORE core;
 
         protected Filter(CORE core) {
@@ -238,6 +241,10 @@ public interface MavenBuildProxy {
 
         public void setExecutedMojos(List<ExecutedMojo> executedMojos) {
             core.setExecutedMojos(executedMojos);
+        }
+
+        public MavenBuildInformation getMavenBuildInformation() {
+            return core.getMavenBuildInformation();
         }
 
         private static final long serialVersionUID = 1L;

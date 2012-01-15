@@ -24,7 +24,11 @@
 package org.jvnet.hudson.test.recipes;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.apache.commons.io.FileUtils;
+
+import hudson.util.JenkinsReloadFailed;
 
 import java.io.File;
 import java.lang.annotation.Documented;
@@ -41,6 +45,7 @@ import java.net.URL;
  */
 @Documented
 @Recipe(WithPlugin.RunnerImpl.class)
+@JenkinsRecipe(WithPlugin.RuleRunnerImpl.class)
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface WithPlugin {
@@ -52,7 +57,7 @@ public @interface WithPlugin {
      */
     String value();
 
-    public class RunnerImpl extends Recipe.Runner<WithPlugin> {
+    class RunnerImpl extends Recipe.Runner<WithPlugin> {
         private WithPlugin a;
 
         @Override
@@ -63,6 +68,22 @@ public @interface WithPlugin {
 
         @Override
         public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
+            URL res = getClass().getClassLoader().getResource("plugins/" + a.value());
+            FileUtils.copyURLToFile(res,new File(home,"plugins/"+a.value()));
+        }
+    }
+
+    class RuleRunnerImpl extends JenkinsRecipe.Runner<WithPlugin> {
+        private WithPlugin a;
+
+        @Override
+        public void setup(JenkinsRule jenkinsRule, WithPlugin recipe) throws Exception {
+            a = recipe;
+            jenkinsRule.useLocalPluginManager = true;
+        }
+
+        @Override
+        public void decorateHome(JenkinsRule jenkinsRule, File home) throws Exception {
             URL res = getClass().getClassLoader().getResource("plugins/" + a.value());
             FileUtils.copyURLToFile(res,new File(home,"plugins/"+a.value()));
         }

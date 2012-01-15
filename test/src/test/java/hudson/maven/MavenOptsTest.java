@@ -43,7 +43,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setAssignedLabel(createSlave(new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         m.setMavenOpts("-Dhudson.mavenOpt.test=baz");
         
@@ -58,7 +58,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         
         buildAndAssertSuccess(m);
 
@@ -70,7 +70,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        m.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setMavenOpts("-Dhudson.mavenOpt.test=foo");
        
         buildAndAssertSuccess(m);

@@ -169,8 +169,16 @@ public final class WorkspaceList {
      *      This makes other calls to {@link #allocate(FilePath)} to wait for the release of this workspace.
      */
     public synchronized Lease acquire(FilePath p, boolean quick) throws InterruptedException {
-        while (inUse.containsKey(p))
-            wait();
+        Thread t = Thread.currentThread();
+        String oldName = t.getName();
+        t.setName("Waiting to acquire "+p+" : "+t.getName());
+        try {
+            while (inUse.containsKey(p)) {
+                wait();
+            }
+        } finally {
+            t.setName(oldName);
+        }
         log("acquired "+p);
         inUse.put(p,new Entry(p,quick));
         return lease(p);

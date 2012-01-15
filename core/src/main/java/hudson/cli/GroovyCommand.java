@@ -103,7 +103,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         if (script.equals("="))
             return IOUtils.toString(stdin);
 
-        return channel.call(new Callable<String,IOException>() {
+        return checkChannel().call(new Callable<String,IOException>() {
             public String call() throws IOException {
                 File f = new File(script);
                 if(f.exists())
