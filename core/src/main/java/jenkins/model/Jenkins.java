@@ -491,6 +491,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     /*package*/ Integer quietPeriod;
 
     /**
+     * Short Display Name.
+     *
+     * This is {@link Boolean}.
+     */
+    private Boolean useShortDisplayName;
+
+    
+    /**
      * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}
      */
     /*package*/ int scmCheckoutRetryCount;
@@ -652,7 +660,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
      */
     private Boolean noUsageStatistics;
-
+    
     /**
      * HTTP proxy configuration.
      */
@@ -898,6 +906,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         save();
     }
 
+    @Exported
+    public Boolean getUseShortDisplayName() {
+        return useShortDisplayName;
+    }
+
+    public boolean isUseShortDisplayName() {
+        return useShortDisplayName!=null && useShortDisplayName;
+    }
+   
+    public void setShortDisplayNameUsage(Boolean useShortDisplayName) throws IOException {
+        this.useShortDisplayName = useShortDisplayName;
+        save();
+    }
+    
     public View.People getPeople() {
         return new View.People(this);
     }
@@ -1195,6 +1217,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return "";
     }
 
+    public String getProcessedDisplayName() {
+        return "";
+    }
+    
     public String getFullDisplayName() {
         return "";
     }
