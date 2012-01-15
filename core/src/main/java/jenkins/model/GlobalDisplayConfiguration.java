@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012 dt25.
+ * Copyright 2012 Thomas Deruyter.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
