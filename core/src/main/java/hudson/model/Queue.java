@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc.
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Stephen Connolly, Tom Huybrechts, InfraDNA, Inc., Thomas Deruyter
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1087,6 +1087,11 @@ public class Queue extends ResourceController implements Saveable {
          */
         String getName();
 
+        /**
+         * @see hudson.model.Item#getProcessedDisplayName()
+         */
+        String getProcessedDisplayName();
+        
         /**
          * @see hudson.model.Item#getFullDisplayName()
          */

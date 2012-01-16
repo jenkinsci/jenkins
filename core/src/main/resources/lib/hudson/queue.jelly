@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc.
+Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Yahoo! Inc., 
+Thomas Deruyter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +64,7 @@ THE SOFTWARE.
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
                   <a href="${rootURL}/${item.task.url}">
-                    ${item.task.fullDisplayName}
+                    ${item.task.processedDisplayName}
                   </a>
                   <j:if test="${stuck}">
                     &#160;
