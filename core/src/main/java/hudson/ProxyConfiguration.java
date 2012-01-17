@@ -129,12 +129,19 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Returns the list of properly formatted no proxy host names.
      */
     public List<Pattern> getNoProxyHostPatterns() {
+        return getNoProxyHostPatterns(noProxyHost);
+    }
+
+    /**
+     * Returns the list of properly formatted no proxy host names.
+     */
+    public static List<Pattern> getNoProxyHostPatterns(String noProxyHost) {
         if (noProxyHost==null)  return Collections.emptyList();
 
         List<Pattern> r = Lists.newArrayList();
         for (String s : noProxyHost.split("[ \t\n,|]+")) {
             if (s.length()==0)  continue;
-            r.add(Pattern.compile(s.replace(".", "\\.").replace("*", "[^.]*")));
+            r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;
     }
@@ -148,8 +155,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     public Proxy createProxy(String host) {
+        return createProxy(host, name, port, noProxyHost);
+    }
+
+    public static Proxy createProxy(String host, String name, int port, String noProxyHost) {
         if (host!=null && noProxyHost!=null) {
-            for (Pattern p : getNoProxyHostPatterns()) {
+            for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
                 if (p.matcher(host).matches())
                     return Proxy.NO_PROXY;
             }
