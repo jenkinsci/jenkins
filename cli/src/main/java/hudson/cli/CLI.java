@@ -50,10 +50,7 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.Socket;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
@@ -70,7 +67,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,28 +84,39 @@ public class CLI {
     private final boolean ownsPool;
     private final List<Closeable> closables = new ArrayList<Closeable>(); // stuff to close in the close method
     private final String httpsProxyTunnel;
+    private final String authorization;
 
     public CLI(URL jenkins) throws IOException, InterruptedException {
         this(jenkins,null);
     }
 
+    /**
+     * @deprecated
+     *      Use {@link CLIConnectionFactory} to create {@link CLI}
+     */
     public CLI(URL jenkins, ExecutorService exec) throws IOException, InterruptedException {
         this(jenkins,exec,null);
     }
 
     /**
-     *
-     * @param httpsProxyTunnel
-     *      Configures the HTTP proxy that we use for making a plain TCP/IP connection.
-     *      "host:port" that points to an HTTP proxy or null.
+     * @deprecated 
+     *      Use {@link CLIConnectionFactory} to create {@link CLI}
      */
     public CLI(URL jenkins, ExecutorService exec, String httpsProxyTunnel) throws IOException, InterruptedException {
+        this(new CLIConnectionFactory().url(jenkins).executorService(exec).httpsProxyTunnel(httpsProxyTunnel));
+    }
+    
+    /*package*/ CLI(CLIConnectionFactory factory) throws IOException, InterruptedException {
+        URL jenkins = factory.jenkins;
+        this.httpsProxyTunnel = factory.httpsProxyTunnel;
+        this.authorization = factory.authorization;
+        ExecutorService exec = factory.exec;
+        
         String url = jenkins.toExternalForm();
         if(!url.endsWith("/"))  url+='/';
 
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
-        this.httpsProxyTunnel = httpsProxyTunnel;
 
         Channel channel = null;
         InetSocketAddress clip = getCliTcpPort(url);
@@ -139,7 +146,7 @@ public class CLI {
         url+="cli";
         URL jenkins = new URL(url);
 
-        FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins);
+        FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins,authorization);
         Channel ch = new Channel("Chunked connection to "+jenkins,
                 pool,con.getInputStream(),con.getOutputStream());
         new PingThread(ch,15*1000) {
