@@ -314,7 +314,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         if(q.cancel(c))
                             logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
                         MatrixRun b = c.getBuildByNumber(n);
-                        if(b!=null) {
+                        if(b!=null && b.isBuilding()) {// executor can spend some time in post production state, so only cancel in-progress builds.
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
                                 logger.println(Messages.MatrixBuild_Interrupting(HyperlinkNote.encodeTo('/'+ b.getUrl(),b.getDisplayName())));

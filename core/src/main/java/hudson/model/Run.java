@@ -1438,7 +1438,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 duration = Math.max(end - start, 0);  // @see HUDSON-5844
 
                 // advance the state.
-                // the significance of doing this is that Hudson
+                // the significance of doing this is that Jenkins
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
