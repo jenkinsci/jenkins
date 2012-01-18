@@ -21,7 +21,11 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class FullDuplexHttpStream {
     private final URL target;
-
+    /**
+     * Authorization header value needed to get through the HTTP layer.
+     */
+    private final String authorization;
+    
     private final OutputStream output;
     private final InputStream input;
 
@@ -43,8 +47,15 @@ public class FullDuplexHttpStream {
         return null;
     }
 
+    /**
+     * @param target
+     *      The endpoint that we are making requests to.
+     * @param authorization
+     *      The value of the authorization header, if non-null.
+     */
     public FullDuplexHttpStream(URL target, String authorization) throws IOException {
         this.target = target;
+        this.authorization = authorization;
 
         CrumbData crumbData = new CrumbData();
 
@@ -121,6 +132,9 @@ public class FullDuplexHttpStream {
 
     	private String readData(String dest) throws IOException {
             HttpURLConnection con = (HttpURLConnection) new URL(dest).openConnection();
+            if (authorization != null) {
+                con.addRequestProperty("Authorization", authorization);
+            }
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 return reader.readLine();
