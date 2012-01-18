@@ -34,12 +34,17 @@ public class FullDuplexHttpStream {
     }
 
     public FullDuplexHttpStream(URL target) throws IOException {
-        this.target = target;
+        this(target,basicAuth(target.getUserInfo()));
+    }
 
-        String authorization = null;
-        if (target.getUserInfo() != null) {
-        	authorization = new String(new Base64().encodeBase64(target.getUserInfo().getBytes()));
-        }
+    private static String basicAuth(String userInfo) {
+        if (userInfo != null)
+            return "Basic "+new String(new Base64().encodeBase64(userInfo.getBytes()));
+        return null;
+    }
+
+    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
+        this.target = target;
 
         CrumbData crumbData = new CrumbData();
 
@@ -52,7 +57,7 @@ public class FullDuplexHttpStream {
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","download");
         if (authorization != null) {
-            con.addRequestProperty("Authorization", "Basic " + authorization);
+            con.addRequestProperty("Authorization", authorization);
         }
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
@@ -72,7 +77,7 @@ public class FullDuplexHttpStream {
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","upload");
         if (authorization != null) {
-        	con.addRequestProperty ("Authorization", "Basic " + authorization);
+        	con.addRequestProperty ("Authorization", authorization);
         }
 
         if(crumbData.isValid) {
