@@ -195,7 +195,7 @@ public final class TestResult extends MetaTabulatedResult {
 
             // but in case we have a test suite splitted by two files
             // we gotta merge them in one
-            if(s.getName().equals(sr.getName())) {
+            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()) {
                 for (CaseResult cr: sr.getCases()) {
                     s.addCase(cr);
                 }

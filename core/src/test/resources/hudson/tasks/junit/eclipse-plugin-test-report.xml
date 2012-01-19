@@ -6385,7 +6385,7 @@ ORMEXT: Should find 3 mapping
 ]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="6" name="testsuite7_duplicate_test" package="" tests="1" time="0.051" timestamp="2011-03-21T16:57:07">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="6" name="testsuite7_duplicate_test_name_different_id" package="" tests="1" time="0.051" timestamp="2011-03-21T16:57:07">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -6625,7 +6625,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="7" name="testsuite7_duplicate_test" package="" tests="176" time="91.008" timestamp="2011-03-21T16:55:36">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="7" name="testsuite7_duplicate_test_name_different_id" package="" tests="176" time="91.008" timestamp="2011-03-21T16:55:36">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -7216,7 +7216,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="8" name="testsuite8" package="" tests="56" time="1.309" timestamp="2011-03-21T16:57:08">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" name="testsuite8_duplicate_test_name_without_id" package="" tests="56" time="1.309" timestamp="2011-03-21T16:57:08">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -7566,7 +7566,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="9" name="testsuite9" package="" tests="60" time="0.049" timestamp="2011-03-21T16:53:17">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" name="testsuite8_duplicate_test_name_without_id" package="" tests="60" time="0.049" timestamp="2011-03-21T16:53:17">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 

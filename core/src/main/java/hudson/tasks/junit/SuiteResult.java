@@ -149,7 +149,7 @@ public final class SuiteResult implements Serializable {
         }
         this.name = TestObject.safe(name);
         this.timestamp = suite.attributeValue("timestamp");
-        this.id = suite.attributeValue("id");
+        this.id = suite.attributeValue("id", "");
 
         Element ex = suite.element("error");
         if(ex!=null) {
