@@ -186,24 +186,22 @@ public final class TestResult extends MetaTabulatedResult {
 
     private void add(SuiteResult sr) {
     	boolean have_to_add = true;
-    	synchronized (suites) { 
-    		for (SuiteResult s : suites) {
-    			// a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
-    			// see http://www.nabble.com/Problem-with-duplicate-build-execution-td17549182.html for discussion
-    			if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()) 
-    					&& eq(s.getId(),sr.getId()))
-    				return; // duplicate
+        for (SuiteResult s : suites) {
+            // a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
+            // see http://www.nabble.com/Problem-with-duplicate-build-execution-td17549182.html for discussion
+            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()) 
+                    && eq(s.getId(),sr.getId()))
+                return; // duplicate
 
-    			// but in case we have a test suite splitted by two files
-    			// we gotta merge them in one
-    			if(s.getName().equals(sr.getName())) {
-    				for (CaseResult cr: sr.getCases()) {
-    					s.addCase(cr);
-    				}
-    				have_to_add = false;
-    			}
-    		}
-    	}
+            // but in case we have a test suite splitted by two files
+            // we gotta merge them in one
+            if(s.getName().equals(sr.getName())) {
+                for (CaseResult cr: sr.getCases()) {
+                    s.addCase(cr);
+                }
+                have_to_add = false;
+            }
+        }
     	if (have_to_add) {
     		suites.add(sr);
     		duration += sr.getDuration();
