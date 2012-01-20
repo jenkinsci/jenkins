@@ -95,8 +95,8 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
                 if (name==null) {
                     name = u.getPath();
-                    name = name.substring(name.indexOf('/')+1);
-                    name = name.substring(name.indexOf('\\')+1);
+                    name = name.substring(name.lastIndexOf('/')+1);
+                    name = name.substring(name.lastIndexOf('\\')+1);
                     int idx = name.lastIndexOf('.');
                     if (idx>0)  name = name.substring(0,idx);
                 }
