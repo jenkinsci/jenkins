@@ -70,6 +70,9 @@ THE SOFTWARE.
               function isCommandKey() {
                 return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
               }
+              function isReturnKeyDown() {
+                return event.type == 'keydown' &amp;&amp; event.keyCode == Event.KEY_RETURN;
+              }
               function saveAndSubmit() {
                 editor.save();
                 document.form1.submit();
@@ -84,14 +87,14 @@ THE SOFTWARE.
                 if (event.type == 'keyup' &amp;&amp; isCommandKey()) {
                   cmdKeyDown = false;
                 }
-                if (cmdKeyDown &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                if (cmdKeyDown &amp;&amp; isReturnKeyDown()) {
                   saveAndSubmit();
                   return true;
                 }
                 
               // Windows, Linux (Ctrl + Enter)
               } else {
-                if (event.ctrlKey &amp;&amp; event.keyCode == Event.KEY_RETURN) {
+                if (event.ctrlKey &amp;&amp; isReturnKeyDown()) {
                   saveAndSubmit();
                   return true;
                 }
