@@ -311,6 +311,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Executes the command, and return the exit code.
+     * 
+     * <p>
+     * This is an internal contract between {@link CLICommand} and its subtype.
+     * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
      *
      * @return
      *      0 to indicate a success, otherwise an error code.
