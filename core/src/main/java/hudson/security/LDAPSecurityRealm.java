@@ -325,8 +325,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
             DirContext ctx = new InitialDirContext(props);
             Attributes atts = ctx.getAttributes("");
             Attribute a = atts.get("defaultNamingContext");
-            if(a!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
-                return a.toString();
+            if(a!=null && a.get()!=null) // this entry is available on Active Directory. See http://msdn2.microsoft.com/en-us/library/ms684291(VS.85).aspx
+                return a.get().toString();
             
             a = atts.get("namingcontexts");
             if(a==null) {
