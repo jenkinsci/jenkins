@@ -213,6 +213,7 @@ THE SOFTWARE.
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
       <version>1.7</version>
+      <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
