@@ -36,7 +36,7 @@ import antlr.TokenStreamException;
  * @author Kohsuke Kawaguchi
  */
 abstract class BaseParser extends LLkParser {
-    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,0,0};
+    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,1,0};
     private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 
     /**

@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.449-SNAPSHOT</version>
+    <version>1.451-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -42,9 +42,9 @@ THE SOFTWARE.
 
   <properties>
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
-    <mavenVersion>3.0.3</mavenVersion>
+    <mavenVersion>3.0.4</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.13</aetherVersion>
+    <aetherVersion>1.13.1</aetherVersion>
     <sisuInjectVersion>2.3.0</sisuInjectVersion>
     <wagonVersion>2.2</wagonVersion>
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->

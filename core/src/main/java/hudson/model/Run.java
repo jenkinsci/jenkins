@@ -395,6 +395,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the {@link Executor} building this job, if it's being built.
      * Otherwise null.
+     * 
+     * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
+     * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
+     * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
+     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
     public Executor getExecutor() {
         for( Computer c : Jenkins.getInstance().getComputers() ) {
@@ -1438,7 +1443,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 duration = Math.max(end - start, 0);  // @see HUDSON-5844
 
                 // advance the state.
-                // the significance of doing this is that Hudson
+                // the significance of doing this is that Jenkins
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.

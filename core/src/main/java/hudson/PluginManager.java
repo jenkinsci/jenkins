@@ -396,10 +396,19 @@ public abstract class PluginManager extends AbstractModelObject {
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
+        String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
         File file = new File(rootDir, fileName);
         File pinFile = new File(rootDir, fileName+".pinned");
 
+        {// normalization first
+            File legacyFile = new File(rootDir,legacyName);
+            if (legacyFile.exists())    legacyFile.renameTo(file);
+            File legacyPinFile = new File(rootDir,legacyName+".pinned");
+            if (legacyPinFile.exists())    legacyPinFile.renameTo(pinFile);
+        }
+        
         // update file if:
         //  - no file exists today
         //  - bundled version and current version differs (by timestamp), and the file isn't pinned.

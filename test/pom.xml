@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.449-SNAPSHOT</version>
+    <version>1.451-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -54,6 +54,12 @@ THE SOFTWARE.
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.modules</groupId>
+          <artifactId>sshd</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>

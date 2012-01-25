@@ -55,20 +55,57 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    job rows in view should have id= for easy access
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12518</a>)
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.450>What's new in 1.450</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    <tt>install-plugin</tt> CLI command fails to put a file in the right location when installing from URL.
+  <li class=bug>
+    Fixed a bug where long post-production processing in matrix jobs can cause incorrect abortion.
+  <li class=bug>
+    month should not be 0.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12356">issue 12356</a>)
+  <li class=bug>
+    "Create a new slave" page didn't auto-complete for copying.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12490</a>)
+  <li class=bug>
+    Fixed a bug in the auto-overwrite of bundled plugins.
+  <li class=rfe>
+    Upgrade to maven artifacts 3.0.4
+  <li class=rfe>
+    Running build via CLI now records actual user who started the build
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.449>What's new in 1.449</a> (2012/01/23)</h3>
+<ul class=image>
   <li class=bug>
     Build fails on "Deploy artifacts to Maven repository" due to trying to upload parent POM twice for release artifacts.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11248">issue 11248</a>)
   <li class=bug>
     Fixed an occasional "URI must start with a slash" error when the anonymous user doesn't have the read access.
   <li class="rfe">
-  OS X installer can optionally create a new user &quot;jenkins&quot; and use
-  it. This user has a writable home directory, making it possible to set up ssh for Jenkins.
+    OS X installer can optionally create a new user &quot;jenkins&quot; and use
+    it. This user has a writable home directory, making it possible to set up ssh for Jenkins.
+  <li class="rfe">
+    No workspace available message includes wiped out workspace as a potential cause.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10432">issue 10432</a>)
+  <li class="bug">
+    Stop users being created in memory if they failed to provide all the required registration information correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7096">issue 7096</a>)
+  <li class=bug>
+    <tt>java -jar jenkins.war</tt> finally detects invalid command line options and report that as an error.
+  <li class=rfe>
+    When run in terminal, warning/error messages are colored.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.448>What's new in 1.448</a> <!--=DATE=--></h3>
+<h3><a name=v1.448>What's new in 1.448</a> (2012/01/17)</h3>
 <ul class=image>
   <li class=bug>
     Location of the temporary file "Maven Global Settings" incompatible with release:prepare
@@ -114,7 +151,6 @@ Upcoming changes</a>
     Jobs now support display name separate from its unique name
     <a href="https://issues.jenkins-ci.org/browse/JENKINS-11762">issue 11762</a>
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.447>What's new in 1.447</a> (2012/01/09)</h3>
 <ul class=image>
   <li class=bug>
