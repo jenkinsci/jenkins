@@ -34,6 +34,7 @@ import hudson.model.TaskListener;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
+import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.scm.PollingResult;
 import hudson.util.StreamTaskListener;
@@ -99,7 +100,7 @@ public class BuildCommand extends CLICommand {
         }
 
         if (checkSCM) {
-            if (job.poll(new StreamTaskListener(stdout, getClientCharset())) == PollingResult.NO_CHANGES) {
+            if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
                 return 0;
             }
         }
