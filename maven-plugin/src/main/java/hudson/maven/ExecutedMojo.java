@@ -187,12 +187,16 @@ public final class ExecutedMojo implements Serializable {
             return Stapler.getCurrentRequest().getContextPath()+m.getUrl();
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/';
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/';
         return null;
     }
 
     public String getGoalLink(Cache c) {
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/'+goal+"-mojo.html";
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/'+goal+"-mojo.html";
         return null;
     }
 

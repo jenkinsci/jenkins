@@ -52,6 +52,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
+import javax.servlet.ServletException;
+
 /**
  * Build of {@link MatrixProject}.
  *
@@ -85,6 +87,36 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return this;
     }
 
+    /**
+     * Deletes the build and all matrix configurations in this build when the button is pressed.
+     */
+    public void doDoDeleteAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        requirePOST();
+        checkPermission(DELETE);
+
+        // We should not simply delete the build if it has been explicitly
+        // marked to be preserved, or if the build should not be deleted
+        // due to dependencies!
+        String why = getWhyKeepLog();
+        if (why!=null) {
+            sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
+            return;
+        }
+        
+        List<MatrixRun> runs = getRuns();
+        for(MatrixRun run : runs){
+        	why = run.getWhyKeepLog();
+            if (why!=null) {
+                sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
+                return;
+            }
+        	run.delete();
+        }
+        delete();
+        rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
+    }
+
+    
     /**
      * Used by view to render a ball for {@link MatrixRun}.
      */
