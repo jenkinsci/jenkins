@@ -747,6 +747,72 @@ var hudsonRules = {
         scroller.style.height = h+"px";
     },
 
+    // Script Console : settings and shortcut key
+    "TEXTAREA.script" : function(e) {
+        (function() {
+            var cmdKeyDown = false;
+            var mode = e.getAttribute("script-mode") || "text/x-groovy";
+            var readOnly = eval(e.getAttribute("script-readOnly")) || false;
+            
+            var w = CodeMirror.fromTextArea(e,{
+              mode: mode,
+              lineNumbers: true,
+              matchBrackets: true,
+              readOnly: readOnly,
+              onKeyEvent: function(editor, event){
+                function isGeckoCommandKey() {
+                    return Prototype.Browser.Gecko && event.keyCode == 224
+                }
+                function isOperaCommandKey() {
+                    return Prototype.Browser.Opera && event.keyCode == 17
+                }
+                function isWebKitCommandKey() {
+                    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+                }
+                function isCommandKey() {
+                    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+                }
+                function isReturnKeyDown() {
+                    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
+                }
+                function getParentForm(element) {
+                    if (element == null) throw 'not found a parent form';
+                    if (element instanceof HTMLFormElement) return element;
+                    
+                    return getParentForm(element.parentNode);
+                }
+                function saveAndSubmit() {
+                    editor.save();
+                    getParentForm(e).submit();
+                    event.stop();
+                }
+                
+                // Mac (Command + Enter)
+                if (navigator.userAgent.indexOf('Mac') > -1) {
+                    if (event.type == 'keydown' && isCommandKey()) {
+                        cmdKeyDown = true;
+                    }
+                    if (event.type == 'keyup' && isCommandKey()) {
+                        cmdKeyDown = false;
+                    }
+                    if (cmdKeyDown && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                  
+                // Windows, Linux (Ctrl + Enter)
+                } else {
+                    if (event.ctrlKey && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                }
+              }
+            }).getWrapperElement();
+            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        })();
+	},
+
 // deferred client-side clickable map.
 // this is useful where the generation of <map> element is time consuming
     "IMG[lazymap]" : function(e) {
