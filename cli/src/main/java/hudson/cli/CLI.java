@@ -497,13 +497,17 @@ public class CLI {
     }
     
     private static String askForPasswd(String filePath){
-        Console cons = System.console();
-        String passwd = null;
-        if (cons != null){
-            char[] p = cons.readPassword("%s", "Enter passphrase for "+filePath+":");
-            passwd = String.valueOf(p);
+        try {
+            Console cons = System.console();
+            String passwd = null;
+            if (cons != null){
+                char[] p = cons.readPassword("%s", "Enter passphrase for "+filePath+":");
+                passwd = String.valueOf(p);
+            }
+            return passwd;
+        } catch (LinkageError e) {
+            throw new Error("Your private key is encrypted, but we need Java6 to ask you password safely",e);
         }
-        return passwd;
     }
     
     /**
