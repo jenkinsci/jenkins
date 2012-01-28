@@ -193,7 +193,7 @@ public class NodeProvisioner {
 
         int idleSnapshot = stat.computeIdleExecutors();
         int totalSnapshot = stat.computeTotalExecutors();
-        boolean needSomeWhenNoneAtAll = ((totalSnapshot + plannedCapacitySnapshot) == 0) && (stat.computeQueueLength() > 0);
+        boolean needSomeWhenNoneAtAll = ((idleSnapshot + totalSnapshot + plannedCapacitySnapshot) == 0) && (stat.computeQueueLength() > 0);
         float idle = Math.max(stat.getLatestIdleExecutors(TIME_SCALE), idleSnapshot);
         if(idle<MARGIN || needSomeWhenNoneAtAll) {
             // make sure the system is fully utilized before attempting any new launch.
