@@ -751,10 +751,11 @@ var hudsonRules = {
     "TEXTAREA.script" : function(e) {
         (function() {
             var cmdKeyDown = false;
+            var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
             
             var w = CodeMirror.fromTextArea(e,{
-              mode:"text/x-groovy",
+              mode: mode,
               lineNumbers: true,
               matchBrackets: true,
               readOnly: readOnly,
