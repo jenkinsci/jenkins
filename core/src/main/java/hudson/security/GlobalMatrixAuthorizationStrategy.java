@@ -39,6 +39,7 @@ import hudson.util.RobustReflectionConverter;
 import hudson.Functions;
 import hudson.Extension;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.Stapler;
