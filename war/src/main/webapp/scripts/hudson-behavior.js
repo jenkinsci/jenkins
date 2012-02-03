@@ -1333,6 +1333,7 @@ var hudsonRules = {
 
             sticker.style.position = "fixed";
             sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
         // react to layout change
@@ -1362,6 +1363,7 @@ var hudsonRules = {
 
             sticker.style.position = "fixed";
             sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
         // react to layout change
