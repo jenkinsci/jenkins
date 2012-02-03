@@ -129,6 +129,7 @@ var FormChecker = {
                 Behaviour.applySubtree(next.target);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
+                layoutUpdateCallback.call();
             }
         });
         this.inProgress++;
@@ -715,13 +716,16 @@ var hudsonRules = {
                     method : 'get',
                     onSuccess : function(x) {
                         div.innerHTML = x.responseText;
+                        layoutUpdateCallback.call();
                     },
                     onFailure : function(x) {
                         div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+                        layoutUpdateCallback.call();
                     }
                 });
             } else {
                 div.style.display = "none";
+                layoutUpdateCallback.call();
             }
 
             return false;
@@ -1048,6 +1052,7 @@ var hudsonRules = {
                         e.style.display = display;
                     }
                 }
+                layoutUpdateCallback.call();
             },
 
             /**
@@ -1280,6 +1285,7 @@ var hudsonRules = {
                 $(hidePreview).show();
                 $(previewDiv).show();
                 previewDiv.innerHTML = txt;
+                layoutUpdateCallback.call();
             };
 
             new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
@@ -1335,6 +1341,7 @@ var hudsonRules = {
         // initial positioning
         Element.observe(window,"load",adjustSticker);
         adjustSticker();
+        layoutUpdateCallback.add(adjustSticker);
     },
 
     "#top-sticker" : function(sticker) {
@@ -1439,6 +1446,7 @@ function replaceDescription() {
                 Behaviour.applySubtree(d);
                 d.getElementsByTagName("TEXTAREA")[0].focus();
             });
+            layoutUpdateCallback.call();
           }
         }
     );
@@ -1617,6 +1625,7 @@ function refreshPart(id,url) {
                 p.insertBefore(node, next);
 
                 Behaviour.applySubtree(node);
+                layoutUpdateCallback.call();
 
                 if(isRunAsTest) return;
                 refreshPart(id,url);
@@ -2468,6 +2477,7 @@ function validateButton(checkUrl,paramList,button) {
                 + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
                 + i + '" style="display:none">' + rsp.responseText + '</div>';
           Behaviour.applySubtree(target);
+          layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
@@ -2515,4 +2525,16 @@ function createComboBox(idOrField,valueFunction) {
 // so that our users can find them more easily.
 Ajax.Request.prototype.dispatchException = function(e) {
     throw e;
+}
+
+// event callback when layouts/visibility are updated and elements might have moved around
+var layoutUpdateCallback = {
+    callbacks : [],
+    add : function (f) {
+        this.callbacks.push(f);
+    },
+    call : function() {
+        for (var i = 0, length = this.callbacks.length; i < length; i++)
+            this.callbacks[i]();
+    }
 }
