@@ -126,6 +126,8 @@ public class SwapSpaceMonitor extends NodeMonitor {
      */
     @ExportedBean
     public static class MemoryUsage2 extends MemoryUsage {
+        private static final long serialVersionUID = 2216994637932270352L;
+
         public MemoryUsage2(MemoryUsage mem) {
             super(mem.totalPhysicalMemory, mem.availablePhysicalMemory, mem.totalSwapSpace, mem.availableSwapSpace);
         }

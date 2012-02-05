@@ -53,6 +53,8 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
 
     public ZFSProvisioner(Node node) throws IOException, InterruptedException {
         rootDataset = node.getRootPath().act(new FileCallable<String>() {
+            private static final long serialVersionUID = -2142349338699797436L;
+
             public String invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return fs.getName();
@@ -67,6 +69,8 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         final String name = build.getProject().getFullName();
         
         ws.act(new FileCallable<Void>() {
+            private static final long serialVersionUID = 2129531727963121198L;
+
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return null;    // already on ZFS
@@ -84,6 +88,8 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
 
     public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
         ws.act(new FileCallable<Void>() {
+            private static final long serialVersionUID = 1916618107019257530L;
+
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)

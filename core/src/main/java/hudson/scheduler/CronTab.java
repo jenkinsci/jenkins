@@ -24,7 +24,6 @@
 package hudson.scheduler;
 
 import antlr.ANTLRException;
-import org.codehaus.groovy.ast.expr.SpreadExpression;
 
 import java.io.StringReader;
 import java.util.Calendar;
@@ -144,6 +143,7 @@ public final class CronTab {
         /**
          * What is this field? Useful for debugging
          */
+        @SuppressWarnings("unused")
         private final String displayName;
 
         private CalendarField(String displayName, int field, int min, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
