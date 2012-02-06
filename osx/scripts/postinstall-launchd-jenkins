@@ -42,3 +42,15 @@ find "$JENKINS_HOMEDIR" \( -not -user jenkins -or -not -group jenkins \) -print0
 
 # Load and start the launch daemon
 /bin/launchctl load -w ${JENKINS_PLIST}
+
+# Wait for port 8080 to start accepting connections.
+# But don't wait forever.
+timeout=$(($(date +%s) + 60))
+while [ $(date +%s) -lt $timeout ] && ! curl -s http://localhost:8080 >/dev/null; do
+    sleep 1
+done
+
+if [ $(date +%s) -ge $timeout ]; then
+    echo "Timed out waiting for Jenkins port 8080 to start listening!"
+    echo "Either Jenkins did not load or this system is very slow."
+fi

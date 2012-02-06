@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.450-SNAPSHOT</version>
+  <version>1.452-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -213,6 +213,7 @@ THE SOFTWARE.
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
       <version>1.7</version>
+      <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
@@ -486,7 +487,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.2.2</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>

@@ -179,6 +179,29 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public abstract String getShortDescription();
 
+    /**
+     * Entry point to the CLI command.
+     * 
+     * <p>
+     * The default implementation uses args4j to parse command line arguments and call {@link #run()},
+     * but if that processing is undesirable, subtypes can directly override this method and leave {@link #run()}
+     * to an empty method.
+     * 
+     * @param args
+     *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
+     *      then "foo" is the sub-command and the argument list is ["bar","zot"].
+     * @param locale
+     *      Locale of the client (which can be different from that of the server.) Good behaving command implementation
+     *      would use this locale for formatting messages.
+     * @param stdin
+     *      Connected to the stdin of the CLI client.
+     * @param stdout
+     *      Connected to the stdout of the CLI client.
+     * @param stderr
+     *      Connected to the stderr of the CLI client.
+     * @return
+     *      Exit code from the command.
+     */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
         this.stdout = stdout;
@@ -288,6 +311,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Executes the command, and return the exit code.
+     * 
+     * <p>
+     * This is an internal contract between {@link CLICommand} and its subtype.
+     * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
      *
      * @return
      *      0 to indicate a success, otherwise an error code.

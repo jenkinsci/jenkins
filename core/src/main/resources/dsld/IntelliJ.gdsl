@@ -1,3 +1,5 @@
+package dsld
+
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.roots.*;
 

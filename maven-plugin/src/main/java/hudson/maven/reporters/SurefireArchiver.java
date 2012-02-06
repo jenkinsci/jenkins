@@ -75,7 +75,9 @@ public class SurefireArchiver extends MavenReporter {
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isSurefireTest(mojo)) {
-            if (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")) {
+		if ((!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
+		    && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
+		    && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test"))) {
                 // tell surefire:test to keep going even if there was a failure,
                 // so that we can record this as yellow.
                 // note that because of the way Maven works, just updating system property at this point is too late
@@ -240,7 +242,9 @@ public class SurefireArchiver extends MavenReporter {
             && (!mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test"))
             && (!mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test"))
             && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
-            && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")))
+            && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
+            && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
+            && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test")))
             return false;
 
         try {
@@ -306,6 +310,16 @@ public class SurefireArchiver extends MavenReporter {
             } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
                     // gwt-maven-plugin < 1.2 does not implement required Surefire option
                     return false;
+            } else if (mojo.is("eviware", "maven-soapui-plugin", "test")) {
+                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
+            } else if (mojo.is("eviware", "maven-soapui-pro-plugin", "test")) {
+                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
+                if (((skipTests != null) && (skipTests))) {
+                    return false;
+                }
             }
         } catch (ComponentConfigurationException e) {
             return false;

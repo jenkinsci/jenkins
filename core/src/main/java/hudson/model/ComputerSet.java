@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
@@ -59,7 +60,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class ComputerSet extends AbstractModelObject {
+public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet> {
     /**
      * This is the owner that persists {@link #monitors}.
      */
@@ -298,7 +299,7 @@ public final class ComputerSet extends AbstractModelObject {
             return FormValidation.error(e.getMessage());
         }
     }
-
+    
     /**
      * Accepts submission from the configuration page.
      */
@@ -331,6 +332,32 @@ public final class ComputerSet extends AbstractModelObject {
 
     public Api getApi() {
         return new Api(this);
+    }
+
+    public Descriptor<ComputerSet> getDescriptor() {
+        return Jenkins.getInstance().getDescriptorOrDie(ComputerSet.class);
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<ComputerSet> {
+        @Override
+        public String getDisplayName() {
+            return "";
+        }
+
+        /**
+         * Auto-completion for the "copy from" field in the new job page.
+         */
+        public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
+            final AutoCompletionCandidates r = new AutoCompletionCandidates();
+
+            for (Node n : Jenkins.getInstance().getNodes()) {
+                if (n.getNodeName().startsWith(value))
+                    r.add(n.getNodeName());
+            }
+
+            return r;
+        }
     }
 
     /**

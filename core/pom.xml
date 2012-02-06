@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.450-SNAPSHOT</version>
+    <version>1.452-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.177</stapler.version>
+    <stapler.version>1.178</stapler.version>
   </properties>
 
   <dependencies>
@@ -82,6 +82,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
       <version>1.0</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
 
@@ -524,6 +525,7 @@ THE SOFTWARE.
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
       <version>1.1</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>

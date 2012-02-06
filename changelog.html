@@ -56,13 +56,65 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-    Fixed a bug where long post-production processing in matrix jobs can cause incorrect abortion.
+    Infinite loop or invalid next execution with crontab DoW=7
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12357">issue 12357</a>)
+  <li class=bug>
+    Broken links to test results with '#' or '?' in the name
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10458">issue 10458</a>)
+  <li class="bug">
+    Fix launching browser too early to http://localhost:8080 in OS X
+    installer.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12622">issue 12622</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.449>What's new in 1.449</a> <!--=DATE=--></h3>
+<h3><a name=v1.451>What's new in 1.451</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    The <tt>-c</tt> option in the <tt>build</tt> command wasn't working for some SCM.
+  <li class=bug>
+    Fix multi submit with shortcut key in script console.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/364">pull 364</a>)
+  <li class=rfe>
+    job rows in view should have id= for easy access
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12518</a>)
+  <li class=rfe>
+    M2 job: create links to codehaus maven plugins and their goals
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12529">issue 12529</a>)  
+  <li class=rfe>
+    Matrix job now allows delete whole matrix, including sub-jobs.
+  <li class=bug>
+    Fixed a bug in LDAP default root DN inference.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8152">issue 8152</a>)
+  <li class=rfe>
+    CLI now supports also encrypted key file
+  <li class=rfe>
+    Recognize test results from eviware:maven-soapui-plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11353">issue 11353</a>)    
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.450>What's new in 1.450</a> (2012/01/30)</h3>
+<ul class=image>
+  <li class=bug>
+    <tt>install-plugin</tt> CLI command fails to put a file in the right location when installing from URL.
+  <li class=bug>
+    Fixed a bug where long post-production processing in matrix jobs can cause incorrect abortion.
+  <li class=bug>
+    month should not be 0.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12356">issue 12356</a>)
+  <li class=bug>
+    "Create a new slave" page didn't auto-complete for copying.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12490</a>)
+  <li class=bug>
+    Fixed a bug in the auto-overwrite of bundled plugins.
+  <li class=rfe>
+    Upgrade to maven artifacts 3.0.4
+  <li class=rfe>
+    Running build via CLI now records actual user who started the build
+</ul>
+<h3><a name=v1.449>What's new in 1.449</a> (2012/01/23)</h3>
 <ul class=image>
   <li class=bug>
     Build fails on "Deploy artifacts to Maven repository" due to trying to upload parent POM twice for release artifacts.
@@ -83,7 +135,6 @@ Upcoming changes</a>
   <li class=rfe>
     When run in terminal, warning/error messages are colored.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.448>What's new in 1.448</a> (2012/01/17)</h3>
 <ul class=image>
   <li class=bug>
