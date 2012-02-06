@@ -532,7 +532,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.gif" ); /* TODO: get a better icon */
+    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
