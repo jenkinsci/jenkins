@@ -136,6 +136,7 @@ import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.BasicAuthenticationFilter;
 import hudson.security.FederatedLoginService;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonFilter;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
@@ -1226,12 +1227,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
+		if (authorizationStrategy instanceof AuthorizationStrategy.Unsecured ||
+			authorizationStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
+			return new ArrayList(items.values());
+		}
+
         List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items.values()) {
             if (item.hasPermission(Item.READ))
                 viewableItems.add(item);
         }
-
+		
         return viewableItems;
     }
 
@@ -1537,11 +1543,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public Node getNode(String name) {
-        for (Node s : getNodes()) {
-            if(s.getNodeName().equals(name))
-                return s;
-        }
-        return null;
+        return slaves.getNode(name);
     }
 
     /**
@@ -1560,7 +1562,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * represents the master.
      */
     public List<Node> getNodes() {
-        return Collections.unmodifiableList(slaves);
+        return slaves;
     }
 
     /**
@@ -1588,11 +1590,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     public void setNodes(List<? extends Node> nodes) throws IOException {
-        // make sure that all names are unique
-        Set<String> names = new HashSet<String>();
-        for (Node n : nodes)
-            if(!names.add(n.getNodeName()))
-                throw new IllegalArgumentException(n.getNodeName()+" is defined more than once");
         this.slaves = new NodeList(nodes);
         updateComputerList();
         trimLabels();
@@ -2655,9 +2652,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
         // issue the requests all at once
         Map<String,Future<Map<String,String>>> future = new HashMap<String, Future<Map<String, String>>>();
+
         for (Computer c : getComputers()) {
             future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
         }
+		if (toComputer() == null) {
+			future.put("master", RemotingDiagnostics.getThreadDumpAsync(MasterComputer.localChannel));
+		}
 
         // if the result isn't available in 5 sec, ignore that.
         // this is a precaution against hang nodes
@@ -3607,7 +3608,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
 
-    private static final int TWICE_CPU_NUM = Runtime.getRuntime().availableProcessors() * 2;
+    private static final int TWICE_CPU_NUM = Math.max(4, Runtime.getRuntime().availableProcessors() * 2);
 
     /**
      * Thread pool used to load configuration in parallel, to improve the start up time.
