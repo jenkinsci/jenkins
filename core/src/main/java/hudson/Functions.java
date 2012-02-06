@@ -1454,7 +1454,7 @@ public class Functions {
      * @return a URL string
      * @since 1.433
      */
-    public String getUserAvatar(User user, String avatarSize) {
+    public static String getUserAvatar(User user, String avatarSize) {
         return UserAvatarResolver.resolve(user, avatarSize);
     }
     
