@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.,
- * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.,
+ * Manufacture Francaise des Pneumatiques Michelin, Romain Seguy, Thomas Deruyter
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,6 +117,18 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * of {@link #getParent() ancestor items}.
      */
     String getDisplayName();
+
+    /**
+     * According to the global configuration, return
+     * fixed length name of this item or full name.
+     *
+     * This method should try to return fixed size human
+     * readable string that describes this item or 
+     * the full path that includes all the display names
+     * of the ancestors.
+     * The string need not be unique.
+     */
+    String getProcessedDisplayName();
 
     /**
      * Works like {@link #getDisplayName()} but return

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright (c) 2010-2012, InfraDNA, Inc., Thomas Deruyter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,10 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getName();
     }
 
+    public String getProcessedDisplayName() {
+        return base.getProcessedDisplayName();
+    }
+    
     public String getFullDisplayName() {
         return base.getFullDisplayName();
     }

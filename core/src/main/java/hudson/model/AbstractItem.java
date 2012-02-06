@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Tom Huybrechts, Yahoo!, Inc.
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Tom Huybrechts, Yahoo!, Inc., Thomas Deruyter
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -320,6 +320,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         else                return n+'/'+getName();
     }
 
+    public final String getProcessedDisplayName() {
+        String n = getFullDisplayName();
+        if (Jenkins.getInstance().isUseShortDisplayName() && n.length() > Jenkins.getInstance().getShortDisplayNameLength()) {
+            String p = n.substring(0, Jenkins.getInstance().getShortDisplayNameLength()-3);
+            p = p.concat("...");
+            return p;
+        }
+        return n;
+    }
+    
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();

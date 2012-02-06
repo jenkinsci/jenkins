@@ -1,11 +1,11 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
  * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.,
- * Yahoo!, Inc.
- *
+ * Yahoo!, Inc., Thomas Deruyter
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -491,6 +491,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     /*package*/ Integer quietPeriod;
 
     /**
+     * Short Display Name.
+     *
+     * This is {@link Integer}.
+     */
+    private Integer useShortDisplayName;
+
+    
+    /**
      * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}
      */
     /*package*/ int scmCheckoutRetryCount;
@@ -652,7 +660,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
      */
     private Boolean noUsageStatistics;
-
+    
     /**
      * HTTP proxy configuration.
      */
@@ -898,6 +906,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         save();
     }
 
+    public Integer getShortDisplayNameLength() {
+        return useShortDisplayName;
+    }
+
+    public boolean isUseShortDisplayName() {
+        return useShortDisplayName!=null && useShortDisplayName>0;
+    }
+   
+    public void setShortDisplayNameLength(int useShortDisplayName) throws IOException {
+        if (useShortDisplayName > 0) this.useShortDisplayName = useShortDisplayName;
+        else this.useShortDisplayName = null;
+        save();
+    }
+    
     public View.People getPeople() {
         return new View.People(this);
     }
@@ -1195,6 +1217,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         return "";
     }
 
+    public String getProcessedDisplayName() {
+        return "";
+    }
+    
     public String getFullDisplayName() {
         return "";
     }
