@@ -1454,8 +1454,15 @@ public class Functions {
      * @return a URL string
      * @since 1.433
      */
-    public static String getUserAvatar(User user, String avatarSize) {
+    public static String getAvatar(User user, String avatarSize) {
         return UserAvatarResolver.resolve(user, avatarSize);
     }
-    
+
+    /**
+     * @deprecated as of 1.451
+     *      Use {@link #getAvatar}
+     */
+    public String getUserAvatar(User user, String avatarSize) {
+        return getAvatar(user,avatarSize);
+    }
 }
