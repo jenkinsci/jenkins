@@ -42,6 +42,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.util.xstream.ImmutableSetConverter;
+import hudson.util.xstream.ImmutableSortedSetConverter;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
@@ -109,6 +111,8 @@ public class XStream2 extends XStream {
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
