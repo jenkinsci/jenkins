@@ -123,7 +123,7 @@ public class NodeListTest extends TestCase {
 
             String xml = FileUtils.readFileToString(tmp);
             System.out.println(xml);
-            assertEquals(4,xml.split("\n").length);
+            assertEquals(6,xml.split("\n").length);
 
             NodeList back = (NodeList)x.read();
 
