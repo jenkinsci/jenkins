@@ -74,8 +74,11 @@ public class JNLPLauncherTest extends HudsonTestCase {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
-        assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
+        assertEquals(1, listener.offlined);
     }
+
+    @Inject
+    ListenerImpl listener;
 
     @TestExtension
     public static class ListenerImpl extends ComputerListener {
