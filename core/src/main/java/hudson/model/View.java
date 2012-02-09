@@ -234,13 +234,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
     private List<Action> _getOwnerViewActions() {
         return owner.getViewActions();
     }
+    
+    private final String SYS_MSG_SPACER = "</br>";
 
     /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
     public String getDescription() {
-        return description;
+    	if(owner.getSystemMessage() != null && !owner.getSystemMessage().isEmpty()){
+    		return owner.getSystemMessage().concat(SYS_MSG_SPACER).concat(Util.fixNull(description));
+    	}else{
+    		return description;
+    	}   
     }
 
     /**

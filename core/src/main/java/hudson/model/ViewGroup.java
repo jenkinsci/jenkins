@@ -137,4 +137,16 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.417
      */
     List<Action> getViewActions();
+    
+    /**
+     * Returns the system message set on the rrot object.
+     * This enables the implemented {@link View} to access the system message on the root object so that it can be 
+     * displayed on each view.
+     * 
+     * @return
+     * 		system message as set on the root object 
+     * @since 1.450
+     */
+    String getSystemMessage();
+    
 }
