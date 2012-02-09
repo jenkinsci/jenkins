@@ -93,7 +93,10 @@ Upcoming changes</a>
   <li class=bug>
     Fixed a bug in LDAP default root DN inference.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8152">issue 8152</a>)
-  <li class=rfe>
+  <li class=bug>
+    <tt>ComputerListener.onOffline</tt> was not called when the client was terminated abruptly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12680">issue 12680</a>)
+  <li class=ref>
     CLI now supports also encrypted key file
   <li class=rfe>
     Recognize test results from eviware:maven-soapui-plugin.
