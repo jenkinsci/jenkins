@@ -165,6 +165,21 @@ public abstract class ComputerListener implements ExtensionPoint {
     public void onOffline(Computer c) {}
 
     /**
+     * Indicates that the computer was marked as temporarily online by the administrator.
+     * This is the reverse operation of {@link #onTemporarilyOffline(Computer)}
+     *
+     * @since 1.452
+     */
+    public void onTemporarilyOnline(Computer c) {}
+    /**
+     * Indicates that the computer was marked as temporarily online by the administrator.
+     * This is the reverse operation of {@link #onTemporarilyOffline(Computer)}
+     *
+     * @since 1.452
+     */
+    public void onTemporarilyOffline(Computer c, OfflineCause cause) {}
+
+    /**
      * Called when configuration of the node was changed, a node is added/removed, etc.
      * @since 1.377
      */
