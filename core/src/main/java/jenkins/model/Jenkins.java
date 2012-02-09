@@ -1331,11 +1331,24 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * Gets the read-only list of all {@link View}s.
+     * Gets the read-only list of all {@link View}s relevant for the current user.
      */
     @Exported
     public synchronized Collection<View> getViews() {
-        return viewGroupMixIn.getViews();
+        final Collection<View> allViews = viewGroupMixIn.getViews();
+        Collection<View> filteredViews = new ArrayList<View>();
+        for (View view : allViews) {
+            // if there is no job in the view the user is not interested in it
+            // ...unless he's allowed to add a job to the view...
+            if(!view.getItems().isEmpty() || view.hasPermission(View.CONFIGURE)){
+                filteredViews.add(view);
+            }
+        }
+        // if there is no view left, at least add the default
+        if(filteredViews.isEmpty()){
+            filteredViews.add(getPrimaryView());
+        }
+        return Collections.unmodifiableCollection(filteredViews);
     }
 
     public void addView(View v) throws IOException {
