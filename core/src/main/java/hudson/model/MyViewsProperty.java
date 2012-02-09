@@ -44,7 +44,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
-import org.apache.commons.lang.NotImplementedException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -256,9 +255,5 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 		}
 		
     }
-
-	public String getSystemMessage() {
-		return getSystemMessage();
-	}
 
 }
