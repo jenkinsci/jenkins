@@ -25,6 +25,7 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
+import com.google.inject.Injector;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -324,6 +325,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         if (desc != null) Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
+
+        // allow the test class to inject Jenkins components
+        jenkins.lookup(Injector.class).injectMembers(this);
     }
 
 

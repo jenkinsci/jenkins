@@ -24,7 +24,7 @@
 package org.jvnet.hudson.test;
 
 import hudson.Extension;
-import hudson.ExtensionFinder.AbstractGuiceFinder;
+import hudson.ExtensionFinder.GuiceExtensionAnnotation;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
+public class TestExtensionLoader extends GuiceExtensionAnnotation<TestExtension> {
     public TestExtensionLoader() {
         super(TestExtension.class);
     }
