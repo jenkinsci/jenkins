@@ -89,6 +89,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
+    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
 
@@ -205,6 +206,27 @@ THE SOFTWARE.
         <version>3.1.0</version>
       </dependency>
 
+      <!-- SLF4J used in maven-plugin and core -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-nop</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
