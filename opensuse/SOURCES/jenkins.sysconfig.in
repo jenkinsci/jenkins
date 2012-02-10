@@ -108,3 +108,12 @@ JENKINS_HANDLER_MAX="100"
 # Maximum number of idle HTTP worker threads.
 #
 JENKINS_HANDLER_IDLE="20"
+
+## Type: string
+## Default: ""
+## ServiceRestart: jenkins
+#
+# Pass arbitrary arguments to Jenkins.
+# Full option list: java -jar jenkins.war --help
+#
+JENKINS_ARGS=""
