@@ -782,40 +782,6 @@ public class Queue extends ResourceController implements Saveable {
                 // in the buildables field.
                 maintain();
 
-                // allocate buildable jobs to executors
-                Iterator<BuildableItem> itr = buildables.iterator();
-                while (itr.hasNext()) {
-                    BuildableItem p = itr.next();
-
-                    // one last check to make sure this build is not blocked.
-                    if (isBuildBlocked(p)) {
-                        itr.remove();
-                        blockedProjects.put(p.task,new BlockedItem(p));
-                        continue;
-                    }
-
-                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                    for (JobOffer j : parked.values())
-                        if(j.canTake(p))
-                            candidates.add(j);
-
-                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                    Mapping m = loadBalancer.map(p.task, ws);
-                    if (m == null)
-                        // if we couldn't find the executor that fits,
-                        // just leave it in the buildables list and
-                        // check if we can execute other projects
-                        continue;
-
-                    // found a matching executor. use it.
-                    WorkUnitContext wuc = new WorkUnitContext(p);
-                    m.execute(wuc);
-
-                    itr.remove();
-                    if (!wuc.getWorkUnits().isEmpty())
-                        pendings.add(p);
-                }
-
                 // we went over all the buildable projects and awaken
                 // all the executors that got work to do. now, go to sleep
                 // until this thread is awakened. If this executor assigned a job to
@@ -919,7 +885,7 @@ public class Queue extends ResourceController implements Saveable {
      * Queue maintenance.
      *
      * <p>
-     * Move projects between {@link #waitingList}, {@link #blockedProjects}, and {@link #buildables}
+     * Move projects between {@link #waitingList}, {@link #blockedProjects}, {@link #buildables}, and {@link #pendings}
      * appropriately.
      *
      * <p>
@@ -931,18 +897,20 @@ public class Queue extends ResourceController implements Saveable {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started " + this);
 
-        // blocked -> buildable
-        Iterator<BlockedItem> itr = blockedProjects.values().iterator();
-        while (itr.hasNext()) {
-            BlockedItem p = itr.next();
-            if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
-                // ready to be executed
-                LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
-                itr.remove();
-                makeBuildable(new BuildableItem(p));
+        {// blocked -> buildable
+            Iterator<BlockedItem> itr = blockedProjects.values().iterator();
+            while (itr.hasNext()) {
+                BlockedItem p = itr.next();
+                if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
+                    // ready to be executed
+                    LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
+                    itr.remove();
+                    makeBuildable(new BuildableItem(p));
+                }
             }
         }
 
+        // waitingList -> buldable/blocked
         while (!waitingList.isEmpty()) {
             WaitingItem top = peek();
 
@@ -966,6 +934,40 @@ public class Queue extends ResourceController implements Saveable {
         final QueueSorter s = sorter;
         if (s != null)
         	s.sortBuildableItems(buildables);
+
+        // allocate buildable jobs to executors
+        Iterator<BuildableItem> itr = buildables.iterator();
+        while (itr.hasNext()) {
+            BuildableItem p = itr.next();
+
+            // one last check to make sure this build is not blocked.
+            if (isBuildBlocked(p)) {
+                itr.remove();
+                blockedProjects.put(p.task,new BlockedItem(p));
+                continue;
+            }
+
+            List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+            for (JobOffer j : parked.values())
+                if(j.canTake(p))
+                    candidates.add(j);
+
+            MappingWorksheet ws = new MappingWorksheet(p, candidates);
+            Mapping m = loadBalancer.map(p.task, ws);
+            if (m == null)
+                // if we couldn't find the executor that fits,
+                // just leave it in the buildables list and
+                // check if we can execute other projects
+                continue;
+
+            // found a matching executor. use it.
+            WorkUnitContext wuc = new WorkUnitContext(p);
+            m.execute(wuc);
+
+            itr.remove();
+            if (!wuc.getWorkUnits().isEmpty())
+                pendings.add(p);
+        }
     }
 
     private void makeBuildable(BuildableItem p) {
