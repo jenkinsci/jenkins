@@ -111,6 +111,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     protected String description;
     
     /**
+     * System Message displayed.
+     */
+    protected String systemmessage;
+    
+    /**
      * If true, only show relevant executors
      */
     protected boolean filterExecutors;
@@ -235,18 +240,23 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return owner.getViewActions();
     }
 
-    private final String SYS_MSG_SPACER = "</br>";
-
     /**
      * Message displayed in the top page. Can be null. Includes HTML.
      */
     @Exported
     public String getDescription() {
+    	 return description;
+    }
+    
+    /**
+     * Gets the system message to be displayed at the top of the page on all views
+     */
+    @Exported
+    public String getSystemMessage(){
     	if(owner.getSystemMessage() != null && !owner.getSystemMessage().isEmpty()){
-    		return owner.getSystemMessage().concat(SYS_MSG_SPACER).concat(Util.fixNull(description));
-    	}else{
-    		return description;
-    	}   
+    		this.systemmessage = owner.getSystemMessage();
+    	}
+    	return systemmessage;
     }
 
     /**
