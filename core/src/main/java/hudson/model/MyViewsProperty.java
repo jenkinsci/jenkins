@@ -255,5 +255,9 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
 		}
 		
     }
+    
+    public String getSystemMessage() {
+		return getSystemMessage();
+	}
 
 }
