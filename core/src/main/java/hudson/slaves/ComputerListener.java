@@ -181,6 +181,11 @@ public abstract class ComputerListener implements ExtensionPoint {
 
     /**
      * Called when configuration of the node was changed, a node is added/removed, etc.
+     *
+     * <p>
+     * This callback is to signal when there's any change to the list of slaves registered to the system,
+     * including addition, removal, changing of the setting, and so on.
+     *
      * @since 1.377
      */
     public void onConfigurationChange() {}

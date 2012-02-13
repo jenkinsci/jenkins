@@ -3719,7 +3719,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
 
     /**
-     * Automatically try to launch a slave when Hudson is initialized or a new slave is created.
+     * Automatically try to launch a slave when Jenkins is initialized or a new slave is created.
      */
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
