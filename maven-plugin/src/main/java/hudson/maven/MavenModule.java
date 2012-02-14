@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -62,6 +62,8 @@ import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -69,7 +71,7 @@ import org.kohsuke.stapler.export.Exported;
 
 /**
  * {@link Job} that builds projects based on Maven2.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> implements Saveable {
@@ -88,16 +90,16 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
      * This field can be null if Jenkins loaded old data
      * that didn't record this information, so that situation
      * needs to be handled gracefully.
-     * 
+     *
      * @since 1.199
      */
     private String version;
-    
+
     /**
      * Packaging type of the module.
-     * 
+     *
      * pom, jar, maven-plugin, ejb, war, ear, rar, par or other custom types.
-     * 
+     *
      * @since 1.425
      */
     private String packaging;
@@ -126,7 +128,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
      * Used to determine parent/child relationship of modules.
      * <p>
      * For compatibility reason, this field may be null when loading data from old hudson.
-     * 
+     *
      * @since 1.133
      */
     @CopyOnWrite
@@ -145,7 +147,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
     }
 
     /**
-     * {@link MavenModule} follows the same log rotation schedule as its parent. 
+     * {@link MavenModule} follows the same log rotation schedule as its parent.
      */
     @Override
     public LogRotator getLogRotator() {
@@ -216,7 +218,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
             }
         }
     }
-    
+
     /**
      * Returns if the given POM likely describes the same module with the same dependencies.
      * Implementation needs not be 100% accurate in the true case, but it MUST return false
@@ -362,7 +364,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
      * <p>
      * This method returns null if this information is not recorded. This happens
      * for compatibility reason.
-     * 
+     *
      * @since 1.133
      */
     public List<MavenModule> getChildren() {
@@ -426,7 +428,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         boolean hasDependenciesWithUnknownVersion = hasDependenciesWithUnknownVersion();
         if (data == null) {
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
-    
+
             for (MavenModule m : getAllMavenModules()) {
                 if(!m.isBuildable())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
@@ -454,14 +456,14 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
 
         // In case two modules with the same name are defined, modules in the same MavenModuleSet
         // take precedence.
-        
+
         // Can lead to OOME, if remembered in the computational data and there are lot big multi-module projects
         // TODO: try to use soft references to clean the heap when needed
         Map<ModuleDependency,MavenModule> myParentsModules; // = data.modulesPerParent.get(getParent());
-        
+
         //if (myParentsModules == null) {
             myParentsModules = new HashMap<ModuleDependency, MavenModule>();
-            
+
             for (MavenModule m : getParent().getModules()) {
                 if(m.isDisabled())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
@@ -470,7 +472,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
                     myParentsModules.put(moduleDependency.withUnknownVersion(),m);
                 }
             }
-            
+
             //data.modulesPerParent.put(getParent(), myParentsModules);
         //}
 
@@ -479,30 +481,32 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         AbstractProject<?, ?> dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
         for (ModuleDependency d : dependencies) {
-            MavenModule src = myParentsModules.get(d);
+            MavenModule src = findMatchingDependentModule(data.allModules, d);
             if (src==null) {
                 src = data.allModules.get(d);
             }
-            
+
             if(src!=null) {
                 DependencyGraph.Dependency dep = new MavenModuleDependency(
-                        src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
+                        src.getParent().isAggregatorStyleBuild()
+                        ? src.getParent()
+                        : src,dest);
                 if (!dep.pointsItself())
                     graph.addDependency(dep);
             }
         }
     }
-    
+
     /**
      * Returns all Maven modules in this Jenkins instance.
      */
     protected Collection<MavenModule> getAllMavenModules() {
         return Jenkins.getInstance().getAllItems(MavenModule.class);
     }
-    
+
     /**
      * Check if this module has dependencies recorded without a concrete version -
-     * which shouldn't happen for any module which was at least build once with Jenkins >= 1.207. 
+     * which shouldn't happen for any module which was at least build once with Jenkins >= 1.207.
      */
     private boolean hasDependenciesWithUnknownVersion() {
         for (ModuleDependency dep : dependencies) {
@@ -512,21 +516,21 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         }
         return false;
     }
-    
+
     private MavenModule chooseMoreRelevantModule(MavenModule mm1, MavenModule mm2, ModuleDependency moduleDependency) {
-        
+
         if (mm1 == null) {
             return mm2;
         }
         if (mm2 == null) {
             return mm1;
         }
-        
+
         final MavenModule moreRelevant;
         final MavenModule lessRelevant;
         int relevancy1 = getDependencyRelevancy(mm1);
         int relevancy2 = getDependencyRelevancy(mm2);
-        
+
         if (relevancy1 > relevancy2) {
             moreRelevant = mm1;
             lessRelevant = mm2;
@@ -543,43 +547,43 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
                 lessRelevant = mm2;
             }
         }
-        
+
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.finer("Choosing " + moreRelevant.getParent().getName() + " over " + lessRelevant.getParent().getName()
-                    + " for module " + moduleDependency.getName() + ". Relevancies: " + relevancy1 + ", " + relevancy2); 
+                    + " for module " + moduleDependency.getName() + ". Relevancies: " + relevancy1 + ", " + relevancy2);
         }
         return moreRelevant;
     }
 
     private int getDependencyRelevancy(MavenModule mm) {
-        
+
         int relevancy = 0;
-        
+
         for (String goal : Util.tokenize(mm.getGoals())) {
             if ("deploy".equals(goal) || "deploy:deploy".equals(goal)) {
                 return 2;
             }
-            
+
             if ("install".equals(goal)) {
                 relevancy = 1;
             }
         }
-        
+
         for (Publisher publisher : mm.getParent().getPublishers()) {
             if (publisher instanceof RedeployPublisher) {
                 return 2;
             }
         }
-        
+
         return relevancy;
     }
 
     private static class MavenDependencyComputationData {
         boolean withUnknownVersions = false;
         Map<ModuleDependency,MavenModule> allModules;
-        
+
         //Map<MavenModuleSet, Map<ModuleDependency,MavenModule>> modulesPerParent = new HashMap<MavenModuleSet, Map<ModuleDependency,MavenModule>>();
-        
+
         public MavenDependencyComputationData(
                 Map<ModuleDependency, MavenModule> modules) {
             this.allModules = modules;
@@ -651,7 +655,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
 
         return reporterList;
     }
-    
+
     /**
      * for debug purpose
      */
@@ -659,6 +663,35 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         return super.toString()+'['+getFullName()+']'+"[relativePath:"+getRelativePath()+']';
     }
 
+    /**
+     * ModuleDependency objects have a string as a version. To support Maven2 version ranges,
+     * string comparison of these versions are not sufficient.
+     *
+     * The ModuleDependency objects in the modules map contain the version identifier of the
+     * modules/projects itself. In these cases, no version ranges are allowed. The second
+     * argument is a ModuleDependency coming from parsing the dependency section of a Maven POM.
+     * In here, version ranges are allowed. This method will perform a lookup in the modules
+     * collection, but based on the VersionRange.containsVersion(ArtifactVersion) method.
+     *
+     * @param modules the map matching a ModuleDependency with the corresponding MavenModule
+     * @param dependencyDescription a ModuleDependency describing the version
+     * @return the Hudson MavenModule that matches the dependency.
+     */
+    private MavenModule findMatchingDependentModule(
+            final Map<ModuleDependency, MavenModule> modules,
+            final ModuleDependency dependencyDescription) {
+
+        Set<ModuleDependency> modulesVersionInfo = modules.keySet();
+        Predicate predicate = new Predicate() {
+            public boolean evaluate(Object moduleInfo) {
+                ModuleDependency moduleVersionInfo = (ModuleDependency) moduleInfo;
+                return dependencyDescription.contains(moduleVersionInfo);
+            }
+        };
+
+        ModuleDependency matchingDependency = (ModuleDependency) CollectionUtils.find(modulesVersionInfo, predicate);
+        return modules.get(matchingDependency);
+    }
+
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
-    
 }
