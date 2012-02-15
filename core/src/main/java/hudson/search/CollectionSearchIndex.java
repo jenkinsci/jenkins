@@ -54,7 +54,7 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         Collection<SMT> items = all();
         if(items==null)     return;
         for (SMT o : items) {
-            if(o!=null && getName(o).contains(token))
+            if(o!=null && getName(o).toLowerCase().contains(token.toLowerCase()))
                 result.add(o);
         }
     }
