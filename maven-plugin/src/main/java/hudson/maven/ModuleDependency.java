@@ -1,18 +1,18 @@
 /*
  * The MIT License
- *
+ * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Olivier Lamy
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,22 +23,17 @@
  */
 package hudson.maven;
 
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Extension;
 
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 import hudson.Functions;
 
 /**
- * group id + artifact id + version and a flag to know if it's a plugin
+ * group id + artifact id + version and a flag to know if it's a plugin 
  *
  * @author Kohsuke Kawaguchi
  * @see ModuleName
@@ -47,7 +42,7 @@ public final class ModuleDependency implements Serializable {
     public final String groupId;
     public final String artifactId;
     public final String version;
-
+    
     /**
      * @since 1.395
      */
@@ -56,7 +51,7 @@ public final class ModuleDependency implements Serializable {
     public ModuleDependency(String groupId, String artifactId, String version) {
         this(groupId, artifactId, version, false);
     }
-
+    
     public ModuleDependency(String groupId, String artifactId, String version, boolean plugin) {
         this.groupId = groupId.intern();
         this.artifactId = artifactId.intern();
@@ -70,7 +65,7 @@ public final class ModuleDependency implements Serializable {
     public ModuleDependency(ModuleName name, String version) {
         this(name.groupId,name.artifactId,version,false);
     }
-
+    
     public ModuleDependency(ModuleName name, String version, boolean plugin) {
         this(name.groupId,name.artifactId,version,plugin);
     }
@@ -104,7 +99,7 @@ public final class ModuleDependency implements Serializable {
         this.version = UNKNOWN;
         this.plugin = plugin;
     }
-
+    
     public ModuleName getName() {
         return new ModuleName(groupId,artifactId);
     }
@@ -168,44 +163,4 @@ public final class ModuleDependency implements Serializable {
     public static final String NONE = "-";
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * If my version string comes from a dependency in the Maven POM, it can
-     * represent a version range. If the argument represents a real version,
-     * this method will check if the group and artifact ID are the same,
-     * and if my version, converted to a VersionRange, contains the the version
-     * from the argument.
-     *
-     * @param otherDependency The dependency to check for.
-     * @return true if contained false otherwise.
-     */
-    public boolean contains(ModuleDependency otherDependency) {
-        if (otherDependency == null) {
-            return false;
-        }
-
-        boolean result = false;
-        if (groupId.equals(otherDependency.groupId) && artifactId.equals(otherDependency.artifactId)) {
-
-            try {
-                VersionRange myRange = VersionRange.createFromVersionSpec(version);
-                ArtifactVersion otherVersion = new DefaultArtifactVersion(otherDependency.version);
-                result = myRange.containsVersion(otherVersion);
-            } catch (InvalidVersionSpecificationException ivse) {
-                result = false;
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ModuleDependency{" +
-               "groupId='" + groupId + '\'' +
-               ", artifactId='" + artifactId + '\'' +
-               ", version='" + version + '\'' +
-               ", plugin=" + plugin +
-               '}';
-    }
 }
