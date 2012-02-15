@@ -1,8 +1,7 @@
 <div>
-    With this option checked, Hudson will not do a checkout from the SCM system 
+    With this option checked, Jenkins will not do a checkout from the SCM system 
     for each configuration.
     This can be usefull if your configuration can build concurrent from the same 
-    master source (e.g. via NFS/SMB), and it saves the time of the SCM-checkout.<br />
-    NB: The feature currently only works if a job is constranied to one node with
-    several executors, otherwise an exception will be thrown and the build will fail.
-</div>
+    master source (e.g. via network share or when all builds run on the same node), 
+    and it saves the time, bandwith and disk space of the SCM-checkout.
+ </div>
