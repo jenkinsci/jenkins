@@ -69,6 +69,12 @@ THE SOFTWARE.
       </j:if>
     </f:optionalBlock>
 
+    <f:optionalBlock field="skipMasterScmCheckout" title="${%Skip SCM checkout on Master, only do checkout per configuration}"/>
+
+    <f:optionalBlock field="useSameScmCheckout" title="${%Use same SCM checkout for all builds, each configuration uses master source via NFS/SMB}"/>
+    
+    <f:optionalBlock field="execMasterBuild" title="${%Execute build steps for Master before executing configuration builds}"/>
+
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
         help="/help/matrix/combinationfilter.html">
 	    <f:entry title="${%Filter}">

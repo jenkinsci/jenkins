@@ -146,6 +146,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     
     private MatrixConfigurationSorter sorter;
 
+    /**
+     * Share SCM checkout for all matrix entries
+     * per-configuration builds use Master source (e.g. via NFS/SMB + custom workspace)
+     */
+    private boolean useSameScmCheckout;
+
+    /**
+     * Skip SCM on master (this takes time and is sometimes useless)
+     */
+    private boolean skipMasterScmCheckout;
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
     }
@@ -192,6 +202,22 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.runSequentially = runSequentially;
         save();
     }
+
+    /**
+     * If true, {@link MatrixRun}s will skip the SCM checkout and just go to the build step.
+     *
+     */
+    public boolean isUseSameScmCheckout() {
+        return useSameScmCheckout;
+    }
+
+    /**
+     * If true, {@link MatrixRun}s will skip the SCM checkout and just go to the build step.
+     *
+     */
+    public boolean isSkipMasterScmCheckout() {
+           return skipMasterScmCheckout;
+   }
 
     /**
      * Sets the combination filter.
@@ -589,6 +615,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
         
+        useSameScmCheckout = json.has("useSameScmCheckout");
+        skipMasterScmCheckout = json.has("skipMasterScmCheckout");
         runSequentially = json.optBoolean("runSequentially");
 
         // set sorter if any sorter is chosen
