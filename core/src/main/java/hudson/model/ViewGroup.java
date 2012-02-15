@@ -26,7 +26,6 @@ package hudson.model;
 
 import hudson.security.AccessControlled;
 import hudson.views.ViewsTabBar;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -138,14 +137,4 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      */
     List<Action> getViewActions();
     
-    /**
-     * Returns the system message set on the root object.
-     * This enables the implemented {@link View} to access the system message on the root object so that it can be 
-     * displayed on each view.
-     * 
-     * @return
-     * 		system message as set on the root object 
-     * @since 1.450
-     */
-    String getSystemMessage();
 }

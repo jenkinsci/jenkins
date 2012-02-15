@@ -36,10 +36,10 @@ THE SOFTWARE.
 
 <j:if test="${it.class.name!='hudson.model.AllView'}">
   <div id="systemmessage">
-	    <div>	     
-	      	<j:out value="${it.getSystemMessage()!=null ? app.markupFormatter.translate(it.getSystemMessage()) : ''}" />
-	    </div>
-	</div>
+    <div>
+      <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
+    </div>
+  </div>
 </j:if>
 
   <div id="description">
