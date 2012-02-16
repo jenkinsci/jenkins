@@ -715,7 +715,8 @@ var hudsonRules = {
                 new Ajax.Request(this.getAttribute("helpURL"), {
                     method : 'get',
                     onSuccess : function(x) {
-                        div.innerHTML = x.responseText;
+                        var from = x.getResponseHeader("X-Plugin-From");
+                        div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
                         layoutUpdateCallback.call();
                     },
                     onFailure : function(x) {

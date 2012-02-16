@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
+import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
@@ -780,6 +781,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
+     * Returns the plugin in which this descriptor is defined.
+     *
+     * @return
+     *      null to indicate that this descriptor came from the core.
+     */
+    protected PluginWrapper getPlugin() {
+        return Jenkins.getInstance().getPluginManager().whichPlugin(clazz);
+    }
+
+    /**
      * Serves <tt>help.html</tt> from the resource of {@link #clazz}.
      */
     public void doHelp(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -787,6 +798,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if(path.contains("..")) throw new ServletException("Illegal path: "+path);
 
         path = path.replace('/','-');
+
+        PluginWrapper pw = getPlugin();
+        if (pw!=null) {
+            rsp.setHeader("X-Plugin-Short-Name",pw.getShortName());
+            rsp.setHeader("X-Plugin-Long-Name",pw.getLongName());
+            rsp.setHeader("X-Plugin-From", Messages.Descriptor_From(
+                    pw.getLongName().replace("Hudson","Jenkins").replace("hudson","jenkins"), pw.getUrl()));
+        }
 
         for (Klass<?> c= getKlass(); c!=null; c=c.getSuperClass()) {
             RequestDispatcher rd = Stapler.getCurrentRequest().getView(c, "help"+path);

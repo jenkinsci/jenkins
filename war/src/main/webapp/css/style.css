@@ -562,6 +562,11 @@ LABEL.attach-previous {
   margin-bottom: 1em;
 }
 
+.help .from-plugin {
+    text-align: right;
+    color: #666;
+}
+
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
 }
