@@ -190,8 +190,5 @@ public class TreeView extends View implements ViewGroup {
     public List<Action> getViewActions() {
         return owner.getViewActions();
     }
-    
-    public String getSystemMessage() {
-		return owner.getSystemMessage();
-	}
+
 }

@@ -2540,3 +2540,58 @@ var layoutUpdateCallback = {
             this.callbacks[i]();
     }
 }
+
+// notification bar
+var notificationBar = {
+    OPACITY : 0.8,
+    DELAY : 3000,   // milliseconds to auto-close the notification
+    div : null,     // the main 'notification-bar' DIV
+    token : null,   // timer for cancelling auto-close
+
+    init : function() {
+        if (this.div==null) {
+            this.div = document.createElement("div");
+            YAHOO.util.Dom.setStyle(this.div,"opacity",0);
+            this.div.id="notification-bar";
+            document.body.insertBefore(this.div, document.body.firstChild);
+
+            var self = this;
+            this.div.onclick = function() {
+                self.hide();
+            };
+        }
+    },
+    // cancel pending auto-hide timeout
+    clearTimeout : function() {
+        if (this.token)
+            window.clearTimeout(this.token);
+        this.token = null;
+    },
+    // hide the current notification bar, if it's displayed
+    hide : function () {
+        this.clearTimeout();
+        new YAHOO.util.Anim(this.div, {
+            opacity: { to:0 }
+        }, 0.3, YAHOO.util.Easing.easeIn).animate();
+    },
+    // show a notification bar
+    show : function (text,options) {
+        options = options || {}
+
+        this.init();
+        this.div.style.backgroundColor = options.backgroundColor || "#fff";
+        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
+
+        if (options.icon)
+            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
+        this.div.innerHTML = text;
+
+        new YAHOO.util.Anim(this.div, {
+            opacity: { to:this.OPACITY }
+        }, 1, YAHOO.util.Easing.easeOut).animate();
+
+        this.clearTimeout();
+        var self = this;
+        this.token = window.setTimeout(function(){self.hide();},this.DELAY);
+    }
+};

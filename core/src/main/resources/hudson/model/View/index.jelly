@@ -31,7 +31,12 @@ THE SOFTWARE.
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
-                <t:editableDescription permission="${app.ADMINISTER}"/>
+              <j:if test="${it.class.name!='hudson.model.AllView'}">
+                <div id="systemmessage">
+                  <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
+                </div>
+              </j:if>            
+              <t:editableDescription permission="${app.ADMINISTER}"/>
             </div>
           </st:include>
           

@@ -34,14 +34,6 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-<j:if test="${it.class.name!='hudson.model.AllView'}">
-  <div id="systemmessage">
-	    <div>	     
-	      	<j:out value="${it.getSystemMessage()!=null ? app.markupFormatter.translate(it.getSystemMessage()) : ''}" />
-	    </div>
-	</div>
-</j:if>
-
   <div id="description">
     <div>
       <j:out value="${it.description!=null ? app.markupFormatter.translate(it.description) : ''}" />
