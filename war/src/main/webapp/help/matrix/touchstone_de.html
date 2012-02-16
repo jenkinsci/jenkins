@@ -1,10 +1,16 @@
 <div>
-  Ein "Touchstone"-Build ist ein besonderer Build, der Sie besonders frühzeitig auf Probleme
-  in Ihrem Code hinweist, z.B. durch Ausführung essentieller Plausibilitätstests.
-    
-  <p>
-  Wenn angewählt, führt Jenkins zunächst die Touchstone-Builds aus, bevor dann alle weiteren
-  Kombinationen gebaut werden. Sie können über einen Kombinationsfilter auch mehrere Builds
-  als Touchstone-Build kennzeichnen. Nur wenn das Ergebnis der Touchstone-Builds die
-  Ergebnisbedingung erfüllt, werden alle weiteren Kombinationen gebaut.
+  Ein "Touchstone" wird durch einen Kombinationsfilter definiert. Alle Builds,
+  die diesem Filter entsprechen, werden zuerst ausgeführt. Nur wenn das Ergebnis
+  die Ergebnis bedingung entspricht, werden die verbleibenden Builds ausgeführt.
+  <p />
+  Es ist auch möglich, mehrere Touchstones durch Semikolon getrennt zu definieren.
+  Dies ist sinnvoll, wenn man mehrere Schritte (build, unit test, functional test)
+  für mehrere Platformen ausführt, und sicherstellen möchte, dass ein Schritt
+  für alle Platformen erfolgreich war, bevor man die Infrastruktur mit dem nächsten
+  Schritt für irgendeine Platform belastet.
+  <p />
+  Beispiel:<p />
+  Label expression PLATFORM = "win32 linuxX86"<br>
+  Label expression SCHRITT = "build unit_test feature_test deploy"<p />
+  hgTouchstone = SCHRITT="win32"; SCHRITT="unit_test"; SCHRITT="feature_test"<br>
 </div>

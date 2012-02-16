@@ -44,6 +44,7 @@ import org.kohsuke.stapler.export.Exported;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -275,18 +276,37 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             axes = p.getAxes();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             final int n = getNumber();
-            
-            String touchStoneFilter = p.getTouchStoneCombinationFilter();
-            Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
+            List<String> touchStoneFilterList = new ArrayList<String>();
+            touchStoneFilterList.addAll( Arrays.asList( p.getTouchStoneCombinationFilter().split(";") ) );
+            touchStoneFilterList.add("");
+/*            Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
             Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
+*/
+            List<Collection<MatrixConfiguration> > activeConfigurationsGrouped = new ArrayList<Collection<MatrixConfiguration> >();
+            for ( int i=0; i<touchStoneFilterList.size(); i++) {
+                activeConfigurationsGrouped.add( new HashSet<MatrixConfiguration>() );
+            }
+            //= HashSet<MatrixConfiguration>();
             for (MatrixConfiguration c: activeConfigurations) {
+                Boolean groupFound = false;
                 if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
                     continue; // skip rebuild
-                if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
-                    touchStoneConfigurations.add(c);
-                } else {
-                    delayedConfigurations.add(c);
+                for ( int i=0; i<touchStoneFilterList.size() && !groupFound; i++) {
+                    /**
+                     * Since the last element of touchStoneFilterList is the
+                     * empty string, it will catch all remainders.
+                     */
+                    if ( c.getCombination().evalGroovyExpression(p.getAxes(), touchStoneFilterList.get(i) ) ) {
+                        activeConfigurationsGrouped.get(i).add( c );
+                        groupFound = true;
+                        break; // exit for loop
+                    }
                 }
+                /**
+                 * The following assertion is justified because the last element
+                 * of touchStoneFilterList is always "", which is catch all
+                 */
+                assert( groupFound );
             }
 
             for (MatrixAggregator a : aggregators)
@@ -295,40 +315,37 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
             MatrixConfigurationSorter sorter = p.getSorter();
             if (sorter != null) {
-                touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
-                delayedConfigurations    = createTreeSet(delayedConfigurations,sorter);
+                logger.print( "Start sorting..." );
+                for ( int i = 0; i < activeConfigurationsGrouped.size(); i++ ) {
+                    activeConfigurationsGrouped.set(
+                            i,
+                            createTreeSet( activeConfigurationsGrouped.get( i ),
+                            sorter )
+                    );
+                }
             }
 
             try {
-                if(!p.isRunSequentially())
-                    for(MatrixConfiguration c : touchStoneConfigurations)
-                        scheduleConfigurationBuild(logger, c);
-
                 Result r = Result.SUCCESS;
-                for (MatrixConfiguration c : touchStoneConfigurations) {
-                    if(p.isRunSequentially())
-                        scheduleConfigurationBuild(logger, c);
-                    Result buildResult = waitForCompletion(listener, c);
-                    r = r.combine(buildResult);
-                }
-                
-                if (p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
-                    logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
-                    return r;
-                }
-                
-                if(!p.isRunSequentially())
-                    for(MatrixConfiguration c : delayedConfigurations)
-                        scheduleConfigurationBuild(logger, c);
+                for ( int i = 0; i < activeConfigurationsGrouped.size(); i++ ) {
+                    if(!p.isRunSequentially())
+                        for(MatrixConfiguration c : activeConfigurationsGrouped.get(i) )
+                            scheduleConfigurationBuild(logger, c);
 
-                for (MatrixConfiguration c : delayedConfigurations) {
-                    if(p.isRunSequentially())
-                        scheduleConfigurationBuild(logger, c);
-                    Result buildResult = waitForCompletion(listener, c);
-                    logger.println(Messages.MatrixBuild_Completed(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName()), buildResult));
-                    r = r.combine(buildResult);
+                    for (MatrixConfiguration c : activeConfigurationsGrouped.get(i) ) {
+                        if(p.isRunSequentially())
+                            scheduleConfigurationBuild(logger, c);
+                        Result buildResult = waitForCompletion(listener, c);
+                        r = r.combine(buildResult);
+                    }
+                
+                    if ( i < activeConfigurationsGrouped.size() - 1 && p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
+                        logger.printf("Touchstone configuration %d resulted in %s, so aborting...%n", i, r);
+                        return r;
+                    } else {
+                        logger.printf("Touchstone configuration %d finished...%n", i );
+                    }
                 }
-
                 return r;
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
