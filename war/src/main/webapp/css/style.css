@@ -1002,6 +1002,17 @@ table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
 }
 
+/* ========================= notification bar ========================= */
+#notification-bar {
+    width:100%;
+    position:fixed;
+    text-align:center;
+    left:0px;
+    font-size: 2em;
+    z-index:999;
+    border-bottom: 1px solid black;
+}
+
 /* ========================= YUI dialog ========================= */
 
 .dialog .hd {
