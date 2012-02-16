@@ -538,12 +538,16 @@ public abstract class PluginManager extends AbstractModelObject {
      * @since 1.402.
      */
     public PluginWrapper whichPlugin(Class c) {
+        PluginWrapper oneAndOnly = null;
         ClassLoader cl = c.getClassLoader();
         for (PluginWrapper p : activePlugins) {
-            if (p.classLoader==cl)
-                return p;
+            if (p.classLoader==cl) {
+                if (oneAndOnly!=null)
+                    return null;    // ambigious
+                oneAndOnly = p;
+            }
         }
-        return null;
+        return oneAndOnly;
     }
 
     /**
