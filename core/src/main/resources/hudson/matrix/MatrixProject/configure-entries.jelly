@@ -69,8 +69,6 @@ THE SOFTWARE.
       </j:if>
     </f:optionalBlock>
 
-    <f:optionalBlock field="skipMasterScmCheckout" title="${%Skip SCM checkout on Master, only do checkout per configuration}"/>
-
     <f:optionalBlock field="useSameScmCheckout" title="${%Use same SCM checkout for all builds, each configuration uses master source via NFS/SMB}"/>
     
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
