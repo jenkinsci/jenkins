@@ -321,15 +321,15 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 for ( int i = 0; i < groupedActiveConfigurations.size(); i++ ) {
                     groupedActiveConfigurations.set(
                             i,
-                            createTreeSet( groupedActiveConfigurations.get( i ),
-                            sorter )
+                            createTreeSet(groupedActiveConfigurations.get(i),
+                            sorter)
                     );
                 }
             }
 
             try {
                 Result r = Result.SUCCESS;
-                for ( int i = 0; i < groupedActiveConfigurations.size(); i++ ) {
+                for (int i = 0; i < groupedActiveConfigurations.size(); i++) {
                     if(!p.isRunSequentially())
                         for(MatrixConfiguration c : groupedActiveConfigurations.get(i) )
                             scheduleConfigurationBuild(logger, c);
@@ -341,7 +341,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         r = r.combine(buildResult);
                     }
                 
-                    if ( i < groupedActiveConfigurations.size() - 1 && p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
+                    if (i < groupedActiveConfigurations.size() - 1 && p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
                         logger.printf("Touchstone configuration %d resulted in %s, so aborting...%n", i, r);
                         return r;
                     } else {
