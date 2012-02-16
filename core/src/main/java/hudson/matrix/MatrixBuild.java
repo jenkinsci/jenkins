@@ -277,16 +277,18 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             final int n = getNumber();
             List<String> touchStoneFilterList = new ArrayList<String>();
-            touchStoneFilterList.addAll( Arrays.asList( p.getTouchStoneCombinationFilter().split(";") ) );
-            touchStoneFilterList.add("");
-/*            Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
-            Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
-*/
+            String touchStoneFilterField = p.getTouchStoneCombinationFilter();
+            if ( null == touchStoneFilterField )
+                touchStoneFilterField = "";
+            touchStoneFilterList.addAll( Arrays.asList( touchStoneFilterField.split(";") ) );
+            if ( touchStoneFilterList.get( touchStoneFilterList.size()- 1).length() != 0 )
+                touchStoneFilterList.add(""); // if last list item is not empty, add empty string as catch-all
+
             List<Collection<MatrixConfiguration> > activeConfigurationsGrouped = new ArrayList<Collection<MatrixConfiguration> >();
             for ( int i=0; i<touchStoneFilterList.size(); i++) {
                 activeConfigurationsGrouped.add( new HashSet<MatrixConfiguration>() );
             }
-            //= HashSet<MatrixConfiguration>();
+
             for (MatrixConfiguration c: activeConfigurations) {
                 Boolean groupFound = false;
                 if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
@@ -302,7 +304,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                         break; // exit for loop
                     }
                 }
-                /**
+                /*
                  * The following assertion is justified because the last element
                  * of touchStoneFilterList is always "", which is catch all
                  */
