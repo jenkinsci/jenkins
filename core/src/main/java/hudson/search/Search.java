@@ -24,9 +24,12 @@
  */
 package hudson.search;
 
+import hudson.Extension;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import hudson.Util;
+import hudson.model.User;
+import hudson.model.UserPropertyDescriptor;
 import hudson.util.EditDistance;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -39,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -349,4 +353,35 @@ public class Search {
     }
     
     private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
+    
+    //User`s setting of case-sensitivity for searching
+    public static class UserProperty extends hudson.model.UserProperty {
+         
+        private final boolean insensitiveSearch;
+
+        public UserProperty(boolean insensitiveSearch) {
+            this.insensitiveSearch = insensitiveSearch;
+        }
+
+        @Exported
+        public boolean getInsensitiveSearch() {
+            return insensitiveSearch;
+        }
+
+        @Extension
+        public static final class DescriptorImpl extends UserPropertyDescriptor {
+            public String getDisplayName() {
+                return "Setting for search";
+            }
+
+            public UserProperty newInstance(User user) {
+                return new UserProperty(false); //default setting is case-sensitive searching
+            }
+
+            @Override
+            public UserProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                return new UserProperty(formData.optBoolean("insensitiveSearch"));
+            }
+        }
+    }
 }

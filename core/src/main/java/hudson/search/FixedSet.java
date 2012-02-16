@@ -23,6 +23,7 @@
  */
 package hudson.search;
 
+import hudson.model.User;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -44,14 +45,37 @@ public class FixedSet implements SearchIndex {
     }
 
     public void find(String token, List<SearchItem> result) {
-        for (SearchItem i : items)
+        boolean caseSensitive = getCaseSensitivity();
+        for (SearchItem i : items){
+            String name = i.getSearchName();
+            if(caseSensitive){
+                token=token.toLowerCase();
+                name=name.toLowerCase();
+            }
             if(token.equals(i.getSearchName()))
                 result.add(i);
+        }
+    }
+    
+    public boolean getCaseSensitivity(){
+        User user = User.current();
+        boolean caseSensitive = false;
+        if(user!=null && user.getProperty(Search.UserProperty.class).getInsensitiveSearch()){//Searching for anonymous user is case-sensitive
+          caseSensitive=true;
+        }
+        return caseSensitive;
     }
 
     public void suggest(String token, List<SearchItem> result) {
-        for (SearchItem i : items)
-            if(i.getSearchName().contains(token))
+        boolean caseSensitive = getCaseSensitivity();
+        for (SearchItem i : items){
+            String name = i.getSearchName();
+            if(caseSensitive){
+                token=token.toLowerCase();
+                name=name.toLowerCase();
+            }
+            if(name.contains(token))
                 result.add(i);
+        }
     }
 }
