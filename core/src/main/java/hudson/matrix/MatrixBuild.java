@@ -280,9 +280,13 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             String touchStoneFilterField = p.getTouchStoneCombinationFilter();
             if (null == touchStoneFilterField)
                 touchStoneFilterField = "";
-            touchStoneFilterList.addAll(Arrays.asList(touchStoneFilterField.split("\\s*;\\s*")));
-            if (!touchStoneFilterList.get(touchStoneFilterList.size() - 1).isEmpty())
-                touchStoneFilterList.add(""); // if last list item is not empty, add empty string as catch-all
+            for (String filter: touchStoneFilterField.split("\\s*;\\s*"))
+                if (!filter.isEmpty())
+                    touchStoneFilterList.add(filter);
+                else
+                    break;
+            
+            touchStoneFilterList.add(""); // if last list item is not empty, add empty string as catch-all
 
             List<Collection<MatrixConfiguration>> groupedActiveConfigurations = new ArrayList<Collection<MatrixConfiguration>>();
             for (int i = 0; i<touchStoneFilterList.size(); i++) {
@@ -342,10 +346,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     }
                 
                     if (i < groupedActiveConfigurations.size() - 1 && p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
-                        logger.printf("Touchstone configuration %d resulted in %s, so aborting...%n", i, r);
+                        logger.printf("Touchstone configuration %d (%s) resulted in %s, so aborting...%n", i, touchStoneFilterList.get(i), r);
                         return r;
                     } else {
-                        logger.printf("Touchstone configuration %d finished...%n", i );
+                        logger.printf("Touchstone configuration %d (%s) finished...%n", i, touchStoneFilterList.get(i));
                     }
                 }
                 return r;
