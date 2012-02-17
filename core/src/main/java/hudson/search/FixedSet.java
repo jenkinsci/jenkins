@@ -45,7 +45,7 @@ public class FixedSet implements SearchIndex {
     }
 
     public void find(String token, List<SearchItem> result) {
-        boolean caseSensitive = getCaseSensitivity();
+        boolean caseSensitive = UserSearchProperty.isCaseSensitive();
         for (SearchItem i : items){
             String name = i.getSearchName();
             if(caseSensitive){
@@ -56,18 +56,9 @@ public class FixedSet implements SearchIndex {
                 result.add(i);
         }
     }
-    
-    public boolean getCaseSensitivity(){
-        User user = User.current();
-        boolean caseSensitive = false;
-        if(user!=null && user.getProperty(Search.UserProperty.class).getInsensitiveSearch()){//Searching for anonymous user is case-sensitive
-          caseSensitive=true;
-        }
-        return caseSensitive;
-    }
 
     public void suggest(String token, List<SearchItem> result) {
-        boolean caseSensitive = getCaseSensitivity();
+        boolean caseSensitive = UserSearchProperty.isCaseSensitive();
         for (SearchItem i : items){
             String name = i.getSearchName();
             if(caseSensitive){

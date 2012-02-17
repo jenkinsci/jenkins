@@ -353,35 +353,4 @@ public class Search {
     }
     
     private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
-    
-    //User`s setting of case-sensitivity for searching
-    public static class UserProperty extends hudson.model.UserProperty {
-         
-        private final boolean insensitiveSearch;
-
-        public UserProperty(boolean insensitiveSearch) {
-            this.insensitiveSearch = insensitiveSearch;
-        }
-
-        @Exported
-        public boolean getInsensitiveSearch() {
-            return insensitiveSearch;
-        }
-
-        @Extension
-        public static final class DescriptorImpl extends UserPropertyDescriptor {
-            public String getDisplayName() {
-                return "Setting for search";
-            }
-
-            public UserProperty newInstance(User user) {
-                return new UserProperty(false); //default setting is case-sensitive searching
-            }
-
-            @Override
-            public UserProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-                return new UserProperty(formData.optBoolean("insensitiveSearch"));
-            }
-        }
-    }
 }
