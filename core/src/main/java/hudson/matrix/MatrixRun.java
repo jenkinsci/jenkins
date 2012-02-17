@@ -32,6 +32,7 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.model.TopLevelItem;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -125,8 +126,8 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
                 r.put(e.getKey(), e.getValue());
             }
         }
-        r.put("MATRIX_PARENT_WORKSPACE", getRootBuild().getWorkspace().getRemote() );
-        r.put("MATRIX_PARENT_NODE", getParentBuild().getBuiltOnStr() );
+        r.put("MATRIX_PARENT_WORKSPACE", getBuiltOn().getWorkspaceFor((TopLevelItem) getRootBuild().getProject()).getRemote());
+        r.put("MATRIX_PARENT_NODE", getRootBuild().getBuiltOnStr());
         return r;
     }
 
