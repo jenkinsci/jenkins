@@ -1210,6 +1210,8 @@ public class Queue extends ResourceController implements Saveable {
         public final Task task;
 
         private /*almost final*/ transient FutureImpl future;
+        
+        private final long inQueueSince;
 
         /**
          * Build is blocked because another build is in progress,
@@ -1232,6 +1234,20 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public boolean isStuck() { return false; }
+        
+        /**
+         * Since when is this item in the queue.
+         * @return Unix timestamp
+         */
+        @Exported
+        public long getInQueueSince() {
+            return this.inQueueSince;
+        }
+        
+        public String getInQueueSinceString() {
+            long duration = System.currentTimeMillis() - this.inQueueSince;
+            return Util.getTimeSpanString(duration);
+        }
 
         /**
          * Can be used to wait for the completion (either normal, abnormal, or cancellation) of the {@link Task}.
@@ -1265,11 +1281,20 @@ public class Queue extends ResourceController implements Saveable {
             this.task = task;
             this.id = id;
             this.future = future;
+            this.inQueueSince = System.currentTimeMillis();
+            for (Action action: actions) addAction(action);
+        }
+        
+        protected Item(Task task, List<Action> actions, int id, FutureImpl future, long inQueueSince) {
+            this.task = task;
+            this.id = id;
+            this.future = future;
+            this.inQueueSince = inQueueSince;
             for (Action action: actions) addAction(action);
         }
         
         protected Item(Item item) {
-        	this(item.task, item.getActions(), item.id, item.future);
+        	this(item.task, item.getActions(), item.id, item.future, item.inQueueSince);
         }
 
         /**
