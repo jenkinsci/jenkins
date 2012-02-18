@@ -7,9 +7,13 @@ if [ -z "$1" ]; then
 fi
 
 # Set up build tools
-DEV_DIR=`xcode-select \
--print-path`
-PACKAGEMAKER="$DEV_DIR/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"
+PACKAGEMAKER_APP=$(mdfind "kMDItemCFBundleIdentifier == com.apple.PackageMaker")
+if [ -z "$PACKAGEMAKER_APP" ]; then
+    echo "Error: PackageMaker.app not found" >&2
+    exit 1
+fi
+
+PACKAGEMAKER="${PACKAGEMAKER_APP}/Contents/MacOS/PackageMaker"
 
 # Get the Jenkins version number
 cp "$1" $(dirname $0)/jenkins.war.tmp
@@ -31,7 +35,7 @@ mv $PACKAGEMAKER_DOC/01jenkins.xml $PACKAGEMAKER_DOC/01jenkins.xml.orig
 sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml.orig > $PACKAGEMAKER_DOC/01jenkins.xml
 
 # Build the package
-${PACKAGEMAKER} \
+"${PACKAGEMAKER}" \
 	--doc "${PACKAGEMAKER_DOC}" \
 	--out "${PKG_NAME}" \
 	--version "${version}" \
