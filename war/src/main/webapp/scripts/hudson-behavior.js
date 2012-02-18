@@ -588,6 +588,43 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
+    "INPUT.applyButton":function (e) {
+        var successText = e.getAttribute("success");
+        var target = document.createElement("iframe");
+        target.style.display = "none";
+        target.id = target.name = "iframe"+(iota++);
+        document.body.appendChild(target);
+
+        function attachIframeOnload(target, f) {
+            if (target.attachEvent) {
+                target.attachEvent("onload", f);
+            } else {
+                target.onload = f;
+            }
+        }
+
+        var attached = false;
+
+        makeButton(e,function (e) {
+            var f = findAncestor(e.target, "FORM");
+
+            if (!attached) {
+                attached = true;
+                attachIframeOnload(target, function () {
+                    notificationBar.show(successText,notificationBar.defaultOptions.OK)
+                });
+            }
+
+            f.target = target.id;
+            try {
+                buildFormTree(f);
+                f.submit();
+            } finally {
+                f.target = null;
+            }
+        });
+    },
+
     "INPUT.advancedButton" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
@@ -2549,6 +2586,13 @@ var notificationBar = {
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
+
+    defaultOptions : {// standard option values for typical notifications
+        OK : {
+            icon: "accept.png",
+            backgroundColor: "#8ae234"
+        }
+    },
 
     init : function() {
         if (this.div==null) {
