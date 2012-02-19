@@ -62,6 +62,8 @@ import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -479,7 +481,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         AbstractProject<?, ?> dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
         for (ModuleDependency d : dependencies) {
-            MavenModule src = myParentsModules.get(d);
+            MavenModule src = findMatchingDependentModule(data.allModules, d);
             if (src==null) {
                 src = data.allModules.get(d);
             }
@@ -661,4 +663,36 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
 
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
     
+
+
+    /**
+     * ModuleDependency objects have a string as a version. To support Maven2 version ranges,
+     * string comparison of these versions are not sufficient.
+     *
+     * The ModuleDependency objects in the modules map contain the version identifier of the
+     * modules/projects itself. In these cases, no version ranges are allowed. The second
+     * argument is a ModuleDependency coming from parsing the dependency section of a Maven POM.
+     * In here, version ranges are allowed. This method will perform a lookup in the modules
+     * collection, but based on the VersionRange.containsVersion(ArtifactVersion) method.
+     *
+     * @param modules the map matching a ModuleDependency with the corresponding MavenModule
+     * @param dependencyDescription a ModuleDependency describing the version
+     * @return the Jenkins MavenModule that matches the dependency.
+     */
+    private MavenModule findMatchingDependentModule(
+            final Map<ModuleDependency, MavenModule> modules,
+            final ModuleDependency dependencyDescription) {
+
+        Set<ModuleDependency> modulesVersionInfo = modules.keySet();
+        Predicate predicate = new Predicate() {
+            public boolean evaluate(Object moduleInfo) {
+                ModuleDependency moduleVersionInfo = (ModuleDependency) moduleInfo;
+                return dependencyDescription.hasDependency(moduleVersionInfo);
+            }
+        };
+
+        ModuleDependency matchingDependency = (ModuleDependency) CollectionUtils.find(modulesVersionInfo, predicate);
+        return modules.get(matchingDependency);
+    }
+
 }

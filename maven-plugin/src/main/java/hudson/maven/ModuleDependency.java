@@ -23,6 +23,10 @@
  */
 package hudson.maven;
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
@@ -163,4 +167,41 @@ public final class ModuleDependency implements Serializable {
     public static final String NONE = "-";
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Checks whether this ModuleDependency has a dependency on the given one.
+     * This caters for versions where the version string defines a version range.
+     *
+     * @param otherDependency The dependency to check for.
+     * @return true if contained false otherwise.
+     */
+    public boolean hasDependency(ModuleDependency otherDependency) {
+        if (otherDependency == null) {
+            return false;
+        }
+
+        boolean result = false;
+        if (groupId.equals(otherDependency.groupId) && artifactId.equals(otherDependency.artifactId)) {
+
+            try {
+                VersionRange myRange = VersionRange.createFromVersionSpec(version);
+                ArtifactVersion otherVersion = new DefaultArtifactVersion(otherDependency.version);
+                result = myRange.containsVersion(otherVersion);
+            } catch (InvalidVersionSpecificationException ivse) {
+                result = false;
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ModuleDependency{" +
+               "groupId='" + groupId + '\'' +
+               ", artifactId='" + artifactId + '\'' +
+               ", version='" + version + '\'' +
+               ", plugin=" + plugin +
+               '}';
+    }
 }
