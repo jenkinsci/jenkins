@@ -2611,16 +2611,18 @@ var notificationBar = {
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
 
-    defaultOptions : {// standard option values for typical notifications
-        OK : {
-            icon: "accept.png",
-            backgroundColor: "#8ae234"
-        },
-        ERROR : {
-            icon: "red.png",
-            backgroundColor: "#ef2929",
-            sticky: true
-        }
+    OK : {// standard option values for typical OK notification
+        icon: "accept.png",
+        backgroundColor: "#8ae234"
+    },
+    WARNING : {// likewise, for warning
+        icon: "yellow.png",
+        backgroundColor: "#fce94f"
+    },
+    ERROR : {// likewise, for error
+        icon: "red.png",
+        backgroundColor: "#ef2929",
+        sticky: true
     },
 
     init : function() {
@@ -2628,6 +2630,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
+            this.div.style.backgroundColor="#fff";
             document.body.insertBefore(this.div, document.body.firstChild);
 
             var self = this;
@@ -2646,8 +2649,9 @@ var notificationBar = {
     hide : function () {
         this.clearTimeout();
         var self = this;
-        var out = new YAHOO.util.Anim(this.div, {
-            opacity: { to:0 }
+        var out = new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:0 },
+            backgroundColor: {to:"#fff"}
         }, 0.3, YAHOO.util.Easing.easeIn);
         out.onComplete.subscribe(function() {
             self.div.style.display = "none";
@@ -2659,7 +2663,6 @@ var notificationBar = {
         options = options || {}
 
         this.init();
-        this.div.style.backgroundColor = options.backgroundColor || "#fff";
         this.div.style.height = this.div.style.lineHeight = options.height || "40px";
         this.div.style.display = "block";
 
@@ -2667,8 +2670,9 @@ var notificationBar = {
             text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
         this.div.innerHTML = text;
 
-        new YAHOO.util.Anim(this.div, {
-            opacity: { to:this.OPACITY }
+        new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:this.OPACITY },
+            backgroundColor : { to: options.backgroundColor || "#fff" }
         }, 1, YAHOO.util.Easing.easeOut).animate();
 
         this.clearTimeout();
