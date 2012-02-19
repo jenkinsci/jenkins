@@ -26,6 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <s:documentation>
     "Apply" button that submits the form but without a page transition.
+    See hudson.util.FormApply for the server-side code.
   </s:documentation>
-  <input type="button" value="${%Apply}" class="applyButton" success="${%Saved}" />
+  <input type="hidden" name="core:apply" value="" />
+  <input type="button" value="${%Apply}" class="applyButton" />
 </j:jelly>

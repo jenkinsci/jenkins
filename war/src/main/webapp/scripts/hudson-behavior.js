@@ -589,11 +589,21 @@ var hudsonRules = {
     },
 
     "INPUT.applyButton":function (e) {
-        var successText = e.getAttribute("success");
-        var target = document.createElement("iframe");
-        target.style.display = "none";
-        target.id = target.name = "iframe"+(iota++);
-        document.body.appendChild(target);
+        var id = "iframe"+(iota++);
+
+        var responseDialog = new YAHOO.widget.Panel("wait"+(iota++), {
+            fixedcenter:true,
+            close:true,
+            draggable:true,
+            zindex:4,
+            modal:true,
+            visible:false
+        });
+
+        responseDialog.setHeader("Error");
+        responseDialog.setBody("<iframe id='"+id+"' name='"+id+"' style='height:100%; width:100%'></iframe>");
+        responseDialog.render(document.body);
+        var target = $(id); // iframe
 
         function attachIframeOnload(target, f) {
             if (target.attachEvent) {
@@ -604,22 +614,33 @@ var hudsonRules = {
         }
 
         var attached = false;
-
         makeButton(e,function (e) {
             var f = findAncestor(e.target, "FORM");
 
             if (!attached) {
                 attached = true;
                 attachIframeOnload(target, function () {
-                    notificationBar.show(successText,notificationBar.defaultOptions.OK)
+                    if (target.contentWindow && target.contentWindow.applyCompletionHandler) {
+                        // apply-aware server is expected to set this handler
+                        target.contentWindow.applyCompletionHandler(window);
+                    } else {
+                        // otherwise this is possibly an error from the server, so we need to render the whole content.
+                        var r = YAHOO.util.Dom.getClientRegion();
+                        responseDialog.cfg.setProperty("width",r.width*3/4+"px");
+                        responseDialog.cfg.setProperty("height",r.height*3/4+"px");
+                        responseDialog.center();
+                        responseDialog.show();
+                    }
                 });
             }
 
             f.target = target.id;
+            f.elements['core:apply'].value = "true";
             try {
                 buildFormTree(f);
                 f.submit();
             } finally {
+                f.elements['core:apply'].value = null;
                 f.target = null;
             }
         });
@@ -2580,7 +2601,10 @@ var layoutUpdateCallback = {
     }
 }
 
-// notification bar
+// Notification bar
+// ==============================
+// this control displays a single line message at the top of the page, like StackOverflow does
+// see ui-samples for more details
 var notificationBar = {
     OPACITY : 0.8,
     DELAY : 3000,   // milliseconds to auto-close the notification
@@ -2591,6 +2615,11 @@ var notificationBar = {
         OK : {
             icon: "accept.png",
             backgroundColor: "#8ae234"
+        },
+        ERROR : {
+            icon: "red.png",
+            backgroundColor: "#ef2929",
+            sticky: true
         }
     },
 
@@ -2638,6 +2667,7 @@ var notificationBar = {
 
         this.clearTimeout();
         var self = this;
-        this.token = window.setTimeout(function(){self.hide();},this.DELAY);
+        if (!options.sticky)
+            this.token = window.setTimeout(function(){self.hide();},this.DELAY);
     }
 };

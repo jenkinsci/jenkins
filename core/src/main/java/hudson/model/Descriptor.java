@@ -30,6 +30,8 @@ import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.FormApply;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
@@ -44,6 +46,7 @@ import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
 import static hudson.Functions.*;
+import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
@@ -957,8 +960,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-            // for now, we can't really use the field name that caused the problem.
-            new Failure(getMessage()).generateResponse(req,rsp,node);
+            if (FormApply.isApply(req)) {
+                FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.defaultOptions.ERROR)")
+                        .generateResponse(req, rsp, node);
+            } else {
+                // for now, we can't really use the field name that caused the problem.
+                new Failure(getMessage()).generateResponse(req,rsp,node);
+            }
         }
     }
 
