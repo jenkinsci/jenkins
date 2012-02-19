@@ -337,7 +337,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             listUpAggregators(listener, p.getProperties().values());
             listUpAggregators(listener, p.getBuildWrappers().values());
 
-            axes = p.getAxes();
             final int n = getNumber();
             Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             List<String> touchStoneFilterList = getTouchstoneFilterList(p);
