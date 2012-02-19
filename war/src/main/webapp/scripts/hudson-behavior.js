@@ -1404,7 +1404,11 @@ var hudsonRules = {
         layoutUpdateCallback.add(adjustSticker);
     },
 
-    "#top-sticker" : function(sticker) {
+    "#top-sticker" : function(sticker) {// legacy
+        this[".top-sticker"](sticker);
+    },
+
+    ".top-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -2461,7 +2465,7 @@ var downloadService = {
     }
 };
 
-// update center service. to remain compatible with earlier version of Hudson, aliased.
+// update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
 
 /*
