@@ -82,21 +82,21 @@ dt {
 #left-top-nav {
   text-align: left;
   border-left: 10px solid #fff;
-  padding: 4px;
   color: #222;
 }
 
-#left-top-nav a, #right-top-nav a {
-  color: black;
+#right-top-nav {
+    float: right;
+    margin-right: 1em;
 }
 
-#right-top-nav {
-  text-align: right;
-  padding: 4px;
+#left-top-nav a {
+  color: black;
 }
 
 #main-panel {
   padding: 10px;
+    padding-top: 0px;
 }
 
 #side-panel {
@@ -469,7 +469,7 @@ LABEL.attach-previous {
     margin-left: 0.5em;
 }
 
-#bottom-sticker {
+.bottom-sticker, #bottom-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
@@ -482,7 +482,7 @@ LABEL.attach-previous {
     background-repeat: repeat-x;
 }
 
-#top-sticker {
+.top-sticker, #top-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 1;
 }
@@ -494,6 +494,9 @@ LABEL.attach-previous {
     height:16px;
     background-image: url("../images/top-sticker-bottom-edge.png");
     background-repeat: repeat-x;
+}
+.top-sticker.noedge > .top-sticker-edge {
+    display: none;
 }
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */

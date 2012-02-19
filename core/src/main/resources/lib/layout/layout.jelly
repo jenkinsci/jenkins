@@ -201,32 +201,35 @@ THE SOFTWARE.
 
       <tr id="top-nav">
         <td id="left-top-nav">
-          <j:forEach var="anc" items="${request.ancestors}">
-            <j:if test="${h.isModel(anc.object)}">
-              <j:if test="${anc.prev.url!=anc.url}">
-                <j:if test="${anc.prev!=null}">
-                  <j:whitespace> &#187; </j:whitespace>
+          <div class="top-sticker">
+            <div class="top-sticker-inner" style="padding:4px">
+              <j:forEach var="anc" items="${request.ancestors}">
+                <j:if test="${h.isModel(anc.object)}">
+                  <j:if test="${anc.prev.url!=anc.url}">
+                    <j:if test="${anc.prev!=null}">
+                      <j:whitespace> &#187; </j:whitespace>
+                    </j:if>
+                    <a href="${anc.url}/" tooltip="${anc.object.name}">
+                      ${anc.object.displayName}
+                    </a>
+                  </j:if>
                 </j:if>
-                <a href="${anc.url}/" tooltip="${anc.object.name}">
-                  ${anc.object.displayName}
-                </a>
+              </j:forEach>
+
+              <j:if test="${attrs.norefresh==null}">
+                <div id="right-top-nav" class="smallfont">
+                  <j:choose>
+                    <j:when test="${h.isAutoRefresh(request)}">
+                      <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
+                    </j:when>
+                    <j:otherwise>
+                      <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
+                    </j:otherwise>
+                  </j:choose>
+                </div>
               </j:if>
-            </j:if>
-          </j:forEach>
-        </td>
-        <td id="right-top-nav">
-          <j:if test="${attrs.norefresh==null}">
-            <span class="smallfont">
-              <j:choose>
-                <j:when test="${h.isAutoRefresh(request)}">
-                  <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                </j:when>
-                <j:otherwise>
-                  <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                </j:otherwise>
-              </j:choose>
-            </span>
-          </j:if>
+            </div>
+          </div>
         </td>
       </tr>
     </table>
@@ -235,7 +238,6 @@ THE SOFTWARE.
                background-repeat: no-repeat; background-position: bottom left;">
       <tr>
         <td id="side-panel" width="20%">
-          <div style="margin-left: 20px; margin-right: 20px; border-top: 1px solid #bbb"></div>
           <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />

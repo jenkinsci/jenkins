@@ -195,7 +195,7 @@ function findElementsBySelector(startNode,selector,includeSelf) {
       // Token contains a class selector
       var bits = token.split('.');
       var tagName = bits[0];
-      var className = new RegExp('\\b'+bits[1]+'\\b');
+      var className = new RegExp('(\\s|^)'+bits[1]+'(\\s|$)');
       // Get elements matching tag, filter them for class selector
       var found = getMatchingElements(tagName);
 
