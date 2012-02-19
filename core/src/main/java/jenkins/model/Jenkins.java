@@ -169,6 +169,7 @@ import hudson.util.CopyOnWriteList;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DescribableList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
@@ -2535,9 +2536,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             save();
             updateComputerList();
             if(result)
-                rsp.sendRedirect(req.getContextPath()+'/');  // go to the top page
+                FormApply.success(req.getContextPath()+'/').generateResponse(req, rsp, null);
             else
-                rsp.sendRedirect("configure"); // back to config
+                FormApply.success("configure").generateResponse(req, rsp, null);    // back to config
         } finally {
             bc.commit();
         }

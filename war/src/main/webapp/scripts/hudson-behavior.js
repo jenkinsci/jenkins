@@ -2645,9 +2645,14 @@ var notificationBar = {
     // hide the current notification bar, if it's displayed
     hide : function () {
         this.clearTimeout();
-        new YAHOO.util.Anim(this.div, {
+        var self = this;
+        var out = new YAHOO.util.Anim(this.div, {
             opacity: { to:0 }
-        }, 0.3, YAHOO.util.Easing.easeIn).animate();
+        }, 0.3, YAHOO.util.Easing.easeIn);
+        out.onComplete.subscribe(function() {
+            self.div.style.display = "none";
+        })
+        out.animate();
     },
     // show a notification bar
     show : function (text,options) {
@@ -2656,6 +2661,7 @@ var notificationBar = {
         this.init();
         this.div.style.backgroundColor = options.backgroundColor || "#fff";
         this.div.style.height = this.div.style.lineHeight = options.height || "40px";
+        this.div.style.display = "block";
 
         if (options.icon)
             text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
