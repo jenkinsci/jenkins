@@ -263,32 +263,20 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     private class RunnerImpl extends AbstractRunner {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
-
-        protected Result doRun(BuildListener listener) throws Exception {
-            MatrixProject p = getProject();
-            PrintStream logger = listener.getLogger();
-
-            // list up aggregators
-            listUpAggregators(listener, p.getPublishers().values());
-            listUpAggregators(listener, p.getProperties().values());
-            listUpAggregators(listener, p.getBuildWrappers().values());
-
-            axes = p.getAxes();
-            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
-            final int n = getNumber();
-            List<String> touchStoneFilterList = new ArrayList<String>();
-            String touchStoneFilterField = p.getTouchStoneCombinationFilter();
-            if (null == touchStoneFilterField)
-                touchStoneFilterField = "";
-            for (String filter: touchStoneFilterField.split("\\s*;\\s*"))
-                if (!filter.isEmpty())
-                    touchStoneFilterList.add(filter);
-                else
-                    break;
-            
-            touchStoneFilterList.add(""); // if last list item is not empty, add empty string as catch-all
-
+        /**
+         * This method groups the active configurations according to the touchstone
+         * combination list. The list must not be empty. Last element must  be the empty
+         * string, so the last group of active combinations will always receive all
+         * configurations not matched by any specific filter.
+         *
+         * @param p Matrix project
+         * @param touchStoneFilterList contains a list of combination filters. Must not be empty,
+         * must end with empty string to catch all remaining configurations
+         * @return list of collections of active configurations
+         */
+        private List<Collection<MatrixConfiguration>>  getGroupedActiveConfigurations(MatrixProject p, List<String> touchStoneFilterList) {
             List<Collection<MatrixConfiguration>> groupedActiveConfigurations = new ArrayList<Collection<MatrixConfiguration>>();
+            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
             for (int i = 0; i<touchStoneFilterList.size(); i++) {
                 groupedActiveConfigurations.add(new HashSet<MatrixConfiguration>());
             }
@@ -314,12 +302,52 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                  */
                 assert(groupFound);
             }
+            return groupedActiveConfigurations;
+        }
+        /**
+         * This method checks if touchstone configuration is active. If so, the
+         * semicolon separated, not-empty combination filters are collected in a
+         * list. Afterwards an empty string is appended to the list, making sure
+         * it is never empty and all active configurations are matched by a
+         * list element.
+         * @param p
+         * @return Non-empty string list where the last element is an empty string
+         */
+        private List<String> getTouchstoneFilterList(MatrixProject p) {
+            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
+            List<String> touchStoneFilterList = new ArrayList<String>();
+            String touchStoneFilterField = p.getTouchStoneCombinationFilter();
+            if (null == touchStoneFilterField)
+                touchStoneFilterField = "";
+            for (String filter: touchStoneFilterField.split("\\s*;\\s*"))
+                if (filter.length() > 0)
+                    touchStoneFilterList.add(filter);
+                else
+                    break;
 
+            touchStoneFilterList.add(""); // if last list item is not empty, add empty string as catch-all
+            return touchStoneFilterList;
+        }
+        protected Result doRun(BuildListener listener) throws Exception {
+            MatrixProject p = getProject();
+            PrintStream logger = listener.getLogger();
+
+            // list up aggregators
+            listUpAggregators(listener, p.getPublishers().values());
+            listUpAggregators(listener, p.getProperties().values());
+            listUpAggregators(listener, p.getBuildWrappers().values());
+
+            axes = p.getAxes();
+            final int n = getNumber();
+            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
+            List<String> touchStoneFilterList = getTouchstoneFilterList(p);
+            List<Collection<MatrixConfiguration>> groupedActiveConfigurations = getGroupedActiveConfigurations(p,touchStoneFilterList);
             for (MatrixAggregator a : aggregators)
                 if(!a.startBuild())
                     return Result.FAILURE;
 
             MatrixConfigurationSorter sorter = p.getSorter();
+
             if (sorter != null) {
                 logger.print( "Start sorting..." );
                 for ( int i = 0; i < groupedActiveConfigurations.size(); i++ ) {
