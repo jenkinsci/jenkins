@@ -92,30 +92,48 @@ public class RedeployPublisher extends Recorder {
     public final String url;
     public final boolean uniqueVersion;
     public final boolean evenIfUnstable;
+    public final String releaseEnvVar;
 
     /**
      * For backward compatibility
      */
     @Deprecated
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
-    	this(id, url, uniqueVersion, false);
+    	this(id, url, uniqueVersion, false, null);
     }
     
     /**
      * @since 1.347
      */
-    @DataBoundConstructor
+    @Deprecated
     public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
+        this(id, url, uniqueVersion, evenIfUnstable, null);
+    }
+    
+    @DataBoundConstructor
+    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable, String releaseEnvVar) {
         this.id = id;
         this.url = Util.fixEmptyAndTrim(url);
         this.uniqueVersion = uniqueVersion;
         this.evenIfUnstable = evenIfUnstable;
+        this.releaseEnvVar = Util.fixEmptyAndTrim(releaseEnvVar);
     }
 
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
 
+        /**
+         * Check if we should skip or not
+         */
+        if (releaseEnvVar != null) {
+        	String envVarValue = build.getEnvironment(listener).get(releaseEnvVar);
+        	if ("true".equals(envVarValue)) { // null or false are ignored
+        		listener.getLogger().println("[INFO] Skipping deploying artifact as release build is in progress.");
+        		return true; // skip the deploy
+        	}
+        }
+        
         List<MavenAbstractArtifactRecord> mavenAbstractArtifactRecords = getActions(build, listener);
         if (mavenAbstractArtifactRecords == null || mavenAbstractArtifactRecords.isEmpty()) {
             listener.getLogger().println("[ERROR] No artifacts are recorded. Is this a Maven project?");
