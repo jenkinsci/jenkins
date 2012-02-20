@@ -23,8 +23,12 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.model.queue.Tasks;
 import jenkins.model.ModelObjectWithContextMenu;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyException;
+import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.StaplerRequest;
@@ -133,7 +137,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         ContextMenu c = new ContextMenu();
 
         WebApp webApp = WebApp.getCurrent();
-        Script s = webApp.getMetaClass(this).getTearOff(JellyClassTearOff.class).findScript("sidepanel");
+        final Script s = webApp.getMetaClass(this).getTearOff(JellyClassTearOff.class).findScript("sidepanel");
         if (s==null) {
             // fallback
             c.addAll(getActions());
@@ -141,7 +145,16 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             JellyFacet facet = webApp.getFacet(JellyFacet.class);
             request.setAttribute("taskTags",c);
             request.setAttribute("mode","side-panel");
-            facet.scriptInvoker.invokeScript(request,response,s,this,new XMLOutput(new DefaultHandler()));
+            facet.scriptInvoker.invokeScript(request,response,new Script() {
+                public Script compile() throws JellyException {
+                    return this;
+                }
+
+                public void run(JellyContext context, XMLOutput output) throws JellyTagException {
+                    Functions.initPageVariables(context);
+                    s.run(context,output);
+                }
+            }, this,new XMLOutput(new DefaultHandler()));
         }
 
         return c;

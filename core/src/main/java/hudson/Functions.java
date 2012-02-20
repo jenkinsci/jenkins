@@ -152,6 +152,16 @@ public class Functions {
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
     }
+    
+    public static void initPageVariables(JellyContext context) {
+        String rootURL = Stapler.getCurrentRequest().getContextPath();
+        Functions h = new Functions();
+
+        context.setVariable("rootURL", rootURL);
+        context.setVariable("h", h);
+        context.setVariable("resURL",rootURL+getResourcePath());
+        context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
+    }
 
     /**
      * Given {@code c=MyList (extends ArrayList<Foo>), base=List}, compute the parameterization of 'base'
