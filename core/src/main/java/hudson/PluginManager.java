@@ -826,7 +826,7 @@ public abstract class PluginManager extends AbstractModelObject {
     }
     
     /**
-     * {@link AdministrativeMonitor} that checks if there's Jenkins update.
+     * {@link AdministrativeMonitor} that checks if there are any plugins with cycle dependencies.
      */
     @Extension
     public static final class PluginCycleDependenciesMonitor extends AdministrativeMonitor {
