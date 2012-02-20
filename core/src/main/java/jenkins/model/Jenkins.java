@@ -2894,8 +2894,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         rsp.getWriter().println("GCed");
     }
 
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) {
-        return new ContextMenu().addAll(getActions());
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
+        return new ContextMenu().from(this,request,response);
     }
 
     /**
