@@ -125,6 +125,8 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
      */
     private final boolean active;
+    
+    private boolean hasCycleDependency = false;
 
     private final List<Dependency> dependencies;
     private final List<Dependency> optionalDependencies;
@@ -276,6 +278,8 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
         return null;
     }
+    
+    
 
     @Override
     public String toString() {
@@ -379,9 +383,17 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * Returns true if this plugin is enabled for this session.
      */
     public boolean isActive() {
-        return active;
+        return active && !hasCycleDependency();
+    }
+    
+    public boolean hasCycleDependency(){
+        return hasCycleDependency;
     }
 
+    public void setHasCycleDependency(boolean hasCycle){
+        hasCycleDependency = hasCycle;
+    }
+    
     public boolean isBundled() {
         return isBundled;
     }
