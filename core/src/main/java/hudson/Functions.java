@@ -792,7 +792,8 @@ public class Functions {
      */
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if(name.startsWith("/"))
+        if (name==null)     return null;
+        if (name.startsWith("/"))
             return name.substring(1);
         else
             return "images/24x24/"+name;
