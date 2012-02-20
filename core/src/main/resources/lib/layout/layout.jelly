@@ -222,33 +222,42 @@ THE SOFTWARE.
                 <j:forEach var="anc" items="${request.ancestors}">
                   <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
                     <li onmouseover="return foo(this)">
-                      <a href="${anc.url}/" tooltip="${anc.object.name}">
+                      <a href="${anc.url}/">
                         ${anc.object.displayName}
                       </a>
                     </li>
                   </j:if>
                 </j:forEach>
               </ul>
-              <script>
+              <script><![CDATA[
+                /** @type {YAHOO.widget.Menu} */
                 var oMenu;
+
+                /**
+                 * @param {HTMLElement} e
+                 *      The LI tag that the mouse has wondered into.
+                 */
                 function foo(e) {
-                  oMenu.cfg.setProperty("context",[e,"tl","bl"]);
-                  oMenu.show();
+                  window.setTimeout(function() {
+                    oMenu.hide();
+                    oMenu.cfg.setProperty("context",[e,"tl","bl"]);
+                    oMenu.clearContent();
+                    oMenu.addItems([
+                            { text: e.firstChild.innerHTML, url: "http://mail.yahoo.com" },
+                            { text: "<b>Yahoo</b>! Address Book", url: "http://addressbook.yahoo.com" },
+                            { text: "<img src='http://localhost:8080/images/24x24/terminal.png'> Yahoo! Calendar", url: "http://calendar.yahoo.com" },
+                            { text: "Yahoo! Notepad",  url: "http://notepad.yahoo.com" }
+                        ]);
+                    oMenu.render("rendertarget");
+                    oMenu.show();
+                  },500);
                   return false;
                 }
                 window.addEventListener("load",function(){
-                  oMenu = new YAHOO.widget.Menu("basicmenu", {position:"dynamic", hidedelay:750});
+                  oMenu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
 
-                  oMenu.addItems([
-                          { text: "Yahoo! Mail", url: "http://mail.yahoo.com" },
-                          { text: "Yahoo! Address Book", url: "http://addressbook.yahoo.com" },
-                          { text: "Yahoo! Calendar", url: "http://calendar.yahoo.com" },
-                          { text: "Yahoo! Notepad",  url: "http://notepad.yahoo.com" }
-                      ]);
-
-                  oMenu.render("rendertarget");
                 })
-              </script>
+              ]]></script>
               <div id="rendertarget"/>
             </div>
           </div>
