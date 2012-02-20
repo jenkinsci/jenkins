@@ -3,7 +3,6 @@ package jenkins.model;
 import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.ModelObject;
-import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -37,7 +36,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
         
         public ContextMenu add(String url, String text) {
-            items.add(new MenuItem(url,text));
+            items.add(new MenuItem(url,null,text));
             return this;
         }
 
@@ -50,7 +49,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu add(Action a) {
             StaplerRequest req = Stapler.getCurrentRequest();
             String text = a.getDisplayName();
-            String icon = Functions.getIconFilePath(a);
+            String base = Functions.getIconFilePath(a);
+            if (base==null)     return this;
+            String icon = Stapler.getCurrentRequest().getContextPath()+(base.startsWith("images/")?Functions.getResourcePath():"")+'/'+base;
+
             String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(),a);
 
             return add(url,icon,text);
@@ -58,7 +60,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         
         public ContextMenu add(String url, String icon, String text) {
             if (text != null && icon != null && url != null)
-                items.add(new MenuItem(url,"<img src='"+url+"'> "+text));
+                items.add(new MenuItem(url,icon,text));
             return this;
         }
     }
@@ -68,11 +70,14 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String url;
         @Exported
-        public String text;
+        public String displayName;
+        @Exported
+        public String icon;
 
-        public MenuItem(String url, String text) {
+        public MenuItem(String url, String icon, String displayName) {
             this.url = url;
-            this.text = text;
+            this.icon = icon;
+            this.displayName = displayName;
         }
     }
 }

@@ -233,29 +233,36 @@ THE SOFTWARE.
                 /** @type {YAHOO.widget.Menu} */
                 var oMenu;
 
+                var xhr;
+
                 /**
                  * @param {HTMLElement} e
                  *      The LI tag that the mouse has wondered into.
                  */
                 function foo(e) {
-                  window.setTimeout(function() {
-                    oMenu.hide();
-                    oMenu.cfg.setProperty("context",[e,"tl","bl"]);
-                    oMenu.clearContent();
-                    oMenu.addItems([
-                            { text: e.firstChild.innerHTML, url: "http://mail.yahoo.com" },
-                            { text: "<b>Yahoo</b>! Address Book", url: "http://addressbook.yahoo.com" },
-                            { text: "<img src='http://localhost:8080/images/24x24/terminal.png'> Yahoo! Calendar", url: "http://calendar.yahoo.com" },
-                            { text: "Yahoo! Notepad",  url: "http://notepad.yahoo.com" }
-                        ]);
-                    oMenu.render("rendertarget");
-                    oMenu.show();
-                  },500);
+                  if (xhr)
+                    xhr.options.onComplete = function() {};   // ignore the currently pending call
+
+                  xhr = new Ajax.Request(e.firstChild.getAttribute("href")+"contextMenu", {
+                    onComplete : function (x) {
+                      var a = x.responseText.evalJSON().items;
+                      a.each(function(e) {
+                        e.text = "<img src='"+e.icon+"' width=24 height=24 style='margin: 2px;' alt=''> "+e.displayName;
+                      });
+
+                      oMenu.hide();
+                      oMenu.cfg.setProperty("context",[e,"tl","bl"]);
+                      oMenu.clearContent();
+                      oMenu.addItems(a);
+                      oMenu.render("rendertarget");
+                      oMenu.show();
+                    }
+                  });
+
                   return false;
                 }
                 window.addEventListener("load",function(){
                   oMenu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
-
                 })
               ]]></script>
               <div id="rendertarget"/>
