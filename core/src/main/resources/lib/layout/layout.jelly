@@ -198,6 +198,62 @@ THE SOFTWARE.
           </table>
         </td>
       </tr>
+      <tr id="top-nav">
+        <td id="left-top-nav" colspan="2">
+          <div class="top-sticker noedge">
+            <div class="top-sticker-inner">
+              <div id="right-top-nav">
+                <j:if test="${attrs.norefresh==null}">
+                  <div id="right-top-nav">
+                    <div class="smallfont">
+                      <j:choose>
+                        <j:when test="${h.isAutoRefresh(request)}">
+                          <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
+                        </j:when>
+                        <j:otherwise>
+                          <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
+                        </j:otherwise>
+                      </j:choose>
+                    </div>
+                  </div>
+                </j:if>
+              </div>
+              <ul id="breadcrumbs">
+                <j:forEach var="anc" items="${request.ancestors}">
+                  <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+                    <li onmouseover="return foo(this)">
+                      <a href="${anc.url}/" tooltip="${anc.object.name}">
+                        ${anc.object.displayName}
+                      </a>
+                    </li>
+                  </j:if>
+                </j:forEach>
+              </ul>
+              <script>
+                var oMenu;
+                function foo(e) {
+                  oMenu.cfg.setProperty("context",[e,"tl","bl"]);
+                  oMenu.show();
+                  return false;
+                }
+                window.addEventListener("load",function(){
+                  oMenu = new YAHOO.widget.Menu("basicmenu", {position:"dynamic", hidedelay:750});
+
+                  oMenu.addItems([
+                          { text: "Yahoo! Mail", url: "http://mail.yahoo.com" },
+                          { text: "Yahoo! Address Book", url: "http://addressbook.yahoo.com" },
+                          { text: "Yahoo! Calendar", url: "http://calendar.yahoo.com" },
+                          { text: "Yahoo! Notepad",  url: "http://notepad.yahoo.com" }
+                      ]);
+
+                  oMenu.render("rendertarget");
+                })
+              </script>
+              <div id="rendertarget"/>
+            </div>
+          </div>
+        </td>
+      </tr>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
         style="background-image: url(${imagesURL}/jenkins.png);
@@ -221,40 +277,6 @@ THE SOFTWARE.
           </div>
         </td>
         <td id="main-panel" width="80%" height="100%">
-          <div id="top-nav">
-            <div id="left-top-nav">
-              <div class="top-sticker">
-                <div class="top-sticker-inner" style="padding-left:0">
-                  <j:forEach var="anc" items="${request.ancestors}">
-                    <j:if test="${h.isModel(anc.object)}">
-                      <j:if test="${anc.prev.url!=anc.url}">
-                        <j:if test="${anc.prev!=null}">
-                          <j:whitespace> &#187; </j:whitespace>
-                        </j:if>
-                        <a href="${anc.url}/" tooltip="${anc.object.name}">
-                          ${anc.object.displayName}
-                        </a>
-                      </j:if>
-                    </j:if>
-                  </j:forEach>
-
-                  <j:if test="${attrs.norefresh==null}">
-                    <div id="right-top-nav" class="smallfont">
-                      <j:choose>
-                        <j:when test="${h.isAutoRefresh(request)}">
-                          <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                        </j:when>
-                        <j:otherwise>
-                          <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                        </j:otherwise>
-                      </j:choose>
-                    </div>
-                  </j:if>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <j:set var="mode" value="main-panel" />
           <d:invokeBody/>
         </td>

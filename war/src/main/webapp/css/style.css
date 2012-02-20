@@ -87,6 +87,8 @@ dt {
 #right-top-nav {
     float: right;
     margin-right: 1em;
+    height: 2em;
+    line-height: 2em;
 }
 
 #left-top-nav a {
@@ -188,6 +190,36 @@ a.tip:hover span {
   color: white;
 }
 
+#breadcrumbs {
+    list-style-type:none;
+    padding:0;
+    margin:0;
+    height: 2em;
+    border-bottom: 1px solid #d3d7cf;
+}
+
+#breadcrumbs LI {
+    float:left;
+    line-height:2em;
+    padding-left:.75em;
+    color:#555753;
+}
+
+#breadcrumbs LI A {
+    display:block;
+    padding:0 15px 0 0;
+    background:url('../images/breadcrumb.gif') no-repeat right center;
+}
+
+#breadcrumbs LI A:link, #breadcrumbs LI A:visited {
+    text-decoration:none;
+    color:#555753;
+}
+
+#breadcrumbs LI A:hover, #crumbs LI A:focus {
+    color:#3465a4;
+}
+
 img {
   vertical-align: middle;
   border: 0;
@@ -195,7 +227,7 @@ img {
 
 div.disabled {
     opacity : 0.4;
-    filter: alpha(opacity=40); // msie
+    filter: alpha(opacity=40); /* msie */
     background-color: #000;
 }
 
@@ -483,7 +515,7 @@ LABEL.attach-previous {
 
 .top-sticker, #top-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
-    z-index: 1;
+    z-index: 999;
 }
 .top-sticker-inner {
     background:white;
@@ -497,6 +529,11 @@ LABEL.attach-previous {
 .top-sticker.noedge > .top-sticker-edge {
     display: none;
 }
+
+.top-sticker.noedge > .top-sticker-inner {
+    padding:0;
+}
+
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
