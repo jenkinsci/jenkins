@@ -293,7 +293,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
     private transient final Queue queue;
 
     /**
@@ -2892,6 +2892,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) {
+        return new ContextMenu().addAll(getActions());
     }
 
     /**
