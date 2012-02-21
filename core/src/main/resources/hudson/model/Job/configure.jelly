@@ -31,12 +31,15 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%configuration page}" id="inpage-nav" />
     <l:main-panel>
+      <style>
+        #breadcrumbs #inpage-nav A { background: none; }
+      </style>
       <script>
         window.addEventListener("load",function(){
           breadcrumbs.attachMenu('inpage-nav',
                   new breadcrumbs.ContextMenu().add(
                           '/',
-                          '${rootURL}${h.resourcePath}/images/24x24/settings.png',"hello world"))
+                          '${rootURL}${h.resourcePath}/images/24x24/gear.png',"hello world"))
         });
       </script>
       <div class="behavior-loading">${%LOADING}</div>
