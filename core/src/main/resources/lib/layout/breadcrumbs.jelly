@@ -55,7 +55,7 @@ THE SOFTWARE.
           <ul id="breadcrumbs">
             <j:forEach var="anc" items="${request.ancestors}">
               <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                <li onmouseover="return foo(this)">
+                <li onmouseover="return breadcrumb.activate(this)">
                   <a href="${anc.url}/">
                     ${anc.object.displayName}
                   </a>
@@ -63,7 +63,7 @@ THE SOFTWARE.
               </j:if>
             </j:forEach>
           </ul>
-          <div id="rendertarget"/>
+          <div id="breadcrumb-menu-target"/>
         </div>
       </div>
     </td>
