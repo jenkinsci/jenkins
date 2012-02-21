@@ -198,7 +198,10 @@ THE SOFTWARE.
           </table>
         </td>
       </tr>
-      <l:breadcrumbs />
+      <l:breadcrumbBar>
+        <j:set var="mode" value="breadcrumbs" />
+        <d:invokeBody />
+      </l:breadcrumbBar>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
         style="background-image: url(${imagesURL}/jenkins.png);

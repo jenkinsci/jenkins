@@ -26,14 +26,17 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Generates breadcrumb, along with its associated dynamic behaviours.
+    Generates the bar that shows breadcrumbs, along with its associated dynamic behaviours.
     This tag is used by l:layout and not expected to be used by anyone else,
     but it's written as separate tag for better readability of code.
+
+    To render additional breadcrumb items (for example to provide in-page navigations),
+    use the &lt;l:breadcrumb> tag.
   </st:documentation>
 
   <tr id="top-nav">
     <td id="left-top-nav" colspan="2">
-      <st:adjunct includes="lib.layout.breadcrumbs_" />
+      <st:adjunct includes="lib.layout.breadcrumbs" />
       <div class="top-sticker noedge">
         <div class="top-sticker-inner">
           <div id="right-top-nav">
@@ -55,15 +58,19 @@ THE SOFTWARE.
           <ul id="breadcrumbs">
             <j:forEach var="anc" items="${request.ancestors}">
               <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                <li onmouseover="return breadcrumb.activate(this)">
+                <li>
                   <a href="${anc.url}/">
                     ${anc.object.displayName}
                   </a>
                 </li>
               </j:if>
             </j:forEach>
+
+            <!-- render additional breadcrumb items -->
+            <d:invokeBody />
           </ul>
-          <div id="breadcrumb-menu-target"/>
+
+          <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
         </div>
       </div>
     </td>
