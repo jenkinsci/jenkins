@@ -501,7 +501,7 @@ function sequencer(fs) {
     return next();
 }
 
-var hudsonRules = {
+var jenkinsRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -1437,6 +1437,7 @@ var hudsonRules = {
         adjustSticker();
     }
 };
+var hudsonRules = jenkinsRules; // legacy name
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element

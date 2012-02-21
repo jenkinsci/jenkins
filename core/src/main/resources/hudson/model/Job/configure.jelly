@@ -29,7 +29,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%configuration page}" id="inpage-nav" />
     <l:main-panel>
+      <script>
+        window.addEventListener("load",function(){
+          breadcrumbs.attachMenu('inpage-nav',
+                  new breadcrumbs.ContextMenu().add(
+                          '/',
+                          '${rootURL}${h.resourcePath}/images/24x24/settings.png',"hello world"))
+        });
+      </script>
       <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="descriptor" value="${it.descriptor}" />
