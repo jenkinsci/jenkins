@@ -1,5 +1,9 @@
 var breadcrumbs = (function() {
-    /** @type {YAHOO.widget.Menu} */
+    /**
+     * This component actually renders the menu.
+     *
+     * @type {YAHOO.widget.Menu}
+     */
     var menu;
 
     /**
@@ -8,7 +12,7 @@ var breadcrumbs = (function() {
     var xhr;
 
     function makeMenuHtml(icon,displayName) {
-        return "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> "+displayName;
+        return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
 
     window.addEventListener("load",function(){
@@ -16,7 +20,7 @@ var breadcrumbs = (function() {
     });
 
     jenkinsRules["#breadcrumbs LI"] = function (e) {
-        // when the moust hovers over LI, activate the menu
+        // when the mouse hovers over LI, activate the menu
         e.addEventListener("mouseover", function () {
             function showMenu(items) {
                 menu.hide();
@@ -32,7 +36,7 @@ var breadcrumbs = (function() {
                 };   // ignore the currently pending call
 
             if (e.items) {// use what's already loaded
-                showMenu(e.items);
+                showMenu(e.items());
             } else {// fetch menu on demand
                 xhr = new Ajax.Request(e.firstChild.getAttribute("href") + "contextMenu", {
                     onComplete:function (x) {
@@ -40,7 +44,7 @@ var breadcrumbs = (function() {
                         a.each(function (e) {
                             e.text = makeMenuHtml(e.icon, e.displayName);
                         });
-                        e.items = a;
+                        e.items = function() { return a };
                         showMenu(a);
                     }
                 });
@@ -76,10 +80,13 @@ var breadcrumbs = (function() {
          *
          * @param {String|HTMLElement} li
          *      The LI tag to which you associate the menu (or its ID)
-         * @param {breadcrumbs.ContextMenu}
+         * @param {Function|breadcrumbs.ContextMenu} menu
+         *      Pass in the configured menu object. If a function is given, this function
+         *      is called each time a menu needs to be displayed. This is convenient for dynamically
+         *      populating the content.
          */
         "attachMenu" : function (li,menu) {
-            $(li).items = menu.items;
+            $(li).items =  (typeof menu=="function") ? menu : function() { return menu.items };
         },
 
         "ContextMenu" : ContextMenu
