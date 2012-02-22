@@ -29,7 +29,10 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
 import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.model.TopLevelItem;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -122,6 +125,8 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             else
                 r.put(e.getKey(), e.getValue());
         }
+        r.put("MATRIX_PARENT_WORKSPACE", getBuiltOn().getWorkspaceFor((TopLevelItem) getRootBuild().getProject()).getRemote());
+        r.put("MATRIX_PARENT_NODE", getRootBuild().getBuiltOnStr());
         return r;
     }
 
@@ -170,6 +175,26 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
                 // Allocate unique workspace (not to be shared between jobs and runs).
                 return wsl.allocate(ws.child(subtree));
             }
+        }
+
+        @Override
+        protected void checkout(BuildListener listener) throws Exception {
+
+            if(getParent().getParent().isUseSameScmCheckout()){
+                //Are we using slaves
+                if (!Hudson.getInstance().getNodes().isEmpty() 
+                    && (getCurrentNode().getNodeName().equals(getParentBuild().getBuiltOnStr()))){
+                        // We are on a different node than the Matrixbuild (first) checkout...
+                        // Since the expressed purpose of this enhancement was to support multiple agents
+                        // using one share drive with one SCM checkout, this might be desired bevaviour
+                        // Print a warning to the log file nevertheless
+                        listener.getLogger().println("WARNING: Different node than checkout! This might work if you use a shared drive");
+                }
+                FilePath workspace = getWorkspace();
+                workspace.mkdirs();
+                listener.getLogger().println("useSameScmCheckout is selected , skipping SCM checkout");
+	    } else
+                super.checkout(listener);
         }
     }
 }
