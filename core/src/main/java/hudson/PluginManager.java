@@ -33,10 +33,8 @@ import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
-import hudson.model.UpdateSite.Data;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import hudson.util.FormValidation;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
@@ -845,7 +843,7 @@ public abstract class PluginManager extends AbstractModelObject {
                     }
                 }
             }
-            return true;
+            return isActive;
         }
 
         public List<String> getPluginsWithCycle() {
