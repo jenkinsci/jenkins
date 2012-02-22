@@ -347,7 +347,8 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
         UNIQUIFIED_NAMES.put(this, uniquified);
         return uniquified;
     }
-    private static final Map<TestObject, String> UNIQUIFIED_NAMES = new MapMaker().weakKeys().makeMap();
+    
+    private static final Map<TestObject, String> UNIQUIFIED_NAMES = Collections.synchronizedMap(new MapMaker().weakKeys().<TestObject, String> makeMap());
 
     /**
      * Replaces URL-unsafe characters.
