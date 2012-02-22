@@ -1,5 +1,19 @@
 <div>
-  Use a touchstone build if you want to run a sanity check before building all the combinations.
-  You can select a number of combinations using a combination filter. These will be built first.
-  If the result satisfies the result condition, the rest of the combinations will be built. 
+  Use a touchstone if you want to run a sanity check before building the remaining combinations.
+  A touchstone can be defined using a combination filter. All builds matching this filter
+  will be executed first. If the result satisfies the result condition, the remaining
+  active combinations are built.<p />
+  You can also define multiple touchstones by specifying several semicolon separated touchstones.
+  This might be helpful when you have multiple steps for multiple platforms, and you want to
+  make sure that all platforms take step n before occupying your infrastructure with step n+1.<p />
+
+  Example:<p />
+  Label expression PLATFORM = "win32 linuxX86"<br>
+  Label expression STEP = "build unit_test feature_test deploy"<p />
+  hgTouchstone = STEP="build"; STEP="unit_test"; STEP="feature_test"<br>
+
+  Unit tests will only be started for any platform if the build was successful
+  for all platforms. Likewise for feature tests depending on successful unit
+  tests for all platforms, deployment depending on successful feature tests for
+  all platforms.
 </div>
