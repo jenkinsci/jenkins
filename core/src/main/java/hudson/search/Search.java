@@ -24,12 +24,9 @@
  */
 package hudson.search;
 
-import hudson.Extension;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import hudson.Util;
-import hudson.model.User;
-import hudson.model.UserPropertyDescriptor;
 import hudson.util.EditDistance;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -42,7 +39,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
