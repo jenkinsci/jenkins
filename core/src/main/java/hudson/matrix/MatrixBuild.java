@@ -262,7 +262,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     private class RunnerImpl extends AbstractRunner {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
-
         protected Result doRun(BuildListener listener) throws Exception {
             MatrixProject p = getProject();
             PrintStream logger = listener.getLogger();
