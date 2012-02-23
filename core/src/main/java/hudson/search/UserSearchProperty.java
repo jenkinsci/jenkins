@@ -6,7 +6,6 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import net.sf.json.JSONObject;
 
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 
@@ -23,13 +22,13 @@ public class UserSearchProperty extends hudson.model.UserProperty {
         return insensitiveSearch;
     }
     
-    public static boolean isCaseSensitive(){
+    public static boolean isCaseInsensitive(){
         User user = User.current();
-        boolean caseSensitive = false;
+        boolean caseInsensitive = false;
         if(user!=null && user.getProperty(UserSearchProperty.class).getInsensitiveSearch()){//Searching for anonymous user is case-sensitive
-          caseSensitive=true;
+          caseInsensitive=true;
         }
-        return caseSensitive;
+        return caseInsensitive;
     }
     
 
