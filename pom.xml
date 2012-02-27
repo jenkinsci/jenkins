@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.453-SNAPSHOT</version>
+  <version>1.452</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -195,7 +195,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>10.0.1</version>
       </dependency>
       
       <dependency>
