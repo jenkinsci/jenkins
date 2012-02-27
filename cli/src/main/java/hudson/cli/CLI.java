@@ -196,7 +196,8 @@ public class CLI {
                 }
             };
         } else {
-            s = new Socket(endpoint.getHostName(),endpoint.getPort());
+            s = new Socket();
+            s.connect(endpoint,3000);
             out = new SocketOutputStream(s);
         }
 
