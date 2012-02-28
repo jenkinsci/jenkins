@@ -36,7 +36,7 @@ THE SOFTWARE.
     TODO: use human-readable ID
   -->
   <script>
-    window.addEventListener("load",function(){
+    Event.observe(window,"load",function(){
       /** @type section.SectionNode */
       var outline = section.buildTree();
       var menu = new breadcrumbs.ContextMenu();
