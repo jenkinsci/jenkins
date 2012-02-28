@@ -19,39 +19,45 @@ var breadcrumbs = (function() {
       menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
     });
 
+    function handleHover(e) {
+        function showMenu(items) {
+            menu.hide();
+            menu.cfg.setProperty("context", [e, "tl", "bl"]);
+            menu.clearContent();
+            menu.addItems(items);
+            menu.render("breadcrumb-menu-target");
+            menu.show();
+        }
+
+        if (xhr)
+            xhr.options.onComplete = function () {
+            };   // ignore the currently pending call
+
+        if (e.items) {// use what's already loaded
+            showMenu(e.items());
+        } else {// fetch menu on demand
+            xhr = new Ajax.Request(e.getAttribute("href") + "contextMenu", {
+                onComplete:function (x) {
+                    var a = x.responseText.evalJSON().items;
+                    a.each(function (e) {
+                        e.text = makeMenuHtml(e.icon, e.displayName);
+                    });
+                    e.items = function() { return a };
+                    showMenu(a);
+                }
+            });
+        }
+
+        return false;
+    }
+
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
-        $(e).observe("mouseover", function () {
-            function showMenu(items) {
-                menu.hide();
-                menu.cfg.setProperty("context", [e, "tl", "bl"]);
-                menu.clearContent();
-                menu.addItems(items);
-                menu.render("breadcrumb-menu-target");
-                menu.show();
-            }
+        $(e).observe("mouseover", function () { handleHover(e.firstChild) });
+    };
 
-            if (xhr)
-                xhr.options.onComplete = function () {
-                };   // ignore the currently pending call
-
-            if (e.items) {// use what's already loaded
-                showMenu(e.items());
-            } else {// fetch menu on demand
-                xhr = new Ajax.Request(e.firstChild.getAttribute("href") + "contextMenu", {
-                    onComplete:function (x) {
-                        var a = x.responseText.evalJSON().items;
-                        a.each(function (e) {
-                            e.text = makeMenuHtml(e.icon, e.displayName);
-                        });
-                        e.items = function() { return a };
-                        showMenu(a);
-                    }
-                });
-            }
-
-            return false;
-        });
+    jenkinsRules["A.model-link"] = function (a) {
+        $(a).observe("mouseover", function () { handleHover(a); });
     };
 
     /**
