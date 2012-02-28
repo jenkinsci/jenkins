@@ -1906,7 +1906,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 Behaviour.applySubtree(div);
 
                 var pivot = rows[0];
-                var newRows = div.firstChild.rows;
+                var newRows = $(div).firstDescendant().rows;
                 for (var i = newRows.length - 1; i >= 0; i--) {
                     pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
                 }
