@@ -89,6 +89,7 @@ public interface Action extends ModelObject {
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
      * @see Functions#isAnonymous()
+     * @see Functions#getIconFilePath(Action)
      */
     String getIconFileName();
 
@@ -103,7 +104,7 @@ public interface Action extends ModelObject {
     /**
      * Gets the URL path name.
      *
-     * <p>
+     * <p>tions
      * For example, if this method returns "xyz", and if the parent object
      * (that this action is associated with) is bound to /foo/bar/zot,
      * then this action object will be exposed to /foo/bar/zot/xyz.
@@ -122,6 +123,7 @@ public interface Action extends ModelObject {
      * @return
      *      null if this action object doesn't need to be bound to web
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
+     * @see Functions#getActionUrl(String, Action)
      */
     String getUrlName();
 }

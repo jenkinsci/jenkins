@@ -501,7 +501,7 @@ function sequencer(fs) {
     return next();
 }
 
-var hudsonRules = {
+var jenkinsRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -1404,7 +1404,14 @@ var hudsonRules = {
         layoutUpdateCallback.add(adjustSticker);
     },
 
-    "#top-sticker" : function(sticker) {
+    "#top-sticker" : function(sticker) {// legacy
+        this[".top-sticker"](sticker);
+    },
+
+    /**
+     * @param {HTMLElement} sticker
+     */
+    ".top-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1412,7 +1419,7 @@ var hudsonRules = {
 
         var edge = document.createElement("div");
         edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge);
+        sticker.insertBefore(edge,sticker.firstChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1433,6 +1440,7 @@ var hudsonRules = {
         adjustSticker();
     }
 };
+var hudsonRules = jenkinsRules; // legacy name
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1478,7 +1486,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("onchange",h); }
+            $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1682,7 +1690,7 @@ function refreshPart(id,url) {
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
 
-                var node = div.firstChild;
+                var node = $(div).firstDescendant();
                 p.insertBefore(node, next);
 
                 Behaviour.applySubtree(node);
@@ -1901,7 +1909,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 Behaviour.applySubtree(div);
 
                 var pivot = rows[0];
-                var newRows = div.firstChild.rows;
+                var newRows = $(div).firstDescendant().rows;
                 for (var i = newRows.length - 1; i >= 0; i--) {
                     pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
                 }
@@ -2461,7 +2469,7 @@ var downloadService = {
     }
 };
 
-// update center service. to remain compatible with earlier version of Hudson, aliased.
+// update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
 
 /*

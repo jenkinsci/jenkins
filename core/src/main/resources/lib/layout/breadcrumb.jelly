@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2012- CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Section header in the form table.
+    Used inside &lt;l:layout> to render additional breadcrumb items.
 
-    <st:attribute name="title" use="required">
-      The section header text.
-      If null is given, the entire &lt;f:section> tag becomes no-op.
+    <st:attribute name="href">
+      URL that the breadcrumb item links to. Can be omitted.
     </st:attribute>
-    <st:attribute name="name">
-      Optional attribute to create a JSON object from this section.
+    <st:attribute name="id">
+      If specified, this ID will be assigned to the LI element.
+      This is useful for programmatically adding the context menu
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Display name of the breadcrumb.
     </st:attribute>
   </st:documentation>
 
-  <st:adjunct includes="lib.form.section_" />
-  <f:rowSet name="${attrs.name}">
-    <j:if test="${attrs.title!=null}">
-      <f:block>
-        <div class="section-header">
-          ${title}
-        </div>
-      </f:block>
-    </j:if>
-    <d:invokeBody />
-  </f:rowSet>
+  <j:if test="${mode=='breadcrumbs'}">
+    <li id="${attrs.id}">
+      <a href="${attrs.href}">
+        ${attrs.title}
+      </a>
+    </li>
+  </j:if>
 </j:jelly>

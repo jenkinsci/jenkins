@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2012- CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Section header in the form table.
-
-    <st:attribute name="title" use="required">
-      The section header text.
-      If null is given, the entire &lt;f:section> tag becomes no-op.
-    </st:attribute>
-    <st:attribute name="name">
-      Optional attribute to create a JSON object from this section.
-    </st:attribute>
+    Adds one more in-page breadcrumb that jumps to sections in the page.
+    Put this tag right before &lt;l:main-panel>
   </st:documentation>
 
-  <st:adjunct includes="lib.form.section_" />
-  <f:rowSet name="${attrs.name}">
-    <j:if test="${attrs.title!=null}">
-      <f:block>
-        <div class="section-header">
-          ${title}
-        </div>
-      </f:block>
-    </j:if>
-    <d:invokeBody />
-  </f:rowSet>
+  <l:breadcrumb title="${%configuration}" id="inpage-nav" />
+  <style>
+    #breadcrumbs #inpage-nav A { background: none; }
+  </style>
+  <!--
+    TODO: use human-readable ID
+  -->
+  <script>
+    Event.observe(window,"load",function(){
+      /** @type section.SectionNode */
+      var outline = section.buildTree();
+      var menu = new breadcrumbs.ContextMenu();
+      $A(outline.children).each(function (e) {
+        if (!e.section.id)
+            e.section.setAttribute("id","section"+(iota++));
+        menu.add('#'+e.section.id,null,e.getHTML());
+      });
+      breadcrumbs.attachMenu('inpage-nav',menu);
+    });
+  </script>
 </j:jelly>
