@@ -217,15 +217,6 @@ public final class WebAppMain implements ServletContextListener {
                         Jenkins instance = new Hudson(home, context);
                         context.setAttribute(APP, instance);
 
-                        // trigger the loading of changelogs in the background,
-                        // but give the system 10 seconds so that the first page
-                        // can be served quickly
-                        Trigger.timer.schedule(new SafeTimerTask() {
-                            public void doRun() {
-                                User.getUnknown().getBuilds();
-                            }
-                        }, 1000*10);
-
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
                         success = true;

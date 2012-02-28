@@ -242,7 +242,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-
+    
     /**
      * Gets the view properties configured for this view.
      * @since 1.406

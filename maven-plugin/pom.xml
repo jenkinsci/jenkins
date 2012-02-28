@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.451-SNAPSHOT</version>
+    <version>1.454-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -47,7 +47,6 @@ THE SOFTWARE.
     <aetherVersion>1.13.1</aetherVersion>
     <sisuInjectVersion>2.3.0</sisuInjectVersion>
     <wagonVersion>2.2</wagonVersion>
-    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
   </properties>
 
   <issueManagement>
@@ -55,31 +54,6 @@ THE SOFTWARE.
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15487</url>
   </issueManagement>
 
-  <dependencyManagement>
-    <dependencies>
-      <!-- SLF4J is used by wagon-webdav-jackrabbit dep --> 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-nop</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
@@ -354,7 +328,7 @@ THE SOFTWARE.
       <artifactId>wagon-webdav-jackrabbit</artifactId>
       <version>${wagonVersion}</version>
       <exclusions>
-        <exclusion><!-- bundling binding creates a problem with app servers that use different versions of slf4j -->
+        <exclusion><!-- jcl-over-slf4j version needs to match with slf4j-api version, which makes this fragile. let's not try to intercept jcl calls -->
           <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>

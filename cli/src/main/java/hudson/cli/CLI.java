@@ -69,6 +69,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.Console;
 
 import static java.util.logging.Level.*;
 
@@ -195,7 +196,8 @@ public class CLI {
                 }
             };
         } else {
-            s = new Socket(endpoint.getHostName(),endpoint.getPort());
+            s = new Socket();
+            s.connect(endpoint,3000);
             out = new SocketOutputStream(s);
         }
 
@@ -349,13 +351,17 @@ public class CLI {
                     printUsage(Messages.CLI_NoSuchFileExists(f));
                     return -1;
                 }
+                KeyPair kp = null;
                 try {
-                    candidateKeys.add(loadKey(f));
+                    kp = loadKey(f);
                 } catch (IOException e) {
-                    throw new Exception("Failed to load key: "+f,e);
+                    //if the PEM file is encrypted, IOException is thrown
+                    kp = tryEncryptedFile(f);                    
                 } catch (GeneralSecurityException e) {
                     throw new Exception("Failed to load key: "+f,e);
                 }
+                if(kp != null)
+                    candidateKeys.add(kp);
                 args = args.subList(2,args.size());
                 sshAuthRequestedExplicitly = true;
                 continue;
@@ -430,19 +436,27 @@ public class CLI {
     /**
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
      */
+    public static KeyPair loadKey(File f, String passwd) throws IOException, GeneralSecurityException {
+        return loadKey(readPemFile(f), passwd);
+    }
+
     public static KeyPair loadKey(File f) throws IOException, GeneralSecurityException {
+    	return loadKey(f, null);
+    }
+    
+    private static String readPemFile(File f) throws IOException{
         DataInputStream dis = new DataInputStream(new FileInputStream(f));
         byte[] bytes = new byte[(int) f.length()];
         dis.readFully(bytes);
         dis.close();
-        return loadKey(new String(bytes));
+        return new String(bytes);
     }
-
+    
     /**
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
      */
-    public static KeyPair loadKey(String pemString) throws IOException, GeneralSecurityException {
-        Object key = PEMDecoder.decode(pemString.toCharArray(), null);
+    public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
+        Object key = PEMDecoder.decode(pemString.toCharArray(), passwd);
         if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
             com.trilead.ssh2.signature.RSAPrivateKey x = (com.trilead.ssh2.signature.RSAPrivateKey)key;
 //            System.out.println("ssh-rsa " + new String(Base64.encode(RSASHA1Verify.encodeSSHRSAPublicKey(x.getPublicKey()))));
@@ -462,6 +476,41 @@ public class CLI {
         throw new UnsupportedOperationException("Unrecognizable key format: "+key);
     }
 
+    public static KeyPair loadKey(String pemString) throws IOException, GeneralSecurityException {
+    	return loadKey(pemString, null);
+    }
+    
+    private static KeyPair tryEncryptedFile(File f) throws IOException, GeneralSecurityException{
+        KeyPair kp = null;
+        if(isPemEncrypted(f)){
+            String passwd = askForPasswd(f.getCanonicalPath());
+            kp = loadKey(f,passwd);
+        }
+        return kp;
+    }
+    
+    private static boolean isPemEncrypted(File f) throws IOException{
+        String pemString = readPemFile(f);
+        //simple check if the file is encrypted
+        if(pemString.contains("4,ENCRYPTED"))
+            return true;
+        return false;
+    }
+    
+    private static String askForPasswd(String filePath){
+        try {
+            Console cons = System.console();
+            String passwd = null;
+            if (cons != null){
+                char[] p = cons.readPassword("%s", "Enter passphrase for "+filePath+":");
+                passwd = String.valueOf(p);
+            }
+            return passwd;
+        } catch (LinkageError e) {
+            throw new Error("Your private key is encrypted, but we need Java6 to ask you password safely",e);
+        }
+    }
+    
     /**
      * try all the default key locations
      */

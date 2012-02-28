@@ -94,8 +94,12 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <div class="task">
+          <j:set var="icon" value="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
+          ${taskTags!=null ? taskTags.add(href,icon,title) : null}
+          ${taskTags}
+
           <a href="${href}" onclick="${attrs.onclick}">
-            <img width="24" height="24" style="margin: 2px;" alt="" src="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
+            <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
           </a>
           <st:nbsp />
 

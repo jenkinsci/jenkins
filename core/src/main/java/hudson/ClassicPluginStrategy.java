@@ -386,7 +386,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return; // no need to expand
 
         // delete the contents so that old files won't interfere with new files
-        Util.deleteContentsRecursive(destDir);
+        Util.deleteRecursive(destDir);
 
         try {
             Expand e = new Expand();

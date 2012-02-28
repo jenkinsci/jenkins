@@ -56,21 +56,95 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-    The <tt>-c</tt> option in the <tt>build</tt> command wasn't working for some SCM.
+    Fixed NPE in Groovy script execution via CLI (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12302">issue 12302</a>)
   <li class=rfe>
-    job rows in view should have id= for easy access
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12518</a>)
-  <li class=ref>
-    M2 job: create links to codehaus maven plugins and their goals
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12529">issue 12529</a>)  
-  <li class=ref>
-    Matrix job now allows delete whole matrix, including sub-jobs.
+    Breadcrumb now supports drop-down menu for faster navigation
+  <li class=rfe>
+    Configuration pages show a navigation drop-down menu in the breadcrumb bar to jump to sections
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.450>What's new in 1.450</a> <!--=DATE=--></h3>
+<h3><a name=v1.453>What's new in 1.453</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    'Age' column on 'Test Result' tab may show incorrect value when a test suite is divided into multiple junit files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12457">issue 12457</a>)
+  <li class=rfe>
+    System Message - Doesnt appear on any view other than the default view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7733">issue 7733</a>)
+  <li class="rfe">
+    Added UI component to show notification bar at the top of the page
+  <li class="rfe">
+    Users can configure search to be case insensitive.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-850">issue 850</a>)
+  <li class="rfe">
+    Inline help now reports the plugin that contributes the said feature.
+  <li class="rfe">
+    Various configuration pages are getting the "apply" button.
+  <li class="rfe">
+    Avoid post-build depoy to Maven repository in release build
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12397">issue 12397</a>)   
+  <li class=rfe>
+    Jenkins no longer failes to start if plugins have cyclic dependencies, but deactivates these plugins.
+  <li class=rfe>
+    Adding the video/webm mime type for files with extension .webm.
+  <li class=rfe>
+    update to guava 11.0.1
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.452>What's new in 1.452</a> (2012/02/27)</h3>
+<ul class=image>
+  <li class=bug>
+    Infinite loop or invalid next execution with crontab DoW=7
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12357">issue 12357</a>)
+  <li class=bug>
+    Broken links to test results with '#' or '?' in the name
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10458">issue 10458</a>)
+  <li class="bug">
+    Fix launching browser too early to http://localhost:8080 in OS X
+    installer.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12622">issue 12622</a>)
+  <li class="bug">
+    Bundled slf4j binding to avoid classloader contraint violation in JBoss
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12334">issue 12334</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-12446">issue 12446</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-12650">issue 12650</a>)
+  <li class="bug">
+    Fixed a UI problem with the "save" button that sticks to the bottom.
+  <li class="rfe">
+    Misc performance improvements
+    (<a href="https://github.com/jenkinsci/jenkins/pull/342">pull 342</a>)
+</ul>
+<h3><a name=v1.451>What's new in 1.451</a> (2012/02/13)</h3>
+<ul class=image>
+  <li class=bug>
+    The <tt>-c</tt> option in the <tt>build</tt> command wasn't working for some SCM.
+  <li class=bug>
+    Fix multi submit with shortcut key in script console.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/364">pull 364</a>)
+  <li class=rfe>
+    job rows in view should have id= for easy access
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12490">issue 12518</a>)
+  <li class=rfe>
+    M2 job: create links to codehaus maven plugins and their goals
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12529">issue 12529</a>)  
+  <li class=rfe>
+    Matrix job now allows delete whole matrix, including sub-jobs.
+  <li class=bug>
+    Fixed a bug in LDAP default root DN inference.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8152">issue 8152</a>)
+  <li class=bug>
+    <tt>ComputerListener.onOffline</tt> was not called when the client was terminated abruptly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12680">issue 12680</a>)
+  <li class=ref>
+    CLI now supports also encrypted key file
+  <li class=rfe>
+    Recognize test results from eviware:maven-soapui-plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11353">issue 11353</a>)    
+</ul>
+<h3><a name=v1.450>What's new in 1.450</a> (2012/01/30)</h3>
 <ul class=image>
   <li class=bug>
     <tt>install-plugin</tt> CLI command fails to put a file in the right location when installing from URL.
@@ -89,7 +163,6 @@ Upcoming changes</a>
   <li class=rfe>
     Running build via CLI now records actual user who started the build
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.449>What's new in 1.449</a> (2012/01/23)</h3>
 <ul class=image>
   <li class=bug>

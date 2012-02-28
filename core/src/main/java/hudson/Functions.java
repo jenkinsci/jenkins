@@ -152,6 +152,16 @@ public class Functions {
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
     }
+    
+    public static void initPageVariables(JellyContext context) {
+        String rootURL = Stapler.getCurrentRequest().getContextPath();
+        Functions h = new Functions();
+
+        context.setVariable("rootURL", rootURL);
+        context.setVariable("h", h);
+        context.setVariable("resURL",rootURL+getResourcePath());
+        context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
+    }
 
     /**
      * Given {@code c=MyList (extends ArrayList<Foo>), base=List}, compute the parameterization of 'base'
@@ -792,7 +802,8 @@ public class Functions {
      */
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if(name.startsWith("/"))
+        if (name==null)     return null;
+        if (name.startsWith("/"))
             return name.substring(1);
         else
             return "images/24x24/"+name;
@@ -1454,8 +1465,15 @@ public class Functions {
      * @return a URL string
      * @since 1.433
      */
-    public String getUserAvatar(User user, String avatarSize) {
+    public static String getAvatar(User user, String avatarSize) {
         return UserAvatarResolver.resolve(user, avatarSize);
     }
-    
+
+    /**
+     * @deprecated as of 1.451
+     *      Use {@link #getAvatar}
+     */
+    public String getUserAvatar(User user, String avatarSize) {
+        return getAvatar(user,avatarSize);
+    }
 }

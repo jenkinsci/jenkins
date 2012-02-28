@@ -39,6 +39,7 @@ import hudson.util.DescribableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -48,8 +49,9 @@ import org.apache.commons.io.FileUtils;
  */
 public class NodeListTest extends TestCase {
     static class DummyNode extends Node {
+        String nodeName = Long.toString(new Random().nextLong());
         public String getNodeName() {
-            throw new UnsupportedOperationException();
+            return nodeName;
         }
 
         public void setNodeName(String name) {
@@ -112,9 +114,7 @@ public class NodeListTest extends TestCase {
     }
 
     public void testSerialization() throws Exception {
-        NodeList nl = new NodeList();
-        nl.add(new DummyNode());
-        nl.add(new EphemeralNode());
+        NodeList nl = new NodeList(new DummyNode(), new EphemeralNode());
 
         File tmp = File.createTempFile("test","test");
         try {
@@ -123,7 +123,7 @@ public class NodeListTest extends TestCase {
 
             String xml = FileUtils.readFileToString(tmp);
             System.out.println(xml);
-            assertEquals(4,xml.split("\n").length);
+            assertEquals(6,xml.split("\n").length);
 
             NodeList back = (NodeList)x.read();
 

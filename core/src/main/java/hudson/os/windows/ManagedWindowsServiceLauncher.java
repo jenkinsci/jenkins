@@ -44,7 +44,6 @@ import hudson.tools.JDKInstaller;
 import hudson.tools.JDKInstaller.CPU;
 import hudson.tools.JDKInstaller.Platform;
 import hudson.util.IOUtils;
-import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
 

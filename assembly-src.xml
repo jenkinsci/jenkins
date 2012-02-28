@@ -39,6 +39,9 @@ THE SOFTWARE.
         <exclude>*.build</exclude>
         <exclude>*.changes</exclude>
         <exclude>*.pkg</exclude>
+        <exclude>*.rpm</exclude>
+        <exclude>*.deb</exclude>
+        <exclude>*.war</exclude>
         <exclude>*.zip</exclude>
         <exclude>*.log</exclude>
         <exclude>.repository</exclude>
