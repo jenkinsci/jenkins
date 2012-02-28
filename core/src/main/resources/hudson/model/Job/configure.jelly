@@ -29,24 +29,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%configuration page}" id="inpage-nav" />
+    <f:breadcrumb-config-outline />
     <l:main-panel>
-      <style>
-        #breadcrumbs #inpage-nav A { background: none; }
-      </style>
-      <script>
-        window.addEventListener("load",function(){
-          /** @type section.SectionNode */
-          var outline = section.buildTree();
-          var menu = new breadcrumbs.ContextMenu();
-          $A(outline.children).each(function (e) {
-            if (!e.section.id)
-                e.section.setAttribute("id","section"+(iota++));
-            menu.add('#'+e.section.id,null,e.getHTML());
-          });
-          breadcrumbs.attachMenu('inpage-nav',menu);
-        });
-      </script>
       <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="descriptor" value="${it.descriptor}" />
