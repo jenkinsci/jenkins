@@ -1408,6 +1408,9 @@ var jenkinsRules = {
         this[".top-sticker"](sticker);
     },
 
+    /**
+     * @param {HTMLElement} sticker
+     */
     ".top-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
@@ -1416,7 +1419,7 @@ var jenkinsRules = {
 
         var edge = document.createElement("div");
         edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge);
+        sticker.insertBefore(edge,sticker.firstChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1687,7 +1690,7 @@ function refreshPart(id,url) {
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
 
-                var node = div.firstChild;
+                var node = $(div).firstDescendant();
                 p.insertBefore(node, next);
 
                 Behaviour.applySubtree(node);
