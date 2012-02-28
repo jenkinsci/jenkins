@@ -36,10 +36,15 @@ THE SOFTWARE.
       </style>
       <script>
         window.addEventListener("load",function(){
-          breadcrumbs.attachMenu('inpage-nav',
-                  new breadcrumbs.ContextMenu().add(
-                          '/',
-                          '${rootURL}${h.resourcePath}/images/24x24/gear.png',"hello world"))
+          /** @type section.SectionNode */
+          var outline = section.buildTree();
+          var menu = new breadcrumbs.ContextMenu();
+          $A(outline.children).each(function (e) {
+            if (!e.section.id)
+                e.section.setAttribute("id","section"+(iota++));
+            menu.add('#'+e.section.id,null,e.getHTML());
+          });
+          breadcrumbs.attachMenu('inpage-nav',menu);
         });
       </script>
       <div class="behavior-loading">${%LOADING}</div>

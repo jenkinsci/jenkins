@@ -35,7 +35,7 @@ var section = (function (){
          *      For root node, the 'section' property refers to null.
          */
         "buildTree" : function(root) {
-            root = $(root);
+            root = $(root||document.body);
 
             /**
              * Recursively visit elements and find all section headers.
