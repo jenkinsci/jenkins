@@ -1122,7 +1122,7 @@ var jenkinsRules = {
              */
             eachRow : function(recursive,f) {
                 if (recursive) {
-                    for (var e=this.start; e!=this.end; e=e.nextSibling)
+                    for (var e=this.start; e!=this.end; e=$(e).next())
                         f(e);
                 } else {
                     throw "not implemented yet";
