@@ -96,7 +96,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         // capture the file to the server
         FilePath src = new FilePath(command.checkChannel(),value);
-        File local = File.createTempFile("hudson","parameter");
+        File local = File.createTempFile("jenkins","parameter");
         src.copyTo(new FilePath(local));
 
         FileParameterValue p = new FileParameterValue(getName(), local, src.getName());

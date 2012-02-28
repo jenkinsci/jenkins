@@ -165,6 +165,9 @@ public abstract class ParameterDefinition implements
      * <p>
      * If a {@link ParameterDefinition} can't really support this mode of creating a value,
      * you may just always return null.
+     *
+     * @throws IllegalStateException
+     *      If the parameter is deemed required but was missing in the submission.
      */
     public abstract ParameterValue createValue(StaplerRequest req);
 
