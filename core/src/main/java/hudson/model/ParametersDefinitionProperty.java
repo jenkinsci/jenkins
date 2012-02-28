@@ -141,8 +141,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	ParameterValue value = d.createValue(req);
         	if (value != null) {
         		values.add(value);
-        	} else {
-        		throw new IllegalArgumentException("Parameter " + d.getName() + " was missing.");
+        	} else if ((value == null) && !(d instanceof FileParameterDefinition)) {
+        	    throw new IllegalArgumentException("Parameter " + d.getName() + " was missing.");
         	}
         }
 
