@@ -15,13 +15,13 @@ var breadcrumbs = (function() {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
 
-    window.addEventListener("load",function(){
+    Event.observe(window,"load",function(){
       menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
     });
 
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
-        e.addEventListener("mouseover", function () {
+        $(e).observe("mouseover", function () {
             function showMenu(items) {
                 menu.hide();
                 menu.cfg.setProperty("context", [e, "tl", "bl"]);
