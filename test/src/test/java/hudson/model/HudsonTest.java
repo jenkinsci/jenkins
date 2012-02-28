@@ -126,8 +126,8 @@ public class HudsonTest extends HudsonTestCase {
      */
     public void testBreadcrumb() throws Exception {
         HtmlPage root = new WebClient().goTo("");
-        HtmlElement navbar = root.getElementById("left-top-nav");
-        assertEquals(1,navbar.selectNodes("a").size());
+        HtmlElement navbar = root.getElementById("breadcrumbs");
+        assertEquals(1,navbar.selectNodes("LI/A").size());
     }
 
     /**
