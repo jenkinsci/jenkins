@@ -143,7 +143,7 @@ var breadcrumbs = (function() {
          *      populating the content.
          */
         "attachMenu" : function (li,menu) {
-            $(li).items =  (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).firstChild.items =  (typeof menu=="function") ? menu : function() { return menu.items };
         },
 
         "ContextMenu" : ContextMenu
