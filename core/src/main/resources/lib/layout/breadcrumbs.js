@@ -67,7 +67,9 @@ var breadcrumbs = (function() {
             menuDelay = window.setTimeout(function() {
                 if (hitTest.contains(mouse)) {
                     menu.hide();
-                    menu.cfg.setProperty("context", [e, "tl", "bl"]);
+                    var pos = [e, "tl", "bl"];
+                    if ($(e).hasClassName("tl-tr"))  pos = [e,"tl","tr"]
+                    menu.cfg.setProperty("context", pos);
                     menu.clearContent();
                     menu.addItems(items);
                     menu.render("breadcrumb-menu-target");
