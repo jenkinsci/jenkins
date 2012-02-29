@@ -64,6 +64,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
@@ -86,6 +87,8 @@ import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Inet4Address;
+
+import static javax.servlet.http.HttpServletResponse.*;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -1069,27 +1072,57 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
         
-        final Jenkins app = Jenkins.getInstance();
-
         Node result = getNode().reconfigure(req, req.getSubmittedForm());
+        replaceBy(result);
+
+        // take the user back to the slave top page.
+        rsp.sendRedirect2("../"+result.getNodeName()+'/');
+    }
+
+    /**
+     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     */
+    @WebMethod(name = "config.xml")
+    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
+            throws IOException, ServletException {
+        checkPermission(Jenkins.ADMINISTER);
+        if (req.getMethod().equals("GET")) {
+            // read
+            rsp.setContentType("application/xml");
+            Jenkins.XSTREAM2.toXML(getNode(), rsp.getOutputStream());
+            return;
+        }
+        if (req.getMethod().equals("POST")) {
+            // submission
+            Node result = (Node)Jenkins.XSTREAM2.fromXML(req.getReader());
+
+            replaceBy(result);
+            return;
+        }
+
+        // huh?
+        rsp.sendError(SC_BAD_REQUEST);
+    }
+
+    /**
+     * Replaces the current {@link Node} by another one.
+     */
+    private void replaceBy(Node newNode) throws ServletException, IOException {
+        final Jenkins app = Jenkins.getInstance();
 
         // replace the old Node object by the new one
         synchronized (app) {
             List<Node> nodes = new ArrayList<Node>(app.getNodes());
             int i = nodes.indexOf(getNode());
             if(i<0) {
-                sendError("This slave appears to be removed while you were editing the configuration",req,rsp);
-                return;
+                throw new IOException("This slave appears to be removed while you were editing the configuration");
             }
 
-            nodes.set(i,result);
+            nodes.set(i, newNode);
             app.setNodes(nodes);
         }
-
-        // take the user back to the slave top page.
-        rsp.sendRedirect2("../"+result.getNodeName()+'/');
     }
-    
+
     /**
      * Really deletes the slave.
      */
