@@ -53,6 +53,11 @@ var breadcrumbs = (function() {
         }
     }
 
+    function combinePath(a,b) {
+        if (a.endsWith('/'))    return a+b;
+        return a+'/'+b;
+    }
+
     /**
      * @param {HTMLElement} e
      *      anchor tag
@@ -86,7 +91,7 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {// fetch menu on demand
-            xhr = new Ajax.Request(e.getAttribute("href") + "contextMenu", {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     a.each(function (e) {

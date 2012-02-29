@@ -10,6 +10,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,8 +39,15 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
      * Source files associated with this sample.
      */
     public List<SourceFile> getSourceFiles() {
-        return Arrays.asList(new SourceFile(getClass().getSimpleName()+".java"),
-                             new SourceFile("index.jelly"));
+        List<SourceFile> r = new ArrayList<SourceFile>();
+
+        r.add(new SourceFile(getClass().getSimpleName()+".java"));
+        for (String name : new String[]{"index.jelly","index.groovy"}) {
+            SourceFile s = new SourceFile(name);
+            if (s.resolve()!=null)
+                r.add(s);
+        }
+        return r;
     }
 
     /**
