@@ -62,7 +62,7 @@ THE SOFTWARE.
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">
-                  <a href="${rootURL}/${item.task.url}">
+                  <a href="${rootURL}/${item.task.url}" class="model-link">
                     ${item.task.fullDisplayName}
                   </a>
                   <j:if test="${stuck}">

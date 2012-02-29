@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:structuredMessageFormat key="description">
     <st:structuredMessageArgument>
-      <a href="${rootURL}/label/${it.label.name}">${it.label.name}</a>
+      <a href="${rootURL}/label/${it.label.name}" class="model-link">${it.label.name}</a>
     </st:structuredMessageArgument>
   </st:structuredMessageFormat>
 </j:jelly>

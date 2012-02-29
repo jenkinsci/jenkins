@@ -63,7 +63,7 @@ THE SOFTWARE.
       <j:set var="atr" value="${it.lastCompletedBuild.aggregatedTestResultAction}"/>
       <j:if test="${atr!=null}">
         <t:summary icon="clipboard.png">
-          <a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
+          <a href="lastCompletedBuild/testReport/" class="model-link">${%Latest Test Result}</a>
           <st:nbsp/>
           <t:test-result it="${atr}" />
         </t:summary>
