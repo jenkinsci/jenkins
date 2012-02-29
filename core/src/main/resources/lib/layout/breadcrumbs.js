@@ -62,12 +62,11 @@ var breadcrumbs = (function() {
      */
     function handleHover(e,delay) {
         function showMenu(items) {
-            menu.hide();
-
             cancelMenu();
             hitTest = Dom.getRegion(e);
             menuDelay = window.setTimeout(function() {
                 if (hitTest.contains(mouse)) {
+                    menu.hide();
                     menu.cfg.setProperty("context", [e, "tl", "bl"]);
                     menu.clearContent();
                     menu.addItems(items);
