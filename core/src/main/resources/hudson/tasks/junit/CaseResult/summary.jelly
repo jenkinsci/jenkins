@@ -35,7 +35,7 @@ THE SOFTWARE.
 		<j:otherwise>
 			<j:if test="${it.errorStackTrace!=null}">
 				<h3>${%Stack Trace}</h3>
-				<pre><st:out value="${it.errorStackTrace}"/></pre>
+				<pre><j:out value="${it.annotate(it.errorStackTrace)}"/></pre>
 			</j:if>
 		</j:otherwise>
   </j:choose>
