@@ -1,4 +1,6 @@
 var breadcrumbs = (function() {
+    var Dom = YAHOO.util.Dom;
+
     /**
      * This component actually renders the menu.
      *
@@ -11,6 +13,26 @@ var breadcrumbs = (function() {
      */
     var xhr;
 
+    /**
+     * When mouse hovers over the anchor that has context menu, we capture its region here.
+     * This is used to to avoid showing menu when the mouse slides over to other elements after a delay.
+     *
+     * @type {YAHOO.util.Region}
+     */
+    var hitTest;
+
+    /**
+     * Current mouse cursor position in the page coordinate.
+     *
+     * @type {YAHOO.util.Point}
+     */
+    var mouse;
+
+    /**
+     * Timer ID for lazy menu display.
+     */
+    var menuDelay;
+
     function makeMenuHtml(icon,displayName) {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
@@ -19,14 +41,41 @@ var breadcrumbs = (function() {
       menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
     });
 
-    function handleHover(e) {
+
+    Event.observe(window,"mousemove",function (ev){
+        mouse = new YAHOO.util.Point(ev.pageX,ev.pageY);
+    });
+
+    function cancelMenu() {
+        if (menuDelay) {
+            window.clearTimeout(menuDelay);
+            menuDelay = null;
+        }
+    }
+
+    /**
+     * @param {HTMLElement} e
+     *      anchor tag
+     * @param {Number} delay
+     *      Number of milliseconds to wait before the menu is displayed.
+     *      The mouse needs to be on the same anchor tag after this delay.
+     */
+    function handleHover(e,delay) {
         function showMenu(items) {
             menu.hide();
-            menu.cfg.setProperty("context", [e, "tl", "bl"]);
-            menu.clearContent();
-            menu.addItems(items);
-            menu.render("breadcrumb-menu-target");
-            menu.show();
+
+            cancelMenu();
+            hitTest = Dom.getRegion(e);
+            menuDelay = window.setTimeout(function() {
+                if (hitTest.contains(mouse)) {
+                    menu.cfg.setProperty("context", [e, "tl", "bl"]);
+                    menu.clearContent();
+                    menu.addItems(items);
+                    menu.render("breadcrumb-menu-target");
+                    menu.show();
+                }
+                menuDelay = null;
+            },delay);
         }
 
         if (xhr)
@@ -53,11 +102,12 @@ var breadcrumbs = (function() {
 
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
-        $(e).observe("mouseover", function () { handleHover(e.firstChild) });
+        $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
     };
 
     jenkinsRules["A.model-link"] = function (a) {
-        $(a).observe("mouseover", function () { handleHover(a); });
+        // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
+        $(a).observe("mouseover", function () { handleHover(a,500); });
     };
 
     /**
