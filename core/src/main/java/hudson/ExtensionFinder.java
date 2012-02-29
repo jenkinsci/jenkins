@@ -262,6 +262,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             sezpozIndex = loadSezpozIndices(Jenkins.getInstance().getPluginManager().uberClassLoader);
 
             List<Module> modules = new ArrayList<Module>();
+            modules.add(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    Jenkins j = Jenkins.getInstance();
+                    bind(Jenkins.class).toInstance(j);
+                    bind(PluginManager.class).toInstance(j.getPluginManager());
+                }
+            });
             modules.add(new SezpozModule(sezpozIndex));
 
             for (ExtensionComponent<Module> ec : moduleFinder.find(Module.class, Hudson.getInstance())) {
