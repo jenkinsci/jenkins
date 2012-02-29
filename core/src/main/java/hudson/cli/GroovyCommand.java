@@ -54,7 +54,7 @@ import java.net.MalformedURLException;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class GroovyCommand extends CLICommand implements Serializable {
+public class GroovyCommand extends CLICommand {
     @Override
     public String getShortDescription() {
         return Messages.GroovyCommand_ShortDescription();
