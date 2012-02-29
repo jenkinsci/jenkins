@@ -75,7 +75,7 @@ THE SOFTWARE.
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className}" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+              <a class="${entry.className} model-link" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
               <st:nbsp/>
             </j:if>
           </j:forEach>

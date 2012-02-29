@@ -57,7 +57,7 @@ THE SOFTWARE.
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
                   </td>
                   <td data="${r.number}">
-                    <a href="${r.number}">
+                    <a href="${r.number}/" class="model-link">
                     ${r.displayName}
                     </a>
                   </td>

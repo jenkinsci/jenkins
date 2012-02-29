@@ -30,7 +30,7 @@ THE SOFTWARE.
   </st:documentation>
   <j:choose>
     <j:when test="${value!=null and value!=app}">
-      <a href="${rootURL}/computer/${value.nodeName}">${value.nodeName}</a>
+      <a href="${rootURL}/computer/${value.nodeName}" class="model-link">${value.nodeName}</a>
     </j:when>
     <j:otherwise>
       ${%master}

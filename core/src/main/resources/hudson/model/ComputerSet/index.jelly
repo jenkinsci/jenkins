@@ -56,7 +56,7 @@ THE SOFTWARE.
           <td width="32" data="${c.icon}">
             <img src="${imagesURL}/32x32/${c.icon}" width="32" height="32" alt="${c.iconAltText}"/>
           </td>
-          <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
+          <td><a href="${rootURL}/${c.url}" class="model-link">${c.displayName}</a></td>
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
               <j:set var="data" value="${m.data(c)}"/>

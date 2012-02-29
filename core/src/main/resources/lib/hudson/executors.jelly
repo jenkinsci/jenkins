@@ -33,7 +33,7 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="computerCaption">
-      <a href="${rootURL}/${c.url}">${title}</a>
+      <a href="${rootURL}/${c.url}" class="model-link">${title}</a>
       <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
@@ -57,7 +57,7 @@ THE SOFTWARE.
                 <td class="pane">
                   <j:choose>
                     <j:when test="${c.offline}">
-                      <a href="${rootURL}/${c.url}">${%Offline}</a>
+                      <a href="${rootURL}/${c.url}" class="model-link">${%Offline}</a>
                     </j:when>
                     <j:otherwise>
                       ${%Idle}
@@ -79,7 +79,7 @@ THE SOFTWARE.
                       </j:invokeStatic>
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}">${exeparent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}">#${exe.number}</a>
+                          <a href="${rootURL}/${exeparent.url}" class="model-link">${exeparent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}" class="model-link">#${exe.number}</a>
                           <t:buildProgressBar build="${exe}" executor="${executor}"/>
                         </j:when>
                         <j:otherwise>
