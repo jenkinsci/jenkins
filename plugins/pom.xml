@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.25</version>
+    <version>1.26</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -256,8 +256,8 @@
 
   <repositories>
     <repository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -269,8 +269,8 @@
 
   <pluginRepositories>
     <pluginRepository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
