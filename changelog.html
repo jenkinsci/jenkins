@@ -57,6 +57,8 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Fixed NPE in Groovy script execution via CLI (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12302">issue 12302</a>)
+  <li class=bug>
+    Fixed bug where a queued build could start while the previous build was still in its post production state.
   <li class=rfe>
     Supported programmatic retrieval/update of slave <tt>config.xml</tt>
   <li class=rfe>
