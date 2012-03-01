@@ -255,7 +255,7 @@ public class Queue extends ResourceController implements Saveable {
 
     public void setLoadBalancer(LoadBalancer loadBalancer) {
         if(loadBalancer==null)  throw new IllegalArgumentException();
-        this.loadBalancer = loadBalancer;
+        this.loadBalancer = loadBalancer.sanitize();
     }
 
     public QueueSorter getSorter() {

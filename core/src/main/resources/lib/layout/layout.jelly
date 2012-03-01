@@ -182,7 +182,7 @@ THE SOFTWARE.
                 <j:choose>
                   <j:when test="${!h.isAnonymous()}">
                     <span style="white-space:nowrap">
-                      <a href="${rootURL}/user/${app.authentication.name}"><b>${app.authentication.name}</b></a>
+                      <a href="${rootURL}/user/${app.authentication.name}" class="model-link"><b>${app.authentication.name}</b></a>
                       <j:if test="${app.securityRealm.canLogOut()}">
                         |
                         <a href="${rootURL}/logout"><b>${%logout}</b></a>

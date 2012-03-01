@@ -45,12 +45,12 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="p" items="${it.users}">
           <tr>
-            <td><a href="${rootURL}/${p.user.url}/"><img src="${h.getUserAvatar(p.user,iconSize)}"
+            <td><a href="${rootURL}/${p.user.url}/" class="model-link"><img src="${h.getUserAvatar(p.user,iconSize)}"
                  alt="" class="icon${iconSize}"/></a></td>
             <td><a href="${rootURL}/${p.user.url}/">${p.user.id}</a></td>
             <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
             <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
-            <td><a href="${rootURL}/${p.project.url}">${p.project.fullDisplayName}</a></td>
+            <td><a href="${rootURL}/${p.project.url}" class="model-link">${p.project.fullDisplayName}</a></td>
           </tr>
         </j:forEach>
       </table>

@@ -1174,6 +1174,24 @@ public class Functions {
     }
 
     /**
+     * Combine path components via '/' while handling leading/trailing '/' to avoid duplicates.
+     */
+    public static String joinPath(String... components) {
+        StringBuilder buf = new StringBuilder();
+        for (String s : components) {
+            if (s.length()==0)  continue;
+
+            if (buf.length()>0) {
+                if (buf.charAt(buf.length()-1)!='/')
+                    buf.append('/');
+                if (s.charAt(0)=='/')   s=s.substring(1);
+            }
+            buf.append(s);
+        }
+        return buf.toString();
+    }
+
+    /**
      * Computes the hyperlink to actions, to handle the situation when the {@link Action#getUrlName()}
      * returns absolute URL.
      */
@@ -1183,10 +1201,10 @@ public class Functions {
         if(SCHEME.matcher(urlName).find())
             return urlName; // absolute URL
         if(urlName.startsWith("/"))
-            return Stapler.getCurrentRequest().getContextPath()+urlName;
+            return joinPath(Stapler.getCurrentRequest().getContextPath(),urlName);
         else
             // relative URL name
-            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
+            return joinPath(Stapler.getCurrentRequest().getContextPath(),itUrl,urlName);
     }
 
     /**

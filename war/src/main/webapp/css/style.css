@@ -1003,7 +1003,7 @@ table.progress-bar.red td.progress-bar-done {
     text-align:center;
     left:0px;
     font-size: 2em;
-    z-index:999;
+    z-index:1000;
     border-bottom: 1px solid black;
 }
 
