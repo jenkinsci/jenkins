@@ -54,8 +54,12 @@ var breadcrumbs = (function() {
     }
 
     function combinePath(a,b) {
-        if (a.endsWith('/'))    return a+b;
-        return a+'/'+b;
+        var uri = URI.parse(a);
+        var path = uri.getPath();
+        if (! path.endsWith('/')) path += '/';
+        path += b;
+        uri.setPath(path);
+        return uri.toString();
     }
 
     /**
