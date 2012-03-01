@@ -128,6 +128,8 @@ THE SOFTWARE.
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
+    <!-- http://code.google.com/p/google-caja/source/browse/trunk/src/com/google/caja/plugin/uri.js r4692 -->
+    <script src="${resURL}/scripts/caja-uri.js" type="text/javascript"/>
 
     <script>
         crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
