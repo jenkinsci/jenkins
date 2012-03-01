@@ -252,6 +252,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT b = getLastBuild();
         return b!=null && b.isBuilding();
     }
+    
+    /**
+     * Returns true if the log file is still being updated.
+     */
+    public boolean isLogUpdated() {
+        RunT b = getLastBuild();
+        return b!=null && b.isLogUpdated();
+    }    
 
     @Override
     public String getPronoun() {

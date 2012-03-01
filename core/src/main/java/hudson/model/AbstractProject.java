@@ -1072,7 +1072,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public CauseOfBlockage getCauseOfBlockage() {
-        if (isBuilding() && !isConcurrentBuild())
+        // Block builds until they are done with post-production
+        if (isLogUpdated() && !isConcurrentBuild())
             return new BecauseOfBuildInProgress(getLastBuild());
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
