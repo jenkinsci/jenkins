@@ -1767,6 +1767,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * correctly, especially when a migration is involved), but the downside
      * is that unless you are processing a request, this method doesn't work.
      *
+     * Please note that this will not work in all cases if Jenkins is running behind a reverse proxy.
+     * In this case, only the user-configured value from getRootUrl is correct.
+     * See https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache
+     *
      * @since 1.263
      */
     public String getRootUrlFromRequest() {
