@@ -240,7 +240,7 @@ function findFollowingTR(input, className) {
 
     // then next TR that matches the CSS
     do {
-        tr = tr.nextSibling;
+        tr = $(tr).next();
     } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
 
     return tr;
@@ -525,13 +525,14 @@ var jenkinsRules = {
 
         // extract templates
         var templates = []; var i=0;
-        for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
+        $(prototypes).childElements().each(function (n) {
             var name = n.getAttribute("name");
             var tooltip = n.getAttribute("tooltip");
             var descriptorId = n.getAttribute("descriptorId");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
             templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
-        }
+            i++;
+        });
         Element.remove(prototypes);
 
         var withDragDrop = initContainerDD(e);
@@ -661,7 +662,7 @@ var jenkinsRules = {
                 link = link.parentNode;
             link.style.display = "none"; // hide the button
 
-            var container = link.nextSibling.firstChild; // TABLE -> TBODY
+            var container = $(link).next().down(); // TABLE -> TBODY
 
             var tr = link;
             while (tr.tagName != "TR")
@@ -673,7 +674,7 @@ var jenkinsRules = {
                 var row = container.lastChild;
                 if(nameRef!=null && row.getAttribute("nameref")==null)
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
-                tr.parentNode.insertBefore(row, tr.nextSibling);
+                tr.parentNode.insertBefore(row, $(tr).next());
             }
         });
         e = null; // avoid memory leak
@@ -685,7 +686,7 @@ var jenkinsRules = {
             while(!Element.hasClassName(link,"advancedLink"))
                 link = link.parentNode;
             link.style.display = "none";
-            link.nextSibling.style.display="block";
+            $(link).next().style.display="block";
         });
         e = null; // avoid memory leak
     },
@@ -742,7 +743,7 @@ var jenkinsRules = {
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
-        e.parentNode.insertBefore(div,e.nextSibling);
+        e.parentNode.insertBefore(div,$(e).next());
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
         var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
@@ -773,7 +774,7 @@ var jenkinsRules = {
     "A.help-button" : function(e) {
         e.onclick = function() {
             var tr = findFollowingTR(this, "help-area");
-            var div = tr.firstChild.nextSibling.firstChild;
+            var div = $(tr).down().next().down();
 
             if (div.style.display != "block") {
                 div.style.display = "block";
@@ -1040,7 +1041,7 @@ var jenkinsRules = {
             var e = s;
             var cnt=1;
             while(cnt>0) {
-                e = e.nextSibling;
+                e = $(e).next();
                 if (Element.hasClassName(e,"radio-block-start"))
                     cnt++;
                 if (Element.hasClassName(e,"radio-block-end"))
@@ -1066,7 +1067,7 @@ var jenkinsRules = {
     "TR.rowvg-start" : function(e) {
         // figure out the corresponding end marker
         function findEnd(e) {
-            for( var depth=0; ; e=e.nextSibling) {
+            for( var depth=0; ; e=$(e).next()) {
                 if(Element.hasClassName(e,"rowvg-start"))    depth++;
                 if(Element.hasClassName(e,"rowvg-end"))      depth--;
                 if(depth==0)    return e;
@@ -1110,8 +1111,7 @@ var jenkinsRules = {
              */
             updateVisibility : function() {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
-                for (var e=this.start; e!=this.end; e=e.nextSibling) {
-                    if (e.nodeType!=1)  continue;
+                for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
                         e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
@@ -1220,13 +1220,12 @@ var jenkinsRules = {
     // editableComboBox.jelly
     "INPUT.combobox" : function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
-        var vdiv = c.nextSibling;
-        if (Element.hasClassName(vdiv, "combobox-values")) {
+        var vdiv = $(c).next();
+        if (vdiv.hasClassName("combobox-values")) {
             createComboBox(c, function() {
-                var values = [];
-                for (var value = vdiv.firstChild; value; value = value.nextSibling)
-                    values.push(value.getAttribute('value'));
-                return values;
+                return vdiv.childElements().collect(function(value) {
+                    return value.getAttribute('value');
+                });
             });
         }
     },
@@ -1236,7 +1235,7 @@ var jenkinsRules = {
         if(isInsideRemovable(e))    return;
 
         var subForms = [];
-        var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
+        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
         do { start = start.firstChild; } while (start && start.tagName != 'TR');
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
@@ -1250,9 +1249,9 @@ var jenkinsRules = {
         function updateDropDownList() {
             for (var i = 0; i < subForms.length; i++) {
                 var show = e.selectedIndex == i;
-                var f = subForms[i];
+                var f = $(subForms[i]);
 
-                if (show)   renderOnDemand(f.nextSibling);
+                if (show)   renderOnDemand(f.next());
                 f.rowVisibilityGroup.makeInnerVisisble(show);
 
                 // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
@@ -1323,7 +1322,7 @@ var jenkinsRules = {
     "A.showDetails" : function(e) {
         e.onclick = function() {
             this.style.display = 'none';
-            this.nextSibling.style.display = 'block';
+            $(this).next().style.display = 'block';
             return false;
         };
         e = null; // avoid memory leak
@@ -1334,7 +1333,7 @@ var jenkinsRules = {
     },
 
     ".button-with-dropdown" : function (e) {
-        new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+        new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
     },
 
     "DIV.textarea-preview-container" : function (e) {
@@ -1513,7 +1512,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
     new Ajax.Request(
         "./descriptionForm",
         {
@@ -1537,9 +1536,9 @@ function replaceDescription() {
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
-    for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
+    for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.nodeType==1 && x.getAttribute("nameRef")==null)
+        if(x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
 }
@@ -1549,14 +1548,14 @@ function applyNameRef(s,e,id) {
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
     // find the start TR
-    var s = c;
-    while(!Element.hasClassName(s, "optional-block-start"))
-        s = s.parentNode;
+    var s = $(c);
+    while(!s.hasClassName("optional-block-start"))
+        s = s.up();
 
     // find the beginning of the rowvg
-    var vg = s;
-    while (!Element.hasClassName(vg,"rowvg-start"))
-        vg = vg.nextSibling;
+    var vg =s;
+    while (!vg.hasClassName("rowvg-start"))
+        vg = vg.next();
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
@@ -1691,8 +1690,8 @@ function refreshPart(id,url) {
         new Ajax.Request(url, {
             onSuccess: function(rsp) {
                 var hist = $(id);
-                var p = hist.parentNode;
-                var next = hist.nextSibling;
+                var p = hist.up();
+                var next = hist.next();
                 p.removeChild(hist);
 
                 var div = document.createElement('div');
@@ -1824,10 +1823,9 @@ var repeatableSupport = {
 
     // update CSS classes associated with repeated items.
     update : function() {
-        var children = [];
-        for( var n=this.container.firstChild; n!=null; n=n.nextSibling )
-            if(Element.hasClassName(n,"repeated-chunk"))
-                children.push(n);
+        var children = $(this.container).childElements().findAll(function (n) {
+            return n.hasClassName("repeated-chunk");
+        });
 
         if(children.length==0) {
             // noop
@@ -1881,13 +1879,14 @@ var radioBlockSupport = {
     // update one block based on the status of the given radio button
     updateSingleButton : function(radio, blockStart, blockEnd) {
         var show = radio.checked;
+        blockStart = $(blockStart);
         
         if (blockStart.getAttribute('hasHelp') == 'true') {
-            n = blockStart.nextSibling;
+            n = blockStart.next();
         } else {
             n = blockStart;
         }
-        while((n = n.nextSibling) != blockEnd) {
+        while((n = n.next()) != blockEnd) {
           n.style.display = show ? "" : "none";
         }
     }
@@ -2304,17 +2303,17 @@ var hoverNotification = (function() {
 function initContainerDD(e) {
     if (!Element.hasClassName(e,"with-drag-drop")) return false;
 
-    for (e=e.firstChild; e!=null; e=e.nextSibling) {
-        if (Element.hasClassName(e,"repeated-chunk"))
+    $(e).childElements().each(function (e) {
+        if (e.hasClassName("repeated-chunk"))
             prepareDD(e);
-    }
+    });
     return true;
 }
 function prepareDD(e) {
-    var h = e;
+    var h = $(e);
     // locate a handle
-    while (h!=null && !Element.hasClassName(h,"dd-handle"))
-        h = h.firstChild ? h.firstChild : h.nextSibling;
+    while (h!=null && !h.hasClassName("dd-handle"))
+        h = h.down() ? h.down() : h.next();
     if (h!=null) {
         var dd = new DragDrop(e);
         dd.setHandleElId(h);
@@ -2541,8 +2540,8 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = Element.up(button,"DIV").nextSibling;
-  var target = spinner.nextSibling;
+  var spinner = $(button).up("DIV").next();
+  var target = spinner.next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
