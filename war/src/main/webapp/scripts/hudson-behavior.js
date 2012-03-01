@@ -518,10 +518,10 @@ var jenkinsRules = {
             btn = btns[btns.length-1]; // In case nested content also uses hetero-list
         YAHOO.util.Dom.insertAfter(menu,btn);
 
-        var prototypes = e.lastChild;
-        while(!Element.hasClassName(prototypes,"prototypes"))
-            prototypes = prototypes.previousSibling;
-        var insertionPoint = prototypes.previousSibling;    // this is where the new item is inserted.
+        var prototypes = $(e.lastChild);
+        while(!prototypes.hasClassName("prototypes"))
+            prototypes = prototypes.previous();
+        var insertionPoint = prototypes.previous();    // this is where the new item is inserted.
 
         // extract templates
         var templates = []; var i=0;
@@ -569,9 +569,9 @@ var jenkinsRules = {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
-        var ip = e.lastChild;
-        while (!Element.hasClassName(ip, "repeatable-insertion-point"))
-            ip = ip.previousSibling;
+        var ip = $(e.lastChild);
+        while (!ip.hasClassName("repeatable-insertion-point"))
+            ip = ip.previous();
         // set up the logic
         object(repeatableSupport).init(e, e.firstChild, ip);
     },
@@ -713,13 +713,13 @@ var jenkinsRules = {
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
-            var e = this.previousSibling;
+            var e = $(this).previous();
             while (e!=null) {
                 if (e.tagName=="INPUT") {
                     e.click();
                     break;
                 }
-                e = e.previousSibling;
+                e = e.previous();
             }
         }
         e = null;
@@ -1141,11 +1141,12 @@ var jenkinsRules = {
 
     "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
+        e = $(e);
         var end = e;
 
-        for( var depth=0; ; e=e.previousSibling) {
-            if(Element.hasClassName(e,"row-set-end"))        depth++;
-            if(Element.hasClassName(e,"row-set-start"))      depth--;
+        for( var depth=0; ; e=e.previous()) {
+            if(e.hasClassName("row-set-end"))        depth++;
+            if(e.hasClassName("row-set-start"))      depth--;
             if(depth==0)    break;
         }
         var start = e;
