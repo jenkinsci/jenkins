@@ -30,12 +30,12 @@
 //
 
 var YAHOO = (function(){
-    var Y = YUI({
-        base: "/adjuncts/12345678/yui3/",
+    YUI_config = {
+        base: adjunctsURL+"/yui3/",
         combine: false,
         groups: {
             yui2: {
-                base: "/adjuncts/12345678/yui3/",
+                base: adjunctsURL+"/yui3/",
                 patterns:{
                     'yui2-':{
                         configFn:function (me) {
@@ -49,7 +49,8 @@ var YAHOO = (function(){
                 }
             }
         }
-    }).use("*");
+    };
+    var Y = YUI().use("*");
 
     // intercept YUI.add and make all yui2 bits immediately available to global 'YAHOO'
     // for backward compatibility
