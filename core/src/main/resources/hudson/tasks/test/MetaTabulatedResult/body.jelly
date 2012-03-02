@@ -63,7 +63,7 @@ THE SOFTWARE.
             <a id="test-${f.fullName}-hidelink" style="display:none"
                href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
             <st:nbsp/>
-            <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+            <a href="${f.getRelativePathFrom(it)}" class="model-link"><st:out value="${f.fullName}"/></a>
             <st:nbsp/>
             <j:forEach var="badge" items="${f.testActions}">
               <st:include it="${badge}" page="badge.jelly" optional="true"/>
@@ -77,7 +77,7 @@ THE SOFTWARE.
             ${f.durationString}
           </td>
           <td class="pane" style="text-align:right;">
-            <a href="${rootURL}/${f.failedSinceRun.url}">${f.age}</a>
+            <a href="${rootURL}/${f.failedSinceRun.url}" class="model-link">${f.age}</a>
           </td>
         </tr>
       </j:forEach>
@@ -102,7 +102,7 @@ THE SOFTWARE.
           <j:set var="prev" value="${p.previousResult}" />
           <tr>
             <td class="pane">
-              <a href="${p.safeName}/"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
+              <a href="${p.safeName}/" class="model-link"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
                 <st:nbsp/>
                 <j:forEach var="badge" items="${p.testActions}">
                   <st:include it="${badge}" page="badge.jelly" optional="true"/>

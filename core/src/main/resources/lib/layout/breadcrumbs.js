@@ -1,4 +1,6 @@
 var breadcrumbs = (function() {
+    var Dom = YAHOO.util.Dom;
+
     /**
      * This component actually renders the menu.
      *
@@ -11,6 +13,26 @@ var breadcrumbs = (function() {
      */
     var xhr;
 
+    /**
+     * When mouse hovers over the anchor that has context menu, we capture its region here.
+     * This is used to to avoid showing menu when the mouse slides over to other elements after a delay.
+     *
+     * @type {YAHOO.util.Region}
+     */
+    var hitTest;
+
+    /**
+     * Current mouse cursor position in the page coordinate.
+     *
+     * @type {YAHOO.util.Point}
+     */
+    var mouse;
+
+    /**
+     * Timer ID for lazy menu display.
+     */
+    var menuDelay;
+
     function makeMenuHtml(icon,displayName) {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
@@ -19,39 +41,79 @@ var breadcrumbs = (function() {
       menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
     });
 
+
+    Event.observe(window,"mousemove",function (ev){
+        mouse = new YAHOO.util.Point(ev.pageX,ev.pageY);
+    });
+
+    function cancelMenu() {
+        if (menuDelay) {
+            window.clearTimeout(menuDelay);
+            menuDelay = null;
+        }
+    }
+
+    function combinePath(a,b) {
+        if (a.endsWith('/'))    return a+b;
+        return a+'/'+b;
+    }
+
+    /**
+     * @param {HTMLElement} e
+     *      anchor tag
+     * @param {Number} delay
+     *      Number of milliseconds to wait before the menu is displayed.
+     *      The mouse needs to be on the same anchor tag after this delay.
+     */
+    function handleHover(e,delay) {
+        function showMenu(items) {
+            cancelMenu();
+            hitTest = Dom.getRegion(e);
+            menuDelay = window.setTimeout(function() {
+                if (hitTest.contains(mouse)) {
+                    menu.hide();
+                    var pos = [e, "tl", "bl"];
+                    if ($(e).hasClassName("tl-tr"))  pos = [e,"tl","tr"]
+                    menu.cfg.setProperty("context", pos);
+                    menu.clearContent();
+                    menu.addItems(items);
+                    menu.render("breadcrumb-menu-target");
+                    menu.show();
+                }
+                menuDelay = null;
+            },delay);
+        }
+
+        if (xhr)
+            xhr.options.onComplete = function () {
+            };   // ignore the currently pending call
+
+        if (e.items) {// use what's already loaded
+            showMenu(e.items());
+        } else {// fetch menu on demand
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
+                onComplete:function (x) {
+                    var a = x.responseText.evalJSON().items;
+                    a.each(function (e) {
+                        e.text = makeMenuHtml(e.icon, e.displayName);
+                    });
+                    e.items = function() { return a };
+                    showMenu(a);
+                }
+            });
+        }
+
+        return false;
+    }
+
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
-        $(e).observe("mouseover", function () {
-            function showMenu(items) {
-                menu.hide();
-                menu.cfg.setProperty("context", [e, "tl", "bl"]);
-                menu.clearContent();
-                menu.addItems(items);
-                menu.render("breadcrumb-menu-target");
-                menu.show();
-            }
+        $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
+    };
 
-            if (xhr)
-                xhr.options.onComplete = function () {
-                };   // ignore the currently pending call
-
-            if (e.items) {// use what's already loaded
-                showMenu(e.items());
-            } else {// fetch menu on demand
-                xhr = new Ajax.Request(e.firstChild.getAttribute("href") + "contextMenu", {
-                    onComplete:function (x) {
-                        var a = x.responseText.evalJSON().items;
-                        a.each(function (e) {
-                            e.text = makeMenuHtml(e.icon, e.displayName);
-                        });
-                        e.items = function() { return a };
-                        showMenu(a);
-                    }
-                });
-            }
-
-            return false;
-        });
+    jenkinsRules["A.model-link"] = function (a) {
+        // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
+        $(a).observe("mouseover", function () { handleHover(a,500); });
     };
 
     /**
@@ -86,7 +148,7 @@ var breadcrumbs = (function() {
          *      populating the content.
          */
         "attachMenu" : function (li,menu) {
-            $(li).items =  (typeof menu=="function") ? menu : function() { return menu.items };
+            $(li).firstChild.items =  (typeof menu=="function") ? menu : function() { return menu.items };
         },
 
         "ContextMenu" : ContextMenu
