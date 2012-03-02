@@ -346,7 +346,30 @@ var Class = (function() {
   extend(Object, {
     extend:        extend,
     inspect:       inspect,
-    toJSON:        NATIVE_JSON_STRINGIFY_SUPPORT ? stringify : toJSON,
+
+    // JENKINS-11618
+    //toJSON:        NATIVE_JSON_STRINGIFY_SUPPORT ? stringify : toJSON,
+    toJSON: function(object) {
+      var type = typeof object;
+      switch(type) {
+        case 'undefined':
+        case 'function':
+        case 'unknown': return;
+        case 'boolean': return object.toString();
+      }
+      if (object === null) return 'null';
+      // "|| object.toJSON" below is workaround for Opera 10.52/53 bug, see HUDSON-6424
+      if (object.toJSON || object.toJSON) return object.toJSON();
+      if (object.ownerDocument === document) return;
+      var results = [];
+      for (var property in object) {
+        var value = Object.toJSON(object[property]);
+        if (value !== undefined)
+          results.push(property.toJSON() + ': ' + value);
+      }
+      return '{' + results.join(', ') + '}';
+    },
+
     toQueryString: toQueryString,
     toHTML:        toHTML,
     keys:          Object.keys || keys,
