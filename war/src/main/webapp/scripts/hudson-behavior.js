@@ -743,7 +743,7 @@ var jenkinsRules = {
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
-        e.parentNode.insertBefore(div,$(e).next());
+        e.parentNode.insertBefore(div,$(e).next()||null);
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
         var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
