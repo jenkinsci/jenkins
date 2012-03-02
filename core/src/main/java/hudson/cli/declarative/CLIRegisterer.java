@@ -44,7 +44,6 @@ import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -67,9 +66,6 @@ import java.util.logging.Logger;
  */
 @Extension
 public class CLIRegisterer extends ExtensionFinder {
-    @Inject
-    Jenkins jenkins;
-
     @Override
     public ExtensionComponentSet refresh() throws ExtensionRefreshException {
         // TODO: this is not complex. just bit tedious.
@@ -78,7 +74,7 @@ public class CLIRegisterer extends ExtensionFinder {
 
     public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
         if (type==CLICommand.class)
-            return (List)discover();
+            return (List)discover(jenkins);
         else
             return Collections.emptyList();
     }
@@ -87,7 +83,7 @@ public class CLIRegisterer extends ExtensionFinder {
      * Finds a resolved method annotated with {@link CLIResolver}.
      */
     private Method findResolver(Class type) throws IOException {
-        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, jenkins.getPluginManager().uberClassLoader), Method.class);
+        List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.getInstance().getPluginManager().uberClassLoader), Method.class);
         for ( ; type!=null; type=type.getSuperclass())
             for (Method m : resolvers)
                 if (m.getReturnType()==type)
@@ -95,12 +91,12 @@ public class CLIRegisterer extends ExtensionFinder {
         return null;
     }
 
-    private List<ExtensionComponent<CLICommand>> discover() {
+    private List<ExtensionComponent<CLICommand>> discover(final Jenkins hudson) {
         LOGGER.fine("Listing up @CLIMethod");
         List<ExtensionComponent<CLICommand>> r = new ArrayList<ExtensionComponent<CLICommand>>();
 
         try {
-            for ( final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader),Method.class)) {
+            for ( final Method m : Util.filter(Index.list(CLIMethod.class, hudson.getPluginManager().uberClassLoader),Method.class)) {
                 try {
                     // command name
                     final String name = m.getAnnotation(CLIMethod.class).name();
@@ -154,7 +150,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                         binders.add(new MethodBinder(chains.pop(),this,parser));
 
                                     // authentication
-                                    CliAuthenticator authenticator = jenkins.getSecurityRealm().createCliAuthenticator(this);
+                                    CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
                                     new ClassParser().parse(authenticator,parser);
 
                                     // fill up all the binders
@@ -164,7 +160,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     if (auth== Jenkins.ANONYMOUS)
                                         auth = loadStoredAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
-                                    jenkins.checkPermission(Jenkins.READ);
+                                    hudson.checkPermission(Jenkins.READ);
 
                                     // resolve them
                                     Object instance = null;
