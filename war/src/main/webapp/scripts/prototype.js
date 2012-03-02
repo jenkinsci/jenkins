@@ -742,6 +742,10 @@ Object.extend(String.prototype, (function() {
     return "'" + escapedString.replace(/'/g, '\\\'') + "'";
   }
 
+  function toJSON() {
+    return this.inspect(true);
+  }
+
   function unfilterJSON(filter) {
     return this.replace(filter || Prototype.JSONFilter, '$1');
   }
@@ -827,6 +831,7 @@ Object.extend(String.prototype, (function() {
     dasherize:      dasherize,
     inspect:        inspect,
     unfilterJSON:   unfilterJSON,
+    toJSON:         toJSON,
     isJSON:         isJSON,
     evalJSON:       NATIVE_JSON_PARSE_SUPPORT ? parseJSON : evalJSON,
     include:        include,
@@ -1215,6 +1220,15 @@ Array.from = $A;
     return '[' + this.map(Object.inspect).join(', ') + ']';
   }
 
+  function toJSON() {
+    var results = [];
+    this.each(function(object) {
+      var value = Object.toJSON(object);
+      if (value !== undefined) results.push(value);
+    });
+    return '[' + results.join(', ') + ']';
+  }
+
   function indexOf(item, i) {
     if (this == null) throw new TypeError();
 
@@ -1409,6 +1423,7 @@ Array.from = $A;
     reverse:   reverse,
     uniq:      uniq,
     intersect: intersect,
+    toJSON:    toJSON,
     clone:     clone,
     toArray:   clone,
     size:      size,
@@ -1527,6 +1542,10 @@ var Hash = Class.create(Enumerable, (function() {
     }).join(', ') + '}>';
   }
 
+  function toJSON() {
+    return this.toObject().toJSON();
+  }
+
   function clone() {
     return new Hash(this);
   }
@@ -1546,7 +1565,7 @@ var Hash = Class.create(Enumerable, (function() {
     update:                 update,
     toQueryString:          toQueryString,
     inspect:                inspect,
-    toJSON:                 toObject,
+    toJSON:                 toJSON,
     clone:                  clone
   };
 })());
@@ -1571,6 +1590,10 @@ Object.extend(Number.prototype, (function() {
     return '0'.times(length - string.length) + string;
   }
 
+  function toJSON() {
+    return isFinite(this) ? this.toString() : 'null';
+  }
+
   function abs() {
     return Math.abs(this);
   }
@@ -1592,6 +1615,7 @@ Object.extend(Number.prototype, (function() {
     succ:           succ,
     times:          times,
     toPaddedString: toPaddedString,
+    toJSON:         toJSON,
     abs:            abs,
     round:          round,
     ceil:           ceil,
@@ -1716,7 +1740,7 @@ Ajax.Base = Class.create({
 
     if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
-  
+
     // KK patch -- handle crumb for POST automatically by adding a header
     if(this.options.method=="post") {
         if(this.options.requestHeaders==undefined)
