@@ -1507,6 +1507,14 @@ Ajax.Base = Class.create({
 
     if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
+  
+    // KK patch -- handle crumb for POST automatically by adding a header
+    if(this.options.method=="post") {
+        if(this.options.requestHeaders==undefined)
+            this.options.requestHeaders = {};
+        crumb.wrap(this.options.requestHeaders);
+    }
+    // KK patch until here
   }
 });
 Ajax.Request = Class.create(Ajax.Base, {
