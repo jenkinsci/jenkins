@@ -1499,7 +1499,7 @@ Ajax.Base = Class.create({
       encoding:     'UTF-8',
       parameters:   '',
       evalJSON:     true,
-      evalJS:       true
+      evalJS:       false
     };
     Object.extend(this.options, options || { });
 
