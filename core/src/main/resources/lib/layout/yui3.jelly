@@ -23,12 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    Load Yahoo UI module.
+    Load Yahoo UI3 module.
     <st:attribute name="module" use="required">
       YUI module name to load.
     </st:attribute>
   </st:documentation>
-  <l:yui3 module="yui2-${module}"/>
+
+  <st:adjunct includes="yui3.${module}.${module}-${yuiSuffix}" />
 </j:jelly>

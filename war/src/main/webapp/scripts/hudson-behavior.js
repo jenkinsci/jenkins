@@ -29,6 +29,23 @@
 //     for memory leak patterns and how to prevent them.
 //
 
+var YAHOO = (function(){
+    var Y = YUI().use("*");
+    var YAHOO = Y.YUI2;
+
+    // intercept YUI.add and make all yui2 bits immediately available to global 'YAHOO'
+    // for backward compatibility
+    var original = YUI.add;
+    YUI.add = function() {
+        var name = arguments[0];
+        if (name.startsWith("yui2-"))
+            arguments[1](Y);
+        return original.apply(this,arguments);
+    };
+
+    return YAHOO;
+})();
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
