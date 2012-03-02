@@ -53,8 +53,6 @@ THE SOFTWARE.
   <f:section title="${%Configuration Matrix}">
     <!-- Needed for LabelAxis, but including these from LabelAxis/config.jelly is too late -->
     <l:yui module="treeview" />
-    <link rel="stylesheet" type="text/css"
-          href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" />
 
     <f:block>
       <f:hetero-list name="axis" hasHeader="true"
