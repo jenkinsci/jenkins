@@ -71,7 +71,6 @@ THE SOFTWARE.
           <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
               <!-- otherwise (unless way too many) use a tree view -->
               <l:yui module="treeview"/>
-              <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
               <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
               <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
               <div id="artifact-tree"></div>
