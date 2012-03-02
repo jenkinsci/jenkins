@@ -2332,7 +2332,7 @@ Element.Methods = {
   hasClassName: function(element, className) {
     if (!(element = $(element))) return;
     var elementClassName = element.className;
-    return (elementClassName.length > 0 && (elementClassName == className ||
+    return (elementClassName && elementClassName.length > 0 && (elementClassName == className ||
       new RegExp("(^|\\s)" + className + "(\\s|$)").test(elementClassName)));
   },
 
