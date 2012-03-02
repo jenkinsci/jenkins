@@ -30,20 +30,56 @@
 //
 
 var YAHOO = (function(){
-    var Y = YUI().use("*");
-    var YAHOO = Y.YUI2;
+    var Y = YUI({
+        base: "/adjuncts/12345678/yui3/",
+        combine: false,
+        groups: {
+            yui2: {
+                base: "/adjuncts/12345678/yui3/",
+                patterns:{
+                    'yui2-':{
+                        configFn:function (me) {
+                            if (/-skin|reset|fonts|grids|base/.test(me.name)) {
+                                me.type = 'css';
+                                me.path = me.path.replace(/\.js/, '.css');
+                                me.path = me.path.replace(/\/yui2-skin/, '/assets/skins/sam/yui2-skin');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }).use("*");
 
     // intercept YUI.add and make all yui2 bits immediately available to global 'YAHOO'
     // for backward compatibility
     var original = YUI.add;
     YUI.add = function() {
         var name = arguments[0];
-        if (name.startsWith("yui2-"))
+        if (name.startsWith("yui2-")) {
             arguments[1](Y);
-        return original.apply(this,arguments);
+            r = original.apply(this,arguments);
+
+            // if statically inserted module has dependencies, load them eagerly to
+            // add them all to global 'YAHOO'
+            if (arguments[3].requires)
+                Y.use(arguments[3].requires);
+            return r;
+        } else {
+            return original.apply(this,arguments);
+        }
     };
 
-    return YAHOO;
+    // Resolve all missing dependencies from statically loaded resources
+    var mods = YUI.Env.mods;
+    for (m in mods) {
+         if (mods.hasOwnProperty(m)) {
+             var requires = mods[m].details.requires;
+             if (requires)  Y.use(requires);
+         }
+     }
+
+    return Y.YUI2;
 })();
 
 // create a new object whose prototype is the given object
