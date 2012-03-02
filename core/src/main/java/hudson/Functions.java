@@ -1204,7 +1204,7 @@ public class Functions {
             return joinPath(Stapler.getCurrentRequest().getContextPath(),urlName);
         else
             // relative URL name
-            return joinPath(Stapler.getCurrentRequest().getContextPath(),itUrl,urlName);
+            return joinPath(Stapler.getCurrentRequest().getContextPath()+'/'+itUrl,urlName);
     }
 
     /**
