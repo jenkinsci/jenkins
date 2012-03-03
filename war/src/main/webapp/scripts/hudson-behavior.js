@@ -83,6 +83,8 @@ var YAHOO = (function(){
     return Y.YUI2;
 })();
 
+YAHOO.util.DataSourceBase.prototype.toString = function() { return this._sName || ""; }
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
