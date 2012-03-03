@@ -33,7 +33,6 @@ var YAHOO = (function(){
     YUI_config = {
         base: adjunctsURL+"/yui3/",
         combine: false,
-        filter: "DEBUG",
         groups: {
             yui2: {
                 base: adjunctsURL+"/yui3/",
@@ -51,6 +50,9 @@ var YAHOO = (function(){
             }
         }
     };
+    if (yuiSuffix=="debug")
+        YUI_config.filter = "DEBUG";
+
     var Y = YUI().use("*");
 
     // intercept YUI.add and make all yui2 bits immediately available to global 'YAHOO'

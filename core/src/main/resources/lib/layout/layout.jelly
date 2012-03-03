@@ -108,6 +108,7 @@ THE SOFTWARE.
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
+    <script>var yuiSuffix="${yuiSuffix}";</script>
     <l:yui3 module="yui"/>
     <l:yui module="yahoo" />
     <l:yui module="dom" />
