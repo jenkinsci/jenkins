@@ -33,6 +33,7 @@ var YAHOO = (function(){
     YUI_config = {
         base: adjunctsURL+"/yui3/",
         combine: false,
+        filter: "DEBUG",
         groups: {
             yui2: {
                 base: adjunctsURL+"/yui3/",
@@ -58,13 +59,15 @@ var YAHOO = (function(){
     YUI.add = function() {
         var name = arguments[0];
         if (name.startsWith("yui2-")) {
-            arguments[1](Y);
+            var mods = YUI.Env.mods[name];
             r = original.apply(this,arguments);
 
-            // if statically inserted module has dependencies, load them eagerly to
-            // add them all to global 'YAHOO'
-            if (arguments[3].requires)
-                Y.use(arguments[3].requires);
+            if (!mods) {
+                arguments[1](Y);
+                // if statically inserted module has dependencies, load them eagerly to
+                // add them all to global 'YAHOO'
+                Y.use(name)
+            }
             return r;
         } else {
             return original.apply(this,arguments);
@@ -80,6 +83,7 @@ var YAHOO = (function(){
          }
      }
 
+    Y.YUI2.Y = Y;   // reverse pointer
     return Y.YUI2;
 })();
 
