@@ -79,6 +79,7 @@ import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.awt.*;
@@ -959,10 +960,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit(StaplerRequest req,
             StaplerResponse rsp) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-        requirePOST();
 
         description = req.getParameter("description");
 
@@ -1195,10 +1196,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Renames this job.
      */
+    @RequirePOST
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
-        requirePOST();
         // rename is essentially delete followed by a create
         checkPermission(CREATE);
         checkPermission(DELETE);

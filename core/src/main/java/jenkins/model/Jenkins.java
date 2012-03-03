@@ -231,6 +231,7 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
@@ -3206,9 +3207,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      *
      * This is useful for system administration as well as unit testing.
      */
+    @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(ADMINISTER);
-        requirePOST();
 
         try {
             MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());

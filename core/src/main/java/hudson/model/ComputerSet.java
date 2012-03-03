@@ -40,6 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -303,11 +304,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-            requirePOST();
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
