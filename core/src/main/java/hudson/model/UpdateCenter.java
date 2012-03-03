@@ -82,6 +82,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 
 /**
@@ -281,8 +282,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     /**
      * Schedules a Jenkins upgrade.
      */
+    @RequirePOST
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
@@ -367,8 +368,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable {
     /**
      * Performs hudson downgrade.
      */
+    @RequirePOST
     public void doDowngrade(StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if(!isDowngradable()) {
             sendError("Jenkins downgrade is not possible, probably backup does not exist");

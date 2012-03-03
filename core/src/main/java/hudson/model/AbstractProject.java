@@ -90,6 +90,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -1651,8 +1652,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Deletes this project.
      */
     @Override
+    @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        requirePOST();
         delete();
         if (req == null || rsp == null)
             return;
@@ -1773,16 +1774,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @CLIMethod(name="disable-job")
+    @RequirePOST
     public HttpResponse doDisable() throws IOException, ServletException {
-        requirePOST();
         checkPermission(CONFIGURE);
         makeDisabled(true);
         return new HttpRedirect(".");
     }
 
     @CLIMethod(name="enable-job")
+    @RequirePOST
     public HttpResponse doEnable() throws IOException, ServletException {
-        requirePOST();
         checkPermission(CONFIGURE);
         makeDisabled(false);
         return new HttpRedirect(".");

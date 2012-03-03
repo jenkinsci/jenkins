@@ -52,6 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -127,8 +128,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the management screen.
      */
+    @RequirePOST
     public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
-        requirePOST();
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         if(req.hasParameter("n")) {
@@ -215,8 +216,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the confirmation screen to actually initiate the migration.
      */
+    @RequirePOST
     public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
-        requirePOST(); 
         Jenkins hudson = Jenkins.getInstance();
         hudson.checkPermission(Jenkins.ADMINISTER);
 

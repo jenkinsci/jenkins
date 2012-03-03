@@ -34,6 +34,7 @@ import hudson.search.SearchableModelObject;
 import hudson.search.Search;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchIndex;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ModelObject} with some convenience methods.
@@ -74,6 +75,9 @@ public abstract class AbstractModelObject implements SearchableModelObject {
 
     /**
      * Convenience method to verify that the current request is a POST request.
+     * 
+     * @deprecated 
+     *      Use {@link RequirePOST} on your method.
      */
     protected final void requirePOST() throws ServletException {
         StaplerRequest req = Stapler.getCurrentRequest();

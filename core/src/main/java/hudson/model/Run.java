@@ -110,6 +110,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -1778,8 +1780,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Deletes the build when the button is pressed.
      */
+    @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly
@@ -1925,9 +1927,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
+    @RequirePOST
     public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
-        requirePOST();
         BulkChange bc = new BulkChange(this);
         try {
             JSONObject json = req.getSubmittedForm();
