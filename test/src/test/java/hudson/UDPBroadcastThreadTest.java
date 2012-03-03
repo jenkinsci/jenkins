@@ -24,7 +24,7 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
     public void testLegacy() throws Exception {
         DatagramSocket s = new DatagramSocket();
         sendQueryTo(s, InetAddress.getLocalHost());
-        s.setSoTimeout(5000); // to prevent test hang
+        s.setSoTimeout(15000); // to prevent test hang
         receiveAndVerify(s);
     }
 
@@ -39,7 +39,7 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
         try {
             DatagramSocket s = new DatagramSocket();
             sendQueryTo(s, UDPBroadcastThread.MULTICAST);
-            s.setSoTimeout(5000); // to prevent test hang
+            s.setSoTimeout(15000); // to prevent test hang
 
             // we should at least get two replies since we run two broadcasts
             receiveAndVerify(s);
