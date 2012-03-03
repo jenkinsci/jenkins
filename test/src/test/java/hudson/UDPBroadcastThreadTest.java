@@ -32,9 +32,14 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
      * Multicast based clients should be able to receive multiple replies.
      */
     public void testMulticast() throws Exception {
-        UDPBroadcastThread second = new UDPBroadcastThread(hudson);
+        UDPBroadcastThread second = new UDPBroadcastThread(jenkins);
         second.start();
+
+        UDPBroadcastThread third = new UDPBroadcastThread(jenkins);
+        third.start();
+
         second.ready.block();
+        third.ready.block();
 
         try {
             DatagramSocket s = new DatagramSocket();
@@ -45,6 +50,7 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
             receiveAndVerify(s);
             receiveAndVerify(s);
         } finally {
+            third.interrupt();
             second.interrupt();
         }
     }
