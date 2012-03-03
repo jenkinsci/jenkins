@@ -59,15 +59,10 @@ var YAHOO = (function(){
     YUI.add = function() {
         var name = arguments[0];
         if (name.startsWith("yui2-")) {
-            var mods = YUI.Env.mods[name];
             r = original.apply(this,arguments);
 
-            if (!mods) {
-                arguments[1](Y);
-                // if statically inserted module has dependencies, load them eagerly to
-                // add them all to global 'YAHOO'
-                Y.use(name)
-            }
+            Y._attach([name]);    // make sure this module is available right away
+            Y.use(name);        // if it has any dependencies, load them (but this will happen lazily)
             return r;
         } else {
             return original.apply(this,arguments);
