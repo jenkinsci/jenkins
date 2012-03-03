@@ -211,6 +211,9 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
@@ -636,9 +639,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         }
     };
 
+
+    /**
+     * Hook for a test harness to intercept Jenkins.getInstance()
+     *
+     * Do not use in the production code as the signature may change.
+     */
+    public interface JenkinsHolder {
+        Jenkins getInstance();
+    }
+
+    static JenkinsHolder HOLDER = new JenkinsHolder() {
+        public Jenkins getInstance() {
+            return theInstance;
+        }
+    };
+
     @CLIResolver
     public static Jenkins getInstance() {
-        return theInstance;
+        return HOLDER.getInstance();
     }
 
     /**
