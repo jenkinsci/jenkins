@@ -50,8 +50,6 @@ import hudson.util.DataSetBuilder;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
-import hudson.util.HttpResponses;
-import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -60,6 +58,7 @@ import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import jenkins.model.ProjectNamingStrategy;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jfree.chart.ChartFactory;
@@ -992,11 +991,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             save();
 
             String newName = req.getParameter("name");
+            final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
             if (newName != null && !newName.equals(name)) {
                 // check this error early to avoid HTTP response splitting.
                 Jenkins.checkGoodName(newName);
+                namingStrategy.checkName(newName);
                 rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
+                if(namingStrategy.isForceExistingJobs()){
+                    namingStrategy.checkName(name);
+                }
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {

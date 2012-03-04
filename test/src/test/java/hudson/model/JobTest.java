@@ -31,6 +31,10 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import hudson.util.TextFile;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+
+import jenkins.model.ProjectNamingStrategy;
+
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -238,5 +242,21 @@ public class JobTest extends HudsonTestCase {
         assertEquals("description", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
         project.setDescription(null);
         assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
+    }
+    
+    public void testProjectNamingStrategy() throws Exception {
+        hudson.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
+        final FreeStyleProject p = createFreeStyleProject("DUMMY_project");
+        assertNotNull("no project created", p);
+        try {
+            createFreeStyleProject("project");
+            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
+        } catch (Failure e) {
+            // OK, expected
+        }finally{
+            // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
+            hudson.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
+        }
+        createFreeStyleProject("project");
     }
 }

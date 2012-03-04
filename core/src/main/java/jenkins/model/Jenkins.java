@@ -192,6 +192,7 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
@@ -365,6 +366,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+    
+    /**
+     * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
+     */
+    private ProjectNamingStrategy projectNamingStrategy = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
 
     /**
      * Root directory for the workspaces. This value will be variable-expanded against
@@ -1863,6 +1869,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
+    
+    public boolean isUseProjectNamingStrategy(){
+        return projectNamingStrategy != DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+    }
 
     /**
      * If true, all the POST requests to Hudson would have to have crumb in it to protect
@@ -1933,6 +1943,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         markupFormatter = null;
     }
 
+    public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
+        if(ns == null){
+            ns = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+        }
+        projectNamingStrategy = ns;
+    }
+    
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
     }
@@ -2040,6 +2057,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     public AuthorizationStrategy getAuthorizationStrategy() {
         return authorizationStrategy;
+    }
+    
+    /**
+     * The strategy used to check the project names.
+     * @return never <code>null</code>
+     */
+    public ProjectNamingStrategy getProjectNamingStrategy() {
+        return projectNamingStrategy == null ? ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY : projectNamingStrategy;
     }
 
     /**
@@ -2773,6 +2798,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private String checkJobName(String name) throws Failure {
         checkGoodName(name);
         name = name.trim();
+        projectNamingStrategy.checkName(name);
         if(getItem(name)!=null)
             throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         // looks good
@@ -3787,4 +3813,5 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         assert PERMISSIONS!=null;
         assert ADMINISTER!=null;
     }
+
 }
