@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.180-SNAPSHOT</stapler.version>
+    <stapler.version>1.180</stapler.version>
   </properties>
 
   <dependencies>
