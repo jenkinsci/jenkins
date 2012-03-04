@@ -68,6 +68,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -1059,15 +1060,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
         }
 
-        req.getView(this,view).forward(req,rsp);
+        req.getView(this,view).forward(req, rsp);
     }
 
     /**
      * Accepts the update to the node configuration.
      */
+    @RequirePOST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-        requirePOST();
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
@@ -1076,7 +1077,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         replaceBy(result);
 
         // take the user back to the slave top page.
-        rsp.sendRedirect2("../"+result.getNodeName()+'/');
+        rsp.sendRedirect2("../" + result.getNodeName() + '/');
     }
 
     /**

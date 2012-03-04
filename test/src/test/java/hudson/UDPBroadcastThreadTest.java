@@ -24,7 +24,7 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
     public void testLegacy() throws Exception {
         DatagramSocket s = new DatagramSocket();
         sendQueryTo(s, InetAddress.getLocalHost());
-        s.setSoTimeout(5000); // to prevent test hang
+        s.setSoTimeout(15000); // to prevent test hang
         receiveAndVerify(s);
     }
 
@@ -32,19 +32,25 @@ public class UDPBroadcastThreadTest extends HudsonTestCase {
      * Multicast based clients should be able to receive multiple replies.
      */
     public void testMulticast() throws Exception {
-        UDPBroadcastThread second = new UDPBroadcastThread(hudson);
+        UDPBroadcastThread second = new UDPBroadcastThread(jenkins);
         second.start();
+
+        UDPBroadcastThread third = new UDPBroadcastThread(jenkins);
+        third.start();
+
         second.ready.block();
+        third.ready.block();
 
         try {
             DatagramSocket s = new DatagramSocket();
             sendQueryTo(s, UDPBroadcastThread.MULTICAST);
-            s.setSoTimeout(5000); // to prevent test hang
+            s.setSoTimeout(15000); // to prevent test hang
 
             // we should at least get two replies since we run two broadcasts
             receiveAndVerify(s);
             receiveAndVerify(s);
         } finally {
+            third.interrupt();
             second.interrupt();
         }
     }

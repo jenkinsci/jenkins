@@ -38,6 +38,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -156,8 +157,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        requirePOST();
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
@@ -203,8 +204,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Deletes this recorder, then go back to the parent.
      */
+    @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
         // Disable logging for all our targets,
