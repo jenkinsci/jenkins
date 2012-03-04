@@ -110,7 +110,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
             @Override
             public String getHelpFile() {
-                return "help/system-config/defaultJobNamingStrategy.html";
+                return "/help/system-config/defaultJobNamingStrategy.html";
             }
         }
     }
@@ -163,7 +163,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
             @Override
             public String getHelpFile() {
-                return "help/system-config/patternJobNamingStrategy.html";
+                return "/help/system-config/patternJobNamingStrategy.html";
             }
         }
     }
