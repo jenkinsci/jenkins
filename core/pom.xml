@@ -503,6 +503,11 @@ THE SOFTWARE.
       <version>1.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>owasp-html-sanitizer</artifactId>
+      <version>r88</version>
+    </dependency>
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
