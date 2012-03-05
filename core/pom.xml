@@ -259,7 +259,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-      <version>1.4</version>
+      <version>1.4.4</version>
       <exclusions>
         <exclusion><!-- using a patched version -->
           <groupId>javax.activation</groupId>
