@@ -175,10 +175,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @Override
     public Set<Label> getRelevantLabels() {
         Set<Label> r = new HashSet<Label>();
-        r.add(getAssignedLabel());
         for (MatrixConfiguration c : getActiveConfigurations())
             r.add(c.getAssignedLabel());
-        return super.getRelevantLabels();
+        return r;
     }
 
     /**
