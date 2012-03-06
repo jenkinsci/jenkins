@@ -68,6 +68,10 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
         this(false,false,null,null,null);
     }
 
+    public boolean getHasTouchStoneCombinationFilter() {
+        return touchStoneCombinationFilter!=null;
+    }
+
     /**
      * If true, {@link MatrixRun}s are run sequentially, instead of running in parallel.
      *

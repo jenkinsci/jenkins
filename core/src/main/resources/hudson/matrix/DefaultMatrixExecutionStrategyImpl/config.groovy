@@ -11,8 +11,7 @@ f.optionalBlock (field:"runSequentially", title:_("Run each configuration sequen
     }
 }
 
-f.optionalBlock (field:"hasTouchStoneCombinationFilter", title:_("Execute touchstone builds first"),
-        inline:true, checked:my.touchStoneCombinationFilter!=null) {
+f.optionalBlock (field:"hasTouchStoneCombinationFilter", title:_("Execute touchstone builds first"), inline:true) {
     // TODO: help="/help/matrix/touchstone.html">
     // TODO: move l10n from MatrixProject/configEntries.jelly
 
