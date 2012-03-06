@@ -24,6 +24,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -163,7 +164,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public String icon;
 
         public MenuItem(String url, String icon, String displayName) {
-            this.url = url;
+            this.url = URI.create(Stapler.getCurrentRequest().getRequestURI()).resolve(url).toString();
             this.icon = icon;
             this.displayName = Util.escape(displayName);
         }
