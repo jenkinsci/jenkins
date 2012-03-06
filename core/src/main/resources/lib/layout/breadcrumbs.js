@@ -54,8 +54,16 @@ var breadcrumbs = (function() {
     }
 
     function combinePath(a,b) {
-        if (a.endsWith('/'))    return a+b;
-        return a+'/'+b;
+        var qs;
+        var i = a.indexOf('?');
+        if (i>=0)  { qs=a.substring(i); a=a.substring(0,i); }
+        else        qs="";
+
+        i=a.indexOf('#');
+        if (i>=0)   a=a.substring(0,i);
+
+        if (a.endsWith('/'))    return a+b+qs;
+        return a+'/'+b+qs;
     }
 
     /**
