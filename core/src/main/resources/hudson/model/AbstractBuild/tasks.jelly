@@ -27,8 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <l:task icon="images/24x24/up.png" href="${it.upUrl}" title="${%Back to Project}" />
-      <l:task icon="images/24x24/search.png" href="${buildUrl.baseUrl}/" title="${%Status}" />
+      <l:task icon="images/24x24/up.png" href="${it.upUrl}" title="${%Back to Project}" contextMenu="false"/>
+      <l:task icon="images/24x24/search.png" href="${buildUrl.baseUrl}/" title="${%Status}" contextMenu="false"/>
       <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
       <j:choose>
         <j:when test="${it.logFile.length() > 200000}">

@@ -37,8 +37,8 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" />
+      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" contextMenu="false" />
+      <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" contextMenu="false"/>
       <l:task icon="images/24x24/notepad.png" href="${url}/changes" title="${%Changes}" />
       <l:task icon="images/24x24/folder.png"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
         <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" />
