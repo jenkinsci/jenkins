@@ -58,7 +58,7 @@ public class MyspacePolicy {
             tag("select",   "multiple");
             tag("option",   "value","label","selected");
             tag("textarea");
-            tag("h1,h2,h3,h4,h5,h6,p,i,b,u,strong,em,small,big,pre,code,cite,samp,sub,sup,strike,center,lockquote");
+            tag("h1,h2,h3,h4,h5,h6,p,i,b,u,strong,em,small,big,pre,code,cite,samp,sub,sup,strike,center,blockquote");
             tag("hr,br,col");
             tag("font", "color", "face", "size");
             tag("a",        "nohref","rel");
@@ -66,6 +66,7 @@ public class MyspacePolicy {
             tag("span,div");
             tag("img",      "src",ONSITE_OR_OFFSITE_URL,
                             "hspace","vspace");
+            tag("iframe",   "src");
             tag("link",     "type","rel");
             tag("ul,ol,li,dd,dl,dt,thead,tbody,tfoot");
             tag("table",    "noresize");
@@ -73,12 +74,13 @@ public class MyspacePolicy {
             tag("colgroup", "span");
             tag("col",      "span");
             tag("fieldset,legend");
+            allowStandardUrlProtocols();
         }}.toFactory();
     }
 
     public static void main(String[] args) throws IOException {
         // Fetch the HTML to sanitize.
-        String html = "<button name='foo' value='xyz' disabled='true'>abc</button><br><script>foo</script>";
+        String html = "<a href='http://www.google.com/'>Google</a><img src='http://www.yahoo.com'>";
         // Set up an output channel to receive the sanitized HTML.
         HtmlStreamRenderer renderer = HtmlStreamRenderer.create(
                 System.out,
