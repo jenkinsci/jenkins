@@ -54,8 +54,12 @@ var breadcrumbs = (function() {
     }
 
     function combinePath(a,b) {
-        if (a.endsWith('/'))    return a+b;
-        return a+'/'+b;
+        var uri = URI.parse(a);
+        var path = uri.getPath();
+        if (! path.endsWith('/')) path += '/';
+        path += b;
+        uri.setPath(path);
+        return uri.toString();
     }
 
     /**
@@ -94,8 +98,9 @@ var breadcrumbs = (function() {
             xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
-                    a.each(function (e) {
-                        e.text = makeMenuHtml(e.icon, e.displayName);
+                    a.each(function (item) {
+                        item.text = makeMenuHtml(item.icon, item.displayName);
+                        item.url = URI.utils.resolve(e.getAttribute("href"), item.url);
                     });
                     e.items = function() { return a };
                     showMenu(a);
