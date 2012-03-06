@@ -1221,8 +1221,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the
         // Ancestor.getUrl()
-        rsp.sendRedirect2(req.getContextPath() + '/' + getParent().getUrl()
-                + getShortUrl());
+        rsp.sendRedirect2("../" + newName);
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)
