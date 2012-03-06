@@ -46,6 +46,9 @@ THE SOFTWARE.
     <st:attribute name="enabled">
       If specified, then this controls whether the task is enabled or not.
     </st:attribute>
+    <st:attribute name="contextMenu" type="boolean">
+      If "false", remove this item from the context menu.
+    </st:attribute>
     <st:attribute name="permission">
       If specified, the link will be only displayed when the current user
       has the specified permission against the "it" object.
@@ -95,8 +98,7 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="task">
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
-          ${taskTags!=null ? taskTags.add(href,icon,title) : null}
-          ${taskTags}
+          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,icon,title) : null}
 
           <a href="${href}" onclick="${attrs.onclick}">
             <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
