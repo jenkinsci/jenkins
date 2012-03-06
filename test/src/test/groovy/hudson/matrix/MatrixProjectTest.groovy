@@ -229,6 +229,17 @@ public class MatrixProjectTest extends HudsonTestCase {
             assertEquals(oi.name,ni.name);
             assertEquals(oi.values,ni.values);
         }
+
+
+        def before = new DefaultMatrixExecutionStrategyImpl(true, "foo", Result.UNSTABLE, null)
+        p.executionStrategy = before;
+        configRoundtrip(p);
+        assertEqualDataBoundBeans(p.executionStrategy,before);
+
+        before = new DefaultMatrixExecutionStrategyImpl(false, null, null, null)
+        p.executionStrategy = before;
+        configRoundtrip(p);
+        assertEqualDataBoundBeans(p.executionStrategy,before);
     }
 
     public void testLabelAxes() {
