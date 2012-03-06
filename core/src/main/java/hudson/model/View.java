@@ -52,6 +52,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -721,9 +722,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
+    @RequirePOST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-        requirePOST();
 
         submit(req);
 
@@ -750,8 +751,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
+    @RequirePOST
     public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);

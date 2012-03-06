@@ -501,7 +501,7 @@ function sequencer(fs) {
     return next();
 }
 
-var hudsonRules = {
+var jenkinsRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -590,7 +590,8 @@ var hudsonRules = {
     },
 
     "INPUT.applyButton":function (e) {
-        var id = "iframe"+(iota++);
+        var id;
+        var containerId = "container"+(iota++);
 
         var responseDialog = new YAHOO.widget.Panel("wait"+(iota++), {
             fixedcenter:true,
@@ -602,9 +603,9 @@ var hudsonRules = {
         });
 
         responseDialog.setHeader("Error");
-        responseDialog.setBody("<iframe id='"+id+"' name='"+id+"' style='height:100%; width:100%'></iframe>");
+        responseDialog.setBody("<div id='"+containerId+"'></iframe>");
         responseDialog.render(document.body);
-        var target = $(id); // iframe
+        var target; // iframe
 
         function attachIframeOnload(target, f) {
             if (target.attachEvent) {
@@ -614,26 +615,33 @@ var hudsonRules = {
             }
         }
 
-        var attached = false;
         makeButton(e,function (e) {
             var f = findAncestor(e.target, "FORM");
 
-            if (!attached) {
-                attached = true;
-                attachIframeOnload(target, function () {
-                    if (target.contentWindow && target.contentWindow.applyCompletionHandler) {
-                        // apply-aware server is expected to set this handler
-                        target.contentWindow.applyCompletionHandler(window);
-                    } else {
-                        // otherwise this is possibly an error from the server, so we need to render the whole content.
-                        var r = YAHOO.util.Dom.getClientRegion();
-                        responseDialog.cfg.setProperty("width",r.width*3/4+"px");
-                        responseDialog.cfg.setProperty("height",r.height*3/4+"px");
-                        responseDialog.center();
-                        responseDialog.show();
-                    }
-                });
-            }
+            // create a throw-away IFRAME to avoid back button from loading the POST result back
+            id = "iframe"+(iota++);
+            target = document.createElement("iframe");
+            target.setAttribute("id",id);
+            target.setAttribute("name",id);
+            target.setAttribute("style","height:100%; width:100%");
+            $(containerId).appendChild(target);
+
+            attachIframeOnload(target, function () {
+                if (target.contentWindow && target.contentWindow.applyCompletionHandler) {
+                    // apply-aware server is expected to set this handler
+                    target.contentWindow.applyCompletionHandler(window);
+                } else {
+                    // otherwise this is possibly an error from the server, so we need to render the whole content.
+                    var r = YAHOO.util.Dom.getClientRegion();
+                    responseDialog.cfg.setProperty("width",r.width*3/4+"px");
+                    responseDialog.cfg.setProperty("height",r.height*3/4+"px");
+                    responseDialog.center();
+                    responseDialog.show();
+                }
+                window.setTimeout(function() {// otherwise Firefox will fail to leave the "connecting" state
+                    $(id).remove();
+                },0)
+            });
 
             f.target = target.id;
             f.elements['core:apply'].value = "true";
@@ -735,7 +743,7 @@ var hudsonRules = {
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
-        e.parentNode.insertBefore(div,$(e).next());
+        e.parentNode.insertBefore(div,$(e).next()||null);
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
         var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
@@ -1404,7 +1412,14 @@ var hudsonRules = {
         layoutUpdateCallback.add(adjustSticker);
     },
 
-    "#top-sticker" : function(sticker) {
+    "#top-sticker" : function(sticker) {// legacy
+        this[".top-sticker"](sticker);
+    },
+
+    /**
+     * @param {HTMLElement} sticker
+     */
+    ".top-sticker" : function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1412,7 +1427,7 @@ var hudsonRules = {
 
         var edge = document.createElement("div");
         edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge);
+        sticker.insertBefore(edge,sticker.firstChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1433,6 +1448,7 @@ var hudsonRules = {
         adjustSticker();
     }
 };
+var hudsonRules = jenkinsRules; // legacy name
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1478,7 +1494,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("onchange",h); }
+            $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1682,7 +1698,7 @@ function refreshPart(id,url) {
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
 
-                var node = div.firstChild;
+                var node = $(div).firstDescendant();
                 p.insertBefore(node, next);
 
                 Behaviour.applySubtree(node);
@@ -1901,7 +1917,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 Behaviour.applySubtree(div);
 
                 var pivot = rows[0];
-                var newRows = div.firstChild.rows;
+                var newRows = $(div).firstDescendant().rows;
                 for (var i = newRows.length - 1; i >= 0; i--) {
                     pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
                 }
@@ -2461,7 +2477,7 @@ var downloadService = {
     }
 };
 
-// update center service. to remain compatible with earlier version of Hudson, aliased.
+// update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
 
 /*

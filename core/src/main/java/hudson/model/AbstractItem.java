@@ -62,6 +62,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.Transformer;
@@ -478,8 +479,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Deletes this item.
      */
     @CLIMethod(name="delete-job")
+    @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        requirePOST();
         delete();
         if (rsp != null) // null for CLI
             rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());

@@ -40,6 +40,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,8 +91,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     /**
      * Deletes the build and all matrix configurations in this build when the button is pressed.
      */
+    @RequirePOST
     public void doDoDeleteAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly

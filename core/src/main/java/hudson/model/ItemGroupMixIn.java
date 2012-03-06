@@ -216,6 +216,7 @@ public abstract class ItemGroupMixIn {
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         acl.checkPermission(Job.CREATE);
 
+        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         configXml.getParentFile().mkdirs();
@@ -241,6 +242,7 @@ public abstract class ItemGroupMixIn {
             throws IOException {
         acl.checkPermission(Job.CREATE);
 
+        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         if(parent.getItem(name)!=null)
             throw new IllegalArgumentException("Project of the name "+name+" already exists");
 

@@ -9,7 +9,7 @@ t=namespace(JenkinsTagLib.class)
 namespace("/lib/samples").sample(title:_("Notification Bar")) {
     raw(_("blurb"))
 
-    raw("To show a notification bar, call <tt>notificationBar.show('message')</tt><")
+    raw("To show a notification bar, call <tt>notificationBar.show('message')</tt>")
     button(onclick:"notificationBar.show('This is a notification');", "Show a notification bar")
 
     raw(_("blurb.hide"))

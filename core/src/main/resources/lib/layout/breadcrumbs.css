@@ -1,0 +1,49 @@
+#left-top-nav {
+  text-align: left;
+  color: #222;
+}
+
+#right-top-nav {
+    float: right;
+    margin-right: 1em;
+    height: 2em;
+    line-height: 2em;
+}
+
+#left-top-nav a {
+  color: black;
+}
+
+#top-nav .a {
+  color: white;
+}
+
+#breadcrumbs {
+    list-style-type:none;
+    padding:0;
+    margin:0;
+    height: 2em;
+    border-bottom: 1px solid #d3d7cf;
+}
+
+#breadcrumbs LI {
+    float:left;
+    line-height:2em;
+    padding-left:.75em;
+    color:#555753;
+}
+
+#breadcrumbs LI A {
+    display:block;
+    padding:0 15px 0 0;
+    background:url('breadcrumb.gif') no-repeat right center;
+}
+
+#breadcrumbs LI A:link, #breadcrumbs LI A:visited {
+    text-decoration:none;
+    color:#555753;
+}
+
+#breadcrumbs LI A:hover, #crumbs LI A:focus {
+    color:#3465a4;
+}

@@ -192,6 +192,7 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
@@ -211,6 +212,9 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
@@ -228,6 +232,7 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
@@ -293,7 +298,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
     private transient final Queue queue;
 
     /**
@@ -361,6 +366,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+    
+    /**
+     * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
+     */
+    private ProjectNamingStrategy projectNamingStrategy = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
 
     /**
      * Root directory for the workspaces. This value will be variable-expanded against
@@ -636,9 +646,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         }
     };
 
+
+    /**
+     * Hook for a test harness to intercept Jenkins.getInstance()
+     *
+     * Do not use in the production code as the signature may change.
+     */
+    public interface JenkinsHolder {
+        Jenkins getInstance();
+    }
+
+    static JenkinsHolder HOLDER = new JenkinsHolder() {
+        public Jenkins getInstance() {
+            return theInstance;
+        }
+    };
+
     @CLIResolver
     public static Jenkins getInstance() {
-        return theInstance;
+        return HOLDER.getInstance();
     }
 
     /**
@@ -1767,6 +1793,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * correctly, especially when a migration is involved), but the downside
      * is that unless you are processing a request, this method doesn't work.
      *
+     * Please note that this will not work in all cases if Jenkins is running behind a
+     * reverse proxy (e.g. when user has switched off ProxyPreserveHost, which is
+     * default setup or the actual url uses https) and you should use getRootUrl if
+     * you want to be sure you reflect user setup.
+     * See https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache
+     *
      * @since 1.263
      */
     public String getRootUrlFromRequest() {
@@ -1836,6 +1868,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     @Exported
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
+    }
+    
+    public boolean isUseProjectNamingStrategy(){
+        return projectNamingStrategy != DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
     }
 
     /**
@@ -1907,6 +1943,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         markupFormatter = null;
     }
 
+    public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
+        if(ns == null){
+            ns = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+        }
+        projectNamingStrategy = ns;
+    }
+    
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
     }
@@ -2014,6 +2057,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      */
     public AuthorizationStrategy getAuthorizationStrategy() {
         return authorizationStrategy;
+    }
+    
+    /**
+     * The strategy used to check the project names.
+     * @return never <code>null</code>
+     */
+    public ProjectNamingStrategy getProjectNamingStrategy() {
+        return projectNamingStrategy == null ? ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY : projectNamingStrategy;
     }
 
     /**
@@ -2747,6 +2798,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     private String checkJobName(String name) throws Failure {
         checkGoodName(name);
         name = name.trim();
+        projectNamingStrategy.checkName(name);
         if(getItem(name)!=null)
             throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         // looks good
@@ -2892,6 +2944,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
         rsp.getWriter().println("GCed");
+    }
+
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
+        return new ContextMenu().from(this,request,response);
     }
 
     /**
@@ -3177,9 +3233,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      *
      * This is useful for system administration as well as unit testing.
      */
+    @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(ADMINISTER);
-        requirePOST();
 
         try {
             MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
@@ -3757,4 +3813,5 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         assert PERMISSIONS!=null;
         assert ADMINISTER!=null;
     }
+
 }
