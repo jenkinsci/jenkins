@@ -382,7 +382,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 // two ways to get beyond this. one is that the build starts and gets done,
                 // or the build gets cancelled before it even started.
                 Result buildResult = null;
-                if(b!=null && !b.isBuilding())
+                if(b!=null && !b.isLogUpdated())
                     buildResult = b.getResult();
                 Queue.Item qi = c.getQueueItem();
                 if(b==null && qi==null)
