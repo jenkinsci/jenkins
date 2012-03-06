@@ -24,6 +24,9 @@
  */
 package hudson.model;
 
+import java.util.Set;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixConfiguration;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -375,8 +378,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	
     	boolean roam = false;
     	HashSet<Label> labels = new HashSet<Label>();
-    	for (Item item: getItems()) {
-    		if (item instanceof AbstractProject<?,?>) {
+        Set<Item> allItems = new HashSet<Item>();
+        for(Item i: getItems()){
+            allItems.add(i);
+            if(i instanceof MatrixProject){
+                MatrixProject p = (MatrixProject) i;
+                allItems.addAll(p.getActiveConfigurations()); // add matrix configurations
+            }
+        }
+    	for (Item item: allItems) {
+    		if (item instanceof AbstractProject<?,?> && !(item instanceof MatrixProject)) { //filtering is useless if contains Matrix project
     			AbstractProject<?,?> p = (AbstractProject<?, ?>) item;
     			Label l = p.getAssignedLabel();
     			if (l != null) {
@@ -386,7 +397,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     			}
     		}
     	}
-    	
+
     	for (Computer c: computers) {
     		Node n = c.getNode();
     		if (n != null) {
@@ -407,6 +418,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	Collection<TopLevelItem> items = getItems(); 
     	List<Queue.Item> result = new ArrayList<Queue.Item>();
     	for (Queue.Item qi: Jenkins.getInstance().getQueue().getItems()) {
+                if(qi.task instanceof MatrixConfiguration){
+                    MatrixConfiguration config = (MatrixConfiguration) qi.task;
+                    if(items.contains(config.getParent())){
+                        result.add(qi); // add matrix configurations 
+                    }
+                }
     		if (items.contains(qi.task)) {
     			result.add(qi);
     		}
