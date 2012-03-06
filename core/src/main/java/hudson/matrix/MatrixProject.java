@@ -42,7 +42,6 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Queue.FlyweightTask;
-import hudson.model.ResourceController;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
@@ -131,20 +130,34 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @CopyOnWrite
     private transient /*final*/ Set<MatrixConfiguration> activeConfigurations = new LinkedHashSet<MatrixConfiguration>();
 
-    private boolean runSequentially;
+    /**
+     * @deprecated as of 1.456
+     *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
+     */
+    private transient Boolean runSequentially;
     
     /**
      * Filter to select a number of combinations to build first
+     * @deprecated as of 1.456
+     *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
      */
-    private String touchStoneCombinationFilter;
+    private transient String touchStoneCombinationFilter;
     
     /**
      * Required result on the touchstone combinations, in order to
      * continue with the rest
+     * @deprecated as of 1.456
+     *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
      */
-    private Result touchStoneResultCondition;
-    
-    private MatrixConfigurationSorter sorter;
+    private transient Result touchStoneResultCondition;
+
+    /**
+     * @deprecated as of 1.456
+     *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
+     */
+    private transient MatrixConfigurationSorter sorter;
+
+    private MatrixExecutionStrategy executionStrategy;
 
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
@@ -154,12 +167,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super(parent, name);
     }
 
-    /**
-     * @return can be null (to indicate that the configurations should be left to their natural order.)
-     */
-    public MatrixConfigurationSorter getSorter() {
-        return sorter;
-    }
+
 
     /**
      * {@link MatrixProject} is relevant with all the labels its configurations are relevant.
@@ -173,9 +181,35 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return super.getRelevantLabels();
     }
 
+    /**
+     * @return can be null (to indicate that the configurations should be left to their natural order.)
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#getSorter()}.
+     *      This method tries to emulate the previous behavior the best it can, but will return null
+     *      if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
+    public MatrixConfigurationSorter getSorter() {
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            return dm.getSorter();
+        }
+        return null;
+    }
+
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#setSorter(MatrixConfigurationSorter)}.
+     *      This method tries to emulate the previous behavior the best it can, but will fall back
+     *      to no-op if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
     public void setSorter(MatrixConfigurationSorter sorter) throws IOException {
-        this.sorter = sorter;
-        save();
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            dm.setSorter(sorter);
+            save();
+        }
     }
     
     public AxisList getAxes() {
@@ -191,18 +225,44 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         save();
     }
 
-    /**
-     * If true, {@link MatrixRun}s are run sequentially, instead of running in parallel.
-     *
-     * TODO: this should be subsumed by {@link ResourceController}.
-     */
-    public boolean isRunSequentially() {
-        return runSequentially;
+    public MatrixExecutionStrategy getExecutionStrategy() {
+        return executionStrategy;
     }
 
-    public void setRunSequentially(boolean runSequentially) throws IOException {
-        this.runSequentially = runSequentially;
+    public void setExecutionStrategy(MatrixExecutionStrategy executionStrategy) throws IOException {
+        if (executionStrategy ==null)   throw new IllegalArgumentException();
+        this.executionStrategy = executionStrategy;
         save();
+    }
+
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#isRunSequentially()}.
+     *      This method tries to emulate the previous behavior the best it can, but will return false
+     *      if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
+    public boolean isRunSequentially() {
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            return dm.isRunSequentially();
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#setRunSequentially(boolean)}.
+     *      This method tries to emulate the previous behavior the best it can, but will fall back
+     *      to no-op if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
+    public void setRunSequentially(boolean runSequentially) throws IOException {
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            dm.setRunSequentially(runSequentially);
+            save();
+        }
     }
 
     /**
@@ -234,21 +294,66 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return combinationFilter;
     }
 
+    /**
+     * @return can be null (to indicate that the configurations should be left to their natural order.)
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#getTouchStoneCombinationFilter()}.
+     *      This method tries to emulate the previous behavior the best it can, but will return null
+     *      if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
     public String getTouchStoneCombinationFilter() {
-        return touchStoneCombinationFilter;
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            return dm.getTouchStoneCombinationFilter();
+        }
+        return null;
     }
 
-    public void setTouchStoneCombinationFilter(
-            String touchStoneCombinationFilter) {
-        this.touchStoneCombinationFilter = touchStoneCombinationFilter;
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#setTouchStoneCombinationFilter(String)}.
+     *      This method tries to emulate the previous behavior the best it can, but will fall back
+     *      to no-op if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
+    public void setTouchStoneCombinationFilter(String touchStoneCombinationFilter) throws IOException {
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            dm.setTouchStoneCombinationFilter(touchStoneCombinationFilter);
+            save();
+        }
     }
 
+    /**
+     * @return can be null (to indicate that the configurations should be left to their natural order.)
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#getTouchStoneResultCondition()}.
+     *      This method tries to emulate the previous behavior the best it can, but will return null
+     *      if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
     public Result getTouchStoneResultCondition() {
-        return touchStoneResultCondition;
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            return dm.getTouchStoneResultCondition();
+        }
+        return null;
     }
 
-    public void setTouchStoneResultCondition(Result touchStoneResultCondition) {
-        this.touchStoneResultCondition = touchStoneResultCondition;
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link DefaultMatrixExecutionStrategyImpl#setTouchStoneResultCondition(Result)}.
+     *      This method tries to emulate the previous behavior the best it can, but will fall back
+     *      to no-op if the current {@link MatrixExecutionStrategy} is not the default one.
+     */
+    public void setTouchStoneResultCondition(Result touchStoneResultCondition) throws IOException {
+        MatrixExecutionStrategy e = executionStrategy;
+        if (e instanceof DefaultMatrixExecutionStrategyImpl) {
+            DefaultMatrixExecutionStrategyImpl dm = (DefaultMatrixExecutionStrategyImpl) e;
+            dm.setTouchStoneResultCondition(touchStoneResultCondition);
+            save();
+        }
     }
 
     @Override
@@ -261,7 +366,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             r.addAll(step.getProjectActions(this));
         for (BuildWrapper step : buildWrappers)
             r.addAll(step.getProjectActions(this));
-        for (Trigger trigger : triggers)
+        for (Trigger<?> trigger : triggers)
             r.addAll(trigger.getProjectActions());
 
         return r;
@@ -290,12 +395,22 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     @Override
+    public void onCreatedFromScratch() {
+        executionStrategy = new DefaultMatrixExecutionStrategyImpl();
+        super.onCreatedFromScratch();
+    }
+
+    @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent,name);
         Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
         builders.setOwner(this);
         publishers.setOwner(this);
         buildWrappers.setOwner(this);
+
+        if (executionStrategy ==null)
+            executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially,touchStoneCombinationFilter,touchStoneResultCondition,sorter);
+
         rebuildConfigurations();
     }
 
@@ -586,14 +701,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         } else {
             this.combinationFilter = null;
         }
-        
-        if (req.getParameter("hasTouchStoneCombinationFilter")!=null) {
-            this.touchStoneCombinationFilter = Util.nullify(req.getParameter("touchStoneCombinationFilter"));
-            String touchStoneResultCondition = req.getParameter("touchStoneResultCondition");
-            this.touchStoneResultCondition = Result.fromString(touchStoneResultCondition);
-        } else {
-            this.touchStoneCombinationFilter = null;
-        }
+
+        List<MatrixExecutionStrategyDescriptor> esd = getDescriptor().getExecutionStrategyDescriptors();
+        if (esd.size()>1)
+            executionStrategy = req.bindJSON(MatrixExecutionStrategy.class,json.getJSONObject("executionStrategy"));
+        else
+            executionStrategy = req.bindJSON(esd.get(0).clazz,json.getJSONObject("executionStrategy"));
 
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
@@ -601,19 +714,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
         
-        runSequentially = json.optBoolean("runSequentially");
-
-        // set sorter if any sorter is chosen
-        if (runSequentially) {
-            MatrixConfigurationSorter s = req.bindJSON(MatrixConfigurationSorter.class,json.optJSONObject("sorter"));
-            if (s!=null)    s.validate(this);
-            if (s instanceof NoopMatrixConfigurationSorter) s=null;
-            setSorter(s);
-        } else {
-            setSorter(null);
-        }
-
-
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
         publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
@@ -677,8 +777,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return r;
         }
 
+        /**
+         * @deprecated as of 1.456
+         *      This was only exposed for Jelly.
+         */
         public List<MatrixConfigurationSorterDescriptor> getSorterDescriptors() {
             return MatrixConfigurationSorterDescriptor.all();
+        }
+
+        public List<MatrixExecutionStrategyDescriptor> getExecutionStrategyDescriptors() {
+            return MatrixExecutionStrategyDescriptor.all();
         }
     }
 

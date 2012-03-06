@@ -24,16 +24,14 @@
  */
 package hudson.matrix;
 
+import hudson.AbortException;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
-import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Cause.UpstreamCause;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
-import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import jenkins.model.Jenkins;
@@ -48,10 +46,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
@@ -274,76 +269,23 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             listUpAggregators(listener, p.getBuildWrappers().values());
 
             axes = p.getAxes();
-            Collection<MatrixConfiguration> activeConfigurations = p.getActiveConfigurations();
-            final int n = getNumber();
-            
-            String touchStoneFilter = p.getTouchStoneCombinationFilter();
-            Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
-            Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
-            for (MatrixConfiguration c: activeConfigurations) {
-                if (!MatrixBuildListener.buildConfiguration(MatrixBuild.this, c))
-                    continue; // skip rebuild
-                if (touchStoneFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
-                    touchStoneConfigurations.add(c);
-                } else {
-                    delayedConfigurations.add(c);
-                }
-            }
-
-            for (MatrixAggregator a : aggregators)
-                if(!a.startBuild())
-                    return Result.FAILURE;
-
-            MatrixConfigurationSorter sorter = p.getSorter();
-            if (sorter != null) {
-                touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
-                delayedConfigurations    = createTreeSet(delayedConfigurations,sorter);
-            }
 
             try {
-                if(!p.isRunSequentially())
-                    for(MatrixConfiguration c : touchStoneConfigurations)
-                        scheduleConfigurationBuild(logger, c);
-
-                Result r = Result.SUCCESS;
-                for (MatrixConfiguration c : touchStoneConfigurations) {
-                    if(p.isRunSequentially())
-                        scheduleConfigurationBuild(logger, c);
-                    Result buildResult = waitForCompletion(listener, c);
-                    r = r.combine(buildResult);
-                }
-                
-                if (p.getTouchStoneResultCondition() != null && r.isWorseThan(p.getTouchStoneResultCondition())) {
-                    logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
-                    return r;
-                }
-                
-                if(!p.isRunSequentially())
-                    for(MatrixConfiguration c : delayedConfigurations)
-                        scheduleConfigurationBuild(logger, c);
-
-                for (MatrixConfiguration c : delayedConfigurations) {
-                    if(p.isRunSequentially())
-                        scheduleConfigurationBuild(logger, c);
-                    Result buildResult = waitForCompletion(listener, c);
-                    logger.println(Messages.MatrixBuild_Completed(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName()), buildResult));
-                    r = r.combine(buildResult);
-                }
-
-                return r;
+                return p.getExecutionStrategy().run(MatrixBuild.this, aggregators, listener);
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
                 Executor x = Executor.currentExecutor();
                 x.recordCauseOfInterruption(MatrixBuild.this, listener);
                 return x.abortResult();
-            } catch (AggregatorFailureException e) {
+            } catch (AbortException e) {
+                logger.println(e.getMessage());
                 return Result.FAILURE;
-            }
-            finally {
+            } finally {
                 // if the build was aborted in the middle. Cancel all the configuration builds.
                 Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
-                    for (MatrixConfiguration c : activeConfigurations) {
+                    final int n = getNumber();
+                    for (MatrixConfiguration c : p.getActiveConfigurations()) {
                         if(q.cancel(c))
                             logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
                         MatrixRun b = c.getBuildByNumber(n);
@@ -370,78 +312,9 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
         }
 
-        private Result waitForCompletion(BuildListener listener, MatrixConfiguration c) throws InterruptedException, IOException, AggregatorFailureException {
-            String whyInQueue = "";
-            long startTime = System.currentTimeMillis();
-
-            // wait for the completion
-            int appearsCancelledCount = 0;
-            while(true) {
-                MatrixRun b = c.getBuildByNumber(getNumber());
-
-                // two ways to get beyond this. one is that the build starts and gets done,
-                // or the build gets cancelled before it even started.
-                Result buildResult = null;
-                if(b!=null && !b.isBuilding())
-                    buildResult = b.getResult();
-                Queue.Item qi = c.getQueueItem();
-                if(b==null && qi==null)
-                    appearsCancelledCount++;
-                else
-                    appearsCancelledCount = 0;
-
-                if(appearsCancelledCount>=5) {
-                    // there's conceivably a race condition in computating b and qi, as their computation
-                    // are not synchronized. There are indeed several reports of Hudson incorrectly assuming
-                    // builds being cancelled. See
-                    // http://www.nabble.com/Master-slave-problem-tt14710987.html and also
-                    // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
-                    // because of this, we really make sure that the build is cancelled by doing this 5
-                    // times over 5 seconds
-                    listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
-                    buildResult = Result.ABORTED;
-                }
-
-                if(buildResult!=null) {
-                    for (MatrixAggregator a : aggregators)
-                        if(!a.endRun(b))
-                            throw new AggregatorFailureException();
-                    return buildResult;
-                } 
-
-                if(qi!=null) {
-                    // if the build seems to be stuck in the queue, display why
-                    String why = qi.getWhy();
-                    if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
-                        listener.getLogger().println(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())+" is still in the queue: "+why);
-                        whyInQueue = why;
-                    }
-                }
-                
-                Thread.sleep(1000);
-            }
-        }
-
-        private void scheduleConfigurationBuild(PrintStream logger, MatrixConfiguration c) {
-            logger.println(Messages.MatrixBuild_Triggering(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
-            c.scheduleBuild(getAction(ParametersAction.class), new UpstreamCause(MatrixBuild.this));
-        }
-
         public void post2(BuildListener listener) throws Exception {
             for (MatrixAggregator a : aggregators)
                 a.endBuild();
         }
     }
-
-    private <T> TreeSet<T> createTreeSet(Collection<T> items, Comparator<T> sorter) {
-        TreeSet<T> r = new TreeSet<T>(sorter);
-        r.addAll(items);
-        return r;
-    }
-
-    /**
-     * A private exception to help maintain the correct control flow after extracting the 'waitForCompletion' method
-     */
-    private static class AggregatorFailureException extends Exception {}
-
 }
