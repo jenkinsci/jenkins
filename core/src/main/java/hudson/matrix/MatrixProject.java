@@ -134,6 +134,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private boolean runSequentially;
     
     /**
+     * Filter to avoid falling back to the default JDK.
+     */
+    private boolean avoidFallbackJDKs;
+
+    /**
      * Filter to select a number of combinations to build first
      */
     private String touchStoneCombinationFilter;
@@ -203,6 +208,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public void setRunSequentially(boolean runSequentially) throws IOException {
         this.runSequentially = runSequentially;
         save();
+    }
+
+    /*
+     * If true, builds which would use the fallback JDK should be omitted
+     */
+    public boolean isAvoidFallbackJDKs() {
+        return avoidFallbackJDKs;
     }
 
     /**
@@ -586,7 +598,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         } else {
             this.combinationFilter = null;
         }
-        
+
         if (req.getParameter("hasTouchStoneCombinationFilter")!=null) {
             this.touchStoneCombinationFilter = Util.nullify(req.getParameter("touchStoneCombinationFilter"));
             String touchStoneResultCondition = req.getParameter("touchStoneResultCondition");
@@ -613,6 +625,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             setSorter(null);
         }
 
+
+        avoidFallbackJDKs = json.has("skipped");
 
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");

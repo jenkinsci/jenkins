@@ -62,7 +62,8 @@ public enum BallColor implements StatusIcon {
     // for historical reasons they are called grey.
     GREY("grey",Messages._BallColor_Pending(), ColorPalette.GREY),
     GREY_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
-
+    JDKnotAvailable("grey", Messages._BallColor_JDKnotAvailable(), ColorPalette.GREY),
+    JDKnotAvailable_ANIME("grey_anime", Messages._BallColor_JDKnotAvailable(), ColorPalette.GREY),
     DISABLED("grey",Messages._BallColor_Disabled(), ColorPalette.GREY),
     DISABLED_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
     ABORTED("grey",Messages._BallColor_Aborted(), ColorPalette.GREY),

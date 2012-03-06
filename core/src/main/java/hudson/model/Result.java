@@ -43,6 +43,10 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public final class Result implements Serializable, CustomExportedBean {
+     /**
+     * The build was going to use the fallback jdk and was therefore skipped.
+     */
+    public static final Result JDK_NOT_AVAILABLE = new Result("JDK_NOT_AVAILABLE",BallColor.JDKnotAvailable,-1);
     /**
      * The build had no errors.
      */

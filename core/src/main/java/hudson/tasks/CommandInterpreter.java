@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
@@ -73,6 +74,33 @@ public abstract class CommandInterpreter extends Builder {
             int r;
             try {
                 EnvVars envVars = build.getEnvironment(listener);
+
+                // logic which omits jobs using the default fallback jdk in matrix jobs
+                if(build instanceof hudson.matrix.MatrixRun) {
+                    // get project
+                    hudson.matrix.MatrixProject project = ((hudson.matrix.MatrixRun) build).getParentBuild().getProject();
+
+                    // check if any jdk is specified in axes
+                    boolean skip = !project.getJDKs().isEmpty();
+
+                    // check if we want to skip a default jdk run
+                    skip &= project.isAvoidFallbackJDKs();
+
+                    /*
+                     * check if JAVA_HOME is set. if it is set the specified jdk is 
+                     * available on the current computer. If not, the default jdk
+                     * would be used.
+                     */
+                    String jdk = envVars.get("JAVA_HOME");
+                    if(null != jdk && jdk.equals("") && skip) {
+                        // set build result accordingly
+                        build.setResult(Result.JDK_NOT_AVAILABLE);
+
+                        // omit job triggering
+                        return true;
+                    }
+                }
+
                 // on Windows environment variables are converted to all upper case,
                 // but no such conversions are done on Unix, so to make this cross-platform,
                 // convert variables to all upper cases.
