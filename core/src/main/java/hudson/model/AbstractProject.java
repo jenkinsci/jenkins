@@ -315,6 +315,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Set of labels relevant to this job.
+     *
+     * This method is used to determine what slaves are relevant to jobs, for example by {@link View}s.
+     * It does not affect the scheduling. This information is informational and the best-effort basis.
+     *
+     * @since 1.456
+     * @return
+     *      Minimally it should contain {@link #getAssignedLabel()}. The set can contain null element
+     *      to correspond to the null return value from {@link #getAssignedLabel()}.
+     */
+    public Set<Label> getRelevantLabels() {
+        return Collections.singleton(getAssignedLabel());
+    }
+
+    /**
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
     public String getAssignedLabelString() {

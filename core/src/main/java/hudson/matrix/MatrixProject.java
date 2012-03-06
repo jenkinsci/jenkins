@@ -160,7 +160,19 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public MatrixConfigurationSorter getSorter() {
         return sorter;
     }
-    
+
+    /**
+     * {@link MatrixProject} is relevant with all the labels its configurations are relevant.
+     */
+    @Override
+    public Set<Label> getRelevantLabels() {
+        Set<Label> r = new HashSet<Label>();
+        r.add(getAssignedLabel());
+        for (MatrixConfiguration c : getActiveConfigurations())
+            r.add(c.getAssignedLabel());
+        return super.getRelevantLabels();
+    }
+
     public void setSorter(MatrixConfigurationSorter sorter) throws IOException {
         this.sorter = sorter;
         save();
