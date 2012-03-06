@@ -27,10 +27,13 @@ import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.util.EditDistance;
+import hudson.util.EnumConverter;
+import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.*;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.CustomExportedBean;
 
 import java.io.Serializable;
@@ -182,5 +185,13 @@ public final class Result implements Serializable, CustomExportedBean {
         public String getDefaultMetaVariable() {
             return "STATUS";
         }
+    }
+
+    static {
+        Stapler.CONVERT_UTILS.register(new Converter() {
+            public Object convert(Class type, Object value) {
+                return Result.fromString(value.toString());
+            }
+        }, Result.class);
     }
 }

@@ -19,7 +19,7 @@ public abstract class MatrixConfigurationSorterDescriptor extends Descriptor<Mat
     }
 
     /**
-     * Returns all the registered {@link AxisDescriptor}s.
+     * Returns all the registered {@link MatrixConfigurationSorterDescriptor}s.
      */
     public static DescriptorExtensionList<MatrixConfigurationSorter,MatrixConfigurationSorterDescriptor> all() {
         return Jenkins.getInstance().<MatrixConfigurationSorter,MatrixConfigurationSorterDescriptor>getDescriptorList(MatrixConfigurationSorter.class);
