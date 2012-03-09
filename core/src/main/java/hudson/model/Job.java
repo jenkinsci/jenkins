@@ -48,7 +48,9 @@ import hudson.util.ColorPalette;
 import hudson.util.CopyOnWriteList;
 import hudson.util.DataSetBuilder;
 import hudson.util.DescribableList;
+import hudson.util.FormApply;
 import hudson.util.Graph;
+import hudson.util.HttpResponses;
 import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
@@ -986,7 +988,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 Jenkins.checkGoodName(newName);
                 rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
             } else {
-                rsp.sendRedirect(".");
+                FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
             StringWriter sw = new StringWriter();

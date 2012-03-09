@@ -41,6 +41,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
@@ -538,6 +539,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
+        }
+        for (ComputerListener cl : ComputerListener.all()) {
+            if (temporarilyOffline)     cl.onTemporarilyOffline(this,cause);
+            else                        cl.onTemporarilyOnline(this);
         }
     }
 

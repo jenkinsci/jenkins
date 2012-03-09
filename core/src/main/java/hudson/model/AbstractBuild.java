@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -71,6 +72,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.AbstractSet;
@@ -284,7 +287,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoots(ws,this);
+        return getParent().getScm().getModuleRoots(ws, this);
     }
 
     /**
@@ -570,7 +573,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
                     // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
-                    AbstractBuild.this.scm = new NullChangeLogParser();
+                    AbstractBuild.this.scm = NullChangeLogParser.INSTANCE;
 
                     try {
                         if (project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml"))) {
@@ -631,7 +634,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 HashSet<String> r = new HashSet<String>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = r;
+                culprits = ImmutableSortedSet.copyOf(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
@@ -750,6 +753,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return Collections.<Fingerprint>emptyList();
     }
 
+	/*
+     * No need to to lock the entire AbstractBuild on change set calculcation
+     */
+    private transient Object changeSetLock = new Object();
+    
     /**
      * Gets the changes incorporated into this build.
      *
@@ -757,20 +765,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     @Exported
     public ChangeLogSet<? extends Entry> getChangeSet() {
-        if (scm==null) {
-            // for historical reason, null means CVS.
-            try {
-                Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
-                scm = (ChangeLogParser)c.newInstance();
-            } catch (ClassNotFoundException e) {
-                // if CVS isn't available, fall back to something non-null.
-                scm = new NullChangeLogParser();
-            } catch (InstantiationException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new InstantiationError().initCause(e);
-            } catch (IllegalAccessException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new IllegalAccessError().initCause(e);
+        synchronized (changeSetLock) {
+            if (scm==null) {
+                // for historical reason, null means CVS.
+                try {
+                    Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
+                    scm = (ChangeLogParser)c.newInstance();
+                } catch (ClassNotFoundException e) {
+                    // if CVS isn't available, fall back to something non-null.
+                    scm = NullChangeLogParser.INSTANCE;
+                } catch (InstantiationException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new InstantiationError().initCause(e);
+                } catch (IllegalAccessException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new IllegalAccessError().initCause(e);
+                }
             }
         }
 

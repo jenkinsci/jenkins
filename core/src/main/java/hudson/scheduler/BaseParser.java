@@ -36,8 +36,9 @@ import antlr.TokenStreamException;
  * @author Kohsuke Kawaguchi
  */
 abstract class BaseParser extends LLkParser {
-    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,1,0};
-    private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
+    // lower/uppser bounds of fields (inclusive)
+    static final int[] LOWER_BOUNDS = new int[] {0,0,1,1,0};
+    static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 
     /**
      * Used to pick a value from within the range
@@ -90,6 +91,7 @@ abstract class BaseParser extends LLkParser {
     protected long doHash( int field ) {
         int u = UPPER_BOUNDS[field];
         if (field==2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
+        if (field==4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
         int h = hash.next(u+1 - LOWER_BOUNDS[field]); // upper bound is inclusive
         return 1L << (h+LOWER_BOUNDS[field]);
     }

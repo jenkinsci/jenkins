@@ -65,6 +65,7 @@ THE SOFTWARE.
               <div class="bottom-sticker-inner">
                 <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
                 <f:submit value="${%Save}" />
+                <f:apply />
               </div>
             </div>
           </f:block>
