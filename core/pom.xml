@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.178</stapler.version>
+    <stapler.version>1.181</stapler.version>
   </properties>
 
   <dependencies>
@@ -143,6 +143,11 @@ THE SOFTWARE.
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jrebel</artifactId>
       <version>${stapler.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>windows-package-checker</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -254,7 +259,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-      <version>1.4</version>
+      <version>1.4.4</version>
       <exclusions>
         <exclusion><!-- using a patched version -->
           <groupId>javax.activation</groupId>
@@ -524,7 +529,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.1</version>
+      <version>1.4</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
