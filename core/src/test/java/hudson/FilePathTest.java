@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import hudson.FilePath.TarCompression;
+import hudson.model.TaskListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
@@ -356,4 +358,25 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    public void testSymlinkInTar() throws Exception {
+        if (Functions.isWindows())  return; // can't test on Windows
+
+        FilePath tmp = new FilePath(Util.createTempDir());
+        try {
+            FilePath in = tmp.child("in");
+            in.mkdirs();
+            in.child("a").touch(0);
+            in.child("b").symlinkTo("a", TaskListener.NULL);
+                        
+            FilePath tar = tmp.child("test.tar");
+            in.tar(tar.write(), "**/*");
+
+            FilePath dst = in.child("dst");
+            tar.untar(dst, TarCompression.NONE);
+
+            assertEquals("a",dst.child("b").readLink());
+        } finally {
+            tmp.deleteRecursive();
+        }
+    }
 }
