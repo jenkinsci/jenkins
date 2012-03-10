@@ -414,12 +414,9 @@ public abstract class PluginManager extends AbstractModelObject {
         File file = new File(rootDir, fileName);
         File pinFile = new File(rootDir, fileName+".pinned");
 
-        {// normalization first
-            File legacyFile = new File(rootDir,legacyName);
-            if (legacyFile.exists())    legacyFile.renameTo(file);
-            File legacyPinFile = new File(rootDir,legacyName+".pinned");
-            if (legacyPinFile.exists())    legacyPinFile.renameTo(pinFile);
-        }
+        // normalization first, if the old file exists.
+        rename(new File(rootDir,legacyName),file);
+        rename(new File(rootDir,legacyName+".pinned"),pinFile);
         
         // update file if:
         //  - no file exists today
@@ -431,6 +428,20 @@ public abstract class PluginManager extends AbstractModelObject {
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
+        }
+    }
+
+    /**
+     * Rename a legacy file to a new name, with care to Windows where {@link File#renameTo(File)}
+     * doesn't work if the destination already exists.
+     */
+    private void rename(File legacyFile, File newFile) throws IOException {
+        if (!legacyFile.exists())   return;
+        if (newFile.exists()) {
+            Util.deleteFile(newFile);
+        }
+        if (!legacyFile.renameTo(newFile)) {
+            LOGGER.warning("Failed to rename " + legacyFile + " to " + newFile);
         }
     }
 
