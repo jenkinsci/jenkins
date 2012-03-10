@@ -1023,6 +1023,14 @@ public class Util {
     }
 
     /**
+     * @deprecated as of 1.456
+     *      Use {@link #resolveSymlink(File)}
+     */
+    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+        return resolveSymlink(link);
+    }
+
+    /**
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
@@ -1030,7 +1038,7 @@ public class Util {
      * @param listener
      *      If we rely on an external command to resolve symlink, this is it.
      */
-    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+    public static String resolveSymlink(File link) throws InterruptedException, IOException {
         if(Functions.isWindows())     return null;
 
         String filename = link.getAbsolutePath();
