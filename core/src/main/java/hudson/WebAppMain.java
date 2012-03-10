@@ -259,9 +259,9 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     /** Add some metadata to a File, allowing to trace setup issues */
-    private static class FileAndDescription {
-        File file;
-        String description;
+    public static class FileAndDescription {
+        public final File file;
+        public final String description;
         public FileAndDescription(File file,String description) {
             this.file = file;
             this.description = description;
@@ -281,7 +281,7 @@ public final class WebAppMain implements ServletContextListener {
      * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */
-    private FileAndDescription getHomeDir(ServletContextEvent event) {
+    public FileAndDescription getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
         for (String name : HOME_NAMES) {
             try {
