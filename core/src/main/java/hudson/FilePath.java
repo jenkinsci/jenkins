@@ -415,11 +415,11 @@ public final class FilePath implements Serializable {
         });
     }
 
-    private int archive(final ArchiverFactory factory, OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
+    public int archive(final ArchiverFactory factory, OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
         return archive(factory,os,new DirScanner.Filter(filter));
     }
 
-    private int archive(final ArchiverFactory factory, OutputStream os, final String glob) throws IOException, InterruptedException {
+    public int archive(final ArchiverFactory factory, OutputStream os, final String glob) throws IOException, InterruptedException {
         return archive(factory,os,new DirScanner.Glob(glob,null));
     }
 
