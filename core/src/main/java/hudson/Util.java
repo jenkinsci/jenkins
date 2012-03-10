@@ -1029,7 +1029,6 @@ public class Util {
      *
      * @param listener
      *      If we rely on an external command to resolve symlink, this is it.
-     *      (TODO: try readlink(1) available on some platforms)
      */
     public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
         if(Functions.isWindows())     return null;
