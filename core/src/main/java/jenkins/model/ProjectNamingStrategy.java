@@ -105,7 +105,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
             @Override
             public String getDisplayName() {
-                return "Default";
+                return Messages.ProjectNamingStrategy_DefaultProjectNamingStrategy_DisplayName();
             }
 
             @Override
@@ -158,7 +158,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
             @Override
             public String getDisplayName() {
-                return "Pattern";
+                return Messages.ProjectNamingStrategy_PatternProjectNamingStrategy_DisplayName();
             }
 
             @Override
