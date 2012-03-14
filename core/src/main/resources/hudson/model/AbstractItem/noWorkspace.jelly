@@ -56,7 +56,9 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
       <p>
+      <j:if test="${!it.isDisabled()}">
         ${%text(rootURL,it.url)}
+      </j:if>
       </p>
     </l:main-panel>
   </l:layout>
