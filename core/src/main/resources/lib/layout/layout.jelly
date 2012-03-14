@@ -54,6 +54,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 <st:header name="Expires" value="0" />
+<st:header name="Cache-Control" value="no-cache,must-revalidate" />
 <st:header name="X-Hudson-Theme" value="default" />
 <st:contentType value="text/html;charset=UTF-8" />
 <!-- The path starts with a "/" character but does not end with a "/" character. -->
