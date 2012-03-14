@@ -1657,7 +1657,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Cancels a scheduled build.
      */
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(BUILD);
+        checkPermission(ABORT);
 
         Jenkins.getInstance().getQueue().cancel(this);
         rsp.forwardToPreviousPage(req);
@@ -2025,9 +2025,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     /**
-     * Permission to abort a build. For now, let's make it the same as {@link #BUILD}
+     * Permission to abort a build
      */
-    public static final Permission ABORT = BUILD;
+    public static final Permission ABORT = CANCEL;
 
     /**
      * Replaceable "Build Now" text.
