@@ -42,7 +42,7 @@ var breadcrumbs = (function() {
     });
 
 
-    Event.observe(window,"mousemove",function (ev){
+    Event.observe(document,"mousemove",function (ev){
         mouse = new YAHOO.util.Point(ev.pageX,ev.pageY);
     });
 
