@@ -652,7 +652,9 @@ public abstract class Launcher {
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
-                starter.masks = prefix(starter.masks);
+                if (starter.masks != null) {
+                    starter.masks = prefix(starter.masks);
+                }
                 return outer.launch(starter);
             }
 
