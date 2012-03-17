@@ -146,16 +146,7 @@ import hudson.security.PermissionScope;
 import hudson.security.SecurityMode;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.slaves.Cloud;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeDescriptor;
-import hudson.slaves.NodeList;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.NodeProvisioner;
-import hudson.slaves.OfflineCause;
-import hudson.slaves.RetentionStrategy;
+import hudson.slaves.*;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
@@ -2396,6 +2387,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
+                // JENKINS-8043: some slaves (eg. swarm slaves) are not saved into the config file
+                // and will get overwritten when reloading. Make a backup copy now, and re-add them later
+                NodeList oldSlaves = slaves;
+                
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
                     // reset some data that may not exist in the disk file
@@ -2412,6 +2407,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
                 clouds.setOwner(Jenkins.this);
                 items.clear();
+
+                // JENKINS-8043: re-add the slaves which were not saved into the config file
+                // and are now missing, but still connected.
+                if (oldSlaves != null) {
+                    ArrayList<Node> newSlaves = new ArrayList<Node>(slaves);
+                    for (Node n: oldSlaves) {
+                        if (n instanceof EphemeralNode) {
+                            if(!newSlaves.contains(n)) {
+                                newSlaves.add(n);
+                            }
+                        }
+                    }
+                    setNodes(newSlaves);
+                }
             }
         });
 
