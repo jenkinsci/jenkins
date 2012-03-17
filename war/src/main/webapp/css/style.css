@@ -21,18 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 body {
-  margin: 0;
-  padding: 0;
-  background: white;
+    /** For the fluid twitter bootstrap layout **/
+    padding-top: 60px;
+    padding-bottom: 40px;
 }
-
-body, table, form, input, td, th, p, textarea, select
-{
-  font-family: Verdana, Helvetica, sans serif;
-  font-size: 11px;
-}
-
+/**
 FORM {
   margin: 0;
 }
@@ -44,6 +39,7 @@ td {
 dt {
   font-weight: bold;
 }
+**/
 
 .fixed-width {
   font-family: Courier, monospace;
@@ -116,16 +112,6 @@ dt {
     margin-bottom: 0.5em;
     padding: 0.5em;
     -moz-border-radius: 0.5em;
-}
-
-a:link {
-  text-decoration: underline;
-  color: #204A87;
-}
-
-a:visited {
-  text-decoration: underline;
-  color: #5c3566;
 }
 
 a.lowkey:link {

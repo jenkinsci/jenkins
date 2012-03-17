@@ -134,7 +134,7 @@ THE SOFTWARE.
     <script>
         crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
     </script>
-    
+
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
@@ -153,53 +153,65 @@ THE SOFTWARE.
   <body class="yui-skin-sam">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand" href="${rootURL}">Jenkins</a>
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li class="active"><a href="#">New Job</a></li>
+                        <li><a href="#">People</a></li>
+                        <li><a href="#">Build History</a></li>
+                        <li class="divider-vertical"></li>
+                        <li class="dropdown">
+                            <a href="#"
+                                class="dropdown-toggle"
+                                data-toggle="dropdown">
+                                Manage Jenkins
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">foobar</a></li>
+                            </ul>
+                        </li>
+                    </ul>
 
-    <table id="header" cellpadding="0" cellspacing="0" width="100%" border="0">
-      <tr>
-        <td id="top-panel" colspan="2">
-          <table cellpadding="0" cellspacing="0" width="100%" border="0">
-            <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
-            </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
+                    <!-- login field -->
+                    <j:if test="${app.useSecurity}">
+                        <ul class="nav pull-right">
+                        <j:choose>
+                            <j:when test="${!h.isAnonymous()}">
+                                <li><a href="${rootURL}/user/${app.authentication.name}" class="model-link"><b>${app.authentication.name}</b></a></li>
+                                <j:if test="${app.securityRealm.canLogOut()}">
+                                    <li class="divider-vertical"></li>
+                                    <li><a href="${rootURL}/logout"><b>${%logout}</b></a></li>
+                                </j:if>
+                            </j:when>
+                            <j:otherwise>
+                                <li><st:include it="${app.securityRealm}" page="loginLink.jelly" /></li>
+                            </j:otherwise>
+                        </j:choose>
+                        </ul>
+                    </j:if>
 
-              <!-- search box -->
-              <j:set var="searchURL" value="${h.searchURL}"/>
-              <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search">
-                <!-- this div determines the minimum width -->
-                <div id="search-box-minWidth"/>
-                <!-- this div is used to calculate the width of the text box -->
-                <div id="search-box-sizer"/>
-                <div id="searchform">
-                  <input name="q" value="${%search}" id="search-box" class="has-default-text defaulted" />
-                  <st:nbsp />
-                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
-                  <div id="search-box-completion" />
-                  <script>createSearchBox("${searchURL}");</script>
+                    <!-- search box -->
+                    <j:set var="searchURL" value="${h.searchURL}"/>
+                    <form action="${searchURL}" method="get" class="navbar-search pull-right no-json" name="search">
+                        <div id="searchform">
+                            <input name="q" value="${%search}" type="text" class="search-query span2" />
+                        <st:nbsp />
+                        <div id="search-box-completion" />
+                            <script>createSearchBox("${searchURL}");</script>
+                        </div>
+                    </form>
                 </div>
-              </form>
-            </td><td id="login-field"><span>
-              <!-- login field -->
-              <j:if test="${app.useSecurity}">
-                <st:nbsp/>
-                <j:choose>
-                  <j:when test="${!h.isAnonymous()}">
-                    <span style="white-space:nowrap">
-                      <a href="${rootURL}/user/${app.authentication.name}" class="model-link"><b>${app.authentication.name}</b></a>
-                      <j:if test="${app.securityRealm.canLogOut()}">
-                        |
-                        <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                      </j:if>
-                    </span>
-                  </j:when>
-                  <j:otherwise>
-                    <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-                  </j:otherwise>
-                </j:choose>
-              </j:if>
-            </span></td></tr>
-          </table>
-        </td>
-      </tr>
+            </div>
+          </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+    <table id="header" cellpadding="0" cellspacing="0" width="100%" border="0">
       <l:breadcrumbBar>
         <j:set var="mode" value="breadcrumbs" />
         <d:invokeBody />
@@ -232,15 +244,13 @@ THE SOFTWARE.
         </td>
       </tr>
     </table>
-    <table width="100%">
-      <tr><td id="footer">
-        <span style="padding-right:2em; color:gray">
-          ${%Page generated}:
-          <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
-        </span>
-        <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
-      </td></tr>
-    </table>
+    </div>
+    </div>
+    <hr />
+    <footer>
+        <p>${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/> <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></p>
+    </footer>
+    </div>
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="footer.jelly" optional="true" />
     </j:forEach>
