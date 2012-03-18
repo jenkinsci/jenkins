@@ -34,45 +34,32 @@ THE SOFTWARE.
     use the &lt;l:breadcrumb> tag.
   </st:documentation>
 
-  <tr id="top-nav">
-    <td id="left-top-nav" colspan="2">
-      <st:adjunct includes="lib.layout.breadcrumbs" />
-      <div class="top-sticker noedge">
-        <div class="top-sticker-inner">
-          <div id="right-top-nav">
-            <j:if test="${norefresh==null}">
-              <div id="right-top-nav">
-                <div class="smallfont">
-                  <j:choose>
-                    <j:when test="${h.isAutoRefresh(request)}">
-                      <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                    </j:when>
-                    <j:otherwise>
-                      <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                    </j:otherwise>
-                  </j:choose>
-                </div>
-              </div>
+  <st:adjunct includes="lib.layout.breadcrumbs" />
+  <div class="row-fluid">
+    <div class="span12">
+        <ul id="breadcrumbs" class="breadcrumb">
+        <j:forEach var="anc" items="${request.ancestors}">
+            <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+            <li>
+                <a href="${anc.url}/">${anc.object.displayName}</a>
+            </li>
             </j:if>
-          </div>
-          <ul id="breadcrumbs">
-            <j:forEach var="anc" items="${request.ancestors}">
-              <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                <li>
-                  <a href="${anc.url}/">
-                    ${anc.object.displayName}
-                  </a>
-                </li>
-              </j:if>
-            </j:forEach>
+        </j:forEach>
+        <!-- render additional breadcrumb items -->
+        <d:invokeBody />
+        <j:if test="${norefresh==null}">
+            <j:choose>
+            <j:when test="${h.isAutoRefresh(request)}">
+                <li id="autorefresh" class="pull-right small"><a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a></li>
+            </j:when>
+            <j:otherwise>
+                <li id="autorefresh" class="pull-right small"><a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a></li>
+            </j:otherwise>
+            </j:choose>
+        </j:if>
+        </ul>
+        <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
+    </div>
+  </div>
 
-            <!-- render additional breadcrumb items -->
-            <d:invokeBody />
-          </ul>
-
-          <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
-        </div>
-      </div>
-    </td>
-  </tr>
 </j:jelly>

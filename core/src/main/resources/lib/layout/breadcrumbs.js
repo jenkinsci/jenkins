@@ -34,7 +34,7 @@ var breadcrumbs = (function() {
     var menuDelay;
 
     function makeMenuHtml(icon,displayName) {
-        return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
+        return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt='' /> " : "")+displayName;
     }
 
     Event.observe(window,"load",function(){
@@ -114,12 +114,14 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    jenkinsRules["#breadcrumbs LI"] = function (e) {
-        // when the mouse hovers over LI, activate the menu
-        $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
+    jenkinsRules["#breadcrumbs li"] = function (e) {
+        // when the mouse hovers over li, activate the menu
+        if (e.id != "autorefresh") {
+            $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
+        }
     };
 
-    jenkinsRules["A.model-link"] = function (a) {
+    jenkinsRules["a.model-link"] = function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
         $(a).observe("mouseover", function () { handleHover(a,500); });
     };
