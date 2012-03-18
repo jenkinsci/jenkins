@@ -156,10 +156,10 @@ THE SOFTWARE.
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
-                <a class="brand" href="${rootURL}">Jenkins</a>
+                <a class="brand" href="${rootURL}/">Jenkins</a>
                 <div class="nav-collapse">
                     <ul class="nav">
-                        <li class="active"><a href="#">New Job</a></li>
+                        <li><a href="#">New Job</a></li>
                         <li><a href="#">People</a></li>
                         <li><a href="#">Build History</a></li>
                         <li class="divider-vertical"></li>
@@ -217,35 +217,27 @@ THE SOFTWARE.
             <j:set var="mode" value="breadcrumbs" />
             <d:invokeBody />
         </l:breadcrumbBar>
-        <div class="row-fluid">
-            <div class="span12">
-              <table id="main-table" width="100%" height="70%" border="0"
-                    style="background-image: url(${imagesURL}/jenkins.png);
-                        background-repeat: no-repeat; background-position: bottom left;">
-                <tr>
-                    <td id="side-panel" width="20%">
-                    <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
-                        <j:set var="mode" value="side-panel" />
-                        <d:invokeBody />
+        <div class="row-fluid" id="main-table" style="background-image: url(${imagesURL}/jenkins.png); background-repeat: no-repeat; background-position: top left;">
+            <div class="span3" id="side-panel">
+                <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
+                    <j:set var="mode" value="side-panel" />
+                    <d:invokeBody />
 
-                        <!-- add YUI logger if debugging YUI -->
-                        <j:if test="${h.yuiSuffix=='debug'}">
-                        <div id="yui-logreader" style="margin-top:1em"/>
-                        <script>
-                            Behaviour.addLoadEvent(function(){
-                            var logReader = new YAHOO.widget.LogReader("yui-logreader");
-                            logReader.collapse();
-                            });
-                        </script>
-                        </j:if>
-                    </div>
-                    </td>
-                    <td id="main-panel" width="80%" height="100%">
-                    <j:set var="mode" value="main-panel" />
-                    <d:invokeBody/>
-                    </td>
-                </tr>
-                </table>
+                    <!-- add YUI logger if debugging YUI -->
+                    <j:if test="${h.yuiSuffix=='debug'}">
+                    <div id="yui-logreader" style="margin-top:1em"/>
+                    <script>
+                        Behaviour.addLoadEvent(function(){
+                        var logReader = new YAHOO.widget.LogReader("yui-logreader");
+                        logReader.collapse();
+                        });
+                    </script>
+                    </j:if>
+                </div>
+            </div>
+            <div class="span9" id="main-panel">
+                <j:set var="mode" value="main-panel" />
+                <d:invokeBody/>
             </div>
         </div>
         <hr />
