@@ -852,11 +852,11 @@ DIV.yahooTree td {
   background-color: #FFF !important;
 }
 /* ========================= search box at the top-right of the page ========================= */
+
 #search-box {
-  background: white url(../images/16x16/search.gif) no-repeat 2px center;
   padding-left: 20px;
   width: 15em;
-  position: static; 
+  position: static;
 }
 
 #search-box.defaulted {
@@ -877,19 +877,20 @@ DIV.yahooTree td {
   overflow: hidden;
 }
 
-#search-box-completion UL {
+#search-box-completion ul {
   padding: 0 0;
   width: 100%;
   margin: 0 0;
   list-style: none;
 }
-#search-box-completion LI {
+#search-box-completion li {
   padding-left:20px;
   white-space:nowrap;
 }
-#search-box-completion LI.yui-ac-highlight {
+#search-box-completion li.yui-ac-highlight {
   background: #729FCF;
 }
+
 #search-box-minWidth {
   position:absolute;
   visibility: hidden;
