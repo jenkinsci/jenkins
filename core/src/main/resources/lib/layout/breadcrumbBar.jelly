@@ -38,10 +38,10 @@ THE SOFTWARE.
   <div class="row-fluid">
     <div class="span12">
         <ul id="breadcrumbs" class="breadcrumb">
-        <j:forEach var="anc" items="${request.ancestors}">
+            <j:forEach var="anc" items="${request.ancestors}">
             <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
             <li>
-                <a href="${anc.url}/">${anc.object.displayName}</a>
+                <a href="${anc.url}/">${anc.object.displayName}</a> <span class="divider">/</span>
             </li>
             </j:if>
         </j:forEach>

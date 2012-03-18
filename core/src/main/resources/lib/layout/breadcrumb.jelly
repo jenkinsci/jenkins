@@ -43,7 +43,6 @@ THE SOFTWARE.
       <a href="${attrs.href}">
         ${attrs.title}
       </a>
-      <span class="divider">/</span>
     </li>
   </j:if>
 </j:jelly>
