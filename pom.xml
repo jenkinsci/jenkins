@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.457-SNAPSHOT</version>
+  <version>1.456</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -136,7 +136,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.8.0</version>
+        <version>1.8.3</version>
       </dependency>
 
       <dependency>
