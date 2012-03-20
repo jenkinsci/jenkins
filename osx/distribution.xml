@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+    Documentation for this type of file is lacking, but good examples
+    can be found by looking inside the packages Apple distributes, ex: Xcode.
+
+    To add a new sub-package:
+    1. Create a folder in packages
+    2. Create the directory structure you need in a "dest_root" folder
+    3. Create a file called "identifier" with a unique identifier
+    4. Add <pkg-ref> entries (both forward and detail)
+    5. Add a <choice> and a line in <choices-outline>
+
+    As an example, look how the launchd package is defined in ./packages and
+    in this file (search for 'org.jenkins-ci.launchd').
+-->
+<installer-gui-script minSpecVersion="1">
+    <!-- General Package Properties -->
+    <title>Jenkins CI Server</title>
+    <organization>org.jenkins-ci</organization>
+    <domain system="true" />
+    <background file="background.png" scaling="none" alignment="bottomleft" />
+    <welcome file="Welcome.rtf" />
+    <license file="license.txt" />
+    <!-- Define all packages references -->
+    <pkg-ref id="org.jenkins-ci.jenkins"/>
+    <pkg-ref id="org.jenkins-ci.launchd"/>
+    <pkg-ref id="org.jenkins-ci.documentation"/>
+    <!-- Defines the list of choices in the customization screen -->
+    <options customize="both" require-scripts="true" rootVolumeOnly="true" />
+    <choices-outline>
+        <line choice="org.jenkins-ci.jenkins"/>
+        <line choice="org.jenkins-ci.launchd"/>
+        <line choice="org.jenkins-ci.documentation"/>
+    </choices-outline>
+    <!-- Define details for each choice -->
+    <choice
+        id="org.jenkins-ci.jenkins"
+        visible="true"
+        title="Jenkins WAR"
+        description="The jenkins.war file. Installed to /Applications/Jenkins"
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.jenkins"/>
+    </choice>
+    <choice
+        id="org.jenkins-ci.launchd"
+        visible="true"
+        title="Jenkins Launch Daemon"
+        description="A launch daemon to run Jenkins at boot."
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.launchd"/>
+    </choice>
+    <choice
+        id="org.jenkins-ci.documentation"
+        visible="true"
+        title="Daemon Documentation"
+        description="Documentation for the launch daemon. Installed to /Library/Documentation/Jenkins."
+        start_selected="true"
+        >
+        <pkg-ref id="org.jenkins-ci.documentation"/>
+    </choice>
+    <!-- Define where each installer source is coming from -->
+    <pkg-ref id="org.jenkins-ci.jenkins" version="0" onConclusion="none" auth="root">jenkins.pkg</pkg-ref>
+    <pkg-ref id="org.jenkins-ci.launchd" version="0" onConclusion="none" auth="root">launchd.pkg</pkg-ref>
+    <pkg-ref id="org.jenkins-ci.documentation" version="0" onConclusion="none" auth="root">documentation.pkg</pkg-ref>
+</installer-gui-script>

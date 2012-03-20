@@ -1,0 +1,6 @@
+#!/bin/bash
+
+JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
+
+# Load and start the launch daemon
+/bin/launchctl load ${JENKINS_PLIST}
