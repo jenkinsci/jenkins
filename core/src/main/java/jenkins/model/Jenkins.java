@@ -755,7 +755,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH);
 
             // initialization consists of ...
             executeReactor( is,
@@ -3707,14 +3707,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         if(ver==null)   ver="?";
         VERSION = ver;
         context.setAttribute("version",ver);
+
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
+        SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8)
 
         if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
-            RESOURCE_PATH = "/static/"+VERSION_HASH;
+            RESOURCE_PATH = "/static/"+SESSION_HASH;
 
-        VIEW_RESOURCE_PATH = "/resources/"+ VERSION_HASH;
+        VIEW_RESOURCE_PATH = "/resources/"+ SESSION_HASH;
     }
 
     /**
@@ -3751,6 +3753,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Hash of {@link #VERSION}.
      */
     public static String VERSION_HASH;
+
+    /**
+     * Unique random token that identifies the current session.
+     * Used to make {@link #RESOURCE_PATH} unique so that we can set long "Expires" header.
+     * 
+     * We used to use {@link #VERSION_HASH}, but making this session local allows us to
+     * reuse the same {@link #RESOURCE_PATH} for static resources in plugins.
+     */
+    public static String SESSION_HASH;
 
     /**
      * Prefix to static resources like images and javascripts in the war file.
