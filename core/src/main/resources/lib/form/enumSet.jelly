@@ -34,8 +34,10 @@ THE SOFTWARE.
   <div name="${field}">
     <j:forEach var="e" items="${descriptor.getPropertyType(instance,field).itemType.enumConstants}">
       <div>
-        <input type="checkbox" name="_.${e.name()}" checked="${instance[field].contains(e)?'true':null}"/>
-        <label class="attach-previous">${e}</label>
+        <label>
+          <input type="checkbox" name="_.${e.name()}" checked="${instance[field].contains(e)?'true':null}"/>
+          ${e}
+        </label>
       </div>
     </j:forEach>
   </div>

@@ -710,6 +710,7 @@ var jenkinsRules = {
         e = null; // avoid memory leak
     },
 
+// DEPRECATED: Use <label><input type="checkbox">text</label> syntax
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
@@ -1011,7 +1012,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start": function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.firstChild.firstChild.firstChild;
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
@@ -1165,7 +1166,7 @@ var jenkinsRules = {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.firstChild.firstChild.firstChild;
         updateOptionalBlock(checkbox,false);
     },
 

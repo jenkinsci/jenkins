@@ -74,10 +74,10 @@ public class LabelAxis extends Axis {
         }
 
         public String buildLabelCheckBox(LabelAtom la, LabelAxis instance) {
-            return jsstr("<input type='checkbox' name='values' json='%s' ",
+            return jsstr("<label><input type='checkbox' name='values' json='%s' ",
                         Functions.htmlAttributeEscape(la.getName()))
                    +String.format("+has(%s)+",jsstr(la.getName()))
-                   +jsstr("/><label class='attach-previous'>%s (%s)</label>",
+                   +jsstr("/> %s (%s)</label>",
                         la.getName(),la.getDescription());
             // '${h.jsStringEscape('<input type="checkbox" name="values" json="'+h.htmlAttributeEscape(l.name)+'" ')}'+has("${h.jsStringEscape(l.name)}")+'${h.jsStringEscape('/><label class="attach-previous">'+l.name+' ('+l.description+')</label>')}'
         }

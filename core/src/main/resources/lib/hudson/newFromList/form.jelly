@@ -64,8 +64,10 @@ THE SOFTWARE.
 
     <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
-        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
+        <label>
+          <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+          <b>${descriptor.displayName}</b>
+        </label>
       </s:block>
       <s:entry>
         <st:set var="instance" value="${descriptor}" />
@@ -74,8 +76,10 @@ THE SOFTWARE.
     </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>
-        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-        <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
+        <label class="attach-previous">
+          <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+          <b>${attrs.copyTitle}</b>
+        </label>
       </s:block>
       <s:entry>
         ${%Copy from}

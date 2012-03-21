@@ -54,10 +54,12 @@ THE SOFTWARE.
 
 	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
-	    <input type="radio" name="${name}" value="${value}"
+	    <label class="attach-previous">
+          <input type="radio" name="${name}" value="${value}"
              class="radio-block-control" checked="${checked?'true':null}" />
-      <label class="attach-previous">${title}</label>
-    </td>
+          ${title}
+        </label>
+      </td>
     <j:if test="${attrs.help!=null}">
       <td>
         <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
