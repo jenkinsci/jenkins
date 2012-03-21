@@ -171,26 +171,24 @@ THE SOFTWARE.
                                 <li><a href="#">foobar</a></li>
                             </ul>
                         </li>
-                    </ul>
-
+                        <li class="divider-vertical"></li>
                     <!-- login field -->
                     <j:if test="${app.useSecurity}">
-                        <ul class="nav pull-right">
                         <j:choose>
                             <j:when test="${!h.isAnonymous()}">
-                                <li><a href="${rootURL}/user/${app.authentication.name}" class="model-link"><b>${app.authentication.name}</b></a></li>
+                                <li><a href="${rootURL}/user/${app.authentication.name}" class="model-link">${app.authentication.name}</a></li>
                                 <j:if test="${app.securityRealm.canLogOut()}">
                                     <li class="divider-vertical"></li>
-                                    <li><a href="${rootURL}/logout"><b>${%logout}</b></a></li>
+                                    <li><a href="${rootURL}/logout">${%logout}</a></li>
                                 </j:if>
                             </j:when>
                             <j:otherwise>
                                 <li><st:include it="${app.securityRealm}" page="loginLink.jelly" /></li>
                             </j:otherwise>
                         </j:choose>
-                        </ul>
                     </j:if>
-
+                    </ul>
+                    
                     <!-- search box -->
                     <j:set var="searchURL" value="${h.searchURL}"/>
                     <form action="${searchURL}" method="get" class="navbar-search pull-right no-json" name="search">

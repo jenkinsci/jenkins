@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:include page="/hudson/security/SecurityRealm/loginLink.jelly" />
-  <j:if test="${it.allowsSignup()}">
-    |
-    <a href="${rootURL}/signup"><b>${%sign up}</b></a>
-  </j:if>
+    <st:include page="/hudson/security/SecurityRealm/loginLink.jelly" />
+    <j:if test="${it.allowsSignup()}">
+        <li class="divider-vertical"></li>
+        <li><a href="${rootURL}/signup">${%sign up}</a></li>
+    </j:if>
 </j:jelly>
