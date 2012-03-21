@@ -67,7 +67,7 @@ THE SOFTWARE.
                 e.appendChild(p); // Needs to be first for IE
                 // Use "outerHTML" for IE; workaround for:
                 // http://www.quirksmode.org/bugreports/archives/2004/11/innerhtml_and_t.html
-                if (p.outerHTML) {
+                if (0 &lt; YAHOO.env.ua.ie &amp;&amp; YAHOO.env.ua.ie &lt;= 7) {
                   p.outerHTML = '<pre>'+text+'</pre>';
                   p = e.lastChild;
                 }
