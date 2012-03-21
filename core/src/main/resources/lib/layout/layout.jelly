@@ -240,8 +240,7 @@ THE SOFTWARE.
                 <d:invokeBody/>
             </div>
         </div>
-        <hr />
-        <footer>
+        <footer id="footer">
             <p>${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/><st:nbsp /><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></p>
         </footer>
     </div>
