@@ -472,17 +472,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        cls.put(Jenkins.getInstance().getPluginManager().uberClassLoader);
+        Jenkins j = Jenkins.getInstance();
+        if (j!=null) {// only when running on the master
+            cls.put(j.getPluginManager().uberClassLoader);
 
-        ResourceNameIterator servicesIter =
-            new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-        final ResourceClassIterator itr =
-            new DiscoverClasses(cls).findResourceClasses(servicesIter);
+            ResourceNameIterator servicesIter =
+                new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
+            final ResourceClassIterator itr =
+                new DiscoverClasses(cls).findResourceClasses(servicesIter);
 
-        while(itr.hasNext()) {
-            Class h = itr.nextResourceClass().loadClass();
-            Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-            CmdLineParser.registerHandler(c,h);
+            while(itr.hasNext()) {
+                Class h = itr.nextResourceClass().loadClass();
+                Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
+                CmdLineParser.registerHandler(c,h);
+            }
         }
     }
 }
