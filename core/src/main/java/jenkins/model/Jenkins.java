@@ -3709,7 +3709,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
-        SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8)
+        SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
         if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
