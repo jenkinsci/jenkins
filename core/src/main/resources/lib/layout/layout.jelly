@@ -158,10 +158,7 @@ THE SOFTWARE.
             <div class="container-fluid">
                 <a class="brand" href="${rootURL}/">Jenkins</a>
                 <div class="nav-collapse">
-                    <ul class="nav">
-                        <li><a href="#">New Job</a></li>
-                        <li><a href="#">People</a></li>
-                        <li><a href="#">Build History</a></li>
+                    <ul class="nav pull-right">
                         <li class="divider-vertical"></li>
                         <li class="dropdown">
                             <a href="#"
