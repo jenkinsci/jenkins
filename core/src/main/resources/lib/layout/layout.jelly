@@ -202,7 +202,7 @@ THE SOFTWARE.
 		                <!-- this div is used to calculate the width of the text box -->
 		                <div id="search-box-sizer"/>
                         <div id="searchform">
-                            <input name="q" value="${%search}" type="text" id="search-box" class="search-query span2" />
+                            <input name="q" placeholder="${%search}" type="search" id="search-box" class="search-query span2" />
                             <st:nbsp />
                             <div id="search-box-completion" />
                             <script>createSearchBox("${searchURL}");</script>
