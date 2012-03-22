@@ -101,6 +101,9 @@ THE SOFTWARE.
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
+    <!--[if lt IE 9]>
+    <script src="${resURL}/scripts/html5shiv.js" type="text/javascript"/>
+    <![endif]-->
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
