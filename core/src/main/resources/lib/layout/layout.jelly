@@ -158,6 +158,23 @@ THE SOFTWARE.
             <div class="container-fluid">
                 <a class="brand" href="${rootURL}/">Jenkins</a>
                 <div class="nav-collapse">
+                    <!-- login field -->
+                    <p class="navbar-text pull-right">
+                    <j:if test="${app.useSecurity}">
+                        <j:choose>
+                            <j:when test="${!h.isAnonymous()}">
+                                <a href="${rootURL}/user/${app.authentication.name}" class="model-link">${app.authentication.name}</a>
+                                <j:if test="${app.securityRealm.canLogOut()}">
+                                    | <a href="${rootURL}/logout">${%logout}</a>
+                                </j:if>
+                            </j:when>
+                            <j:otherwise>
+                                <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+                            </j:otherwise>
+                        </j:choose>
+                    </j:if>
+                    </p>
+
                     <ul class="nav pull-right">
                         <li class="divider-vertical"></li>
                         <li class="dropdown">
@@ -172,23 +189,8 @@ THE SOFTWARE.
                             </ul>
                         </li>
                         <li class="divider-vertical"></li>
-                    <!-- login field -->
-                    <j:if test="${app.useSecurity}">
-                        <j:choose>
-                            <j:when test="${!h.isAnonymous()}">
-                                <li><a href="${rootURL}/user/${app.authentication.name}" class="model-link">${app.authentication.name}</a></li>
-                                <j:if test="${app.securityRealm.canLogOut()}">
-                                    <li class="divider-vertical"></li>
-                                    <li><a href="${rootURL}/logout">${%logout}</a></li>
-                                </j:if>
-                            </j:when>
-                            <j:otherwise>
-                                <li><st:include it="${app.securityRealm}" page="loginLink.jelly" /></li>
-                            </j:otherwise>
-                        </j:choose>
-                    </j:if>
                     </ul>
-                    
+
                     <!-- search box -->
                     <j:set var="searchURL" value="${h.searchURL}"/>
                     <form action="${searchURL}" method="get" class="navbar-search pull-right no-json" name="search">
