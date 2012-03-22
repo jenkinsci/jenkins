@@ -184,11 +184,6 @@ public class CLI {
             // HTTP proxies (at least the one I tried --- squid) doesn't seem to do half-close very well.
             // So instead of relying on it, we'll just send the close command and then let the server
             // cut their side, then close the socket after the join.
-            closables.add(new Closeable() {
-                public void close() throws IOException {
-                    s.close();
-                }
-            });
             out = new SocketOutputStream(s) {
                 @Override
                 public void close() throws IOException {
@@ -200,6 +195,12 @@ public class CLI {
             s.connect(endpoint,3000);
             out = new SocketOutputStream(s);
         }
+
+        closables.add(new Closeable() {
+            public void close() throws IOException {
+                s.close();
+            }
+        });
 
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
         dos.writeUTF("Protocol:CLI-connect");
