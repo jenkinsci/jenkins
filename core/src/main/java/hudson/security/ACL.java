@@ -49,6 +49,10 @@ public abstract class ACL {
      */
     public final void checkPermission(Permission p) {
         Authentication a = Jenkins.getAuthentication();
+
+        if(hasOverride(a, p))
+            return;
+
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
     }
@@ -60,7 +64,12 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(Permission p) {
-        return hasPermission(Jenkins.getAuthentication(),p);
+        Authentication a = Jenkins.getAuthentication();
+
+        if (hasOverride(a,p))
+            return true;
+
+        return hasPermission(a,p);
     }
 
     /**
@@ -71,6 +80,23 @@ public abstract class ACL {
      * in which case you should probably just assume it has every permission.
      */
     public abstract boolean hasPermission(Authentication a, Permission permission);
+
+    /**
+     * Check with the ACLPermissionOverride extension point if the given principal has the given permission.
+     *
+     * @return true if the permision is granted by any of the ACLPermissionOverride extensions.
+     */
+    private boolean hasOverride(Authentication a, Permission p) {
+        List<ACLPermissionOverride>overrideList = Jenkins.getInstance().getExtensionList(ACLPermissionOverride.class);
+
+        for (ACLPermissionOverride s : overrideList) {
+            if (s.checkPermission(a, p))
+                return true;
+        }
+
+        return false;
+    }
+
 
     //
     // Sid constants
