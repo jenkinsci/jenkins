@@ -166,7 +166,10 @@ THE SOFTWARE.
                     <j:if test="${app.useSecurity}">
                         <j:choose>
                             <j:when test="${!h.isAnonymous()}">
-                                <a href="${rootURL}/user/${app.authentication.name}" class="model-link">${app.authentication.name}</a>
+                                <a href="${rootURL}/user/${app.authentication.name}" class="model-link">
+                                  <img src="${h.getAvatar(app.getUser(app.authentication.name),'24x24')}" alt="" height="24" width="24" />
+                                  ${app.authentication.name}
+                                </a>
                                 <j:if test="${app.securityRealm.canLogOut()}">
                                     | <a href="${rootURL}/logout">${%logout}</a>
                                 </j:if>
