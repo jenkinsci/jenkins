@@ -169,7 +169,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *
      * @param ws
      *      New workspace should be prepared in this location. This is the same value as
-     *      {@code build.getProject().getWorkspace()} but passed separately for convenience.
+     *      {@code build.getWorkspace()} but passed separately for convenience.
      * @param glob
      *      Ant-style file glob for files to include in the snapshot. May not be pertinent for all
      *      implementations.
