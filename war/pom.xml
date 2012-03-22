@@ -417,6 +417,25 @@ THE SOFTWARE.
           </systemProperties>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.lesscss</groupId>
+        <artifactId>lesscss-maven-plugin</artifactId>
+        <version>1.3.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <outputDirectory>${project.build.directory}/jenkins/css</outputDirectory>
+          <includes>
+            <value>jenkins.less</value>
+          </includes>
+          <compress>true</compress>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
