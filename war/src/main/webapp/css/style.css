@@ -24,7 +24,7 @@
 
 body {
     /** For the fluid twitter bootstrap layout **/
-    padding-top: 60px;
+    padding-top: 55px;
     padding-bottom: 40px;
 }
 
@@ -858,6 +858,7 @@ DIV.yahooTree td {
 }
 
 #search-box-completion .yui-ac-content {
+  color: black;
   border: 1px solid black;
   width:25em;
   background-color: white;
