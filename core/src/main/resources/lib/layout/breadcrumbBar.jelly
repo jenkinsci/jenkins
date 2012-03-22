@@ -41,8 +41,11 @@ THE SOFTWARE.
             <j:forEach var="anc" items="${request.ancestors}">
             <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
             <li>
-                <a href="${anc.url}/">${anc.object.displayName}</a> <span class="divider">/</span>
+                <a href="${anc.url}/">${anc.object.displayName}</a>
             </li>
+            <j:if test="${anc.next!=null}">
+            <li class="divider">/</li>
+            </j:if>
             </j:if>
         </j:forEach>
         <!-- render additional breadcrumb items -->
