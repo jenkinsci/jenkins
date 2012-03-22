@@ -21,14 +21,14 @@
 
 // Accent colors
 // -------------------------
-@blue:                  #049cdb;
-@blueDark:              #0064cd;
-@green:                 #46a546;
-@red:                   #9d261d;
-@yellow:                #ffc40d;
-@orange:                #f89406;
-@pink:                  #c3325f;
-@purple:                #7a43b6;
+@blue:                  @tangoSkyBlue2;
+@blueDark:              @tangoSkyBlue3;
+@green:                 @tangoChameleon3;
+@red:                   @tangoScarletRed3;
+@yellow:                @tangoButter1;
+@orange:                @tangoOrange1;
+@pink:                  @tangoScarletRed1;
+@purple:                @tangoPlum2;
 
 
 // Scaffolding
@@ -39,8 +39,8 @@
 
 // Links
 // -------------------------
-@linkColor:             #08c;
-@linkColorHover:        darken(@linkColor, 15%);
+@linkColor:             @jenkinsTeal;
+@linkColorHover:        @jenkinsDarkSlateGray;
 
 
 // Typography
@@ -58,9 +58,9 @@
 // Tables
 // -------------------------
 @tableBackground:                   transparent; // overall background-color
-@tableBackgroundAccent:             #f9f9f9; // for striping
-@tableBackgroundHover:              #f5f5f5; // for hover
-@tableBorder:                       #ddd; // table and cell border
+@tableBackgroundAccent:             @jenkinsLightGray; // for striping
+@tableBackgroundHover:              lighten(@jenkinsLightGray, 20%); // for hover
+@tableBorder:                       lighten(@jenkinsLightGray, 10%); // table and cell border
 
 
 // Buttons
@@ -140,12 +140,12 @@
 // Navbar
 // -------------------------
 @navbarHeight:                    40px;
-@navbarBackground:                @grayDarker;
-@navbarBackgroundHighlight:       @grayDark;
+@navbarBackground:                @jenkinsBlack;
+@navbarBackgroundHighlight:       @jenkinsBlack;
 
-@navbarText:                      @grayLight;
-@navbarLinkColor:                 @grayLight;
-@navbarLinkColorHover:            @white;
+@navbarText:                      @jenkinsLightGray;
+@navbarLinkColor:                 @jenkinsLightGray;
+@navbarLinkColorHover:            @linkColorHover;
 @navbarLinkColorActive:           @navbarLinkColorHover;
 @navbarLinkBackgroundHover:       transparent;
 @navbarLinkBackgroundActive:      @navbarBackground;
@@ -153,7 +153,7 @@
 @navbarSearchBackground:          lighten(@navbarBackground, 25%);
 @navbarSearchBackgroundFocus:     @white;
 @navbarSearchBorder:              darken(@navbarSearchBackground, 30%);
-@navbarSearchPlaceholderColor:    #ccc;
+@navbarSearchPlaceholderColor:    @jenkinsGray;
 
 
 // Hero unit
