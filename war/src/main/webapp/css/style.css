@@ -877,7 +877,7 @@ DIV.yahooTree td {
   text-align: left;
   width:25em;
   position: absolute;
-  z-index: 999;
+  z-index: 1000;
 }
 
 #search-box-completion .yui-ac-content {
