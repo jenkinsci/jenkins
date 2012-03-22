@@ -220,7 +220,7 @@ THE SOFTWARE.
             <j:set var="mode" value="breadcrumbs" />
             <d:invokeBody />
         </l:breadcrumbBar>
-        <div class="row-fluid" id="main-table" style="background-image: url(${imagesURL}/jenkins.png); background-repeat: no-repeat; background-position: top left;">
+        <div class="row-fluid" id="main-table" style="background-image: url(${imagesURL}/jenkins.png); background-repeat: no-repeat; background-position: bottom left;">
             <div class="span3" id="side-panel">
                 <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
                     <j:set var="mode" value="side-panel" />
