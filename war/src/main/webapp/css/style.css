@@ -125,7 +125,6 @@ a.lowkey:visited {
 a.tip {
   position:relative;
   z-index:24;
-  text-decoration: underline;
 }
 
 a.tip:hover {
