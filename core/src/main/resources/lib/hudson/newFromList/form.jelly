@@ -103,7 +103,7 @@ THE SOFTWARE.
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
+      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" class="btn btn-primary"/>
     </s:block>
   </s:form>
   <script><![CDATA[
@@ -120,8 +120,8 @@ THE SOFTWARE.
         return true;
       }
 
-      okButton.set('disabled',state(),false);
+      okButton.disabled = state();
     }
-    updateOk(okButton.getForm());
+    updateOk(okButton.form);
   ]]></script>
 </j:jelly>

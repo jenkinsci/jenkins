@@ -47,7 +47,7 @@ THE SOFTWARE.
           </tr>
           <tr>
             <td colspan="3" style="text-align:right">
-              <f:submit value="${%Compare}" />
+              <f:submit value="${%Compare}" clazz="btn-primary"/>
               <a href="projectRelationship-help"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
             </td>
           </tr>

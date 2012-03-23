@@ -43,7 +43,7 @@ THE SOFTWARE.
         <f:block>
           <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
 
-          <f:submit value="${%Save}"/>
+          <f:submit value="${%Save}" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

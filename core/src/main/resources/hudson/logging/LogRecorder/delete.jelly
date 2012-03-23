@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:main-panel>
       <form method="post" action="doDelete">
         ${%Are you sure about deleting this log recorder?}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" clazz="btn-danger"/>
       </form>
     </l:main-panel>
   </l:layout>

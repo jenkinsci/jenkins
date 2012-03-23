@@ -40,7 +40,7 @@ THE SOFTWARE.
         </f:entry>
 
         <f:block>
-          <f:submit value="OK" />
+          <f:submit value="OK" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

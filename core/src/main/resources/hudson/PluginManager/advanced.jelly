@@ -42,7 +42,7 @@ THE SOFTWARE.
               <st:include from="${descriptor}" page="${descriptor.configPage}" />
             </j:scope>
             <f:block>
-              <f:submit value="${%Submit}" />
+              <f:submit value="${%Submit}" clazz="btn-primary"/>
             </f:block>
           </f:form>
 
@@ -58,7 +58,7 @@ THE SOFTWARE.
               ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
             </f:block>
             <f:block>
-              <f:submit value="${%Upload}" />
+              <f:submit value="${%Upload}" clazz="btn-primary"/>
             </f:block>
           </f:form>
 
@@ -68,7 +68,7 @@ THE SOFTWARE.
               <f:textbox name="site" value="${app.updateCenter.getSite('default').url}" />
             </f:entry>
             <f:block>
-              <f:submit value="${%Submit}" />
+              <f:submit value="${%Submit}" clazz="btn-primary"/>
             </f:block>
           </f:form>
         </td>

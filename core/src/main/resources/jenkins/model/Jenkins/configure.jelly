@@ -63,7 +63,7 @@ THE SOFTWARE.
       <f:block>
         <div id="bottom-sticker" >
           <div class="bottom-sticker-inner">
-            <f:submit value="${%Save}" />
+            <f:submit value="${%Save}" clazz="btn-primary"/>
             <f:apply />
           </div>
         </div>

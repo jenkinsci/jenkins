@@ -37,7 +37,7 @@ THE SOFTWARE.
                         codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </table>
-        <f:submit value="${%Submit}" />
+        <f:submit value="${%Submit}" clazz="btn-primary"/>
       </form>
     </l:main-panel>
   </l:layout>

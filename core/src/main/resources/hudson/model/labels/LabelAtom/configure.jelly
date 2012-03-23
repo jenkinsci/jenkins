@@ -40,7 +40,7 @@ THE SOFTWARE.
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:block>
-          <f:submit value="${%Save}"/>
+          <f:submit value="${%Save}" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

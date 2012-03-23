@@ -47,7 +47,7 @@ THE SOFTWARE.
                 <td><input type="password" name="j_password" /></td>
               </tr>
             </table>
-            <f:submit value="${%login}" />
+            <f:submit value="${%login}" clazz="btn-primary"/>
             <script>
               $('j_username').focus();
             </script>

@@ -41,7 +41,7 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable<Va
         DescriptorImpl d = getDescriptor();
         d.test1Outcome = new Exception(); // if doValidateTest1() doesn't get invoked, we want to know.
         HtmlPage p = createWebClient().goTo("self/test1");
-        p.getFormByName("config").getButtonByCaption("test").click();
+        p.getFormByName("config").getInputByValue("test").click();
         if (d.test1Outcome!=null)
             throw d.test1Outcome;
     }

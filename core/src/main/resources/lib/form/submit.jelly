@@ -36,6 +36,11 @@ THE SOFTWARE.
     <s:attribute name="value" use="required">
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
+    <!-- Tomcat doesn't like us using the attribute called 'class' -->
+    <s:attribute name="clazz">
+      Additional CSS class(es) to add (such as meanings of the button clazz="btn-primary",
+      "btn-warning" or "btn-danger"; these may be combined).
+    </s:attribute>
   </s:documentation>
-  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="submit-button" />
+  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="btn ${attrs.clazz}" />
 </j:jelly>

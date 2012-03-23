@@ -35,7 +35,7 @@ THE SOFTWARE.
         <form method="post" action="toggleOffline">
           <f:textarea name="offlineMessage" />
           <p>
-            <f:submit value="${%submit}"  />
+            <f:submit value="${%submit}" clazz="btn-warning"/>
           </p>
         </form>
       </l:hasPermission>

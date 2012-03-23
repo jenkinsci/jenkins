@@ -30,7 +30,7 @@ THE SOFTWARE.
 		<l:main-panel>
 		  <form method="post" action="safeRestart">
 		    ${%Are you sure about restarting Jenkins? Jenkins will restart once all running jobs are finished.}
-		    <f:submit value="${%Yes}" />
+		    <f:submit value="${%Yes}" clazz="btn-warning"/>
 		  </form>
 		</l:main-panel>
 	</l:layout>

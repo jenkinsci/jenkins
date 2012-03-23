@@ -29,7 +29,7 @@ THE SOFTWARE.
       ${%You have data stored in an older format and/or unreadable data.}
       <st:nbsp/>
       <st:nbsp/>
-      <f:submit name="yes" value="${%Manage}"/>
+      <f:submit name="yes" value="${%Manage}" clazz="btn-primary"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
   </div>

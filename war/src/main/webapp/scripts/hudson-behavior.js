@@ -391,27 +391,18 @@ function registerRegexpValidator(e,regexp,message) {
 }
 
 /**
- * Wraps a <button> into YUI button.
+ * Makes an element into a Bootstrap button.
  *
  * @param e
- *      button element
+ *      element (input, anchor or whatever)
  * @param onclick
  *      onclick handler
  */
 function makeButton(e,onclick) {
-    var h = e.onclick;
-    var clsName = e.className;
-    var n = e.name;
-    var btn = new YAHOO.widget.Button(e,{});
+    Element.addClassName(e,"btn");
     if(onclick!=null)
-        btn.addListener("click",onclick);
-    if(h!=null)
-        btn.addListener("click",h);
-    var be = btn.get("element");
-    Element.addClassName(be,clsName);
-    if(n!=null) // copy the name
-        be.setAttribute("name",n);
-    return btn;
+        Event.observe(e, "click", onclick);
+    return e;
 }
 
 /*
@@ -1002,11 +993,9 @@ var jenkinsRules = {
         applyTooltip(e,e.getAttribute("tooltip"));
     },
 
-    "INPUT.submit-button" : function(e) {
-        makeButton(e);
-    },
-
+    // DEPRECATED: Use class="btn"
     "INPUT.yui-button" : function(e) {
+        Element.removeClassName(e, "yui-button");
         makeButton(e);
     },
 
@@ -2530,8 +2519,6 @@ function applySafeRedirector(url) {
 
 // logic behind <f:validateButton />
 function validateButton(checkUrl,paramList,button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(',').each(function(name) {

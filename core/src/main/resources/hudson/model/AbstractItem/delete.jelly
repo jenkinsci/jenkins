@@ -35,7 +35,7 @@ THE SOFTWARE.
 		<l:main-panel>
 		  <form method="post" action="doDelete">
 		    ${%blurb(it.pronoun, it.displayName)}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" clazz="btn-danger"/>
 		  </form>
 		</l:main-panel>
 	</l:layout>

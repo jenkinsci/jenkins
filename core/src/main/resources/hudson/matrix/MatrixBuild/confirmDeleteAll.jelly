@@ -35,7 +35,7 @@ THE SOFTWARE.
 		  <j:if test="${msg==null}">
 		    <form method="post" action="doDeleteAll">
 		      ${%Are you sure about deleting the build and all configurations in this build?}
-		      <f:submit value="${%Yes}" />
+		      <f:submit value="${%Yes}" clazz="btn-danger"/>
 		    </form>
 		  </j:if>
 		</l:main-panel>

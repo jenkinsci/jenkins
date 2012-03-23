@@ -42,7 +42,7 @@ THE SOFTWARE.
       <form action="script" method="post">
         <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
         <div align="right">
-          <f:submit  value="${%Run}"/>
+          <f:submit  value="${%Run}" clazz="btn-primary"/>
         </div>
       </form>
       <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.clike.clike"/>

@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import jenkins.model.Jenkins;
@@ -151,7 +152,7 @@ public class MavenTest extends HudsonTestCase {
     public void testGlobalConfigAjax() throws Exception {
         HtmlPage p = new WebClient().goTo("configure");
         HtmlForm f = p.getFormByName("config");
-        HtmlButton b = getButtonByCaption(f, "Add Maven");
+        HtmlButtonInput b = (HtmlButtonInput)f.getInputByValue("Add Maven");
         b.click();
         findPreviousInputElement(b,"name").setValueAttribute("myMaven");
         findPreviousInputElement(b,"home").setValueAttribute("/tmp/foo");

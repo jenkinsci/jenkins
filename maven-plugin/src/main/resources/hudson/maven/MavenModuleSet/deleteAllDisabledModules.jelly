@@ -32,7 +32,7 @@ THE SOFTWARE.
 		<l:main-panel>
 		  <form method="post" action="doDeleteAllDisabledModules">
 		    ${%Are you sure about deleting all the disabled modules?}
-		    <f:submit value="${%Yes}" />
+		    <f:submit value="${%Yes}" clazz="btn-warning"/>
 		  </form>
 		</l:main-panel>
 	</l:layout>

@@ -31,5 +31,5 @@ THE SOFTWARE.
       Caption of the button. Defaults to 'Delete'.
     </st:attribute>
   </st:documentation>
-  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete" />
+  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete btn btn-warning" />
 </j:jelly>

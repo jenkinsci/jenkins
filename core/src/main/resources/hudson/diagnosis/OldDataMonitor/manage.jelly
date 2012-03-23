@@ -66,7 +66,7 @@ THE SOFTWARE.
           </select>
           ${%blurb.5}
           <br/>
-          <f:submit value="${%Upgrade}"/>
+          <f:submit value="${%Upgrade}" clazz="btn-primary"/>
         </form>
       </j:when>
       <j:otherwise>
@@ -92,7 +92,7 @@ THE SOFTWARE.
       </table>
       <br/>
       <form action="discard" method="POST" name="discardUnreadable">
-        <f:submit value="${%Discard Unreadable Data}"/>
+        <f:submit value="${%Discard Unreadable Data}" clazz="btn-warning"/>
       </form>
     </j:if>
   </l:main-panel>

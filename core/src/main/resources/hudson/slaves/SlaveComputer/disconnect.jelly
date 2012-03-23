@@ -30,7 +30,7 @@ THE SOFTWARE.
     <l:main-panel>
       <form method="post" action="doDisconnect">
         ${%Are you sure about disconnecting?}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" clazz="btn-warning"/>
         <p>${%blurb}</p>
         <f:textarea name="offlineMessage" />
       </form>

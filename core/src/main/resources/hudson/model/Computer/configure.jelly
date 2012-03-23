@@ -43,7 +43,7 @@ THE SOFTWARE.
         <st:include it="${instance}" page="configure-entries.jelly" />
 
         <f:block>
-          <f:submit value="${%Save}"/>
+          <f:submit value="${%Save}" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

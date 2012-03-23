@@ -50,7 +50,7 @@ THE SOFTWARE.
             </j:if>
           </table>
           <input type="hidden" name="from" value="${request.getParameter('from')}" />
-          <f:submit value="${%login}" />
+          <f:submit value="${%login}" clazz="btn-primary"/>
           <script>
             $('j_username').focus();
           </script>

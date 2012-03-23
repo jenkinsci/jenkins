@@ -44,7 +44,7 @@ THE SOFTWARE.
           <input type="file" name="name" class="setting-input" />
         </f:entry>
         <f:block>
-          <f:submit value="${%Check}" />
+          <f:submit value="${%Check}" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

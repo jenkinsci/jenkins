@@ -46,9 +46,9 @@ THE SOFTWARE.
           <form method="post" action="doRename">
             ${%description(it.name, newName)}
             <input type="hidden" name="newName" value="${newName}" />
-            <f:submit value="${%Yes}" />
+            <f:submit value="${%Yes}" clazz="btn-warning"/>
             <input type="button" value="${%No}"
-                   onclick="javascript:history.back()" class="yui-button" />
+                   onclick="javascript:history.back()" class="btn" />
           </form>
         </j:otherwise>
       </j:choose>

@@ -24,7 +24,6 @@
  */
 package org.jvnet.hudson.test;
 
-import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.google.inject.Injector;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
@@ -179,6 +178,7 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
@@ -1106,11 +1106,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     /**
      * Submits the form.
-     *
-     * Plain {@link HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
-        return (HtmlPage)form.submit((HtmlButton)last(form.getHtmlElementsByTagName("button")));
+        return (HtmlPage)form.submit();
     }
 
     /**
@@ -1120,19 +1118,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      *      This corresponds to the @name of &lt;f:submit />
      */
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
-        for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
-            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(p.getAttribute("name").equals(name)) {
-                // To make YUI event handling work, this combo seems to be necessary
-                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
-                // (a comment alluding to this behavior can be seen in submitForm method)
-                // so to complete it, submit the form later.
-                //
-                // Just doing form.submit() doesn't work either, because it doesn't do
-                // the preparation work needed to pass along the name of the button that
-                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
-                ((HtmlButton)e).click();
-                return (HtmlPage)form.submit((HtmlButton)e);
+        for( HtmlElement e : form.getHtmlElementsByTagName("input")) {
+            if(e.getAttribute("name").equals(name)) {
+                e.click();
+                return (HtmlPage)form.submit((HtmlInput)e);
             }
         }
         throw new AssertionError("No such submit button with the name "+name);

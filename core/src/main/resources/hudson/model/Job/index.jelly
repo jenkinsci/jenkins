@@ -40,7 +40,7 @@ THE SOFTWARE.
                   <form method="post" action="enable">
                     ${%This project is currently disabled}
                     <l:hasPermission permission="${it.CONFIGURE}">
-                      <f:submit value="${%Enable}" />
+                      <f:submit value="${%Enable}" clazz="btn-primary"/>
                     </l:hasPermission>
                   </form>
                 </div>

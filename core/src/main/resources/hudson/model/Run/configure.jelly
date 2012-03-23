@@ -38,7 +38,7 @@ THE SOFTWARE.
 
         <j:if test="${h.hasPermission(it,it.UPDATE)}">
           <f:block>
-            <f:submit value="${%Save}" />
+            <f:submit value="${%Save}" clazz="btn-primary"/>
           </f:block>
         </j:if>
       </f:form>

@@ -42,7 +42,7 @@ THE SOFTWARE.
           </j:forEach>
         </f:dropdownList>
         <f:entry title="" >
-          <f:submit value="Submit"/>
+          <f:submit value="Submit" clazz="btn-primary"/>
         </f:entry>
       </table>
     </form>

@@ -17,7 +17,7 @@ public class AdvancedButtonTest extends HudsonTestCase {
     public void testNestedOptionalBlock() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testNestedOptionalBlock");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Advanced...").click();
+        f.getInputByValue("Advanced...").click();
         f.getInputByName("c").click();
         submit(f);
     }

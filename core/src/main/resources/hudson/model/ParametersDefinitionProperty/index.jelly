@@ -51,7 +51,7 @@ THE SOFTWARE.
           </tbody>
         </j:forEach>
         <f:block>
-          <f:submit value="${%Build}" />
+          <f:submit value="${%Build}" clazz="btn-primary"/>
         </f:block>
       </f:form>
     </l:main-panel>

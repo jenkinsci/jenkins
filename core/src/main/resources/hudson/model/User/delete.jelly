@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <form method="post" action="doDelete" name="delete">
         ${%Are you sure about deleting the user from Jenkins?}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" clazz="btn-danger"/>
       </form>
     </l:main-panel>
   </l:layout>

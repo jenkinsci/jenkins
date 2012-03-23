@@ -50,7 +50,7 @@ THE SOFTWARE.
           <f:form method="post" action="redeploy">
             <st:include page="/hudson/maven/RedeployPublisher/config.jelly" />
             <f:block>
-              <f:submit value="${%OK}" style="margin-top:1em;" />
+              <f:submit value="${%OK}" style="margin-top:1em;" clazz="btn-primary"/>
             </f:block>
           </f:form>
         </j:otherwise>
