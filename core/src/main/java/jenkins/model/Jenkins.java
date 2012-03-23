@@ -149,6 +149,7 @@ import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeList;
 import hudson.slaves.NodeProperty;
@@ -212,9 +213,6 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
@@ -757,7 +755,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+VERSION_HASH);
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH);
 
             // initialization consists of ...
             executeReactor( is,
@@ -2396,6 +2394,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
+                // JENKINS-8043: some slaves (eg. swarm slaves) are not saved into the config file
+                // and will get overwritten when reloading. Make a backup copy now, and re-add them later
+                NodeList oldSlaves = slaves;
+                
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
                     // reset some data that may not exist in the disk file
@@ -2412,6 +2414,20 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
                 clouds.setOwner(Jenkins.this);
                 items.clear();
+
+                // JENKINS-8043: re-add the slaves which were not saved into the config file
+                // and are now missing, but still connected.
+                if (oldSlaves != null) {
+                    ArrayList<Node> newSlaves = new ArrayList<Node>(slaves);
+                    for (Node n: oldSlaves) {
+                        if (n instanceof EphemeralNode) {
+                            if(!newSlaves.contains(n)) {
+                                newSlaves.add(n);
+                            }
+                        }
+                    }
+                    setNodes(newSlaves);
+                }
             }
         });
 
@@ -3691,14 +3707,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         if(ver==null)   ver="?";
         VERSION = ver;
         context.setAttribute("version",ver);
+
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
+        SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
         if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
-            RESOURCE_PATH = "/static/"+VERSION_HASH;
+            RESOURCE_PATH = "/static/"+SESSION_HASH;
 
-        VIEW_RESOURCE_PATH = "/resources/"+ VERSION_HASH;
+        VIEW_RESOURCE_PATH = "/resources/"+ SESSION_HASH;
     }
 
     /**
@@ -3735,6 +3753,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * Hash of {@link #VERSION}.
      */
     public static String VERSION_HASH;
+
+    /**
+     * Unique random token that identifies the current session.
+     * Used to make {@link #RESOURCE_PATH} unique so that we can set long "Expires" header.
+     * 
+     * We used to use {@link #VERSION_HASH}, but making this session local allows us to
+     * reuse the same {@link #RESOURCE_PATH} for static resources in plugins.
+     */
+    public static String SESSION_HASH;
 
     /**
      * Prefix to static resources like images and javascripts in the war file.

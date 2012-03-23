@@ -34,10 +34,10 @@ THE SOFTWARE.
       <st:include page="tasks.jelly"/>
       <st:include page="actions.jelly" />
       <j:if test="${it.previousBuild!=null}">
-        <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" />
+        <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" contextMenu="false"/>
       </j:if>
       <j:if test="${it.nextBuild!=null}">
-        <l:task icon="images/24x24/next.png" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" />
+        <l:task icon="images/24x24/next.png" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" contextMenu="false"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

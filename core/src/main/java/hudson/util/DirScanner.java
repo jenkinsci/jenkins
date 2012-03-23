@@ -101,6 +101,18 @@ public abstract class DirScanner implements Serializable {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
+
+                    if (visitor.understandsSymlink()) {
+                        try {
+                            String target = Util.resolveSymlink(file,TaskListener.NULL);
+                            if (target!=null) {
+                                visitor.visitSymlink(file,target,f);
+                                continue;
+                            }
+                        } catch (InterruptedException e) {
+                            throw (IOException)new InterruptedIOException().initCause(e);
+                        }
+                    }
                     visitor.visit(file,f);
                 }
             }

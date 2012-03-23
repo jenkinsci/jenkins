@@ -122,6 +122,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *      in CVS there's no single identifier for commits. Each file gets a different revision number.
          * @since 1.405
          */
+        @Exported
         public String getCommitId() {
             return null;
         }
@@ -137,6 +138,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *      spreads over time between multiple changes on multiple files, so there's no single timestamp.)
          * @since 1.405
          */
+        @Exported
         public long getTimestamp() {
             return -1;
         }
@@ -150,6 +152,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return
          *      Can be empty but never null.
          */
+        @Exported
         public abstract String getMsg();
 
         /**
@@ -158,6 +161,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return
          *      never null.
          */
+        @Exported
         public abstract User getAuthor();
 
         /**
@@ -170,6 +174,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *
          * @return never null.
          */
+        @Exported
         public abstract Collection<String> getAffectedPaths();
         
         /**

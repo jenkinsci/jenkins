@@ -47,7 +47,7 @@ THE SOFTWARE.
     <j:if test="${it.checkURIEncodingEnabled}">
       <script>
         var url='checkURIEncoding';
-        var params='value=\u57f7\u4e8b';
+        var params= {value : '\u57f7\u4e8b'};
         var checkAjax=new Ajax.Updater(
           'message', url,
           {

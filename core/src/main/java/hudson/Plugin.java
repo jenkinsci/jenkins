@@ -23,12 +23,14 @@
  */
 package hudson;
 
+import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
+import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -208,8 +210,16 @@ public abstract class Plugin implements Saveable {
             return;
         }
 
+        // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
+        // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
+        // to create unique URLs. Recognize that and set a long expiration header.
+        String requestPath = req.getRequestURI().substring(req.getContextPath().length());
+        boolean staticLink = requestPath.startsWith("/static/");
+
+        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
+
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path));
+        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path),expires);
     }
 
 //

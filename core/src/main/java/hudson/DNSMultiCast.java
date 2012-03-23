@@ -6,6 +6,7 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -41,10 +42,23 @@ public class DNSMultiCast implements Closeable {
 
             props.put("server-id", Util.getDigestOf(hudson.getSecretKey()));
 
+            URL jenkins_url = new URL(rootURL);
+            int jenkins_port = jenkins_url.getPort();
+            if (jenkins_port == -1) {
+                jenkins_port = 80;
+            }
+            if (jenkins_url.getPath().length() > 0) {
+                props.put("path", jenkins_url.getPath());
+            }
+            
             jmdns.registerService(ServiceInfo.create("_hudson._tcp.local.","hudson",
-                    80,0,0,props));	// for backward compatibility
+                    jenkins_port,0,0,props));	// for backward compatibility
             jmdns.registerService(ServiceInfo.create("_jenkins._tcp.local.","jenkins",
-                    80,0,0,props));
+                    jenkins_port,0,0,props));
+            
+            // Make Jenkins appear in Safari's Bonjour bookmarks
+            jmdns.registerService(ServiceInfo.create("_http._tcp.local.","Jenkins",
+                    jenkins_port,0,0,props));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,"Failed to advertise the service to DNS multi-cast",e);
         }

@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.454-SNAPSHOT</version>
+    <version>1.458-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.180</stapler.version>
+    <stapler.version>1.183</stapler.version>
   </properties>
 
   <dependencies>
@@ -259,7 +259,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-      <version>1.4</version>
+      <version>1.4.4</version>
       <exclusions>
         <exclusion><!-- using a patched version -->
           <groupId>javax.activation</groupId>
@@ -565,6 +565,11 @@ THE SOFTWARE.
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>owasp-html-sanitizer</artifactId>
+      <version>r88</version>
+    </dependency>
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>

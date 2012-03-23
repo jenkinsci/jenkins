@@ -212,14 +212,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 //                // continue anyway, just in case it's just ICMP that's getting filtered
 //            }
 
-            try {
-                Socket s = new Socket();
-                s.connect(new InetSocketAddress(host,135),5000);
-                s.close();
-            } catch (IOException e) {
-                logger.println("Failed to connect to port 135 of "+name+". Is Windows firewall blocking this port? Or did you disable DCOM service?");
-                // again, let it continue.
-            }
+            checkPort135Access(logger, name, host);
 
             JIDefaultAuthInfoImpl auth = createAuth();
             JISession session = JISession.createSession(auth);
@@ -383,6 +376,18 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 e.printStackTrace(listener.error(e.getMessage()));
         } catch (DocumentException e) {
             e.printStackTrace(listener.error(e.getMessage()));
+        }
+    }
+
+    private void checkPort135Access(PrintStream logger, String name, InetAddress host) throws IOException {
+        Socket s = new Socket();
+        try {
+            s.connect(new InetSocketAddress(host,135),5000);
+        } catch (IOException e) {
+            logger.println("Failed to connect to port 135 of "+name+". Is Windows firewall blocking this port? Or did you disable DCOM service?");
+            // again, let it continue.
+        } finally {
+            s.close();
         }
     }
 
