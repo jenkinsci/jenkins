@@ -158,12 +158,12 @@ function ts_resortTable(lnk) {
     // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
     // don't do sortbottom rows
     for (var i=0;i<newRows.length;i++) {
-        if (Element.hasClassName(newRows[i], 'sortbottom'))
+        if (! Element.hasClassName(newRows[i], 'sortbottom'))
             table.tBodies[0].appendChild(newRows[i]);
     }
     // do sortbottom rows only
     for (var i=0;i<newRows.length;i++) {
-        if (! Element.hasClassName(newRows[i], 'sortbottom'))
+        if (Element.hasClassName(newRows[i], 'sortbottom'))
             table.tBodies[0].appendChild(newRows[i]);
     }
 
