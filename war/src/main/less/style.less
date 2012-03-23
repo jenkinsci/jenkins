@@ -96,12 +96,10 @@ dt {
 
 #shutdown-msg {
     font-weight: bold;
-    color: white;
-    background-color: #ef2929;
+    color: @white;
+    background-color: @errorText;
     text-align: center;
-    margin-left: 2em;
-    margin-right: 2em;
-    margin-bottom: 0.5em;
+    margin: 0 2em 0.5em;
     padding: 0.5em;
     -moz-border-radius: 0.5em;
 }
@@ -467,44 +465,39 @@ LABEL.attach-previous {
 
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
-.error {
-    color: #CC0000;
-    font-weight: bold;
-    padding-left: 20px;
+.jenkins-alert-block(@image) {
+    .alert;
+    .alert-block;
+    margin-bottom: 2px;
+    padding: 2px 20px;
     min-height: 16px;
-    background-image: url("../images/16x16/error.gif");
+    background-image: url("../images/16x16/@{image}.png");
     background-position: left center;
     background-repeat: no-repeat;
 }
 
+.error {
+    .jenkins-alert-block("error");
+    .alert-error;
+}
+
 .error-inline {
-    color: #CC0000;
+    color: @errorText;
     font-weight: bold;
 }
 
 .warning {
-    color: #C4A000;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    background-image: url( "../images/16x16/warning.gif" );
-    background-position: left center;
-    background-repeat: no-repeat;
+    .jenkins-alert-block("warning");
 }
 
 .warning-inline {
-    color: #C4A000;
+    color: @warningText;
     font-weight: bold;
 }
 
 .info {
-    color: black;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
-    background-position: left center;
-    background-repeat: no-repeat;
+    .jenkins-alert-block("go-next"); // TODO: get a better icon
+    .alert-info;
 }
 
 .icon16x16 {
