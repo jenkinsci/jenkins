@@ -91,8 +91,6 @@ THE SOFTWARE.
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/jenkins.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
     </j:if>
