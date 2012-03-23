@@ -59,7 +59,5 @@ THE SOFTWARE.
            value="${attrs.value}"
            onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
            checkUrl="${attrs.checkUrl}" json="${attrs.json}"
-           checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
-    ${attrs.title}
-  </label>
+           checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>${attrs.title}</label>
 </j:jelly>

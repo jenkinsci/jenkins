@@ -114,11 +114,9 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    jenkinsRules["#breadcrumbs li"] = function (e) {
+    jenkinsRules["#breadcrumbs li[class='breadcrumb-item']"] = function (e) {
         // when the mouse hovers over li, activate the menu
-        if (e.id != "autorefresh") {
-            $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
-        }
+        $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
     };
 
     jenkinsRules["a.model-link"] = function (a) {

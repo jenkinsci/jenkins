@@ -261,6 +261,10 @@ pre.console {
   padding-left: 1em;
 }
 
+.task a img, .subtask a img {
+  margin: 2px 0.5em 2px 2px;
+}
+
 .main-table {
 }
 

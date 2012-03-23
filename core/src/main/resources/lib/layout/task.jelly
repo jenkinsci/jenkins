@@ -101,8 +101,7 @@ THE SOFTWARE.
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,icon,title) : null}
 
           <a href="${href}" onclick="${attrs.onclick}">
-            <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
-            <st:nbsp />
+            <img width="24" height="24" alt="" src="${icon}"/>
             <j:choose>
               <j:when test="${match}">
                 <b>${title}</b>
