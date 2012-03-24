@@ -1244,7 +1244,11 @@ public class Queue extends ResourceController implements Saveable {
             return this.inQueueSince;
         }
         
-        public String getInQueueSinceString() {
+        /**
+         * Returns a human readable presentation of how long this item is already in the queue.
+         * E.g. something like '3 minutes 40 seconds'
+         */
+        public String getInQueueForString() {
             long duration = System.currentTimeMillis() - this.inQueueSince;
             return Util.getTimeSpanString(duration);
         }
