@@ -26,6 +26,8 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-cp "$1" jenkins.war
+d=$(dirname $0)
+cp "$1" $d/jenkins.war
 
+cd $d
 exec debuild -us -uc -B
