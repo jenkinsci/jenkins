@@ -1626,35 +1626,37 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * (especially in comparison with the previous build.)
      */
     public Summary getBuildStatusSummary() {
-        ResultTrend trend = ResultTrend.getResultTrend(this);
-        
-        switch (trend) {
-            case ABORTED : return new Summary(false, Messages.Run_Summary_Aborted());
+        if (!this.isBuilding()) {
+            ResultTrend trend = ResultTrend.getResultTrend(this);
             
-            case NOT_BUILT : return new Summary(false, Messages.Run_Summary_NotBuilt());
-            
-            case FAILURE : return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
-            
-            case STILL_FAILING : 
-                RunT since = getPreviousNotFailedBuild();
-                if(since==null)
-                    return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
-                RunT failedBuild = since.getNextBuild();
-                return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
-           
-            case NOW_UNSTABLE:
-                return determineDetailedUnstableSummary(Boolean.FALSE);
-            case UNSTABLE :
-                return determineDetailedUnstableSummary(Boolean.TRUE);
-            case STILL_UNSTABLE :
-                return determineDetailedUnstableSummary(null);
+            switch (trend) {
+                case ABORTED : return new Summary(false, Messages.Run_Summary_Aborted());
                 
-            case SUCCESS :
-                return new Summary(false, Messages.Run_Summary_Stable());
-            
-            case FIXED :
-                return new Summary(false, Messages.Run_Summary_BackToNormal());
+                case NOT_BUILT : return new Summary(false, Messages.Run_Summary_NotBuilt());
                 
+                case FAILURE : return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
+                
+                case STILL_FAILING : 
+                    RunT since = getPreviousNotFailedBuild();
+                    if(since==null)
+                        return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
+                    RunT failedBuild = since.getNextBuild();
+                    return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
+               
+                case NOW_UNSTABLE:
+                    return determineDetailedUnstableSummary(Boolean.FALSE);
+                case UNSTABLE :
+                    return determineDetailedUnstableSummary(Boolean.TRUE);
+                case STILL_UNSTABLE :
+                    return determineDetailedUnstableSummary(null);
+                    
+                case SUCCESS :
+                    return new Summary(false, Messages.Run_Summary_Stable());
+                
+                case FIXED :
+                    return new Summary(false, Messages.Run_Summary_BackToNormal());
+                    
+            }
         }
         
         return new Summary(false, Messages.Run_Summary_Unknown());
