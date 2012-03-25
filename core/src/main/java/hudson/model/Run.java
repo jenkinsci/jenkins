@@ -1626,6 +1626,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * (especially in comparison with the previous build.)
      */
     public Summary getBuildStatusSummary() {
+        if (isBuilding()) {
+            return new Summary(false, Messages.Run_Summary_Unknown());
+        }
+        
         ResultTrend trend = ResultTrend.getResultTrend(this);
         
         switch (trend) {
