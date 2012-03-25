@@ -940,6 +940,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     // ..and then "too many"
 
     public final class ArtifactList extends ArrayList<Artifact> {
+        private static final long serialVersionUID = 1L;
         /**
          * Map of Artifact to treeNodeId of parent node in tree view.
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
@@ -1358,7 +1359,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * is reported to {@link BuildListener} and the build should be simply aborted
      * without further recording a stack trace.
      */
-    public static final class RunnerAbortedException extends RuntimeException {}
+    public static final class RunnerAbortedException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    }
 
     protected final void run(Runner job) {
         if(result!=null)
@@ -1390,7 +1393,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         logger = filter.decorateLogger((AbstractBuild) build, logger);
                     }
 
-                    // Project specific log filterss
+                    // Project specific log filters
                     if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
                         BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                         for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
