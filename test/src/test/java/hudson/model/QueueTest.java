@@ -29,7 +29,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixRun;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
 import hudson.tasks.Shell;
@@ -38,16 +37,13 @@ import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.XStream2;
 import hudson.util.OneShotEvent;
 import hudson.Launcher;
-import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
-import org.kohsuke.stapler.StaplerRequest;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -78,7 +74,7 @@ public class QueueTest extends HudsonTestCase {
         hudson.setNodes(hudson.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserCause());
+        testProject.scheduleBuild(new UserIdCause());
         q.save();
 
         System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
@@ -106,7 +102,7 @@ public class QueueTest extends HudsonTestCase {
         hudson.setNodes(hudson.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserCause());
+        testProject.scheduleBuild(new UserIdCause());
         q.save();
 
         System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
@@ -122,6 +118,7 @@ public class QueueTest extends HudsonTestCase {
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
+        private static final long serialVersionUID = 1L;
         @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             resp.setContentType("text/html");
             resp.getWriter().println(
@@ -134,7 +131,7 @@ public class QueueTest extends HudsonTestCase {
         @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             try {
                 ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
-                List v = f.parseRequest(req);
+                List<?> v = f.parseRequest(req);
                 assertEquals(1,v.size());
                 XStream2 xs = new XStream2();
                 System.out.println(xs.toXML(v.get(0)));
@@ -190,21 +187,21 @@ public class QueueTest extends HudsonTestCase {
         });
 
         // Start one build to block others
-        assertTrue(project.scheduleBuild(new UserCause()));
+        assertTrue(project.scheduleBuild(new UserIdCause()));
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
-        Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserCause());
+        Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
         assertNotNull(fb);
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
-        assertFalse(project.scheduleBuild(new UserCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
+        assertFalse(project.scheduleBuild(new UserIdCause()));
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
         assertFalse(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
 
         // Wait for 2nd build to finish
@@ -251,7 +248,7 @@ public class QueueTest extends HudsonTestCase {
         List<Future<MatrixBuild>> r = new ArrayList<Future<MatrixBuild>>();
 
         for (int i=0; i<3; i++)
-            r.add(m.scheduleBuild2(0,new LegacyCodeCause(),new ParametersAction(new StringParameterValue("FOO","value"+i))));
+            r.add(m.scheduleBuild2(0,new UserIdCause(),new ParametersAction(new StringParameterValue("FOO","value"+i))));
 
         for (Future<MatrixBuild> f : r)
             assertBuildStatusSuccess(f);
