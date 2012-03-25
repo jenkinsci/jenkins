@@ -32,11 +32,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
         run.checkPermission(Run.UPDATE);
 
         if ("-".equals(displayName)) {
-            displayName = channel.call(new Callable<String, IOException>() {
-                public String call() throws IOException {
-                    return IOUtils.toString(System.in);
-                }
-            });
+            displayName = IOUtils.toString(stdin);
         }
 
         run.setDisplayName(displayName);

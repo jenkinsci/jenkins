@@ -49,11 +49,16 @@ THE SOFTWARE.
             <li>
               ${%li3(it.workspace.local)}
             </li>
+            <li>
+              ${%The workspace was wiped out and no build has been done since then.}
+            </li>
           </ol>
         </j:otherwise>
       </j:choose>
       <p>
+      <j:if test="${!it.isDisabled()}">
         ${%text(rootURL,it.url)}
+      </j:if>
       </p>
     </l:main-panel>
   </l:layout>

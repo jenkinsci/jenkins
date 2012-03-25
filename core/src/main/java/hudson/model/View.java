@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
+ * Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +29,6 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
@@ -52,6 +52,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -66,6 +67,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static jenkins.model.Jenkins.*;
 
@@ -91,6 +94,7 @@ import static jenkins.model.Jenkins.*;
  */
 @ExportedBean
 public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
+
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -239,7 +243,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-
+    
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -361,53 +365,52 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public List<Computer> getComputers() {
-    	Computer[] computers = Jenkins.getInstance().getComputers();
-    	
-    	if (!isFilterExecutors()) {
-    		return Arrays.asList(computers);
-    	}
-    	
-    	List<Computer> result = new ArrayList<Computer>();
-    	
-    	boolean roam = false;
-    	HashSet<Label> labels = new HashSet<Label>();
-    	for (Item item: getItems()) {
-    		if (item instanceof AbstractProject<?,?>) {
-    			AbstractProject<?,?> p = (AbstractProject<?, ?>) item;
-    			Label l = p.getAssignedLabel();
-    			if (l != null) {
-    				labels.add(l);
-    			} else {
-    				roam = true;
-    			}
-    		}
-    	}
-    	
-    	for (Computer c: computers) {
-    		Node n = c.getNode();
-    		if (n != null) {
-    			if (roam && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
-    				result.add(c);
-    			}
-    		}
-    	}
-    	
-    	return result;
+        Computer[] computers = Jenkins.getInstance().getComputers();
+
+        if (!isFilterExecutors()) {
+            return Arrays.asList(computers);
+        }
+
+        List<Computer> result = new ArrayList<Computer>();
+
+        HashSet<Label> labels = new HashSet<Label>();
+        for (Item item : getItems()) {
+            if (item instanceof AbstractProject<?, ?>) {
+                labels.addAll(((AbstractProject<?, ?>) item).getRelevantLabels());
+            }
+        }
+
+        for (Computer c : computers) {
+            Node n = c.getNode();
+            if (n != null) {
+                if (labels.contains(null) && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
+                    result.add(c);
+                }
+            }
+        }
+
+        return result;
     }
     
     public List<Queue.Item> getQueueItems() {
-    	if (!isFilterQueue()) {
-    		return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
-    	}
-    	
-    	Collection<TopLevelItem> items = getItems(); 
-    	List<Queue.Item> result = new ArrayList<Queue.Item>();
-    	for (Queue.Item qi: Jenkins.getInstance().getQueue().getItems()) {
-    		if (items.contains(qi.task)) {
-    			result.add(qi);
-    		}
-    	}
-    	return result;
+        if (!isFilterQueue()) {
+            return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
+        }
+
+        Collection<TopLevelItem> items = getItems();
+        List<Queue.Item> result = new ArrayList<Queue.Item>();
+        for (Queue.Item qi : Jenkins.getInstance().getQueue().getItems()) {
+            if (items.contains(qi.task)) {
+                result.add(qi);
+            } else
+            if (qi.task instanceof AbstractProject<?, ?>) {
+                AbstractProject<?,?> project = (AbstractProject<?, ?>) qi.task;
+                if (items.contains(project.getRootProject())) {
+                    result.add(qi);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -454,9 +457,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public Object getDynamic(String token) {
-        for (Action a : getActions())
+        for (Action a : getActions()) {
+            String url = a.getUrlName();
+            if (url==null)  continue;
             if(a.getUrlName().equals(token))
                 return a;
+        }
         return null;
     }
 
@@ -669,14 +675,34 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
     }
 
-
+    void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
+        for(TopLevelItem item : items) {
+            
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName())));
+            }
+            sib.add(item.getSearchUrl(), item.getDisplayName());
+        }        
+    }
+    
     @Override
     public SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add(new CollectionSearchIndex() {// for jobs in the view
+        SearchIndexBuilder sib = super.makeSearchIndex();
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected Collection<TopLevelItem> all() { return getItems(); }                
+                @Override
+                protected String getName(TopLevelItem o) {
+                    // return the name instead of the display for suggestion searching
+                    return o.getName();
+                }
             });
+        
+        // add the display name for each item in the search index
+        addDisplayNamesToSearchIndex(sib, getItems());
+
+        return sib;
     }
 
     /**
@@ -695,9 +721,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
+    @RequirePOST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
-        requirePOST();
 
         submit(req);
 
@@ -724,8 +750,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
+    @RequirePOST
     public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);
@@ -866,4 +892,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * It might be useful to override this.
      */
     public static final Message<View> NEW_PRONOUN = new Message<View>();
+
+    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
 }

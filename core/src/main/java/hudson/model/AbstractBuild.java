@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Functions;
@@ -31,6 +32,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.HyperlinkNote;
 import hudson.console.ExpandableDetailsNote;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.WorkspaceList;
@@ -70,6 +72,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.AbstractSet;
@@ -283,7 +287,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public FilePath[] getModuleRoots() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoots(ws,this);
+        return getParent().getScm().getModuleRoots(ws, this);
     }
 
     /**
@@ -445,14 +449,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             launcher = createLauncher(listener);
             if (!Jenkins.getInstance().getNodes().isEmpty())
-                listener.getLogger().println(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : Messages.AbstractBuild_BuildingRemotely(builtOn));
-
+                listener.getLogger().print(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
+                    Messages.AbstractBuild_BuildingRemotely(HyperlinkNote.encodeTo("/computer/"+ builtOn, builtOn)));
+            else
+            	listener.getLogger().print(Messages.AbstractBuild_Building());
+            
             final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
 
             try {
                 workspace = lease.path.getRemote();
+                listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
                 node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-
+                
+                for (WorkspaceListener wl : WorkspaceListener.all()) {
+                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                }
                 preCheckout(launcher,listener);
                 checkout(listener);
 
@@ -562,7 +573,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
                     // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
-                    AbstractBuild.this.scm = new NullChangeLogParser();
+                    AbstractBuild.this.scm = NullChangeLogParser.INSTANCE;
 
                     try {
                         if (project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml"))) {
@@ -623,7 +634,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 HashSet<String> r = new HashSet<String>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = r;
+                culprits = ImmutableSortedSet.copyOf(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
@@ -742,6 +753,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return Collections.<Fingerprint>emptyList();
     }
 
+	/*
+     * No need to to lock the entire AbstractBuild on change set calculcation
+     */
+    private transient Object changeSetLock = new Object();
+    
     /**
      * Gets the changes incorporated into this build.
      *
@@ -749,34 +765,40 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     @Exported
     public ChangeLogSet<? extends Entry> getChangeSet() {
-        if (scm==null) {
-            // for historical reason, null means CVS.
-            try {
-                Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
-                scm = (ChangeLogParser)c.newInstance();
-            } catch (ClassNotFoundException e) {
-                // if CVS isn't available, fall back to something non-null.
-                scm = new NullChangeLogParser();
-            } catch (InstantiationException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new InstantiationError().initCause(e);
-            } catch (IllegalAccessException e) {
-                scm = new NullChangeLogParser();
-                throw (Error)new IllegalAccessError().initCause(e);
+        synchronized (changeSetLock) {
+            if (scm==null) {
+                // for historical reason, null means CVS.
+                try {
+                    Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
+                    scm = (ChangeLogParser)c.newInstance();
+                } catch (ClassNotFoundException e) {
+                    // if CVS isn't available, fall back to something non-null.
+                    scm = NullChangeLogParser.INSTANCE;
+                } catch (InstantiationException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new InstantiationError().initCause(e);
+                } catch (IllegalAccessException e) {
+                    scm = NullChangeLogParser.INSTANCE;
+                    throw (Error)new IllegalAccessError().initCause(e);
+                }
             }
         }
 
-        if (changeSet == null || changeSet.get() == null) // cached value
-            try {
-                changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(calcChangeSet());
-            } finally {
-                // defensive check. if the calculation fails (such as through an exception),
-                // set a dummy value so that it'll work the next time. the exception will
-                // be still reported, giving the plugin developer an opportunity to fix it.
-                if (changeSet==null)
-                    changeSet=new WeakReference<ChangeLogSet<? extends Entry>>(ChangeLogSet.createEmpty(this));
-            }
-        return changeSet.get();
+        ChangeLogSet<? extends Entry> cs = null;
+        if (changeSet!=null)
+            cs = changeSet.get();
+
+        if (cs==null)
+            cs = calcChangeSet();
+
+        // defensive check. if the calculation fails (such as through an exception),
+        // set a dummy value so that it'll work the next time. the exception will
+        // be still reported, giving the plugin developer an opportunity to fix it.
+        if (cs==null)
+            cs = ChangeLogSet.createEmpty(this);
+
+        changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
+        return cs;
     }
 
     /**
@@ -837,11 +859,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * During the build, expose the environments contributed by {@link BuildWrapper}s and others.
-     *
+     * 
+     * <p>
+     * Since 1.444, executor thread that's doing the build can access mutable underlying list,
+     * which allows the caller to add/remove environments. The recommended way of adding
+     * environment is through {@link BuildWrapper}, but this might be handy for build steps
+     * who wants to expose additional environment variables to the rest of the build.
+     * 
      * @return can be empty list, but never null. Immutable.
      * @since 1.437
      */
     public EnvironmentList getEnvironments() {
+        Executor e = Executor.currentExecutor();
+        if (e!=null && e.getCurrentExecutable()==this) {
+            if (buildEnvironments==null)    buildEnvironments = new ArrayList<Environment>();
+            return new EnvironmentList(buildEnvironments); 
+        }
+        
         return new EnvironmentList(buildEnvironments==null ? Collections.<Environment>emptyList() : ImmutableList.copyOf(buildEnvironments));
     }
 

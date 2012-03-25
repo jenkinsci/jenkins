@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
  * Yahoo! Inc., Tom Huybrechts, Olivier Lamy
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +25,7 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
+import com.google.inject.Injector;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -46,6 +47,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenEmbedder;
+import hudson.maven.MavenEmbedderException;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -137,6 +139,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -304,6 +307,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         hudson.servletContext.setAttribute("app",hudson);
         hudson.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
+        Mailer.descriptor().setHudsonUrl(getURL().toExternalForm());
 
         // set a default JDK to be the one that the harness is using.
         hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
@@ -321,6 +325,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         if (desc != null) Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
             d.load();
+
+        // allow the test class to inject Jenkins components
+        jenkins.lookup(Injector.class).injectMembers(this);
     }
 
 
@@ -352,11 +359,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
             clients.clear();
 
-            for (Channel c : channels)
-                c.close();
-            for (Channel c : channels)
-                c.join();
-            channels.clear();
+            synchronized(channels) {
+                for (Channel c : channels)
+                    c.close();
+                for (Channel c : channels)
+                    c.join();
+                channels.clear();
+            }
 
         } finally {
             server.stop();
@@ -495,11 +504,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
             VirtualChannel ch = c.getChannel();
             if (ch instanceof Channel)
-            TestEnvironment.get().testCase.channels.add((Channel)ch);
+            TestEnvironment.get().testCase.addChannel((Channel)ch);
         }
     }
 
-
+    private void addChannel(Channel ch) {
+        synchronized (channels) {
+            channels.add(ch);
+        }
+    }
+    
 //    /**
 //     * Sets guest credentials to access java.net Subversion repo.
 //     */
@@ -624,7 +638,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * @see #configureDefaultMaven()
      */
     protected MavenModuleSet createMavenProject(String name) throws IOException {
-        return hudson.createProject(MavenModuleSet.class,name);
+        MavenModuleSet mavenModuleSet = hudson.createProject(MavenModuleSet.class,name);
+        mavenModuleSet.setRunHeadless( true );
+        return mavenModuleSet;
     }
 
     protected String createUniqueProjectName() {
@@ -1369,7 +1385,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
-     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.hpl</tt>
+     * If this test harness is launched for a Jenkins plugin, locate the <tt>target/test-classes/the.jpl</tt>
      * and add a recipe to install that to the new Jenkins.
      *
      * <p>
@@ -1377,21 +1393,26 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * packaging is <tt>hpi</tt>.
      */
     protected void recipeLoadCurrentPlugin() throws Exception {
-        final Enumeration<URL> e = getClass().getClassLoader().getResources("the.hpl");
-        if(!e.hasMoreElements())    return; // nope
+    	final Enumeration<URL> jpls = getClass().getClassLoader().getResources("the.jpl");
+        final Enumeration<URL> hpls = getClass().getClassLoader().getResources("the.hpl");
+
+        final List<URL> all = Collections.list(jpls);
+        all.addAll(Collections.list(hpls));
+        
+        if(all.isEmpty())    return; // nope
 
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-                while (e.hasMoreElements()) {
-                    final URL hpl = e.nextElement();
-
+            	
+            	for (URL hpl : all) {
+					
                     // make the plugin itself available
                     Manifest m = new Manifest(hpl.openStream());
                     String shortName = m.getMainAttributes().getValue("Short-Name");
                     if(shortName==null)
                         throw new Error(hpl+" doesn't have the Short-Name attribute");
-                    FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".hpl"));
+                    FileUtils.copyURLToFile(hpl,new File(home,"plugins/"+shortName+".jpl"));
 
                     // make dependency plugins available
                     // TODO: probably better to read POM, but where to read from?
@@ -1410,7 +1431,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                             String version = tokens[1];
                             File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
 
-                            File dst = new File(home, "plugins/" + artifactId + ".hpi");
+                            File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
                                 FileUtils.copyFile(dependencyJar, dst);
                             }
@@ -1444,20 +1465,33 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                         // found it
                         return Which.jarFile(dependencyPomResource);
                     } else {
-                        Artifact a;
-                        a = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, "hpi");
-                        try {
-                            embedder.resolve(a, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                            return a.getFile();
-                        } catch (AbstractArtifactResolutionException x) {
-                            // could be a wrong groupId
-                            resolutionError = x;
-                        }
+                    	
+                    	try {
+                    		// currently the most of the plugins are still hpi
+                            return resolvePluginFile(embedder, artifactId, version, groupId, "hpi");
+                    	} catch(AbstractArtifactResolutionException x){
+                    		try {
+                    			// but also try with the new jpi
+                    		    return resolvePluginFile(embedder, artifactId, version, groupId, "jpi");
+                    		} catch(AbstractArtifactResolutionException x2){
+                                // could be a wrong groupId
+                                resolutionError = x;
+                    		}
+                    	}
+                    	
                     }
                 }
 
-                throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
+                throw new Exception("Failed to resolve plugin (tryied with types: 'jpi' and 'hpi'): "+artifactId+" version "+version, resolutionError);
             }
+
+			private File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
+					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
+				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
+				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+				return jpi.getFile();
+				
+			}
         });
     }
 

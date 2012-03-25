@@ -97,7 +97,11 @@ THE SOFTWARE.
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
-        checked="${it.usesPrivateRepository()}" />
+                       checked="${it.getExplicitLocalRepository()!=null}" inline="true">
+        <f:dropdownDescriptorSelector title="${%Strategy}" field="explicitLocalRepository" />
+      </f:optionalBlock>
+      <f:optionalBlock name="maven.perModuleEmail" title="${%Send e-mail for each failed module}" help="/plugin/maven-plugin/per-module-email.html"
+        checked="${it.isPerModuleEmail()}" />
       <f:optionalBlock name="maven.resolveDependencies" title="${%Resolve Dependencies during Pom parsing}" 
         checked="${it.isResolveDependencies()}" /> 
       <f:optionalBlock name="maven.runHeadless" title="${%Run Headless}" help="/plugin/maven-plugin/run-headless.html"

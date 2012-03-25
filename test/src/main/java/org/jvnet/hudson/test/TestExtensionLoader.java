@@ -24,7 +24,7 @@
 package org.jvnet.hudson.test;
 
 import hudson.Extension;
-import hudson.ExtensionFinder.AbstractGuiceFinder;
+import hudson.ExtensionFinder.GuiceExtensionAnnotation;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
+public class TestExtensionLoader extends GuiceExtensionAnnotation<TestExtension> {
     public TestExtensionLoader() {
         super(TestExtension.class);
     }
@@ -58,7 +58,7 @@ public class TestExtensionLoader extends AbstractGuiceFinder<TestExtension> {
         TestExtension a = e.getAnnotation(TestExtension.class);
         if (a==null)        return false;   // stale index
         String testName = a.value();
-        if (testName.length()>0 && !env.testCase.getName().equals(testName))
+        if (testName.length()>0 && env!=null && env.testCase!=null && !env.testCase.getName().equals(testName))
             return false;   // doesn't apply to this test
 
         if (e instanceof Class) {

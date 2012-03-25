@@ -1,13 +1,9 @@
 package hudson.os.windows;
 
 import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerConnectorDescriptor;
-import hudson.slaves.ComputerLauncher;
 import hudson.util.Secret;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -33,28 +29,16 @@ public class ManagedWindowsServiceConnector extends ComputerConnector {
 
     @Override
     public ManagedWindowsServiceLauncher launch(final String hostName, TaskListener listener) throws IOException, InterruptedException {
-        return new ManagedWindowsServiceLauncher(userName,Secret.toString(password)) {
-            @Override
-            protected String determineHost(Computer c) throws IOException, InterruptedException {
-                return hostName;
-            }
-
-            @Override
-            public Descriptor<ComputerLauncher> getDescriptor() {
-                return Jenkins.getInstance().getDescriptor(ManagedWindowsServiceLauncher.class);
-            }
-        };
+        return new ManagedWindowsServiceLauncher(userName,Secret.toString(password),hostName);
     }
 
     @Extension
-//  Fix broken trunk (temporary)
-//  public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
     public static class DescriptorImpl extends ComputerConnectorDescriptor {
         public String getDisplayName() {
             return Messages.ManagedWindowsServiceLauncher_DisplayName();
         }
 
         // used by Jelly
-        public static final Class CONFIG_DELEGATE_TO = ManagedWindowsServiceLauncher.class;
+        public static final Class<?> CONFIG_DELEGATE_TO = ManagedWindowsServiceLauncher.class;
     }
 }

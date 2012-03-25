@@ -17,7 +17,7 @@ public class LogoutCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        ClientAuthenticationCache store = new ClientAuthenticationCache(channel);
+        ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
         store.remove();
         return 0;
     }

@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.kohsuke.stapler.Stapler;
 
 /**
@@ -84,7 +85,7 @@ public final class ExecutedMojo implements Serializable {
      */
     public final String digest;
 
-    public ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
+    public ExecutedMojo(MojoInfo mojo, long duration) {
         this.groupId = mojo.pluginName.groupId;
         this.artifactId = mojo.pluginName.artifactId;
         this.version = mojo.pluginName.version;
@@ -97,12 +98,17 @@ public final class ExecutedMojo implements Serializable {
         PluginDescriptor pd = md.getPluginDescriptor();
         try {
             Class<?> clazz = getMojoClass( md, pd );
-            digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
+            if (clazz!=null) {
+                digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));    
+            } else {
+                LOGGER.log(Level.WARNING, "Failed to getClass for "+md.getImplementation());    
+            }
+            
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
             // perhaps the plugin has failed to load.
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             // Maybe mojo was loaded from a classes dir instead of from a jar (JENKINS-5044)
             LOGGER.log(Level.WARNING, "Failed to caculate digest for "+md.getImplementation(),e);
         }
@@ -111,7 +117,8 @@ public final class ExecutedMojo implements Serializable {
     
     private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
         try {
-            return pd.getClassRealm().loadClass( md.getImplementation() );
+            ClassRealm classRealm = pd.getClassRealm();
+            return classRealm == null ? null : classRealm.loadClass( md.getImplementation() );
         } catch (NoSuchMethodError e) {
             // maybe we are in maven2 build ClassRealm package has changed
             return getMojoClassForMaven2( md, pd );
@@ -125,6 +132,10 @@ public final class ExecutedMojo implements Serializable {
         org.codehaus.classworlds.ClassRealm cl = 
             (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
         
+        if (cl==null)
+        {
+            return null;
+        }
         Class<?> clazz = cl.loadClass( md.getImplementation() );
         return clazz;
        
@@ -176,12 +187,16 @@ public final class ExecutedMojo implements Serializable {
             return Stapler.getCurrentRequest().getContextPath()+m.getUrl();
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/';
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/';
         return null;
     }
 
     public String getGoalLink(Cache c) {
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/'+goal+"-mojo.html";
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/'+goal+"-mojo.html";
         return null;
     }
 

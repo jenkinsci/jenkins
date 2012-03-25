@@ -86,7 +86,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
-        boolean isLinked = archive.getName().endsWith(".hpl");
+        boolean isLinked = archive.getName().endsWith(".hpl") || archive.getName().endsWith(".jpl");
         if (isLinked) {
             // resolve the .hpl file to the location of the manifest file
             final String firstLine = IOUtils.readFirstLine(new FileInputStream(archive), "UTF-8");
@@ -386,7 +386,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return; // no need to expand
 
         // delete the contents so that old files won't interfere with new files
-        Util.deleteContentsRecursive(destDir);
+        Util.deleteRecursive(destDir);
 
         try {
             Expand e = new Expand();

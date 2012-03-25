@@ -27,7 +27,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
-import hudson.model.Build;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -65,7 +65,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         hudson.rebuildDependencyGraph();
 
         // First build should not trigger downstream job
-        Build b = p.scheduleBuild2(0).get();
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
         assertNoDownstreamBuild(dp, b);
 
         // Next build should trigger downstream job
@@ -74,7 +74,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertDownstreamBuild(dp, b);
     }
 
-    private void assertNoDownstreamBuild(FreeStyleProject dp, Run b) throws Exception {
+    private void assertNoDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
         for (int i = 0; i < 3; i++) {
             Thread.sleep(200);
             assertTrue("downstream build should not run!  upstream log: " + getLog(b),
@@ -82,7 +82,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         }
     }
 
-    private void assertDownstreamBuild(FreeStyleProject dp, Run b) throws Exception {
+    private void assertDownstreamBuild(FreeStyleProject dp, Run<?,?> b) throws Exception {
         // Wait for downstream build
         for (int i = 0; dp.getLastBuild()==null && i < 20; i++) Thread.sleep(100);
         assertNotNull("downstream build didn't run.. upstream log: " + getLog(b), dp.getLastBuild());

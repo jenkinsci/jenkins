@@ -129,6 +129,7 @@ var FormChecker = {
                 Behaviour.applySubtree(next.target);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
+                layoutUpdateCallback.call();
             }
         });
         this.inProgress++;
@@ -239,7 +240,7 @@ function findFollowingTR(input, className) {
 
     // then next TR that matches the CSS
     do {
-        tr = tr.nextSibling;
+        tr = $(tr).next();
     } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
 
     return tr;
@@ -500,7 +501,7 @@ function sequencer(fs) {
     return next();
 }
 
-var hudsonRules = {
+var jenkinsRules = {
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -517,20 +518,21 @@ var hudsonRules = {
             btn = btns[btns.length-1]; // In case nested content also uses hetero-list
         YAHOO.util.Dom.insertAfter(menu,btn);
 
-        var prototypes = e.lastChild;
-        while(!Element.hasClassName(prototypes,"prototypes"))
-            prototypes = prototypes.previousSibling;
-        var insertionPoint = prototypes.previousSibling;    // this is where the new item is inserted.
+        var prototypes = $(e.lastChild);
+        while(!prototypes.hasClassName("prototypes"))
+            prototypes = prototypes.previous();
+        var insertionPoint = prototypes.previous();    // this is where the new item is inserted.
 
         // extract templates
         var templates = []; var i=0;
-        for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
+        $(prototypes).childElements().each(function (n) {
             var name = n.getAttribute("name");
             var tooltip = n.getAttribute("tooltip");
             var descriptorId = n.getAttribute("descriptorId");
             menu.options[i] = new Option(n.getAttribute("title"),""+i);
             templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
-        }
+            i++;
+        });
         Element.remove(prototypes);
 
         var withDragDrop = initContainerDD(e);
@@ -567,9 +569,9 @@ var hudsonRules = {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
-        var ip = e.lastChild;
-        while (!Element.hasClassName(ip, "repeatable-insertion-point"))
-            ip = ip.previousSibling;
+        var ip = $(e.lastChild);
+        while (!ip.hasClassName("repeatable-insertion-point"))
+            ip = ip.previous();
         // set up the logic
         object(repeatableSupport).init(e, e.firstChild, ip);
     },
@@ -587,6 +589,72 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
+    "INPUT.applyButton":function (e) {
+        var id;
+        var containerId = "container"+(iota++);
+
+        var responseDialog = new YAHOO.widget.Panel("wait"+(iota++), {
+            fixedcenter:true,
+            close:true,
+            draggable:true,
+            zindex:4,
+            modal:true,
+            visible:false
+        });
+
+        responseDialog.setHeader("Error");
+        responseDialog.setBody("<div id='"+containerId+"'></iframe>");
+        responseDialog.render(document.body);
+        var target; // iframe
+
+        function attachIframeOnload(target, f) {
+            if (target.attachEvent) {
+                target.attachEvent("onload", f);
+            } else {
+                target.onload = f;
+            }
+        }
+
+        makeButton(e,function (e) {
+            var f = findAncestor(e.target, "FORM");
+
+            // create a throw-away IFRAME to avoid back button from loading the POST result back
+            id = "iframe"+(iota++);
+            target = document.createElement("iframe");
+            target.setAttribute("id",id);
+            target.setAttribute("name",id);
+            target.setAttribute("style","height:100%; width:100%");
+            $(containerId).appendChild(target);
+
+            attachIframeOnload(target, function () {
+                if (target.contentWindow && target.contentWindow.applyCompletionHandler) {
+                    // apply-aware server is expected to set this handler
+                    target.contentWindow.applyCompletionHandler(window);
+                } else {
+                    // otherwise this is possibly an error from the server, so we need to render the whole content.
+                    var r = YAHOO.util.Dom.getClientRegion();
+                    responseDialog.cfg.setProperty("width",r.width*3/4+"px");
+                    responseDialog.cfg.setProperty("height",r.height*3/4+"px");
+                    responseDialog.center();
+                    responseDialog.show();
+                }
+                window.setTimeout(function() {// otherwise Firefox will fail to leave the "connecting" state
+                    $(id).remove();
+                },0)
+            });
+
+            f.target = target.id;
+            f.elements['core:apply'].value = "true";
+            try {
+                buildFormTree(f);
+                f.submit();
+            } finally {
+                f.elements['core:apply'].value = null;
+                f.target = null;
+            }
+        });
+    },
+
     "INPUT.advancedButton" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
@@ -594,7 +662,7 @@ var hudsonRules = {
                 link = link.parentNode;
             link.style.display = "none"; // hide the button
 
-            var container = link.nextSibling.firstChild; // TABLE -> TBODY
+            var container = $(link).next().down(); // TABLE -> TBODY
 
             var tr = link;
             while (tr.tagName != "TR")
@@ -606,7 +674,7 @@ var hudsonRules = {
                 var row = container.lastChild;
                 if(nameRef!=null && row.getAttribute("nameref")==null)
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
-                tr.parentNode.insertBefore(row, tr.nextSibling);
+                tr.parentNode.insertBefore(row, $(tr).next());
             }
         });
         e = null; // avoid memory leak
@@ -618,7 +686,7 @@ var hudsonRules = {
             while(!Element.hasClassName(link,"advancedLink"))
                 link = link.parentNode;
             link.style.display = "none";
-            link.nextSibling.style.display="block";
+            $(link).next().style.display="block";
         });
         e = null; // avoid memory leak
     },
@@ -645,13 +713,13 @@ var hudsonRules = {
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
-            var e = this.previousSibling;
+            var e = $(this).previous();
             while (e!=null) {
                 if (e.tagName=="INPUT") {
                     e.click();
                     break;
                 }
-                e = e.previousSibling;
+                e = e.previous();
             }
         }
         e = null;
@@ -675,7 +743,7 @@ var hudsonRules = {
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
-        e.parentNode.insertBefore(div,e.nextSibling);
+        e.parentNode.insertBefore(div,$(e).next()||null);
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
         var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
@@ -706,7 +774,7 @@ var hudsonRules = {
     "A.help-button" : function(e) {
         e.onclick = function() {
             var tr = findFollowingTR(this, "help-area");
-            var div = tr.firstChild.nextSibling.firstChild;
+            var div = $(tr).down().next().down();
 
             if (div.style.display != "block") {
                 div.style.display = "block";
@@ -714,14 +782,18 @@ var hudsonRules = {
                 new Ajax.Request(this.getAttribute("helpURL"), {
                     method : 'get',
                     onSuccess : function(x) {
-                        div.innerHTML = x.responseText;
+                        var from = x.getResponseHeader("X-Plugin-From");
+                        div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+                        layoutUpdateCallback.call();
                     },
                     onFailure : function(x) {
                         div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+                        layoutUpdateCallback.call();
                     }
                 });
             } else {
                 div.style.display = "none";
+                layoutUpdateCallback.call();
             }
 
             return false;
@@ -746,6 +818,72 @@ var hudsonRules = {
         scroller.setAttribute("style","border:1px solid black;");
         scroller.style.height = h+"px";
     },
+
+    // Script Console : settings and shortcut key
+    "TEXTAREA.script" : function(e) {
+        (function() {
+            var cmdKeyDown = false;
+            var mode = e.getAttribute("script-mode") || "text/x-groovy";
+            var readOnly = eval(e.getAttribute("script-readOnly")) || false;
+            
+            var w = CodeMirror.fromTextArea(e,{
+              mode: mode,
+              lineNumbers: true,
+              matchBrackets: true,
+              readOnly: readOnly,
+              onKeyEvent: function(editor, event){
+                function isGeckoCommandKey() {
+                    return Prototype.Browser.Gecko && event.keyCode == 224
+                }
+                function isOperaCommandKey() {
+                    return Prototype.Browser.Opera && event.keyCode == 17
+                }
+                function isWebKitCommandKey() {
+                    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+                }
+                function isCommandKey() {
+                    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+                }
+                function isReturnKeyDown() {
+                    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
+                }
+                function getParentForm(element) {
+                    if (element == null) throw 'not found a parent form';
+                    if (element instanceof HTMLFormElement) return element;
+                    
+                    return getParentForm(element.parentNode);
+                }
+                function saveAndSubmit() {
+                    editor.save();
+                    getParentForm(e).submit();
+                    event.stop();
+                }
+                
+                // Mac (Command + Enter)
+                if (navigator.userAgent.indexOf('Mac') > -1) {
+                    if (event.type == 'keydown' && isCommandKey()) {
+                        cmdKeyDown = true;
+                    }
+                    if (event.type == 'keyup' && isCommandKey()) {
+                        cmdKeyDown = false;
+                    }
+                    if (cmdKeyDown && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                  
+                // Windows, Linux (Ctrl + Enter)
+                } else {
+                    if (event.ctrlKey && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                }
+              }
+            }).getWrapperElement();
+            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        })();
+	},
 
 // deferred client-side clickable map.
 // this is useful where the generation of <map> element is time consuming
@@ -877,11 +1015,59 @@ var hudsonRules = {
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // radioBlock.jelly
+    "INPUT.radio-block-control" : function(r) {
+        r.id = "radio-block-"+(iota++);
+
+        // when one radio button is clicked, we need to update foldable block for
+        // other radio buttons with the same name. To do this, group all the
+        // radio buttons with the same name together and hang it under the form object
+        var f = r.form;
+        var radios = f.radios;
+        if (radios == null)
+            f.radios = radios = {};
+
+        var g = radios[r.name];
+        if (g == null) {
+            radios[r.name] = g = object(radioBlockSupport);
+            g.buttons = [];
+        }
+
+        var s = findAncestorClass(r,"radio-block-start");
+        s.setAttribute("ref", r.id);
+
+        // find the end node
+        var e = (function() {
+            var e = s;
+            var cnt=1;
+            while(cnt>0) {
+                e = $(e).next();
+                if (Element.hasClassName(e,"radio-block-start"))
+                    cnt++;
+                if (Element.hasClassName(e,"radio-block-end"))
+                    cnt--;
+            }
+            return e;
+        })();
+
+        var u = function() {
+            g.updateSingleButton(r,s,e);
+        };
+        g.buttons.push(u);
+
+        // apply the initial visibility
+        u();
+
+        // install event handlers to update visibility.
+        // needs to use onclick and onchange for Safari compatibility
+        r.onclick = r.onchange = function() { g.updateButtons(); };
+    },
+
     // see RowVisibilityGroupTest
     "TR.rowvg-start" : function(e) {
         // figure out the corresponding end marker
         function findEnd(e) {
-            for( var depth=0; ; e=e.nextSibling) {
+            for( var depth=0; ; e=$(e).next()) {
                 if(Element.hasClassName(e,"rowvg-start"))    depth++;
                 if(Element.hasClassName(e,"rowvg-end"))      depth--;
                 if(depth==0)    return e;
@@ -925,8 +1111,7 @@ var hudsonRules = {
              */
             updateVisibility : function() {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
-                for (var e=this.start; e!=this.end; e=e.nextSibling) {
-                    if (e.nodeType!=1)  continue;
+                for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
                         e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
@@ -934,6 +1119,7 @@ var hudsonRules = {
                         e.style.display = display;
                     }
                 }
+                layoutUpdateCallback.call();
             },
 
             /**
@@ -944,7 +1130,7 @@ var hudsonRules = {
              */
             eachRow : function(recursive,f) {
                 if (recursive) {
-                    for (var e=this.start; e!=this.end; e=e.nextSibling)
+                    for (var e=this.start; e!=this.end; e=$(e).next())
                         f(e);
                 } else {
                     throw "not implemented yet";
@@ -955,15 +1141,19 @@ var hudsonRules = {
 
     "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
+        e = $(e);
         var end = e;
 
-        for( var depth=0; ; e=e.previousSibling) {
-            if(Element.hasClassName(e,"row-set-end"))        depth++;
-            if(Element.hasClassName(e,"row-set-start"))      depth--;
+        for( var depth=0; ; e=e.previous()) {
+            if(e.hasClassName("row-set-end"))        depth++;
+            if(e.hasClassName("row-set-start"))      depth--;
             if(depth==0)    break;
         }
         var start = e;
 
+        // @ref on start refers to the ID of the element that controls the JSON object created from these rows
+        // if we don't find it, turn the start node into the governing node (thus the end result is that you
+        // created an intermediate JSON object that's always on.)
         var ref = start.getAttribute("ref");
         if(ref==null)
             start.id = ref = "rowSetStart"+(iota++);
@@ -1028,64 +1218,15 @@ var hudsonRules = {
         }
     },
 
-    // radioBlock.jelly
-    "INPUT.radio-block-control" : function(r) {
-        r.id = "radio-block-"+(iota++);
-
-        // when one radio button is clicked, we need to update foldable block for
-        // other radio buttons with the same name. To do this, group all the
-        // radio buttons with the same name together and hang it under the form object
-        var f = r.form;
-        var radios = f.radios;
-        if (radios == null)
-            f.radios = radios = {};
-
-        var g = radios[r.name];
-        if (g == null) {
-            radios[r.name] = g = object(radioBlockSupport);
-            g.buttons = [];
-        }
-
-        var s = findAncestorClass(r,"radio-block-start");
-
-        // find the end node
-        var e = (function() {
-            var e = s;
-            var cnt=1;
-            while(cnt>0) {
-                e = e.nextSibling;
-                if (Element.hasClassName(e,"radio-block-start"))
-                    cnt++;
-                if (Element.hasClassName(e,"radio-block-end"))
-                    cnt--;
-            }
-            return e;
-        })();
-
-        var u = function() {
-            g.updateSingleButton(r,s,e);
-        };
-        applyNameRef(s,e,r.id);
-        g.buttons.push(u);
-
-        // apply the initial visibility
-        u();
-
-        // install event handlers to update visibility.
-        // needs to use onclick and onchange for Safari compatibility
-        r.onclick = r.onchange = function() { g.updateButtons(); };
-    },
-
     // editableComboBox.jelly
     "INPUT.combobox" : function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
-        var vdiv = c.nextSibling;
-        if (Element.hasClassName(vdiv, "combobox-values")) {
+        var vdiv = $(c).next();
+        if (vdiv.hasClassName("combobox-values")) {
             createComboBox(c, function() {
-                var values = [];
-                for (var value = vdiv.firstChild; value; value = value.nextSibling)
-                    values.push(value.getAttribute('value'));
-                return values;
+                return vdiv.childElements().collect(function(value) {
+                    return value.getAttribute('value');
+                });
             });
         }
     },
@@ -1095,7 +1236,7 @@ var hudsonRules = {
         if(isInsideRemovable(e))    return;
 
         var subForms = [];
-        var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
+        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
         do { start = start.firstChild; } while (start && start.tagName != 'TR');
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
@@ -1109,9 +1250,9 @@ var hudsonRules = {
         function updateDropDownList() {
             for (var i = 0; i < subForms.length; i++) {
                 var show = e.selectedIndex == i;
-                var f = subForms[i];
+                var f = $(subForms[i]);
 
-                if (show)   renderOnDemand(f.nextSibling);
+                if (show)   renderOnDemand(f.next());
                 f.rowVisibilityGroup.makeInnerVisisble(show);
 
                 // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
@@ -1182,7 +1323,7 @@ var hudsonRules = {
     "A.showDetails" : function(e) {
         e.onclick = function() {
             this.style.display = 'none';
-            this.nextSibling.style.display = 'block';
+            $(this).next().style.display = 'block';
             return false;
         };
         e = null; // avoid memory leak
@@ -1193,7 +1334,7 @@ var hudsonRules = {
     },
 
     ".button-with-dropdown" : function (e) {
-        new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+        new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
     },
 
     "DIV.textarea-preview-container" : function (e) {
@@ -1211,6 +1352,7 @@ var hudsonRules = {
                 $(hidePreview).show();
                 $(previewDiv).show();
                 previewDiv.innerHTML = txt;
+                layoutUpdateCallback.call();
             };
 
             new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
@@ -1233,8 +1375,80 @@ var hudsonRules = {
             $(hidePreview).hide();
             $(previewDiv).hide();
         };
+    },
+
+    /*
+        Use on div tag to make it sticky visible on the bottom of the page.
+        When page scrolls it remains in the bottom of the page
+        Convenient on "OK" button and etc for a long form page
+     */
+    "#bottom-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var edge = document.createElement("div");
+        edge.className = "bottom-sticker-edge";
+        sticker.insertBefore(edge,sticker.firstChild);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
+        layoutUpdateCallback.add(adjustSticker);
+    },
+
+    "#top-sticker" : function(sticker) {// legacy
+        this[".top-sticker"](sticker);
+    },
+
+    /**
+     * @param {HTMLElement} sticker
+     */
+    ".top-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var edge = document.createElement("div");
+        edge.className = "top-sticker-edge";
+        sticker.insertBefore(edge,sticker.firstChild);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
     }
 };
+var hudsonRules = jenkinsRules; // legacy name
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1280,7 +1494,7 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("onchange",h); }
+            $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
         });
     }
@@ -1299,7 +1513,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
     new Ajax.Request(
         "./descriptionForm",
         {
@@ -1309,18 +1523,23 @@ function replaceDescription() {
                 Behaviour.applySubtree(d);
                 d.getElementsByTagName("TEXTAREA")[0].focus();
             });
+            layoutUpdateCallback.call();
           }
         }
     );
     return false;
 }
 
+/**
+ * Indicates that form fields from rows [s,e) should be grouped into a JSON object,
+ * and attached under the element identified by the specified id.
+ */
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
-    for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
+    for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.nodeType==1 && x.getAttribute("nameRef")==null)
+        if(x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
 }
@@ -1330,14 +1549,14 @@ function applyNameRef(s,e,id) {
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
     // find the start TR
-    var s = c;
-    while(!Element.hasClassName(s, "optional-block-start"))
-        s = s.parentNode;
+    var s = $(c);
+    while(!s.hasClassName("optional-block-start"))
+        s = s.up();
 
     // find the beginning of the rowvg
-    var vg = s;
-    while (!Element.hasClassName(vg,"rowvg-start"))
-        vg = vg.nextSibling;
+    var vg =s;
+    while (!vg.hasClassName("rowvg-start"))
+        vg = vg.next();
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
@@ -1472,17 +1691,18 @@ function refreshPart(id,url) {
         new Ajax.Request(url, {
             onSuccess: function(rsp) {
                 var hist = $(id);
-                var p = hist.parentNode;
-                var next = hist.nextSibling;
+                var p = hist.up();
+                var next = hist.next();
                 p.removeChild(hist);
 
                 var div = document.createElement('div');
                 div.innerHTML = rsp.responseText;
 
-                var node = div.firstChild;
+                var node = $(div).firstDescendant();
                 p.insertBefore(node, next);
 
                 Behaviour.applySubtree(node);
+                layoutUpdateCallback.call();
 
                 if(isRunAsTest) return;
                 refreshPart(id,url);
@@ -1604,10 +1824,9 @@ var repeatableSupport = {
 
     // update CSS classes associated with repeated items.
     update : function() {
-        var children = [];
-        for( var n=this.container.firstChild; n!=null; n=n.nextSibling )
-            if(Element.hasClassName(n,"repeated-chunk"))
-                children.push(n);
+        var children = $(this.container).childElements().findAll(function (n) {
+            return n.hasClassName("repeated-chunk");
+        });
 
         if(children.length==0) {
             // noop
@@ -1651,7 +1870,7 @@ var repeatableSupport = {
 
 // prototype object to be duplicated for each radio button group
 var radioBlockSupport = {
-    buttons : null,
+    buttons : null, // set of functions, one for updating one radio block each
 
     updateButtons : function() {
         for( var i=0; i<this.buttons.length; i++ )
@@ -1660,29 +1879,16 @@ var radioBlockSupport = {
 
     // update one block based on the status of the given radio button
     updateSingleButton : function(radio, blockStart, blockEnd) {
-        var tbl = blockStart.parentNode;
-        var i = false;
-        var o = false;
         var show = radio.checked;
-
-        for (var j = 0; tbl.rows[j]; j++) {
-            var n = tbl.rows[j];
-
-            if (n == blockEnd)
-                o = true;
-
-            if (i && !o) {
-                if (show)
-                    n.style.display = "";
-                else
-                    n.style.display = "none";
-            }
-
-            if (n == blockStart) {
-                i = true;
-                if (n.getAttribute('hasHelp') == 'true')
-                    j++;
-            }
+        blockStart = $(blockStart);
+        
+        if (blockStart.getAttribute('hasHelp') == 'true') {
+            n = blockStart.next();
+        } else {
+            n = blockStart;
+        }
+        while((n = n.next()) != blockEnd) {
+          n.style.display = show ? "" : "none";
         }
     }
 };
@@ -1711,7 +1917,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 Behaviour.applySubtree(div);
 
                 var pivot = rows[0];
-                var newRows = div.firstChild.rows;
+                var newRows = $(div).firstDescendant().rows;
                 for (var i = newRows.length - 1; i >= 0; i--) {
                     pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
                 }
@@ -1786,6 +1992,7 @@ function createSearchBox(searchURL) {
     };
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
+    ac.autoHighlight = false;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
@@ -2097,17 +2304,17 @@ var hoverNotification = (function() {
 function initContainerDD(e) {
     if (!Element.hasClassName(e,"with-drag-drop")) return false;
 
-    for (e=e.firstChild; e!=null; e=e.nextSibling) {
-        if (Element.hasClassName(e,"repeated-chunk"))
+    $(e).childElements().each(function (e) {
+        if (e.hasClassName("repeated-chunk"))
             prepareDD(e);
-    }
+    });
     return true;
 }
 function prepareDD(e) {
-    var h = e;
+    var h = $(e);
     // locate a handle
-    while (h!=null && !Element.hasClassName(h,"dd-handle"))
-        h = h.firstChild ? h.firstChild : h.nextSibling;
+    while (h!=null && !h.hasClassName("dd-handle"))
+        h = h.down() ? h.down() : h.next();
     if (h!=null) {
         var dd = new DragDrop(e);
         dd.setHandleElId(h);
@@ -2270,7 +2477,7 @@ var downloadService = {
     }
 };
 
-// update center service. to remain compatible with earlier version of Hudson, aliased.
+// update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
 
 /*
@@ -2334,8 +2541,8 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = Element.up(button,"DIV").nextSibling;
-  var target = spinner.nextSibling;
+  var spinner = $(button).up("DIV").next();
+  var target = spinner.next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
@@ -2348,6 +2555,7 @@ function validateButton(checkUrl,paramList,button) {
                 + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
                 + i + '" style="display:none">' + rsp.responseText + '</div>';
           Behaviour.applySubtree(target);
+          layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
@@ -2396,3 +2604,96 @@ function createComboBox(idOrField,valueFunction) {
 Ajax.Request.prototype.dispatchException = function(e) {
     throw e;
 }
+
+// event callback when layouts/visibility are updated and elements might have moved around
+var layoutUpdateCallback = {
+    callbacks : [],
+    add : function (f) {
+        this.callbacks.push(f);
+    },
+    call : function() {
+        for (var i = 0, length = this.callbacks.length; i < length; i++)
+            this.callbacks[i]();
+    }
+}
+
+// Notification bar
+// ==============================
+// this control displays a single line message at the top of the page, like StackOverflow does
+// see ui-samples for more details
+var notificationBar = {
+    OPACITY : 0.8,
+    DELAY : 3000,   // milliseconds to auto-close the notification
+    div : null,     // the main 'notification-bar' DIV
+    token : null,   // timer for cancelling auto-close
+
+    OK : {// standard option values for typical OK notification
+        icon: "accept.png",
+        backgroundColor: "#8ae234"
+    },
+    WARNING : {// likewise, for warning
+        icon: "yellow.png",
+        backgroundColor: "#fce94f"
+    },
+    ERROR : {// likewise, for error
+        icon: "red.png",
+        backgroundColor: "#ef2929",
+        sticky: true
+    },
+
+    init : function() {
+        if (this.div==null) {
+            this.div = document.createElement("div");
+            YAHOO.util.Dom.setStyle(this.div,"opacity",0);
+            this.div.id="notification-bar";
+            this.div.style.backgroundColor="#fff";
+            document.body.insertBefore(this.div, document.body.firstChild);
+
+            var self = this;
+            this.div.onclick = function() {
+                self.hide();
+            };
+        }
+    },
+    // cancel pending auto-hide timeout
+    clearTimeout : function() {
+        if (this.token)
+            window.clearTimeout(this.token);
+        this.token = null;
+    },
+    // hide the current notification bar, if it's displayed
+    hide : function () {
+        this.clearTimeout();
+        var self = this;
+        var out = new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:0 },
+            backgroundColor: {to:"#fff"}
+        }, 0.3, YAHOO.util.Easing.easeIn);
+        out.onComplete.subscribe(function() {
+            self.div.style.display = "none";
+        })
+        out.animate();
+    },
+    // show a notification bar
+    show : function (text,options) {
+        options = options || {}
+
+        this.init();
+        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
+        this.div.style.display = "block";
+
+        if (options.icon)
+            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
+        this.div.innerHTML = text;
+
+        new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:this.OPACITY },
+            backgroundColor : { to: options.backgroundColor || "#fff" }
+        }, 1, YAHOO.util.Easing.easeOut).animate();
+
+        this.clearTimeout();
+        var self = this;
+        if (!options.sticky)
+            this.token = window.setTimeout(function(){self.hide();},this.DELAY);
+    }
+};

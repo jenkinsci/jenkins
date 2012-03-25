@@ -34,6 +34,7 @@ import hudson.model.TaskListener;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
+import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.scm.PollingResult;
 import hudson.util.StreamTaskListener;
@@ -48,6 +49,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.io.PrintStream;
+
+import jenkins.model.Jenkins;
 
 /**
  * Builds a job, and optionally waits until its completion.
@@ -97,12 +100,12 @@ public class BuildCommand extends CLICommand {
         }
 
         if (checkSCM) {
-            if (job.poll(new StreamTaskListener(stdout, getClientCharset())) == PollingResult.NO_CHANGES) {
+            if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
                 return 0;
             }
         }
 
-        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(), a);
+        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         if (!sync)  return 0;
 
         AbstractBuild b = f.get();    // wait for the completion
@@ -123,10 +126,20 @@ public class BuildCommand extends CLICommand {
         );
     }
 
-    // TODO: CLI can authenticate as different users, so should record which user here..
     public static class CLICause extends Cause {
+    	
+    	private String startedBy;
+    	
+    	public CLICause(){
+    		startedBy = "unknown"; 
+    	}
+    	
+    	public CLICause(String startedBy){
+    		this.startedBy = startedBy;
+    	}
+    	
         public String getShortDescription() {
-            return "Started by command line";
+            return "Started by command line by " + startedBy;
         }
 
         @Override

@@ -7,28 +7,7 @@ def f=namespace(lib.FormTagLib)
 
 f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
     f.entry (title:_("TCP port for JNLP slave agents"), field:"slaveAgentPort") {
-
-        int port = app.slaveAgentPort
-
-        f.radio(name:"slaveAgentPortType", value:"fixed", id:"sat.fixed",
-                checked:port>0, onclick:"\$('sat.port').disabled=false")
-        label("for":"sat.fixed", _("Fixed"))
-        text(" : ")
-        input(type:"number", "class":"number", name:"slaveAgentPort", id:"sat.port",
-                value: port>0 ? port : null, disabled: port>0 ? null : "true",
-                min:0, max:65535, step:1)
-
-        raw("&nbsp;") ////////////////////////////
-
-        f.radio(name:"slaveAgentPortType", value:"random", id:"sat.random",
-                checked:port==0, onclick:"\$('sat.port').disabled=true")
-        label("for":"sat.random", _("Random"))
-
-        raw("&nbsp;") ////////////////////////////
-
-        f.radio(name:"slaveAgentPortType", value:"disable", id:"sat.disabled",
-                checked:port==-1, onclick:"\$('sat.port').disabled=true")
-        label("for":"sat.disabled", _("Disable"))
+        f.serverTcpPort()
     }
 
     f.dropdownDescriptorSelector(title:_("Markup Formatter"),field:"markupFormatter")

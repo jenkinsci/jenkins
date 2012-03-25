@@ -29,7 +29,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
@@ -38,7 +39,7 @@ import static java.util.Calendar.MONDAY;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class CronTabTest extends TestCase {
+public class CronTabTest {
     public void test1() throws ANTLRException {
         new CronTab("@yearly");
         new CronTab("@weekly");
@@ -70,6 +71,16 @@ public class CronTabTest extends TestCase {
         Calendar c = new GregorianCalendar(2010,0,1,15,55);
         // the first such day in 2010 is Aug 1st
         compare(new GregorianCalendar(2010,7,1,0,0),x.ceil(c));
+    }
+
+    @Test(timeout = 1000)
+    @Bug(12357)
+    public void testCeil3_DoW7() throws Exception {
+        // similar to testCeil3, but DoW=7 may stuck in an infinite loop
+        CronTab x = new CronTab("0 0 1 * 7");
+        Calendar c = new GregorianCalendar(2010,0,1,15,55);
+        // the first such day in 2010 is Aug 1st
+        compare(new GregorianCalendar(2010, 7, 1, 0, 0), x.ceil(c));
     }
 
     /**
@@ -160,4 +171,25 @@ public class CronTabTest extends TestCase {
         assertEquals(a,b);
     }
 
+    public void testHash1() throws Exception {
+        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+            public int next(int n) {
+                return n-1;
+            }
+        });
+
+        assertEquals(x.bits[0],1L<<59);
+        assertEquals(x.bits[1],1L<<8);
+    }
+
+    public void testHash2() throws Exception {
+        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+            public int next(int n) {
+                return 1;
+            }
+        });
+
+        assertEquals(x.bits[0],1L<<1);
+        assertEquals(x.bits[1],1L<<6);
+    }
 }

@@ -30,8 +30,8 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href=".." title="${%Back to List}" />
-      <l:task icon="images/24x24/search.png" href="${rootURL}/${it.url}" title="${%Status}" />
+      <l:task icon="images/24x24/up.png" href=".." title="${%Back to List}" contextMenu="false"/>
+      <l:task icon="images/24x24/search.png" href="${rootURL}/${it.url}" title="${%Status}" contextMenu="false"/>
       <l:task icon="images/24x24/edit-delete.png" href="delete" title="${%Delete Slave}" permission="${it.DELETE}" />
       <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${it.CONFIGURE}" />
       <l:task icon="images/24x24/notepad.png" href="builds" title="${%Build History}" />

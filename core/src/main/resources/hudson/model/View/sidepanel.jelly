@@ -67,6 +67,7 @@ THE SOFTWARE.
       <!-- subtypes can put more stuff here -->
       <st:include page="sidepanel2.jelly" optional="true"/>
 
+      <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
       <t:actions />
     </l:tasks>
     <t:queue items="${it.queueItems}" />

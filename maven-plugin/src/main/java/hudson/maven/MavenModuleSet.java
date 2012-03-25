@@ -24,7 +24,7 @@
  */
 package hudson.maven;
 
-import static hudson.Util.fixEmpty;
+import static hudson.Util.*;
 import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
@@ -34,6 +34,9 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
+import hudson.maven.local_repo.LocalRepositoryLocator;
+import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -183,8 +186,28 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * from multiple Maven process, so this helps there too.
      *
      * @since 1.223
+     * @deprecated as of 1.448
+     *      Subsumed by {@link #localRepository}. false maps to {@link DefaultLocalRepositoryLocator},
+     *      and true maps to {@link PerJobLocalRepositoryLocator}
      */
-    private boolean usePrivateRepository = false;
+    private transient Boolean usePrivateRepository;
+
+    /**
+     * Encapsulates where to run the local repository.
+     *
+     * If null, inherited from the global configuration.
+     * 
+     * @since 1.448
+     */
+    private LocalRepositoryLocator localRepository = null;
+    
+   /**
+    * If true, the build will send a failure e-mail for each failing maven module.
+    * Defaults to <code>true</code> to simulate old behavior. 
+    * <p>
+    * see JENKINS-5695. 
+    */
+    private Boolean perModuleEmail = Boolean.TRUE;
 
     /**
      * If true, do not automatically schedule a build when one of the project dependencies is built.
@@ -432,10 +455,18 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return aggregatorStyleBuild;
     }
 
+    /**
+     * @deprecated as of 1.448
+     *      Use {@link #getLocalRepository()}
+     */
     public boolean usesPrivateRepository() {
-        return usePrivateRepository;
+        return !(getLocalRepository() instanceof DefaultLocalRepositoryLocator);
     }
 
+    public boolean isPerModuleEmail() {
+        return perModuleEmail;
+    }
+    
     public boolean ignoreUpstremChanges() {
         return ignoreUpstremChanges;
     }
@@ -456,8 +487,31 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         this.aggregatorStyleBuild = aggregatorStyleBuild;
     }
 
+    /**
+     * @deprecated as of 1.448.
+     *      Use {@link #setLocalRepository(LocalRepositoryLocator)} instead
+     */
     public void setUsePrivateRepository(boolean usePrivateRepository) {
-        this.usePrivateRepository = usePrivateRepository;
+        setLocalRepository(usePrivateRepository?new PerJobLocalRepositoryLocator() : new DefaultLocalRepositoryLocator());
+    }
+
+    /**
+     * @return 
+     *      never null
+     */
+    public LocalRepositoryLocator getLocalRepository() {
+        return localRepository!=null ? localRepository : getDescriptor().getLocalRepository();
+    }
+
+    /**
+     * Undefaulted locally configured value with taking inheritance from the global configuration into account.
+     */
+    public LocalRepositoryLocator getExplicitLocalRepository() {
+        return localRepository;
+    }
+
+    public void setLocalRepository(LocalRepositoryLocator localRepository) {
+        this.localRepository = localRepository;
     }
 
     public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
@@ -664,6 +718,15 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         	postbuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
         }
         postbuilders.setOwner(this);
+        
+        if(perModuleEmail == null){
+            perModuleEmail = Boolean.TRUE;
+        }
+        
+        if (Boolean.TRUE.equals(usePrivateRepository)) {
+            this.localRepository = new PerJobLocalRepositoryLocator();
+            usePrivateRepository = null;
+        }
         
         updateTransientActions();
     }
@@ -986,7 +1049,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
-        usePrivateRepository = req.hasParameter("maven.usePrivateRepository");
+        if (json.optBoolean("usePrivateRepository"))
+            localRepository = req.bindJSON(LocalRepositoryLocator.class,json.getJSONObject("explicitLocalRepository"));
+        else
+            localRepository = null;
+        perModuleEmail = req.hasParameter("maven.perModuleEmail");
         ignoreUpstremChanges = !json.has("triggerByDependency");
         runHeadless = req.hasParameter("maven.runHeadless");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
@@ -1068,6 +1135,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
          */
         private Map<String, Integer> mavenValidationLevels = new LinkedHashMap<String, Integer>();
 
+        /**
+         * @since 1.448
+         */
+        private LocalRepositoryLocator localRepository = new DefaultLocalRepositoryLocator();
+
         public DescriptorImpl() {
             super();
             load();
@@ -1085,6 +1157,18 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
         public void setGlobalMavenOpts(String globalMavenOpts) {
             this.globalMavenOpts = globalMavenOpts;
+            save();
+        }
+
+        /**
+         * @return never null.
+         */
+        public LocalRepositoryLocator getLocalRepository() {
+            return localRepository!=null ? localRepository : new DefaultLocalRepositoryLocator();
+        }
+
+        public void setLocalRepository(LocalRepositoryLocator localRepository) {
+            this.localRepository = localRepository;
             save();
         }
 
@@ -1111,6 +1195,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
             globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
+            localRepository = req.bindJSON(LocalRepositoryLocator.class,o.getJSONObject("localRepository"));
             save();
 
             return true;

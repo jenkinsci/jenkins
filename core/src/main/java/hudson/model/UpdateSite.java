@@ -35,6 +35,7 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.IOUtils;
 import hudson.util.TextFile;
+import hudson.util.TimeUnit2;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
@@ -45,6 +46,7 @@ import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -107,6 +109,12 @@ public class UpdateSite {
     private transient volatile long lastAttempt = -1;
 
     /**
+     * If the attempt to fetch data fails, we progressively use longer time out before retrying,
+     * to avoid overloading the server.
+     */
+    private transient volatile long retryWindow;
+
+    /**
      * ID string for this update source.
      */
     private final String id;
@@ -161,6 +169,7 @@ public class UpdateSite {
         }
 
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
+        retryWindow = 0;
         getDataFile().write(json);
         return FormValidation.ok();
     }
@@ -277,8 +286,14 @@ public class UpdateSite {
         if(dataTimestamp==-1)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
-        boolean due = now - dataTimestamp > DAY && now - lastAttempt > 15000;
-        if(due)     lastAttempt = now;
+        
+        retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
+        
+        boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
+        if(due) {
+            lastAttempt = now;
+            retryWindow = Math.min(retryWindow*2, HOURS.toMillis(1)); // exponential back off but at most 1 hour
+        }
         return due;
     }
 
@@ -689,21 +704,29 @@ public class UpdateSite {
             deploy();
         }
 
+        public Future<UpdateCenterJob> deploy() {
+            return deploy(false);
+        }
+
         /**
          * Schedules the installation of this plugin.
          *
          * <p>
          * This is mainly intended to be called from the UI. The actual installation work happens
          * asynchronously in another thread.
+         *
+         * @param dynamicLoad
+         *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
+         *      the plugin will only take effect after the reboot.
          */
-        public Future<UpdateCenterJob> deploy() {
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
-                dep.deploy();
+                dep.deploy(dynamicLoad);
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
         }
 
         /**
@@ -717,17 +740,22 @@ public class UpdateSite {
         /**
          * Making the installation web bound.
          */
-        public void doInstall(StaplerResponse rsp) throws IOException {
-            deploy();
-            rsp.sendRedirect2("../..");
+        public HttpResponse doInstall() throws IOException {
+            deploy(false);
+            return HttpResponses.redirectTo("../..");
+        }
+
+        public HttpResponse doInstallNow() throws IOException {
+            deploy(true);
+            return HttpResponses.redirectTo("../..");
         }
 
         /**
          * Performs the downgrade of the plugin.
          */
-        public void doDowngrade(StaplerResponse rsp) throws IOException {
+        public HttpResponse doDowngrade() throws IOException {
             deployBackup();
-            rsp.sendRedirect2("../..");
+            return HttpResponses.redirectTo("../..");
         }
     }
 

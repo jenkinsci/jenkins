@@ -30,6 +30,8 @@ import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
 import hudson.model.Hudson;
+import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
@@ -64,9 +66,15 @@ import java.util.logging.Logger;
  */
 @Extension
 public class CLIRegisterer extends ExtensionFinder {
-    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson hudson) {
+    @Override
+    public ExtensionComponentSet refresh() throws ExtensionRefreshException {
+        // TODO: this is not complex. just bit tedious.
+        return ExtensionComponentSet.EMPTY;
+    }
+
+    public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
         if (type==CLICommand.class)
-            return (List)discover(hudson);
+            return (List)discover(jenkins);
         else
             return Collections.emptyList();
     }
@@ -112,7 +120,6 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stdout = stdout;
                             this.stderr = stderr;
                             this.locale = locale;
-                            this.channel = Channel.current();
 
                             registerOptionHandlers();
                             CmdLineParser parser = new CmdLineParser(null);

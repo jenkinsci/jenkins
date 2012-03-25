@@ -49,7 +49,7 @@ THE SOFTWARE.
                       var div = document.createElement('div');
                       div.innerHTML = rsp.responseText;
 
-                      var rows = div.firstChild.rows;
+                      var rows = div.children[0].rows;
                       for(var i=0; i<rows.length; i++ ) {
                         var row = rows[i];
                         var target = document.getElementById(row.id);

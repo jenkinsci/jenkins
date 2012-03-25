@@ -31,13 +31,17 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
 
+import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,8 +73,25 @@ public class JNLPLauncherTest extends HudsonTestCase {
     public void testHeadlessLaunch() throws Exception {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
+        // make sure that onOffline gets called just the right number of times
+        assertEquals(1, listener.offlined);
     }
 
+    @Inject
+    ListenerImpl listener;
+
+    @TestExtension
+    public static class ListenerImpl extends ComputerListener {
+        int offlined = 0;
+
+        @Override
+        public void onOffline(Computer c) {
+            offlined++;
+            assertTrue(c.isOffline());
+        }
+    }
+    
+    
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");

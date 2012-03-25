@@ -111,10 +111,10 @@ public class ExtensionFinderTest extends HudsonTestCase {
 
     @TestExtension("testErrorRecovery")
     public static class BrokenExtension extends PageDecorator {
-        @Inject Comparable c;
-        
         public BrokenExtension() {
             super(InjectingExtension.class);
+            
+            throw new Error();
         }
     }
 }

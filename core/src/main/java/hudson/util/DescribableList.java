@@ -39,7 +39,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.ReconfigurableDescribable;
 import hudson.model.Saveable;
 import net.sf.json.JSONObject;
-import org.apache.avalon.framework.configuration.Reconfigurable;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;

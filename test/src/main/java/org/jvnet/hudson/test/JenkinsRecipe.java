@@ -9,11 +9,14 @@ import java.lang.annotation.Annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
+import org.jvnet.hudson.test.recipes.Recipe;
 
 
 /**
  * Meta-annotation for recipe annotations, which controls
  * the test environment set up.
+ * 
+ * This is JUnit4 version of {@link Recipe}.
  *
  * @author Kohsuke Kawaguchi
  */

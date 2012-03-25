@@ -23,11 +23,13 @@
  */
 package hudson.maven;
 
+import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
@@ -45,6 +47,7 @@ import java.lang.reflect.Method;
 
 import hudson.util.InvocationInterceptor;
 import hudson.util.ReflectionUtils;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 /**
  * Information about Mojo to be executed. This object provides
@@ -109,6 +112,12 @@ public class MojoInfo {
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;
         this.pluginName = new PluginName(mojoExecution.getMojoDescriptor().getPluginDescriptor());
+    }
+
+    public MojoInfo(ExecutionEvent event) {
+        this(event.getMojoExecution(), null,
+                new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() ),
+                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ));
     }
 
     /**

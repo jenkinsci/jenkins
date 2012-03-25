@@ -34,6 +34,9 @@ THE SOFTWARE.
     <f:entry field="uniqueVersion">
       <f:checkbox title="${%Assign unique versions to snapshots}" default="true"/>
     </f:entry>
+    <f:entry title="${%Release environment variable}" field="releaseEnvVar" >
+      <f:textbox />
+    </f:entry>
     <j:if test="${descriptor.showEvenIfUnstableOption()}">
       <f:entry field="evenIfUnstable">
         <f:checkbox title="${%Deploy even if the build is unstable}" />

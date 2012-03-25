@@ -52,6 +52,11 @@ import java.util.Set;
  * along with {@link Project}.
  *
  * <p>
+ * {@link BuildWrapper}s are instantiated when the user saves the job configuration, and sticks
+ * around in memory until the job configuration is overwritten.
+ *
+ *
+ * <p>
  * The {@link #setUp(Build,Launcher,BuildListener)} method is invoked for each build.
  *
  * <p>

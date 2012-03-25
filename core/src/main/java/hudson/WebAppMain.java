@@ -217,15 +217,6 @@ public final class WebAppMain implements ServletContextListener {
                         Jenkins instance = new Hudson(home, context);
                         context.setAttribute(APP, instance);
 
-                        // trigger the loading of changelogs in the background,
-                        // but give the system 10 seconds so that the first page
-                        // can be served quickly
-                        Trigger.timer.schedule(new SafeTimerTask() {
-                            public void doRun() {
-                                User.getUnknown().getBuilds();
-                            }
-                        }, 1000*10);
-
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
                         success = true;
@@ -268,9 +259,9 @@ public final class WebAppMain implements ServletContextListener {
     }
 
     /** Add some metadata to a File, allowing to trace setup issues */
-    private static class FileAndDescription {
-        File file;
-        String description;
+    public static class FileAndDescription {
+        public final File file;
+        public final String description;
         public FileAndDescription(File file,String description) {
             this.file = file;
             this.description = description;
@@ -290,7 +281,7 @@ public final class WebAppMain implements ServletContextListener {
      * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */
-    private FileAndDescription getHomeDir(ServletContextEvent event) {
+    public FileAndDescription getHomeDir(ServletContextEvent event) {
         // check JNDI for the home directory first
         for (String name : HOME_NAMES) {
             try {

@@ -68,7 +68,7 @@ public class InstallToolCommand extends CLICommand {
         h.checkPermission(Jenkins.READ);
 
         // where is this build running?
-        BuildIDs id = channel.call(new BuildIDs());
+        BuildIDs id = checkChannel().call(new BuildIDs());
 
         if (!id.isComplete())
             throw new AbortException("This command can be only invoked from a build executing inside Hudson");
@@ -129,7 +129,7 @@ public class InstallToolCommand extends CLICommand {
         }
         if (t instanceof EnvironmentSpecific) {
             EnvironmentSpecific e = (EnvironmentSpecific) t;
-            t = (ToolInstallation)e.forEnvironment(EnvVars.getRemote(channel));
+            t = (ToolInstallation)e.forEnvironment(EnvVars.getRemote(checkChannel()));
         }
         stdout.println(t.getHome());
         return 0;

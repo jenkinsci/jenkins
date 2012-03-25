@@ -136,7 +136,7 @@ public class MavenTest extends HudsonTestCase {
         project.getBuildersList().add(new Maven("--help", varMaven.getName()));
         project.setJDK(varJDK);
 
-        Build build = project.scheduleBuild2(0, new LegacyCodeCause(),
+        FreeStyleBuild build = project.scheduleBuild2(0, new LegacyCodeCause(),
                 new ParametersAction(
                         new StringParameterValue("VAR_MAVEN", mavenVar),
                         new StringParameterValue("VAR_JAVA", javaVar))).get();
@@ -190,6 +190,7 @@ public class MavenTest extends HudsonTestCase {
         project.getBuildersList().add(new Maven("clean package",null));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        @SuppressWarnings("deprecation")
         String buildLog = build.getLog();
         assertNotNull(buildLog);
 	System.out.println(buildLog);

@@ -110,6 +110,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -261,6 +263,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.project = job;
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
+		getRootDir().mkdirs();
     }
 
     /**
@@ -395,6 +398,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Gets the {@link Executor} building this job, if it's being built.
      * Otherwise null.
+     * 
+     * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
+     * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
+     * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
+     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
     public Executor getExecutor() {
         for( Computer c : Jenkins.getInstance().getComputers() ) {
@@ -843,9 +851,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Files related to this {@link Run} should be stored below this directory.
      */
     public File getRootDir() {
-        File f = new File(project.getBuildDir(),getId());
-        f.mkdirs();
-        return f;
+        return new File(project.getBuildDir(),getId());
     }
 
     /**
@@ -1438,7 +1444,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 duration = Math.max(end - start, 0);  // @see HUDSON-5844
 
                 // advance the state.
-                // the significance of doing this is that Hudson
+                // the significance of doing this is that Jenkins
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
@@ -1616,59 +1622,77 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets an object that computes the single line summary of this build.
+     * Gets an object which represents the single line summary of the status of this build
+     * (especially in comparison with the previous build.)
      */
     public Summary getBuildStatusSummary() {
-        Run prev = getPreviousBuild();
-
-        if(getResult()==Result.SUCCESS) {
-            if(prev==null || prev.getResult()== Result.SUCCESS)
+        ResultTrend trend = ResultTrend.getResultTrend(this);
+        
+        switch (trend) {
+            case ABORTED : return new Summary(false, Messages.Run_Summary_Aborted());
+            
+            case NOT_BUILT : return new Summary(false, Messages.Run_Summary_NotBuilt());
+            
+            case FAILURE : return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
+            
+            case STILL_FAILING : 
+                RunT since = getPreviousNotFailedBuild();
+                if(since==null)
+                    return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
+                RunT failedBuild = since.getNextBuild();
+                return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
+           
+            case NOW_UNSTABLE:
+                return determineDetailedUnstableSummary(Boolean.FALSE);
+            case UNSTABLE :
+                return determineDetailedUnstableSummary(Boolean.TRUE);
+            case STILL_UNSTABLE :
+                return determineDetailedUnstableSummary(null);
+                
+            case SUCCESS :
                 return new Summary(false, Messages.Run_Summary_Stable());
-            else
+            
+            case FIXED :
                 return new Summary(false, Messages.Run_Summary_BackToNormal());
+                
         }
+        
+        return new Summary(false, Messages.Run_Summary_Unknown());
+    }
 
-        if(getResult()==Result.FAILURE) {
-            RunT since = getPreviousNotFailedBuild();
-            if(since==null)
-                return new Summary(false, Messages.Run_Summary_BrokenForALongTime());
-            if(since==prev)
-                return new Summary(true, Messages.Run_Summary_BrokenSinceThisBuild());
-            RunT failedBuild = since.getNextBuild();
-            return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
-        }
-
-        if(getResult()==Result.ABORTED)
-            return new Summary(false, Messages.Run_Summary_Aborted());
-
-        if(getResult()==Result.NOT_BUILT)
-            return new Summary(false, Messages.Run_Summary_NotBuilt());
-
-        if(getResult()==Result.UNSTABLE) {
-            if(((Run)this) instanceof AbstractBuild) {
-                AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
-                AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
-                if(trP==null) {
-                    if(trN!=null && trN.getFailCount()>0)
-                        return new Summary(false, Messages.Run_Summary_TestFailures(trN.getFailCount()));
-                } else {
-                    if(trN.getFailCount()!= 0) {
-                        if(trP.getFailCount()==0)
-                            return new Summary(true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
-                        if(trP.getFailCount() < trN.getFailCount())
-                            return new Summary(true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
-                        if(trP.getFailCount() > trN.getFailCount())
-                            return new Summary(false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
-                        
-                        return new Summary(false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
-                    }
+    /**
+     * @param worseOverride override the 'worse' parameter to this value.
+     *   May be null in which case 'worse' is calculated based on the number of failed tests.
+     */
+    private Summary determineDetailedUnstableSummary(Boolean worseOverride) {
+        if(((Run)this) instanceof AbstractBuild) {
+            AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+            Run prev = getPreviousBuild();
+            AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
+            if(trP==null) {
+                if(trN!=null && trN.getFailCount()>0)
+                    return new Summary(worseOverride != null ? worseOverride : true,
+                            Messages.Run_Summary_TestFailures(trN.getFailCount()));
+            } else {
+                if(trN.getFailCount()!= 0) {
+                    if(trP.getFailCount()==0)
+                        return new Summary(worseOverride != null ? worseOverride : true,
+                                Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
+                    if(trP.getFailCount() < trN.getFailCount())
+                        return new Summary(worseOverride != null ? worseOverride : true,
+                                Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
+                    if(trP.getFailCount() > trN.getFailCount())
+                        return new Summary(worseOverride != null ? worseOverride : false,
+                                Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
+                    
+                    return new Summary(worseOverride != null ? worseOverride : false,
+                            Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
                 }
             }
-            
-            return new Summary(false, Messages.Run_Summary_Unstable());
         }
-
-        return new Summary(false, Messages.Run_Summary_Unknown());
+        
+        return new Summary(worseOverride != null ? worseOverride : false,
+                Messages.Run_Summary_Unstable());
     }
 
     /**
@@ -1756,8 +1780,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Deletes the build when the button is pressed.
      */
+    @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         // We should not simply delete the build if it has been explicitly
@@ -1870,7 +1894,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
-        env.put("BUILD_TAG","jenkins-"+getParent().getName()+"-"+number);
+        env.put("BUILD_TAG","jenkins-"+getParent().getFullName().replace('/', '-')+"-"+number);
         env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
@@ -1903,9 +1927,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
+    @RequirePOST
     public HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
-        requirePOST();
         BulkChange bc = new BulkChange(this);
         try {
             JSONObject json = req.getSubmittedForm();

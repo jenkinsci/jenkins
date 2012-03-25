@@ -53,6 +53,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -386,7 +387,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
-            for (AbstractBuild<?,?> b : p.getBuilds())
+            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds())
                 if(b.hasParticipant(this))
                     r.add(b);
         return RunList.fromRuns(r);
@@ -454,9 +455,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
-        requirePOST();
 
         fullName = req.getParameter("fullName");
         description = req.getParameter("description");
@@ -491,8 +492,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Deletes this user from Hudson.
      */
+    @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         checkPermission(Jenkins.ADMINISTER);
         if (id.equals(Jenkins.getAuthentication().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");

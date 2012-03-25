@@ -62,6 +62,11 @@ import java.util.WeakHashMap;
  * be null (which is the case when you access the field for the first time
  * the object is restored.)
  *
+ * <h2>Lifecycle</h2>
+ * <p>
+ * Build steps are instantiated when the user saves the job configuration, and sticks
+ * around in memory until the job configuration is overwritten.
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface BuildStep {

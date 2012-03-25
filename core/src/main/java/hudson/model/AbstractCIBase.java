@@ -30,15 +30,21 @@ package hudson.model;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
-import hudson.util.CopyOnWriteMap;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
+
+import jenkins.model.Configuration;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
+    
+    public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
+    
+    private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
 
     private final transient Object updateComputerLock = new Object();
 
@@ -163,8 +169,13 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             Set<Computer> used = new HashSet<Computer>();
 
             updateComputer(this, byName, used, automaticSlaveLaunch);
-            for (Node s : getNodes())
+            for (Node s : getNodes()) {
+                long start = System.currentTimeMillis();
                 updateComputer(s, byName, used, automaticSlaveLaunch);
+                if(LOG_STARTUP_PERFORMANCE)
+                    LOGGER.info(String.format("Took %dms to update node %s",
+                            System.currentTimeMillis()-start, s.getNodeName()));
+            }
 
             // find out what computers are removed, and kill off all executors.
             // when all executors exit, it will be removed from the computers map.

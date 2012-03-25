@@ -40,6 +40,14 @@ import hudson.model.UserPropertyDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -172,6 +180,12 @@ public class Mailer extends Notifier {
         private String adminAddress;
 
         /**
+         * The e-mail address that Jenkins puts to "Reply-To" header in outgoing e-mails.
+         * Null if not configured.
+         */
+        private String replyToAddress;
+
+        /**
          * The SMTP server to use for sending e-mail. Null for default to the environment,
          * which is usually <tt>localhost</tt>.
          */
@@ -215,6 +229,14 @@ public class Mailer extends Notifier {
 
         public String getDefaultSuffix() {
             return defaultSuffix;
+        }
+
+        public String getReplyToAddress() {
+            return replyToAddress;
+        }
+
+        public void setReplyToAddress(String address) {
+            this.replyToAddress = Util.fixEmpty(address);
         }
 
         /** JavaMail session. */
@@ -273,6 +295,7 @@ public class Mailer extends Notifier {
             // this code is brain dead
             smtpHost = nullify(json.getString("smtpServer"));
             setAdminAddress(json.getString("adminAddress"));
+            setReplyToAddress(json.getString("replyToAddress"));
 
             defaultSuffix = nullify(json.getString("defaultSuffix"));
             String url = nullify(json.getString("url"));
@@ -450,6 +473,9 @@ public class Mailer extends Notifier {
                 msg.setSubject(Messages.Mailer_TestMail_Subject(++testEmailCount), charset);
                 msg.setText(Messages.Mailer_TestMail_Content(testEmailCount, Jenkins.getInstance().getDisplayName()), charset);
                 msg.setFrom(new InternetAddress(adminAddress));
+                if (StringUtils.isNotBlank(replyToAddress)) {
+                    msg.setHeader("Reply-To", replyToAddress);
+                }
                 msg.setSentDate(new Date());
                 msg.setRecipient(Message.RecipientType.TO, new InternetAddress(sendTestMailTo));
 
@@ -481,11 +507,18 @@ public class Mailer extends Notifier {
 
         @Exported
         public String getAddress() {
-            if(Util.fixEmptyAndTrim(emailAddress)!=null)
+            if(hasExplicitlyConfiguredAddress())
                 return emailAddress;
 
             // try the inference logic
             return MailAddressResolver.resolve(user);
+        }
+
+        /**
+         * Has the user configured a value explicitly (true), or is it inferred (false)?
+         */
+        public boolean hasExplicitlyConfiguredAddress() {
+            return Util.fixEmptyAndTrim(emailAddress)!=null;
         }
 
         @Extension

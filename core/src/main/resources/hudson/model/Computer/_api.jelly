@@ -28,4 +28,12 @@ THE SOFTWARE.
   <p>
     Load statistics of this computer has <a href="../loadStatistics/api/">its own separate API</a>.
   </p>
+
+  <h2>Fetch/Update config.xml</h2>
+  <p>
+    To programmatically obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
+    You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
+    update the configuration of a node.
+  </p>
+
 </j:jelly>

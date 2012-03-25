@@ -27,7 +27,6 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.scm.SCM;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -41,11 +40,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Deletes old log files.
- *
- * TODO: is there any other task that follows the same pattern?
- * try to generalize this just like {@link SCM} or {@link BuildStep}.
- *
+ * Deletes old builds.
+ * 
+ * Historically this is called LogRotator, though it deletes the whole build including all artifacts.
+ * 
+ * Since 1.350 it has also the option to keep the build, but delete its recorded artifacts.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class LogRotator implements Describable<LogRotator> {
@@ -105,10 +105,11 @@ public class LogRotator implements Describable<LogRotator> {
         
     }
 
+    @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         LOGGER.log(FINE,"Running the log rotation for "+job.getFullDisplayName());
         
-        // keep the last successful build regardless of the status
+        // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
 
@@ -135,7 +136,6 @@ public class LogRotator implements Describable<LogRotator> {
         if(daysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
-            // copy it to the array because we'll be deleting builds as we go.
             for( Run r : job.getBuilds() ) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's marked as a keeper");
@@ -180,7 +180,6 @@ public class LogRotator implements Describable<LogRotator> {
         if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
-            // copy it to the array because we'll be deleting builds as we go.
             for( Run r : job.getBuilds() ) {
                 if (r.isKeepLog()) {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's marked as a keeper");

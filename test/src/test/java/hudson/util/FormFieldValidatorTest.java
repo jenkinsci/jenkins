@@ -37,7 +37,7 @@ import org.jvnet.hudson.test.recipes.WithPlugin;
  */
 public class FormFieldValidatorTest extends HudsonTestCase {
     @Bug(2771)
-    @WithPlugin("tasks.hpi")
+    @WithPlugin("tasks.jpi")
     public void test2771() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         new WebClient().getPage(p,"configure");
