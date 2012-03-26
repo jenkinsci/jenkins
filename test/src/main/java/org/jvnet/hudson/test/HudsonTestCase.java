@@ -454,7 +454,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * that we need for testing.
      */
     protected ServletContext createWebServer() throws Exception {
-        String os = System.getProperty("os.name").toLowerCase();
         server = new Server();
 
         WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
@@ -462,7 +461,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         server.setHandler(context);
         context.setMimeTypes(MIME_TYPES);
-        if(os.indexOf("win") >= 0) {
+        if(Functions.isWindows()) {
             // this is only needed on Windows because of the file
             // locking issue as described in JENKINS-12647
             context.setCopyWebDir(true);
