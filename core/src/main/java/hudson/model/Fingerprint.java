@@ -61,6 +61,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -875,11 +876,15 @@ public class Fingerprint implements ModelObject, Saveable {
         return new Api(this);
     }
 
+    private static AtomicInteger roundRobinCounter = new AtomicInteger();
+    private static final int XSTREAM_COUNT = 10;
+
     /**
      * The file we save our configuration.
      */
     private static XmlFile getConfigFile(File file) {
-        return new XmlFile(XSTREAM,file);
+        int i = roundRobinCounter.incrementAndGet() % XSTREAM_COUNT;
+        return new XmlFile(XSTREAMS.get(i), file);
     }
 
     /**
@@ -932,21 +937,30 @@ public class Fingerprint implements ModelObject, Saveable {
         }
     }
 
-    private static final XStream XSTREAM = new XStream2();
-    static {
-        XSTREAM.alias("fingerprint",Fingerprint.class);
-        XSTREAM.alias("range",Range.class);
-        XSTREAM.alias("ranges",RangeSet.class);
-        XSTREAM.registerConverter(new HexBinaryConverter(),10);
-        XSTREAM.registerConverter(new RangeSet.ConverterImpl(
-            new CollectionConverter(XSTREAM.getMapper()) {
-                @Override
-                protected Object createCollection(Class type) {
-                    return new ArrayList();
-                }
+    private static final List<XStream> XSTREAMS = Collections.unmodifiableList(new ArrayList<XStream>() {
+        {
+            for (int i = 0; i < XSTREAM_COUNT; i++) {
+                add(newXStream());
             }
-        ),10);
-    }
+        }
+
+        private XStream newXStream() {
+            XStream XSTREAM =  new XStream2();
+            XSTREAM.alias("fingerprint",Fingerprint.class);
+            XSTREAM.alias("range",Range.class);
+            XSTREAM.alias("ranges",RangeSet.class);
+            XSTREAM.registerConverter(new HexBinaryConverter(),10);
+            XSTREAM.registerConverter(new RangeSet.ConverterImpl(
+                new CollectionConverter(XSTREAM.getMapper()) {
+                    @Override
+                    protected Object createCollection(Class type) {
+                        return new ArrayList();
+                    }
+                }
+            ),10);
+            return XSTREAM;
+        }
+    });
 
     private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
 }
