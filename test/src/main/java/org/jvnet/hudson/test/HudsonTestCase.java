@@ -333,7 +333,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // allow the test class to inject Jenkins components
         jenkins.lookup(Injector.class).injectMembers(this);
-        explodedWarDir = WarExploder.getExplodedDir();
     }
 
 
@@ -462,6 +461,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
 
+        explodedWarDir = WarExploder.getExplodedDir();
         WebAppContext context = new WebAppContext(explodedWarDir.getPath(), contextPath);
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
