@@ -263,6 +263,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     public ComputerConnectorTester computerConnectorTester = new ComputerConnectorTester(this);
 
+    /**
+     * The directory where a war file gets exploded.
+     */
+    protected File explodedWarDir;
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -328,6 +333,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // allow the test class to inject Jenkins components
         jenkins.lookup(Injector.class).injectMembers(this);
+        explodedWarDir = WarExploder.getExplodedDir();
     }
 
 
@@ -456,7 +462,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
 
-        WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
+        WebAppContext context = new WebAppContext(explodedWarDir.getPath(), contextPath);
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         server.setHandler(context);
