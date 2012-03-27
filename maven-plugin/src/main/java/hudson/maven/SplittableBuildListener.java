@@ -29,6 +29,7 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.util.AbstractTaskListener;
+import jenkins.util.MarkFindingOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -55,7 +57,7 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
      * Used to accumulate data when no one is claiming the {@link #side},
      * so that the next one who set the {@link #side} can claim all the data.
      */
-    private final ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
+    private ByteArrayOutputStream unclaimed = new ByteArrayOutputStream();
 
     private volatile OutputStream side = unclaimed;
 
@@ -64,43 +66,104 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
      * This is so that we can change the side stream without the client noticing it.
      */
     private final PrintStream logger;
+    
+    private int markCount = 0;
+    private final Object markCountLock = new Object();
 
     public SplittableBuildListener(BuildListener core) {
         this.core = core;
         final OutputStream base = core.getLogger();
-        logger = new PrintStream(new OutputStream() {
+        
+        final OutputStream tee = new OutputStream() {
             public void write(int b) throws IOException {
                 base.write(b);
-                side.write(b);
+                synchronized (lock()) {
+                    side.write(b);
+                }
             }
 
             public void write(byte b[], int off, int len) throws IOException {
-                base.write(b,off,len);
-                side.write(b,off,len);
+                base.write(b, off, len);
+                synchronized (lock()) {
+                    side.write(b, off, len);
+                }
             }
 
             public void flush() throws IOException {
                 base.flush();
-                side.flush();
+                synchronized (lock()) {
+                    side.flush();
+                }
             }
 
             public void close() throws IOException {
                 base.close();
-                side.close();
+                synchronized (lock()) {
+                    side.close();
+                }
+            }
+        };
+        
+        logger = new PrintStream(new MarkFindingOutputStream(tee) {
+            @Override
+            protected void onMarkFound() {
+                synchronized (markCountLock) {
+                    markCount++;
+                    markCountLock.notifyAll();
+                }
             }
         });
     }
-    
-    public void setSideOutputStream(OutputStream os) throws IOException {
-        if(os==null) {
-            os = unclaimed;
-        } else {
-            synchronized (unclaimed) {
-                unclaimed.writeTo(os);
-                unclaimed.reset();
-            }
+
+    /**
+     * Mark/sync operation.
+     * 
+     * <p>
+     * Where {@link SplittableBuildListener} is used, Jenkins is normally in control of the process
+     * that's generating the log, and it's also the receiver.
+     *
+     * But because the stdout of the sender travels through a different route than the remoting channel,
+     * a synchronization needs to happen when we switch the side OutputStream.
+     *
+     * <p>
+     * This method is a part of the protocol to do that. First,
+     * To ensure that the output is split
+     * at the right moment,
+     */
+    public int byMyMark() {
+        synchronized (markCountLock) {
+            return markCount;
         }
-        this.side = os;
+    }
+    
+    public void waitForMark(int n) throws InterruptedException {
+         synchronized (markCountLock) {
+             while (markCount==n)
+                 wait();
+         }
+    }
+
+    public void setSideOutputStream(OutputStream os) throws IOException {
+        synchronized (lock()) {
+            if(os==null) {
+                os = unclaimed;
+            } else {
+                unclaimed.writeTo(os);
+                unclaimed = new ByteArrayOutputStream(); // BAOS internally keeps the old buffer, but we don't want to keep around a big buffer
+            }
+            this.side = os;
+        }
+    }
+
+    /**
+     * We need to be able to atomically write the buffered bits and then create a fresh {@link ByteArrayOutputStream},
+     * when another thread (pipe I/O thread) is calling log.write().
+     * 
+     * This locks controls the access and the write operation to {@link #side} (and since that can point to the same
+     * object as {@link #unclaimed}, that access needs to be in the same lock, too.)
+     */
+    private Object lock() {
+        return this;
     }
 
     public void started(List<Cause> causes) {
@@ -144,4 +207,14 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
     }
 
     private static final long serialVersionUID = 1L;
+
+    private static final byte[] MARK = toUTF8("[Jenkins:SYNC-MARK]");
+
+    private static byte[] toUTF8(String s) {
+        try {
+            return s.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
+    }
 }
