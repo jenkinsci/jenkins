@@ -196,7 +196,7 @@ public abstract class PluginManager extends AbstractModelObject {
                                             PluginWrapper p = strategy.createPluginWrapper(arc);
                                             if (isDuplicate(p)) return;
 
-                                            p.isBundled = bundledPlugins.contains(arc.getName());
+                                            p.isBundled = containsHpiJpi(bundledPlugins, arc.getName());
                                             plugins.add(p);
                                         } catch (IOException e) {
                                             failedPlugins.add(new FailedPlugin(arc.getName(),e));
@@ -342,6 +342,15 @@ public abstract class PluginManager extends AbstractModelObject {
                 }
             });
         }});
+    }
+
+    /*
+     * contains operation that considers xxx.hpi and xxx.jpi as equal
+     * this is necessary since the bundled plugins are still called *.hpi 
+     */
+    private boolean containsHpiJpi(Collection<String> bundledPlugins, String name) {
+        return bundledPlugins.contains(name.replaceAll("\\.hpi",".jpi"))
+                || bundledPlugins.contains(name.replaceAll("\\.jpi",".hpi"));
     }
 
     /**
