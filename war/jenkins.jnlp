@@ -1,0 +1,24 @@
+<!-- this is  
+<jnlp spec="1.0+">
+
+  <information>
+    <title>Jenkins</title>
+    <vendor>Jenkins project</vendor>
+    <homepage href="http://jenkins-ci.org/"/>
+    <offline-allowed/>
+  </information>
+
+  <security>
+    <all-permissions/>
+  </security>
+
+  <resources>
+    <j2se version="1.5+"/>
+    <jar href="http://ci.jenkins-ci.org/job/jenkins_ui-changes_branch/lastSuccessfulBuild/artifact/war/target/jenkins.war"/>
+    <!--jar href="http://ftp.osuosl.org/pub/hudson/war/latest/hudson.war"/-->
+    <!-- create a prominent Windows service installation link --> 
+    <!--property name="hudson.lifecycle.WindowsInstallerLink.prominent" value="true" /-->
+  </resources>
+
+  <application-desc main-class="JNLPMain" />
+</jnlp>
