@@ -157,7 +157,7 @@ THE SOFTWARE.
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
-                <a class="brand" href="${rootURL}/"><img src="${resURL}/images/title.png" alt="Jenkins" width="110" height="31" /></a>
+                <a class="brand" href="${rootURL}/">Jenkins</a>
                 <div class="nav-collapse">
                     <!-- login field -->
                     <p class="navbar-text pull-right">
