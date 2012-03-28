@@ -29,6 +29,6 @@ do
   for color in grey blue yellow red green
   do
     cp $sz/$color.gif ../resources/images/$sz/$color.gif
-    ./makeFlash.sh $sz/$color.gif ../resources/images/$sz/${color}_anime.gif
+    ./makeFlash.sh $sz/$color.png ../resources/images/$sz/${color}_anime.png
   done
 done
