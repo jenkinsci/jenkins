@@ -218,15 +218,15 @@ THE SOFTWARE.
             <j:set var="mode" value="breadcrumbs" />
             <d:invokeBody />
         </l:breadcrumbBar>
-        <div class="row-fluid" id="main-table" style="background-image: url(${imagesURL}/jenkins.png); background-repeat: no-repeat; background-position: bottom left;">
+        <div class="row-fluid" id="main-table">
             <div class="span3" id="side-panel">
-                <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
+                <div id="navigation">
                     <j:set var="mode" value="side-panel" />
                     <d:invokeBody />
 
                     <!-- add YUI logger if debugging YUI -->
                     <j:if test="${h.yuiSuffix=='debug'}">
-                    <div id="yui-logreader" style="margin-top:1em"/>
+                    <div id="yui-logreader" />
                     <script>
                         Behaviour.addLoadEvent(function(){
                         var logReader = new YAHOO.widget.LogReader("yui-logreader");
