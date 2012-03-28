@@ -1,4 +1,4 @@
-<!-- this is  
+<!-- this is a JNLP file to launch the last successful build of Jenkins ui-changes branch -->
 <jnlp spec="1.0+">
 
   <information>
