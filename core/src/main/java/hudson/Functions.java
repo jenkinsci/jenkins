@@ -145,6 +145,13 @@ public class Functions {
         return o instanceof ModelObject;
     }
 
+    /**
+     * Returns true if we are running "mvn hudson-dev:run"
+     */
+    public static boolean inJenkinsDevRunMode() {
+        return Boolean.getBoolean("hudson.Main.development");
+    }
+    
     public static String xsDate(Calendar cal) {
         return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
     }

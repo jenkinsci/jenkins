@@ -429,6 +429,7 @@ THE SOFTWARE.
           </execution>
         </executions>
         <configuration>
+          <sourceDirectory>src/main/webapp/less</sourceDirectory>
           <outputDirectory>${project.build.directory}/jenkins/css</outputDirectory>
           <includes>
             <value>jenkins.less</value>

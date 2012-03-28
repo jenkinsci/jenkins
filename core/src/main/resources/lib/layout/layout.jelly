@@ -143,6 +143,11 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
+    <j:if test="${f.inJenkinsDevRunMode()">
+      <link rel="stylesheet/less" type="text/css" href="${resURL}/less/jenkins.less"/>
+      <script src="${resURL}/scripts/less.js" type="text/javascript"/>
+    </j:if>
+
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
@@ -157,7 +162,7 @@ THE SOFTWARE.
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
-                <a class="brand" href="${rootURL}/">Jenkins</a>
+                <a class="brand" href="${rootURL}/"><img src="${imagesURL}/title.png" /></a>
                 <div class="nav-collapse">
                     <!-- login field -->
                     <p class="navbar-text pull-right">
