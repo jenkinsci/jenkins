@@ -59,6 +59,20 @@ body {
     font-weight: @headingsFontWeight;
 }
 
+.navbar .divider-vertical {
+    background-color: lighten(@jenkinsBlack, 10%);
+    border: none;
+}
+
+.navbar, .navbar a, .navbar .nav > li > a {
+    color: @jenkinsLightGray;
+}
+
+.navbar a:hover, .navbar .nav > li > a:hover {
+    color: @white;
+    text-decoration: none;
+}
+
 // Import Jenkins rules
 @import "style.less";
 @import "color.less";
