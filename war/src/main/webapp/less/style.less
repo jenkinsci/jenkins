@@ -82,7 +82,7 @@
     text-align: center;
     margin: 0 2em 0.5em;
     padding: 0.5em;
-    -moz-border-radius: 0.5em;
+    .border-radius(0.5em);
 }
 
 a.lowkey:link {
@@ -131,8 +131,7 @@ img {
 }
 
 div.disabled {
-    opacity : 0.4;
-    filter: alpha(opacity=40); /* msie */
+    .opacity(40);
     background-color: @black;
 }
 
@@ -158,16 +157,7 @@ td.tab {
 }
 
 .dashboard td {
-  padding: 4px 4px 4px 4px;
-}
-
-pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
-    white-space: pre-wrap;       /* css-3 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
-    margin: 0;
+  padding: 4px;
 }
 
 pre.console {
@@ -400,9 +390,7 @@ th.pane {
 div.behavior-loading {
     position: absolute; width: 80%; height:100%;
     background-color: @grayLighter; text-align: center; font-size: 300%;
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
+    .opacity(50);
 }
 
 LABEL.attach-previous {
