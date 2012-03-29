@@ -143,7 +143,7 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <j:if test="${f.inJenkinsDevRunMode()">
+    <j:if test="${f.inJenkinsDevRunMode()}">
       <link rel="stylesheet/less" type="text/css" href="${resURL}/less/jenkins.less"/>
       <script src="${resURL}/scripts/less.js" type="text/javascript"/>
     </j:if>
