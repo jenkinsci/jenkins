@@ -31,9 +31,9 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${it.displayName}</h1>
-    <j:forEach var="log" items="${it.logRecords}">
-      <pre>${h.printLogRecord(log)}</pre>
-    </j:forEach>
+    <pre><j:forEach var="log" items="${it.logRecords}"><!--
+      --><div>${h.printLogRecord(log)}</div><!--
+    --></j:forEach></pre>
 
     <st:include it="${it.parent}" page="feeds.jelly" />    
   </l:main-panel>
