@@ -1,5 +1,6 @@
 package hudson.model.queue;
 
+import hudson.console.HyperlinkNote;
 import hudson.model.Queue.Task;
 import hudson.model.Node;
 import hudson.model.Messages;
@@ -102,7 +103,7 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(HyperlinkNote.encodeTo("/computer/"+ node.getNodeName(), node.getNodeName()));
         }
     }
 
