@@ -11,11 +11,11 @@
 // Grays
 // -------------------------
 @black:                 #000;
-@grayDarker:            #222;
-@grayDark:              #333;
-@gray:                  #555;
-@grayLight:             #999;
-@grayLighter:           #eee;
+@grayDarker:            @tangoAluminium6;
+@grayDark:              #414544; //mix(@tangoAluminium6, @tangoAluminium5);
+@gray:                  @tangoAluminium5;
+@grayLight:             @tangoAluminium4;
+@grayLighter:           @tangoAluminium1;
 @white:                 #fff;
 
 
@@ -58,9 +58,9 @@
 // Tables
 // -------------------------
 @tableBackground:                   transparent; // overall background-color
-@tableBackgroundAccent:             @jenkinsLightGray; // for striping
-@tableBackgroundHover:              lighten(@jenkinsLightGray, 20%); // for hover
-@tableBorder:                       lighten(@jenkinsLightGray, 10%); // table and cell border
+@tableBackgroundAccent:             @grayLighter; // for striping
+@tableBackgroundHover:              @grayLighter; // for hover
+@tableBorder:                       darken(@grayLighter, 10%); // table and cell border
 
 
 // Buttons

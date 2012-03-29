@@ -7,8 +7,10 @@
 @jenkinsRed:            #d24939;
 @jenkinsLightGray:      #d9d8d6;
 @jenkinsGray:           #757172;
-@jenkinsDarkGray:       #2C2C2C;
 @jenkinsBlack:          #000000;
+
+// Additional Jenkins Color Pallete
+@jenkinsDarkGray:       #2C2C2C; // Used in http://jenkins-ci.org/ navigation bar
 
 // Tango Icon Theme
 // http://tango.freedesktop.org/Generic_Icon_Theme_Guidelines
@@ -49,6 +51,18 @@ body {
     /** For the fluid twitter bootstrap layout **/
     padding-top: 60px;
     padding-bottom: 40px;
+}
+a {
+  text-decoration: underline;
+}
+a:hover {
+  color: @linkColor;
+}
+a:visited {
+  color: @linkColorHover;
+}
+.navbar a, a.btn, .btn a {
+  text-decoration: none;
 }
 
 .navbar-inner {

@@ -85,16 +85,6 @@
     -moz-border-radius: 0.5em;
 }
 
-a:link {
-  text-decoration: underline;
-  color: #355564;
-}
-
-a:visited {
-  text-decoration: underline;
-  color: #5c3566;
-}
-
 a.lowkey:link {
   text-decoration: none;
   color: inherit;
@@ -130,9 +120,8 @@ a.tip:hover span {
   top:2em;
   left:2em;
   width:400px;
-  border:1px solid #bbbbbb;
-  background-color:#fffff0;
-  color:#000;
+  border:1px @tableBorder solid;
+  background-color:@infoBackground;
   text-align: left
 }
 
@@ -144,7 +133,7 @@ img {
 div.disabled {
     opacity : 0.4;
     filter: alpha(opacity=40); /* msie */
-    background-color: #000;
+    background-color: @black;
 }
 
 table.tab {
@@ -273,44 +262,44 @@ div.dashboard {
 table.pane {
   width: 100%;
   border-collapse: collapse;
-  border: 1px #bbb solid;
+  border: 1px @tableBorder solid;
 }
 table.pane > tbody > tr > td:last-child {
-  border-right: 1px #bbb solid;
+  border-right: 1px @tableBorder solid;
 }
 
 td.pane {
-  border: 1px #bbb solid;
+  border: 1px @tableBorder solid;
   padding: 3px 4px 3px 4px;
   vertical-align: middle;
 }
 
 td.pane-header {
-  border: 1px #bbb solid;
+  border: 1px @tableBorder solid;
   border-right: none;
   border-left: none;
-  background-color: #f0f0f0;
+  background-color: @tableBackgroundAccent;
   font-weight: bold;
 }
 
 th.pane {
-  border: 1px #bbb solid;
+  border: 1px @tableBorder solid;
   font-weight: bold;
 }
 
 .bigtable tr {
-  border: 1px solid #bbb;
+  border: 1px solid @tableBorder;
   padding: 3px 4px 3px 4px;
 }
 
 .bigtable tr:hover {
-  background-color: #f0f0f0;
+  background-color: @tableBackgroundHover;
 }
 
 .bigtable th {
   font-weight: bold;
   border: none;
-  background-color: #f0f0f0;
+  background-color: @tableBackgroundAccent;
   padding: 3px 4px 3px 4px;
 }
 
@@ -410,7 +399,7 @@ th.pane {
 
 div.behavior-loading {
     position: absolute; width: 80%; height:100%;
-    background-color: #e4e4e4; text-align: center; font-size: 300%;
+    background-color: @grayLighter; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
@@ -510,15 +499,15 @@ LABEL.attach-previous {
 
 .help {
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: #f0f0f0;
+  border: 1px @tableBorder solid;
+  background-color: @tableBackgroundHover;
   padding: 1em;
   margin-bottom: 1em;
 }
 
 .help .from-plugin {
     text-align: right;
-    color: #666;
+    color: @gray;
 }
 
 .help-area {
@@ -537,15 +526,14 @@ LABEL.attach-previous {
   padding: 0px;
 }
 #viewList td.inactive {
-  border: solid 1px #ccc;
-  border-bottom-color: #bbb;
+  border: 1px @tableBorder solid;
 }
 #viewList td.inactive:hover {
-  background-color: #777;
+  background-color: @grayLight;
 }
 #viewList td.inactive a {
   text-decoration: none;
-  color: #444
+  color: @grayDark
 }
 #viewList td.noleft {
   border-left: none;
@@ -554,17 +542,17 @@ LABEL.attach-previous {
   border-right: none;
 }
 #viewList td.active {
-  border: solid 1px #bbb;
+  border: 1px @tableBorder solid;
+  border-bottom-color: @tableBackgroundAccent;
   padding: 0.5em;
-  border-bottom: none;
   vertical-align:middle;
-  background-color: rgb(240,240,240);
+  background-color: @tableBackgroundAccent;
   font-weight: bold;
   white-space: nowrap;
 }
 #viewList td.filler {
   border: none;
-  border-bottom: solid 1px #bbb;
+  border-bottom: 1px @tableBorder solid;
   width: 100%;
   text-align: right;
 }
@@ -593,7 +581,7 @@ table.parameters .setting-description {
 }
 
 table.parameters > tbody:hover {
-  background-color: #f0f0f0;
+  background-color: @tableBackgroundHover;
 }
 
 /* ============================ health report hover ========================== */
@@ -613,8 +601,8 @@ table.parameters > tbody:hover {
 .healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
     display: block;
     position: absolute;
-    background-color: #ffe;
-    border: 1px solid #bbb;
+    background-color: @infoBackground;
+    border: 1px @tableBorder solid;
     margin-left: 32px; /* move it across a bit */
     z-index: 26;
 }
@@ -641,7 +629,7 @@ table.parameters > tbody:hover {
 
 /* ========================= editable combobox style ========================= */
 .comboBoxList {
-  border: 1px solid #000;
+  border: 1px @black solid;
   overflow: visible;
   color: MenuText;
   background-color: Menu;
@@ -681,31 +669,31 @@ TABLE.fileList TD {
 TABLE.fileList TD.fileSize {
   padding-left: 2em;
   text-align: right;
-  color: #888;
+  color: @grayLight;
 }
 
 
 
 /* ========================= test result ========================= */
 .result-passed {
-  color: #3465a4;
+  color: @blue;
 }
 
 .result-skipped {
-  color: #ddbb00;
+  color: @yellow;
 }
 
 .result-fixed {
-  color: #3465a4;
+  .result-passed;
   font-weight: bold;
 }
 
 .result-failed {
-  color: #ef2929;
+  color: @pink;
 }
 
 .result-regression {
-  color: #ef2929;
+  .result-failed;
   font-weight: bold;
 }
 .test-trend-caption {
@@ -719,11 +707,11 @@ TABLE.fileList TD.fileSize {
 /* ========================= sortable table ========================= */
 table.sortable a.sortheader {
   text-decoration: none;
-  color: black;
+  color: @black;
   display: block;
 }
 table.sortable span.sortarrow {
-  color: black;
+  color: @black;
   text-decoration: none;
 }
 
@@ -759,7 +747,7 @@ TABLE.fingerprint-in-build TD {
 }
 
 #plugins tr.already-upgraded {
-  background-color: #e8eeee;
+  background-color: @grayLighter;
 }
 
 
@@ -816,7 +804,7 @@ DIV.yahooTree td {
 
 .yui-tt {
   border: 1px solid black !important;
-  background-color: #FFFFFF !important;
+  background-color: @white !important;
   padding: 2px !important;
   font-family: inherit !important;
   color: inherit !important;
@@ -824,7 +812,7 @@ DIV.yahooTree td {
 
 .yui-skin-sam .yui-tt .bd {
   border: none !important;
-  background-color: #FFF !important;
+  background-color: @white !important;
 }
 /* ========================= search box at the top-right of the page ========================= */
 
@@ -835,7 +823,7 @@ DIV.yahooTree td {
 }
 
 #search-box.defaulted {
-  color: gray;
+  color: @gray;
 }
 
 #search-box-completion {
@@ -846,10 +834,10 @@ DIV.yahooTree td {
 }
 
 #search-box-completion .yui-ac-content {
-  color: black;
+  color: @black;
   border: 1px solid black;
   width:25em;
-  background-color: white;
+  background-color: @white;
   overflow: hidden;
 }
 
@@ -864,7 +852,7 @@ DIV.yahooTree td {
   white-space:nowrap;
 }
 #search-box-completion LI.yui-ac-highlight {
-  background: #80AFDF;
+  background: @blue;
 }
 
 #search-box-minWidth {
@@ -887,8 +875,8 @@ TEXTAREA {
 DIV.textarea-handle {
     height: 5px;
     font-size: 0;
-    background: #EEE url(../images/textarea-handle.gif) no-repeat 50% 1px;
-    border: 1px solid #BABDB6;
+    background: @tableBackgroundAccent url(../images/textarea-handle.gif) no-repeat 50% 1px;
+    border: 1px @tableBorder solid;
     border-top: none;
     cursor: s-resize;
 }
@@ -900,8 +888,8 @@ TEXTAREA.rich-editor {
 
 #hoverNotification {
     visibility:hidden;
-    background-color: white;
-    border: 1px solid black;
+    background-color: @white;
+    border: 1px @black solid;
     padding: 0.5em;
 }
 
@@ -920,21 +908,21 @@ TEXTAREA.rich-editor {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
-    color: #888a85;
+    color: @grayLight;
 }
 
 #plugins .compatWarning {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
-    color: #FF0000;
+    color: @warningText;
 }
 
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
   border-collapse: collapse;
-  border: 1px solid #3465a4;
+  border: 1px solid @blue;
   height: 6px;
   width: 100px;
   clear: none;
@@ -945,22 +933,22 @@ table.progress-bar tr.unknown {
 }
 
 td.progress-bar-done {
-  background-color: #3465a4;
+  background-color: @blue;
 }
 
 td.progress-bar-left {
-  background-color: #ffffff;
+  background-color: @white;
 }
 
 table.progress-bar.red {
-  border: 1px solid #cc0000;
+  border: 1px solid @red;
 }
 
 table.progress-bar.red tr.unknown {
     background-image:url(../images/progress-unknown-red.gif);
 }
 table.progress-bar.red td.progress-bar-done {
-  background-color: #cc0000;
+  background-color: @red;
 }
 
 /* ========================= notification bar ========================= */
@@ -971,7 +959,7 @@ table.progress-bar.red td.progress-bar-done {
     left:0px;
     font-size: 2em;
     z-index:1000;
-    border-bottom: 1px solid black;
+    border-bottom: 1px @black solid;
 }
 
 /* ========================= YUI dialog ========================= */
@@ -1012,33 +1000,33 @@ table.progress-bar.red td.progress-bar-done {
     text-align:left;
 }
 .textarea-preview {
-    background-color: #F0F0F0;
+    background-color: @tableBackgroundHover;
     padding: 0.5em;
 }
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
+	border: 1px @tableBorder solid;
 	border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
+	background: @tableBackgroundAccent;
 	font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
+	border: 1px @tableBorder solid;
 	padding: 3px;
 }
 td#matrix-title {
 	padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
+	border: 1px @tableBorder solid;
 	font-weight: bold;
-	background: #f0f0f0;
+	background: @tableBackgroundAccent;
 	padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
+	border: 1px @tableBorder solid;
 	text-align: center;
 }
