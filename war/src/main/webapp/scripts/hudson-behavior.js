@@ -665,7 +665,7 @@ var jenkinsRules = {
                 var row = container.lastChild;
                 if(nameRef!=null && row.getAttribute("nameref")==null)
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
-                tr.parentNode.insertBefore(row, $(tr).next());
+                tr.parentNode.insertBefore(row, $(tr).next() || null);
             }
         });
         e = null; // avoid memory leak
