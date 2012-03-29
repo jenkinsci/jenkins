@@ -904,8 +904,14 @@ var jenkinsRules = {
     },
 
     "INPUT.repeatable-delete" : function(e) {
-        makeButton(e,function(e) {
+        e = makeButton(e,function(e) {
             repeatableSupport.onDelete(e.target);
+        });
+        Event.observe(e, "mouseover", function(ev) {
+            repeatableSupport.onBeginPreviewDelete(ev.target);
+        });
+        Event.observe(e, "mouseout", function(ev) {
+            repeatableSupport.onEndPreviewDelete(ev.target);
         });
         e = null; // avoid memory leak
     },
@@ -1840,6 +1846,17 @@ var repeatableSupport = {
         p.removeChild(n);
         if (p.tag)
             p.tag.update();
+    },
+
+    // called when 'delete' button is mouseover-ed
+    onBeginPreviewDelete : function(n) {
+        n = findAncestorClass(n,"repeated-chunk");
+        Element.addClassName(n, "repeated-preview-delete");
+    },
+    // called when 'delete' button is mouseout-ed
+    onEndPreviewDelete : function(n) {
+        n = findAncestorClass(n,"repeated-chunk");
+        Element.removeClassName(n, "repeated-preview-delete");
     },
 
     // called when 'add' button is clicked

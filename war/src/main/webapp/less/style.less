@@ -772,6 +772,14 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
+.repeated-preview-delete {
+  .opacity(50);
+  background-color: @inputDisabledBackground;
+  .repeatable-delete:hover {
+    .opacity(100);
+  }
+}
+
 /*
     <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
