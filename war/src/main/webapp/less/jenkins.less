@@ -83,6 +83,13 @@ a:visited {
     text-decoration: none;
 }
 
+.jenkinsHeading() {
+    color: @jenkinsRed;
+}
+h1, h2, h3, h4, h5, h6 {
+  .jenkinsHeading();
+}
+
 // Import Jenkins rules
 @import "style.less";
 @import "color.less";
