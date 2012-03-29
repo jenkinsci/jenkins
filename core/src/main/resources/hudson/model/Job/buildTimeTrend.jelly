@@ -42,7 +42,7 @@ THE SOFTWARE.
 
           <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>
           <div align="center">
-            <table class="sortable" style="margin-top:1em;">
+            <table class="sortable bigtable" style="margin-top:1em;">
               <tr>
                 <th><st:nbsp/></th>
                 <th initialSortDir="up">${%Build}</th>
