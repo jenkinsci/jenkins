@@ -57,7 +57,8 @@ THE SOFTWARE.
     <d:tag name="body">
       <table style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
-        <j:if test="${hasHeader}">
+        <j:choose>
+        <j:when test="${hasHeader}">
           <tr>
             <td colspan="3">
               <div class="dd-handle">
@@ -68,7 +69,6 @@ THE SOFTWARE.
               <j:if test="${help!=null}">
                 <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
               </j:if>
-              <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
               <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
             </td>
           </tr>
@@ -76,8 +76,19 @@ THE SOFTWARE.
           <j:if test="${help!=null}">
             <f:helpArea />
           </j:if>
-        </j:if>
+        </j:when>
+        <j:otherwise>
+          <tr>
+            <td colspan="3">
+            </td>
+            <td>
+              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+            </td>
+          </tr>
+        </j:otherwise>
+        </j:choose>
 
+        <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
         <d:invokeBody/>
 
       </table>
