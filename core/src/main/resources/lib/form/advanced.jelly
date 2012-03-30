@@ -30,7 +30,10 @@ THE SOFTWARE.
     appears.
 
     <st:attribute name="title" use="optional">
-      Caption of the button. By default "Advanced"
+      Caption of the button when advanced block is hidden. By default "Advanced"
+    </st:attribute>
+    <st:attribute name="titleHide" use="optional">
+      Caption of the button when advanced block is visible. By default "Hide Advanced"
     </st:attribute>
     <st:attribute name="style" use="optional">
       Additional styles
@@ -43,12 +46,12 @@ THE SOFTWARE.
 	<tr><td/><td/>
 	  <td>
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
-	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advancedButton" />
+	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advancedButton btn btn-info" data-textToggled="${attrs.titleHide?:'%Hide Advanced'}" />
 	    </div>
-	    <table class="advancedBody"><tbody>
-	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
-	      <d:invokeBody/>
-	    </tbody></table>
 	  </td>
 	</tr>
+	<tr class="advancedBody-start rowvg-start"><td/><td/><td/></tr>
+	<!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
+	<d:invokeBody/>
+	<tr class="advancedBody-end rowvg-end"><td/><td/><td/></tr>
 </j:jelly>

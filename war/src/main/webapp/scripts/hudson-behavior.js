@@ -646,31 +646,6 @@ var jenkinsRules = {
         });
     },
 
-    "INPUT.advancedButton" : function(e) {
-        makeButton(e,function(e) {
-            var link = e.target;
-            while(!Element.hasClassName(link,"advancedLink"))
-                link = link.parentNode;
-            link.style.display = "none"; // hide the button
-
-            var container = $(link).next().down(); // TABLE -> TBODY
-
-            var tr = link;
-            while (tr.tagName != "TR")
-                tr = tr.parentNode;
-
-            // move the contents of the advanced portion into the main table
-            var nameRef = tr.getAttribute("nameref");
-            while (container.lastChild != null) {
-                var row = container.lastChild;
-                if(nameRef!=null && row.getAttribute("nameref")==null)
-                    row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
-                tr.parentNode.insertBefore(row, $(tr).next() || null);
-            }
-        });
-        e = null; // avoid memory leak
-    },
-
     "INPUT.expandButton" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
@@ -1096,7 +1071,7 @@ var jenkinsRules = {
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisisble : function(b) {
+            makeOuterVisible : function(b) {
                 this.outerVisible = b;
                 this.updateVisibility();
             },
@@ -1107,9 +1082,12 @@ var jenkinsRules = {
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisisble : function(b) {
+            makeInnerVisible : function(b) {
                 this.innerVisible = b;
                 this.updateVisibility();
+            },
+            toggleInnerVisible : function() {
+                this.makeInnerVisible(!this.innerVisible);
             },
 
             /**
@@ -1119,7 +1097,7 @@ var jenkinsRules = {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
                 for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
                     } else {
                         e.style.display = display;
@@ -1165,6 +1143,23 @@ var jenkinsRules = {
             start.id = ref = "rowSetStart"+(iota++);
 
         applyNameRef(start,end,ref);
+    },
+
+    "INPUT.advancedButton" : function(e) {
+        var findAdvancedBodyStart = function(el) {
+            var tr = findAncestor(el, "TR");
+            return $(tr).next();
+        };
+        Event.observe(e, "click", function(ev) {
+            var button = ev.target;
+            var start = findAdvancedBodyStart(button);
+            start.rowVisibilityGroup.toggleInnerVisible(!start.rowVisibilityGroup.innerVisible);
+            var text = button.value;
+            button.value = button.getAttribute("data-textToggled");
+            button.setAttribute("data-textToggled",text);
+        });
+        findAdvancedBodyStart(e).rowVisibilityGroup.makeInnerVisible(false); // advanced block should be hidden at first
+        e = null; // avoid memory leak
     },
 
     "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
@@ -1259,7 +1254,7 @@ var jenkinsRules = {
                 var f = $(subForms[i]);
 
                 if (show)   renderOnDemand(f.next());
-                f.rowVisibilityGroup.makeInnerVisisble(show);
+                f.rowVisibilityGroup.makeInnerVisible(show);
 
                 // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
                 // so far dropdownList doesn't create such a situation.
@@ -1566,14 +1561,16 @@ function updateOptionalBlock(c,scroll) {
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
-    vg.rowVisibilityGroup.makeInnerVisisble(checked);
+    vg.rowVisibilityGroup.makeInnerVisible(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
 
         var r = D.getRegion(s);
-        r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
-        scrollIntoView(r);
+        if(r) { // if element is display:none, Dom.getRegion returns false
+            r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
+            scrollIntoView(r);
+        }
     }
 
     if (c.name == 'hudson-tools-InstallSourceProperty') {
