@@ -90,6 +90,9 @@ THE SOFTWARE.
     ${h.checkPermission(it,permission)}
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <x:comment escapeText="false" trim="true"><![CDATA[[if lt IE 9]>
+    <script src="${resURL}/scripts/html5shiv.js" type="text/javascript"></script>
+    <![endif]]]></x:comment>
     <link rel="stylesheet" href="${resURL}/css/jenkins.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
@@ -99,9 +102,6 @@ THE SOFTWARE.
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
-    <!--[if lt IE 9]>
-    <script src="${resURL}/scripts/html5shiv.js" type="text/javascript"/>
-    <![endif]-->
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
