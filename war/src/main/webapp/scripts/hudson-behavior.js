@@ -903,10 +903,20 @@ var jenkinsRules = {
         e = null; // avoid memory leak
     },
 
-    "INPUT.repeatable-delete" : function(e) {
-        e = makeButton(e,function(e) {
-            repeatableSupport.onDelete(e.target);
-        });
+    ".repeatable-delete" : function(e) {
+        var delHandler = function() {
+            repeatableSupport.onDelete(this);
+            return false;
+        };
+
+        if(e.tagName.toLowerCase() == "a") {
+            // In Chrome, Event.observe does not return false, and clicking the button makes the browser scroll to the top
+            e.onclick = delHandler;
+        } else {
+            // Backward compatibility. Some plugins uses <input type="button" class="repeatable-delete"/> instead of <f:repeatableDeleteButton/>
+            e = makeButton(e, delHandler);
+            Element.addClassName(e, "btn-warning");
+        }
         Event.observe(e, "mouseover", function(ev) {
             repeatableSupport.onBeginPreviewDelete(ev.target);
         });

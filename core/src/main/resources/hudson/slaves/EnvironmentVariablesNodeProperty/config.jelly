@@ -26,17 +26,15 @@ THE SOFTWARE.
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="${%List of key-value pairs}" help="${descriptor.getHelpPage()}">
     <f:repeatable var="env" items="${instance.envVars.entrySet()}">
+      <div style="float:right;">
+        <f:repeatableDeleteButton />
+      </div>
       <table width="100%">
         <f:entry title="${%name}">
           <f:textbox name="env.key" value="${env.key}" />
         </f:entry>
         <f:entry title="${%value}">
           <f:textbox name="env.value" value="${env.value}" />
-        </f:entry>
-      	<f:entry title="">
-          <div align="right">
-            <f:repeatableDeleteButton />
-          </div>
         </f:entry>
       </table>
     </f:repeatable>

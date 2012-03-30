@@ -43,13 +43,13 @@ THE SOFTWARE.
         <f:repeatable var="instance" items="${it.targets}" name="targets">
           <table width="100%">
             <tr>
-              <td>
+              <td class="no-wrap">
                 ${%Logger}
               </td>
               <td width="100%">
                 <f:textbox field="name"/>
               </td>
-              <td style="white-space:nowrap;">
+              <td class="no-wrap">
                 ${%Log level}
               </td>
               <td>
