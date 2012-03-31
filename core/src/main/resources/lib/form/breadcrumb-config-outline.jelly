@@ -29,13 +29,10 @@ THE SOFTWARE.
   </st:documentation>
 
   <l:breadcrumb title="${%configuration}" id="inpage-nav" />
-  <style>
-    #breadcrumbs #inpage-nav A { background: none; }
-  </style>
   <!--
     TODO: use human-readable ID
   -->
-  <script>
+  <script type="text/javascript">
     Event.observe(window,"load",function(){
       /** @type section.SectionNode */
       var outline = section.buildTree();

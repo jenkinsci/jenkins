@@ -393,7 +393,7 @@ div.behavior-loading {
     .opacity(50);
 }
 
-LABEL.attach-previous {
+label.attach-previous {
     margin-left: 0.5em;
 }
 
@@ -430,7 +430,6 @@ LABEL.attach-previous {
 .top-sticker.noedge > .top-sticker-inner {
     padding:0;
 }
-
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .jenkins-alert-block(@image) {
@@ -646,22 +645,20 @@ table.parameters > tbody:hover {
   margin-right: 1em;
 }
 
-TABLE.fileList {
+table.fileList {
   margin-left: 2em;
   padding: 0;
 }
 
-TABLE.fileList TD {
+table.fileList td {
   padding: 0;
 }
 
-TABLE.fileList TD.fileSize {
+table.fileList td.fileSize {
   padding-left: 2em;
   text-align: right;
   color: @grayLight;
 }
-
-
 
 /* ========================= test result ========================= */
 .result-passed {
@@ -692,8 +689,6 @@ TABLE.fileList TD.fileSize {
   font-weight: bold;
 }
 
-
-
 /* ========================= sortable table ========================= */
 table.sortable a.sortheader {
   text-decoration: none;
@@ -705,10 +700,8 @@ table.sortable span.sortarrow {
   text-decoration: none;
 }
 
-
-
-
 /* ========================= fingerprint ========================= */
+
 .md5sum {
   text-align: right;
 }
@@ -718,15 +711,13 @@ table.sortable span.sortarrow {
   vertical-align: middle;
 }
 
-TABLE.fingerprint-in-build TD {
+table.fingerprint-in-build td {
   padding-left: 1em;
   padding-right: 1em;
 }
 
-
-
-
 /* ========================= plugin manager ========================= */
+
 #plugins {
   margin-top: 0;
   border-top: none;
@@ -785,7 +776,7 @@ TABLE.fingerprint-in-build TD {
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
-DIV.to-be-removed { display: none; }
+div.to-be-removed { display: none; }
 
 /* ========================= Other form related CSS ========================= */
 
@@ -796,7 +787,7 @@ DIV.to-be-removed { display: none; }
 	color: inherit;
 }
 
-DIV.yahooTree td {
+div.yahooTree td {
   vertical-align: middle;
 }
 
@@ -869,10 +860,11 @@ DIV.yahooTree td {
 
 /* ========================= resizable text area ========================= */
 
-TEXTAREA {
+textarea {
     margin-bottom: 0;
 }
-DIV.textarea-handle {
+
+div.textarea-handle {
     height: 5px;
     font-size: 0;
     background: @tableBackgroundAccent url(../images/textarea-handle.gif) no-repeat 50% 1px;
@@ -880,7 +872,7 @@ DIV.textarea-handle {
     border-top: none;
     cursor: s-resize;
 }
-TEXTAREA.rich-editor {
+textarea.rich-editor {
   visibility: hidden;
 }
 
@@ -1005,28 +997,45 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 /* ========================= matrix configuration table ================== */
-table#configuration-matrix {
+#configuration-matrix {
 	border: 1px @tableBorder solid;
 	border-collapse: collapse;
 }
+
 tr.matrix-row {
 	background: @tableBackgroundAccent;
 	font-weight: bold;
 }
+
 td.matrix-header {
 	border: 1px @tableBorder solid;
 	padding: 3px;
 }
+
 td#matrix-title {
 	padding: 3px;
 }
+
 td.matrix-leftcolumn {
 	border: 1px @tableBorder solid;
 	font-weight: bold;
 	background: @tableBackgroundAccent;
 	padding: 3px;
 }
+
 td.matrix-cell {
 	border: 1px @tableBorder solid;
 	text-align: center;
+}
+
+/* == Breadcrumb inpage navigation ========================================= */
+
+#breadcrumbs #inpage-nav a {
+    background: none;
+}
+
+/* == Computer table  ====================================================== */
+
+#computers td {
+    padding-right: 1em;
 }

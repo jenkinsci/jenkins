@@ -236,7 +236,7 @@ THE SOFTWARE.
                     <!-- add YUI logger if debugging YUI -->
                     <j:if test="${h.yuiSuffix=='debug'}">
                     <div id="yui-logreader" />
-                    <script>
+                    <script type="text/javascript">
                         Behaviour.addLoadEvent(function(){
                         var logReader = new YAHOO.widget.LogReader("yui-logreader");
                         logReader.collapse();
