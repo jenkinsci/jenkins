@@ -61,7 +61,7 @@ THE SOFTWARE.
               box.innerHTML = '<img src="${imagesURL}/spinner.gif" alt=""/>';
 
               // then actually fetch the HTML
-              new Ajax.Request("${it.baseUrl}/buildHistory/all/",{
+              new Ajax.Request("${it.baseUrl}/buildHistory/all",{
                 method: "get",
                 onComplete: function(rsp,_) {
                   <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
