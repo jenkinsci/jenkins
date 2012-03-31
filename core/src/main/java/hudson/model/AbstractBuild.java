@@ -87,6 +87,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -881,6 +882,25 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public Calendar due() {
         return getTimestamp();
+    }
+    
+     /**
+     * Add all transient action for this build
+     * 
+     */
+    protected List<Action> createTransientActions() {
+        Vector<Action> ta = new Vector<Action>();
+        for (TransientBuildActionFactory tpaf : TransientBuildActionFactory.all())
+            ta.addAll(Util.fixNull(tpaf.createFor(this)));
+        return ta;
+    }    
+
+    @Override
+    public synchronized List<Action> getActions() {
+        List<Action> actions = new Vector<Action>(super.getActions());
+        //add transient actions too
+        actions.addAll(createTransientActions());       
+        return actions;
     }
 
     /**
