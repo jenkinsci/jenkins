@@ -54,7 +54,8 @@ public @interface WithPlugin {
      *
      * For now, this has to be one of the plugins statically available in resources
      * "/plugins/NAME". TODO: support retrieval through Maven repository.
-     * Proposal for Maven solution: load the HPI file from $M2_REPO or $USER_HOME/.m2 by naming e.g. org.jvnet.hudson.plugins:monitoring:hpi:1.34.0
+     * TODO: load the HPI file from $M2_REPO or $USER_HOME/.m2 by naming e.g. org.jvnet.hudson.plugins:monitoring:hpi:1.34.0
+     * (used in conjunction with the depepdency in POM to ensure it's available)
      */
     String value();
 
