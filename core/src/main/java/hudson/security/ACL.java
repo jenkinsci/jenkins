@@ -93,9 +93,7 @@ public abstract class ACL {
      * @return true if the permission is granted by any of the ACLPermissionOverride extensions.
      */
     private Boolean hasOverride(Authentication a, Permission p) {
-        List<ACLPermissionOverride> overrideList = Jenkins.getInstance().getExtensionList(ACLPermissionOverride.class);
-
-        for (ACLPermissionOverride s : overrideList) {
+        for (AuthorizationStrategyOverride s : AuthorizationStrategyOverride.all()) {
             Boolean b = s.checkPermission(a, p);
             if (b!=null)
                 return b;

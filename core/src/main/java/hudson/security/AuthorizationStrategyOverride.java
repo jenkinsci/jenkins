@@ -23,9 +23,13 @@
  */
 package hudson.security;
 
+import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import hudson.ExtensionPoint;
+
+import java.util.List;
 
 /**
  * An ACLPermissionOverride provides a permission check that is applied within the base {@link ACL} class
@@ -41,7 +45,7 @@ import hudson.ExtensionPoint;
  * @author Michael O'Cleirigh
  *
  */
-public abstract class ACLPermissionOverride implements ExtensionPoint {
+public abstract class AuthorizationStrategyOverride implements ExtensionPoint {
 
         /**
          * Checks if the given principle has the given permission.
@@ -53,4 +57,7 @@ public abstract class ACLPermissionOverride implements ExtensionPoint {
          */
         public abstract Boolean checkPermission (Authentication a, Permission p);
 
+    public static ExtensionList<AuthorizationStrategyOverride> all() {
+        return Jenkins.getInstance().getExtensionList(AuthorizationStrategyOverride.class);
+    }
 }
