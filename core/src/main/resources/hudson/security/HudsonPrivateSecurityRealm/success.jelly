@@ -29,7 +29,7 @@ THE SOFTWARE.
       <st:include page="sidepanel.jelly" it="${app}" />
     </l:hasPermission>
     <l:main-panel>
-      <h1>${%Success}</h1>
+      <l:pageHeader title="${%Success}" />
       <div>
         ${%description}
       </div>
