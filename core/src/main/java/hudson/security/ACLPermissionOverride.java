@@ -46,9 +46,11 @@ public abstract class ACLPermissionOverride implements ExtensionPoint {
         /**
          * Checks if the given principle has the given permission.
          *
-         * <p>
-         * @return true only if you want to override the default ACL permission check.
+         * @return
+         *      if this method returns non-null, that becomes the final answer regardless of what
+         *      {@link AuthorizationStrategy} actually says. If the return value is null,
+         *      that indicates no override.
          */
-        public abstract boolean checkPermission (Authentication a, Permission p);
+        public abstract Boolean checkPermission (Authentication a, Permission p);
 
 }

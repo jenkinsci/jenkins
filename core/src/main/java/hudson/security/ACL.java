@@ -31,6 +31,8 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
 import hudson.model.Executor;
 
+import java.util.List;
+
 /**
  * Gate-keeper that controls access to Hudson's model objects.
  *
@@ -50,8 +52,11 @@ public abstract class ACL {
     public final void checkPermission(Permission p) {
         Authentication a = Jenkins.getAuthentication();
 
-        if(hasOverride(a, p))
-            return;
+        Boolean o = hasOverride(a, p);
+        if(o!=null) {
+            if (o)      return;
+            throw new AccessDeniedException2(a,p);
+        }
 
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
@@ -66,8 +71,9 @@ public abstract class ACL {
     public final boolean hasPermission(Permission p) {
         Authentication a = Jenkins.getAuthentication();
 
-        if (hasOverride(a,p))
-            return true;
+        Boolean o = hasOverride(a, p);
+        if (o!=null)
+            return o;
 
         return hasPermission(a,p);
     }
@@ -84,17 +90,18 @@ public abstract class ACL {
     /**
      * Check with the ACLPermissionOverride extension point if the given principal has the given permission.
      *
-     * @return true if the permision is granted by any of the ACLPermissionOverride extensions.
+     * @return true if the permission is granted by any of the ACLPermissionOverride extensions.
      */
-    private boolean hasOverride(Authentication a, Permission p) {
-        List<ACLPermissionOverride>overrideList = Jenkins.getInstance().getExtensionList(ACLPermissionOverride.class);
+    private Boolean hasOverride(Authentication a, Permission p) {
+        List<ACLPermissionOverride> overrideList = Jenkins.getInstance().getExtensionList(ACLPermissionOverride.class);
 
         for (ACLPermissionOverride s : overrideList) {
-            if (s.checkPermission(a, p))
-                return true;
+            Boolean b = s.checkPermission(a, p);
+            if (b!=null)
+                return b;
         }
 
-        return false;
+        return null;
     }
 
 
