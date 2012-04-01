@@ -368,33 +368,10 @@ th.pane {
   background-position: right;
 }
 
-#login-field {
-    vertical-align: middle;
-    padding-right: 1em;
-    width:1px;
-}
-
-#login-field SPAN {
-  white-space:nowrap;
-  color: white;
-}
-
-#login-field A {
-    /*
-      link inside login field should be always white.
-      If I set this to inherit, it won't work in IE7
-     */
-    color: white;
-}
-
 div.behavior-loading {
     position: absolute; width: 80%; height:100%;
     background-color: @grayLighter; text-align: center; font-size: 300%;
     .opacity(50);
-}
-
-label.attach-previous {
-    margin-left: 0.5em;
 }
 
 .bottom-sticker, #bottom-sticker {
@@ -1038,4 +1015,10 @@ td.matrix-cell {
 
 #computers td {
     padding-right: 1em;
+}
+
+/* == Login Form  ========================================================== */
+
+#login .form-actions span {
+    padding-left: 20px;
 }

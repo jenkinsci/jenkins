@@ -38,15 +38,10 @@ THE SOFTWARE.
           <st:include page="sidepanel.jelly" />
         </l:hasPermission>
         <l:main-panel>
-          <div style="margin: 2em; text-align:center; color:red; font-weight:bold">
-            ${%Invalid login information. Please try again.}
-            <br/>       
+          <div class="alert alert-error">
+            <h4 class="alert-heading">${%Invalid login information. Please try again.}</h4>
+            <p>${%If you are a system administrator and suspect this to be a configuration problem, see the server console output for more details.}</p>
             <a href="login?from=${request.session.getAttribute('from')}">${%Try again}</a>
-          </div>
-          <div align="middle">
-            <div style="margin-top:2em; color:gray; width:20em">
-              ${%If you are a system administrator and suspect this to be a configuration problem, see the server console output for more details.}
-            </div>
           </div>
         </l:main-panel>
       </l:layout>

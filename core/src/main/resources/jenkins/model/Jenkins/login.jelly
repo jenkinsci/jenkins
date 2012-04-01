@@ -29,29 +29,42 @@ THE SOFTWARE.
       <st:include page="sidepanel.jelly" />
     </l:hasPermission>
     <l:main-panel>
-      <div style="margin: 2em;">
         <!-- login form -->
-        <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" style="text-size:smaller">
-          <table>
-            <tr>
-              <td>${%User}:</td>
-              <td><input type="text" name="j_username" id="j_username" /></td>
-            </tr>
-            <tr>
-              <td>${%Password}:</td>
-              <td><input type="password" name="j_password" /></td>
-            </tr>
+        <form id="login" name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" class="form-horizontal">
+          <fieldset>
+              <legend>${%Login}</legend>
+              <div class="control-group">
+                <label class="control-label" for="j_username">${%User}</label>
+                <div class="controls">
+                  <input type="text" name="j_username" id="j_username" />
+                </div>
+              </div>
+              <div class="control-group">
+                  <label class="control-label" for="j_password">${%Password}</label>
+                  <div class="controls">
+                      <input type="password" name="j_password" id="j_password" />
+                  </div>
+              </div>
             <j:if test="${app.security.name()=='SECURED'}">
               <!-- remember me service only available for Acegi -->
-              <tr>
-                <td align="right"><input id="remember_me" type="checkbox" name="remember_me" /></td>
-                <td><label for="remember_me">${%Remember me on this computer}</label></td>
-              </tr>
+                <div class="control-group">
+                  <div class="controls">
+                    <label class="checkbox">
+                      <input id="remember_me" type="checkbox" name="remember_me" />
+                      ${%Remember me on this computer}
+                    </label>
+                  </div>
+                </div>
             </j:if>
-          </table>
-          <input type="hidden" name="from" value="${request.getParameter('from')}" />
-          <f:submit value="${%login}" clazz="btn-primary"/>
-          <script>
+            <div class="form-actions">
+              <input type="hidden" name="from" value="${request.getParameter('from')}" />
+              <f:submit value="${%login}" clazz="btn-primary"/>
+              <j:if test="${it.securityRealm.allowsSignup()}">
+                <span>${%signUp}</span>
+              </j:if>
+            </div>
+          </fieldset>
+          <script type="text/javascript">
             $('j_username').focus();
           </script>
         </form>
@@ -61,13 +74,6 @@ THE SOFTWARE.
             <st:include page="loginFragment.jelly" it="${fls}"/>
           </div>
         </j:forEach>
-
-        <j:if test="${it.securityRealm.allowsSignup()}">
-          <div style="margin-top:2em">
-            ${%signUp}
-          </div>
-        </j:if>
-      </div>
     </l:main-panel>
-  </l:layout>
+</l:layout>
 </j:jelly>
