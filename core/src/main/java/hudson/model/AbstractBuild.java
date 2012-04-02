@@ -88,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -897,7 +898,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override
     public List<Action> getActions() {
-        List<Action> actions = super.getActions();
+        List<Action> actions = new CopyOnWriteArrayList<Action>(super.getActions());
         actions.addAll(createTransientActions());
         return actions;
     }
