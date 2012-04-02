@@ -896,13 +896,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return ta;
     }    
 
-    @Override
+    // commented out until fixed problem with adding actions, see discussion under https://github.com/jenkinsci/jenkins/pull/421
+/*    @Override
     public List<Action> getActions() {
         List<Action> actions = new CopyOnWriteArrayList<Action>(super.getActions());
         actions.addAll(createTransientActions());
         return actions;
     }
-    
+*/    
     public List<Action> getPersistentActions(){
         return super.getActions();
     }
