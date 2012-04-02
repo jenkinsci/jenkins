@@ -56,6 +56,9 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Ant's default exclusion was preventing plugins from archiving some files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13165">issue 13165</a>)
+  <li class=bug>
     Fixed NPE in PAM authentication if the user is in a group that doesn't exist anymore.
   <li class=bug>
     End up more gracefully if there's some problem when searching for user partipication in the build
