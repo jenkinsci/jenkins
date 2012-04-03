@@ -586,36 +586,40 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             recordMojoFailed(event);
         }
 
-        /**
-         * @see org.apache.maven.execution.ExecutionListener#forkedProjectStarted(org.apache.maven.execution.ExecutionEvent)
+        /*
+            Forked life cycle handling
+            --------------------------
+
+            As discussed in MavenBuildProxy2, Jenkins has a simplistic view of Maven build sequence,
+            and in particular it doesn't recognize the forked life cycle as a first-class citizen.
+            So to map the reality with the Jenkins' simplified model, we don't report forked project as
+            a separate module start/end.
+
+            Doing so would require that we remember the nesting, and when the forking is over, we need to
+            tell MavenBuildProxy2 of the right module that its build has resumed.
          */
+
         public void forkedProjectStarted( ExecutionEvent event ) {
             LOGGER.fine( "forkedProjectStarted " + event.getProject().getGroupId() + ":"
                                                         + event.getProject().getArtifactId() + event.getProject().getVersion() );
-            recordProjectStarted(event);
+//            recordProjectStarted(event);
             this.eventLogger.forkedProjectStarted( event );
         }
 
-        /**
-         * @see org.apache.maven.execution.ExecutionListener#forkedProjectSucceeded(org.apache.maven.execution.ExecutionEvent)
-         */
         public void forkedProjectSucceeded( ExecutionEvent event ) {
             LOGGER.fine( "forkedProjectSucceeded "
                                                         + event.getProject().getGroupId() + ":"
                                                         + event.getProject().getArtifactId()
                                                         + event.getProject().getVersion());
-            recordProjectSucceeded(event);
+//            recordProjectSucceeded(event);
             this.eventLogger.forkedProjectSucceeded( event );
         }
 
-        /**
-         * @see org.apache.maven.execution.ExecutionListener#forkedProjectFailed(org.apache.maven.execution.ExecutionEvent)
-         */
         public void forkedProjectFailed( ExecutionEvent event ) {
             LOGGER.fine("forkedProjectFailed " + event.getProject().getGroupId()
                                                        + ":"  + event.getProject().getArtifactId()
                                                        + ":" + event.getProject().getVersion());
-            recordProjectFailed(event);
+//            recordProjectFailed(event);
         }
     }
 
