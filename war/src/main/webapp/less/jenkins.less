@@ -46,28 +46,35 @@
 @import "bootstrap/bootstrap.less";
 
 // Override bootstrap
-
 body {
     /** For the fluid twitter bootstrap layout **/
     padding-top: 60px;
     padding-bottom: 40px;
 }
+
 a {
-  text-decoration: underline;
+    text-decoration: underline;
 }
+
 a:hover {
-  color: @linkColorHover;
-  text-decoration: none;
+    color: @linkColorHover;
+    text-decoration: none;
 }
+
 a:visited {
-  color: @linkColorHover;
+    color: @linkColorHover;
 }
+
+.navbar, .container-fluid {
+    min-width: 768px;
+}
+
 .navbar a, a.btn, .btn a {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 .navbar-inner {
-  border-bottom: 4px @jenkinsRed solid;
+    border-bottom: 4px @jenkinsRed solid;
 }
 
 .navbar .brand {
@@ -87,8 +94,9 @@ a:visited {
 .jenkinsHeading() {
     color: @jenkinsRed;
 }
+
 h1, h2, h3, h4, h5, h6 {
-  .jenkinsHeading();
+    .jenkinsHeading();
 }
 
 // Import Jenkins rules
