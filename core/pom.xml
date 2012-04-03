@@ -546,13 +546,6 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <!-- with this, stapler can load parameter names from the debug info -->
-      <groupId>asm</groupId>
-      <artifactId>asm-commons</artifactId>
-      <version>2.2.3</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
       <version>1.0</version>
