@@ -215,8 +215,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         if (mvn == null)
             throw new hudson.AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
         mvn = mvn.forEnvironment(envs).forNode(Computer.currentComputer().getNode(), log);
-        envs.put("M2_HOME", mvn.getHome());
-        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+        mvn.buildEnvVars(envs);
         return envs;
     }
 

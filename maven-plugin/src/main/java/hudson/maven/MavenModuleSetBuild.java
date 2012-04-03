@@ -169,9 +169,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             Node node = computer.getNode();
             if (node != null) {
                 mvn = mvn.forNode(node, log);
-                
-                envs.put("M2_HOME", mvn.getHome());
-                envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+                mvn.buildEnvVars(envs);
             }
         }
         

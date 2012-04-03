@@ -126,6 +126,18 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         return home;
     }
 
+    /**
+     * Expose any environment variables that this tool installation wants the build to see.
+     *
+     * <p>
+     * To add entry to PATH, do {@code envVars.put("PATH+XYZ",path)} where 'XYZ' is something unique.
+     * Variable names of the form 'A+B' is interpreted as adding the value to the existing PATH.
+     *
+     * @since 1.460
+     */
+    public void buildEnvVars(EnvVars env) {
+    }
+
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
         assert properties!=null;
         return properties;
