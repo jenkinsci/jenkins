@@ -93,7 +93,15 @@ THE SOFTWARE.
     <x:comment escapeText="false" trim="true"><![CDATA[[if lt IE 9]>
     <script src="${resURL}/scripts/html5shiv.js" type="text/javascript"></script>
     <![endif]]]></x:comment>
-    <link rel="stylesheet" href="${resURL}/css/jenkins.css" type="text/css" />
+    <j:choose>
+      <j:when test="${h.inJenkinsDevRunMode()}">
+        <link rel="stylesheet/less" type="text/css" href="${resURL}/less/jenkins.less"/>
+        <script src="${resURL}/scripts/less.js" type="text/javascript"/>
+      </j:when>
+      <j:otherwise>
+        <link rel="stylesheet" href="${resURL}/css/jenkins.css" type="text/css" />
+      </j:otherwise>
+    </j:choose>
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
     </j:if>
@@ -146,11 +154,6 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
-
-    <j:if test="${f.inJenkinsDevRunMode()}">
-      <link rel="stylesheet/less" type="text/css" href="${resURL}/less/jenkins.less"/>
-      <script src="${resURL}/scripts/less.js" type="text/javascript"/>
-    </j:if>
 
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
