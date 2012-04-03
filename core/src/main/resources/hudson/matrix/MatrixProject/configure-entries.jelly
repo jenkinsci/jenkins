@@ -33,14 +33,14 @@ THE SOFTWARE.
 
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
+      <f:entry title="${%Display Name}" field="displayNameOrNull">
+        <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
+      </f:entry>
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
       <p:config-blockWhenDownstreamBuilding />
       <p:config-customWorkspace />
-      <f:entry title="${%Display Name}" field="displayNameOrNull">
-         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
-      </f:entry>
     </f:advanced>
   </f:section>
 
