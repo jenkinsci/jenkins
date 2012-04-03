@@ -28,10 +28,10 @@ THE SOFTWARE.
     Delete button for the &lt;repeatable> tag.
 
     <st:attribute name="value">
-      Alt text of the button. Defaults to 'Delete'.
+      Tooltip text of the button. Defaults to 'Delete'.
     </st:attribute>
   </st:documentation>
-  <a class="repeatable-delete" href="#">
-    <img src="${imagesURL}/16x16/edit-delete.png" width="16" height="16" alt="${attrs.value ?: '%Delete'}"/>
+  <a class="repeatable-delete" href="#" tooltip="${attrs.value ?: '%Delete'}">
+    <img src="${imagesURL}/16x16/user-trash.png" width="16" height="16" alt="${attrs.value ?: '%Delete'}"/>
   </a>
 </j:jelly>
