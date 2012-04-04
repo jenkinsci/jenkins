@@ -277,6 +277,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * but if you are adding {@link Descriptor}s programmatically for the same type, you can change
      * this to disambiguate them.
      *
+     * <p>
+     * To look up {@link Descriptor} from ID, use {@link Jenkins#getDescriptor(String)}.
+     *
      * @return
      *      Stick to valid Java identifier character, plus '.', which had to be allowed for historical reasons.
      * 
