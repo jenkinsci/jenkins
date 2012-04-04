@@ -1923,7 +1923,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
+        public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
         	if(Util.fixEmptyAndTrim(customWorkspace)==null)
         		return FormValidation.error("Custom workspace is empty");
         	else
