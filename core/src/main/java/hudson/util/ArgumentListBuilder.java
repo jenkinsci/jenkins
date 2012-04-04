@@ -364,5 +364,25 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         add(string, true);
     }
 
+    /**
+     * Debug/error message friendly output.
+     */
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        for (int i=0; i<args.size(); i++) {
+            String arg = args.get(i);
+            if (mask.get(i))
+                arg = "******";
+
+            if(buf.length()>0)  buf.append(' ');
+
+            if(arg.indexOf(' ')>=0 || arg.length()==0)
+                buf.append('"').append(arg).append('"');
+            else
+                buf.append(arg);
+        }
+        return buf.toString();
+    }
+
     private static final long serialVersionUID = 1L;
 }
