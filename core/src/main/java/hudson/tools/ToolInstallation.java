@@ -32,6 +32,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.*;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
+import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
 
 import java.io.Serializable;
@@ -141,6 +142,41 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
         assert properties!=null;
         return properties;
+    }
+
+    /**
+     * Performs a necessary variable/environment/context expansion.
+     *
+     * @param node
+     *      Node that this tool is used in.
+     * @param envs
+     *      Set of environment variables to expand any references.
+     * @param listener
+     *      Any lengthy operation (such as auto-installation) will report its progress here.
+     * @return
+     *      {@link ToolInstallation} object that is fully specialized.
+     * @since 1.460
+     */
+    public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+        ToolInstallation t = this;
+        if (t instanceof NodeSpecific) {
+            NodeSpecific n = (NodeSpecific) t;
+            t = (ToolInstallation)n.forNode(node,listener);
+        }
+        if (t instanceof EnvironmentSpecific) {
+            EnvironmentSpecific e = (EnvironmentSpecific) t;
+            t = (ToolInstallation)e.forEnvironment(envs);
+        }
+        return t;
+    }
+
+    /**
+     * Convenient version of {@link #translate(Node, EnvVars, TaskListener)} that just takes a build object in progress.
+     * @since 1.460
+     */
+    public ToolInstallation translate(AbstractBuild<?,?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
+        assert buildInProgress.isBuilding();
+        return translate(buildInProgress.getBuiltOn(),buildInProgress.getEnvironment(listener),listener);
     }
 
     /**
