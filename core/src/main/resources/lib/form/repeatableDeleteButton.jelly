@@ -32,6 +32,6 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <a class="repeatable-delete" href="#" tooltip="${attrs.value ?: '%Delete'}">
-    <img src="${imagesURL}/16x16/user-trash.png" width="16" height="16" alt="${attrs.value ?: '%Delete'}"/>
+    <img src="${imagesURL}/16x16/stop.png" width="16" height="16" alt="${attrs.value ?: '%Delete'}"/>
   </a>
 </j:jelly>
