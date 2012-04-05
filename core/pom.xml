@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.185</stapler.version>
+    <stapler.version>1.186</stapler.version>
   </properties>
 
   <dependencies>
@@ -148,6 +148,11 @@ THE SOFTWARE.
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-zeroclipboard</artifactId>
+      <version>1.0.7-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
