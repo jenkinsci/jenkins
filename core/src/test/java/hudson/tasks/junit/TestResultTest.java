@@ -112,13 +112,33 @@ public class TestResultTest extends TestCase {
         testResult.parse(getDataFile("JENKINS-13214/29734.xml"));
         testResult.tally();
         
-        // Ideally the suites should be merged as they are logically the same, but that doesn't work, yet
-        // See also JENKINS-12457
-//        Collection<SuiteResult> suites = testResult.getSuites();
-//        assertEquals("Wrong number of test suites", 1, suites.size());
-        
-
+        assertEquals("Wrong number of test suites", 1, testResult.getSuites().size());
         assertEquals("Wrong number of test cases", 3, testResult.getTotalCount());
+    }
+    
+    @Bug(12457)
+    public void testTestSuiteDistributedOverMultipleFilesIsCountedAsOne() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_a1.xml"));
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_a2.xml"));
+        testResult.tally();
+        
+        assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
+        assertEquals("Wrong number of test cases", 2, testResult.getTotalCount());
+    }
+    
+    /**
+     * A common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml.
+     * See http://jenkins.361315.n4.nabble.com/Problem-with-duplicate-build-execution-td371616.html for discussion.
+     */
+    public void testDuplicatedTestSuiteIsNotCounted() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_b.xml"));
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_b_duplicate.xml"));
+        testResult.tally();
+        
+        assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
+        assertEquals("Wrong number of test cases", 1, testResult.getTotalCount());
     }
 
     private static final XStream XSTREAM = new XStream2();

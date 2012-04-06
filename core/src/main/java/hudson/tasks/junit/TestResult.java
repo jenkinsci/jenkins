@@ -186,18 +186,36 @@ public final class TestResult extends MetaTabulatedResult {
 
     private void add(SuiteResult sr) {
         for (SuiteResult s : suites) {
-            // a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
-            // see http://www.nabble.com/Problem-with-duplicate-build-execution-td17549182.html for discussion
-            if(s.getName().equals(sr.getName()) && eq(s.getTimestamp(),sr.getTimestamp()) 
-                    && eq(s.getId(),sr.getId()))
-                return; // duplicate
+            // JENKINS-12457: If a testsuite is distributed over multiple files, merge it into a single SuiteResult:
+            if(s.getName().equals(sr.getName())  && nullSafeEq(s.getId(),sr.getId())) {
+            
+                // However, a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml.
+                // In that case consider the result file as a duplicate and discard it.
+                // see http://jenkins.361315.n4.nabble.com/Problem-with-duplicate-build-execution-td371616.html for discussion.
+                if(strictEq(s.getTimestamp(),sr.getTimestamp())) {
+                    return;
+                }
+            
+                for (CaseResult cr: sr.getCases()) {
+                    s.addCase(cr);
+                    cr.replaceParent(s);
+                }
+                return;
+            }
         }
         suites.add(sr);
         duration += sr.getDuration();
     }
-
-    private boolean eq(Object lhs, Object rhs) {
+    
+    private boolean strictEq(Object lhs, Object rhs) {
         return lhs != null && rhs != null && lhs.equals(rhs);
+    }
+
+    private boolean nullSafeEq(Object lhs, Object rhs) {
+        if (lhs == null) {
+            return rhs == null;
+        }
+        return lhs.equals(rhs);
     }
 
     /**
