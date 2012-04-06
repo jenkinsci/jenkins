@@ -23,11 +23,8 @@
  */
 package hudson.model;
 
-import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import java.io.IOException;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**

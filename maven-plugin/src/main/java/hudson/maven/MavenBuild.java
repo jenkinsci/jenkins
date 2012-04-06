@@ -215,8 +215,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         if (mvn == null)
             throw new hudson.AbortException(Messages.MavenModuleSetBuild_NoMavenConfigured());
         mvn = mvn.forEnvironment(envs).forNode(Computer.currentComputer().getNode(), log);
-        envs.put("M2_HOME", mvn.getHome());
-        envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
+        mvn.buildEnvVars(envs);
         return envs;
     }
 
@@ -517,11 +516,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
          * Before we touch I/O streams, we need to make sure all the remote I/O operations are locally completed,
          * or else we end up switching the log traffic at unaligned moments.
          */
-        private void sync() {
+        private void sync() throws IOException {
             try {
                 Channel ch = Channel.current();
                 if (ch!=null)
-                    ch.syncLocalIO();
+                    listener.synchronizeOnMark(ch);
             } catch (InterruptedException e) {
                 // our signature doesn't allow us to throw InterruptedException, so we process it later
                 Thread.currentThread().interrupt();

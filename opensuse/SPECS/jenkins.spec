@@ -69,6 +69,7 @@ rm -rf "%{buildroot}"
 %__install -d "%{buildroot}%{workdir}/plugins"
 
 %__install -d "%{buildroot}/var/log/jenkins"
+%__install -d "%{buildroot}/var/cache/jenkins"
 
 %__install -D -m0755 "%{SOURCE1}" "%{buildroot}/etc/init.d/%{name}"
 %__sed -i 's,@@WAR@@,%{_prefix}/%{name}.war,g' "%{buildroot}/etc/init.d/%{name}"
@@ -128,6 +129,7 @@ exit 0
 %{_prefix}/%{name}.war
 %attr(0755,jenkins,jenkins) %dir %{workdir}
 %attr(0750,jenkins,jenkins) /var/log/jenkins
+%attr(0750,jenkins,jenkins) /var/cache/jenkins
 %config(noreplace) /etc/logrotate.d/%{name}
 %config /etc/init.d/%{name}
 %config(noreplace) /etc/sysconfig/%{name}

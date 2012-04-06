@@ -58,7 +58,7 @@ THE SOFTWARE.
       <j:otherwise>
         <j:forEach var="item" items="${items}">
           <tr>
-            <td class="pane" width="100%" tooltip="${item.why}${h.escape(item.params)}&lt;br&gt;${%WaitingSince(item.inQueueSinceString)}" style="white-space: normal;">
+            <td class="pane" width="100%" tooltip="${item.why}${h.escape(item.params)}&lt;br&gt;${%WaitingFor(item.inQueueForString)}" style="white-space: normal;">
               <j:set var="stuck" value="${item.isStuck()}"/>
               <j:choose>
                 <j:when test="${h.hasPermission(item.task,item.task.READ)}">

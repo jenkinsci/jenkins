@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.BridgeMethodsAdded;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.FormValidation;
@@ -100,12 +102,20 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     }
 
     /**
-     * Sets PATH and JAVA_HOME from this JDK.
+     * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
     public void buildEnvVars(Map<String,String> env) {
-        // see EnvVars javadoc for why this adss PATH.
+        // see EnvVars javadoc for why this adds PATH.
         env.put("PATH+JDK",getHome()+"/bin");
         env.put("JAVA_HOME",getHome());
+    }
+
+    /**
+     * Sets PATH and JAVA_HOME from this JDK.
+     */
+    @Override
+    public void buildEnvVars(EnvVars env) {
+        buildEnvVars((Map)env);
     }
 
     public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
