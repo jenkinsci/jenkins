@@ -116,7 +116,7 @@ abstract class BaseParser extends LLkParser {
         );
     }
     
-    private Hash getHashForTokens() {
+    protected Hash getHashForTokens() {
         return HASH_TOKENS ? hash : Hash.zero();
     }
 
