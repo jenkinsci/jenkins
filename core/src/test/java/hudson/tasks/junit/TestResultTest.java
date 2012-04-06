@@ -23,18 +23,24 @@
  */
 package hudson.tasks.junit;
 
-import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.jvnet.hudson.test.Bug;
+
+import com.thoughtworks.xstream.XStream;
+
 /**
+ * Tests the JUnit result XML file parsing in {@link TestResult}.
  *
  * @author dty
  */
@@ -92,6 +98,27 @@ public class TestResultTest extends TestCase {
         assertFalse(failedCase.isSkipped());
         assertFalse(failedCase.isPassed());
         assertEquals(5, failedCase.getFailedSince());
+    }
+    
+    /**
+     * When test methods are parametrized, they can occur multiple times in the testresults XMLs.
+     * Test that these are counted correctly.
+     */
+    @Bug(13214)
+    public void testDuplicateTestMethods() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-13214/27449.xml"));
+        testResult.parse(getDataFile("JENKINS-13214/27540.xml"));
+        testResult.parse(getDataFile("JENKINS-13214/29734.xml"));
+        testResult.tally();
+        
+        // Ideally the suites should be merged as they are logically the same, but that doesn't work, yet
+        // See also JENKINS-12457
+//        Collection<SuiteResult> suites = testResult.getSuites();
+//        assertEquals("Wrong number of test suites", 1, suites.size());
+        
+
+        assertEquals("Wrong number of test cases", 3, testResult.getTotalCount());
     }
 
     private static final XStream XSTREAM = new XStream2();
