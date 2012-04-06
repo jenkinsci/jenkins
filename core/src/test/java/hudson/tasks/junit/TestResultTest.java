@@ -52,7 +52,7 @@ public class TestResultTest extends TestCase {
         testResult.parse(getDataFile("eclipse-plugin-test-report.xml"));
 
         Collection<SuiteResult> suites = testResult.getSuites();
-        assertEquals("Wrong number of test suites", 15, suites.size());
+        assertEquals("Wrong number of test suites", 16, suites.size());
         int testCaseCount = 0;
         for (SuiteResult suite : suites) {
             testCaseCount += suite.getCases().size();
