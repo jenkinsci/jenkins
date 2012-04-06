@@ -62,13 +62,15 @@ public class MavenArtifactArchiver extends MavenReporter {
     @Override
     public boolean preBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
 //        System.out.println("Zeroing out at "+MavenArtifactArchiver.this);
-        assemblies = new ArrayList<File>();
+        assemblies = null;
         return true;
     }
 
     @Override
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if(mojo.is("org.apache.maven.plugins","maven-assembly-plugin","assembly")) {
+            if (assemblies==null)   assemblies = new ArrayList<File>();
+
             try {
                 // watch out for AssemblyArchiver.createArchive that returns a File object, pointing to the archives created by the assembly plugin.
                 mojo.intercept("assemblyArchiver",new InvocationInterceptor() {
@@ -151,17 +153,19 @@ public class MavenArtifactArchiver extends MavenReporter {
         // do we have any assembly artifacts?
 //        System.out.println("Considering "+assemblies+" at "+MavenArtifactArchiver.this);
 //        new Exception().fillInStackTrace().printStackTrace();
-        for (File assembly : assemblies) {
-            if(mavenArtifacts.contains(assembly))
-                continue;   // looks like this is already archived
-            if (build.isArchivingDisabled()) {
-                listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + assembly);
-            }
-            else {
-                FilePath target = build.getArtifactsDir().child(assembly.getName());
-                listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                new FilePath(assembly).copyTo(target);
-                // TODO: fingerprint
+        if (assemblies!=null) {
+            for (File assembly : assemblies) {
+                if(mavenArtifacts.contains(assembly))
+                    continue;   // looks like this is already archived
+                if (build.isArchivingDisabled()) {
+                    listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + assembly);
+                }
+                else {
+                    FilePath target = build.getArtifactsDir().child(assembly.getName());
+                    listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
+                    new FilePath(assembly).copyTo(target);
+                    // TODO: fingerprint
+                }
             }
         }
 
