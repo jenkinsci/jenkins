@@ -36,6 +36,21 @@
     <li>'A,B,...,Z' can be used to specify multiple values, such as "0,30" or "1,3,5"</li>
   </ul>
   <p>
+    To allow periodically scheduled tasks to produce even load on the system,
+    the '<tt>H</tt>' token can be used. For example, people often use
+    '<tt>0 0 * * *</tt>' for a daily job, but this ends up causing a large
+    spike in midnight. In contrast, doing '<tt>H H * * *</tt>' would
+    still execute a job once a day, but the actual time of the day this gets
+    executed will be spread over by Jenkins.
+  </p><p>
+    The 'H' token can be used with a range. For example, '<tt>H H(0-7) * * *</tt>'
+    means some time between midnight to 7:59am.
+  </p><p>
+    The '<tt>H</tt>' token can be thought of as a random value over a range,
+    but it actually is a hash of the job name, not a random function, so that
+    the value remains stable for any given project.
+  </p>
+  <p>
     Empty lines and lines that start with '#' will be ignored as comments.
   </p><p>
     In addition, '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
