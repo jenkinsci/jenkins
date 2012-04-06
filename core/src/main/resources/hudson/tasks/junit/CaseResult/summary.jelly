@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:contentType value="text/plain"/>
+  <st:contentType value="text/plain;charset=UTF-8"/>
   <j:choose>
 		<j:when test="${it.errorDetails!=null}">
 			<h3>${%Error Details}</h3>
