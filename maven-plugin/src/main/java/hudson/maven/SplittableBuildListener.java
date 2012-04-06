@@ -144,7 +144,7 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
             
             // and block until we receive a mark
             while (markCount==start)
-                wait();
+                markCountLock.wait();
         }
     }
     
