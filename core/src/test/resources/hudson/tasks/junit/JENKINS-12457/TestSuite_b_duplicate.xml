@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="TestSuite_b" tests="1" errors="0" failures="0" skip="0" timestamp="2012-01-01T00:00:00">
+  <testcase classname="TestFoo" name="bar" time="1" />
+</testsuite>

@@ -511,6 +511,10 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     /*package*/ void setClass(ClassResult classResult) {
         this.classResult = classResult;
     }
+    
+    void replaceParent(SuiteResult parent) {
+        this.parent = parent;
+    }
 
     /**
      * Constants that represent the status of this test.
