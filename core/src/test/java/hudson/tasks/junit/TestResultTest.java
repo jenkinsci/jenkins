@@ -125,6 +125,9 @@ public class TestResultTest extends TestCase {
         
         assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
         assertEquals("Wrong number of test cases", 2, testResult.getTotalCount());
+        
+        // check duration: 157.980 (TestSuite_a1.xml) and 15.000 (TestSuite_a2.xml) = 172.98 
+        assertEquals("Wrong duration for test result", 172.98, testResult.getDuration(), 0.1);
     }
     
     /**
