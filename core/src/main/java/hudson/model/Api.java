@@ -142,7 +142,7 @@ public class Api extends AbstractModelObject {
             }
 
         } catch (DocumentException e) {
-            throw new IOException2("Failed to do XPath/wrapper handling. XML is as follows:"+sw,e);
+            throw new IOException2("Failed to do XPath/wrapper handling.",e);
         }
 
         OutputStream o = rsp.getCompressedOutputStream(req);
