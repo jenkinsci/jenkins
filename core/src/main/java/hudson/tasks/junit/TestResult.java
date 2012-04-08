@@ -185,7 +185,6 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     private void add(SuiteResult sr) {
-    	duration += sr.getDuration();
         for (SuiteResult s : suites) {
             // JENKINS-12457: If a testsuite is distributed over multiple files, merge it into a single SuiteResult:
             if(s.getName().equals(sr.getName())  && nullSafeEq(s.getId(),sr.getId())) {
@@ -201,10 +200,12 @@ public final class TestResult extends MetaTabulatedResult {
                     s.addCase(cr);
                     cr.replaceParent(s);
                 }
+                duration += sr.getDuration();
                 return;
             }
         }
         suites.add(sr);
+        duration += sr.getDuration();
     }
     
     private boolean strictEq(Object lhs, Object rhs) {
