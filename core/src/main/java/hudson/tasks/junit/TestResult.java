@@ -200,6 +200,7 @@ public final class TestResult extends MetaTabulatedResult {
                     s.addCase(cr);
                     cr.replaceParent(s);
                 }
+                duration += sr.getDuration();
                 return;
             }
         }
