@@ -142,6 +142,7 @@ public class TestResultTest extends TestCase {
         
         assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
         assertEquals("Wrong number of test cases", 1, testResult.getTotalCount());
+        assertEquals("Wrong duration for test result", 1.0, testResult.getDuration(), 0.01);
     }
 
     private static final XStream XSTREAM = new XStream2();
