@@ -45,6 +45,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.maven.cli.PrintStreamLogger;
@@ -567,19 +568,19 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
 
         public void forkedProjectStarted( ExecutionEvent event ) {
-            LOGGER.fine("forkedProjectStarted " + gav(event.getProject()));
+            debug("forkedProjectStarted " + gav(event.getProject()));
 //            recordProjectStarted(event);
             this.eventLogger.forkedProjectStarted( event );
         }
 
         public void forkedProjectSucceeded( ExecutionEvent event ) {
-            LOGGER.fine("forkedProjectSucceeded " +gav(event.getProject()));
+            debug("forkedProjectSucceeded " +gav(event.getProject()));
 //            recordProjectSucceeded(event);
             this.eventLogger.forkedProjectSucceeded(event);
         }
 
         public void forkedProjectFailed( ExecutionEvent event ) {
-            LOGGER.fine("forkedProjectFailed " +gav(event.getProject()));
+            debug("forkedProjectFailed " +gav(event.getProject()));
 //            recordProjectFailed(event);
         }
 
@@ -597,7 +598,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
     private static final long serialVersionUID = 1L;
 
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
 
     private static final Logger LOGGER = Logger.getLogger(Maven3Builder.class.getName());
 }
