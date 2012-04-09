@@ -23,7 +23,6 @@
  */
 package hudson.maven;
 
-import hudson.Launcher;
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
@@ -53,12 +52,10 @@ import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
@@ -261,9 +258,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#projectSkipped(org.apache.maven.execution.ExecutionEvent)
          */
         public void projectSkipped( ExecutionEvent event ) {
-            debug("projectSkipped " + event.getProject().getGroupId()
-                                                       + ":"  + event.getProject().getArtifactId()
-                                                       + ":" + event.getProject().getVersion());    
+            debug("projectSkipped " + gav(event.getProject()));
             this.eventLogger.projectSkipped( event );
         }
 
@@ -271,8 +266,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#projectStarted(org.apache.maven.execution.ExecutionEvent)
          */
         public void projectStarted( ExecutionEvent event ) {
-            debug( "projectStarted " + event.getProject().getGroupId() + ":"
-                                                            + event.getProject().getArtifactId() + ":" + event.getProject().getVersion() );
+            debug( "projectStarted " + gav(event.getProject()));
             recordProjectStarted(event);
             this.eventLogger.projectStarted( event );
             
@@ -316,10 +310,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#projectSucceeded(org.apache.maven.execution.ExecutionEvent)
          */
         public void projectSucceeded( ExecutionEvent event ) {
-            debug( "projectSucceeded "
-                                                            + event.getProject().getGroupId() + ":"
-                                                            + event.getProject().getArtifactId() + ":"
-                                                            + event.getProject().getVersion());
+            debug( "projectSucceeded "+gav(event.getProject()));
             recordProjectSucceeded(event);
             this.eventLogger.projectSucceeded( event );
         }
@@ -362,9 +353,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#projectFailed(org.apache.maven.execution.ExecutionEvent)
          */
         public void projectFailed( ExecutionEvent event ) {
-            debug("projectFailed " + event.getProject().getGroupId()
-                                                                        + ":"  + event.getProject().getArtifactId()
-                                                                        + ":" + event.getProject().getVersion());
+            debug("projectFailed " + gav(event.getProject()));
             recordProjectFailed(event);
             this.eventLogger.projectFailed( event );
         }
@@ -406,10 +395,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#mojoSkipped(org.apache.maven.execution.ExecutionEvent)
          */
         public void mojoSkipped( ExecutionEvent event ) {
-            debug("mojoSkipped " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");
+            debug("mojoSkipped " + mojoExec(event));
             this.eventLogger.mojoSkipped( event );
         }
         
@@ -417,10 +403,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#mojoStarted(org.apache.maven.execution.ExecutionEvent)
          */
         public void mojoStarted( ExecutionEvent event ) {
-            debug("mojoStarted " + event.getMojoExecution().getGroupId() + ":"
-                                                                      + event.getMojoExecution().getArtifactId() + ":"
-                                                                      + event.getMojoExecution().getVersion()
-                                                                      + "(" + event.getMojoExecution().getExecutionId() + ")");
+            debug("mojoStarted " + mojoExec(event));
             recordMojoStarted(event);
             this.eventLogger.mojoStarted( event );
         }
@@ -452,10 +435,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#mojoSucceeded(org.apache.maven.execution.ExecutionEvent)
          */
         public void mojoSucceeded( ExecutionEvent event ) {
-            debug("mojoSucceeded " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");
+            debug("mojoSucceeded " + mojoExec(event));
             recordMojoSucceeded(event);
             this.eventLogger.mojoSucceeded( event );
         }
@@ -502,10 +482,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#mojoFailed(org.apache.maven.execution.ExecutionEvent)
          */
         public void mojoFailed( ExecutionEvent event ) {
-            debug("mojoFailed " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");
+            debug("mojoFailed " + mojoExec(event));
             recordMojoFailed(event);
             this.eventLogger.mojoFailed( event );
         }
@@ -555,12 +532,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         /**
          * @see org.apache.maven.execution.ExecutionListener#forkStarted(org.apache.maven.execution.ExecutionEvent)
          */
-        public void forkStarted( ExecutionEvent event )
-        {
-            LOGGER.fine("mojo forkStarted " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");
+        public void forkStarted( ExecutionEvent event ) {
+            LOGGER.fine("mojo forkStarted " + mojoExec(event));
             recordMojoStarted(event);
         }
 
@@ -568,10 +541,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#forkSucceeded(org.apache.maven.execution.ExecutionEvent)
          */
         public void forkSucceeded( ExecutionEvent event ) {
-            LOGGER.fine("mojo forkSucceeded " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");
+            LOGGER.fine("mojo forkSucceeded " + mojoExec(event));
             recordMojoSucceeded(event);
         }
 
@@ -579,10 +549,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#forkFailed(org.apache.maven.execution.ExecutionEvent)
          */
         public void forkFailed( ExecutionEvent event ) {
-            LOGGER.fine("mojo forkFailed " + event.getMojoExecution().getGroupId() + ":"
-                                                       + event.getMojoExecution().getArtifactId() + ":"
-                                                       + event.getMojoExecution().getVersion()
-                                                       + "(" + event.getMojoExecution().getExecutionId() + ")");  
+            LOGGER.fine("mojo forkFailed " + mojoExec(event));
             recordMojoFailed(event);
         }
 
@@ -600,26 +567,29 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
 
         public void forkedProjectStarted( ExecutionEvent event ) {
-            LOGGER.fine( "forkedProjectStarted " + event.getProject().getGroupId() + ":"
-                                                        + event.getProject().getArtifactId() + event.getProject().getVersion() );
+            LOGGER.fine("forkedProjectStarted " + gav(event.getProject()));
 //            recordProjectStarted(event);
             this.eventLogger.forkedProjectStarted( event );
         }
 
         public void forkedProjectSucceeded( ExecutionEvent event ) {
-            LOGGER.fine( "forkedProjectSucceeded "
-                                                        + event.getProject().getGroupId() + ":"
-                                                        + event.getProject().getArtifactId()
-                                                        + event.getProject().getVersion());
+            LOGGER.fine("forkedProjectSucceeded " +gav(event.getProject()));
 //            recordProjectSucceeded(event);
-            this.eventLogger.forkedProjectSucceeded( event );
+            this.eventLogger.forkedProjectSucceeded(event);
         }
 
         public void forkedProjectFailed( ExecutionEvent event ) {
-            LOGGER.fine("forkedProjectFailed " + event.getProject().getGroupId()
-                                                       + ":"  + event.getProject().getArtifactId()
-                                                       + ":" + event.getProject().getVersion());
+            LOGGER.fine("forkedProjectFailed " +gav(event.getProject()));
 //            recordProjectFailed(event);
+        }
+
+        private String gav(MavenProject p) {
+            return String.format("%s:%s:%s", p.getGroupId(), p.getArtifactId(), p.getVersion());
+        }
+
+        private String mojoExec(ExecutionEvent event) {
+            MojoExecution me = event.getMojoExecution();
+            return String.format("%s:%s:%s(%s)", me.getGroupId(), me.getArtifactId(), me.getVersion(), me.getExecutionId());
         }
     }
 
