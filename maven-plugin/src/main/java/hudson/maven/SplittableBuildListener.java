@@ -127,13 +127,15 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
      * 
      * <p>
      * Where {@link SplittableBuildListener} is used, Jenkins is normally in control of the process
-     * that's generating the log, and it's also the receiver.
+     * that's generating the log (Maven, for example), and it's also the receiver.
      *
      * But because the stdout of the sender travels through a different route than the remoting channel,
      * a synchronization needs to happen when we switch the side OutputStream.
      *
      * <p>
-     * This method does that synchronization.
+     * This method does that synchronization by sending a marker string to the output, then
+     * block until we receive it. Provided that we are in control of the process generating the output,
+     * we will not receive any extra bytes after the marker string.
      */
     public void synchronizeOnMark(Channel ch) throws IOException, InterruptedException {
         synchronized (markCountLock) {
