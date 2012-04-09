@@ -1,0 +1,81 @@
+.TH "makeself" "1" "2.1.6"
+.SH "NAME"
+makeself \- An utility to generate self-extractable archives.
+.SH "SYNTAX"
+.LP 
+.B makeself [\fIoptions\fP] archive_dir file_name label 
+.B [\fIstartup_script\fP] [\fIargs\fP]
+.SH "DESCRIPTION"
+.LP 
+This program is a free (GPL) utility designed to create self-extractable 
+archives from a directory. 
+.br
+.SH "OPTIONS"
+.LP 
+The following options are supported.
+.LP 
+.TP 15
+.B -v, --version
+Prints out the makeself version number and exits.
+.TP
+.B -h, --help
+Print out help information.
+.TP
+.B --gzip
+Compress using gzip (default if detected).
+.TP
+.B --bzip2
+Compress using bzip2.
+.TP
+.B --compress
+Compress using the UNIX 'compress' command.
+.TP
+.B --nocomp
+Do not compress the data.
+.TP
+.B --notemp
+The archive will create archive_dir in the current directory and 
+uncompress in ./archive_dir.
+.TP
+.B --copy
+Upon extraction, the archive will first copy itself to a temporary directory.
+.TP
+.B --append
+Append more files to an existing makeself archive. The label and startup scripts will then be ignored.
+.TP
+.B --current
+Files will be extracted to the current directory. Both --current and --target dir imply --notemp.
+.TP
+.B --target dir
+Extract directly to a target directory. Directory path can be either absolute or relative.
+.TP
+.B --header file
+Specify location of the header script. 
+.TP
+.B --follow
+Follow the symlinks in the archive.
+.TP
+.B --noprogress
+Do not show the progress during the decompression.
+.TP
+.B --nox11
+Disable automatic spawn of an xterm if running in X11.
+.TP
+.B --nowait
+Do not wait for user input after executing embedded program from an xterm.
+.TP
+.B --nomd5
+Do not create a MD5 checksum for the archive.
+.TP
+.B --nocrc
+Do not create a CRC32 checksum for the archive.
+.TP
+.B --lsm file
+LSM file describing the package.
+.PD
+.SH "AUTHORS"
+.LP 
+Makeself has been written by Stéphane Peter <megastep@megastep.org>.
+.BR 
+This man page was originally written by Bartosz Fenski <fenio@o2.pl> for the 
+Debian GNU/Linux distribution (but it may be used by others).

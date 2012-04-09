@@ -1,0 +1,16 @@
+Begin3
+Title:          makeself.sh
+Version:        2.1
+Description:    makeself.sh is a shell script that generates a self-extractable        
+                tar.gz archive from a directory. The resulting file appears as a shell          
+                script, and can be launched as is. The archive will then uncompress
+                itself to a temporary directory and an arbitrary command will be
+                executed (for example an installation script). This is pretty similar
+                to archives generated with WinZip Self-Extractor in the Windows world.
+Keywords:       Installation archive tar winzip
+Author:         Stéphane Peter (megastep@megastep.org)
+Maintained-by:  Stéphane Peter (megastep@megastep.org)
+Original-site:  http://www.megastep.org/makeself/
+Platform:       Unix
+Copying-policy: GPL
+End

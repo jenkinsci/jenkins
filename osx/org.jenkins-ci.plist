@@ -21,6 +21,6 @@
 	<key>RunAtLoad</key>
 	<true/>
 	<key>UserName</key>
-	<string>daemon</string>
+	<string>@JENKINS_USER@</string>
 </dict>
 </plist>
