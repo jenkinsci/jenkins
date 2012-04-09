@@ -223,7 +223,7 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
 
     private static final long serialVersionUID = 1L;
 
-    private static final byte[] MARK = toUTF8("[Jenkins:SYNC-MARK]");
+    private static final byte[] MARK = toUTF8(MarkFindingOutputStream.MARK);
 
     private static byte[] toUTF8(String s) {
         try {
