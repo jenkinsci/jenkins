@@ -101,6 +101,8 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -146,12 +148,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Previous build. Can be null.
      * These two fields are maintained and updated by {@link RunMap}.
+     *
+     * External code should use {@link #getPreviousBuild()}
      */
+    @Restricted(NoExternalUse.class)
     protected volatile transient RunT previousBuild;
 
     /**
      * Next build. Can be null.
+     *
+     * External code should use {@link #getNextBuild()}
      */
+    @Restricted(NoExternalUse.class)
     protected volatile transient RunT nextBuild;
 
     /**
