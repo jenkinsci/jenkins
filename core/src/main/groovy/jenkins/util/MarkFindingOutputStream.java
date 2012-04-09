@@ -104,7 +104,8 @@ public abstract class MarkFindingOutputStream extends OutputStream {
 
     protected  abstract void onMarkFound();
 
-    public static final String MARK = "[Jenkins:SYNC-MARK]";
+    // having a new line in the end makes it work better with line-buffering transformation
+    public static final String MARK = "[Jenkins:SYNC-MARK]\n";
     private static final byte[] MBYTES = toUTF8(MARK);
     
     private static byte[] toUTF8(String s) {
