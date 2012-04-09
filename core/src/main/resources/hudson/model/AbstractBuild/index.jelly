@@ -32,9 +32,6 @@ THE SOFTWARE.
         <l:hasPermission permission="${it.UPDATE}">
           <st:include page="logKeep.jelly" />
         </l:hasPermission>
-        <l:hasPermission permission="${it.DELETE}">
-          <st:include page="delete.jelly" />
-        </l:hasPermission>
         <div style="margin-top:1em">
           ${%startedAgo(it.timestampString)}
           </div><div>

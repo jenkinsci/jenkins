@@ -23,16 +23,12 @@ THE SOFTWARE.
 -->
 
 <!--
-  Displays the button to delete the build.
+  Displays the links to delete the build.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!it.keepLog and !it.building}">
-  	<form method="get" action="confirmDelete" style="margin-top:1em">
-      <f:submit value="${%Delete this build}" />
-    </form>
-    <form method="get" action="confirmDeleteAll" style="margin-top:1em">
-      <f:submit value="${%Delete this build and all configurations in this build}" />
-    </form>
+    <l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDelete" title="${%Delete Build}" permission="${it.DELETE}" />
+  	<l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDeleteAll" title="${%Delete this build and all configurations in this build}" permission="${it.DELETE}" />
   </j:if>
 </j:jelly>
