@@ -583,14 +583,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Does this {@link View} has any associated user information recorded?
      */
-    public final boolean hasPeople() {
+    public boolean hasPeople() {
         return People.isApplicable(getItems());
     }
 
     /**
      * Gets the users that show up in the changelog of this job collection.
      */
-    public final People getPeople() {
+    public People getPeople() {
         return new People(this);
     }
 
