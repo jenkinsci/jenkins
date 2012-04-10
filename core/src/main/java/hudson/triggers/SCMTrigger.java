@@ -425,18 +425,18 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                         logger.println("No changes");
                     return result;
                 } catch (Error e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling"));
-                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } catch (RuntimeException e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling"));
-                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {
                     listener.close();
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                 return false;
             }
         }
