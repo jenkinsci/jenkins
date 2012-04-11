@@ -2116,28 +2116,28 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
-     * Gets the item by its relative name from the given context
+     * Gets the item by its path name from the given context
      *
-     * <h2>Relative Names</h2>
+     * <h2>Path Names</h2>
      * <p>
      * If the name starts from '/', like "/foo/bar/zot", then it's interpreted as absolute.
-     * Otherwise, the name should be something like "../foo/bar" and it's interpreted like
-     * relative path name is, against the given context.
+     * Otherwise, the name should be something like "foo/bar" and it's interpreted like
+     * relative path name in the file system is, against the given context.
      *
      * @param context
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
      */
-    public Item getItem(String relativeName, ItemGroup context) {
+    public Item getItem(String pathName, ItemGroup context) {
         if (context==null)  context = this;
-        if (relativeName==null) return null;
+        if (pathName==null) return null;
 
-        if (relativeName.startsWith("/"))   // absolute
-            return getItemByFullName(relativeName);
+        if (pathName.startsWith("/"))   // absolute
+            return getItemByFullName(pathName);
 
         Object/*Item|ItemGroup*/ ctx = context;
 
-        StringTokenizer tokens = new StringTokenizer(relativeName,"/");
+        StringTokenizer tokens = new StringTokenizer(pathName,"/");
         while (tokens.hasMoreTokens()) {
             String s = tokens.nextToken();
             if (s.equals("..")) {
@@ -2168,22 +2168,22 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             return (Item)ctx;
 
         // fall back to the classic interpretation
-        return getItemByFullName(relativeName);
+        return getItemByFullName(pathName);
     }
 
-    public final Item getItem(String relativeName, Item context) {
-        return getItem(relativeName,context!=null?context.getParent():null);
+    public final Item getItem(String pathName, Item context) {
+        return getItem(pathName,context!=null?context.getParent():null);
     }
 
-    public final <T extends Item> T getItem(String relativeName, ItemGroup context, Class<T> type) {
-        Item r = getItem(relativeName, context);
+    public final <T extends Item> T getItem(String pathName, ItemGroup context, Class<T> type) {
+        Item r = getItem(pathName, context);
         if (type.isInstance(r))
             return type.cast(r);
         return null;
     }
 
-    public final <T extends Item> T getItem(String relativeName, Item context, Class<T> type) {
-        return getItem(relativeName,context!=null?context.getParent():null,type);
+    public final <T extends Item> T getItem(String pathName, Item context, Class<T> type) {
+        return getItem(pathName,context!=null?context.getParent():null,type);
     }
 
     public File getRootDirFor(TopLevelItem child) {
