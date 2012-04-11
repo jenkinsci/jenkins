@@ -35,6 +35,7 @@ import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
@@ -223,15 +224,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             for (Entry<ModuleName,FilterImpl> e : this.proxies.entrySet()) {
                 MavenProject project = buildingProjects.get(e.getKey());
                 if (project!=null) {
-                    //maven3Builder.listener.getLogger().println("Project " + e.getKey() + " needs not be build");
-
-                    // set all modules which are not actually being build (in incremental builds) to NOT_BUILD (JENKINS-9072)
-                    // TODO: this is an abuse of abstraction
-                    MavenBuildProxy2 proxy = e.getValue();
-                    proxy.start();
-                    proxy.setResult(Result.NOT_BUILT);
-                    proxy.end();
-
                     for (MavenReporter mavenReporter : fixNull(reporters.get(e.getKey()))) {
                         try {
                             mavenReporter.preBuild( e.getValue() ,project, maven3Builder.listener);
@@ -241,6 +233,14 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                             x.printStackTrace();
                         }
                     }
+                } else {
+                    // set all modules which are not actually being build (in incremental builds) to NOT_BUILD (JENKINS-9072)
+                    LOGGER.fine("Project " + e.getKey() + " needs not be build");
+
+                    MavenBuildProxy2 proxy = e.getValue();
+                    proxy.start();
+                    proxy.setResult(Result.NOT_BUILT);
+                    proxy.end();
                 }
             }
         }
@@ -400,11 +400,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void mojoSucceeded( ExecutionEvent event ) {
             debug("mojoSucceeded " + mojoExec(event));
-            recordMojoEnded(event);
+            recordMojoEnded(event,null);
             this.eventLogger.mojoSucceeded( event );
         }
         
-        private void recordMojoEnded(ExecutionEvent event) {
+        private void recordMojoEnded(ExecutionEvent event, Exception problem) {
             MavenProject mavenProject = event.getProject();
             MojoInfo mojoInfo = new MojoInfo(event);
 
@@ -418,7 +418,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             for (MavenReporter mavenReporter : fixNull(mavenReporters)) {
                 try {
-                    mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, getExecutionException(event));
+                    mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, problem);
                 } catch ( InterruptedException e ) {
                     e.printStackTrace();
                 } catch ( IOException e ) {
@@ -445,7 +445,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void mojoFailed( ExecutionEvent event ) {
             debug("mojoFailed " + mojoExec(event));
-            recordMojoEnded(event);
+            recordMojoEnded(event, getExecutionException(event));
             this.eventLogger.mojoFailed( event );
         }
 
@@ -463,7 +463,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             try {
                 return event.getException();
             } catch (NoSuchMethodError e) {
-                return null;
+                return new MojoExecutionException(event.getMojoExecution()+" failed");
             }
         }
 
@@ -480,7 +480,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkSucceeded( ExecutionEvent event ) {
             LOGGER.fine("mojo forkSucceeded " + mojoExec(event));
-            recordMojoEnded(event);
+            recordMojoEnded(event,null);
         }
 
         /**
@@ -488,7 +488,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          */
         public void forkFailed( ExecutionEvent event ) {
             LOGGER.fine("mojo forkFailed " + mojoExec(event));
-            recordMojoEnded(event);
+            recordMojoEnded(event, getExecutionException(event));
         }
 
         /*
