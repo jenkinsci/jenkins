@@ -43,6 +43,13 @@ import javax.servlet.http.HttpSession;
 public class NotSerilizableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 
+    public NotSerilizableSecurityContext() {
+    }
+
+    public NotSerilizableSecurityContext(Authentication authentication) {
+        this.authentication = authentication;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof SecurityContext) {
