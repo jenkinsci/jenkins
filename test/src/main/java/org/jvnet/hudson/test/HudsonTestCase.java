@@ -131,6 +131,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -394,7 +395,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         // so that test code has all the access to the system
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        ACL.impersonate(ACL.SYSTEM);
 
         try {
             super.runTest();
