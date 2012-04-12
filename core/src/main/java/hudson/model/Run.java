@@ -242,6 +242,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * This field is not persisted.
      */
     private volatile transient Runner runner;
+    
+    protected transient List<Action> transientActions;
 
     protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER =
             new ThreadLocal<SimpleDateFormat>() {
@@ -272,6 +274,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
 		getRootDir().mkdirs();
+        transientActions = updateTransientActions();
     }
 
     /**
@@ -304,7 +307,30 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (Action a : getActions())
             if (a instanceof RunAction)
                 ((RunAction) a).onLoad();
+        transientActions = updateTransientActions();
     }
+    
+    /**
+     * Return all transient actions associated with this build
+     * 
+     * @return transient actions
+     */
+    public List<Action> getTransientActions(){
+        return transientActions;
+    }
+   
+    /**
+     * Create transient actions for this build
+     * 
+     * @return transient actions
+     */
+    public List<Action> updateTransientActions(){
+        List<Action> actions = new ArrayList<Action>();
+        for(TransientBuildActionFactory factory: TransientBuildActionFactory.all()){
+            actions.addAll(factory.createFor(this));
+        }
+        return actions;
+     }
 
     @Override
     public void addAction(Action a) {
@@ -2059,11 +2085,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object result = super.getDynamic(token, req, rsp);
-        if (result == null)
+        if (result == null){
+            //check transient actions too
+            for(Action action: transientActions){
+                if(action.getUrlName().equals(token))
+                    return action;
+            }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds
             // may not have the action.. tell browsers to redirect up to the build page.
             result = new RedirectUp();
+        }
         return result;
     }
 
