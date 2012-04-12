@@ -1938,6 +1938,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return the estimated duration in milliseconds
      * @since 1.383
      */
+    @Exported
     public long getEstimatedDuration() {
         return project.getEstimatedDuration();
     }
