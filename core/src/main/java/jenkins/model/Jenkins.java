@@ -200,6 +200,7 @@ import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
@@ -702,7 +703,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         long start = System.currentTimeMillis();
         
     	// As Jenkins is starting, grant this process full control
-    	SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        ACL.impersonate(ACL.SYSTEM);
         try {
             this.root = root;
             this.servletContext = context;
@@ -826,7 +827,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             protected void runTask(Task task) throws Exception {
                 if (is!=null && is.skipInitTask(task))  return;
 
-                SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);   // full access in the initialization thread
+                ACL.impersonate(ACL.SYSTEM); // full access in the initialization thread
                 String taskName = task.getDisplayName();
 
                 Thread t = Thread.currentThread();
@@ -2912,7 +2913,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             @Override
             public void run() {
                 try {
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    ACL.impersonate(ACL.SYSTEM);
                     reload();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
@@ -3081,7 +3082,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             @Override
             public void run() {
                 try {
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    ACL.impersonate(ACL.SYSTEM);
 
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(5000);
@@ -3113,7 +3114,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             @Override
             public void run() {
                 try {
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    ACL.impersonate(ACL.SYSTEM);
 
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0);
@@ -3175,7 +3176,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             @Override
             public void run() {
                 try {
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    ACL.impersonate(ACL.SYSTEM);
                     LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.

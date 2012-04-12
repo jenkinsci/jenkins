@@ -121,6 +121,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -431,7 +432,7 @@ public class JenkinsRule implements TestRule, RootAction {
                 try {
                     System.out.println("=== Starting " + testDescription.getDisplayName());
                     // so that test code has all the access to the system
-                    SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+                    ACL.impersonate(ACL.SYSTEM);
                     try {
                         base.evaluate();
                     } catch (Throwable th) {
