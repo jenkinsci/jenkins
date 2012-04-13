@@ -88,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -895,12 +896,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return ta;
     }    
 
-    @Override
-    public synchronized List<Action> getActions() {
-        List<Action> actions = new Vector<Action>(super.getActions());
-        //add transient actions too
-        actions.addAll(createTransientActions());       
+    // commented out until fixed problem with adding actions, see discussion under https://github.com/jenkinsci/jenkins/pull/421
+/*    @Override
+    public List<Action> getActions() {
+        List<Action> actions = new CopyOnWriteArrayList<Action>(super.getActions());
+        actions.addAll(createTransientActions());
         return actions;
+    }
+*/    
+    public List<Action> getPersistentActions(){
+        return super.getActions();
     }
 
     /**

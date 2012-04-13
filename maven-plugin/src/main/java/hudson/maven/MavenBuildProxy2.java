@@ -33,6 +33,11 @@ package hudson.maven;
 public interface MavenBuildProxy2 extends MavenBuildProxy {
     /**
      * Notifies that the build has entered a module.
+     *
+     * Jenkins has a somewhat simplified view of the sequence of events in a Maven build.
+     * Namely, a Maven build can be building a particular Maven module, and start and end marks that boundary.
+     * Note that Maven can be in a state that it's not building any module, for example when executing an aggregator mojo,
+     * and start/end cannot be nested (which right now means a forked lifecycle doesn't result in the event firing.)
      */
     void start();
 

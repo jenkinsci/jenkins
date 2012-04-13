@@ -69,6 +69,16 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         view = Collections.unmodifiableMap(core);
     }
 
+    /**
+     * Atomically replaces the entire map by the copy of the specified map.
+     */
+    public void replaceBy(Map<? extends K, ? extends V> data) {
+        Map<K, V> d = copy();
+        d.clear();
+        d.putAll(data);
+        update(d);
+    }
+
     public int size() {
         return core.size();
     }

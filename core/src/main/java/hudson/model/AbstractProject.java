@@ -80,6 +80,8 @@ import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.ForwardToView;
@@ -141,7 +143,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * All the builds keyed by their build number.
+     *
+     * External code should use {@link #getBuildByNumber(int)} or {@link #getLastBuild()} and traverse via
+     * {@link Run#getPreviousBuild()}
      */
+    @Restricted(NoExternalUse.class)
     protected transient /*almost final*/ RunMap<R> builds = new RunMap<R>();
 
     /**
@@ -1917,7 +1923,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
+        public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
         	if(Util.fixEmptyAndTrim(customWorkspace)==null)
         		return FormValidation.error("Custom workspace is empty");
         	else

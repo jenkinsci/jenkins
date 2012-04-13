@@ -23,6 +23,7 @@
  */
 package hudson.triggers;
 
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
 import java.util.Timer;
@@ -48,14 +49,13 @@ public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-
+        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
         try {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);
         } finally {
-            SecurityContextHolder.clearContext();
+            SecurityContextHolder.setContext(oldContext);
         }
     }
 

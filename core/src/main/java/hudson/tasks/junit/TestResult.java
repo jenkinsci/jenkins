@@ -186,20 +186,30 @@ public final class TestResult extends MetaTabulatedResult {
 
     private void add(SuiteResult sr) {
         for (SuiteResult s : suites) {
-            // A common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml
-            // see http://jenkins.361315.n4.nabble.com/Problem-with-duplicate-build-execution-td371616.html for discussion.
-            // On the other hand, it's also possible that a TestSuite is split between different files - e.g. in PHPUnit
-            // See JENKINS-12457
-            if(s.getName().equals(sr.getName()) && nullSafeEq(s.getId(),sr.getId())) {
-                for (CaseResult caseResult : sr.getCases()) {
-                    s.addCase(caseResult);
-                    caseResult.replaceParent(s);
+            // JENKINS-12457: If a testsuite is distributed over multiple files, merge it into a single SuiteResult:
+            if(s.getName().equals(sr.getName())  && nullSafeEq(s.getId(),sr.getId())) {
+            
+                // However, a common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml.
+                // In that case consider the result file as a duplicate and discard it.
+                // see http://jenkins.361315.n4.nabble.com/Problem-with-duplicate-build-execution-td371616.html for discussion.
+                if(strictEq(s.getTimestamp(),sr.getTimestamp())) {
+                    return;
                 }
+            
+                for (CaseResult cr: sr.getCases()) {
+                    s.addCase(cr);
+                    cr.replaceParent(s);
+                }
+                duration += sr.getDuration();
                 return;
             }
         }
         suites.add(sr);
         duration += sr.getDuration();
+    }
+    
+    private boolean strictEq(Object lhs, Object rhs) {
+        return lhs != null && rhs != null && lhs.equals(rhs);
     }
 
     private boolean nullSafeEq(Object lhs, Object rhs) {
