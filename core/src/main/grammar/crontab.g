@@ -47,31 +47,31 @@ throws ANTLRException
       (
         "yearly"
       {
-        table.set("H H H H *",hash);
+        table.set("H H H H *",getHashForTokens());
       }
       | "annually"
       {
-        table.set("H H H H *",hash);
+        table.set("H H H H *",getHashForTokens());
       }
       | "monthly"
       {
-        table.set("H H H * *",hash);
+        table.set("H H H * *",getHashForTokens());
       }
       | "weekly"
       {
-        table.set("H H * * H",hash);
+        table.set("H H * * H",getHashForTokens());
       }
       | "daily"
       {
-        table.set("H H * * *",hash);
+        table.set("H H * * *",getHashForTokens());
       }
       | "midnight"
       {
-        table.set("H H(0-2) * * *",hash);
+        table.set("H H(0-2) * * *",getHashForTokens());
       }
       | "hourly"
       {
-        table.set("H * * * *",hash);
+        table.set("H * * * *",getHashForTokens());
       }
     )
   )

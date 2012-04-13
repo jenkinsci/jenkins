@@ -29,6 +29,8 @@ import hudson.tasks.MailMessageIdAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
@@ -114,7 +116,7 @@ public class DependencyGraphTest extends HudsonTestCase {
         hudson.rebuildDependencyGraph();
         try {
             // Switch to full access to check results:
-            SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+            ACL.impersonate(ACL.SYSTEM);
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject)hudson.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);

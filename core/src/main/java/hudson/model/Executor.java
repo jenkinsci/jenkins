@@ -38,6 +38,7 @@ import hudson.security.ACL;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -175,7 +176,7 @@ public class Executor extends Thread implements ModelObject {
     @Override
     public void run() {
         // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        ACL.impersonate(ACL.SYSTEM);
 
         try {
             finishTime = System.currentTimeMillis();

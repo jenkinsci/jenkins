@@ -1,7 +1,9 @@
 package jenkins.security;
 
 import hudson.model.User;
+import hudson.security.ACL;
 import hudson.util.Scrambler;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.Filter;
@@ -47,12 +49,12 @@ public class ApiTokenFilter implements Filter {
                 if (t!=null && t.matchesPassword(password)) {
                     // even if we fail to match the password, we aren't rejecting it.
                     // as the user might be passing in a real password.
-                    SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                    SecurityContext oldContext = ACL.impersonate(u.impersonate());
                     try {
                         chain.doFilter(request,response);
                         return;
                     } finally {
-                        SecurityContextHolder.clearContext();
+                        SecurityContextHolder.setContext(oldContext);
                     }
                 }
             }

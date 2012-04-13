@@ -55,14 +55,28 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=rfe>
-    Removed ASM dependency to avoid class incompatibility trobules.
+  <li class=bug>
+    Custom workspace validation not working.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13404">issue 13404</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.459>What's new in 1.459</a> <!--=DATE=--></h3>
+<h3><a name=v1.460>What's new in 1.460</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed: tests with the same name are no longer counted correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13214">issue 13214</a>)
+  <li class=rfe>
+    Added a tag to copy text into clipboard for plugins
+  <li class=rfe>
+    Removed ASM dependency to avoid class incompatibility trobules.
+  <li class=rfe>
+    Supported hash token in the crontab syntax to distribute workload and avoid spikes.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.459>What's new in 1.459</a> (2012/04/09)</h3>
 <ul class=image>
   <li class=bug>
     CLI - I/O error in channel Chunked connection/Unexpected termination of the channel - still occuring in Jenkins 1.449.
@@ -80,7 +94,6 @@ Upcoming changes</a>
     Added new extension point for transient build actions.
     (<a href="https://github.com/jenkinsci/jenkins/pull/421">pull 421</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.458>What's new in 1.458</a> (2012/04/02)</h3>
 <ul class=image>
   <li class=bug>
