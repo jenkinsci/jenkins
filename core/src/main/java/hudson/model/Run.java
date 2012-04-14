@@ -242,8 +242,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * This field is not persisted.
      */
     private volatile transient Runner runner;
-    
-    protected transient List<Action> transientActions;
 
     protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER =
             new ThreadLocal<SimpleDateFormat>() {
@@ -274,7 +272,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
 		getRootDir().mkdirs();
-        transientActions = updateTransientActions();
     }
 
     /**
@@ -307,31 +304,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (Action a : getActions())
             if (a instanceof RunAction)
                 ((RunAction) a).onLoad();
-        transientActions = updateTransientActions();
     }
     
     /**
-     * Return all transient actions associated with this build
+     * Return all transient actions associated with this build.
      * 
-     * @return transient actions
+     * @return the list can be empty but never null. read only.
      */
-    public List<Action> getTransientActions(){
-        return transientActions;
-    }
-   
-    /**
-     * Create transient actions for this build
-     * 
-     * @return transient actions
-     */
-    public List<Action> updateTransientActions(){
+    public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<Action>();
-        for(TransientBuildActionFactory factory: TransientBuildActionFactory.all()){
+        for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
             actions.addAll(factory.createFor(this));
         }
-        return actions;
-     }
-
+        return Collections.unmodifiableList(actions);
+    }
+   
     @Override
     public void addAction(Action a) {
         super.addAction(a);
@@ -2087,7 +2074,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         Object result = super.getDynamic(token, req, rsp);
         if (result == null){
             //check transient actions too
-            for(Action action: transientActions){
+            for(Action action: getTransientActions()){
                 if(action.getUrlName().equals(token))
                     return action;
             }

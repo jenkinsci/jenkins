@@ -33,15 +33,7 @@ THE SOFTWARE.
       <j:set var="buildUrl" value="${h.decompose(request)}" />
       <st:include page="tasks.jelly"/>
       <st:include page="actions.jelly" />
-      <!-- add transient actions too -->
-      <j:forEach var="action" items="${it.transientActions}">          
-        <st:include page="action.jelly" from="${action}" optional="true">
-            <j:if test="${action.iconFileName!=null}">
-                <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-                href="${h.getActionUrl(it.url,action)}" />
-            </j:if>
-        </st:include>
-      </j:forEach>
+      <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.previousBuild!=null}">
         <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" contextMenu="false"/>
       </j:if>
