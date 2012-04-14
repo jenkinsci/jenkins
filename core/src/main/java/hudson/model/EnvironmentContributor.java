@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -48,6 +49,10 @@ import java.io.IOException;
  * <p>
  * In this view, {@code it} points to {@link EnvironmentContributor} and {@code job} points to {@link Job} for which
  * the help is being rendered.
+ *
+ * <p>
+ * Jenkins provides other extension points (such as {@link SCM}) to contribute environment variables to builds,
+ * and for those plugins, Jenkins also looks for {@code /buildEnv.groovy} and aggregates them.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.392
