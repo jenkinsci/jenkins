@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
+import hudson.model.Queue.*;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -191,9 +192,9 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public long getIdleDelay() {
             return idleDelay;
         }
-        
+
         public synchronized long check(SlaveComputer c) {
-            if (c.isOffline()) {
+            if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
                 for (Computer o : Jenkins.getInstance().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle()) {
@@ -201,7 +202,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                         availableComputers.put(o, idleExecutors);
                     }
                 }
-                
+
                 boolean needComputer = false;
                 long demandMilliseconds = 0;
                 for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
@@ -216,10 +217,10 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                             break;
                         }
                     }
-                    
+
                     if (needExecutor) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
-                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported();
+                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
                         break;
                     }
                 }
