@@ -83,6 +83,11 @@ public class MavenEmbedderRequest
      * @since 1.426
      */
     private File globalSettings;
+
+    /**
+     * @since 1.461
+     */
+    private boolean updateSnapshots;
     
     /**
      * @param listener
@@ -223,5 +228,14 @@ public class MavenEmbedderRequest
     public MavenEmbedderRequest setGlobalSettings( File globalSettings ) {
         this.globalSettings = globalSettings;
         return this;
+    }
+
+    public MavenEmbedderRequest setUpdateSnapshots(boolean updateSnapshots) {
+      this.updateSnapshots = updateSnapshots;
+      return this;
+    }
+    
+    public boolean isUpdateSnapshots() {
+      return updateSnapshots;
     }
 }
