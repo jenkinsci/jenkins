@@ -174,6 +174,8 @@ public class MavenUtil {
             mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );
         }
         
+        mavenRequest.setUpdateSnapshots(mavenEmbedderRequest.isUpdateSnapshots());
+
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
 
