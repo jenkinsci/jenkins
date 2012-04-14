@@ -5,6 +5,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Extension point for inserting transient {@link Action}s into {@link Run}s.
@@ -20,10 +21,23 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
     /**
      * Creates actions for the given build.
      *
-     * @param Build for which the action objects are requested. Never null.
+     * @param target for which the action objects are requested. Never null.
      * @return Can be empty but must not be null.
      */
-    public abstract Collection<? extends Action> createFor(Run target);
+    public Collection<? extends Action> createFor(Run target) {
+        if (target instanceof AbstractBuild)
+            return createFor((AbstractBuild)target);
+        else
+            return Collections.emptyList();
+    }
+
+    /**
+     * @deprecated as of 1.461
+     *      Override and call {@link #createFor(Run)} instead.
+     */
+    public Collection<? extends Action> createFor(AbstractBuild target) {
+        return Collections.emptyList();
+    }
 
     /**
      * Returns all the registered {@link TransientBuildActionFactory}s.
