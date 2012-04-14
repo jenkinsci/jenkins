@@ -38,6 +38,17 @@ import java.io.IOException;
  * of the fixed name, a typical strategy is to look for specific {@link JobProperty}s and other similar configurations
  * of {@link Job}s to compute values.
  *
+ * <h2>Views</h2>
+ * <h4>buildEnv.groovy/.jelly</h4>
+ * <p>
+ * When Jenkins displays the help page listing all the environment variables available for a build, it does
+ * so by combining all the {@code buildEnv} views from this extension point. This view should use the &lt;t:buildEnvVar> tag
+ * to render a variable.
+ *
+ * <p>
+ * In this view, {@code it} points to {@link EnvironmentContributor} and {@code job} points to {@link Job} for which
+ * the help is being rendered.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.392
  * @see BuildVariableContributor
