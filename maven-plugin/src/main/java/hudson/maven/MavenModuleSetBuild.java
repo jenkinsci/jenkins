@@ -1069,6 +1069,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         private int mavenValidationLevel = -1;
         
+        private boolean updateSnapshots = false;
+        
         String rootPOMRelPrefix;
         
         public PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
@@ -1079,6 +1081,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.rootPOM = project.getRootPOM();
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
+            this.updateSnapshots = isUpdateSnapshots(project.getGoals());
             ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
             if (parametersDefinitionProperty != null && parametersDefinitionProperty.getParameterDefinitions() != null) {
                 for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.getParameterDefinitions()) {
@@ -1121,6 +1124,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         
+        private boolean isUpdateSnapshots(String goals) {
+          return StringUtils.contains(goals, "-U") || StringUtils.contains(goals, "--update-snapshots");
+        }
+
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
             
@@ -1186,6 +1193,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
+                mavenEmbedderRequest.setUpdateSnapshots( this.updateSnapshots );
                 
                 mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
                 mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
