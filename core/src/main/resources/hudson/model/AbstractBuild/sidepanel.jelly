@@ -32,6 +32,7 @@ THE SOFTWARE.
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
       <st:include page="tasks.jelly"/>
+      <st:include page="delete.jelly" />
       <st:include page="actions.jelly" />
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.previousBuild!=null}">
