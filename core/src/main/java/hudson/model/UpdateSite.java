@@ -115,6 +115,16 @@ public class UpdateSite {
     private transient volatile long retryWindow;
 
     /**
+     * lastModified time of the data file when it was last read.
+     */
+    private transient long dataLastReadFromFile;
+
+    /**
+     * Latest data as read from the data file.
+     */
+    private Data data;
+
+    /**
      * ID string for this update source.
      */
     private final String id;
@@ -309,14 +319,22 @@ public class UpdateSite {
     }
 
     /**
-     * Loads the update center data, if any.
+     * Loads the update center data, if any and if modified since last read.
      *
      * @return  null if no data is available.
      */
     public Data getData() {
-        JSONObject o = getJSONObject();
-        if (o!=null)    return new Data(o);
-        return null;
+        TextFile df = getDataFile();
+        if (df.exists() && dataLastReadFromFile != df.file.lastModified()) {
+            JSONObject o = getJSONObject();
+            if (o!=null) {
+                data = new Data(o);
+                dataLastReadFromFile = df.file.lastModified();
+            } else {
+                data = null;
+            }
+        }
+        return data;
     }
 
     /**
