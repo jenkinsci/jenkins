@@ -33,11 +33,6 @@ THE SOFTWARE.
       <t:buildCaption>
         ${%Console Output}
       </t:buildCaption>
-      <l:rightspace>
-        <a href="consoleText">
-          <img src="${imagesURL}/24x24/document.png" alt="" height="24" width="24" />${%View as plain text}
-        </a>
-      </l:rightspace>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
       <j:set var="offset" value="${empty(consoleFull) ? it.logFile.length()-threshold*1024 : 0}" />
