@@ -35,6 +35,15 @@ THE SOFTWARE.
         <l:hasPermission permission="${it.DELETE}">
           <st:include page="delete.jelly" />
         </l:hasPermission>
+        <!-- add button action -->
+        <j:forEach var="buttonDescriptor" items="${it.buttonDescriptors}">
+            <j:if test="${buttonDescriptor.isAvailable(it)}">
+                <form method="get" action="buttonAction" style="margin-top:1em">
+                    <input type="hidden" name="kind" value="${buttonDescriptor.id}" />
+                    <f:submit value="${buttonDescriptor.displayName}" />
+                </form>
+            </j:if>
+        </j:forEach>
         <div style="margin-top:1em">
           ${%startedAgo(it.timestampString)}
           </div><div>

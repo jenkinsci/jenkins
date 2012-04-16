@@ -39,6 +39,8 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.matrix.MatrixConfiguration;
+import hudson.model.BuildButtonAction.BuildButtonActionDescriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.listeners.SCMListener;
@@ -170,6 +172,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public final P getProject() {
         return getParent();
+    }
+    
+     public List<BuildButtonActionDescriptor> getButtonDescriptors() {
+            return BuildButtonActionDescriptor.all();
+        }
+
+    /**
+     * Call method doAction(AbstractBuild build) on appropriate {@link BuildButtonAction} instance after click its button in the build main page
+     *
+     */
+    public void doButtonAction( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException{
+        BuildButtonActionDescriptor descriptor = Descriptor.find(getButtonDescriptors(),req.getSubmittedForm().getString("kind"));
+        BuildButtonAction action = descriptor.newInstance(req, req.getSubmittedForm());
+        action.doAction(this);
+        rsp.forwardToPreviousPage(req);
     }
 
     /**
