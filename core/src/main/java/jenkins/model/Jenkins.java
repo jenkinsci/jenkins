@@ -2162,6 +2162,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                     break;
                 }
                 ctx=i;
+            } else {
+                return null;
             }
         }
 
