@@ -565,7 +565,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(String name) {
-        return getItem(Combination.fromString(name));
+        try {
+            return getItem(Combination.fromString(name));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public MatrixConfiguration getItem(Combination c) {
