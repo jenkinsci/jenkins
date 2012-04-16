@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,12 @@ THE SOFTWARE.
           <j:choose>
             <j:when test="${attrs.href!=null}">
               <a href="${attrs.href}">
-                <img src="${icon.startsWith('/') ? rootURL+icon : imagesURL+'/48x48/'+icon}"
+                <img src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
                      alt="" width="48" height="48" style="margin-right:1em" />
               </a>
             </j:when>
             <j:otherwise>
-              <img src="${icon.startsWith('/') ? rootURL+icon : imagesURL+'/48x48/'+icon}"
+              <img src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
                    alt="" width="48" height="48" style="margin-right:1em" />
             </j:otherwise>
           </j:choose>
