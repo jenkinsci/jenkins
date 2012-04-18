@@ -149,6 +149,14 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
         return Collections.unmodifiableList(values);
     }
 
+    public boolean isComputable() {
+        return false;
+    }
+
+    public List<String> computeValues() {
+        return getValues();
+    }
+
     @Override
     public AxisDescriptor getDescriptor() {
         return (AxisDescriptor)super.getDescriptor();
