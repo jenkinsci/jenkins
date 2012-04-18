@@ -46,12 +46,6 @@
 @import "bootstrap/bootstrap.less";
 
 // Override bootstrap
-body {
-    /** For the fluid twitter bootstrap layout **/
-    padding-top: 60px;
-    padding-bottom: 40px;
-}
-
 a {
     text-decoration: underline;
 }
@@ -65,6 +59,9 @@ a:visited {
     color: @linkColorHover;
 }
 
+.navbar {
+    margin-bottom: 0;
+}
 .navbar, .container-fluid {
     min-width: 768px;
 }
@@ -74,6 +71,7 @@ a:visited {
 }
 
 .navbar-inner {
+    .border-radius(0);
     border-bottom: 4px @jenkinsRed solid;
 }
 
@@ -89,6 +87,12 @@ a:visited {
 .navbar a:hover, .navbar .nav > li > a:hover {
     color: @white;
     text-decoration: none;
+}
+
+.breadcrumb {
+    padding: 2px @gridGutterWidth;
+    margin: 0;
+    .box-shadow();
 }
 
 .jenkinsHeading() {

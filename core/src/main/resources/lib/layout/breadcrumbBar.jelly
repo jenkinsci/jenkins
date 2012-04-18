@@ -35,17 +35,15 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.layout.breadcrumbs" />
-  <div class="row-fluid">
-    <div class="span12">
+  <div class="top-sticker noedge">
+    <div class="top-sticker-inner">
         <ul id="breadcrumbs" class="breadcrumb">
             <j:forEach var="anc" items="${request.ancestors}">
             <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
             <li class="breadcrumb-item">
                 <a href="${anc.url}/">${anc.object.displayName}</a>
             </li>
-            <j:if test="${anc.next!=null}">
-            <li class="divider">/</li>
-            </j:if>
+            <li class="divider"></li>
             </j:if>
         </j:forEach>
         <!-- render additional breadcrumb items -->
@@ -64,5 +62,4 @@ THE SOFTWARE.
         <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
     </div>
   </div>
-
 </j:jelly>

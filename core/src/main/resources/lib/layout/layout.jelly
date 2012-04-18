@@ -166,7 +166,7 @@ THE SOFTWARE.
   <body class="yui-skin-sam">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
-    <div class="navbar navbar-fixed-top">
+    <div class="navbar">
         <div class="navbar-inner">
             <div class="container-fluid">
                 <a class="brand" href="${rootURL}/">Jenkins</a>
@@ -225,11 +225,11 @@ THE SOFTWARE.
             </div>
           </div>
     </div>
+    <l:breadcrumbBar>
+      <j:set var="mode" value="breadcrumbs" />
+      <d:invokeBody />
+    </l:breadcrumbBar>
     <div class="container-fluid">
-        <l:breadcrumbBar>
-            <j:set var="mode" value="breadcrumbs" />
-            <d:invokeBody />
-        </l:breadcrumbBar>
         <div class="row-fluid" id="main-table">
             <div class="span3" id="side-panel">
                 <div id="navigation">
