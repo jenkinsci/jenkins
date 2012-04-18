@@ -100,31 +100,6 @@ a.lowkey:visited {
   color: inherit;
 }
 
-/* tip - anchors of class info */
-a.tip {
-  position:relative;
-  z-index:24;
-}
-
-a.tip:hover {
-  z-index:25;
-}
-
-a.tip span {
-  display: none
-}
-
-a.tip:hover span {
-  display:block;
-  position:absolute;
-  top:2em;
-  left:2em;
-  width:400px;
-  border:1px @tableBorder solid;
-  background-color:@infoBackground;
-  text-align: left
-}
-
 img {
   vertical-align: middle;
   border: 0;
@@ -389,7 +364,7 @@ div.behavior-loading {
 
 .top-sticker, #top-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
-    z-index: 999;
+    z-index: @zindexDropdown - 1; // -1 to fix JENKINS-13195
 }
 .top-sticker-inner {
     background:white;
@@ -569,7 +544,7 @@ table.parameters > tbody:hover {
     background-color: @infoBackground;
     border: 1px @tableBorder solid;
     margin-left: 32px; /* move it across a bit */
-    z-index: 26;
+    z-index: @zindexPopover;
 }
 
 .healthReport div.healthReportDetails table {
@@ -797,7 +772,7 @@ div.yahooTree td {
   text-align: left;
   width:25em;
   position: absolute;
-  z-index: 999;
+  z-index: @zindexDropdown;
 }
 
 #search-box-completion .yui-ac-content {
@@ -927,7 +902,7 @@ table.progress-bar.red td.progress-bar-done {
     text-align:center;
     left:0px;
     font-size: 2em;
-    z-index:1000;
+    z-index:@zindexModal;
     border-bottom: 1px @black solid;
 }
 
