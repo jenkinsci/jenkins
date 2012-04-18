@@ -182,7 +182,7 @@ public abstract class Layouter<T> {
             if(index/base==(index-1)/base && index!=0)  return null;    // no need to draw a new value
 
             Axis axis = y.get(n);
-            return axis.value((index/base)%axis.values.size());
+            return axis.value((index/base)%axis.getValues().size());
         }
     }
 
