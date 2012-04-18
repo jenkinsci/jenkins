@@ -593,6 +593,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     @Exported
     public Collection<MatrixConfiguration> getActiveConfigurations() {
+        try {
+            rebuildConfigurations();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return activeConfigurations;
     }
 
