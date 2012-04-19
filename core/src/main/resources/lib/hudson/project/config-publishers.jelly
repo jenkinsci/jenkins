@@ -34,6 +34,7 @@ THE SOFTWARE.
                      items="${it.publishersList}"
                      oneEach="true"
                      menuAlign="bl-tl"
+                     honorOrder="true"
                      addCaption="${%Add post-build action}"/>
     </f:block>
   </f:section>
