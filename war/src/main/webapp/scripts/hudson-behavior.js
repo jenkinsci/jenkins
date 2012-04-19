@@ -556,7 +556,53 @@ var jenkinsRules = {
             var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
-                insertionPoint.insert({after:nc});
+                function findInsertionPoint() {
+                    // given the element to be inserted 'prospect',
+                    // and the array of existing items 'current',
+                    // and preferred ordering function, return the position in the array
+                    // the prospect should be inserted.
+                    // (for example 0 if it should be the first item)
+                    function findBestPosition(prospect,current,order) {
+                        function desirability(pos) {
+                            var count=0;
+                            for (var i=0; i<current.length; i++) {
+                                if ((i<pos) == (order(current[i])<=order(prospect)))
+                                    count++;
+                            }
+                            return count;
+                        }
+
+                        var bestScore = -1;
+                        var bestPos = 0;
+                        for (var i=0; i<=current.length; i++) {
+                            var d = desirability(i);
+                            if (bestScore<=d) {// prefer to insert them toward the end
+                                bestScore = d;
+                                bestPos = i;
+                            }
+                        }
+                        return bestPos;
+                    }
+
+                    var current = e.childElements().findAll(function(e) {return e.match("DIV.repeated-chunk")});
+
+                    function o(did) {
+                        if (Object.isElement(did))
+                            did = did.getAttribute("descriptorId");
+                        for (var i=0; i<templates.length; i++)
+                            if (templates[i].descriptorId==did)
+                                return i;
+                        return 0; // can't happen
+                    }
+
+                    var bestPos = findBestPosition(t.descriptorId, current, o);
+                    if (bestPos<current.length)
+                        return current[bestPos];
+                    else
+                        return insertionPoint;
+                }
+                (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
+
                 if(withDragDrop)    prepareDD(nc);
 
                 new YAHOO.util.Anim(nc, {
@@ -589,10 +635,7 @@ var jenkinsRules = {
             menuButton.getMenu().showEvent.subscribe(function() {
                 var items = menuButton.getMenu().getItems();
                 for(i=0; i<items.length; i++) {
-                    // TEST
-                    if (has(templates[i].descriptorId)) {
-                        items[i].cfg.setProperty("disabled",true);
-                    }
+                    items[i].cfg.setProperty("disabled",has(templates[i].descriptorId));
                 }
             });
         }

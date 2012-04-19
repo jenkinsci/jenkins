@@ -58,6 +58,10 @@ THE SOFTWARE.
     <st:attribute name="menuAlign">
       Menu alignment against the button. Defaults to tl-bl
     </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -96,7 +100,7 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''}">
+  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
