@@ -27,7 +27,7 @@ THE SOFTWARE.
     Adds one more in-page breadcrumb that jumps to sections in the page.
     Put this tag right before &lt;l:main-panel>
   </st:documentation>
-
+  <j:if test="${mode=='breadcrumbs'}">
   <l:breadcrumb title="${%configuration}" id="inpage-nav" />
   <!--
     TODO: use human-readable ID
@@ -45,4 +45,5 @@ THE SOFTWARE.
       breadcrumbs.attachMenu('inpage-nav',menu);
     });
   </script>
+  </j:if>
 </j:jelly>
