@@ -610,8 +610,7 @@ var jenkinsRules = {
                 }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
                 Behaviour.applySubtree(nc,true);
-                if (menuAlign=="bl-tl") // for a button that gets displayed at the bottom, scroll down so that newly added section is fully visible
-                    document.body.scrollTop = scroll+nc.clientHeight;
+                ensureVisible(nc);
                 layoutUpdateCallback.call();
             },true);
         });
@@ -2063,7 +2062,49 @@ function getStyle(e,a){
   if(e.currentStyle)
     return e.currentStyle[a];
   return null;
-};
+}
+
+/**
+ * Makes sure the given element is within the viewport.
+ *
+ * @param {HTMLElement} e
+ *      The element to bring into the viewport.
+ */
+function ensureVisible(e) {
+    var viewport = YAHOO.util.Dom.getClientRegion();
+    var pos      = YAHOO.util.Dom.getRegion(e);
+
+    var Y = viewport.top;
+    var H = viewport.height;
+
+    function handleStickers(name,f) {
+        var e = $(name);
+        if (e) f(e);
+        document.getElementsBySelector("."+name).each(f);
+    }
+
+    // if there are any stickers around, subtract them from the viewport
+    handleStickers("top-sticker",function (t) {
+        t = t.clientHeight;
+        Y+=t; H-=t;
+    });
+
+    handleStickers("bottom-sticker",function (b) {
+        b = b.clientHeight;
+        H-=b;
+    });
+
+    var y = pos.top;
+    var h = pos.height;
+
+    var d = (y+h)-(Y+H);
+    if (d>0) {
+        document.body.scrollTop += d;
+    } else {
+        var d = Y-y;
+        if (d>0)    document.body.scrollTop -= d;
+    }
+}
 
 // set up logic behind the search box
 function createSearchBox(searchURL) {
