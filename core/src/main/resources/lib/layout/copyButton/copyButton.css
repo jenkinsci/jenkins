@@ -1,0 +1,5 @@
+.copy-button BUTTON {
+    background: url('clipboard.png') center center no-repeat;
+    width: 20px;
+    height: 20px;
+}

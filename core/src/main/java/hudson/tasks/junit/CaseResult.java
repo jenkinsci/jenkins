@@ -39,7 +39,6 @@ import static java.util.Collections.emptyList;
 
 /**
  * One test result.
- * It is uniquely identified by its className and testName.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -129,10 +128,6 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         Collection<CaseResult> _this = Collections.singleton(this);
         stdout = possiblyTrimStdio(_this, keepLongStdio, testCase.elementText("system-out"));
         stderr = possiblyTrimStdio(_this, keepLongStdio, testCase.elementText("system-err"));
-    }
-    
-    void replaceParent(SuiteResult parent) {
-        this.parent = parent;
     }
 
     private static final int HALF_MAX_SIZE = 500;
@@ -516,41 +511,10 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     /*package*/ void setClass(ClassResult classResult) {
         this.classResult = classResult;
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((className == null) ? 0 : className.hashCode());
-        result = prime * result
-                + ((testName == null) ? 0 : testName.hashCode());
-        return result;
+    
+    void replaceParent(SuiteResult parent) {
+        this.parent = parent;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CaseResult other = (CaseResult) obj;
-        if (className == null) {
-            if (other.className != null)
-                return false;
-        } else if (!className.equals(other.className))
-            return false;
-        if (testName == null) {
-            if (other.testName != null)
-                return false;
-        } else if (!testName.equals(other.testName))
-            return false;
-        return true;
-    }
-
-
 
     /**
      * Constants that represent the status of this test.

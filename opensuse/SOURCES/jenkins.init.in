@@ -77,7 +77,7 @@ fi
 export JAVA_HOME
 
 JAVA_CMD="$JAVA_HOME/bin/java $JENKINS_JAVA_OPTIONS -DJENKINS_HOME=$JENKINS_HOME -jar $JENKINS_WAR"
-PARAMS="--javaHome=$JAVA_HOME --logfile=/var/log/jenkins/jenkins.log"
+PARAMS="--javaHome=$JAVA_HOME --logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war"
 [ -n "$JENKINS_PORT" ] && PARAMS="$PARAMS --httpPort=$JENKINS_PORT"
 [ -n "$JENKINS_AJP_PORT" ] && PARAMS="$PARAMS --ajp13Port=$JENKINS_AJP_PORT"
 [ -n "$JENKINS_DEBUG_LEVEL" ] && PARAMS="$PARAMS --debug=$JENKINS_DEBUG_LEVEL"

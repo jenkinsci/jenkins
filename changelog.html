@@ -55,6 +55,65 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Added the filter textbox to the update center selector.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13476">issue 13476</a>)
+  <li class=rfe>
+    Move "View as plain text" link on console output page from top right to the sidepanel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13389">issue 13389</a>)
+  <li class=rfe>
+    Convert "Delete this build" buttons into links in the sidepanel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13387">issue 13387</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.461>What's new in 1.461</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Flag -U is not used during the parsing step of a Maven Job
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8663">issue 8663</a>)
+  <li class=bug>
+    Custom workspace validation not working.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13404">issue 13404</a>)
+  <li class=rfe>
+    allow j/k navigation for search results
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13105">issue 13105</a>)    
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.460>What's new in 1.460</a> (2012/04/14)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed: tests with the same name are no longer counted correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13214">issue 13214</a>)
+  <li class=rfe>
+    Added a tag to copy text into clipboard for plugins
+  <li class=rfe>
+    Removed ASM dependency to avoid class incompatibility trobules.
+  <li class=rfe>
+    Supported hash token in the crontab syntax to distribute workload and avoid spikes.
+</ul>
+<h3><a name=v1.459>What's new in 1.459</a> (2012/04/09)</h3>
+<ul class=image>
+  <li class=bug>
+    CLI - I/O error in channel Chunked connection/Unexpected termination of the channel - still occuring in Jenkins 1.449.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12037">issue 12037</a>)
+  <li class=bug>
+    Quiet period is blocking other jobs in queue.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12994">issue 12994</a>)  
+  <li class=bug>
+    Loading All Build History Fails.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13238">issue 13238</a>)  
+  <li class=rfe>
+    Added the View.READ permission to control visibility of views, and updated the default implementation to hide empty views.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-3681">issue 3681</a>)  
+  <li class=rfe>
+    Added new extension point for transient build actions.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/421">pull 421</a>)
+</ul>
+<h3><a name=v1.458>What's new in 1.458</a> (2012/04/02)</h3>
+<ul class=image>
   <li class=bug>
     Build Status page continues to show flashing "building" icons after build completion.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13217">issue 13217</a>)  
@@ -74,12 +133,10 @@ Upcoming changes</a>
     (<a href="https://wiki.jenkins-ci.org/display/JENKINS/Configuring+Jenkins+upon+start+up">feature</a>)
   <li class=rfe>
     Improved the page loading performance, especially on large latency network
+  <li class=bug>
+    Resolve dependency issue between 'maven-plugin' and 'config-file-provider' plugin. If you are using the 'config-file-provider' plugin, you have to upgrade to version 1.9.1!  
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.457>What's new in 1.457</a> <!--=DATE=--></h3>
+<h3><a name=v1.457>What's new in 1.457</a> (2012/03/26)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a thread leak in the embedded servlet container.
@@ -103,7 +160,6 @@ Upcoming changes</a>
   <li class="rfe">
     Jenkins uses correct port in mDNS advertisement and shows up in Safari Bonjour bookmarks.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.456>What's new in 1.456</a> (2012/03/19)</h3>
 <ul class=image>
   <li class=bug>
@@ -758,7 +814,7 @@ Upcoming changes</a>
     Project names in fingerprint records weren't updated when a project is renamed.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10330">issue 10330</a>)
   <li class=rfe>
-    External job submision now supports &ly;displayName> and &lt;description> elements
+    External job submision now supports &lt;displayName&gt; and &lt;description&gt; elements
     (<a href="https://github.com/jenkinsci/jenkins/pull/215">pull 215</a>)
 </ul>
 <h3><a name=v1.428>What's new in 1.428</a> (2011/08/29)</h3>

@@ -26,6 +26,8 @@ package hudson.security;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
@@ -113,4 +115,22 @@ public abstract class ACL {
      * the user who triggered a build.)
      */
     public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken("SYSTEM","SYSTEM");
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread
+     * to the specified one, and returns  the previous security context.
+     * 
+     * <p>
+     * When the impersonation is over, be sure to restore the previous authentication
+     * via {@code SecurityContextHolder.setContext(returnValueFromThisMethod)}.
+     * 
+     * <p>
+     * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
+     * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
+     */
+    public static SecurityContext impersonate(Authentication auth) {
+        SecurityContext old = SecurityContextHolder.getContext();
+        SecurityContextHolder.setContext(new NotSerilizableSecurityContext(ACL.SYSTEM));
+        return old;
+    }
 }

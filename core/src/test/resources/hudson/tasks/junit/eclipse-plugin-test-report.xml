@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuites>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="0" name="testsuite1" package="" tests="20" time="15.02" timestamp="2011-03-21T16:51:12">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="0" name="tests" package="" tests="20" time="15.02" timestamp="2011-03-21T16:51:12">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -290,7 +290,7 @@ x86_64
 ]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="1" name="testsuite2" package="" tests="6" time="0.03" timestamp="2011-03-21T16:53:10">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="1" name="tests" package="" tests="6" time="0.03" timestamp="2011-03-21T16:53:10">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -552,7 +552,7 @@ ProjectImportTask: execution finished
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="2" name="testsuite3" package="" tests="240" time="14.494" timestamp="2011-03-21T16:57:12">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="2" name="tests" package="" tests="240" time="14.494" timestamp="2011-03-21T16:57:12">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -1703,7 +1703,7 @@ java.lang.NullPointerException
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="3" name="testsuite4" package="" tests="1742" time="97.882" timestamp="2011-03-21T16:51:29">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="3" name="tests" package="" tests="1742" time="97.882" timestamp="2011-03-21T16:51:29">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -5550,7 +5550,7 @@ SEVERE: Message
 ]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="4" name="testsuite5" package="" tests="95" time="3.381" timestamp="2011-03-21T16:53:11">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="4" name="tests" package="" tests="95" time="3.381" timestamp="2011-03-21T16:53:11">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -5981,7 +5981,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="5" name="testsuite6" package="" tests="28" time="2.048" timestamp="2011-03-21T16:53:15">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="5" name="tests" package="" tests="28" time="2.048" timestamp="2011-03-21T16:53:15">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -6385,7 +6385,7 @@ ORMEXT: Should find 3 mapping
 ]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="6" name="testsuite7_duplicate_test_name_different_id" package="" tests="1" time="0.051" timestamp="2011-03-21T16:57:07">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="6" name="tests" package="" tests="1" time="0.051" timestamp="2011-03-21T16:57:07">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -6625,7 +6625,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="7" name="testsuite7_duplicate_test_name_different_id" package="" tests="176" time="91.008" timestamp="2011-03-21T16:55:36">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="7" name="tests" package="" tests="176" time="91.008" timestamp="2011-03-21T16:55:36">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -7216,7 +7216,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" name="testsuite8_duplicate_test_name_without_id" package="" tests="56" time="1.309" timestamp="2011-03-21T16:57:08">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="8" name="tests" package="" tests="56" time="1.309" timestamp="2011-03-21T16:57:08">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -7566,7 +7566,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" name="testsuite8_duplicate_test_name_without_id" package="" tests="60" time="0.049" timestamp="2011-03-21T16:53:17">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="9" name="tests" package="" tests="60" time="0.049" timestamp="2011-03-21T16:53:17">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -7924,7 +7924,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="10" name="testsuite10" package="" tests="222" time="2.758" timestamp="2011-03-21T16:53:08">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="10" name="tests" package="" tests="222" time="2.758" timestamp="2011-03-21T16:53:08">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -8602,7 +8602,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="11" name="testsuite11" package="" tests="2" time="1.021" timestamp="2011-03-21T16:55:35">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="11" name="tests" package="" tests="2" time="1.021" timestamp="2011-03-21T16:55:35">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -8844,7 +8844,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="12" name="testsuite12" package="" tests="244" time="1.532" timestamp="2011-03-21T16:53:17">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="12" name="tests" package="" tests="244" time="1.532" timestamp="2011-03-21T16:53:17">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -9572,7 +9572,7 @@ Test test.CalculationTest1 finished.
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="13" name="testsuite13" package="" tests="323" time="136.381" timestamp="2011-03-21T16:53:19">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="13" name="tests" package="" tests="323" time="136.381" timestamp="2011-03-21T16:53:19">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -10456,7 +10456,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="14" name="testsuite14" package="" tests="37" time="0.036" timestamp="2011-03-21T16:53:10">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="14" name="tests" package="" tests="37" time="0.036" timestamp="2011-03-21T16:53:10">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 
@@ -10768,7 +10768,7 @@ x86_64
         <system-err><![CDATA[]]></system-err>
 
   </testsuite>
-  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="15" name="testsuite15" package="" tests="114" time="0.126" timestamp="2011-03-21T16:53:11">
+  <testsuite errors="0" failures="0" hostname="faktorzehn.org" id="15" name="tests" package="" tests="114" time="0.126" timestamp="2011-03-21T16:53:11">
         <properties>
               <property name="java.vendor" value="Sun Microsystems Inc." />
 

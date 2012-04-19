@@ -90,7 +90,9 @@ public class InitReactorRunner {
     protected void onInitMilestoneAttained(InitMilestone milestone) {
     }
 
-    private static final int TWICE_CPU_NUM = Runtime.getRuntime().availableProcessors() * 2;
+    private static final int TWICE_CPU_NUM = Integer.getInteger(
+            InitReactorRunner.class.getName()+".concurrency",
+            Runtime.getRuntime().availableProcessors() * 2);
 
     private static final Logger LOGGER = Logger.getLogger(InitReactorRunner.class.getName());
 }

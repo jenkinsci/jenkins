@@ -101,6 +101,8 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -146,12 +148,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Previous build. Can be null.
      * These two fields are maintained and updated by {@link RunMap}.
+     *
+     * External code should use {@link #getPreviousBuild()}
      */
+    @Restricted(NoExternalUse.class)
     protected volatile transient RunT previousBuild;
 
     /**
      * Next build. Can be null.
+     *
+     * External code should use {@link #getNextBuild()}
      */
+    @Restricted(NoExternalUse.class)
     protected volatile transient RunT nextBuild;
 
     /**
@@ -297,7 +305,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if (a instanceof RunAction)
                 ((RunAction) a).onLoad();
     }
-
+    
+    /**
+     * Return all transient actions associated with this build.
+     * 
+     * @return the list can be empty but never null. read only.
+     */
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<Action>();
+        for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
+            actions.addAll(factory.createFor(this));
+        }
+        return Collections.unmodifiableList(actions);
+    }
+   
     @Override
     public void addAction(Action a) {
         super.addAction(a);
@@ -940,6 +961,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     // ..and then "too many"
 
     public final class ArtifactList extends ArrayList<Artifact> {
+        private static final long serialVersionUID = 1L;
         /**
          * Map of Artifact to treeNodeId of parent node in tree view.
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
@@ -1358,7 +1380,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * is reported to {@link BuildListener} and the build should be simply aborted
      * without further recording a stack trace.
      */
-    public static final class RunnerAbortedException extends RuntimeException {}
+    public static final class RunnerAbortedException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    }
 
     protected final void run(Runner job) {
         if(result!=null)
@@ -1390,7 +1414,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         logger = filter.decorateLogger((AbstractBuild) build, logger);
                     }
 
-                    // Project specific log filterss
+                    // Project specific log filters
                     if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
                         BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                         for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
@@ -1626,6 +1650,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * (especially in comparison with the previous build.)
      */
     public Summary getBuildStatusSummary() {
+        if (isBuilding()) {
+            return new Summary(false, Messages.Run_Summary_Unknown());
+        }
+        
         ResultTrend trend = ResultTrend.getResultTrend(this);
         
         switch (trend) {
@@ -1923,6 +1951,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return the estimated duration in milliseconds
      * @since 1.383
      */
+    @Exported
     public long getEstimatedDuration() {
         return project.getEstimatedDuration();
     }
@@ -2043,11 +2072,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object result = super.getDynamic(token, req, rsp);
-        if (result == null)
+        if (result == null){
+            //check transient actions too
+            for(Action action: getTransientActions()){
+                if(action.getUrlName().equals(token))
+                    return action;
+            }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds
             // may not have the action.. tell browsers to redirect up to the build page.
             result = new RedirectUp();
+        }
         return result;
     }
 

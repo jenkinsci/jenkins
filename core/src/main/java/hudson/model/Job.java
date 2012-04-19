@@ -35,6 +35,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.Range;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
+import hudson.model.listeners.ItemListener;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -989,6 +990,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             submit(req, rsp);
 
             save();
+            ItemListener.fireOnUpdated(this);
 
             String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();

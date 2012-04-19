@@ -37,6 +37,15 @@ public class BuildStatusSummaryTest {
     }
     
     @Test
+    public void testStatusUnknownIfRunIsStillBuilding() {
+        when(this.build.getResult()).thenReturn(null);
+        when(this.build.isBuilding()).thenReturn(true);
+        
+        Summary summary = this.build.getBuildStatusSummary();
+        assertEquals(Messages.Run_Summary_Unknown(), summary.message);
+    }
+    
+    @Test
     public void testSuccess() {
         when(this.build.getResult()).thenReturn(Result.SUCCESS);
         when(this.prevBuild.getResult()).thenReturn(Result.SUCCESS);

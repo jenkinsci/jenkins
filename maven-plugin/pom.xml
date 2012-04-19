@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.458-SNAPSHOT</version>
+    <version>1.462-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -114,19 +114,13 @@ THE SOFTWARE.
       <artifactId>maven3-interceptor</artifactId>
       <version>${mavenInterceptorsVersion}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.jenkins-ci.lib</groupId>
-      <artifactId>config-provider-model</artifactId>
-      <version>1.1</version>
+      <!-- this plugin is optional and is used to provide settigns.xml from a central UI -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>config-file-provider</artifactId>
+      <version>1.9.1</version>
+      <optional>true</optional>
     </dependency>
-    <!-- the dependency between config-file-provider and maven-plugin should be in the other direction  -->
-<!--     <dependency> -->
-<!-- 	  <groupId>org.jenkins-ci.plugins</groupId> -->
-<!-- 	  <artifactId>config-file-provider</artifactId> -->
-<!-- 	  <version>1.2-SNAPSHOT</version> -->
-<!-- 	  <optional>true</optional> -->
-<!--     </dependency> -->
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>

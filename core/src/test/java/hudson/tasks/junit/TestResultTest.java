@@ -23,18 +23,24 @@
  */
 package hudson.tasks.junit;
 
-import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.jvnet.hudson.test.Bug;
+
+import com.thoughtworks.xstream.XStream;
+
 /**
+ * Tests the JUnit result XML file parsing in {@link TestResult}.
  *
  * @author dty
  */
@@ -52,7 +58,7 @@ public class TestResultTest extends TestCase {
         testResult.parse(getDataFile("eclipse-plugin-test-report.xml"));
 
         Collection<SuiteResult> suites = testResult.getSuites();
-        assertEquals("Wrong number of test suites", 15, suites.size());
+        assertEquals("Wrong number of test suites", 16, suites.size());
         int testCaseCount = 0;
         for (SuiteResult suite : suites) {
             testCaseCount += suite.getCases().size();
@@ -92,6 +98,51 @@ public class TestResultTest extends TestCase {
         assertFalse(failedCase.isSkipped());
         assertFalse(failedCase.isPassed());
         assertEquals(5, failedCase.getFailedSince());
+    }
+    
+    /**
+     * When test methods are parametrized, they can occur multiple times in the testresults XMLs.
+     * Test that these are counted correctly.
+     */
+    @Bug(13214)
+    public void testDuplicateTestMethods() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-13214/27449.xml"));
+        testResult.parse(getDataFile("JENKINS-13214/27540.xml"));
+        testResult.parse(getDataFile("JENKINS-13214/29734.xml"));
+        testResult.tally();
+        
+        assertEquals("Wrong number of test suites", 1, testResult.getSuites().size());
+        assertEquals("Wrong number of test cases", 3, testResult.getTotalCount());
+    }
+    
+    @Bug(12457)
+    public void testTestSuiteDistributedOverMultipleFilesIsCountedAsOne() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_a1.xml"));
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_a2.xml"));
+        testResult.tally();
+        
+        assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
+        assertEquals("Wrong number of test cases", 2, testResult.getTotalCount());
+        
+        // check duration: 157.980 (TestSuite_a1.xml) and 15.000 (TestSuite_a2.xml) = 172.98 
+        assertEquals("Wrong duration for test result", 172.98, testResult.getDuration(), 0.1);
+    }
+    
+    /**
+     * A common problem is that people parse TEST-*.xml as well as TESTS-TestSuite.xml.
+     * See http://jenkins.361315.n4.nabble.com/Problem-with-duplicate-build-execution-td371616.html for discussion.
+     */
+    public void testDuplicatedTestSuiteIsNotCounted() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_b.xml"));
+        testResult.parse(getDataFile("JENKINS-12457/TestSuite_b_duplicate.xml"));
+        testResult.tally();
+        
+        assertEquals("Wrong number of testsuites", 1, testResult.getSuites().size());
+        assertEquals("Wrong number of test cases", 1, testResult.getTotalCount());
+        assertEquals("Wrong duration for test result", 1.0, testResult.getDuration(), 0.01);
     }
 
     private static final XStream XSTREAM = new XStream2();

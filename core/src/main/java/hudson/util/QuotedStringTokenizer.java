@@ -60,7 +60,7 @@ public class QuotedStringTokenizer
     private String _delim = __delim;
     private boolean _returnQuotes=false;
     private boolean _returnDelimiters=false;
-    private StringBuffer _token;
+    private StringBuilder _token;
     private boolean _hasToken=false;
     private int _i=0;
     private int _lastStart=0;
@@ -104,7 +104,7 @@ public class QuotedStringTokenizer
             _delim.indexOf('"')>=0)
             throw new Error("Can't use quotes as delimiters: "+_delim);
 
-        _token=new StringBuffer(_string.length()>1024?512:_string.length()/2);
+        _token=new StringBuilder(_string.length()>1024?512:_string.length()/2);
     }
 
     /* ------------------------------------------------------------ */
