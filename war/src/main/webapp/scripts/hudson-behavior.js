@@ -494,7 +494,7 @@ function sequencer(fs) {
 
 var jenkinsRules = {
     "BODY" : function() {
-        tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
+        tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:1050*2+1}); // 1050 = @zindexModal in Bootstrap
     },
 
 // do the ones that extract innerHTML so that they can get their original HTML before
@@ -504,38 +504,20 @@ var jenkinsRules = {
         if(isInsideRemovable(e))    return;
 
         // components for the add button
-        var menu = document.createElement("SELECT");
-        var btns = findElementsBySelector(e,"INPUT.hetero-list-add"),
+        var btns = findElementsBySelector(e,".hetero-list-add"),
             btn = btns[btns.length-1]; // In case nested content also uses hetero-list
-        YAHOO.util.Dom.insertAfter(menu,btn);
+        var dropdown = btn.nextSibling;
 
         var prototypes = $(e.lastChild);
         while(!prototypes.hasClassName("prototypes"))
             prototypes = prototypes.previous();
         var insertionPoint = prototypes.previous();    // this is where the new item is inserted.
 
-        // extract templates
-        var templates = []; var i=0;
-        $(prototypes).childElements().each(function (n) {
-            var name = n.getAttribute("name");
-            var tooltip = n.getAttribute("tooltip");
-            var descriptorId = n.getAttribute("descriptorId");
-            menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name, tooltip:tooltip,descriptorId:descriptorId});
-            i++;
-        });
-        Element.remove(prototypes);
-
-        var withDragDrop = initContainerDD(e);
-
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
-        menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
-            var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
-
+        var repeatableAddHandler = function() {
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
-            nc.setAttribute("name",t.name);
-            nc.innerHTML = t.html;
+            nc.setAttribute("name", this.getAttribute("data-name"));
+            nc.innerHTML = this.getAttribute("data-html");
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
@@ -543,17 +525,27 @@ var jenkinsRules = {
 
                 Behaviour.applySubtree(nc,true);
             },true);
-        });
-
-        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
-            // hook up tooltip for menu items
-            var items = menuButton.getMenu().getItems();
-            for(i=0; i<items.length; i++) {
-                var t = templates[i].tooltip;
-                if(t!=null)
-                    applyTooltip(items[i].element,t);
+            return false;
+        };
+        // extract templates
+        $(prototypes).childElements().each(function (n) {
+            var anchor = document.createElement("A");
+            anchor.href = "#";
+            anchor.innerText = n.getAttribute("title");
+            anchor.setAttribute("data-name", n.getAttribute("name"));
+            anchor.setAttribute("data-html", n.innerHTML);
+            anchor.setAttribute("data-descriptor-id", n.getAttribute("descriptorId"));
+            if(n.getAttribute("tooltip")) {
+                applyTooltip(anchor,n.getAttribute("tooltip"));
             }
+            anchor.onclick = repeatableAddHandler;
+            var li = document.createElement("LI");
+            li.insertBefore(anchor, null);
+            dropdown.insertBefore(li, null);
         });
+        Element.remove(prototypes);
+
+        var withDragDrop = initContainerDD(e);
     },
 
     "DIV.repeated-container" : function(e) {

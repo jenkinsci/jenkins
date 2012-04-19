@@ -127,8 +127,14 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" />
+    <div class="btn-group">
+      <button class="btn btn-info dropdown-toggle hetero-list-add" data-toggle="dropdown">
+        ${attrs.addCaption?:'%Add'}
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <!-- LI's will be inserted here -->
+      </ul>
     </div>
   </div>
 </j:jelly>
