@@ -566,6 +566,7 @@ var jenkinsRules = {
                 Behaviour.applySubtree(nc,true);
                 if (menuAlign=="bl-tl") // for a button that gets displayed at the bottom, scroll down so that newly added section is fully visible
                     document.body.scrollTop = scroll+nc.clientHeight;
+                layoutUpdateCallback.call();
             },true);
         });
 
