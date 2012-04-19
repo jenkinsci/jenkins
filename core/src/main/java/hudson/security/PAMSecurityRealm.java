@@ -104,12 +104,18 @@ public class PAMSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
     @Override
     public GroupDetails loadGroupByGroupname(final String groupname) throws UsernameNotFoundException, DataAccessException {
-        if(CLibrary.libc.getgrnam(groupname)==null)
-            throw new UsernameNotFoundException(groupname);
+        final String group;
+        if(groupname.startsWith("@")) {
+            group = groupname.substring(1);
+        } else {
+            group = groupname;
+        }
+        if(CLibrary.libc.getgrnam(group)==null)
+            throw new UsernameNotFoundException(group);
         return new GroupDetails() {
             @Override
             public String getName() {
-                return groupname;
+                return group;
             }
         };
     }

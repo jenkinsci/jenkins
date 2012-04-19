@@ -5,7 +5,13 @@
 
   <p>
   This mode will also allow you to use Unix groups for authorization. For example,
-  you can say "everyone in the 'developers' group will have the administrator access". 
+  you can say "everyone in the 'developers' group will have the administrator access".
+
+  <p>
+  Unix allows an user and a group to have the same name. If you need to disambiguate,
+  you can use the '@' prefix to force the name to be interpreted as a group. For example,
+  '@dev' would mean the 'dev' group and not the 'dev' user, while 'dev' would be interpreted
+  as an user if you indeed have the user of that name.
 
   <p>
   This is done through a library called <a href="http://en.wikipedia.org/wiki/Pluggable_Authentication_Modules">PAM</a>,
