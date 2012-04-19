@@ -559,7 +559,7 @@ var jenkinsRules = {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
                 if(withDragDrop)    prepareDD(nc);
 
-                new YAHOO.util.ColorAnim(nc, {
+                new YAHOO.util.Anim(nc, {
                     opacity: { to:1 }
                 }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
@@ -1879,10 +1879,17 @@ var repeatableSupport = {
     // called when 'delete' button is clicked
     onDelete : function(n) {
         n = findAncestorClass(n,"repeated-chunk");
-        var p = n.parentNode;
-        p.removeChild(n);
-        if (p.tag)
-            p.tag.update();
+        var a = new YAHOO.util.Anim(n, {
+            opacity: { to:0 },
+            height: {to:0 }
+        }, 0.2, YAHOO.util.Easing.easeIn);
+        a.onComplete.subscribe(function() {
+            var p = n.parentNode;
+            p.removeChild(n);
+            if (p.tag)
+                p.tag.update();
+        });
+        a.animate();
     },
 
     // called when 'add' button is clicked
