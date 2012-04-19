@@ -510,6 +510,7 @@ var jenkinsRules = {
 // other behavior rules change them (like YUI buttons.)
 
     "DIV.hetero-list-container" : function(e) {
+        e=$(e);
         if(isInsideRemovable(e))    return;
 
         // components for the add button
@@ -537,18 +538,26 @@ var jenkinsRules = {
 
         var withDragDrop = initContainerDD(e);
 
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
+        var menuAlign = (btn.getAttribute("menualign")||"tl-bl").split("-");
+
+        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
             var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
 
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
+            nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
+            $(nc).setOpacity(0);
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
                 if(withDragDrop)    prepareDD(nc);
+
+                new YAHOO.util.ColorAnim(nc, {
+                    opacity: { to:1 }
+                }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
                 Behaviour.applySubtree(nc,true);
             },true);
@@ -563,6 +572,23 @@ var jenkinsRules = {
                     applyTooltip(items[i].element,t);
             }
         });
+
+        if (e.hasClassName("one-each")) {
+            // does this container already has a ocnfigured instance of the specified descriptor ID?
+            function has(id) {
+                return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
+            }
+
+            menuButton.getMenu().showEvent.subscribe(function() {
+                var items = menuButton.getMenu().getItems();
+                for(i=0; i<items.length; i++) {
+                    // TEST
+                    if (has(templates[i].descriptorId)) {
+                        items[i].cfg.setProperty("disabled",true);
+                    }
+                }
+            });
+        }
     },
 
     "DIV.repeated-container" : function(e) {
