@@ -570,7 +570,7 @@ var jenkinsRules = {
             },true);
         });
 
-        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
+        menuButton.getMenu().renderEvent.subscribe(function() {
             // hook up tooltip for menu items
             var items = menuButton.getMenu().getItems();
             for(i=0; i<items.length; i++) {
