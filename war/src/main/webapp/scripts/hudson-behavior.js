@@ -556,7 +556,7 @@ var jenkinsRules = {
             var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
-                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                insertionPoint.insert({after:nc});
                 if(withDragDrop)    prepareDD(nc);
 
                 new YAHOO.util.Anim(nc, {
