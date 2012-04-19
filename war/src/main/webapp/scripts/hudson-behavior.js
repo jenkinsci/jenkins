@@ -544,7 +544,7 @@ var jenkinsRules = {
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
             var item = args[1];
             if (item.cfg.getProperty("disabled"))   return;
-            var t = templates[parseInt(item.value)]; // where this args[1] comes is a real mystery
+            var t = templates[parseInt(item.value)];
 
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
