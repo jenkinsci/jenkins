@@ -538,11 +538,13 @@ var jenkinsRules = {
 
         var withDragDrop = initContainerDD(e);
 
-        var menuAlign = (btn.getAttribute("menualign")||"tl-bl").split("-");
+        var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
 
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign });
+        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-") });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
-            var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
+            var item = args[1];
+            if (item.cfg.getProperty("disabled"))   return;
+            var t = templates[parseInt(item.value)]; // where this args[1] comes is a real mystery
 
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
@@ -550,6 +552,8 @@ var jenkinsRules = {
             nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
             $(nc).setOpacity(0);
+
+            var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
                 insertionPoint.parentNode.insertBefore(nc, insertionPoint);
@@ -560,6 +564,8 @@ var jenkinsRules = {
                 }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
                 Behaviour.applySubtree(nc,true);
+                if (menuAlign=="bl-tl") // for a button that gets displayed at the bottom, scroll down so that newly added section is fully visible
+                    document.body.scrollTop = scroll+nc.clientHeight;
             },true);
         });
 
