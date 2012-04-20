@@ -44,7 +44,9 @@ THE SOFTWARE.
           </div>
         </j:when>
         <j:otherwise>
-          <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}" />
+          <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}" >
+            <l:task icon="images/24x24/document.png" href="${buildUrl.baseUrl}/consoleText" title="${%View as plain text}" />
+          </l:task>
         </j:otherwise>
       </j:choose>
       <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>

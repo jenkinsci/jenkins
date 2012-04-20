@@ -38,6 +38,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -87,12 +88,24 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns the ACL of the ViewGroup.
+     * The default implementation makes the view visible if any of the items are visible
+     * or the view is configurable.
      *
      * @since 1.220
      */
-    public ACL getACL(View item) {
-    	return item.getOwner().getACL();
+    public ACL getACL(final View item) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission permission) {
+                ACL base = item.getOwner().getACL();
+
+                if (permission==View.READ) {
+                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                }
+
+                return base.hasPermission(a, permission);
+            }
+        };
     }
     
     /**

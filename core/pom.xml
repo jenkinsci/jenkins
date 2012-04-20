@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.457-SNAPSHOT</version>
+    <version>1.462-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.182</stapler.version>
+    <stapler.version>1.187</stapler.version>
   </properties>
 
   <dependencies>
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -148,6 +148,11 @@ THE SOFTWARE.
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-zeroclipboard</artifactId>
+      <version>1.0.7-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -543,13 +548,6 @@ THE SOFTWARE.
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.4</version>
-    </dependency>
-
-    <dependency>
-      <!-- with this, stapler can load parameter names from the debug info -->
-      <groupId>asm</groupId>
-      <artifactId>asm-commons</artifactId>
-      <version>2.2.3</version>
     </dependency>
 
     <dependency>

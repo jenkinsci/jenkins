@@ -42,7 +42,7 @@ THE SOFTWARE.
         <j:otherwise>
           <ol>
             <j:forEach var="i" items="${items}">
-              <li>
+              <li id="item_${i.path}">
                 <a href="?q=${i.path}">${i.path}</a>
               </li>
             </j:forEach>

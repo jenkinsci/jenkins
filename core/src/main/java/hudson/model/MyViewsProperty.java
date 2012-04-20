@@ -35,6 +35,7 @@ import hudson.views.ViewsTabBar;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -48,6 +49,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -56,7 +58,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Tom Huybrechts
  */
-public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
+public class MyViewsProperty extends UserProperty implements ViewGroup, Action, StaplerFallback {
     private String primaryViewName;
 
     /**
@@ -223,11 +225,16 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action {
     }
 
     public ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Hudson.getInstance();
+        return Jenkins.getInstance();
     }
 
     public List<Action> getViewActions() {
-        return Hudson.getInstance().getActions();
+        // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
+        return Collections.emptyList();
+    }
+
+    public Object getStaplerFallback() {
+        return getPrimaryView();
     }
 
     public MyViewsTabBar getMyViewsTabBar() {

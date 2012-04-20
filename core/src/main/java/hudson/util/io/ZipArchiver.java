@@ -61,11 +61,13 @@ final class ZipArchiver extends Archiver {
             // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).
             dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
             if (mode!=-1)   dirZipEntry.setUnixMode(mode);
+            dirZipEntry.setTime(f.lastModified());
             zip.putNextEntry(dirZipEntry);
             zip.closeEntry();
         } else {
             ZipEntry fileZipEntry = new ZipEntry(relativePath);
             if (mode!=-1)   fileZipEntry.setUnixMode(mode);
+            fileZipEntry.setTime(f.lastModified());
             zip.putNextEntry(fileZipEntry);
             FileInputStream in = new FileInputStream(f);
             int len;

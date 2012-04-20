@@ -1,7 +1,7 @@
 /*
  The MIT License
 
- Copyright (c) 2011, Dominik Bartholdi, Olivier Lamy
+ Copyright (c) 2012, Dominik Bartholdi
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,43 @@
  */
 package hudson.maven.settings;
 
+import java.io.Serializable;
+
 /**
- * @since 1.426
+ * Represents a particular settings file and its content - actually its a shadow object to hold the config data coming from a ConfigProvider of the 'config-provider' plugin.
+ * 
+ * @author domi
  */
-public interface MavenSettingsProvider
-{
-    // no op only a marker interface
+public class SettingConfig implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * a unique id along all providers!
+     */
+    public final String id; 
+
+    public final String name;
+
+    /**
+     * Any note that the author of this configuration wants to associate with this.
+     */
+    public final String comment;
+
+    /**
+     * Content of the file as-is.
+     */
+    public final String content;
+
+    public SettingConfig(String id, String name, String comment, String content) {
+        this.id = id == null ? String.valueOf(System.currentTimeMillis()) : id;
+        this.name = name;
+        this.comment = comment;
+        this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return "[SettingConfig: id=" + id + ", name=" + name + "]";
+    }
 }

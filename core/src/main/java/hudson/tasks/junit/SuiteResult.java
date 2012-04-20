@@ -76,9 +76,6 @@ public final class SuiteResult implements Serializable {
      * All test cases.
      */
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
-    // transient representation of the cases, which is only used while the SuiteResult is build up initially
-    private transient Set<CaseResult> casesSet = new HashSet<CaseResult>();
-    
     private transient hudson.tasks.junit.TestResult parent;
 
     SuiteResult(String name, String stdout, String stderr) {
@@ -207,16 +204,9 @@ public final class SuiteResult implements Serializable {
         this.stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, stderr);
     }
 
-    /**
-     * Adds the {@link CaseResult} to this {@link SuiteResult}, if it's not already
-     * included.
-     */
     /*package*/ void addCase(CaseResult cr) {
-        boolean added = casesSet.add(cr);
-        if (added) {
-            cases.add(cr);
-            duration += cr.getDuration();
-        }
+        cases.add(cr);
+        duration += cr.getDuration();
     }
 
     @Exported(visibility=9)
@@ -323,8 +313,6 @@ public final class SuiteResult implements Serializable {
             return false;   // already frozen
 
         this.parent = owner;
-        
-        casesSet = null;
         for (CaseResult c : cases)
             c.freeze(this);
         return true;

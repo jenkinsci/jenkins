@@ -251,9 +251,9 @@ public class XStream2Test extends TestCase {
         InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
         MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
         assertNotNull(result);
-        assertNotNull(result.getActions());
-        assertEquals(2, result.getActions().size());
-        InterruptedBuildAction action = (InterruptedBuildAction) result.getActions().get(1);
+        assertNotNull(result.getPersistentActions());
+        assertEquals(2, result.getPersistentActions().size());
+        InterruptedBuildAction action = (InterruptedBuildAction) result.getPersistentActions().get(1);
         assertNotNull(action.getCauses());
         assertEquals(1, action.getCauses().size());
         CauseOfInterruption.UserInterruption cause =

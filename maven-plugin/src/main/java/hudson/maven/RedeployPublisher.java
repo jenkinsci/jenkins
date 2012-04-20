@@ -29,8 +29,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.maven.reporters.MavenArtifactRecord;
-import hudson.maven.settings.GlobalMavenSettingsProvider;
-import hudson.maven.settings.MavenSettingsProvider;
+import hudson.maven.settings.SettingConfig;
 import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -54,6 +53,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -67,12 +69,8 @@ import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.cli.BatchModeMavenTransferListener;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -233,8 +231,7 @@ public class RedeployPublisher extends Recorder {
                 String altSettingsPath = null;
 
                 if (!StringUtils.isBlank(settingsConfigId)) {
-                    Config config = SettingsProviderUtils.findConfig( settingsConfigId,
-                                                                      MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
+                    SettingConfig config = SettingsProviderUtils.findSettings(settingsConfigId);
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a config with id " + settingsConfigId
@@ -254,7 +251,7 @@ public class RedeployPublisher extends Recorder {
 
                 String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
                 if (!StringUtils.isBlank(globalSettingsConfigId)) {
-                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
+                    SettingConfig config = SettingsProviderUtils.findSettings(globalSettingsConfigId);
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a global settings config with id "

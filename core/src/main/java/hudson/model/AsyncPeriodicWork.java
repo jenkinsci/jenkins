@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
 import java.io.File;
@@ -47,8 +48,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
                     StreamTaskListener l = createListener();
                     try {
-                        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-                        
+                        ACL.impersonate(ACL.SYSTEM);
+
                         execute(l);
                     } catch (IOException e) {
                         e.printStackTrace(l.fatalError(e.getMessage()));

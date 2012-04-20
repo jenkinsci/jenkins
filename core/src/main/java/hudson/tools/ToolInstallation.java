@@ -32,6 +32,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.*;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
+import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
 
 import java.io.Serializable;
@@ -126,9 +127,56 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         return home;
     }
 
+    /**
+     * Expose any environment variables that this tool installation wants the build to see.
+     *
+     * <p>
+     * To add entry to PATH, do {@code envVars.put("PATH+XYZ",path)} where 'XYZ' is something unique.
+     * Variable names of the form 'A+B' is interpreted as adding the value to the existing PATH.
+     *
+     * @since 1.460
+     */
+    public void buildEnvVars(EnvVars env) {
+    }
+
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
         assert properties!=null;
         return properties;
+    }
+
+    /**
+     * Performs a necessary variable/environment/context expansion.
+     *
+     * @param node
+     *      Node that this tool is used in.
+     * @param envs
+     *      Set of environment variables to expand any references.
+     * @param listener
+     *      Any lengthy operation (such as auto-installation) will report its progress here.
+     * @return
+     *      {@link ToolInstallation} object that is fully specialized.
+     * @since 1.460
+     */
+    public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+        ToolInstallation t = this;
+        if (t instanceof NodeSpecific) {
+            NodeSpecific n = (NodeSpecific) t;
+            t = (ToolInstallation)n.forNode(node,listener);
+        }
+        if (t instanceof EnvironmentSpecific) {
+            EnvironmentSpecific e = (EnvironmentSpecific) t;
+            t = (ToolInstallation)e.forEnvironment(envs);
+        }
+        return t;
+    }
+
+    /**
+     * Convenient version of {@link #translate(Node, EnvVars, TaskListener)} that just takes a build object in progress.
+     * @since 1.460
+     */
+    public ToolInstallation translate(AbstractBuild<?,?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
+        assert buildInProgress.isBuilding();
+        return translate(buildInProgress.getBuiltOn(),buildInProgress.getEnvironment(listener),listener);
     }
 
     /**

@@ -5,13 +5,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link Job}.
  */
+@SuppressWarnings("rawtypes")
 public class SimpleJobTest extends HudsonTestCase {
 
     public void testGetEstimatedDuration() throws IOException {
@@ -97,7 +96,8 @@ public class SimpleJobTest extends HudsonTestCase {
     private Job createMockProject(final SortedMap<Integer, TestBuild> runs) {
         return new TestJob(runs);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static class TestBuild extends Run {
         
         public TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {

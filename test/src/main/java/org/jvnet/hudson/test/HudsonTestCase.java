@@ -130,6 +130,7 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -263,6 +264,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     public ComputerConnectorTester computerConnectorTester = new ComputerConnectorTester(this);
 
+    /**
+     * The directory where a war file gets exploded.
+     */
+    protected File explodedWarDir;
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -389,7 +395,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected void runTest() throws Throwable {
         System.out.println("=== Starting "+ getClass().getSimpleName() + "." + getName());
         // so that test code has all the access to the system
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        ACL.impersonate(ACL.SYSTEM);
 
         try {
             super.runTest();
@@ -456,11 +462,17 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
 
-        WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
+        explodedWarDir = WarExploder.getExplodedDir();
+        WebAppContext context = new WebAppContext(explodedWarDir.getPath(), contextPath);
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         server.setHandler(context);
         context.setMimeTypes(MIME_TYPES);
+        if(Functions.isWindows()) {
+            // this is only needed on Windows because of the file
+            // locking issue as described in JENKINS-12647
+            context.setCopyWebDir(true);
+        }
 
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
