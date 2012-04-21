@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2012, Dominik Bartholdi
+ * Copyright (c) 2012, Dominik Bartholdi, Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,21 @@ package jenkins.model;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.util.FormValidation;
+import java.io.IOException;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import javax.servlet.ServletException;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * This ExtensionPoint allows to enforce the name of projects/jobs.
@@ -105,7 +111,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
             @Override
             public String getDisplayName() {
-                return Messages.ProjectNamingStrategy_DefaultProjectNamingStrategy_DisplayName();
+                return Messages.DefaultProjectNamingStrategy_DisplayName();
             }
 
             @Override
@@ -158,12 +164,26 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
 
             @Override
             public String getDisplayName() {
-                return Messages.ProjectNamingStrategy_PatternProjectNamingStrategy_DisplayName();
+                return Messages.PatternProjectNamingStrategy_DisplayName();
             }
 
             @Override
             public String getHelpFile() {
                 return "/help/system-config/patternJobNamingStrategy.html";
+            }
+            
+            public FormValidation doCheckNamePattern(@QueryParameter String value) 
+                    throws IOException, ServletException {
+                String pattern = Util.fixEmptyAndTrim(value);
+                if (pattern == null) {
+                    return FormValidation.error(Messages.PatternProjectNamingStrategy_NamePatternRequired());
+                }
+                try {
+                    Pattern.compile(pattern);
+                } catch (PatternSyntaxException e) {
+                    return FormValidation.error(Messages.PatternProjectNamingStrategy_NamePatternInvalidSyntax());
+                }
+                return FormValidation.ok();
             }
         }
     }
