@@ -31,10 +31,7 @@ THE SOFTWARE.
 <l:layout title="This page has moved">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1>
-      <img src="${imagesURL}/48x48/error.png" alt="" height="48" width="48"/>
-      This page has moved
-    </h1>
+      <l:pageHeader title="This page has moved" />
     <p>
       Starting 1.271, slave configuration is split into individual configuration page per slave,
       accessible from <a href="computer/">here</a>.

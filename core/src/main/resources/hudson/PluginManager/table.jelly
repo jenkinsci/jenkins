@@ -34,6 +34,7 @@ THE SOFTWARE.
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
+      <l:pageHeader title="${%Update Center}" />
       <st:adjunct includes="hudson.PluginManager._table"/>
       <form method="post" action="install">
         <div id="filter-container">

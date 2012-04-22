@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:header title="${%Jenkins Login}" />
     <l:side-panel />
     <l:main-panel>
-      <h1>${%Access Denied}</h1>
+      <l:pageHeader title="${%Access Denied}" />
       <!-- TODO: message is not human readable. define a subclass -->
       <p class="error"><st:out value="${exception.message}"/></p>
 

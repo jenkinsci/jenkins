@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
     Used inside &lt;l:layout> to render the page header.
     <st:attribute name="title" use="required">
@@ -31,6 +31,9 @@ THE SOFTWARE.
     <st:attribute name="description">
       Description of the page.
     </st:attribute>
+    <st:attribute name="help">
+      Help icon
+    </st:attribute>
   </st:documentation>
 
   <div class="page-header">
@@ -38,6 +41,9 @@ THE SOFTWARE.
         ${attrs.title}
         <j:if test="${attrs.description!=null}">
             <small>${attrs.description}</small>
+        </j:if>
+        <j:if test="${attrs.help!=null}">
+            <t:help href="${attrs.help}" />
         </j:if>
     </h1>
   </div>

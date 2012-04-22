@@ -30,6 +30,7 @@ THE SOFTWARE.
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
+    <l:pageHeader title="${%Nodes}" />
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
     <table id="computers" class="sortable pane bigtable">

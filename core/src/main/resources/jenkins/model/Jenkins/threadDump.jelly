@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1>${%Thread Dump}</h1>
+      <l:pageHeader title="${%Thread Dump}" />
       <j:forEach var="e" items="${it.getAllThreadDumps().entrySet()}" varStatus="loop">
         <j:if test="${!loop.first}">
           <hr style="margin-bottom:6em"/>

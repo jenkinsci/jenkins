@@ -28,13 +28,13 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <t:setIconSize/>
     <l:main-panel>
-      <h1>
-        <img src="${imagesURL}/48x48/user.png" alt="" height="48" width="48"/>
-        ${%People}
-        <j:set var="viewType" value="${it.parent.class.simpleName}"/>
-        <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
-        <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
-      </h1>
+      <j:set var="viewType" value="${it.parent.class.simpleName}"/>
+      <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
+      <j:set var="title" value="${%People}" />
+      <j:if test="${!isAll}">
+        <j:set var="title" value="${%People} - ${it.parent.displayName}" />
+      </j:if>
+      <l:pageHeader title="${title}" />
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th>${%User Id}</th>

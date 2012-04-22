@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" title="${%Node Monitoring Configuration}" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
+      <l:pageHeader title="${%Node Monitoring Configuration}" />
       <!-- to make the form field binding work -->
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${it.descriptor}" />

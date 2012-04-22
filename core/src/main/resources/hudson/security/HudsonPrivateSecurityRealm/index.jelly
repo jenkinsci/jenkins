@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" title="${%Users}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Users}</h1>
+      <l:pageHeader title="${%Users}" />
       <p>${%blurb}</p>
       
       <table class="sortable pane bigtable" id="people">

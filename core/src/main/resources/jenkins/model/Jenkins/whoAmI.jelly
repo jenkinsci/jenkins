@@ -31,7 +31,7 @@ THE SOFTWARE.
     </l:hasPermission>
     <l:main-panel>
       <j:set var="auth" value="${app.authentication}" />
-      <h1>Who Am I?</h1>
+      <l:pageHeader title="Who Am I?" />
       <table>
         <tr>
           <td>Name:</td>

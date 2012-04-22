@@ -27,20 +27,16 @@ THE SOFTWARE.
   <l:layout norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>
-        <img src="${imagesURL}/48x48/terminal.png" alt="" height="48" width="48"/>
-        ${%Jenkins CLI}
-      </h1>
-      <p>
-        ${%blurb(rootURL)}
-      </p>
-      <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
-              style="color: white"
-              href="jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} help</pre>
+      <l:pageHeader title="${%Jenkins CLI}" />
+      <p>${%blurb(rootURL)}</p>
+
+      <pre>
+        <p>java -jar <a href="jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} help</p>
+      </pre>
         <h2>${%Available Commands}</h2>
         <ul>
           <j:forEach items="${h.getCLICommands()}" var="command">
-            <li><b>${command.getName()}</b>: ${command.getShortDescription()}</li>
+            <li><strong>${command.getName()}</strong>: ${command.getShortDescription()}</li>
           </j:forEach>
         </ul>
     </l:main-panel>

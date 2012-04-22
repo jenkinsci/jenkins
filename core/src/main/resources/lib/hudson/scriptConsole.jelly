@@ -30,12 +30,9 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${h.RUN_SCRIPTS}">
     <st:include page="sidepanel.jelly" />
 
-    <l:main-panel>
-      <h1>${%Script Console}</h1>
-
-      <p>
-        ${%description}
-      </p>
+    <l:main-panel title="${%Script Console}">
+      <l:pageHeader title="${%Script Console}" />
+      <p>${%description}</p>
       <!-- this is where the example goes -->
       <d:invokeBody />
 

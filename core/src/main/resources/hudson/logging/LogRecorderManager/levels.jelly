@@ -30,10 +30,7 @@ THE SOFTWARE.
 <l:layout title="Log Levels">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1>
-      ${%Logger Configuration}
-      <t:help href="${%url}" />
-    </h1>
+    <l:pageHeader title="${%Logger Configuration}" help="${%url}" />
     <table class="sortable pane bigtable" style="width:auto" id="logLevels">
       <tr>
         <th>${%Name}</th>

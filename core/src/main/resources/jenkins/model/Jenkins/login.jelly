@@ -29,10 +29,10 @@ THE SOFTWARE.
       <st:include page="sidepanel.jelly" />
     </l:hasPermission>
     <l:main-panel>
+        <l:pageHeader title="${%Login}" />
         <!-- login form -->
         <form id="login" name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post" class="form-horizontal">
           <fieldset>
-              <legend>${%Login}</legend>
               <div class="control-group">
                 <label class="control-label" for="j_username">${%User}</label>
                 <div class="controls">

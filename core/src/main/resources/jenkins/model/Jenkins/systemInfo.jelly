@@ -30,11 +30,11 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" title="${%System Information}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-        <h1>${%System Properties}</h1>
+        <l:pageHeader title="${%System Properties}" />
         <t:propertyTable items="${h.systemProperties}" />
-        <h1>${%Environment Variables}</h1>
+        <h2>${%Environment Variables}</h2>
         <t:propertyTable items="${h.envVars}" />
-        <h1>${%Plugins}</h1>
+        <h2>${%Plugins}</h2>
         <table class="pane sortable bigtable">
           <j:choose>
             <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
