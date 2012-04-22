@@ -305,7 +305,20 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if (a instanceof RunAction)
                 ((RunAction) a).onLoad();
     }
-
+    
+    /**
+     * Return all transient actions associated with this build.
+     * 
+     * @return the list can be empty but never null. read only.
+     */
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<Action>();
+        for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
+            actions.addAll(factory.createFor(this));
+        }
+        return Collections.unmodifiableList(actions);
+    }
+   
     @Override
     public void addAction(Action a) {
         super.addAction(a);
@@ -2059,11 +2072,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         Object result = super.getDynamic(token, req, rsp);
-        if (result == null)
+        if (result == null){
+            //check transient actions too
+            for(Action action: getTransientActions()){
+                if(action.getUrlName().equals(token))
+                    return action;
+            }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds
             // may not have the action.. tell browsers to redirect up to the build page.
             result = new RedirectUp();
+        }
         return result;
     }
 

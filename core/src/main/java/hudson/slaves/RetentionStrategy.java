@@ -28,7 +28,10 @@ import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
+import hudson.model.Queue.*;
 import hudson.util.DescriptorList;
+import java.util.Collections;
+import java.util.HashMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -191,9 +194,38 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         public synchronized long check(SlaveComputer c) {
-            if (c.isOffline()) {
-                final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported()) {
+            if (c.isOffline() && c.isLaunchSupported()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
+                for (Computer o : Jenkins.getInstance().getComputers()) {
+                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle()) {
+                        final int idleExecutors = o.countIdle();
+                        availableComputers.put(o, idleExecutors);
+                    }
+                }
+
+                boolean needComputer = false;
+                long demandMilliseconds = 0;
+                for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                    boolean needExecutor = true;
+                    for (Computer o : Collections.unmodifiableSet(availableComputers.keySet())) {
+                        if (o.getNode().canTake(item) == null) {
+                            needExecutor = false;
+                            final int availableExecutors = availableComputers.remove(o);
+                            if (availableExecutors > 1) {
+                                availableComputers.put(o, availableExecutors - 1);
+                            }
+                            break;
+                        }
+                    }
+
+                    if (needExecutor) {
+                        demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
+                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        break;
+                    }
+                }
+
+                if (needComputer) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
