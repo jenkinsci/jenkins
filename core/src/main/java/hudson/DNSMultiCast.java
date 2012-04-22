@@ -22,7 +22,12 @@ public class DNSMultiCast implements Closeable {
 
     public DNSMultiCast(Jenkins hudson) {
         if (disabled)   return; // escape hatch
-        
+
+        if(hudson.getRootUrl()==null) {
+            LOGGER.log(Level.INFO,"rootURL is not set, not starting mdns service");
+            return;
+        }
+
         try {
             this.jmdns = JmDNS.create();
 
