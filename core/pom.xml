@@ -502,9 +502,9 @@ THE SOFTWARE.
       <version>1.7</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
+      <groupId>org.jvnet.libpam4j</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.6</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
