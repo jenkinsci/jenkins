@@ -1493,6 +1493,13 @@ public class Queue extends ResourceController implements Saveable {
                     return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
                 return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
             }
+            
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+                CauseOfBlockage cause = d.canRun(this);
+                if (cause != null)
+                    return cause;
+            }
+            
             return task.getCauseOfBlockage();
         }
     }
