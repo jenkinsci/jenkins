@@ -359,8 +359,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public boolean hasParticipant(User user) {
         for (ChangeLogSet.Entry e : getChangeSet())
-            if (e.getAuthor()==user)
-                return true;
+            try{
+                if (e.getAuthor()==user)
+                    return true;
+            } catch (RuntimeException re) {
+                // no-op, just remove exception thrown e.g. from git plugin. 
+                // It there's some problem to determine committer, user probably doesn't participate in the build.
+            }
         return false;
     }
 
