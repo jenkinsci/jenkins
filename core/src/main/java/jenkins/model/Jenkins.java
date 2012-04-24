@@ -200,7 +200,6 @@ import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
@@ -2111,8 +2110,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     public TopLevelItem getItem(String name) {
         if (name==null)    return null;
     	TopLevelItem item = items.get(name);
-        if (item==null || !item.hasPermission(Item.READ))
+        if (item==null)
             return null;
+        if (!item.hasPermission(Item.READ)) {
+            if (item.hasPermission(Item.DISCOVER)) {
+                throw new AccessDeniedException("Please login to access job " + name);
+            }
+            return null;
+        }
         return item;
     }
 
