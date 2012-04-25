@@ -2247,7 +2247,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      *      This method returns a non-null object for any user name, without validation.
      */
     public User getUser(String name) {
-        return User.get(name);
+        return User.get(name,hasPermission(ADMINISTER));
     }
 
     /**
