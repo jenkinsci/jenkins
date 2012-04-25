@@ -2062,7 +2062,8 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null && name.length>0) {
+        // Don't count repeated containers as real parents.
+        if(name!=null && name.length>0 && !Element.hasClassName(e.parentNode,"repeated-container")) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
