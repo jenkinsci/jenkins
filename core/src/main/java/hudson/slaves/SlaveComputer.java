@@ -233,8 +233,11 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskAccepted(executor, task);
         }
-        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
-            ((ExecutorListener)getNode().getRetentionStrategy()).taskAccepted(executor, task);
+        
+        //getNode() can return null at indeterminate times when nodes go offline
+        Slave node = getNode();
+        if (node != null && node.getRetentionStrategy() instanceof ExecutorListener) {
+            ((ExecutorListener)node.getRetentionStrategy()).taskAccepted(executor, task);
         }
     }
 
