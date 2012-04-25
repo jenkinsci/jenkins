@@ -36,10 +36,10 @@ THE SOFTWARE.
       <st:include page="actions.jelly" />
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.previousBuild!=null}">
-        <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" contextMenu="false"/>
+        <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" contextMenu="false" rel="prev"/>
       </j:if>
       <j:if test="${it.nextBuild!=null}">
-        <l:task icon="images/24x24/next.png" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" contextMenu="false"/>
+        <l:task icon="images/24x24/next.png" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" contextMenu="false" rel="next"/>
       </j:if>
     </l:tasks>
   </l:side-panel>

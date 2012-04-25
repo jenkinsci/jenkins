@@ -31,6 +31,10 @@ THE SOFTWARE.
     <st:attribute name="href" use="required">
       Link target. Relative to the current page.
     </st:attribute>
+    <st:attribute name="rel">
+      rel attribute to describe link target "href".
+      For instance, rel=next and rel=prev.
+    </st:attribute>
     <st:attribute name="icon" use="required">
       URL to the icon, which should be 24x24 in size.
       It's relative to the context path of Hudson.
@@ -100,7 +104,7 @@ THE SOFTWARE.
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,icon,title) : null}
 
-          <a href="${href}" onclick="${attrs.onclick}">
+          <a href="${href}" onclick="${attrs.onclick}" rel="${rel}">
             <img width="24" height="24" alt="" src="${icon}"/>
             <j:choose>
               <j:when test="${match}">
