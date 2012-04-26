@@ -25,10 +25,13 @@ package hudson.matrix;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import jenkins.model.Jenkins;
 import hudson.util.QuotedStringTokenizer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -67,6 +70,8 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * @deprecated as of 1.373
      *      Use {@link #getValues()}
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.463")
     public final List<String> values;
 
     public Axis(String name, List<String> values) {
