@@ -510,6 +510,7 @@ var jenkinsRules = {
 // other behavior rules change them (like YUI buttons.)
 
     "DIV.hetero-list-container" : function(e) {
+        e=$(e);
         if(isInsideRemovable(e))    return;
 
         // components for the add button
@@ -537,24 +538,84 @@ var jenkinsRules = {
 
         var withDragDrop = initContainerDD(e);
 
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
+        var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
+
+        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-") });
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
-            var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
+            var item = args[1];
+            if (item.cfg.getProperty("disabled"))   return;
+            var t = templates[parseInt(item.value)];
 
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
+            nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
+            $(nc).setOpacity(0);
+
+            var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
-                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                function findInsertionPoint() {
+                    // given the element to be inserted 'prospect',
+                    // and the array of existing items 'current',
+                    // and preferred ordering function, return the position in the array
+                    // the prospect should be inserted.
+                    // (for example 0 if it should be the first item)
+                    function findBestPosition(prospect,current,order) {
+                        function desirability(pos) {
+                            var count=0;
+                            for (var i=0; i<current.length; i++) {
+                                if ((i<pos) == (order(current[i])<=order(prospect)))
+                                    count++;
+                            }
+                            return count;
+                        }
+
+                        var bestScore = -1;
+                        var bestPos = 0;
+                        for (var i=0; i<=current.length; i++) {
+                            var d = desirability(i);
+                            if (bestScore<=d) {// prefer to insert them toward the end
+                                bestScore = d;
+                                bestPos = i;
+                            }
+                        }
+                        return bestPos;
+                    }
+
+                    var current = e.childElements().findAll(function(e) {return e.match("DIV.repeated-chunk")});
+
+                    function o(did) {
+                        if (Object.isElement(did))
+                            did = did.getAttribute("descriptorId");
+                        for (var i=0; i<templates.length; i++)
+                            if (templates[i].descriptorId==did)
+                                return i;
+                        return 0; // can't happen
+                    }
+
+                    var bestPos = findBestPosition(t.descriptorId, current, o);
+                    if (bestPos<current.length)
+                        return current[bestPos];
+                    else
+                        return insertionPoint;
+                }
+                (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
+
                 if(withDragDrop)    prepareDD(nc);
 
+                new YAHOO.util.Anim(nc, {
+                    opacity: { to:1 }
+                }, 0.2, YAHOO.util.Easing.easeIn).animate();
+
                 Behaviour.applySubtree(nc,true);
+                ensureVisible(nc);
+                layoutUpdateCallback.call();
             },true);
         });
 
-        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
+        menuButton.getMenu().renderEvent.subscribe(function() {
             // hook up tooltip for menu items
             var items = menuButton.getMenu().getItems();
             for(i=0; i<items.length; i++) {
@@ -563,6 +624,20 @@ var jenkinsRules = {
                     applyTooltip(items[i].element,t);
             }
         });
+
+        if (e.hasClassName("one-each")) {
+            // does this container already has a ocnfigured instance of the specified descriptor ID?
+            function has(id) {
+                return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
+            }
+
+            menuButton.getMenu().showEvent.subscribe(function() {
+                var items = menuButton.getMenu().getItems();
+                for(i=0; i<items.length; i++) {
+                    items[i].cfg.setProperty("disabled",has(templates[i].descriptorId));
+                }
+            });
+        }
     },
 
     "DIV.repeated-container" : function(e) {
@@ -1846,10 +1921,17 @@ var repeatableSupport = {
     // called when 'delete' button is clicked
     onDelete : function(n) {
         n = findAncestorClass(n,"repeated-chunk");
-        var p = n.parentNode;
-        p.removeChild(n);
-        if (p.tag)
-            p.tag.update();
+        var a = new YAHOO.util.Anim(n, {
+            opacity: { to:0 },
+            height: {to:0 }
+        }, 0.2, YAHOO.util.Easing.easeIn);
+        a.onComplete.subscribe(function() {
+            var p = n.parentNode;
+            p.removeChild(n);
+            if (p.tag)
+                p.tag.update();
+        });
+        a.animate();
     },
 
     // called when 'add' button is clicked
@@ -1980,7 +2062,49 @@ function getStyle(e,a){
   if(e.currentStyle)
     return e.currentStyle[a];
   return null;
-};
+}
+
+/**
+ * Makes sure the given element is within the viewport.
+ *
+ * @param {HTMLElement} e
+ *      The element to bring into the viewport.
+ */
+function ensureVisible(e) {
+    var viewport = YAHOO.util.Dom.getClientRegion();
+    var pos      = YAHOO.util.Dom.getRegion(e);
+
+    var Y = viewport.top;
+    var H = viewport.height;
+
+    function handleStickers(name,f) {
+        var e = $(name);
+        if (e) f(e);
+        document.getElementsBySelector("."+name).each(f);
+    }
+
+    // if there are any stickers around, subtract them from the viewport
+    handleStickers("top-sticker",function (t) {
+        t = t.clientHeight;
+        Y+=t; H-=t;
+    });
+
+    handleStickers("bottom-sticker",function (b) {
+        b = b.clientHeight;
+        H-=b;
+    });
+
+    var y = pos.top;
+    var h = pos.height;
+
+    var d = (y+h)-(Y+H);
+    if (d>0) {
+        document.body.scrollTop += d;
+    } else {
+        var d = Y-y;
+        if (d>0)    document.body.scrollTop -= d;
+    }
+}
 
 // set up logic behind the search box
 function createSearchBox(searchURL) {
