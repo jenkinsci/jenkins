@@ -67,7 +67,7 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * @deprecated as of 1.373
      *      Use {@link #getValues()}
      */
-    public final List<String> values;
+    public List<String> values;
 
     public Axis(String name, List<String> values) {
         this.name = name;
@@ -142,6 +142,14 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      */
     public List<String> getValues() {
         return Collections.unmodifiableList(values);
+    }
+
+    public boolean isComputable() {
+        return false;
+    }
+
+    public List<String> computeValues() {
+        return getValues();
     }
 
     @Override
