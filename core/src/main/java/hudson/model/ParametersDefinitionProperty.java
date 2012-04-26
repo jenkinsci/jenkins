@@ -24,26 +24,24 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Flavor;
+
+import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.AbstractList;
-
-import javax.servlet.ServletException;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
-import hudson.Extension;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -144,12 +142,17 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-    	Jenkins.getInstance().getQueue().schedule(
+		Jenkins.getInstance().getQueue().schedule(
                 owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
 
-        // send the user back to the job top page.
-        rsp.sendRedirect(".");
-    }
+		if (req.getContentType() != null && req.getContentType().contains("application/json")) {
+			rsp.setContentType("application/json");
+			rsp.serveExposedBean(req, owner, Flavor.JSON);
+		} else {
+			// send the user back to the job top page.
+			rsp.sendRedirect(".");
+		}
+	}
 
     /**
      * Gets the {@link ParameterDefinition} of the given name, if any.
