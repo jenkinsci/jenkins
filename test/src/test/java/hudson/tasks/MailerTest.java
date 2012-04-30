@@ -90,11 +90,13 @@ public class MailerTest extends HudsonTestCase {
         verifyRoundtrip(m);
     }
 
-    private void verifyRoundtrip(Mailer m) throws Exception {
+    private void verifyRoundtrip(Mailer before) throws Exception {
         FreeStyleProject p = createFreeStyleProject();
-        p.getPublishersList().add(m);
+        p.getPublishersList().add(before);
         submit(new WebClient().getPage(p,"configure").getFormByName("config"));
-        assertEqualBeans(m,p.getPublishersList().get(Mailer.class),"recipients,dontNotifyEveryUnstableBuild,sendToIndividuals");
+        Mailer after = p.getPublishersList().get(Mailer.class);
+        assertNotSame(before,after);
+        assertEqualBeans(before,after,"recipients,dontNotifyEveryUnstableBuild,sendToIndividuals");
     }
 
     public void testGlobalConfigRoundtrip() throws Exception {

@@ -200,7 +200,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
         buildWrappers.rebuild(req,json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req,json, Builder.all(), "builder");
-        publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(), this.getClass()));
+        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
     }
 
     @Override
