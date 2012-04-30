@@ -269,7 +269,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             listUpAggregators(listener, p.getBuildWrappers().values());
 
             axes = p.getAxes();
-
+            
+            for(MatrixConfiguration c: getParent().getActiveConfigurations()){
+                c.setWaiting(true); // configuration waiting for adding to a queue
+            }           
             try {
                 return p.getExecutionStrategy().run(MatrixBuild.this, aggregators, listener);
             } catch( InterruptedException e ) {

@@ -50,6 +50,9 @@ import hudson.tasks.Publisher;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.ServletException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * One configuration of {@link MatrixProject}.
@@ -66,6 +69,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * Hash value of {@link #combination}. Cached for efficiency.
      */
     private transient String digestName;
+    
+    /**
+     * Determine if the configuration waiting for adding to queue
+     */
+    private boolean waiting=false;
 
     public MatrixConfiguration(MatrixProject parent, Combination c) {
         super(parent,c.toString());
@@ -76,6 +84,28 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
+    }
+       
+    /**
+     * Return true if the configuration waiting for adding to queue
+     */
+    public boolean isWaiting(){
+        if(!getParent().getLastBuild().isBuilding()){
+            waiting=false; //matrix build was canceled
+        }
+        return waiting;
+    }
+    
+    protected void setWaiting(boolean waiting){
+        this.waiting=waiting;
+    }
+    
+    /**
+     * Cancel this configuration build, so the configuration 
+     */
+    public void doCancelWaiting(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException{
+        waiting=false;
+        rsp.forwardToPreviousPage(req);
     }
 
     /**
@@ -325,6 +355,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Can be null.
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        if(waiting){
+            waiting=false;
+            return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        }
+        return waiting=false; // the configuration has been canceled
     }
 }

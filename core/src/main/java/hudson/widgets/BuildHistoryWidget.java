@@ -23,6 +23,7 @@
  */
 package hudson.widgets;
 
+import hudson.matrix.MatrixConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
@@ -63,5 +64,14 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
     	List<Item> list = new ArrayList<Item>(Jenkins.getInstance().getQueue().getItems(owner));
     	Collections.reverse(list);
     	return list;
+    }
+    
+    /**
+     * Returns true if the configuration waiting for adding to a queue
+     */
+    public boolean isWaiting(){
+        if(owner instanceof MatrixConfiguration)
+            return ((MatrixConfiguration)owner).isWaiting();        
+        return false;
     }
 }
