@@ -1042,7 +1042,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         processPlugins = req.hasParameter( "maven.processPlugins" );
         mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
-        publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
+        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
         settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
         globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );

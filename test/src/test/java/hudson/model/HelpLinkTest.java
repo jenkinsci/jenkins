@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.Functions;
+import hudson.tasks.BuildStepMonitor;
 import org.jvnet.hudson.test.HudsonTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
@@ -33,8 +35,9 @@ public class HelpLinkTest extends HudsonTestCase {
         clickAllHelpLinks(createMatrixProject());
     }
 
-    private void clickAllHelpLinks(Job j) throws Exception {
-        clickAllHelpLinks(new WebClient().getPage(j,"configure"));
+    private void clickAllHelpLinks(AbstractProject j) throws Exception {
+        // TODO: how do we add all the builders and publishers so that we can test this meaningfully?
+        clickAllHelpLinks(new WebClient().getPage(j, "configure"));
     }
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
@@ -46,7 +49,7 @@ public class HelpLinkTest extends HudsonTestCase {
             helpLink.click();
     }
 
-    public static class HelpNotFoundBuilder extends Builder {
+    public static class HelpNotFoundBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
             public boolean isApplicable(Class jobType) {
                 return true;
@@ -61,6 +64,10 @@ public class HelpLinkTest extends HudsonTestCase {
                 return "I don't have the help file";
             }
         }
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.BUILD;
+        }
     }
 
     /**
@@ -71,7 +78,9 @@ public class HelpLinkTest extends HudsonTestCase {
         DescriptorImpl d = new DescriptorImpl();
         Publisher.all().add(d);
         try {
-            clickAllHelpLinks(createFreeStyleProject());
+            FreeStyleProject p = createFreeStyleProject();
+            p.getPublishersList().add(new HelpNotFoundBuilder());
+            clickAllHelpLinks(p);
             fail("should detect a failure");
         } catch(AssertionError e) {
             if(e.getMessage().contains(d.getHelpFile()))
