@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.463-SNAPSHOT</version>
+    <version>1.462</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -189,17 +189,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
       <artifactId>sisu-guice</artifactId>
-      <exclusions>
-        <exclusion>
-          <!--
-             sisu-guice wants a patched version of guava, which is old.
-             but from what I can tell from changes, it's GWT related
-             and we don't care. So let's stick to the proper guava
-          -->
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
