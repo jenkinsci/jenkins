@@ -31,7 +31,10 @@ THE SOFTWARE.
             <j:invokeStatic var="encodedName" className="hudson.Util" method="rawEncode">
                 <j:arg value="${it.name}" />
             </j:invokeStatic>
-            <a href="parameter/${encodedName}/${it.originalFileName}">${it.originalFileName}</a>
+            <j:set var="path" value="parameter/${encodedName}/${it.originalFileName}"/>
+            <a href="${path}">${it.originalFileName}</a>
+            <st:nbsp/>
+            <a href="${path}?view">${%view}</a>
         </j:if>
     </f:entry>
 </j:jelly>
