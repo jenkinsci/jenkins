@@ -83,5 +83,5 @@ THE SOFTWARE.
 
   <p:config-buildWrappers />
   <p:config-builders />
-  <p:config-publishers />
+  <p:config-publishers2 />
 </j:jelly>
