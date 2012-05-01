@@ -1808,7 +1808,8 @@ public final class FilePath implements Serializable {
                     if (parent != null) parent.mkdirs();
 
                     byte linkFlag = (Byte) LINKFLAG_FIELD.get(te);
-                    if (linkFlag==TarEntry.LF_SYMLINK) {
+                    boolean isSymlink = (linkFlag==TarEntry.LF_SYMLINK);
+                    if (isSymlink) {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
                         IOUtils.copy(t,f);
@@ -1817,7 +1818,8 @@ public final class FilePath implements Serializable {
                     f.setLastModified(te.getModTime().getTime());
                     int mode = te.getMode()&0777;
                     if(mode!=0 && !Functions.isWindows()) // be defensive
-                        _chmod(f,mode);
+                        if (!isSymlink) // symlinks don't have modes, fixes 13280
+                            _chmod(f,mode);
                 }
             }
         } catch(IOException e) {
