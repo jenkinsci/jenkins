@@ -356,4 +356,16 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    @Bug(13649)
+    public void testMultiSegmentRelativePaths() throws Exception {
+        FilePath winPath = new FilePath(new LocalChannel(null), "c:\\app\\jenkins\\workspace");
+        FilePath nixPath = new FilePath(new LocalChannel(null), "/opt/jenkins/workspace");
+
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo/bar/manchu").getRemote());
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo\\bar/manchu").getRemote());
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo\\bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo\\bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar/manchu").getRemote());
+    }
 }
