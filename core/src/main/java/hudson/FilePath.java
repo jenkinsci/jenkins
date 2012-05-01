@@ -218,9 +218,12 @@ public final class FilePath implements Serializable {
             this.remote = normalize(rel);
         } else 
         if(base.isUnix()) {
-            this.remote = normalize(base.remote+'/'+rel);
+            // shouldn't need this replace, but better safe than sorry
+            this.remote = normalize(base.remote+'/'+rel.replace('\\','/'));
         } else {
-            this.remote = normalize(base.remote+'\\'+rel);
+            // need this replace, see Slave.getWorkspaceFor and AbstractItem.getFullName, nested jobs on Windows
+            // slaves will always have a rel containing at least one '/' character. JENKINS-13649
+            this.remote = normalize(base.remote+'\\'+rel.replace('/','\\'));
         }
     }
 
