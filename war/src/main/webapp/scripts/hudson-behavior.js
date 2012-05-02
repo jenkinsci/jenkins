@@ -587,7 +587,12 @@ var jenkinsRules = {
             return false;
         };
 
-        var menuAlign = (btn.getAttribute("data-menualign")||"tl-bl"); // TODO Bootstrap dropdown does not support menualign
+        var menuAlign = (btn.getAttribute("data-menualign")||"tl-bl");
+        // TODO Bootstrap dropdown does not support YUI menualign
+        if(menuAlign[0] == "b" && menuAlign[3] == "t") { // b?-t?
+            dropdown.style.top = "auto";
+            dropdown.style.bottom = "100%";
+        }
 
         // extract templates
         $(prototypes).childElements().each(function (n) {
