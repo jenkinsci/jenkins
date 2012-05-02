@@ -717,7 +717,7 @@ table.fingerprint-in-build td {
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 .repeated-preview-delete {
-  .opacity(50);
+  .opacity(50) !important; // !important to overwrite inline style used by YUI
   background-color: @inputDisabledBackground;
   .repeatable-delete:hover {
     .opacity(100);
