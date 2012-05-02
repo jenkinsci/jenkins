@@ -68,7 +68,7 @@ THE SOFTWARE.
     <j:when test="${attrs.title!=null}">
       <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
         <td colspan="3">
-          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true,true)"
                       negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
         </td>
         <j:if test="${attrs.help!=null}">

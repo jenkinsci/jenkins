@@ -1148,9 +1148,9 @@ var jenkinsRules = {
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisible : function(b) {
+            makeOuterVisible : function(b, animate) {
                 this.outerVisible = b;
-                this.updateVisibility();
+                this.updateVisibility(animate);
             },
 
             /**
@@ -1159,25 +1159,44 @@ var jenkinsRules = {
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisible : function(b) {
+            makeInnerVisible : function(b, animate) {
                 this.innerVisible = b;
-                this.updateVisibility();
+                this.updateVisibility(animate);
             },
-            toggleInnerVisible : function() {
-                this.makeInnerVisible(!this.innerVisible);
+            toggleInnerVisible : function(animate) {
+                this.makeInnerVisible(!this.innerVisible, animate);
             },
 
             /**
              * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
              */
-            updateVisibility : function() {
-                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+            updateVisibility : function(animate) {
+                var displayCurrent = this.start.style.display != "none";
+                var display = (this.outerVisible && this.innerVisible);
                 for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
+                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible, animate);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
-                    } else {
+                    } else if (!isRunAsTest && animate) {
+                        if(displayCurrent && !display) {
+                            var a = new YAHOO.util.Anim(e, {
+                                opacity: { to:0 },
+                                height: { to:0 }
+                            }, 0.2, YAHOO.util.Easing.easeIn);
+                            a.onComplete.subscribe(function() {
+                                this.getEl().style.display = "none";
+                            });
+                            a.animate();
+                        } else if (!displayCurrent && display) {
+                            $(e).setOpacity(0);
+                            e.style.display = "";
+                            new YAHOO.util.Anim(e, {
+                                opacity: { to:1 }
+                            }, 0.2, YAHOO.util.Easing.easeIn).animate();
+                        }
                         e.style.display = display;
+                    } else {
+                        e.style.display = display ? "" : "none";
                     }
                 }
                 layoutUpdateCallback.call();
@@ -1230,7 +1249,7 @@ var jenkinsRules = {
         Event.observe(e, "click", function(ev) {
             var button = ev.target;
             var start = findAdvancedBodyStart(button);
-            start.rowVisibilityGroup.toggleInnerVisible(!start.rowVisibilityGroup.innerVisible);
+            start.rowVisibilityGroup.toggleInnerVisible(true);
             var text = button.value;
             button.value = button.getAttribute("data-textToggled");
             button.setAttribute("data-textToggled",text);
@@ -1625,7 +1644,9 @@ function applyNameRef(s,e,id) {
 
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
-function updateOptionalBlock(c,scroll) {
+//   @param scroll   enable scrolling to the element
+//   @param animate  enable animation
+function updateOptionalBlock(c,scroll,animate) {
     // find the start TR
     var s = $(c);
     while(!s.hasClassName("optional-block-start"))
@@ -1638,7 +1659,7 @@ function updateOptionalBlock(c,scroll) {
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
-    vg.rowVisibilityGroup.makeInnerVisible(checked);
+    vg.rowVisibilityGroup.makeInnerVisible(checked, animate);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
@@ -1895,11 +1916,15 @@ var repeatableSupport = {
         nc.className = "repeated-chunk";
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
+        $(nc).setOpacity(0);
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
 
         Behaviour.applySubtree(nc,true);
         this.update();
+        new YAHOO.util.Anim(nc, {
+            opacity: { to:1 }
+        }, 0.2, YAHOO.util.Easing.easeIn).animate();
     },
 
     // update CSS classes associated with repeated items.
