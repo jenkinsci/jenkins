@@ -24,6 +24,7 @@
 package hudson.util;
 
 import hudson.model.FreeStyleProject;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
@@ -43,7 +44,7 @@ public class FormFieldValidatorTest extends HudsonTestCase {
         new WebClient().getPage(p,"configure");
     }
 
-    public static class BrokenFormValidatorBuilder extends Builder {
+    public static class BrokenFormValidatorBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
             public boolean isApplicable(Class jobType) {
                 return true;
@@ -57,6 +58,10 @@ public class FormFieldValidatorTest extends HudsonTestCase {
                 return "I have broken form field validation";
             }
         }
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.BUILD;
+        }
     }
 
     /**
@@ -68,6 +73,7 @@ public class FormFieldValidatorTest extends HudsonTestCase {
         Publisher.all().add(d);
         try {
             FreeStyleProject p = createFreeStyleProject();
+            p.getPublishersList().add(new BrokenFormValidatorBuilder());
             new WebClient().getPage(p,"configure");
             fail("should have failed");
         } catch(AssertionError e) {

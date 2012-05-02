@@ -118,7 +118,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
-            if(!preBuild(listener,project.getPublishers()))
+            if(!preBuild(listener,project.getPublishersList()))
                 return FAILURE;
 
             Result r = null;
@@ -159,7 +159,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
-            if (!performAllBuildSteps(listener, project.getPublishers(), true))
+            if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);
             if (!performAllBuildSteps(listener, project.getProperties(), true))
                 setResult(FAILURE);
@@ -168,7 +168,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, project.getPublishers(), false);
+            performAllBuildSteps(listener, project.getPublishersList(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
             super.cleanUp(listener);
         }

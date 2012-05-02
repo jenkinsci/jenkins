@@ -224,6 +224,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     Permission DELETE = new Permission(PERMISSIONS, "Delete", null, Permission.DELETE, PermissionScope.ITEM);
     Permission CONFIGURE = new Permission(PERMISSIONS, "Configure", null, Permission.CONFIGURE, PermissionScope.ITEM);
     Permission READ = new Permission(PERMISSIONS, "Read", null, Permission.READ, PermissionScope.ITEM);
+    Permission DISCOVER = new Permission(PERMISSIONS, "Discover", Messages._AbstractProject_DiscoverPermission_Description(), Permission.READ, PermissionScope.ITEM);
     Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.ITEM});
     Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE, PermissionScope.ITEM);
     Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ, PermissionScope.ITEM);

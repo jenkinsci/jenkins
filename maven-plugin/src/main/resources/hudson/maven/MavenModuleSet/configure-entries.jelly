@@ -167,5 +167,7 @@ THE SOFTWARE.
                       instances="${it.reporters.toMap()}" />
   </j:if>
 
-  <p:config-publishers />
+
+  <p:config-buildWrappers />
+  <p:config-publishers2 />
 </j:jelly>

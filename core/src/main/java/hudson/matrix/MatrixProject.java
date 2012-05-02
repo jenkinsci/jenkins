@@ -719,7 +719,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
-        publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
+        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
 
         rebuildConfigurations();
     }

@@ -130,7 +130,7 @@ public abstract class ACL {
      */
     public static SecurityContext impersonate(Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(new NotSerilizableSecurityContext(ACL.SYSTEM));
+        SecurityContextHolder.setContext(new NotSerilizableSecurityContext(auth));
         return old;
     }
 }

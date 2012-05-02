@@ -55,6 +55,48 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.463>What's new in 1.463</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a bug in the Content-Range header handling.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13125">issue 13125</a>)
+  <li class=bug>
+    Ant's default exclusion was preventing plugins from archiving some files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13165">issue 13165</a>)
+  <li class=bug>
+    Fixed NPE in PAM authentication if the user is in a group that doesn't exist anymore.
+  <li class=bug>
+    End up more gracefully if there's some problem when searching for user partipication in the build
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13564">issue 13564</a>)
+  <li class=rfe>
+    Improved the performance of the fingerprint persistence.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13154">issue 13154</a>)
+  <li class=rfe>
+    PAM authentication supports '@group' to force interpretation as a group instead of user.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13526">issue 13526</a>)
+  <li class=rfe>
+    Honor the <tt>Accept</tt> header in the <tt>job/name/build</tt> URL. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13546">issue 13546</a>)
+  <li class=rfe>
+    Added a DISCOVER permission to allow anonymous users to be presented the login screen
+    when accessing job URLs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8214">issue 8214</a>)
+  <li class='major rfe'>
+    Publishers can be now reordered by the user.
+    (<a href="https://groups.google.com/forum/?fromgroups#!topic/jenkinsci-dev/UQLvxQclyb4">discussion</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.462>What's new in 1.462</a> (2012/04/30)</h3>
+<ul class=image>
+  <li class=bug>
+    API token authentication was broken in 1.461
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13600">issue 13600</a>)
   <li class=rfe>
     Added the filter textbox to the update center selector.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13476">issue 13476</a>)
@@ -64,12 +106,11 @@ Upcoming changes</a>
   <li class=rfe>
     Convert "Delete this build" buttons into links in the sidepanel.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13387">issue 13387</a>)
+  <li class=rfe>
+    Validate project naming regex immediately.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13524">issue 13524</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.461>What's new in 1.461</a> <!--=DATE=--></h3>
+<h3><a name=v1.461>What's new in 1.461</a> (2012/04/23)</h3>
 <ul class=image>
   <li class=bug>
     Flag -U is not used during the parsing step of a Maven Job
@@ -81,7 +122,6 @@ Upcoming changes</a>
     allow j/k navigation for search results
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13105">issue 13105</a>)    
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.460>What's new in 1.460</a> (2012/04/14)</h3>
 <ul class=image>
   <li class=bug>
