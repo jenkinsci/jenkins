@@ -123,6 +123,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         public MatrixRun getRun() {
             return MatrixBuild.this.getRun(combination);
         }
+        
+        /**
+        * Return absolute url of run {@link MatrixRun} which belongs to a given build {@link MatrixBuild}. 
+        * If there is no run which belongs to the build, return url of run, which belongs to the nearest previous build.
+        *
+        */
+        public String getNearestRunUrl(){           
+            String url = Jenkins.getInstance().getRootUrl() + getRun().getUrl();
+            return url;
+        }
 
         public String getShortUrl() {
             return Util.rawEncode(combination.toString());
@@ -235,7 +245,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
-            if(item!=null)
+            if(item!=null && item.getNumber()==this.getNumber()) //do not return run of other matrix build
                 return item;
         } catch (IllegalArgumentException _) {
             // failed to parse the token as Combination. Must be something else
