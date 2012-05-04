@@ -77,6 +77,8 @@ public class TimerTrigger extends Trigger<BuildableItem> {
                 if(msg!=null)   return FormValidation.warning(msg);
                 return FormValidation.ok();
             } catch (ANTLRException e) {
+                if (value.trim().indexOf('\n')==-1 && value.contains("**"))
+                    return FormValidation.error(Messages.TimerTrigger_MissingWhitespace());
                 return FormValidation.error(e.getMessage());
             }
         }
