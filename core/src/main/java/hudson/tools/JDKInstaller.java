@@ -74,6 +74,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static hudson.tools.JDKInstaller.Preference.*;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
 
 /**
  * Install JDKs from java.sun.com.
@@ -369,7 +372,12 @@ public class JDKInstaller extends ToolInstaller {
 
         int authCount=0, totalPageCount=0;  // counters for avoiding infinite loop
 
+        // login page requires the cookie.
+        hc.getState().addCookie(new Cookie(".oracle.com", "gpw_e24", 
+                "http%3A%2F%2Fwww.oracle.com%2Ftechnetwork%2Fjava%2Fjavase%2Fdownloads%2Fjava-archive-downloads-javase7-521261.html", "/", -1, false));
+
         HttpMethodBase m = new GetMethod(primary.filepath);
+        m.getParams().setCookiePolicy(CookiePolicy.DEFAULT);
         try {
             while (true) {
                 if (totalPageCount++>16) // looping too much
@@ -382,6 +390,7 @@ public class JDKInstaller extends ToolInstaller {
                     String loc = m.getResponseHeader("Location").getValue();
                     m.releaseConnection();
                     m = new GetMethod(loc);
+                    m.getParams().setCookiePolicy(CookiePolicy.DEFAULT);
                     continue;
                 }
                 if (r!=200)
