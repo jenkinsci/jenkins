@@ -107,7 +107,7 @@ public class JDKInstallerTest extends HudsonTestCase {
 
         retrieveUpdateCenterData();
 
-        JDKInstaller i = new JDKInstaller("jdk-6u13-oth-JPR@CDS-CDS_Developer", true);
+        JDKInstaller i = new JDKInstaller("jdk-7u3-oth-JPR", true);
         StreamTaskListener listener = StreamTaskListener.fromStdout();
         i.locate(listener, Platform.LINUX, CPU.i386);
         i.locate(listener, Platform.WINDOWS, CPU.amd64);
