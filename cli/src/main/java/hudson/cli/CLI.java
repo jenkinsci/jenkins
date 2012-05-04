@@ -216,7 +216,11 @@ public class CLI {
      * If the server advertises CLI endpoint, returns its location.
      */
     private InetSocketAddress getCliTcpPort(String url) throws IOException {
-        URLConnection head = new URL(url).openConnection();
+        URL _url = new URL(url);
+        if (_url.getHost()==null || _url.getHost().length()==0) {
+            throw new IOException("Invalid URL: "+url);
+        }
+        URLConnection head = _url.openConnection();
         try {
             head.connect();
         } catch (IOException e) {
