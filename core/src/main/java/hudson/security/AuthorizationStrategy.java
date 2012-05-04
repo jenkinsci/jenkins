@@ -99,11 +99,12 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             public boolean hasPermission(Authentication a, Permission permission) {
                 ACL base = item.getOwner().getACL();
 
-                if (permission==View.READ) {
+                boolean hasPermission = base.hasPermission(a, permission);
+                if (!hasPermission && permission == View.READ) {
                     return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
                 }
 
-                return base.hasPermission(a, permission);
+                return hasPermission;
             }
         };
     }
