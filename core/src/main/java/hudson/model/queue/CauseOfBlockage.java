@@ -5,6 +5,7 @@ import hudson.model.Queue.Task;
 import hudson.model.Node;
 import hudson.model.Messages;
 import hudson.model.Label;
+import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
 import org.jvnet.localizer.Localizable;
 
@@ -23,6 +24,13 @@ public abstract class CauseOfBlockage {
      * Human readable description of why the build is blocked.
      */
     public abstract String getShortDescription();
+
+    /**
+     * Report a line to the listener about this cause.
+     */
+    public void print(TaskListener listener) {
+        listener.getLogger().println(getShortDescription());
+    }
 
     /**
      * Obtains a simple implementation backed by {@link Localizable}.
@@ -75,6 +83,12 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             return Messages.Queue_NodeOffline(node.getDisplayName());
         }
+        
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(
+                Messages.Queue_NodeOffline(ModelHyperlinkNote.encodeTo(node)));
+        }
     }
 
     /**
@@ -103,7 +117,12 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo("/computer/" + node.getNodeName(), node.getNodeName()));
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
+        }
+        
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo(node)));
         }
     }
 
