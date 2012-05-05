@@ -3,6 +3,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.ModelObject;
+import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.User;
 
@@ -46,7 +47,11 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     public static String encodeTo(Run r) {
         return encodeTo('/'+r.getUrl(),r.getDisplayName());
     }
-    
+
+    public static String encodeTo(Node node) {
+        return encodeTo("/computer/"+ node.getNodeName(), node.getDisplayName());
+    }
+
     public static String encodeTo(String url, String text) {
         try {
             return new ModelHyperlinkNote(url,text.length()).encode()+text;
