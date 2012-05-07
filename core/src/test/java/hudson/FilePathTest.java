@@ -365,8 +365,8 @@ public class FilePathTest extends ChannelTestCase {
         try {
             FilePath in = tmp.child("in");
             in.mkdirs();
-            in.child("a").touch(0);
-            in.child("b").symlinkTo("a", TaskListener.NULL);
+            in.child("c").touch(0);
+            in.child("b").symlinkTo("c", TaskListener.NULL);
                         
             FilePath tar = tmp.child("test.tar");
             in.tar(tar.write(), "**/*");
@@ -374,7 +374,7 @@ public class FilePathTest extends ChannelTestCase {
             FilePath dst = in.child("dst");
             tar.untar(dst, TarCompression.NONE);
 
-            assertEquals("a",dst.child("b").readLink());
+            assertEquals("c",dst.child("b").readLink());
         } finally {
             tmp.deleteRecursive();
         }

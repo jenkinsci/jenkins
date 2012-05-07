@@ -1812,12 +1812,12 @@ public final class FilePath implements Serializable {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
                         IOUtils.copy(t,f);
+
+                        f.setLastModified(te.getModTime().getTime());
+                        int mode = te.getMode()&0777;
+                        if(mode!=0 && !Functions.isWindows()) // be defensive
+                            _chmod(f,mode);
                     }
-                    
-                    f.setLastModified(te.getModTime().getTime());
-                    int mode = te.getMode()&0777;
-                    if(mode!=0 && !Functions.isWindows()) // be defensive
-                        _chmod(f,mode);
                 }
             }
         } catch(IOException e) {
