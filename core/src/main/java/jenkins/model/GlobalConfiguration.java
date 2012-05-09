@@ -48,6 +48,7 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
     public static ExtensionList<GlobalConfiguration> all() {
-        return Jenkins.getInstance().getDescriptorList(GlobalConfiguration.class);
+        return Jenkins.getInstance().<GlobalConfiguration,GlobalConfiguration>getDescriptorList(GlobalConfiguration.class);
+        // pointless type parameters help work around bugs in javac in earlier versions http://codepad.org/m1bbFRrH
     }
 }
