@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
+import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
@@ -39,8 +40,12 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.MatrixExecutionStrategy;
+import hudson.matrix.MatrixExecutionStrategyDescriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -61,10 +66,15 @@ import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
@@ -128,9 +138,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * SCM used for this build.
      * Maybe null, for historical reason, in which case CVS is assumed.
      */
-    private ChangeLogParser scm;
+    private ChangeLogParser scm;   
 
-    /**
+	/**
      * Changes in this build.
      */
     private volatile transient WeakReference<ChangeLogSet<? extends Entry>> changeSet;
@@ -155,7 +165,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
      */
     protected transient List<Environment> buildEnvironments;
-
+    
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -222,6 +232,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public AbstractBuild<?,?> getRootBuild() {
         return this;
     }
+    
+    protected ChangeLogParser getScm() {
+		return scm;
+	}
+
+	protected void setScm(ChangeLogParser scm) {
+		this.scm = scm;
+	}
 
     /**
      * Used to render the side panel "Back to project" link.
@@ -409,7 +427,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private void createSymlink(TaskListener listener, String name) throws InterruptedException {
         Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
     }
-
+        
     protected abstract class AbstractRunner extends Runner {
         /**
          * Since configuration can be changed while a build is in progress,
@@ -470,7 +488,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);
-                }
+                }                            
+                
                 preCheckout(launcher,listener);
                 checkout(listener);
 
@@ -567,48 +586,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @throws IOException
          * @throws InterruptedException
          */
-        private void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
-        	if (project instanceof BuildableItemWithBuildWrappers) {
-                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-                for (BuildWrapper bw : biwbw.getBuildWrappersList())
-                    bw.preCheckout(AbstractBuild.this,launcher,listener);
-            }
+        protected void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
+        	project.getBuildCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, listener);
         }
         
-        private void checkout(BuildListener listener) throws Exception {
-                for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
-                    // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
-                    // in case check out fails and leaves a broken changelog.xml behind.
-                    // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
-                    AbstractBuild.this.scm = NullChangeLogParser.INSTANCE;
-
-                    try {
-                        if (project.checkout(AbstractBuild.this,launcher,listener,new File(getRootDir(),"changelog.xml"))) {
-                            // check out succeeded
-                            SCM scm = project.getScm();
-
-                            AbstractBuild.this.scm = scm.createChangeLogParser();
-                            AbstractBuild.this.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(AbstractBuild.this.calcChangeSet());
-
-                            for (SCMListener l : Jenkins.getInstance().getSCMListeners())
-                                l.onChangeLogParsed(AbstractBuild.this,listener,getChangeSet());
-                            return;
-                        }
-                    } catch (AbortException e) {
-                        listener.error(e.getMessage());
-                    } catch (InterruptedIOException e) {
-                        throw (InterruptedException)new InterruptedException().initCause(e);
-                    } catch (IOException e) {
-                        // checkout error not yet reported
-                        e.printStackTrace(listener.getLogger());
-                    }
-
-                    if (retryCount == 0)   // all attempts failed
-                        throw new RunnerAbortedException();
-
-                    listener.getLogger().println("Retrying after 10 seconds");
-                    Thread.sleep(10000);
-                }
+        protected void checkout(BuildListener listener) throws Exception {
+        	project.getBuildCheckoutStrategy().checkout(AbstractBuild.this, launcher, listener);
         }
 
         /**
@@ -765,6 +748,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     private transient Object changeSetLock = new Object();
     
+    protected void setChangeSet(WeakReference<ChangeLogSet<? extends Entry>> changeSet) {
+    	this.changeSet = changeSet;
+    }
+    
     /**
      * Gets the changes incorporated into this build.
      *
@@ -816,7 +803,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return changelogFile.exists();
     }
 
-    private ChangeLogSet<? extends Entry> calcChangeSet() {
+    protected ChangeLogSet<? extends Entry> calcChangeSet() {
         File changelogFile = new File(getRootDir(), "changelog.xml");
         if (!changelogFile.exists())
             return ChangeLogSet.createEmpty(this);

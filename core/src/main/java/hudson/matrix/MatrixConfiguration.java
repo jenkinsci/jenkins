@@ -32,6 +32,7 @@ import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
+import hudson.model.BuildCheckoutStrategy;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -160,6 +161,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     @Override
     public int getScmCheckoutRetryCount() {
         return getParent().getScmCheckoutRetryCount();
+    }
+    
+    /**
+     * Inherit the value from the parent.
+     */
+    @Override
+    public BuildCheckoutStrategy getBuildCheckoutStrategy() {
+        return getParent().getBuildCheckoutStrategy();
     }
 
     @Override

@@ -41,6 +41,7 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.BuildCheckoutStrategyDescriptor;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
@@ -790,6 +791,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         public List<MatrixExecutionStrategyDescriptor> getExecutionStrategyDescriptors() {
             return MatrixExecutionStrategyDescriptor.all();
+        }
+        
+        public List<BuildCheckoutStrategyDescriptor> getBuildCheckoutStrategyDescriptors() {
+            return BuildCheckoutStrategyDescriptor.all();
         }
     }
 
