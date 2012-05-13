@@ -43,6 +43,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,6 +121,8 @@ public class MailSender {
             }
         } catch (MessagingException e) {
             e.printStackTrace(listener.error(e.getMessage()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace(listener.error(e.getMessage()));
         } finally {
             CHECKPOINT.report();
         }
@@ -145,7 +148,7 @@ public class MailSender {
         return b.getResult();
     }
 
-    protected MimeMessage getMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
+    protected MimeMessage getMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, UnsupportedEncodingException, InterruptedException {
         if (build.getResult() == Result.FAILURE) {
             return createFailureMail(build, listener);
         }
@@ -169,7 +172,7 @@ public class MailSender {
         return null;
     }
 
-    private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException {
+    private MimeMessage createBackToNormalMail(AbstractBuild<?, ?> build, String subject, BuildListener listener) throws MessagingException, UnsupportedEncodingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, Messages.MailSender_BackToNormalMail_Subject(subject)),charset);
@@ -180,7 +183,7 @@ public class MailSender {
         return msg;
     }
 
-    private MimeMessage createUnstableMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
+    private MimeMessage createUnstableMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, UnsupportedEncodingException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         String subject = Messages.MailSender_UnstableMail_Subject();
@@ -219,7 +222,7 @@ public class MailSender {
             buf.append(Messages.MailSender_Link(baseUrl, url)).append("\n\n");
     }
 
-    private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, InterruptedException {
+    private MimeMessage createFailureMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, UnsupportedEncodingException, InterruptedException {
         MimeMessage msg = createEmptyMail(build, listener);
 
         msg.setSubject(getSubject(build, Messages.MailSender_FailureMail_Subject()),charset);
@@ -304,19 +307,19 @@ public class MailSender {
         return msg;
     }
 
-    private MimeMessage createEmptyMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException {
+    private MimeMessage createEmptyMail(AbstractBuild<?, ?> build, BuildListener listener) throws MessagingException, UnsupportedEncodingException {
         MimeMessage msg = new MimeMessage(Mailer.descriptor().createSession());
         // TODO: I'd like to put the URL to the page in here,
         // but how do I obtain that?
         msg.addHeader("X-Jenkins-Job", build.getProject().getDisplayName());
         msg.addHeader("X-Jenkins-Result", build.getResult().toString());
         msg.setContent("", "text/plain");
-        msg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
+        msg.setFrom(Mailer.StringToAddress(Mailer.descriptor().getAdminAddress(), charset));
         msg.setSentDate(new Date());
         
         String replyTo = Mailer.descriptor().getReplyToAddress();
         if (StringUtils.isNotBlank(replyTo)) {
-            msg.setHeader("Reply-To", replyTo);
+            msg.setReplyTo(new Address[]{Mailer.StringToAddress(replyTo, charset)});
         }
 
         Set<InternetAddress> rcp = new LinkedHashSet<InternetAddress>();
@@ -342,7 +345,7 @@ public class MailSender {
             	}
             	
                 try {
-                    rcp.add(new InternetAddress(address));
+                    rcp.add(Mailer.StringToAddress(address, charset));
                 } catch (AddressException e) {
                     // report bad address, but try to send to other addresses
                     listener.getLogger().println("Unable to send to address: " + address);
@@ -377,7 +380,7 @@ public class MailSender {
         return msg;
     }
 
-    void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException {
+    void includeCulpritsOf(AbstractProject upstreamProject, AbstractBuild<?, ?> currentBuild, BuildListener listener, Set<InternetAddress> recipientList) throws AddressException, UnsupportedEncodingException {
         AbstractBuild<?,?> upstreamBuild = currentBuild.getUpstreamRelationshipBuild(upstreamProject);
         AbstractBuild<?,?> previousBuild = currentBuild.getPreviousBuild();
         AbstractBuild<?,?> previousBuildUpstreamBuild = previousBuild!=null ? previousBuild.getUpstreamRelationshipBuild(upstreamProject) : null;
@@ -398,14 +401,14 @@ public class MailSender {
         } while ( b != upstreamBuild && b != null );
     }
 
-    private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException {
+    private Set<InternetAddress> buildCulpritList(BuildListener listener, Set<User> culprits) throws AddressException, UnsupportedEncodingException {
         Set<InternetAddress> r = new HashSet<InternetAddress>();
         for (User a : culprits) {
             String adrs = Util.fixEmpty(a.getProperty(Mailer.UserProperty.class).getAddress());
             if(debug)
                 listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
             if (adrs != null)
-                r.add(new InternetAddress(adrs));
+                r.add(Mailer.StringToAddress(adrs, charset));
             else {
                 listener.getLogger().println(Messages.MailSender_NoAddress(a.getFullName()));
             }
