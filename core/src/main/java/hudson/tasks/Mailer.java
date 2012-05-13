@@ -50,12 +50,16 @@ import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -139,6 +143,18 @@ public class Mailer extends Notifier {
      */
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
+    }
+
+    private static Pattern ADDRESS_PATTERN = Pattern.compile("\\s*([^<]*)<([^>]+)>\\s*");
+    public static InternetAddress StringToAddress(String strAddress, String charset) throws AddressException, UnsupportedEncodingException {
+        Matcher m = ADDRESS_PATTERN.matcher(strAddress);
+        if(!m.matches()) {
+            return new InternetAddress(strAddress);
+        }
+
+        String personal = m.group(1);
+        String address = m.group(2);
+        return new InternetAddress(address, personal, charset);
     }
 
     /**
@@ -472,12 +488,12 @@ public class Mailer extends Notifier {
                 MimeMessage msg = new MimeMessage(createSession(smtpServer,smtpPort,useSsl,smtpAuthUserName,Secret.fromString(smtpAuthPassword)));
                 msg.setSubject(Messages.Mailer_TestMail_Subject(++testEmailCount), charset);
                 msg.setText(Messages.Mailer_TestMail_Content(testEmailCount, Jenkins.getInstance().getDisplayName()), charset);
-                msg.setFrom(new InternetAddress(adminAddress));
+                msg.setFrom(StringToAddress(adminAddress, charset));
                 if (StringUtils.isNotBlank(replyToAddress)) {
-                    msg.setHeader("Reply-To", replyToAddress);
+                    msg.setReplyTo(new Address[]{StringToAddress(replyToAddress, charset)});
                 }
                 msg.setSentDate(new Date());
-                msg.setRecipient(Message.RecipientType.TO, new InternetAddress(sendTestMailTo));
+                msg.setRecipient(Message.RecipientType.TO, StringToAddress(sendTestMailTo, charset));
 
                 Transport.send(msg);                
                 return FormValidation.ok(Messages.Mailer_EmailSentSuccessfully());
