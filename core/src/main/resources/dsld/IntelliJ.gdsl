@@ -12,7 +12,7 @@ contributor(ctx) {
     property name:"app", type:"hudson.model.Hudson"
 
     def ct = classType
-    if (ct.getClass().name.endsWith(".GroovyScriptClass")) {
+    if (ct!=null && ct.getClass().name.endsWith(".GroovyScriptClass")) {
         // if we are completing Groovy script
 
         def roots = new HashSet/*<VirtualFile>*/()
