@@ -44,19 +44,19 @@ THE SOFTWARE.
     </f:advanced>
   </f:section>
 
-	<p:config-scm/>
-	
-	<f:section title="${%Advanced Source Code Management}">
-		<j:choose>
-		  <j:when test="${descriptor.buildCheckoutStrategyDescriptors.size() gt 1}">
-			<f:dropdownDescriptorSelector title="${%Build Checkout Strategy}" field="buildCheckoutStrategy"/>
-		  </j:when>
-		  <j:otherwise>
-			<!-- for the default case when there's only one build checkout strategy, render it inline to simplify the UI -->
-			<f:property field="buildCheckoutStrategy" propertyDescriptor="${descriptor.buildCheckoutStrategyDescriptors.get(0)}"/>
-		  </j:otherwise>
-		</j:choose>
-	</f:section>
+  <p:config-scm/>
+  
+  <f:section title="${%Advanced Source Code Management}">
+    <j:choose>
+      <j:when test="${descriptor.buildCheckoutStrategyDescriptors.size() gt 1}">
+      <f:dropdownDescriptorSelector title="${%Build Checkout Strategy}" field="buildCheckoutStrategy"/>
+      </j:when>
+      <j:otherwise>
+        <!-- for the default case when there's only one build checkout strategy, render it inline to simplify the UI -->
+        <f:property field="buildCheckoutStrategy" propertyDescriptor="${descriptor.buildCheckoutStrategyDescriptors.get(0)}"/>
+      </j:otherwise>
+    </j:choose>
+  </f:section>
 
   <p:config-trigger>
     <p:config-upstream-pseudo-trigger />

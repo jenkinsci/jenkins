@@ -14,7 +14,7 @@ public abstract class BuildCheckoutStrategyDescriptor extends Descriptor<BuildCh
     }
 
     /**
-     * Returns all the registered {@link MatrixExecutionStrategyDescriptor}s.
+     * Returns all the registered {@link BuildCheckoutStrategyDescriptor}s.
      */
     public static DescriptorExtensionList<BuildCheckoutStrategy,BuildCheckoutStrategyDescriptor> all() {
         return Jenkins.getInstance().<BuildCheckoutStrategy,BuildCheckoutStrategyDescriptor>getDescriptorList(BuildCheckoutStrategy.class);
