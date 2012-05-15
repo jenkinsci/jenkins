@@ -108,6 +108,7 @@ public class BuildCommand extends CLICommand {
         Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         if (!sync)  return 0;
 
+        // TODO: should we abort the build if the CLI is cancelled?
         AbstractBuild b = f.get();    // wait for the completion
         stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
         return b.getResult().ordinal;
