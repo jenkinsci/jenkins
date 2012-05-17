@@ -234,7 +234,8 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
                 // if the build seems to be stuck in the queue, display why
                 String why = qi.getWhy();
                 if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
-                    listener.getLogger().println(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())+" is still in the queue: "+why);
+                    listener.getLogger().print("Configuration " + HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())+" is still in the queue: ");
+                    qi.getCauseOfBlockage().print(listener); //this is still shown on the same line
                     whyInQueue = why;
                 }
             }
