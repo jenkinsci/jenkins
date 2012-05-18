@@ -89,7 +89,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
                 f = new File(System.getProperty("java.io.tmpdir"));
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;
-                return new DiskSpace(s);
+                return new DiskSpace(f.getCanonicalPath(), s);
             } catch (LinkageError e) {
                 // pre-mustang
                 return null;
