@@ -78,6 +78,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         super.onLoad(parent, combination.toString());
     }
 
+    @Override
+    public boolean isConcurrentBuild() {
+        return getParent().isConcurrentBuild();
+    }
+
+    @Override
+    public void setConcurrentBuild(boolean b) throws IOException {
+        throw new UnsupportedOperationException("The setting can be only changed at MatrixProject");
+    }
+
     /**
      * Used during loading to set the combination back.
      */
