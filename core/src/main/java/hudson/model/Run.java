@@ -1400,8 +1400,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             try {
                 try {
-                    Charset charset = Computer.currentComputer().getDefaultCharset();
-                    this.charset = charset.name();
+                    Computer computer = Computer.currentComputer();
+                    Charset charset = null;
+                    if (computer != null) {
+                        charset = computer.getDefaultCharset();
+                        this.charset = charset.name();
+                    }
 
                     // don't do buffering so that what's written to the listener
                     // gets reflected to the file immediately, which can then be
