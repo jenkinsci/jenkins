@@ -159,8 +159,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The retry count. Null to delegate to the system default.
      */
     private volatile Integer scmCheckoutRetryCount = null;
+    
+    protected BuildCheckoutStrategy buildCheckoutStrategy = null;
 
-    /**
+	/**
      * If this project is configured to be only built on a certain label,
      * this value will be set to that label.
      *
@@ -520,6 +522,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount !=null ? scmCheckoutRetryCount : Jenkins.getInstance().getScmCheckoutRetryCount();
     }
+    
+    public BuildCheckoutStrategy getBuildCheckoutStrategy() {
+		return buildCheckoutStrategy !=null ? buildCheckoutStrategy : (buildCheckoutStrategy=new DefaultBuildCheckoutStrategyImpl());
+	}
 
     // ugly name because of EL
     public boolean getHasCustomQuietPeriod() {
@@ -1731,6 +1737,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
             t.start(this,true);
+        
+        try {
+        	JSONObject json = req.getSubmittedForm();     
+	        List<BuildCheckoutStrategyDescriptor> bcsd = BuildCheckoutStrategyDescriptor.all();
+	        if (bcsd.size()>1)
+	            buildCheckoutStrategy = req.bindJSON(BuildCheckoutStrategy.class,json.getJSONObject("buildCheckoutStrategy"));
+	        else
+	            buildCheckoutStrategy = req.bindJSON(bcsd.get(0).clazz,json.getJSONObject("buildCheckoutStrategy"));
+        } catch (Exception exc) {
+        	buildCheckoutStrategy = new DefaultBuildCheckoutStrategyImpl();
+        }
+        
     }
 
     /**
