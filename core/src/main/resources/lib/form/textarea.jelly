@@ -51,6 +51,9 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
+    <st:attribute name="checkMethod">
+      If specified, the HTTP method to use for input field will be checked (via AJAX)
+    </st:attribute>
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
       This attribute specifies the mode of CodeMirror, such as "text/x-java".
@@ -76,7 +79,7 @@ THE SOFTWARE.
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
             class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
-            checkUrl="${attrs.checkUrl}"
+            checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
             rows="${h.determineRows(value)}"
             codemirror-mode="${attrs['codemirror-mode']}"
             codemirror-config="${attrs['codemirror-config']}">
