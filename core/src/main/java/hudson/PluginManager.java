@@ -29,6 +29,7 @@ import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.UpdateCenter;
@@ -60,6 +61,8 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -93,6 +96,7 @@ import static hudson.init.InitMilestone.*;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public abstract class PluginManager extends AbstractModelObject {
     /**
      * All discovered plugins.
@@ -155,6 +159,10 @@ public abstract class PluginManager extends AbstractModelObject {
             rootDir.mkdirs();
         
         strategy = createPluginStrategy();
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**
@@ -496,7 +504,11 @@ public abstract class PluginManager extends AbstractModelObject {
     public boolean isPluginUploaded() {
         return pluginUploaded;
     }
-    
+
+    /**
+     * All discovered plugins.
+     */
+    @Exported
     public List<PluginWrapper> getPlugins() {
         return plugins;
     }
