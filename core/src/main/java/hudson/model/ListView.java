@@ -134,7 +134,7 @@ public class ListView extends View implements Saveable {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
-    public synchronized List<TopLevelItem> getItems() {
+    public List<TopLevelItem> getItems() {
         SortedSet<String> names = new TreeSet<String>(jobNames);
 
         if (includePattern != null) {
