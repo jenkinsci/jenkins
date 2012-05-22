@@ -164,7 +164,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
                 // We allow custom workspaces to be used concurrently between jobs.
                 return Lease.createDummyLease(ws.child(subtree));
             } else {
-                // Use default workspace as assigned by Hudson.
+                // Use default workspace as assigned by Jenkins.
                 Node node = getBuiltOn();
                 FilePath ws = node.getWorkspaceFor(getParent().getParent());
                 // Allocate unique workspace (not to be shared between jobs and runs).
