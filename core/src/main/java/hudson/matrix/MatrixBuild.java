@@ -26,7 +26,7 @@ package hudson.matrix;
 
 import hudson.AbortException;
 import hudson.Util;
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -287,12 +287,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     final int n = getNumber();
                     for (MatrixConfiguration c : p.getActiveConfigurations()) {
                         if(q.cancel(c))
-                            logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
+                            logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null && b.isBuilding()) {// executor can spend some time in post production state, so only cancel in-progress builds.
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
-                                logger.println(Messages.MatrixBuild_Interrupting(HyperlinkNote.encodeTo('/'+ b.getUrl(),b.getDisplayName())));
+                                logger.println(Messages.MatrixBuild_Interrupting(ModelHyperlinkNote.encodeTo(b)));
                                 exe.interrupt();
                             }
                         }

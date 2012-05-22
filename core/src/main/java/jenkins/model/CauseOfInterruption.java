@@ -23,7 +23,7 @@
  */
 package jenkins.model;
 
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -89,7 +89,7 @@ public abstract class CauseOfInterruption {
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(
-                Messages.CauseOfInterruption_ShortDescription(HyperlinkNote.encodeTo("/" + getUser().getUrl(), user)));
+                Messages.CauseOfInterruption_ShortDescription(ModelHyperlinkNote.encodeTo(getUser())));
         }
 
         @Override
