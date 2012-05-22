@@ -228,6 +228,9 @@ public final class FilePath implements Serializable {
         }
     }
 
+    /**
+     * Is the given path name an absolute path?
+     */
     private static boolean isAbsolute(String rel) {
         return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
     }
