@@ -53,6 +53,9 @@ import hudson.model.FileParameterDefinition
 import hudson.model.Cause.LegacyCodeCause
 import hudson.model.ParametersAction
 import hudson.model.FileParameterValue
+import org.jvnet.hudson.test.MockBuilder
+import org.jvnet.hudson.test.SleepBuilder
+import java.util.concurrent.CountDownLatch
 
 /**
  *
@@ -326,5 +329,42 @@ public class MatrixProjectTest extends HudsonTestCase {
         ))
         
         assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+    }
+
+    /**
+     * Verifies that the concurrent build feature works, and makes sure
+     * that each gets its own unique workspace.
+     */
+    void testConcurrentBuild() {
+        jenkins.numExecutors = 10
+        jenkins.updateComputerList()
+
+        def p = createMatrixProject()
+        p.axes = new AxisList(new TextAxis("foo","1","2"))
+        p.concurrentBuild = true;
+        def latch = new CountDownLatch(4)
+        def dirs = Collections.synchronizedSet(new HashSet())
+        
+        p.buildersList.add(new TestBuilder() {
+            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+                dirs << build.workspace.getRemote()
+                def marker = build.workspace.child("file")
+                def name = build.fullDisplayName
+                marker.write(name,"UTF-8")
+                latch.countDown()
+                latch.await()
+                assertEquals(name,marker.readToString())
+                return true
+            }
+        })
+
+        // should have gotten all unique names
+        def f1 = p.scheduleBuild2(0)
+        // get one going
+        Thread.sleep(1000)
+        def f2 = p.scheduleBuild2(0)
+        [f1,f2]*.get().each{ assertBuildStatusSuccess(it)}
+
+        assertEquals 4, dirs.size()
     }
 }

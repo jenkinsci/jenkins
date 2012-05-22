@@ -25,6 +25,7 @@
 package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
+import hudson.model.Api;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -46,6 +47,8 @@ import static java.util.logging.Level.WARNING;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.Enumeration;
 import java.util.jar.JarFile;
@@ -72,6 +75,7 @@ import java.util.jar.JarFile;
  *
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * {@link PluginManager} to which this belongs to.
@@ -136,9 +140,13 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      */
     /*package*/ boolean isBundled;
 
-    static final class Dependency {
+    @ExportedBean
+    public static final class Dependency {
+        @Exported
         public final String shortName;
+        @Exported
         public final String version;
+        @Exported
         public final boolean optional;
 
         public Dependency(String s) {
@@ -194,6 +202,10 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 		this.optionalDependencies = optionalDependencies;
     }
 
+    public Api getApi() {
+        return new Api(this);
+    }
+
     /**
      * Returns the URL of the index page jelly script.
      */
@@ -238,6 +250,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         return n;
     }
 
+    @Exported
     public List<Dependency> getDependencies() {
         return dependencies;
     }
@@ -250,6 +263,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns the short name suitable for URL.
      */
+    @Exported
     public String getShortName() {
         return shortName;
     }
@@ -267,6 +281,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      *      null if this information is unavailable.
      * @since 1.283
      */
+    @Exported
     public String getUrl() {
         // first look for the manifest entry. This is new in maven-hpi-plugin 1.30
         String url = manifest.getMainAttributes().getValue("Url");
@@ -289,6 +304,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns a one-line descriptive name of this plugin.
      */
+    @Exported
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
@@ -298,6 +314,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Does this plugin supports dynamic loading?
      */
+    @Exported
     public YesNoMaybe supportsDynamicLoad() {
         String v = manifest.getMainAttributes().getValue("Support-Dynamic-Loading");
         if (v==null) return YesNoMaybe.MAYBE;
@@ -307,6 +324,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns the version number of this plugin
      */
+    @Exported
     public String getVersion() {
         String v = manifest.getMainAttributes().getValue("Plugin-Version");
         if(v!=null)      return v;
@@ -382,6 +400,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns true if this plugin is enabled for this session.
      */
+    @Exported
     public boolean isActive() {
         return active && !hasCycleDependency();
     }
@@ -394,6 +413,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         hasCycleDependency = hasCycle;
     }
     
+    @Exported
     public boolean isBundled() {
         return isBundled;
     }
@@ -402,6 +422,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * If true, the plugin is going to be activated next time
      * Jenkins runs.
      */
+    @Exported
     public boolean isEnabled() {
         return !disableFile.exists();
     }
@@ -482,10 +503,12 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * This method is conservative in the sense that if the version number is incomprehensible,
      * it always returns false.
      */
+    @Exported
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
     
+    @Exported
     public boolean isPinned() {
         return pinFile.exists();
     }
@@ -500,6 +523,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * returns true if backup of previous version of plugin exists
      */
+    @Exported
     public boolean isDowngradable() {
         return getBackupFile().exists();
     }
@@ -515,6 +539,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * returns the version of the backed up plugin,
      * or null if there's no back up.
      */
+    @Exported
     public String getBackupVersion() {
         File backup = getBackupFile();
         if (backup.exists()) {

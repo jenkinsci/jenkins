@@ -299,7 +299,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Exported
     public boolean isConcurrentBuild() {
-        return Jenkins.CONCURRENT_BUILD && concurrentBuild;
+        return concurrentBuild;
     }
 
     public void setConcurrentBuild(boolean b) throws IOException {

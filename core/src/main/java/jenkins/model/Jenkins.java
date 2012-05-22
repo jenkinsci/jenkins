@@ -213,6 +213,8 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
@@ -3802,7 +3804,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * When we merge this back to the trunk, this allows us to keep
      * this feature hidden for a while until we iron out the kinks.
      * @see AbstractProject#isConcurrentBuild()
+     * @deprecated as of 1.464
+     *      This flag will have no effect.
      */
+    @Restricted(NoExternalUse.class)
     public static boolean CONCURRENT_BUILD = true;
 
     /**
