@@ -16,6 +16,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
+import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
 
 public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	public static final String DUMMY_LOCATION_VARNAME = "TOOLS_DUMMY_LOCATION";
@@ -114,8 +115,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		assertBuildStatus(Result.FAILURE, build);
 
 		String buildLogRegular = getBuildLog(build);
-		assertTrue(buildLogRegular.contains(Messages
-				.Ant_ExecutableNotFound("varAnt")));
+		assertTrue(buildLogRegular.contains(Ant_ExecutableNotFound("varAnt")));
 
 		// test the slave with prepared environment
 		project.setAssignedLabel(slaveEnv.getSelfLabel());
