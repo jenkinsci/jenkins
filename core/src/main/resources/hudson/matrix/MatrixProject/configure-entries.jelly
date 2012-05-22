@@ -64,6 +64,8 @@ THE SOFTWARE.
                      addCaption="${%Add axis}"/>
     </f:block>
 
+    <f:optionalBlock field="useSameScmCheckout" title="${%Use same SCM checkout for all builds, each configuration uses master source via NFS/SMB}"/>
+    
     <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
         help="/help/matrix/combinationfilter.html">
 	    <f:entry title="${%Filter}">

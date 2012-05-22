@@ -575,7 +575,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
         
-        private void checkout(BuildListener listener) throws Exception {
+        protected void checkout(BuildListener listener) throws Exception {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.

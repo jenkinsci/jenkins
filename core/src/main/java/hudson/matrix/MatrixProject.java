@@ -159,6 +159,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     private MatrixExecutionStrategy executionStrategy;
 
+    /**
+     * Share SCM checkout for all matrix entries
+     * per-configuration builds use Master source (e.g. via NFS/SMB + custom workspace)
+     */
+    private boolean useSameScmCheckout;
+
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
     }
@@ -262,6 +268,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             dm.setRunSequentially(runSequentially);
             save();
         }
+    }
+
+    /**
+     * If true, {@link MatrixRun}s will skip the SCM checkout and just go to the build step.
+     *
+     */
+    public boolean isUseSameScmCheckout() {
+        return useSameScmCheckout;
     }
 
     /**
@@ -716,7 +730,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
-        
+        useSameScmCheckout = json.has("useSameScmCheckout");
+
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
