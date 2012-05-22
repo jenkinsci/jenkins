@@ -324,7 +324,7 @@ public class JDKInstaller extends ToolInstaller {
      */
     public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
         File cache = getLocalCacheFile(platform, cpu);
-        if (cache.exists()) return cache.toURL();
+        if (cache.exists() && cache.length()>1*1024*1024) return cache.toURL(); // if the file is too small, don't trust it. In the past, the download site served error message in 200 status code
 
         log.getLogger().println("Installing JDK "+id);
         JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
