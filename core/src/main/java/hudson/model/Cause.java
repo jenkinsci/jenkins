@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
@@ -162,8 +162,8 @@ public abstract class Cause {
         public void print(TaskListener listener) {
             listener.getLogger().println(
                 Messages.Cause_UpstreamCause_ShortDescription(
-                    HyperlinkNote.encodeTo('/'+upstreamUrl, upstreamProject),
-                    HyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
+                    ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
+                    ModelHyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
             );
         }
 
@@ -253,7 +253,7 @@ public abstract class Cause {
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
-                    HyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
+                    ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
         }
 
         @Override
