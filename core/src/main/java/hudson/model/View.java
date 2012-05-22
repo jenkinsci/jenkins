@@ -383,7 +383,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for (Computer c : computers) {
             Node n = c.getNode();
             if (n != null) {
-                if (labels.contains(null) && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
+                if(labels.contains(null)){
+                    if(n.getMode()==Mode.NORMAL)
+                        result.add(c);
+                    continue;
+                }
+                if(!Collections.disjoint(n.getAssignedLabels(), labels)) {
                     result.add(c);
                 }
             }
