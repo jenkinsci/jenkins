@@ -316,7 +316,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * See http://cygwin.com/ml/cygwin/2005-04/msg00395.html and
      * http://www.nabble.com/Windows-Filename-too-long-errors-t3161089.html for
      * the background of this issue. Setting this flag to true would
-     * cause Hudson to use cryptic but short path name, giving more room for
+     * cause Jenkins to use cryptic but short path name, giving more room for
      * jobs to use longer path names.
      */
     public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");

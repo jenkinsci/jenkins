@@ -444,7 +444,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
             }
             // TODO: this cast is indicative of abstraction problem
-            return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()));
+            return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
         }
 
         public Result run(BuildListener listener) throws Exception {

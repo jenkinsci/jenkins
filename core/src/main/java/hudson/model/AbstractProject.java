@@ -1707,8 +1707,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(req.hasParameter("customWorkspace")) {
             customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
-            if(customWorkspace==null)
-            	throw new FormException("Custom workspace is empty", "customWorkspace");
         } else {
             customWorkspace = null;
         }

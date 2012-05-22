@@ -34,6 +34,8 @@ import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Node;
+import hudson.slaves.WorkspaceList;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -47,7 +49,6 @@ import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
@@ -159,6 +160,20 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     private MatrixExecutionStrategy executionStrategy;
 
+    /**
+     * Custom workspace location for {@link MatrixConfiguration}s.
+     * 
+     * <p>
+     * (Historically, we used {@link AbstractProject#customWorkspace} + some unique suffix (see {@link MatrixConfiguration#useShortWorkspaceName})
+     * for custom workspace, but we now separated that so that the user has more control.
+     * 
+     * <p>
+     * If null, the historical semantics is assumed.
+     *
+     * @since 1.466
+     */
+    private String childCustomWorkspace;
+
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
     }
@@ -167,7 +182,38 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super(parent, name);
     }
 
+    /**
+     * Gets the workspace location that {@link MatrixConfiguration} uses.
+     * 
+     * @see MatrixRun.RunnerImpl#decideWorkspace(Node, WorkspaceList) 
+     * 
+     * @return never null
+     *      even when {@link MatrixProject} uses no custom workspace, this method still
+     *      returns something like "${PARENT_WORKSPACE}/${COMBINATION}" that controls
+     *      how the workspace should be laid out.
+     *
+     *      The return value can be absolute or relative. If relative, it is resolved
+     *      against the working directory of the overarching {@link MatrixBuild}.
+     */
+    public String getChildCustomWorkspace() {
+        String ws = childCustomWorkspace;
+        if (ws==null) {
+            ws = MatrixConfiguration.useShortWorkspaceName?"${SHORT_COMBINATION}":"${COMBINATION}";
+        }
+        return ws;
+    }
 
+    /**
+     * Do we have an explicit child custom workspace setting (true)? Or just using the default value (false)?
+     */
+    public boolean hasChildCustomWorkspace() {
+        return childCustomWorkspace!=null;
+    }
+
+    public void setChildCustomWorkspace(String childCustomWorkspace) throws IOException {
+        this.childCustomWorkspace = Util.fixEmptyAndTrim(childCustomWorkspace);
+        save();
+    }
 
     /**
      * {@link MatrixProject} is relevant with all the labels its configurations are relevant.
@@ -703,6 +749,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             this.combinationFilter = Util.nullify(req.getParameter("combinationFilter"));
         } else {
             this.combinationFilter = null;
+        }
+
+        if(req.hasParameter("customWorkspace")) {
+            setChildCustomWorkspace(Util.fixEmptyAndTrim(req.getParameter("childCustomWorkspace.directory")));
+        } else {
+            setChildCustomWorkspace(null);
         }
 
         List<MatrixExecutionStrategyDescriptor> esd = getDescriptor().getExecutionStrategyDescriptors();
