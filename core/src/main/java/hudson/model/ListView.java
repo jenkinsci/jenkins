@@ -24,8 +24,6 @@
  */
 package hudson.model;
 
-import com.infradna.tool.bridge_method_injector.BridgeMethodsAdded;
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -34,12 +32,12 @@ import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.views.ListViewColumn;
 import hudson.views.ViewJobFilter;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +58,7 @@ public class ListView extends View implements Saveable {
     /**
      * List of job names. This is what gets serialized.
      */
+    @GuardedBy("this")
     /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
@@ -135,7 +134,11 @@ public class ListView extends View implements Saveable {
      * concurrent modification issue.
      */
     public List<TopLevelItem> getItems() {
-        SortedSet<String> names = new TreeSet<String>(jobNames);
+        SortedSet<String> names;
+
+        synchronized (this) {
+            names = new TreeSet<String>(jobNames);
+        }
 
         if (includePattern != null) {
             for (Item item : getOwnerItemGroup().getItems()) {
@@ -146,6 +149,7 @@ public class ListView extends View implements Saveable {
             }
         }
 
+        Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String n : names) {
             TopLevelItem item = getOwnerItemGroup().getItem(n);
@@ -167,7 +171,7 @@ public class ListView extends View implements Saveable {
         return items;
     }
 
-    public boolean contains(TopLevelItem item) {
+    public synchronized boolean contains(TopLevelItem item) {
         return jobNames.contains(item.getName());
     }
 
@@ -177,7 +181,9 @@ public class ListView extends View implements Saveable {
      * @since 1.389
      */
     public void add(TopLevelItem item) throws IOException {
-        jobNames.add(item.getName());
+        synchronized (this) {
+            jobNames.add(item.getName());
+        }
         save();
     }
 
@@ -219,10 +225,12 @@ public class ListView extends View implements Saveable {
      */
     @Override
     protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
-        jobNames.clear();
-        for (TopLevelItem item : getOwnerItemGroup().getItems()) {
-            if(req.getParameter(item.getName())!=null)
-                jobNames.add(item.getName());
+        synchronized (this) {
+            jobNames.clear();
+            for (TopLevelItem item : getOwnerItemGroup().getItems()) {
+                if(req.getParameter(item.getName())!=null)
+                    jobNames.add(item.getName());
+            }
         }
 
         if (req.getParameter("useincluderegex") != null) {
