@@ -158,8 +158,8 @@ sub processFile {
 
    my $nj = "";
    foreach (keys %okeys) {
-      if ($okeys{$_} && $okeys{$_} =~ /Hudson/i ) {
-         $nj .= "  Non Jenknis    -> $_ -> $okeys{$_}\n" ;
+      if ($okeys{$_} && $okeys{$_} =~ /Hudson/ ) {
+         $nj .= "  Non Jenkins    -> $_ -> $okeys{$_}\n" ;
          $tnojenkins ++;
       }
    }
