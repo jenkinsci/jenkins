@@ -53,17 +53,27 @@ import org.kohsuke.stapler.export.Exported;
     @ExportedBean
     public static final class DiskSpace extends OfflineCause implements Serializable {
         @Exported
+        public final String path;
+        @Exported
         public final long size;
         
         private boolean triggered;
 
-        public DiskSpace(long size) {
+        public DiskSpace(String path, long size) {
+            this.path = path;
             this.size = size;
         }
 
         @Override
         public String toString() {
             return String.valueOf(size);
+        }
+        
+        /**
+         * The path that was checked
+         */
+        public String getPath() {
+            return path;
         }
 
         /**
@@ -125,7 +135,7 @@ import org.kohsuke.stapler.export.Exported;
                 }
             }
 
-            return new DiskSpace((long)(Double.parseDouble(size.trim())*multiplier));
+            return new DiskSpace("", (long)(Double.parseDouble(size.trim())*multiplier));
         }
 
         private static final long serialVersionUID = 2L;
@@ -146,7 +156,7 @@ import org.kohsuke.stapler.export.Exported;
             try {
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;
-                return new DiskSpace(s);
+                return new DiskSpace(f.getCanonicalPath(), s);
             } catch (LinkageError e) {
                 // pre-mustang
                 return null;
