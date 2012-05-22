@@ -799,10 +799,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
 
         activities.addAll(super.getResourceActivities());
-        activities.addAll(Util.filter(publishers,ResourceActivity.class));
+        activities.addAll(Util.filter(publishers, ResourceActivity.class));
         activities.addAll(Util.filter(buildWrappers, ResourceActivity.class));
-        activities.addAll(Util.filter(prebuilders,ResourceActivity.class));
-        activities.addAll(Util.filter(postbuilders,ResourceActivity.class));
+        activities.addAll(Util.filter(prebuilders, ResourceActivity.class));
+        activities.addAll(Util.filter(postbuilders, ResourceActivity.class));
 
         return activities;
     }
@@ -810,9 +810,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * Gets the location of top-level <tt>pom.xml</tt> relative to the workspace root.
      */
-    public String getRootPOM() {
-        if(rootPOM==null)   return "pom.xml";
-        return rootPOM;
+    public String getRootPOM(EnvVars env) {
+        if (rootPOM == null) return "pom.xml";
+        // JENKINS-13822
+        if (env == null) return rootPOM;
+        return env.expand(rootPOM);
     }
 
     public void setRootPOM(String rootPOM) {
