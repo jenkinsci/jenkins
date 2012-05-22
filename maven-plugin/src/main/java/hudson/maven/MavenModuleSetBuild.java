@@ -688,7 +688,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // choice of module root ('ws' in this method) is somewhat arbitrary
                         // when multiple CVS/SVN modules are checked out, so also check
                         // the path against the workspace root if that seems like what the user meant (see issue #1293)
-                        String rootPOM = project.getRootPOM();
+                        String rootPOM = project.getRootPOM(envVars); // JENKINS-13822
                         FilePath pom = getModuleRoot().child(rootPOM);
                         FilePath parentLoc = getWorkspace().child(rootPOM);
                         if(!pom.exists() && parentLoc.exists())
@@ -1078,7 +1078,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             MavenModuleSet project = build.getProject();
             this.listener = listener;
             this.mavenHome = mavenHome;
-            this.rootPOM = project.getRootPOM();
+            this.rootPOM = project.getRootPOM(envVars); // JENKINS-13822
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
             this.updateSnapshots = isUpdateSnapshots(project.getGoals());
@@ -1123,7 +1123,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.globalSetings = project.globalSettingConfigPath;
         }
 
-        
         private boolean isUpdateSnapshots(String goals) {
           return StringUtils.contains(goals, "-U") || StringUtils.contains(goals, "--update-snapshots");
         }
