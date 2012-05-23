@@ -25,6 +25,7 @@
 package hudson.matrix;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
@@ -34,7 +35,9 @@ import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -125,13 +128,20 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         }
         
         /**
-        * Return absolute url of run {@link MatrixRun} which belongs to a given build {@link MatrixBuild}. 
-        * If there is no run which belongs to the build, return url of run, which belongs to the nearest previous build.
-        *
-        */
-        public String getNearestRunUrl(){           
-            String url = Jenkins.getInstance().getRootUrl() + getRun().getUrl();
-            return url;
+         * Return the URL to the run that this pointer references.
+         *
+         * In the typical case, this creates {@linkplain #getShortUrl() a very short relative url}.
+         * If the referenced run is a nearest previous build, this method returns a longer URL to that exact build.
+         * {@link MatrixRun} which belongs to a given build {@link MatrixBuild}.
+         * If there is no run which belongs to the build, return url of run, which belongs to the nearest previous build.
+         */
+        public String getNearestRunUrl() {
+            MatrixRun r = getRun();
+            if (r==null)    return null;
+            if (getNumber()==r.getNumber())
+                return getShortUrl()+'/';
+            else
+                return Stapler.getCurrentRequest().getContextPath()+'/'+r.getUrl();
         }
 
         public String getShortUrl() {
@@ -245,8 +255,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
-            if(item!=null && item.getNumber()==this.getNumber()) //do not return run of other matrix build
-                return item;
+            if(item!=null) {
+                if (item.getNumber()==this.getNumber())
+                    return item;
+                else {
+                    // redirect the user to the correct URL
+                    String url = Functions.joinPath(item.getUrl(), req.getRestOfPath());
+                    String qs = req.getQueryString();
+                    if (qs!=null)   url+='?'+qs;
+                    throw HttpResponses.redirectViaContextPath(url);
+                }
+            }
         } catch (IllegalArgumentException _) {
             // failed to parse the token as Combination. Must be something else
         }
