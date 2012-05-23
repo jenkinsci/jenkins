@@ -25,10 +25,14 @@ package hudson.matrix;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.TopLevelItem;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
+import hudson.tasks.BuildWrapper;
 import hudson.model.Build;
 import hudson.model.Node;
 import org.kohsuke.stapler.Ancestor;
@@ -181,6 +185,25 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             // child workspace need no individual locks, whether or not we use custom workspace
             String childWs = mp.getChildCustomWorkspace();
             return Lease.createLinkedDummyLease(baseDir.child(env.expand(childWs)),baseLease);
+        }
+        @Override
+        protected void preCheckout(Launcher launcher, BuildListener listener)
+                throws IOException, InterruptedException {
+            MatrixProject mp = getParent().getParent();
+            MatrixRunCheckoutStrategy strategy = mp.getMatrixRunCheckoutStrategy();
+            boolean invokeSuper = strategy.preCheckout(MatrixRun.this, launcher, listener);
+            if(invokeSuper) {
+                super.preCheckout(launcher, listener);
+            }
+        }
+        @Override
+        protected void checkout(BuildListener listener) throws Exception {
+            MatrixProject mp = getParent().getParent();
+            MatrixRunCheckoutStrategy strategy = mp.getMatrixRunCheckoutStrategy();
+            boolean invokeSuper = strategy.checkout(MatrixRun.this, launcher, listener);
+            if(invokeSuper) {
+                super.checkout(listener);
+            }
         }
     }
 }

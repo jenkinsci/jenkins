@@ -568,7 +568,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @throws IOException
          * @throws InterruptedException
          */
-        private void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
+        protected void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
         	if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
@@ -576,7 +576,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
         
-        private void checkout(BuildListener listener) throws Exception {
+        protected void checkout(BuildListener listener) throws Exception {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
