@@ -103,7 +103,7 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(HyperlinkNote.encodeTo("/computer/"+ node.getNodeName(), node.getNodeName()));
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
         }
     }
 
