@@ -60,6 +60,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @see Label#loadStatistics
  * @see Jenkins#overallLoad
+ * @see Jenkins#unlabeledLoad
  */
 @ExportedBean
 public abstract class LoadStatistics {
@@ -177,6 +178,20 @@ public abstract class LoadStatistics {
     }
 
     /**
+     * Updates {@link #totalExecutors} and {@link #busyExecutors} by using
+     * the current snapshot value.
+     * 
+     * {@link #queueLength} is updated separately via {@link LoadStatisticsUpdater} to
+     * improve the efficiency because we are counting this for all {@link LoadStatistics} at once.
+     */
+    protected void updateExecutorCounts() {
+        int t = computeTotalExecutors();
+        int i = computeIdleExecutors();
+        totalExecutors.update(t);
+        busyExecutors.update(t-i);
+    }
+
+    /**
      * With 0.90 decay ratio for every 10sec, half reduction is about 1 min.
      */
     public static final float DECAY = Float.parseFloat(System.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
@@ -195,33 +210,30 @@ public abstract class LoadStatistics {
         }
 
         protected void doRun() {
-            Jenkins h = Jenkins.getInstance();
-            List<hudson.model.Queue.BuildableItem> bis = h.getQueue().getBuildableItems();
+            Jenkins j = Jenkins.getInstance();
+            List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
             // update statistics on slaves
-            for( Label l : h.getLabels() ) {
-                l.loadStatistics.totalExecutors.update(l.getTotalExecutors());
-                l.loadStatistics.busyExecutors .update(l.getBusyExecutors());
-
-                int q=0;
-                for (hudson.model.Queue.BuildableItem bi : bis) {
-                    if(bi.task.getAssignedLabel()==l)
-                        q++;
-                }
-                l.loadStatistics.queueLength.update(q);
+            for( Label l : j.getLabels() ) {
+                l.loadStatistics.updateExecutorCounts();
+                l.loadStatistics.queueLength.update(count(bis, l));
             }
 
             // update statistics of the entire system
-            ComputerSet cs = new ComputerSet();
-            h.overallLoad.totalExecutors.update(cs.getTotalExecutors());
-            h.overallLoad.busyExecutors .update(cs.getBusyExecutors());
+            j.unlabeledLoad.updateExecutorCounts();
+            j.unlabeledLoad.queueLength.update(count(bis, null));
+
+            j.overallLoad.updateExecutorCounts();
+            j.overallLoad.queueLength.update(bis.size());
+        }
+
+        private int count(List<Queue.BuildableItem> bis, Label l) {
             int q=0;
-            for (hudson.model.Queue.BuildableItem bi : bis) {
-                if(bi.task.getAssignedLabel()==null)
+            for (Queue.BuildableItem bi : bis) {
+                if(bi.task.getAssignedLabel()==l)
                     q++;
             }
-            h.overallLoad.queueLength.update(q);
-            h.overallLoad.totalQueueLength.update(bis.size());
+            return q;
         }
     }
 }

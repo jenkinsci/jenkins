@@ -305,7 +305,7 @@ public class NodeProvisioner {
         @Override
         protected void doRun() {
             Jenkins h = Jenkins.getInstance();
-            h.overallNodeProvisioner.update();
+            h.unlabeledNodeProvisioner.update();
             for( Label l : h.getLabels() )
                 l.nodeProvisioner.update();
         }

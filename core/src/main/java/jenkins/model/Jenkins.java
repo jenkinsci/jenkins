@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
+import hudson.model.LoadStatistics;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.AbstractCIBase;
@@ -569,14 +570,38 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
     /**
      * Load statistics of the entire system.
+     *
+     * This includes every executor and every job in the system.
      */
     @Exported
     public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
-     * {@link NodeProvisioner} that reacts to {@link OverallLoadStatistics}.
+     * Load statistics of the free roaming jobs and slaves.
+     * 
+     * This includes all executors on {@link Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
+     *
+     * @since 1.467
      */
-    public transient final NodeProvisioner overallNodeProvisioner = new NodeProvisioner(null,overallLoad);
+    @Exported
+    public transient final LoadStatistics unlabeledLoad = new UnlabeldLoadStatistics();
+
+    /**
+     * {@link NodeProvisioner} that reacts to {@link #unlabeledLoad}.
+     * @since 1.467
+     */
+    public transient final NodeProvisioner unlabeledNodeProvisioner = new NodeProvisioner(null,unlabeledLoad);
+
+    /**
+     * @deprecated as of 1.467
+     *      Use {@link #unlabeledNodeProvisioner}.
+     *      This was broken because it was tracking all the executors in the system, but it was only tracking
+     *      free-roaming jobs in the queue. So {@link Cloud} fails to launch nodes when you have some exclusive
+     *      slaves and free-roaming jobs in the queue.
+     */
+    @Restricted(NoExternalUse.class)
+    public transient final NodeProvisioner overallNodeProvisioner = unlabeledNodeProvisioner;
+
 
     public transient final ServletContext servletContext;
 
