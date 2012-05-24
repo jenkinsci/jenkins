@@ -84,6 +84,7 @@ THE SOFTWARE.
       <!-- advertise the CLI TCP port -->
       <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
       <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:header name="X-Jenkins-CLI2-Port" value="${app.tcpSlaveAgentListener.port}"/>
       <st:header name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
     </j:if>
     <j:forEach var="pd" items="${h.pageDecorators}">

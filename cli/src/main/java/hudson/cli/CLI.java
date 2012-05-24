@@ -33,6 +33,9 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -57,8 +60,10 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -120,7 +125,7 @@ public class CLI {
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
 
         Channel channel = null;
-        InetSocketAddress clip = getCliTcpPort(url);
+        CliPort clip = getCliTcpPort(url);
         if(clip!=null) {
             // connect via CLI port
             try {
@@ -161,8 +166,8 @@ public class CLI {
         return ch;
     }
 
-    private Channel connectViaCliPort(URL jenkins, InetSocketAddress endpoint) throws IOException {
-        LOGGER.fine("Trying to connect directly via TCP/IP to "+endpoint);
+    private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
+        LOGGER.fine("Trying to connect directly via TCP/IP to "+clip.endpoint);
         final Socket s;
         OutputStream out;
 
@@ -170,7 +175,7 @@ public class CLI {
             String[] tokens = httpsProxyTunnel.split(":");
             s = new Socket(tokens[0], Integer.parseInt(tokens[1]));
             PrintStream o = new PrintStream(s.getOutputStream());
-            o.print("CONNECT " + endpoint.getHostName() + ":" + endpoint.getPort() + " HTTP/1.0\r\n\r\n");
+            o.print("CONNECT " + clip.endpoint.getHostName() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
 
             // read the response from the proxy
             ByteArrayOutputStream rsp = new ByteArrayOutputStream();
@@ -194,7 +199,7 @@ public class CLI {
             };
         } else {
             s = new Socket();
-            s.connect(endpoint,3000);
+            s.connect(clip.endpoint,3000);
             out = new SocketOutputStream(s);
         }
 
@@ -204,18 +209,51 @@ public class CLI {
             }
         });
 
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-        dos.writeUTF("Protocol:CLI-connect");
+        Connection c = new Connection(new SocketInputStream(s),out);
+
+        switch (clip.version) {
+        case 1:
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            dos.writeUTF("Protocol:CLI-connect");
+            // we aren't checking greeting from the server here because I'm too lazy. It gets ignored by Channel constructor.
+            break;
+        case 2:
+            DataInputStream dis = new DataInputStream(s.getInputStream());
+            dos = new DataOutputStream(s.getOutputStream());
+            dos.writeUTF("Protocol:CLI2-connect");
+            String greeting = dis.readUTF();
+            if (!greeting.equals("Welcome"))
+                throw new IOException("Handshaking failed: "+greeting);
+            try {
+                byte[] secret = c.diffieHellman(false).generateSecret();
+                SecretKey sessionKey = new SecretKeySpec(Connection.fold(secret,128/8),"AES");
+                c = c.encryptConnection(sessionKey,"AES/CFB8/NoPadding");
+
+                // validate the instance identity, so that we can be sure that we are talking to the same server
+                // and there's no one in the middle.
+                byte[] signature = c.readByteArray();
+
+                if (clip.identity!=null) {
+                    Signature verifier = Signature.getInstance("SHA1withRSA");
+                    verifier.initVerify(clip.getIdentity());
+                    verifier.update(secret);
+                    if (!verifier.verify(signature))
+                        throw new IOException("Server identity signature validation failed.");
+                }
+
+            } catch (GeneralSecurityException e) {
+                throw (IOException)new IOException("Failed to negotiate transport security").initCause(e);
+            }
+        }
 
         return new Channel("CLI connection to "+jenkins, pool,
-                new BufferedInputStream(new SocketInputStream(s)),
-                new BufferedOutputStream(out));
+                new BufferedInputStream(c.in), new BufferedOutputStream(c.out));
     }
 
     /**
      * If the server advertises CLI endpoint, returns its location.
      */
-    private InetSocketAddress getCliTcpPort(String url) throws IOException {
+    private CliPort getCliTcpPort(String url) throws IOException {
         URL _url = new URL(url);
         if (_url.getHost()==null || _url.getHost().length()==0) {
             throw new IOException("Invalid URL: "+url);
@@ -226,15 +264,20 @@ public class CLI {
         } catch (IOException e) {
             throw (IOException)new IOException("Failed to connect to "+url).initCause(e);
         }
-        String p = head.getHeaderField("X-Jenkins-CLI-Port");
-        if (p==null)    p = head.getHeaderField("X-Hudson-CLI-Port");   // backward compatibility
+
         String h = head.getHeaderField("X-Jenkins-CLI-Host");
         if (h==null)    h = head.getURL().getHost();
-        
+        String p1 = head.getHeaderField("X-Jenkins-CLI-Port");
+        if (p1==null)    p1 = head.getHeaderField("X-Hudson-CLI-Port");   // backward compatibility
+        String p2 = head.getHeaderField("X-Jenkins-CLI2-Port");
+
+        String identity = head.getHeaderField("X-Instance-Identity");
+
         flushURLConnection(head);
-        if (p==null)     return null;
-        
-        return new InetSocketAddress(h,Integer.parseInt(p));
+        if (p1==null && p2==null)     return null;
+
+        if (p2!=null)   return new CliPort(new InetSocketAddress(h,Integer.parseInt(p2)),identity,2);
+        else            return new CliPort(new InetSocketAddress(h,Integer.parseInt(p1)),identity,1);
     }
 
     /**
