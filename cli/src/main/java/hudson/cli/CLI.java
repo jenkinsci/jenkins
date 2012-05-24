@@ -358,7 +358,7 @@ public class CLI {
                     printUsage(Messages.CLI_NoSuchFileExists(f));
                     return -1;
                 }
-                KeyPair kp = null;
+                KeyPair kp;
                 try {
                     kp = loadKey(f);
                 } catch (IOException e) {
@@ -499,11 +499,10 @@ public class CLI {
     private static boolean isPemEncrypted(File f) throws IOException{
         String pemString = readPemFile(f);
         //simple check if the file is encrypted
-        if(pemString.contains("4,ENCRYPTED"))
-            return true;
-        return false;
+        return pemString.contains("4,ENCRYPTED");
     }
     
+    @SuppressWarnings("Since15")
     private static String askForPasswd(String filePath){
         try {
             Console cons = System.console();
