@@ -23,81 +23,33 @@
  */
 package hudson;
 
-import hudson.cli.Connection;
-import hudson.util.Secret;
-import jenkins.model.Jenkins;
-import hudson.model.Computer;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.SlaveComputer;
-import hudson.remoting.Channel;
-import hudson.remoting.SocketOutputStream;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.Engine;
-import hudson.remoting.Channel.Listener;
-import hudson.remoting.Channel.Mode;
-import hudson.cli.CliManagerImpl;
-import hudson.cli.CliEntryPoint;
-import hudson.util.IOException2;
+import jenkins.AgentProtocol;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.BindException;
-import java.security.GeneralSecurityException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Signature;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Listens to incoming TCP connections from JNLP slave agents and CLI.
  *
- * <h2>Security</h2>
  * <p>
- * Once connected, remote slave agents can send in commands to be
- * executed on the master, so in a way this is like an rsh service.
- * Therefore, it is important that we reject connections from
- * unauthorized remote slaves.
+ * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
+ * Historically  this was used for inbound connection from slave agents (hence the name), but over time
+ * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
+ * same socket.
  *
  * <p>
- * The approach here is to have {@link jenkins.model.Jenkins#getSecretKey() a secret key} on the master.
- * This key is sent to the slave inside the <tt>.jnlp</tt> file
- * (this file itself is protected by HTTP form-based authentication that
- * we use everywhere else in Hudson), and the slave sends this
- * token back when it connects to the master.
- * Unauthorized slaves can't access the protected <tt>.jnlp</tt> file,
- * so it can't impersonate a valid slave.
- *
- * <p>
- * We don't want to force the JNLP slave agents to be restarted
- * whenever the server restarts, so right now this secret master key
- * is generated once and used forever, which makes this whole scheme
- * less secure.
+ * This class accepts the socket, then after a short handshaking, it dispatches to appropriate
+ * {@link AgentProtocol}s.
  *
  * @author Kohsuke Kawaguchi
+ * @see AgentProtocol
  */
 public final class TcpSlaveAgentListener extends Thread {
 
@@ -129,10 +81,6 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public int getPort() {
         return serverSocket.getLocalPort();
-    }
-
-    private String getSecretKey() {
-        return Jenkins.getInstance().getSecretKey();
     }
 
     @Override
@@ -195,17 +143,11 @@ public final class TcpSlaveAgentListener extends Thread {
 
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
-                    if(protocol.equals("JNLP-connect")) {
-                        runJnlpConnect(in, out);
-                    } else if(protocol.equals("JNLP2-connect")) {
-                        runJnlp2Connect(in, out);
-                    } else if(protocol.equals("CLI-connect")) {
-                        runCliConnect(in, out);
-                    } else if(protocol.equals("CLI2-connect")) {
-                        runCliConnect2();
-                    } else {
+                    AgentProtocol p = AgentProtocol.of(protocol);
+                    if (p!=null)
+                        p.handle(this.s);
+                    else
                         error(out, "Unknown protocol:" + s);
-                    }
                 } else {
                     error(out, "Unrecognized protocol: "+s);
                 }
@@ -223,185 +165,6 @@ public final class TcpSlaveAgentListener extends Thread {
                 } catch (IOException _) {
                     // try to clean up the socket
                 }
-            }
-        }
-
-        /**
-         * Handles CLI connection request.
-         */
-        private void runCliConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            out.println("Welcome");
-            runCli(new Connection(s));
-        }
-
-        /**
-         * CLI connection version2 that does transport encryption.
-         */
-        private void runCliConnect2() throws IOException, InterruptedException {
-            try {
-                DataOutputStream out = new DataOutputStream(s.getOutputStream());
-                out.writeUTF("Welcome");
-
-                // perform coin-toss and come up with a session key to encrypt data
-                Connection c = new Connection(s);
-                byte[] secret = c.diffieHellman(true).generateSecret();
-                SecretKey sessionKey = new SecretKeySpec(Connection.fold(secret,128/8),"AES");
-                c = c.encryptConnection(sessionKey,"AES/CFB8/NoPadding");
-
-                try {
-                    // HACK: TODO: move the transport support into modules
-                    Class<?> cls = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("org.jenkinsci.main.modules.instance_identity.InstanceIdentity");
-                    Object iid = cls.getDeclaredMethod("get").invoke(null);
-                    PrivateKey instanceId = (PrivateKey)cls.getDeclaredMethod("getPrivate").invoke(iid);
-
-                    // send a signature to prove our identity
-                    Signature signer = Signature.getInstance("SHA1withRSA");
-                    signer.initSign(instanceId);
-                    signer.update(secret);
-                    c.writeByteArray(signer.sign());
-                } catch (ClassNotFoundException e) {
-                    throw new Error(e);
-                } catch (IllegalAccessException e) {
-                    throw new Error(e);
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                } catch (NoSuchMethodException e) {
-                    throw new Error(e);
-                }
-
-                runCli(c);
-            } catch (GeneralSecurityException e) {
-                throw new IOException2("Failed to encrypt the CLI channel",e);
-            }
-        }
-
-        private void runCli(Connection c) throws IOException, InterruptedException {
-            Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
-                    Computer.threadPoolForRemoting, Mode.BINARY,
-                    new BufferedInputStream(c.in), new BufferedOutputStream(c.out), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
-            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
-            channel.join();
-        }
-
-        /**
-         * Handles JNLP slave agent connection request.
-         */
-        private void runJnlpConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            if(!getSecretKey().equals(in.readUTF())) {
-                error(out, "Unauthorized access");
-                return;
-            }
-
-            final String nodeName = in.readUTF();
-            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
-            if(computer==null) {
-                error(out, "No such slave: "+nodeName);
-                return;
-            }
-
-            if(computer.getChannel()!=null) {
-                error(out, nodeName+" is already connected to this master. Rejecting this connection.");
-                return;
-            }
-
-            out.println(Engine.GREETING_SUCCESS);
-
-            jnlpConnect(computer);
-        }
-
-        /**
-         * Handles JNLP slave agent connection request (v2 protocol)
-         */
-        private void runJnlp2Connect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            Properties request = new Properties();
-            request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
-
-            if(!getSecretKey().equals(request.getProperty("Secret-Key"))) {
-                error(out, "Unauthorized access");
-                return;
-            }
-
-            final String nodeName = request.getProperty("Node-Name");
-            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
-            if(computer==null) {
-                error(out, "No such slave: "+nodeName);
-                return;
-            }
-
-            Channel ch = computer.getChannel();
-            if(ch !=null) {
-                String c = request.getProperty("Cookie");
-                if (c!=null && c.equals(ch.getProperty(COOKIE_NAME))) {
-                    // we think we are currently connected, but this request proves that it's from the party
-                    // we are supposed to be communicating to. so let the current one get disconnected
-                    LOGGER.info("Disconnecting "+nodeName+" as we are reconnected from the current peer");
-                    try {
-                        computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
-                    } catch (ExecutionException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
-                    } catch (TimeoutException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
-                    }
-                } else {
-                    error(out, nodeName + " is already connected to this master. Rejecting this connection.");
-                    return;
-                }
-            }
-
-            out.println(Engine.GREETING_SUCCESS);
-
-            Properties response = new Properties();
-            String cookie = generateCookie();
-            response.put("Cookie",cookie);
-            writeResponseHeaders(out, response);
-
-            ch = jnlpConnect(computer);
-
-            ch.setProperty(COOKIE_NAME, cookie);
-        }
-
-        private void writeResponseHeaders(PrintWriter out, Properties response) {
-            for (Entry<Object, Object> e : response.entrySet()) {
-                out.println(e.getKey()+": "+e.getValue());
-            }
-            out.println(); // empty line to conclude the response header
-        }
-
-        private String generateCookie() {
-            byte[] cookie = new byte[32];
-            new SecureRandom().nextBytes(cookie);
-            return Util.toHexString(cookie);
-        }
-
-        private Channel jnlpConnect(SlaveComputer computer) throws InterruptedException, IOException {
-            final String nodeName = computer.getName();
-            final OutputStream log = computer.openLogFile();
-            PrintWriter logw = new PrintWriter(log,true);
-            logw.println("JNLP agent connected from "+ this.s.getInetAddress());
-
-            try {
-                computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
-                    new Listener() {
-                        @Override
-                        public void onClosed(Channel channel, IOException cause) {
-                            if(cause!=null)
-                                LOGGER.log(Level.WARNING, "Connection #"+id+" for + " + nodeName + " terminated",cause);
-                            try {
-                                ConnectionHandler.this.s.close();
-                            } catch (IOException e) {
-                                // ignore
-                            }
-                        }
-                    });
-                return computer.getChannel();
-            } catch (AbortException e) {
-                logw.println(e.getMessage());
-                logw.println("Failed to establish the connection with the slave");
-                throw e;
-            } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName);
-                e.printStackTrace(logw);
-                throw e;
             }
         }
 
@@ -424,8 +187,6 @@ public final class TcpSlaveAgentListener extends Thread {
     private static int iotaGen=1;
 
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
-
-    private static final String COOKIE_NAME = TcpSlaveAgentListener.class.getName()+".cookie";
 
     /**
      * Host name that we advertise the CLI client to connect to.
