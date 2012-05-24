@@ -692,6 +692,13 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Counts all the {@link BuildableItem}s currently in the queue.
+     */
+    public synchronized int countBuildableItems() {
+        return buildables.size()+pendings.size();
+    }
+
+    /**
      * Gets the information about the queue item for the given project.
      *
      * @return null if the project is not in the queue.
@@ -1260,6 +1267,14 @@ public class Queue extends ResourceController implements Saveable {
          */
         public Future<Executable> getFuture() { return future; }
 
+        /**
+         * If this task needs to be run on a node with a particular label,
+         * return that {@link Label}. Otherwise null, indicating
+         * it can run on anywhere.
+         * 
+         * <p>
+         * This code takes {@link LabelAssignmentAction} into account, then fall back to {@link SubTask#getAssignedLabel()}
+         */
         public Label getAssignedLabel() {
             for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
                 Label l = laa.getAssignedLabel(task);

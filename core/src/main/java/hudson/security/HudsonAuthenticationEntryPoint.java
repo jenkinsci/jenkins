@@ -34,10 +34,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * For anonymous requests to pages that require authentication,
@@ -78,7 +80,13 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out;
             try {
-                ServletOutputStream sout = rsp.getOutputStream();
+                OutputStream sout = rsp.getOutputStream();
+                if (rsp.containsHeader("Content-Encoding")) {
+                    // we serve Jelly pages with Content-Encoding:gzip.
+                    // ServletResponse doesn't provide means for us to check the value of the header,
+                    // so this is a hack.
+                    sout = new GZIPOutputStream(sout);
+                }
                 out = new PrintWriter(new OutputStreamWriter(sout));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
