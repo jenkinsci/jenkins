@@ -82,16 +82,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out;
             try {
-                OutputStream sout = rsp.getOutputStream();
-//                if (rsp.containsHeader("Content-Encoding")) {
-//                    // we serve Jelly pages with Content-Encoding:gzip.
-//                    // ServletResponse doesn't provide means for us to check the value of the header,
-//                    // to make the matter worse, GZIPOutputStream writes a header right away,
-//                    // so by the time we get here we already have GZip header. Skip that part away by skipping first 10 bytes.
-//                    // this is a hack.
-//                    sout = new GZIPOutputStream(new ChopHeaderOutputStream(sout,10));
-//                }
-                out = new PrintWriter(new OutputStreamWriter(sout));
+                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
@@ -108,34 +99,6 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             for (int i=0; i < 10; i++)
                 out.print("                              ");
             out.close();
-        }
-    }
-
-    private static class ChopHeaderOutputStream extends FilterOutputStream {
-        private int count;
-
-        ChopHeaderOutputStream(OutputStream out, int count) {
-            super(out);
-            this.count = count;
-        }
-        
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            int i = Math.min(len,count);
-            count-=i;
-            off+=i;
-            len-=i;
-
-            if (len>0)
-                out.write(b, off, len);
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            if (count>0)
-                count--;
-            else
-                out.write(b);
         }
     }
 }

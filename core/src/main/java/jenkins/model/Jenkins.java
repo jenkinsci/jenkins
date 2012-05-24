@@ -2997,6 +2997,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         rsp.getWriter().println("GCed");
     }
 
+    /**
+     * End point that intentionally throws an exception to test the error behaviour.
+     */
+    public void doException() {
+        throw new RuntimeException();
+    }
+
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
         return new ContextMenu().from(this,request,response);
     }
