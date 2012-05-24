@@ -392,7 +392,7 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
-        CLI cli = new CLI(new URL(url),null,httpProxy);
+        CLI cli = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy).connect();
         try {
             if (!candidateKeys.isEmpty()) {
                 try {
