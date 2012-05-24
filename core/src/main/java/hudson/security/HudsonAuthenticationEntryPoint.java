@@ -78,8 +78,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out;
             try {
-                ServletOutputStream sout = rsp.getOutputStream();
-                out = new PrintWriter(new OutputStreamWriter(sout));
+                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
@@ -95,7 +94,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // See http://support.microsoft.com/kb/294807
             for (int i=0; i < 10; i++)
                 out.print("                              ");
-            out.flush();
+            out.close();
         }
     }
 }
