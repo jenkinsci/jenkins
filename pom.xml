@@ -553,10 +553,11 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.4</version>
+        <version>2.5-jenkins-1</version><!-- SNAPSHOT release from rev.1336858 to pick up 'compilerReuseStrategy' flag -->
         <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
           <source>1.5</source>
           <target>1.5</target>
+          <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
         </configuration>
       </plugin>
 
