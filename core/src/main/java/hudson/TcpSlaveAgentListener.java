@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import hudson.cli.Connection;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import hudson.model.Computer;
 import hudson.slaves.OfflineCause;
@@ -37,17 +39,31 @@ import hudson.cli.CliManagerImpl;
 import hudson.cli.CliEntryPoint;
 import hudson.util.IOException2;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.BindException;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -173,7 +189,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
-                PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+                PrintWriter out = new PrintWriter(s.getOutputStream(),true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 String s = in.readUTF();
 
@@ -185,6 +201,8 @@ public final class TcpSlaveAgentListener extends Thread {
                         runJnlp2Connect(in, out);
                     } else if(protocol.equals("CLI-connect")) {
                         runCliConnect(in, out);
+                    } else if(protocol.equals("CLI2-connect")) {
+                        runCliConnect2();
                     } else {
                         error(out, "Unknown protocol:" + s);
                     }
@@ -213,10 +231,54 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void runCliConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
             out.println("Welcome");
+            runCli(new Connection(s));
+        }
+
+        /**
+         * CLI connection version2 that does transport encryption.
+         */
+        private void runCliConnect2() throws IOException, InterruptedException {
+            try {
+                DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                out.writeUTF("Welcome");
+
+                // perform coin-toss and come up with a session key to encrypt data
+                Connection c = new Connection(s);
+                byte[] secret = c.diffieHellman(true).generateSecret();
+                SecretKey sessionKey = new SecretKeySpec(Connection.fold(secret,128/8),"AES");
+                c = c.encryptConnection(sessionKey,"AES/CFB8/NoPadding");
+
+                try {
+                    // HACK: TODO: move the transport support into modules
+                    Class<?> cls = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("org.jenkinsci.main.modules.instance_identity.InstanceIdentity");
+                    Object iid = cls.getDeclaredMethod("get").invoke(null);
+                    PrivateKey instanceId = (PrivateKey)cls.getDeclaredMethod("getPrivate").invoke(iid);
+
+                    // send a signature to prove our identity
+                    Signature signer = Signature.getInstance("SHA1withRSA");
+                    signer.initSign(instanceId);
+                    signer.update(secret);
+                    c.writeByteArray(signer.sign());
+                } catch (ClassNotFoundException e) {
+                    throw new Error(e);
+                } catch (IllegalAccessException e) {
+                    throw new Error(e);
+                } catch (InvocationTargetException e) {
+                    throw new Error(e);
+                } catch (NoSuchMethodException e) {
+                    throw new Error(e);
+                }
+
+                runCli(c);
+            } catch (GeneralSecurityException e) {
+                throw new IOException2("Failed to encrypt the CLI channel",e);
+            }
+        }
+
+        private void runCli(Connection c) throws IOException, InterruptedException {
             Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
                     Computer.threadPoolForRemoting, Mode.BINARY,
-                    new BufferedInputStream(new SocketInputStream(this.s)),
-                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
+                    new BufferedInputStream(c.in), new BufferedOutputStream(c.out), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
