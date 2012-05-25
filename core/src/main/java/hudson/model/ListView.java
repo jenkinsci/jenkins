@@ -199,12 +199,14 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
-    public synchronized Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
         if (ig instanceof ModifiableItemGroup) {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
             if(item!=null) {
-                jobNames.add(item.getName());
+                synchronized (this) {
+                    jobNames.add(item.getName());
+                }
                 owner.save();
             }
             return item;
