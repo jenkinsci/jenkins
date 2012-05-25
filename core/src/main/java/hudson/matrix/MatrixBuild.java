@@ -66,6 +66,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      */
     private Integer baseBuild;
 
+    /**
+     * Backdoor acces for {@link DefaultMatrixCheckoutStrategyImpl} to {@link RunnerImpl}
+      */
+    /*package*/ transient RunnerImpl runner;
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -285,7 +289,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    private class RunnerImpl extends AbstractRunner {
+    /*package*/ class RunnerImpl extends AbstractRunner {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
 
         protected Result doRun(BuildListener listener) throws Exception {
@@ -328,6 +332,28 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     }
                 }
             }
+        }
+
+        @Override
+        protected void preCheckout() throws IOException, InterruptedException {
+            getCheckoutStrategy().preCheckout(MatrixBuild.this, launcher, listener);
+        }
+
+        /*package*/ void defaultPreCheckout() throws IOException, InterruptedException {
+            super.preCheckout();
+        }
+
+        @Override
+        protected void checkout() throws IOException, InterruptedException {
+            getCheckoutStrategy().checkout(MatrixBuild.this, launcher, listener);
+        }
+
+        /*package*/ void defaultCheckout() throws IOException, InterruptedException {
+            super.checkout();
+        }
+
+        private MatrixCheckoutStrategy getCheckoutStrategy() {
+            return getProject().getMatrixCheckoutStrategy();
         }
 
         private void listUpAggregators(BuildListener listener, Collection<?> values) {

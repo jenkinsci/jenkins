@@ -25,14 +25,11 @@ package hudson.matrix;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.BuildableItemWithBuildWrappers;
-import hudson.model.TopLevelItem;
+import hudson.model.Result;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
-import hudson.tasks.BuildWrapper;
 import hudson.model.Build;
 import hudson.model.Node;
 import org.kohsuke.stapler.Ancestor;
@@ -51,6 +48,11 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
+    /**
+     * Backdoor acces for {@link DefaultMatrixCheckoutStrategyImpl} to {@link RunnerImpl}
+      */
+    /*package*/ transient RunnerImpl runner;
+
     public MatrixRun(MatrixConfiguration job) throws IOException {
         super(job);
     }
@@ -152,6 +154,16 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
     }
 
     protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
+        @Override
+        public Result run(BuildListener listener) throws Exception {
+            runner = this;
+            try {
+                return super.run(listener);
+            } finally {
+                runner = null;
+            }
+        }
+
         protected Lease getParentWorkspaceLease(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             MatrixProject mp = getParent().getParent();
 
@@ -186,24 +198,28 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             String childWs = mp.getChildCustomWorkspace();
             return Lease.createLinkedDummyLease(baseDir.child(env.expand(childWs)),baseLease);
         }
+        
         @Override
-        protected void preCheckout(Launcher launcher, BuildListener listener)
-                throws IOException, InterruptedException {
-            MatrixProject mp = getParent().getParent();
-            MatrixRunCheckoutStrategy strategy = mp.getMatrixRunCheckoutStrategy();
-            boolean invokeSuper = strategy.preCheckout(MatrixRun.this, launcher, listener);
-            if(invokeSuper) {
-                super.preCheckout(launcher, listener);
-            }
+        protected void preCheckout() throws IOException, InterruptedException {
+            getCheckoutStrategy().preCheckout(MatrixRun.this, launcher, listener);
         }
+
+        /*package*/ void defaultPreCheckout() throws IOException, InterruptedException {
+            super.preCheckout();
+        }
+        
         @Override
-        protected void checkout(BuildListener listener) throws Exception {
+        protected void checkout() throws IOException, InterruptedException {
+            getCheckoutStrategy().checkout(MatrixRun.this, launcher, listener);
+        }
+
+        /*package*/ void defaultCheckout() throws IOException, InterruptedException {
+            super.checkout();
+        }
+
+        private MatrixCheckoutStrategy getCheckoutStrategy() {
             MatrixProject mp = getParent().getParent();
-            MatrixRunCheckoutStrategy strategy = mp.getMatrixRunCheckoutStrategy();
-            boolean invokeSuper = strategy.checkout(MatrixRun.this, launcher, listener);
-            if(invokeSuper) {
-                super.checkout(listener);
-            }
+            return mp.getMatrixCheckoutStrategy();
         }
     }
 }

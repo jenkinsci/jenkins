@@ -58,6 +58,7 @@ import hudson.tasks.BuildTrigger;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.AdaptedIterator;
+import hudson.util.IOException2;
 import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
@@ -277,7 +278,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoot(ws,this);
+        return getParent().getScm().getModuleRoot(ws, this);
     }
 
     /**
@@ -472,8 +473,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);
                 }
-                preCheckout(launcher,listener);
-                checkout(listener);
+                preCheckout();
+                checkout();
 
                 if (!preBuild(listener,project.getProperties()))
                     return Result.FAILURE;
@@ -560,15 +561,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         
         /**
          * Run preCheckout on {@link BuildWrapper}s
-         * 
-         * @param launcher
-         * 		The launcher, never null.
-         * @param listener
-         * 		Never null, connected to the main build output.
-         * @throws IOException
-         * @throws InterruptedException
          */
-        protected void preCheckout(Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
+        protected void preCheckout() throws IOException, InterruptedException{
         	if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
@@ -576,7 +570,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
         
-        protected void checkout(BuildListener listener) throws Exception {
+        protected void checkout() throws IOException, InterruptedException {
                 for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
                     // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
                     // in case check out fails and leaves a broken changelog.xml behind.
@@ -602,6 +596,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     } catch (IOException e) {
                         // checkout error not yet reported
                         e.printStackTrace(listener.getLogger());
+                    } catch (Exception e) {
+                        throw new IOException2("Failed to parse changelog",e);
                     }
 
                     if (retryCount == 0)   // all attempts failed

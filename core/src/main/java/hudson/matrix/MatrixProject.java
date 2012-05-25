@@ -160,7 +160,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     private MatrixExecutionStrategy executionStrategy;
 
-    private MatrixRunCheckoutStrategy matrixRunCheckoutStrategy;
+    private MatrixCheckoutStrategy matrixCheckoutStrategy;
 
     /**
      * Custom workspace location for {@link MatrixConfiguration}s.
@@ -282,13 +282,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         save();
     }
 
-    public MatrixRunCheckoutStrategy getMatrixRunCheckoutStrategy() {
-        return matrixRunCheckoutStrategy == null ? new DefaultMatrixRunCheckoutStrategyImpl() : matrixRunCheckoutStrategy;
+    public MatrixCheckoutStrategy getMatrixCheckoutStrategy() {
+        return matrixCheckoutStrategy == null ? new DefaultMatrixCheckoutStrategyImpl() : matrixCheckoutStrategy;
     }
 
-    public void setMatrixRunCheckoutStrategy(MatrixRunCheckoutStrategy matrixRunCheckoutStrategy) throws IOException {
-        if (matrixRunCheckoutStrategy ==null)   throw new IllegalArgumentException();
-        this.matrixRunCheckoutStrategy = matrixRunCheckoutStrategy;
+    public void setMatrixCheckoutStrategy(MatrixCheckoutStrategy matrixCheckoutStrategy) throws IOException {
+        if (matrixCheckoutStrategy ==null)   throw new IllegalArgumentException();
+        this.matrixCheckoutStrategy = matrixCheckoutStrategy;
         save();
     }
 
@@ -776,16 +776,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             executionStrategy = req.bindJSON(esd.get(0).clazz,json.getJSONObject("executionStrategy"));
 
         try {
-            List<MatrixRunCheckoutStrategyDescriptor> mrcsd = MatrixRunCheckoutStrategyDescriptor
+            List<MatrixCheckoutStrategyDescriptor> mrcsd = MatrixCheckoutStrategyDescriptor
                 .all();
             if (mrcsd.size() > 1)
-                matrixRunCheckoutStrategy = req.bindJSON(MatrixRunCheckoutStrategy.class,
-                    json.getJSONObject("matrixRunCheckoutStrategy"));
+                matrixCheckoutStrategy = req.bindJSON(MatrixCheckoutStrategy.class,
+                    json.getJSONObject("matrixCheckoutStrategy"));
             else
-                matrixRunCheckoutStrategy = req.bindJSON(mrcsd.get(0).clazz,
-                    json.getJSONObject("matrixRunCheckoutStrategy"));
+                matrixCheckoutStrategy = req.bindJSON(mrcsd.get(0).clazz,
+                    json.getJSONObject("matrixCheckoutStrategy"));
         } catch (Exception exc) {
-            matrixRunCheckoutStrategy = new DefaultMatrixRunCheckoutStrategyImpl();
+            matrixCheckoutStrategy = new DefaultMatrixCheckoutStrategyImpl();
         }
 
         // parse system axes
@@ -869,8 +869,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return MatrixExecutionStrategyDescriptor.all();
         }
 
-        public List<MatrixRunCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
-            return MatrixRunCheckoutStrategyDescriptor.all();
+        public List<MatrixCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
+            return MatrixCheckoutStrategyDescriptor.all();
         }
     }
 
