@@ -58,15 +58,9 @@ THE SOFTWARE.
   <p:config-scm/>
 
   <f:section title="${%Advanced Source Code Management}">
-	<j:choose>
-		<j:when test="${descriptor.matrixRunCheckoutStrategyDescriptors.size() gt 1}">
-			<f:dropdownDescriptorSelector title="${%Matrix Run Checkout Strategy}" field="matrixCheckoutStrategy"/>
-		</j:when>
-		<j:otherwise>
-			<!-- for the default case when there's only one build checkout strategy, render it inline to simplify the UI -->
-			<f:property field="matrixCheckoutStrategy" propertyDescriptor="${descriptor.matrixRunCheckoutStrategyDescriptors.get(0)}"/>
-		</j:otherwise>
-	</j:choose>
+	<j:if test="${descriptor.matrixRunCheckoutStrategyDescriptors.size() gt 1}">
+			<f:dropdownDescriptorSelector title="${%SCM Checkout Strategy}" field="matrixCheckoutStrategy"/>
+  </j:if>
   </f:section>
 
   <p:config-trigger>

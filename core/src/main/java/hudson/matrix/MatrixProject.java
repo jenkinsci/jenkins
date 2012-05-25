@@ -774,18 +774,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         else
             executionStrategy = req.bindJSON(esd.get(0).clazz,json.getJSONObject("executionStrategy"));
 
-        try {
-            List<MatrixCheckoutStrategyDescriptor> mrcsd = MatrixCheckoutStrategyDescriptor
-                .all();
-            if (mrcsd.size() > 1)
-                matrixCheckoutStrategy = req.bindJSON(MatrixCheckoutStrategy.class,
-                    json.getJSONObject("matrixCheckoutStrategy"));
-            else
-                matrixCheckoutStrategy = req.bindJSON(mrcsd.get(0).clazz,
-                    json.getJSONObject("matrixCheckoutStrategy"));
-        } catch (Exception exc) {
-            matrixCheckoutStrategy = new DefaultMatrixCheckoutStrategyImpl();
-        }
+        if (json.has("matrixCheckoutStrategy"))
+            matrixCheckoutStrategy = req.bindJSON(MatrixCheckoutStrategy.class,
+                json.getJSONObject("matrixCheckoutStrategy"));
+        else
+            matrixCheckoutStrategy = null;
 
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
