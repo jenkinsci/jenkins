@@ -4,8 +4,11 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
+/**
+ * {@link Descriptor} for {@link MatrixCheckoutStrategy}.
+ *
+ */
 public abstract class MatrixCheckoutStrategyDescriptor extends Descriptor<MatrixCheckoutStrategy> {
-
     protected MatrixCheckoutStrategyDescriptor(Class<? extends MatrixCheckoutStrategy> clazz) {
         super(clazz);
     }
