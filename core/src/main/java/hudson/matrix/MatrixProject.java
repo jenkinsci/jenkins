@@ -287,7 +287,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public void setMatrixCheckoutStrategy(MatrixCheckoutStrategy matrixCheckoutStrategy) throws IOException {
-        if (matrixCheckoutStrategy ==null)   throw new IllegalArgumentException();
         this.matrixCheckoutStrategy = matrixCheckoutStrategy;
         save();
     }
