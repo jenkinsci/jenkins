@@ -58,6 +58,9 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -159,8 +162,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private transient MatrixConfigurationSorter sorter;
 
     private MatrixExecutionStrategy executionStrategy;
-
-    private MatrixCheckoutStrategy matrixCheckoutStrategy;
 
     /**
      * Custom workspace location for {@link MatrixConfiguration}s.
@@ -279,15 +280,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     public void setExecutionStrategy(MatrixExecutionStrategy executionStrategy) throws IOException {
         if (executionStrategy ==null)   throw new IllegalArgumentException();
         this.executionStrategy = executionStrategy;
-        save();
-    }
-
-    public MatrixCheckoutStrategy getMatrixCheckoutStrategy() {
-        return matrixCheckoutStrategy == null ? new DefaultMatrixCheckoutStrategyImpl() : matrixCheckoutStrategy;
-    }
-
-    public void setMatrixCheckoutStrategy(MatrixCheckoutStrategy matrixCheckoutStrategy) throws IOException {
-        this.matrixCheckoutStrategy = matrixCheckoutStrategy;
         save();
     }
 
@@ -774,12 +766,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         else
             executionStrategy = req.bindJSON(esd.get(0).clazz,json.getJSONObject("executionStrategy"));
 
-        if (json.has("matrixCheckoutStrategy"))
-            matrixCheckoutStrategy = req.bindJSON(MatrixCheckoutStrategy.class,
-                json.getJSONObject("matrixCheckoutStrategy"));
-        else
-            matrixCheckoutStrategy = null;
-
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
@@ -861,8 +847,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return MatrixExecutionStrategyDescriptor.all();
         }
 
-        public List<MatrixCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
-            return MatrixCheckoutStrategyDescriptor.all();
+        public List<SCMCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
+            return SCMCheckoutStrategyDescriptor.all();
         }
     }
 

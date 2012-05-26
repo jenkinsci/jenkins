@@ -37,6 +37,9 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategy;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -65,11 +68,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      * If non-null, the {@link MatrixBuild} originates from the given build number.
      */
     private Integer baseBuild;
-
-    /**
-     * Backdoor acces for {@link DefaultMatrixCheckoutStrategyImpl} to {@link RunnerImpl}
-      */
-    /*package*/ transient RunnerImpl runner;
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -332,28 +330,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     }
                 }
             }
-        }
-
-        @Override
-        protected void preCheckout() throws IOException, InterruptedException {
-            getCheckoutStrategy().preCheckout(MatrixBuild.this, launcher, listener);
-        }
-
-        /*package*/ void defaultPreCheckout() throws IOException, InterruptedException {
-            super.preCheckout();
-        }
-
-        @Override
-        protected void checkout() throws IOException, InterruptedException {
-            getCheckoutStrategy().checkout(MatrixBuild.this, launcher, listener);
-        }
-
-        /*package*/ void defaultCheckout() throws IOException, InterruptedException {
-            super.checkout();
-        }
-
-        private MatrixCheckoutStrategy getCheckoutStrategy() {
-            return getProject().getMatrixCheckoutStrategy();
         }
 
         private void listUpAggregators(BuildListener listener, Collection<?> values) {
