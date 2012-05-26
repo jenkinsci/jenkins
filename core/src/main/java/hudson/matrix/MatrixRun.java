@@ -26,15 +26,10 @@ package hudson.matrix;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
 import hudson.model.Build;
 import hudson.model.Node;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -151,17 +146,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
         run(new RunnerImpl());
     }
 
-    protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
-        @Override
-        public Result run(BuildListener listener) throws Exception {
-            runner = this;
-            try {
-                return super.run(listener);
-            } finally {
-                runner = null;
-            }
-        }
-
+    private class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
         protected Lease getParentWorkspaceLease(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             MatrixProject mp = getParent().getParent();
 

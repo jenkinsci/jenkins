@@ -37,9 +37,6 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
-import jenkins.scm.SCMCheckoutStrategy;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -287,7 +284,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    /*package*/ class RunnerImpl extends AbstractRunner {
+    private class RunnerImpl extends AbstractRunner {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
 
         protected Result doRun(BuildListener listener) throws Exception {
