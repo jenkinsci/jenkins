@@ -57,12 +57,6 @@ THE SOFTWARE.
 
   <p:config-scm/>
 
-  <f:section title="${%Advanced Source Code Management}">
-	<j:if test="${descriptor.matrixRunCheckoutStrategyDescriptors.size() gt 1}">
-			<f:dropdownDescriptorSelector title="${%SCM Checkout Strategy}" field="matrixCheckoutStrategy"/>
-  </j:if>
-  </f:section>
-
   <p:config-trigger>
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>

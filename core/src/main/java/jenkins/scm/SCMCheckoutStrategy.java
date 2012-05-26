@@ -1,11 +1,14 @@
-package hudson.matrix;
+package jenkins.scm;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Executor;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
@@ -38,7 +41,7 @@ import java.io.IOException;
  * <h3>checkout</h3>
  * <p>
  * The default implementation uses {@link AbstractProject#checkout(AbstractBuild, Launcher, BuildListener, File)} to
- * let {@link SCM} do check out, but your {@link MatrixCheckoutStrategy} impls can substitute this call with other
+ * let {@link SCM} do check out, but your {@link SCMCheckoutStrategy} impls can substitute this call with other
  * operations that substitutes this semantics.
  * 
  * <h2>State and concurrency</h2>
@@ -47,8 +50,7 @@ import java.io.IOException;
  * the subtype needs to avoid using instance variables to refer to build-specific state (such as {@link BuildListener}s.)
  * Similarly, methods can be invoked concurrently. The code executes on the master, even if builds are running remotely.
  */
-public abstract class MatrixCheckoutStrategy extends
-    AbstractDescribableImpl<MatrixCheckoutStrategy> implements ExtensionPoint {
+public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMCheckoutStrategy> implements ExtensionPoint {
 
     /*
         Default behavior is defined in AbstractBuild.AbstractRunner, which is the common
@@ -67,40 +69,27 @@ public abstract class MatrixCheckoutStrategy extends
      * @param listener
      *      Allows you to write to console output and report errors. Never null.
      */
-    public void preCheckout(MatrixRun build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        build.runner.defaultPreCheckout();
+    public void preCheckout(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        AbstractProject<?, ?> project = build.getProject();
+        if (project instanceof BuildableItemWithBuildWrappers) {
+               BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+               for (BuildWrapper bw : biwbw.getBuildWrappersList())
+                   bw.preCheckout(build,launcher,listener);
+           }
     }
 
     /**
      * Performs the checkout step.
      * 
-     * See {@link #preCheckout(MatrixRun, Launcher, BuildListener)} for the semantics of the parameters.
+     * See {@link #preCheckout(AbstractBuild, Launcher, BuildListener)} for the semantics of the parameters.
      */
-    public void checkout(MatrixRun build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        build.runner.defaultCheckout();
-    }
-
-    /**
-     * Performs the pre-checkout step.
-     *
-     * See {@link #preCheckout(MatrixRun, Launcher, BuildListener)} for the semantics of the parameters.
-     */
-    public void preCheckout(MatrixBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        build.runner.defaultPreCheckout();
-    }
-
-    /**
-     * Performs the checkout step.
-     *
-     * See {@link #preCheckout(MatrixRun, Launcher, BuildListener)} for the semantics of the parameters.
-     */
-    public void checkout(MatrixBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        build.runner.defaultCheckout();
+    public void checkout(AbstractBuild.AbstractRunner runner) throws IOException, InterruptedException {
+        runner.defaultCheckout();
     }
 
     @Override
-    public MatrixCheckoutStrategyDescriptor getDescriptor() {
-        return (MatrixCheckoutStrategyDescriptor)super.getDescriptor();
+    public SCMCheckoutStrategyDescriptor getDescriptor() {
+        return (SCMCheckoutStrategyDescriptor)super.getDescriptor();
     }
 
 }

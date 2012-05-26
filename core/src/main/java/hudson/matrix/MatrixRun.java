@@ -32,6 +32,9 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.model.Build;
 import hudson.model.Node;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -48,11 +51,6 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
-    /**
-     * Backdoor acces for {@link DefaultMatrixCheckoutStrategyImpl} to {@link RunnerImpl}
-      */
-    /*package*/ transient RunnerImpl runner;
-
     public MatrixRun(MatrixConfiguration job) throws IOException {
         super(job);
     }
@@ -197,29 +195,6 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             // child workspace need no individual locks, whether or not we use custom workspace
             String childWs = mp.getChildCustomWorkspace();
             return Lease.createLinkedDummyLease(baseDir.child(env.expand(childWs)),baseLease);
-        }
-        
-        @Override
-        protected void preCheckout() throws IOException, InterruptedException {
-            getCheckoutStrategy().preCheckout(MatrixRun.this, launcher, listener);
-        }
-
-        /*package*/ void defaultPreCheckout() throws IOException, InterruptedException {
-            super.preCheckout();
-        }
-        
-        @Override
-        protected void checkout() throws IOException, InterruptedException {
-            getCheckoutStrategy().checkout(MatrixRun.this, launcher, listener);
-        }
-
-        /*package*/ void defaultCheckout() throws IOException, InterruptedException {
-            super.checkout();
-        }
-
-        private MatrixCheckoutStrategy getCheckoutStrategy() {
-            MatrixProject mp = getParent().getParent();
-            return mp.getMatrixCheckoutStrategy();
         }
     }
 }
