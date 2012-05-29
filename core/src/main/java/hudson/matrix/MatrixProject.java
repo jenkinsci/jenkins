@@ -58,8 +58,6 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
@@ -188,7 +186,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     /**
      * Gets the workspace location that {@link MatrixConfiguration} uses.
      * 
-     * @see MatrixRun.RunnerImpl#decideWorkspace(Node, WorkspaceList) 
+     * @see MatrixRun.MatrixRunExecution#decideWorkspace(Node, WorkspaceList)
      * 
      * @return never null
      *      even when {@link MatrixProject} uses no custom workspace, this method still

@@ -143,10 +143,10 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixRunExecution());
     }
 
-    private class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
+    private class MatrixRunExecution extends BuildExecution {
         protected Lease getParentWorkspaceLease(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             MatrixProject mp = getParent().getParent();
 

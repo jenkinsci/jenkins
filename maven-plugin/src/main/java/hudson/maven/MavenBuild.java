@@ -25,7 +25,6 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.slaves.WorkspaceList;
@@ -246,7 +245,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MavenBuildExecution());
 
         getProject().updateTransientActions();
 
@@ -543,7 +542,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 // failed before it didn't even get to this module
                 // OR if the aggregated build is an incremental one and this
                 // module needn't be build.
-                run(new Runner() {
+                MavenBuild.this.execute(new RunExecution() {
                     public Result run(BuildListener listener) {
                         listener.getLogger().println(Messages.MavenBuild_FailedEarlier());
                         return Result.NOT_BUILT;
@@ -642,7 +641,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     
     
 
-    private class RunnerImpl extends AbstractRunner {
+    private class MavenBuildExecution extends AbstractBuildExecution {
         private List<MavenReporter> reporters;
 
         @Override
