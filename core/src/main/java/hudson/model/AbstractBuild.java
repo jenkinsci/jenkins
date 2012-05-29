@@ -273,7 +273,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoot(ws, this);
+        return getParent().getScm().getModuleRoot(ws,this);
     }
 
     /**
@@ -481,8 +481,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);
                 }
-                preCheckout();
-                checkout();
+
+                getProject().getSCMCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
+                getProject().getSCMCheckoutStrategy().checkout(this);
 
                 if (!preBuild(listener,project.getProperties()))
                     return Result.FAILURE;
@@ -564,18 +565,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
 
             return l;
-        }
-
-        
-        /**
-         * Run preCheckout on {@link BuildWrapper}s
-         */
-        private void preCheckout() throws IOException, InterruptedException{
-            getProject().getSCMCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, listener);
-        }
-        
-        private void checkout() throws IOException, InterruptedException {
-            getProject().getSCMCheckoutStrategy().checkout(this);
         }
 
         public void defaultCheckout() throws IOException, InterruptedException {
