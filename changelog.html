@@ -55,14 +55,6 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
-</ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.467>What's new in 1.467</a> <!--=DATE=--></h3>
-<ul class=image>
   <li class=bug>
     Added more MIME type mapping for Winstone.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13496">issue 13496</a>)
@@ -106,11 +98,19 @@ Upcoming changes</a>
   <li class=rfe>
     Added a new extension point for agent protocols.
   <li class=rfe>
+    Added a new extension point for custom checkout behaviour, especially targeted for matrix projects.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/482">pull 482</a>)
+  <li class=rfe>
+    Allow the tree parameter and the xpath parameter to be used together in the REST API.
+  <li class=rfe>
     Enabled concurrent build support for matrix projects
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6747">issue 6747</a>)
 </ul>
-</div><!--=END=-->
-<h3><a name=v1.466>What's new in 1.466</a> (2012/05/28)</h3>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.466>What's new in 1.466</a> <!--=DATE=--></h3>
 <ul class=image>
   <li class=bug>
     Maven plugin: expand variables in "Room POM" field
@@ -120,6 +120,7 @@ Upcoming changes</a>
   <li class=rfe>
     Enabled concurrent build support for matrix projects
 </ul>
+</div><!--=END=-->
 <h3><a name=v1.465>What's new in 1.465</a> (2012/05/21)</h3>
 <ul class=image>
   <li class=bug>
@@ -222,6 +223,9 @@ Upcoming changes</a>
   <li class=bug>
     Loading All Build History Fails.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13238">issue 13238</a>)  
+  <li class=rfe>
+    Added the View.READ permission to control visibility of views, and updated the default implementation to hide empty views.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-3681">issue 3681</a>)  
   <li class=rfe>
     Added new extension point for transient build actions.
     (<a href="https://github.com/jenkinsci/jenkins/pull/421">pull 421</a>)
