@@ -43,6 +43,6 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new BuildExecution());
     }
 }
