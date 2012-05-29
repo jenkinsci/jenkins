@@ -218,7 +218,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                         }
                     }
 
-                    if (needExecutor) {
+                    if (needExecutor && (c.getNode().canTake(item) == null)) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
                         needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
                         break;
