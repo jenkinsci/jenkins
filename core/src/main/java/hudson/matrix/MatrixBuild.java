@@ -273,7 +273,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixBuildExecution());
     }
 
     @Override
@@ -284,7 +284,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    private class RunnerImpl extends AbstractRunner {
+    private class MatrixBuildExecution extends AbstractBuildExecution {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
 
         protected Result doRun(BuildListener listener) throws Exception {

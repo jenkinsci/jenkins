@@ -474,7 +474,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     public void run() {
-        run(new RunnerImpl());
+        execute(new MavenModuleSetBuildExecution());
         getProject().updateTransientActions();
     }
 
@@ -554,7 +554,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * The sole job of the {@link MavenModuleSet} build is to update SCM
      * and triggers module builds.
      */
-    private class RunnerImpl extends AbstractRunner {
+    private class MavenModuleSetBuildExecution extends AbstractBuildExecution {
         private Map<ModuleName,MavenBuild.ProxyImpl2> proxies;
 
         protected Result doRun(final BuildListener listener) throws Exception {

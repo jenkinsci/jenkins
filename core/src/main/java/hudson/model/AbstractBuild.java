@@ -241,7 +241,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * <p>
      * Note to implementors: to control where the workspace is created, override
-     * {@link AbstractRunner#decideWorkspace(Node,WorkspaceList)}.
+     * {@link AbstractBuildExecution#decideWorkspace(Node,WorkspaceList)}.
      *
      * @return
      *      null if the workspace is on a slave that's not connected. Note that once the build is completed,
@@ -257,7 +257,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Normally, a workspace is assigned by {@link Runner}, but this lets you set the workspace in case
+     * Normally, a workspace is assigned by {@link RunExecution}, but this lets you set the workspace in case
      * {@link AbstractBuild} is created without a build.
      */
     protected void setWorkspace(FilePath ws) {
@@ -407,7 +407,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
     }
 
-    public abstract class AbstractRunner extends Runner {
+    /**
+     * @deprecated as of 1.467
+     *      Please use {@link RunExecution}
+     */
+    public abstract class AbstractRunner extends AbstractBuildExecution {
+
+    }
+
+    public abstract class AbstractBuildExecution extends Runner {
+        /*
+            Some plugins might depend on this instance castable to Runner, so we need to use
+            deprecated class here.
+         */
+
         /**
          * Since configuration can be changed while a build is in progress,
          * create a launcher once and stick to it for the entire build duration.

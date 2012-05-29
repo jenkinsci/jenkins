@@ -63,7 +63,7 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
      * record the log and its exit code, then call it a build.
      */
     public void run(final String[] cmd) {
-        run(new Runner() {
+        execute(new RunExecution() {
             public Result run(BuildListener listener) throws Exception {
                 Proc proc = new Proc.LocalProc(cmd,getEnvironment(listener),System.in,new DualOutputStream(System.out,listener.getLogger()));
                 return proc.join()==0?Result.SUCCESS:Result.FAILURE;
@@ -97,7 +97,7 @@ public class ExternalRun extends Run<ExternalJob,ExternalRun> {
     @IgnoreJRERequirement
     public void acceptRemoteSubmission(final Reader in) throws IOException {
         final long[] duration = new long[1];
-        run(new Runner() {
+        execute(new RunExecution() {
             private String elementText(XMLStreamReader r) throws XMLStreamException {
                 StringBuilder buf = new StringBuilder();
                 while(true) {

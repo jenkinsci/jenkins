@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractBuild.AbstractBuildExecution;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -83,8 +84,8 @@ public abstract class SCMCheckoutStrategy extends AbstractDescribableImpl<SCMChe
      * 
      * See {@link #preCheckout(AbstractBuild, Launcher, BuildListener)} for the semantics of the parameters.
      */
-    public void checkout(AbstractBuild.AbstractRunner runner) throws IOException, InterruptedException {
-        runner.defaultCheckout();
+    public void checkout(AbstractBuildExecution execution) throws IOException, InterruptedException {
+        execution.defaultCheckout();
     }
 
     @Override
