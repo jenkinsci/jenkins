@@ -597,7 +597,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet());
 
                         for (SCMListener l : Jenkins.getInstance().getSCMListeners())
-                            l.onChangeLogParsed(build,listener,build.getChangeSet());
+                            try {
+                                l.onChangeLogParsed(build,listener,build.getChangeSet());
+                            } catch (Exception e) {
+                                throw new IOException2("Failed to parse changelog",e);
+                            }
                         return;
                     }
                 } catch (AbortException e) {
@@ -607,8 +611,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 } catch (IOException e) {
                     // checkout error not yet reported
                     e.printStackTrace(listener.getLogger());
-                } catch (Exception e) {
-                    throw new IOException2("Failed to parse changelog",e);
                 }
 
                 if (retryCount == 0)   // all attempts failed
