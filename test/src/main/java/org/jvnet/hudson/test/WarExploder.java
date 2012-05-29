@@ -80,11 +80,11 @@ final class WarExploder {
             }
         }
 
-        // locate hudson.war
+        // locate jenkins.war
         URL winstone = WarExploder.class.getResource("/winstone.jar");
         if(winstone==null)
-        // impossible, since the test harness pulls in hudson.war
-            throw new AssertionError("jenkins.war is not in the classpath.");
+            // impossible, since the test harness pulls in jenkins.war
+            throw new AssertionError("jenkins.war is not in the classpath. If you are running this from the core workspace, run 'mvn install' to create the war image in war/target/jenkins");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
