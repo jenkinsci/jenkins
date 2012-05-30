@@ -64,6 +64,18 @@ Upcoming changes</a>
 <h3><a name=v1.467>What's new in 1.467</a> <!--=DATE=--></h3>
 <ul class=image>
   <li class=bug>
+    Added more MIME type mapping for Winstone.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13496">issue 13496</a>)
+  <li class=bug>
+    Winstone wasn't handling downloads bigger than 2GB.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12854">issue 12854</a>)
+  <li class=bug>
+    With 'on-demand' retention strategy, wrong slave can be started for jobs restricted to specific slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13735">issue 13735</a>)
+  <li class=bug>
+    Fixed encoding handling in e-mail headers.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/486">pull 486</a>)
+  <li class=bug>
     When accessing a page that requires authentication, redirection to start authentication results in a content decoding failure.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13625">issue 13625</a>)
   <li class=bug>
@@ -93,6 +105,11 @@ Upcoming changes</a>
     Exposed plugin manager and update center to the REST API
   <li class=rfe>
     Added a new extension point for agent protocols.
+  <li class=rfe>
+    Added a new extension point for custom checkout behaviour, especially targeted for matrix projects.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/482">pull 482</a>)
+  <li class=rfe>
+    Allow the tree parameter and the xpath parameter to be used together in the REST API.
   <li class=rfe>
     Enabled concurrent build support for matrix projects
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6747">issue 6747</a>)

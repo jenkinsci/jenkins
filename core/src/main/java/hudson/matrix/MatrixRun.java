@@ -26,11 +26,10 @@ package hudson.matrix;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.TopLevelItem;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
 import hudson.model.Build;
 import hudson.model.Node;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -144,10 +143,10 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixRunExecution());
     }
 
-    protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
+    private class MatrixRunExecution extends BuildExecution {
         protected Lease getParentWorkspaceLease(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             MatrixProject mp = getParent().getParent();
 

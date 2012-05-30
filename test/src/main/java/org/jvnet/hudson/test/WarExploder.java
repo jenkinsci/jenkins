@@ -65,15 +65,10 @@ final class WarExploder {
      * Explodes hudson.war, if necessary, and returns its root dir.
      */
     private static File explode() throws Exception {
-        // are we in the hudson main workspace? If so, pick up hudson/main/war/resources
+        // are we in the Jenkins main workspace? If so, pick up hudson/main/war/resources
         // this saves the effort of packaging a war file and makes the debug cycle faster
 
         File d = new File(".").getAbsoluteFile();
-
-        // just in case we were started from hudson instead of from hudson/main/...
-        if (new File(d, "main/war/target/jenkins").exists()) {
-            return new File(d, "main/war/target/jenkins");
-        }
 
         for( ; d!=null; d=d.getParentFile()) {
             if(new File(d,".jenkins").exists()) {
@@ -85,11 +80,11 @@ final class WarExploder {
             }
         }
 
-        // locate hudson.war
+        // locate jenkins.war
         URL winstone = WarExploder.class.getResource("/winstone.jar");
         if(winstone==null)
-        // impossible, since the test harness pulls in hudson.war
-            throw new AssertionError("jenkins.war is not in the classpath.");
+            // impossible, since the test harness pulls in jenkins.war
+            throw new AssertionError("jenkins.war is not in the classpath. If you are running this from the core workspace, run 'mvn install' to create the war image in war/target/jenkins");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();

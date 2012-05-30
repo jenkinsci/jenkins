@@ -35,6 +35,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.*;
+import org.kohsuke.stapler.export.TreePruner.ByDepth;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -79,6 +80,7 @@ public class Api extends AbstractModelObject {
     public void doXml(StaplerRequest req, StaplerResponse rsp,
                       @QueryParameter String xpath,
                       @QueryParameter String wrapper,
+                      @QueryParameter String tree,
                       @QueryParameter int depth) throws IOException, ServletException {
         String[] excludes = req.getParameterValues("exclude");
 
@@ -92,7 +94,8 @@ public class Api extends AbstractModelObject {
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
-        p.writeTo(bean,depth,Flavor.XML.createDataWriter(bean,sw));
+        TreePruner pruner = (tree!=null) ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
+        p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
         Object result;

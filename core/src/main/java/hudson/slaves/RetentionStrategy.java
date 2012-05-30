@@ -199,13 +199,16 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                 for (Computer o : Jenkins.getInstance().getComputers()) {
                     if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle()) {
                         final int idleExecutors = o.countIdle();
-                        availableComputers.put(o, idleExecutors);
+                        if (idleExecutors>0)
+                            availableComputers.put(o, idleExecutors);
                     }
                 }
 
                 boolean needComputer = false;
                 long demandMilliseconds = 0;
                 for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                    // can any of the currently idle executors take this task?
+                    // assume the answer is no until we can find such an executor
                     boolean needExecutor = true;
                     for (Computer o : Collections.unmodifiableSet(availableComputers.keySet())) {
                         if (o.getNode().canTake(item) == null) {
@@ -213,12 +216,15 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                             final int availableExecutors = availableComputers.remove(o);
                             if (availableExecutors > 1) {
                                 availableComputers.put(o, availableExecutors - 1);
+                            } else {
+                                availableComputers.remove(o);
                             }
                             break;
                         }
                     }
 
-                    if (needExecutor) {
+                    // this 'item' cannot be built by any of the existing idle nodes, but it can be built by 'c'
+                    if (needExecutor && c.getNode().canTake(item) == null) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
                         needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
                         break;

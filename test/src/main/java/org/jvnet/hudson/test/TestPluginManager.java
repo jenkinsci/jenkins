@@ -64,7 +64,10 @@ public class TestPluginManager extends PluginManager {
     protected Collection<String> loadBundledPlugins() throws Exception {
         Set<String> names = new HashSet<String>();
 
-        File[] children = new File(WarExploder.getExplodedDir(),"WEB-INF/plugins").listFiles();
+        File bundledPlugins = new File(WarExploder.getExplodedDir(), "WEB-INF/plugins");
+        File[] children = bundledPlugins.listFiles();
+        if (children==null)
+            throw new Error("Unable to find "+bundledPlugins);
         for (File child : children) {
             try {
                 names.add(child.getName());

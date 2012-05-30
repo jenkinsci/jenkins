@@ -23,11 +23,14 @@
  */
 package hudson.model;
 
+import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
 import hudson.tasks.Notifier;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,14 +110,32 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 //
     @Override
     public void run() {
-        run(createRunner());
+        execute(createRunner());
     }
 
+    /**
+     * @deprecated as of 1.467
+     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      proper execution object.
+     */
+    @Restricted(NoExternalUse.class)
     protected Runner createRunner() {
-        return new RunnerImpl();
+        return new BuildExecution();
     }
-    
-    protected class RunnerImpl extends AbstractRunner {
+
+    /**
+     * @deprecated as of 1.467
+     *      Please use {@link BuildExecution}
+     */
+    protected class RunnerImpl extends BuildExecution {
+    }
+
+    protected class BuildExecution extends AbstractRunner {
+        /*
+            Some plugins might depend on this instance castable to Runner, so we need to use
+            deprecated class here.
+         */
+
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;

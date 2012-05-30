@@ -48,12 +48,20 @@ THE SOFTWARE.
             
             For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
             to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
-         </p>
+          </p>
           <p>
             Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
             that match the given XPath from the result. This is useful for
             trimming down the amount of data you fetch (but again see <a href="#tree">below</a>). This query parameter can be specified
             multiple times.
+          </p>
+          <p>
+            XPath filtering is powerful, and you can have it only return a very small data, but note that
+            the server still has to build a full DOM of the raw data, which could cause a large memory spike.
+            To avoid overloading the server, consider using the <tt>tree</tt> parameter, or use the <tt>xpath</tt> parameter
+            in conjunction with the <tt>tree</tt> parameter. When used together, the result of the <tt>tree</tt> parameter
+            filtering is built into DOM, then the XPath is applied to compute the final return value. In this way,
+            you can often substantially reduce the size of DOM built in memory.
           </p>
         </dd>
 

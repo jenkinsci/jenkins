@@ -238,10 +238,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private boolean keepLog;
 
     /**
-     * If the build is in progress, remember {@link Runner} that's running it.
+     * If the build is in progress, remember {@link RunExecution} that's running it.
      * This field is not persisted.
      */
-    private volatile transient Runner runner;
+    private volatile transient RunExecution runner;
 
     protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER =
             new ThreadLocal<SimpleDateFormat>() {
@@ -1282,7 +1282,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         while(true) {
             Run b = RunnerStack.INSTANCE.peek().getBuild().getPreviousBuildInProgress();
             if(b==null)     return; // no pending earlier build
-            Run.Runner runner = b.runner;
+            Run.RunExecution runner = b.runner;
             if(runner==null) {
                 // polled at the wrong moment. try again.
                 Thread.sleep(0);
@@ -1295,14 +1295,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
-    protected abstract class Runner {
+    /**
+     * @deprecated as of 1.467
+     *      Please use {@link RunExecution}
+     */
+    protected abstract class Runner extends RunExecution {}
+
+    /**
+     * Object that lives while the build is executed, to keep track of things that
+     * are needed only during the build.
+     */
+    public abstract class RunExecution {
         /**
          * Keeps track of the check points attained by a build, and abstracts away the synchronization needed to 
          * maintain this data structure.
          */
         private final class CheckpointSet {
             /**
-             * Stages of the builds that this runner has completed. This is used for concurrent {@link Runner}s to
+             * Stages of the builds that this runner has completed. This is used for concurrent {@link RunExecution}s to
              * coordinate and serialize their executions where necessary.
              */
             private final Set<CheckPoint> checkpoints = new HashSet<CheckPoint>();
@@ -1376,7 +1386,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Used in {@link Runner#run} to indicates that a fatal error in a build
+     * Used in {@link RunExecution#run} to indicates that a fatal error in a build
      * is reported to {@link BuildListener} and the build should be simply aborted
      * without further recording a stack trace.
      */
@@ -1384,7 +1394,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * @deprecated as of 1.467
+     *      Use {@link #execute(RunExecution)}
+     */
     protected final void run(Runner job) {
+        execute(job);
+    }
+
+    protected final void execute(RunExecution job) {
         if(result!=null)
             return;     // already built.
 
