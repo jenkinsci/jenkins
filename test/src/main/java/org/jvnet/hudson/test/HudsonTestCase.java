@@ -110,6 +110,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.jar.Manifest;
@@ -254,6 +256,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public boolean useLocalPluginManager;
 
     /**
+     * Number of seconds until the test times out.
+     */
+    public int timeout = 90;
+
+    private volatile Timer timeoutTimer;
+
+    /**
      * Set the plugin manager to be passed to {@link Jenkins} constructor.
      *
      * For historical reasons, {@link #useLocalPluginManager}==true will take the precedence.
@@ -288,7 +297,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     @Override
-    protected void setUp() throws Exception {
+    protected void  setUp() throws Exception {
         env.pin();
         recipe();
         AbstractProject.WORKSPACE.toString();
@@ -335,8 +344,23 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // allow the test class to inject Jenkins components
         jenkins.lookup(Injector.class).injectMembers(this);
+
+        setUpTimeout();
     }
 
+    protected void setUpTimeout() {
+        if (timeout<=0)     return; // no timeout
+
+        final Thread testThread = Thread.currentThread();
+        timeoutTimer = new Timer();
+        timeoutTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (timeoutTimer!=null)
+                    testThread.interrupt();
+            }
+        }, TimeUnit.SECONDS.toMillis(timeout));
+    }
 
 
     /**
@@ -358,6 +382,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void tearDown() throws Exception {
         try {
+            if (timeoutTimer!=null) {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
+            }
+
             // cancel pending asynchronous operations, although this doesn't really seem to be working
             for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations
@@ -384,7 +413,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
 
-            // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
+            // Jenkins creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
