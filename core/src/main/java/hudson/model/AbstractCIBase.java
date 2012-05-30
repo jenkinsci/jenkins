@@ -77,7 +77,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         v.owner = this;
     }
     protected void interruptReloadThread() {
-        ExternalJob.reloadThread.interrupt();
+        ViewJob.reloadThread.interrupt();
     }
 
     protected void killComputer(Computer c) {

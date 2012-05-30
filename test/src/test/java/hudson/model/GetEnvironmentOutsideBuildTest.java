@@ -85,16 +85,6 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
     }
     
-    public void testExternalJob() throws Exception {
-        ExternalJob p = jenkins.createProject(ExternalJob.class, createUniqueProjectName());
-        ExternalRun b = p.newBuild();
-        b.acceptRemoteSubmission(new StringReader(
-            "<run><log content-encoding='UTF-8'></log><result>0</result><duration>1</duration></run>"
-        ));
-        
-        assertGetEnvironmentWorks(b);
-    }
-
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void assertGetEnvironmentCallOutsideBuildWorks(AbstractProject job) throws Exception {
         AbstractBuild build = buildAndAssertSuccess(job);
