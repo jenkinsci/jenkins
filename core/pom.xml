@@ -513,11 +513,6 @@ THE SOFTWARE.
       <version>1.7</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.libzfs</groupId>
       <artifactId>libzfs</artifactId>
       <version>0.5</version>
