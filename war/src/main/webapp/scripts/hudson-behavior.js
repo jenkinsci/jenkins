@@ -751,6 +751,7 @@ var jenkinsRules = {
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
                 tr.parentNode.insertBefore(row, $(tr).next());
             }
+            layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
     },
@@ -762,6 +763,7 @@ var jenkinsRules = {
                 link = link.parentNode;
             link.style.display = "none";
             $(link).next().style.display="block";
+            layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
     },
@@ -1399,6 +1401,7 @@ var jenkinsRules = {
         e.onclick = function() {
             this.style.display = 'none';
             $(this).next().style.display = 'block';
+            layoutUpdateCallback.call();
             return false;
         };
         e = null; // avoid memory leak
@@ -1652,6 +1655,7 @@ function updateOptionalBlock(c,scroll) {
             var tr = findAncestor(homeField, 'TR');
             if (tr != null) {
                 tr.style.display = c.checked ? 'none' : '';
+                layoutUpdateCallback.call();
             }
         }
     }
@@ -1757,6 +1761,7 @@ function expandTextArea(button,id) {
 
     n.parentNode.innerHTML = 
         "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    layoutUpdateCallback.call();
 }
 
 // refresh a part of the HTML specified by the given ID,
@@ -1972,6 +1977,7 @@ var radioBlockSupport = {
         while((n = n.next()) != blockEnd) {
           n.style.display = show ? "" : "none";
         }
+        layoutUpdateCallback.call();
     }
 };
 
