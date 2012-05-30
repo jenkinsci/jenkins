@@ -296,6 +296,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         AbstractProject.WORKSPACE.toString();
         User.clear();
 
+        // just in case tearDown failed in the middle, make sure to really clean them up so that there's no left-over from earlier tests
+        ExtensionList.clearLegacyInstances();
+        DescriptorExtensionList.clearLegacyInstances();
 
         try {
             jenkins = hudson = newHudson();
