@@ -110,7 +110,7 @@ public class MailSenderTest {
      * list.
      */
     @Test
-    public void testIncludeUpstreamCulprits() throws MessagingException, InterruptedException {
+    public void testIncludeUpstreamCulprits() throws Exception {
         Collection<AbstractProject> upstreamProjects = Collections.singleton(this.upstreamProject);
         
         MailSender sender = new MailSender("", false, false, "UTF-8", upstreamProjects);
