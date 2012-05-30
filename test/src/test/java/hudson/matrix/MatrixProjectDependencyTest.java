@@ -25,7 +25,7 @@ public class MatrixProjectDependencyTest extends HudsonTestCase {
 		FreeStyleProject freestyleProject = createFreeStyleProject();
 		matrixProject.getPublishersList().add(new BuildTrigger(freestyleProject.getName(), false));
 		
-		hudson.rebuildDependencyGraph();
+		jenkins.rebuildDependencyGraph();
 		
 		buildAndAssertSuccess(matrixProject);
 		waitUntilNoActivity();
@@ -34,7 +34,7 @@ public class MatrixProjectDependencyTest extends HudsonTestCase {
 		assertEquals("There should only be one FreestyleBuild", 1, builds.size());
 		FreeStyleBuild build = builds.iterator().next();
 		assertEquals(Result.SUCCESS, build.getResult());
-		List<AbstractProject> downstream = hudson.getDependencyGraph().getDownstream(matrixProject);
+		List<AbstractProject> downstream = jenkins.getDependencyGraph().getDownstream(matrixProject);
 		assertTrue(downstream.contains(freestyleProject));		
 	}
 	

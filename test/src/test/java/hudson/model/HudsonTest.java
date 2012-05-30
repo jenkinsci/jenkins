@@ -79,18 +79,18 @@ public class HudsonTest extends HudsonTestCase {
         submit(form);
 
         // make sure all the pieces are intact
-        assertEquals(2,hudson.getNumExecutors());
-        assertSame(Mode.NORMAL,hudson.getMode());
-        assertSame(SecurityRealm.NO_AUTHENTICATION,hudson.getSecurityRealm());
-        assertSame(AuthorizationStrategy.UNSECURED,hudson.getAuthorizationStrategy());
-        assertEquals(5,hudson.getQuietPeriod());
+        assertEquals(2, jenkins.getNumExecutors());
+        assertSame(Mode.NORMAL, jenkins.getMode());
+        assertSame(SecurityRealm.NO_AUTHENTICATION, jenkins.getSecurityRealm());
+        assertSame(AuthorizationStrategy.UNSECURED, jenkins.getAuthorizationStrategy());
+        assertEquals(5, jenkins.getQuietPeriod());
 
-        List<JDK> jdks = hudson.getJDKs();
+        List<JDK> jdks = jenkins.getJDKs();
         assertEquals(3,jdks.size()); // Hudson adds one more
         assertJDK(jdks.get(0),"jdk1","/tmp");
         assertJDK(jdks.get(1),"jdk2","/tmp");
 
-        AntInstallation[] ants = hudson.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+        AntInstallation[] ants = jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(2,ants.length);
         assertAnt(ants[0],"ant1","/tmp");
         assertAnt(ants[1],"ant2","/tmp");
@@ -174,10 +174,10 @@ public class HudsonTest extends HudsonTestCase {
         };
 
         BuildStep.PUBLISHERS.addRecorder(dummy);
-        assertSame(dummy,hudson.getDescriptor(HudsonTest.class.getName()));
+        assertSame(dummy, jenkins.getDescriptor(HudsonTest.class.getName()));
 
         BuildStep.PUBLISHERS.remove(dummy);
-        assertNull(hudson.getDescriptor(HudsonTest.class.getName()));
+        assertNull(jenkins.getDescriptor(HudsonTest.class.getName()));
     }
 
     /**
@@ -188,10 +188,10 @@ public class HudsonTest extends HudsonTestCase {
         Field pv = Jenkins.class.getDeclaredField("primaryView");
         pv.setAccessible(true);
         String value = null;
-        pv.set(hudson, value);
-        assertNull("null primaryView", hudson.getView(value));
+        pv.set(jenkins, value);
+        assertNull("null primaryView", jenkins.getView(value));
         value = "some bogus name";
-        pv.set(hudson, value);
-        assertNull("invalid primaryView", hudson.getView(value));
+        pv.set(jenkins, value);
+        assertNull("invalid primaryView", jenkins.getView(value));
     }
 }

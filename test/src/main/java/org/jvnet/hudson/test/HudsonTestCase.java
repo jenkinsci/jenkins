@@ -131,8 +131,6 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -309,30 +307,30 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             f.set(null,null);
             throw e;
         }
-        hudson.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
+        jenkins.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
         
-        hudson.setCrumbIssuer(new TestCrumbIssuer());
+        jenkins.setCrumbIssuer(new TestCrumbIssuer());
 
-        hudson.servletContext.setAttribute("app",hudson);
-        hudson.servletContext.setAttribute("version","?");
-        WebAppMain.installExpressionFactory(new ServletContextEvent(hudson.servletContext));
+        jenkins.servletContext.setAttribute("app", jenkins);
+        jenkins.servletContext.setAttribute("version","?");
+        WebAppMain.installExpressionFactory(new ServletContextEvent(jenkins.servletContext));
         Mailer.descriptor().setHudsonUrl(getURL().toExternalForm());
 
         // set a default JDK to be the one that the harness is using.
-        hudson.getJDKs().add(new JDK("default",System.getProperty("java.home")));
+        jenkins.getJDKs().add(new JDK("default",System.getProperty("java.home")));
 
         configureUpdateCenter();
 
         // expose the test instance as a part of URL tree.
         // this allows tests to use a part of the URL space for itself.
-        hudson.getActions().add(this);
+        jenkins.getActions().add(this);
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
         DescriptorImpl desc = Mailer.descriptor();
         // prevent NPE with eclipse 
         if (desc != null) Mailer.descriptor().setHudsonUrl(null);
-        for( Descriptor d : hudson.getExtensionList(Descriptor.class) )
+        for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
 
         // allow the test class to inject Jenkins components
@@ -352,7 +350,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         DownloadService.neverUpdate = true;
         UpdateSite.neverUpdate = true;
 
-        PersistedList<UpdateSite> sites = hudson.getUpdateCenter().getSites();
+        PersistedList<UpdateSite> sites = jenkins.getUpdateCenter().getSites();
         sites.clear();
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
@@ -381,7 +379,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             for (LenientRunnable r : tearDowns)
                 r.run();
 
-            hudson.cleanUp();
+            jenkins.cleanUp();
             env.dispose();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
@@ -454,7 +452,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public void setPluginManager(PluginManager pluginManager) {
         this.useLocalPluginManager = false;
         this.pluginManager = pluginManager;
-        if (hudson!=null)
+        if (jenkins !=null)
             throw new IllegalStateException("Too late to override the plugin manager");
     }
 
@@ -548,7 +546,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         MavenInstallation mvn = configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
         
         MavenInstallation m3 = new MavenInstallation("apache-maven-3.0.1",mvn.getHome(), NO_PROPERTIES);
-        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
+        jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
         return m3;
     }    
     
@@ -562,7 +560,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
         if (mavenAlreadyInstalled.exists()) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",mavenAlreadyInstalled.getAbsolutePath(), NO_PROPERTIES);
-            hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
+            jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
         
@@ -571,7 +569,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         if(home!=null) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",home, NO_PROPERTIES);
             if (mavenInstallation.meetsMavenReqVersion(createLocalLauncher(), mavenReqVersion)) {
-                hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
+                jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
                 return mavenInstallation;
             }
         }
@@ -580,7 +578,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         // this happens when a test is invoked from an IDE, for example.
         LOGGER.warning("Extracting a copy of Maven bundled in the test harness. " +
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
-        FilePath mvn = hudson.getRootPath().createTempFile("maven", "zip");
+        FilePath mvn = jenkins.getRootPath().createTempFile("maven", "zip");
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         File mvnHome =  new File(buildDirectory);
         mvn.unzip(new FilePath(mvnHome));
@@ -590,7 +588,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 new File(mvnHome,mavenVersion).getAbsolutePath(), NO_PROPERTIES);
-		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
+		jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
 
@@ -604,7 +602,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         } else {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
-            FilePath ant = hudson.getRootPath().createTempFile("ant", "zip");
+            FilePath ant = jenkins.getRootPath().createTempFile("ant", "zip");
             ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
@@ -614,7 +612,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
             antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
         }
-		hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
+		jenkins.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 		return antInstallation;
     }
 
@@ -627,7 +625,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected FreeStyleProject createFreeStyleProject(String name) throws IOException {
-        return hudson.createProject(FreeStyleProject.class, name);
+        return jenkins.createProject(FreeStyleProject.class, name);
     }
 
     protected MatrixProject createMatrixProject() throws IOException {
@@ -635,7 +633,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected MatrixProject createMatrixProject(String name) throws IOException {
-        return hudson.createProject(MatrixProject.class, name);
+        return jenkins.createProject(MatrixProject.class, name);
     }
 
     /**
@@ -653,13 +651,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * @see #configureDefaultMaven()
      */
     protected MavenModuleSet createMavenProject(String name) throws IOException {
-        MavenModuleSet mavenModuleSet = hudson.createProject(MavenModuleSet.class,name);
+        MavenModuleSet mavenModuleSet = jenkins.createProject(MavenModuleSet.class,name);
         mavenModuleSet.setRunHeadless( true );
         return mavenModuleSet;
     }
 
     protected String createUniqueProjectName() {
-        return "test"+hudson.getItems().size();
+        return "test"+ jenkins.getItems().size();
     }
 
     /**
@@ -731,27 +729,27 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Creates a slave with certain additional environment variables
      */
     public DumbSlave createSlave(String labels, EnvVars env) throws Exception {
-        synchronized (hudson) {
-            int sz = hudson.getNodes().size();
+        synchronized (jenkins) {
+            int sz = jenkins.getNodes().size();
             return createSlave("slave" + sz,labels,env);
     	}
     }
 
     public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
-        synchronized (hudson) {
+        synchronized (jenkins) {
             DumbSlave slave = new DumbSlave(nodeName, "dummy",
     				createTmpDir().getPath(), "1", Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env),
 			        RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
-    		hudson.addNode(slave);
+    		jenkins.addNode(slave);
     		return slave;
     	}
     }
 
     public PretendSlave createPretendSlave(FakeLauncher faker) throws Exception {
-        synchronized (hudson) {
-            int sz = hudson.getNodes().size();
+        synchronized (jenkins) {
+            int sz = jenkins.getNodes().size();
             PretendSlave slave = new PretendSlave("slave" + sz, createTmpDir().getPath(), "", createComputerLauncher(null), faker);
-    		hudson.addNode(slave);
+    		jenkins.addNode(slave);
     		return slave;
         }
     }
@@ -763,12 +761,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      *      Environment variables to add to the slave process. Can be null.
      */
     public CommandLauncher createComputerLauncher(EnvVars env) throws URISyntaxException, MalformedURLException {
-        int sz = hudson.getNodes().size();
+        int sz = jenkins.getNodes().size();
         return new CommandLauncher(
                 String.format("\"%s/bin/java\" %s -jar \"%s\"",
                         System.getProperty("java.home"),
                         SLAVE_DEBUG_PORT>0 ? " -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address="+(SLAVE_DEBUG_PORT+sz): "",
-                        new File(hudson.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath()),
+                        new File(jenkins.getJnlpJars("slave.jar").getURL().toURI()).getAbsolutePath()),
                 env);
     }
 
@@ -903,7 +901,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @SuppressWarnings("unchecked")
     protected <N extends Node> N configRoundtrip(N node) throws Exception {
         submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
-        return (N)hudson.getNode(node.getNodeName());
+        return (N) jenkins.getNode(node.getNodeName());
     }
 
     protected <V extends View> V configRoundtrip(V view) throws Exception {
@@ -1092,7 +1090,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public void assertHelpExists(final Class<? extends Describable> type, final String properties) throws Exception {
         executeOnServer(new Callable<Object>() {
             public Object call() throws Exception {
-                Descriptor d = hudson.getDescriptor(type);
+                Descriptor d = jenkins.getDescriptor(type);
                 WebClient wc = createWebClient();
                 for (String property : listProperties(properties)) {
                     String url = d.getHelpFile(property);
@@ -1231,7 +1229,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     protected void setQuietPeriod(int qp) {
-        JenkinsAdaptor.setQuietPeriod(hudson, qp);
+        JenkinsAdaptor.setQuietPeriod(jenkins, qp);
     }
 
     /**
@@ -1306,7 +1304,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Gets the descriptor instance of the current Hudson by its type.
      */
     protected <T extends Descriptor<?>> T get(Class<T> d) {
-        return hudson.getDescriptorByType(d);
+        return jenkins.getDescriptorByType(d);
     }
 
 
@@ -1314,9 +1312,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Returns true if Hudson is building something or going to build something.
      */
     protected boolean isSomethingHappening() {
-        if (!hudson.getQueue().isEmpty())
+        if (!jenkins.getQueue().isEmpty())
             return true;
-        for (Computer n : hudson.getComputers())
+        for (Computer n : jenkins.getComputers())
             if (!n.isIdle())
                 return true;
         return false;
@@ -1351,14 +1349,14 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
             if (System.currentTimeMillis()-startTime > timeout) {
                 List<Executable> building = new ArrayList<Executable>();
-                for (Computer c : hudson.getComputers()) {
+                for (Computer c : jenkins.getComputers()) {
                     for (Executor e : c.getExecutors()) {
                         if (e.isBusy())
                             building.add(e.getCurrentExecutable());
                     }
                 }
                 throw new AssertionError(String.format("Jenkins is still doing something after %dms: queue=%s building=%s",
-                        timeout, Arrays.asList(hudson.getQueue().getItems()), building));
+                        timeout, Arrays.asList(jenkins.getQueue().getItems()), building));
             }
         }
     }
@@ -1689,7 +1687,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             final Exception[] t = new Exception[1];
             final List<V> r = new ArrayList<V>(1);  // size 1 list
 
-            ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+            ClosureExecuterAction cea = jenkins.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
             UUID id = UUID.randomUUID();
             cea.add(id,new Runnable() {
                 public void run() {
@@ -1823,8 +1821,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public WebRequestSettings addCrumb(WebRequestSettings req) {
             NameValuePair crumb[] = { new NameValuePair() };
             
-            crumb[0].setName(hudson.getCrumbIssuer().getDescriptor().getCrumbRequestField());
-            crumb[0].setValue(hudson.getCrumbIssuer().getCrumb( null ));
+            crumb[0].setName(jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField());
+            crumb[0].setValue(jenkins.getCrumbIssuer().getCrumb( null ));
             
             req.setRequestParameters(Arrays.asList( crumb ));
             return req;
@@ -1834,7 +1832,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          * Creates a URL with crumb parameters relative to {{@link #getContextPath()}
          */
         public URL createCrumbedUrl(String relativePath) throws IOException {
-            CrumbIssuer issuer = hudson.getCrumbIssuer();
+            CrumbIssuer issuer = jenkins.getCrumbIssuer();
             String crumbName = issuer.getDescriptor().getCrumbRequestField();
             String crumb = issuer.getCrumb(null);
             
@@ -1845,7 +1843,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
          * Makes an HTTP request, process it with the given request handler, and returns the response.
          */
         public HtmlPage eval(final Runnable requestHandler) throws IOException, SAXException {
-            ClosureExecuterAction cea = hudson.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
+            ClosureExecuterAction cea = jenkins.getExtensionList(RootAction.class).get(ClosureExecuterAction.class);
             UUID id = UUID.randomUUID();
             cea.add(id,requestHandler);
             return goTo("closures/?uuid="+id);

@@ -27,22 +27,22 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		JDK defaultJDK = hudson.getJDK(null);
+		JDK defaultJDK = jenkins.getJDK(null);
 		JDK varJDK = new JDK("varJDK", withVariable(defaultJDK.getHome()));
-		hudson.getJDKs().add(varJDK);
+		jenkins.getJDKs().add(varJDK);
 
 		// Maven with a variable in its path
 		configureDefaultMaven();
-		MavenInstallation defaultMaven = hudson.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations()[0];
+		MavenInstallation defaultMaven = jenkins.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations()[0];
 		MavenInstallation varMaven = new MavenInstallation("varMaven",
 				withVariable(defaultMaven.getHome()), NO_PROPERTIES);
-		hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
+		jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(varMaven);
 
 		// Ant with a variable in its path
         AntInstallation ant = configureDefaultAnt();
         AntInstallation antInstallation = new AntInstallation("varAnt",
                 withVariable(ant.getHome()),NO_PROPERTIES);
-        hudson.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
+        jenkins.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 
 		// create slaves
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
@@ -61,7 +61,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 		} else {
 			project.getBuildersList().add(new Shell("echo \"$JAVA_HOME\""));
 		}
-		project.setJDK(hudson.getJDK("varJDK"));
+		project.setJDK(jenkins.getJDK("varJDK"));
 
 		// set appropriate SCM to get the necessary build files
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
@@ -92,12 +92,12 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	}
 
 	public void testFreeStyleAntOnSlave() throws Exception {
-        if (hudson.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0) {
+        if (jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0) {
             System.out.println("Cannot do testFreeStyleAntOnSlave without ANT_HOME");
             return;
         }
 		FreeStyleProject project = createFreeStyleProject();
-		project.setJDK(hudson.getJDK("varJDK"));
+		project.setJDK(jenkins.getJDK("varJDK"));
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
 				"/simple-projects.zip")));
 
@@ -137,7 +137,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
 	public void testFreeStyleMavenOnSlave() throws Exception {
 		FreeStyleProject project = createFreeStyleProject();
-		project.setJDK(hudson.getJDK("varJDK"));
+		project.setJDK(jenkins.getJDK("varJDK"));
 		project.setScm(new ExtractResourceSCM(getClass().getResource(
 				"/simple-projects.zip")));
 
@@ -172,7 +172,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 
     public void testNativeMavenOnSlave() throws Exception {
         MavenModuleSet project = createMavenProject();
-        project.setJDK(hudson.getJDK("varJDK"));
+        project.setJDK(jenkins.getJDK("varJDK"));
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
 

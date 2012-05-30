@@ -40,7 +40,7 @@ public class ExecutorTest extends HudsonTestCase {
 
     @Bug(4756)
     public void testWhenAnExecuterIsYankedANewExecuterTakesItsPlace() throws Exception {
-        Computer c = hudson.toComputer();
+        Computer c = jenkins.toComputer();
         Executor e = getExecutorByNumber(c, 0);
 
         kill(e);

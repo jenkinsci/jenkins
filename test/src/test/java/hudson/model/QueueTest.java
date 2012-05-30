@@ -32,7 +32,6 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
 import hudson.model.Queue.*;
-import hudson.model.Queue.*;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -70,17 +69,17 @@ public class QueueTest extends HudsonTestCase {
      * Checks the persistence of queue.
      */
     public void testPersistence() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -98,17 +97,17 @@ public class QueueTest extends HudsonTestCase {
      * Can {@link Queue} successfully recover removal?
      */
     public void testPersistence2() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
