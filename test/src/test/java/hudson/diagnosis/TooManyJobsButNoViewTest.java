@@ -60,7 +60,7 @@ public class TooManyJobsButNoViewTest extends HudsonTestCase {
         assertNotNull(p.getFormByName(mon.id));
 
         // once we create a view, the message should disappear
-        hudson.addView(new ListView("test"));
+        jenkins.addView(new ListView("test"));
 
         verifyNoForm();
     }

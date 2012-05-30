@@ -42,7 +42,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
     public void testReadOnlyConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertTrue("Charlie should have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
@@ -58,7 +58,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
     public void testReadOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
         
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Charlie should not have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
@@ -79,7 +79,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
     public void testNoConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Bob should not have extended read for this test", gas.hasExplicitPermission("bob",Item.EXTENDED_READ));

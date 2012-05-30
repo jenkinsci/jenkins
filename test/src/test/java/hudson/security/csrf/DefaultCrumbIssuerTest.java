@@ -18,10 +18,10 @@ import org.jvnet.hudson.test.HudsonTestCase;
 public class DefaultCrumbIssuerTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         super.setUp();
-        assertNotNull(hudson);
+        assertNotNull(jenkins);
         CrumbIssuer issuer = new DefaultCrumbIssuer(false);
         assertNotNull(issuer);
-        hudson.setCrumbIssuer(issuer);
+        jenkins.setCrumbIssuer(issuer);
     }
 
     private static final String[] testData = {
@@ -85,7 +85,7 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
     public void testProxyCompatibilityMode() throws Exception {
         CrumbIssuer issuer = new DefaultCrumbIssuer(true);
         assertNotNull(issuer);
-        hudson.setCrumbIssuer(issuer);
+        jenkins.setCrumbIssuer(issuer);
 
         WebClient wc = new WebClient();
         wc.addRequestHeader(HEADER_NAME, testData[0]);

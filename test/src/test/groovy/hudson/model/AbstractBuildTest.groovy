@@ -24,13 +24,13 @@
 package hudson.model
 
 import com.gargoylesoftware.htmlunit.Page
-import hudson.model.BuildListener
+
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry
-import junit.framework.Assert
+
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder
 import org.jvnet.hudson.test.GroovyHudsonTestCase
-import org.jvnet.hudson.test.ExtractResourceWithChangesSCM
+
 import org.jvnet.hudson.test.FakeChangeLogSCM
 import org.jvnet.hudson.test.FailureBuilder
 import org.jvnet.hudson.test.UnstableBuilder
@@ -38,7 +38,7 @@ import org.jvnet.hudson.test.UnstableBuilder
 public class AbstractBuildTest extends GroovyHudsonTestCase {
 	void testVariablesResolved() {
 		def project = createFreeStyleProject();
-		hudson.nodeProperties.replaceBy([
+		jenkins.nodeProperties.replaceBy([
                 new EnvironmentVariablesNodeProperty(new Entry("KEY1", "value"), new Entry("KEY2",'$KEY1'))]);
 		def builder = new CaptureEnvironmentBuilder();
 		project.buildersList.add(builder);

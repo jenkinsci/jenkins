@@ -28,7 +28,6 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.slaves.NodeProvisioner.NodeProvisionerInvoker;
 import hudson.tasks.Builder;
-import hudson.util.TimeUnit2;
 
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -104,7 +103,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
      * Scenario: schedule a build and see if one slave is provisioned.
      */
     public void _testAutoProvision() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(hudson);
+        BulkChange bc = new BulkChange(jenkins);
         try {
             DummyCloudImpl cloud = initHudson(10);
 
@@ -125,7 +124,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
      * Scenario: we got a lot of jobs all of the sudden, and we need to fire up a few nodes.
      */
     public void _testLoadSpike() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(hudson);
+        BulkChange bc = new BulkChange(jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
 
@@ -143,7 +142,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
      * Scenario: make sure we take advantage of statically configured slaves.
      */
     public void _testBaselineSlaveUsage() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(hudson);
+        BulkChange bc = new BulkChange(jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
             // add slaves statically upfront
@@ -163,11 +162,11 @@ public class NodeProvisionerTest extends HudsonTestCase {
      * Scenario: loads on one label shouldn't translate to load on another label.
      */
     public void _testLabels() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(hudson);
+        BulkChange bc = new BulkChange(jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
-            Label blue = hudson.getLabel("blue");
-            Label red = hudson.getLabel("red");
+            Label blue = jenkins.getLabel("blue");
+            Label red = jenkins.getLabel("red");
             cloud.label = red;
 
             // red jobs
@@ -206,11 +205,11 @@ public class NodeProvisionerTest extends HudsonTestCase {
     private DummyCloudImpl initHudson(int delay) throws IOException {
         // start a dummy service
         DummyCloudImpl cloud = new DummyCloudImpl(this, delay);
-        hudson.clouds.add(cloud);
+        jenkins.clouds.add(cloud);
 
         // no build on the master, to make sure we get everything from the cloud
-        hudson.setNumExecutors(0);
-        hudson.setNodes(Collections.<Node>emptyList());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(Collections.<Node>emptyList());
         return cloud;
     }
 

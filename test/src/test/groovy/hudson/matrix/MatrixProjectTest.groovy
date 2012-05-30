@@ -53,8 +53,7 @@ import hudson.model.FileParameterDefinition
 import hudson.model.Cause.LegacyCodeCause
 import hudson.model.ParametersAction
 import hudson.model.FileParameterValue
-import org.jvnet.hudson.test.MockBuilder
-import org.jvnet.hudson.test.SleepBuilder
+
 import java.util.concurrent.CountDownLatch
 
 /**
@@ -209,7 +208,7 @@ public class MatrixProjectTest extends HudsonTestCase {
      * Makes sure that the configuration correctly roundtrips.
      */
     public void testConfigRoundtrip() {
-        hudson.getJDKs().addAll([
+        jenkins.getJDKs().addAll([
                 new JDK("jdk1.7","somewhere"),
                 new JDK("jdk1.6","here"),
                 new JDK("jdk1.5","there")]);
@@ -255,10 +254,10 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         System.out.println(p.labels);
         assertEquals(4,p.labels.size());
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave3")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave3")));
     }
 
     /**
@@ -283,7 +282,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         // have foo=1 block to make sure the 2nd configuration is in the queue
         firstStarted.block();
         // enter into the quiet down while foo=2 is still in the queue
-        hudson.doQuietDown();
+        jenkins.doQuietDown();
         buildCanProceed.signal();
 
         // make sure foo=2 still completes. use time out to avoid hang

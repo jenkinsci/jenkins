@@ -86,12 +86,12 @@ public class JDKInstallerTest extends HudsonTestCase {
         File tmp = env.temporaryDirectoryAllocator.allocate();
         JDKInstaller installer = new JDKInstaller("jdk-6u13-oth-JPR@CDS-CDS_Developer", true);
 
-        hudson.getJDKs().add(new JDK("test",tmp.getAbsolutePath(), Arrays.asList(
+        jenkins.getJDKs().add(new JDK("test",tmp.getAbsolutePath(), Arrays.asList(
                 new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer)))));
 
         submit(new WebClient().goTo("configure").getFormByName("config"));
 
-        JDK jdk = hudson.getJDK("test");
+        JDK jdk = jenkins.getJDK("test");
         InstallSourceProperty isp = jdk.getProperties().get(InstallSourceProperty.class);
         assertEquals(1,isp.installers.size());
         assertEqualBeans(installer,isp.installers.get(JDKInstaller.class),"id,acceptLicense");
@@ -153,7 +153,7 @@ public class JDKInstallerTest extends HudsonTestCase {
         JDK jdk = new JDK("test", tmp.getAbsolutePath(), Arrays.asList(
                 new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer))));
 
-        hudson.getJDKs().add(jdk);
+        jenkins.getJDKs().add(jdk);
 
         FreeStyleProject p = createFreeStyleProject();
         p.setJDK(jdk);
@@ -185,7 +185,7 @@ public class JDKInstallerTest extends HudsonTestCase {
             File d = env.temporaryDirectoryAllocator.allocate();
 
             new JDKInstaller("",true).install(new LocalLauncher(l),Platform.LINUX,
-                    new JDKInstaller.FilePathFileSystem(hudson),l,d.getPath(),bundle.getPath());
+                    new JDKInstaller.FilePathFileSystem(jenkins),l,d.getPath(),bundle.getPath());
 
             assertTrue(new File(d,"bin/java").exists());
         } finally {

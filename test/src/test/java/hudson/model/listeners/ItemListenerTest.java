@@ -63,7 +63,7 @@ public class ItemListenerTest extends HudsonTestCase {
                             + "<buildWrappers/></project>").getBytes()),
                     out, out);
             out.flush();
-            assertNotNull("job should be created: " + buf, hudson.getItem("testJob"));
+            assertNotNull("job should be created: " + buf, jenkins.getItem("testJob"));
             assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
         } finally {
             cli.close();

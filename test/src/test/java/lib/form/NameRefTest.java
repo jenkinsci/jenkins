@@ -23,9 +23,7 @@
  */
 package lib.form;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.HttpResponse;
@@ -39,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class NameRefTest extends HudsonTestCase {
     public void test1() throws Exception {
-        hudson.setCrumbIssuer(null);
+        jenkins.setCrumbIssuer(null);
         HtmlPage p = createWebClient().goTo("self/test1");
         submit(p.getFormByName("config"));
     }

@@ -173,7 +173,7 @@ public class FingerprinterTest extends HudsonTestCase {
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         addFingerprinterToProject(matrixProject, singleContents, singleFiles);
 
-        hudson.rebuildDependencyGraph();
+        jenkins.rebuildDependencyGraph();
 
         buildAndAssertSuccess(matrixProject);
         buildAndAssertSuccess(freestyleProject);
@@ -183,9 +183,9 @@ public class FingerprinterTest extends HudsonTestCase {
         assertEquals("There should only be one FreestyleBuild", 1, builds.size());
         FreeStyleBuild build = builds.iterator().next();
         assertEquals(Result.SUCCESS, build.getResult());
-        List<AbstractProject> downstream = hudson.getDependencyGraph().getDownstream(matrixProject);
+        List<AbstractProject> downstream = jenkins.getDependencyGraph().getDownstream(matrixProject);
         assertTrue(downstream.contains(freestyleProject));        
-        List<AbstractProject> upstream = hudson.getDependencyGraph().getUpstream(freestyleProject);
+        List<AbstractProject> upstream = jenkins.getDependencyGraph().getUpstream(freestyleProject);
         assertTrue(upstream.contains(matrixProject));
     }
 
