@@ -31,6 +31,8 @@ import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
+import hudson.model.Queue.*;
+import hudson.model.Queue.*;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -43,6 +45,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -115,6 +118,38 @@ public class QueueTest extends HudsonTestCase {
         testProject.delete();
         q.load();
         assertEquals(0,q.getItems().length);
+    }
+
+    /**
+     * {@link Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
+     */
+    public void testPersistenceBlockedItem() throws Exception {
+        Queue q = jenkins.getQueue();
+        final SequenceLock seq = new SequenceLock();
+
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                seq.phase(0);   // first, we let one build going
+
+                seq.phase(2);
+                return true;
+            }
+        });
+
+        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        seq.phase(1);   // and make sure we have one build under way
+
+        // get another going
+        Future<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+
+        Thread.sleep(1000);
+        Queue.Item[] items = q.getItems();
+        assertEquals(1,items.length);
+        assertTrue(items[0] instanceof BlockedItem);
+
+        q.save();
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {

@@ -1644,6 +1644,26 @@ public class Queue extends ResourceController implements Saveable {
 				return run.getParent().getFullName() + "#" + run.getNumber();
 			}
         });
+
+        /**
+         * Reconnect every reference to {@link Queue} by the singleton.
+         */
+        XSTREAM.registerConverter(new AbstractSingleValueConverter() {
+			@Override
+			public boolean canConvert(Class klazz) {
+				return Queue.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+                return Jenkins.getInstance().getQueue();
+			}
+
+			@Override
+			public String toString(Object item) {
+                return "queue";
+			}
+        });
     }
 
     /**
