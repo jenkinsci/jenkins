@@ -613,6 +613,12 @@ LABEL.attach-previous {
   text-align: left;
 }
 
+/* ============================ list view entries ======================== */
+div.listview-jobs {
+  max-height:300px;
+  overflow:auto;
+}
+
 /* ============================ parameters form ========================== */
 
 table.parameters {
