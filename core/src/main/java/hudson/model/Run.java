@@ -1117,6 +1117,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getLength() {
             return length;
         }
+        
+        public long getFileSize(){
+            return Long.decode(length);
+        }
 
         public String getTreeNodeId() {
             return treeNodeId;
