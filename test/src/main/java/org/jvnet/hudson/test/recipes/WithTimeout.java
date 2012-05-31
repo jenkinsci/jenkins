@@ -21,39 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson;
+package org.jvnet.hudson.test.recipes;
 
-import jenkins.model.Jenkins;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.apache.commons.io.FileUtils;
 
-import static java.lang.annotation.ElementType.TYPE;
+import hudson.util.JenkinsReloadFailed;
+
+import java.io.File;
+import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.METHOD;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
+import java.net.URL;
 
 /**
- * Marker interface that designates extensible components
- * in Jenkins that can be implemented by plugins.
+ * Times out the test after the specified number of seconds.
  *
- * <p>
- * See respective interfaces/classes for more about how to register custom
- * implementations to Jenkins. See {@link Extension} for how to have
- * Jenkins auto-discover your implementations.
- *
- * <p>
- * This interface is used for auto-generating
- * documentation.
+ * All the tests time out after some number of seconds by default, but this recipe
+ * allows you to override that value.
  *
  * @author Kohsuke Kawaguchi
- * @see Plugin
- * @see Extension
  */
-public interface ExtensionPoint {
+@Documented
+@Recipe(WithTimeout.RunnerImpl.class)
+@JenkinsRecipe(WithTimeout.RuleRunnerImpl.class)
+@Target(METHOD)
+@Retention(RUNTIME)
+public @interface WithTimeout {
     /**
-     * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
-     * static scope.  
+     * Number of seconds.
+     *
+     * 0 to indicate the test should never time out.
      */
-    @Target(TYPE)
-    @Retention(RUNTIME)
-    @interface LegacyInstancesAreScopedToHudson {}
+    int value();
+
+    class RunnerImpl extends Recipe.Runner<WithTimeout> {
+        @Override
+        public void setup(HudsonTestCase testCase, WithTimeout recipe) throws Exception {
+            testCase.timeout = recipe.value();
+        }
+    }
+
+    class RuleRunnerImpl extends JenkinsRecipe.Runner<WithTimeout> {
+        @Override
+        public void setup(JenkinsRule jenkinsRule, WithTimeout recipe) throws Exception {
+            jenkinsRule.timeout = recipe.value();
+        }
+    }
 }

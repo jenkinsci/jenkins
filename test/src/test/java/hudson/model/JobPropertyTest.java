@@ -53,7 +53,7 @@ public class JobPropertyTest extends HudsonTestCase {
 
     private void assertJobPropertySummaryIsShownInIndexPage(TopLevelItemDescriptor type) throws Exception {
         JobPropertyImpl jp = new JobPropertyImpl("NeedleInPage");
-        Job<?,?> project = (Job<?, ?>) hudson.createProject(type, "job-test-case");
+        Job<?,?> project = (Job<?, ?>) jenkins.createProject(type, "job-test-case");
         project.addProperty(jp);
         
         HtmlPage page = new WebClient().goTo("job/job-test-case");

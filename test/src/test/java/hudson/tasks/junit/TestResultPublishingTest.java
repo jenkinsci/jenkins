@@ -79,7 +79,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
         DumbSlave s = createOnlineSlave();
         project.setAssignedLabel(s.getSelfLabel());
 
-        FilePath src = new FilePath(hudson.getRootPath(), "jobs/" + BASIC_TEST_PROJECT + "/workspace/");
+        FilePath src = new FilePath(jenkins.getRootPath(), "jobs/" + BASIC_TEST_PROJECT + "/workspace/");
         assertNotNull(src);
         FilePath dest = s.getWorkspaceFor(project);
         assertNotNull(dest);
@@ -99,7 +99,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
      */
     @LocalData
     public void testOpenJUnitPublishing() throws IOException, SAXException {
-        List<Project> projects = this.hudson.getProjects();
+        List<Project> projects = this.jenkins.getProjects();
         // Make sure there's a project named TEST_PROJECT_WITH_HISTORY
         Project proj = null;
         for (Project p : projects) {
@@ -208,7 +208,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
     @Bug(5246)
     @LocalData
     public void testInterBuildDiffs() throws IOException, SAXException {
-        List<Project> projects = this.hudson.getProjects();
+        List<Project> projects = this.jenkins.getProjects();
         // Make sure there's a project named TEST_PROJECT_WITH_HISTORY
         Project proj = null;
         for (Project p : projects) {
@@ -235,7 +235,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
      */
     @LocalData
     public void testHistoryPageOpenJunit() throws IOException, SAXException {
-        List<Project> projects = this.hudson.getProjects();
+        List<Project> projects = this.jenkins.getProjects();
         // Make sure there's a project named breakable
         Project proj = null;
         for (Project p : projects) {

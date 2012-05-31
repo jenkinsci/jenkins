@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Implements memoization semantics.
  *
  * <p>
- * Conceputually a function from K -> V that computes values lazily and remembers the results.
+ * Conceptually a function from K -> V that computes values lazily and remembers the results.
  * Often used to implement a data store per key.
  *
  * @author Kohsuke Kawaguchi

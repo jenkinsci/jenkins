@@ -68,13 +68,13 @@ public class LabelExpressionTest extends HudsonTestCase {
                 return true;
             }
         });
-        p1.setAssignedLabel(hudson.getLabel("win && 32bit"));
+        p1.setAssignedLabel(jenkins.getLabel("win && 32bit"));
 
         FreeStyleProject p2 = createFreeStyleProject();
-        p2.setAssignedLabel(hudson.getLabel("win && 32bit"));
+        p2.setAssignedLabel(jenkins.getLabel("win && 32bit"));
 
         FreeStyleProject p3 = createFreeStyleProject();
-        p3.setAssignedLabel(hudson.getLabel("win"));
+        p3.setAssignedLabel(jenkins.getLabel("win"));
 
         Future<FreeStyleBuild> f1 = p1.scheduleBuild2(0);
 
@@ -107,17 +107,17 @@ public class LabelExpressionTest extends HudsonTestCase {
 
         FreeStyleProject p = createFreeStyleProject();
 
-        p.setAssignedLabel(hudson.getLabel("!win"));
+        p.setAssignedLabel(jenkins.getLabel("!win"));
         FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertSame(hudson,b.getBuiltOn());
+        assertSame(jenkins,b.getBuiltOn());
 
-        p.setAssignedLabel(hudson.getLabel("win"));
+        p.setAssignedLabel(jenkins.getLabel("win"));
         b = assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertSame(s,b.getBuiltOn());
 
-        p.setAssignedLabel(hudson.getLabel("!win"));
+        p.setAssignedLabel(jenkins.getLabel("!win"));
         b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertSame(hudson,b.getBuiltOn());
+        assertSame(jenkins,b.getBuiltOn());
     }
 
     /**
@@ -153,7 +153,7 @@ public class LabelExpressionTest extends HudsonTestCase {
 
     public void testLaxParsing() {
         // this should parse as an atom
-        LabelAtom l = (LabelAtom)hudson.getLabel("lucene.zones.apache.org (Solaris 10)");
+        LabelAtom l = (LabelAtom) jenkins.getLabel("lucene.zones.apache.org (Solaris 10)");
         assertEquals(l.getName(),"lucene.zones.apache.org (Solaris 10)");
         assertEquals(l.getExpression(),"\"lucene.zones.apache.org (Solaris 10)\"");
     }
@@ -161,11 +161,11 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testDataCompatibilityWithHostNameWithWhitespace() throws Exception {
         DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
                 createTmpDir().getPath(), "1", Mode.NORMAL, "", createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
-        hudson.addNode(slave);
+        jenkins.addNode(slave);
 
 
         FreeStyleProject p = createFreeStyleProject();
-        p.setAssignedLabel(hudson.getLabel("abc def"));
+        p.setAssignedLabel(jenkins.getLabel("abc def"));
         assertEquals("abc def",p.getAssignedLabel().getName());
         assertEquals("\"abc def\"",p.getAssignedLabel().getExpression());
 
@@ -180,7 +180,7 @@ public class LabelExpressionTest extends HudsonTestCase {
     }
 
     public void testQuote() {
-        Label l = hudson.getLabel("\"abc\\\\\\\"def\"");
+        Label l = jenkins.getLabel("\"abc\\\\\\\"def\"");
         assertEquals("abc\\\"def",l.getName());
     }
 
@@ -188,14 +188,14 @@ public class LabelExpressionTest extends HudsonTestCase {
      * The name should have parenthesis at the right place to preserve the tree structure.
      */
     public void testComposite() {
-        LabelAtom x = hudson.getLabelAtom("x");
+        LabelAtom x = jenkins.getLabelAtom("x");
         assertEquals("!!x",x.not().not().getName());
         assertEquals("(x||x)&&x",x.or(x).and(x).getName());
         assertEquals("x&&x||x",x.and(x).or(x).getName());
     }
 
     public void testDash() {
-        hudson.getLabelAtom("solaris-x86");
+        jenkins.getLabelAtom("solaris-x86");
     }
 
     private void parseShouldFail(String expr) {

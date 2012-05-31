@@ -31,7 +31,6 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
-import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
@@ -41,7 +40,6 @@ import org.jvnet.hudson.test.TestExtension;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -146,12 +144,12 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Adds a JNLP {@link Slave} to the system and returns it.
      */
     private Computer addTestSlave() throws Exception {
-        List<Node> slaves = new ArrayList<Node>(hudson.getNodes());
+        List<Node> slaves = new ArrayList<Node>(jenkins.getNodes());
         File dir = Util.createTempDir();
         slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
                 new JNLPLauncher(), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
-        hudson.setNodes(slaves);
-        Computer c = hudson.getComputer("test");
+        jenkins.setNodes(slaves);
+        Computer c = jenkins.getComputer("test");
         assertNotNull(c);
         return c;
     }

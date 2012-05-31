@@ -65,14 +65,14 @@ THE SOFTWARE.
           </p>
         </dd>
 
-        <dt><a href="json">JSON API</a></dt>
+        <dt><a href="json?pretty=true">JSON API</a></dt>
         <dd>
           Access the same data as JSON for JavaScript-based access. Supports
           <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
           the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
         </dd>
 
-        <dt><a href="python">Python API</a></dt>
+        <dt><a href="python?pretty=true">Python API</a></dt>
         <dd>
          <p>
            Access the same data as Python for Python clients. This can be parsed into Python
@@ -87,6 +87,18 @@ THE SOFTWARE.
            <tt>ast.literal_eval(urllib.urlopen("...").read())</tt>
          </p>
         </dd>
+
+        <!--
+        <dt><a href="ruby?pretty=true">Ruby API</a></dt>
+        <dd>
+         <p>
+           Access the same data as Ruby literals that can be <tt>eval</tt>ed.
+
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs.
+         </p>
+        </dd>
+        -->
       </dl>
 
       <p>

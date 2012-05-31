@@ -51,13 +51,13 @@ public class ViewTest extends HudsonTestCase {
      */
     @Email("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
     public void testConflictingName() throws Exception {
-        assertNull(hudson.getView("foo"));
+        assertNull(jenkins.getView("foo"));
 
         HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         submit(form);
-        assertNotNull(hudson.getView("foo"));
+        assertNotNull(jenkins.getView("foo"));
 
         // do it again and verify an error
         try {
@@ -82,8 +82,8 @@ public class ViewTest extends HudsonTestCase {
         Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//table[@id='viewList']//td[@class='active']/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
-        View listView = new ListView("listView", hudson);
-        hudson.addView(listView);
+        View listView = new ListView("listView", jenkins);
+        jenkins.addView(listView);
 
         HtmlPage newViewPage = wc.goTo("/user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
@@ -104,11 +104,11 @@ public class ViewTest extends HudsonTestCase {
     public void testDeleteView() throws Exception {
     	WebClient wc = new WebClient();
 
-    	ListView v = new ListView("list", hudson);
-		hudson.addView(v);
+    	ListView v = new ListView("list", jenkins);
+		jenkins.addView(v);
     	HtmlPage delete = wc.getPage(v, "delete");
     	submit(delete.getFormByName("delete"));
-    	assertNull(hudson.getView("list"));
+    	assertNull(jenkins.getView("list"));
     	
     	User user = User.get("user", true);
     	MyViewsProperty p = user.getProperty(MyViewsProperty.class);
@@ -122,8 +122,8 @@ public class ViewTest extends HudsonTestCase {
 
     @Bug(9367)
     public void testPersistence() throws Exception {
-        ListView view = new ListView("foo", hudson);
-        hudson.addView(view);
+        ListView view = new ListView("foo", jenkins);
+        jenkins.addView(view);
 
         ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
         System.out.println(v.getProperties());

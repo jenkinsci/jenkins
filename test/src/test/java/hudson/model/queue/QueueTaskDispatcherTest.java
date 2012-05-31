@@ -4,23 +4,12 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Item;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
 
 public class QueueTaskDispatcherTest extends HudsonTestCase {
 
     @SuppressWarnings("deprecation")
     public void testCanRunBlockageIsDisplayed() throws Exception {
-        QueueTaskDispatcher.all().add(new QueueTaskDispatcher() {
-            @Override
-            public CauseOfBlockage canRun(Item item) {
-                return new CauseOfBlockage() {
-
-                    @Override
-                    public String getShortDescription() {
-                        return "blocked by canRun";
-                    }
-                };
-            }
-        });
         FreeStyleProject project = createFreeStyleProject();
         jenkins.getQueue().schedule(project);
 
@@ -31,5 +20,18 @@ public class QueueTaskDispatcherTest extends HudsonTestCase {
         }
         assertTrue("Not blocked after 60 seconds", item.isBlocked());
         assertEquals("Expected CauseOfBlockage to be returned", "blocked by canRun", item.getWhy());
+    }
+
+    @TestExtension
+    public static class MyQueueTaskDispatcher extends QueueTaskDispatcher {
+        @Override
+        public CauseOfBlockage canRun(Item item) {
+            return new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "blocked by canRun";
+                }
+            };
+        }
     }
 }

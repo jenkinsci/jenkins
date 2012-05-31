@@ -61,7 +61,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Email("http://www.nabble.com/Launching-slave-by-JNLP-with-Active-Directory-plugin-and-matrix-security-problem-td18980323.html")
     public void test() throws Exception {
-        hudson.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
+        jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         HudsonTestCase.WebClient wc = new WebClient();
         HtmlPage p = wc.login("alice").goTo("computer/test/");
 

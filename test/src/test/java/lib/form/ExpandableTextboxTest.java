@@ -38,13 +38,13 @@ public class ExpandableTextboxTest extends HudsonTestCase {
     @Bug(2816)
     public void testMultiline() throws Exception {
         // because attribute values are normalized, it's not very easy to encode multi-line string as @value. So let's use the system message here.
-        hudson.setSystemMessage("foo\nbar\nzot");
+        jenkins.setSystemMessage("foo\nbar\nzot");
         HtmlPage page = evaluateAsHtml("<l:layout><l:main-panel><table><j:set var='instance' value='${it}'/><f:expandableTextbox field='systemMessage' /></table></l:main-panel></l:layout>");
         // System.out.println(page.getWebResponse().getContentAsString());
 
         NodeList textareas = page.getElementsByTagName("textarea");
         assertEquals(1, textareas.getLength());
-        assertEquals(hudson.getSystemMessage(),textareas.item(0).getTextContent());
+        assertEquals(jenkins.getSystemMessage(),textareas.item(0).getTextContent());
     }
 
     /**
