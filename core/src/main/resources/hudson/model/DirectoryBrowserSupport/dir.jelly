@@ -71,7 +71,7 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
-                      ${x.getSize()}
+                      ${h.humanReadableByteSize(x.getSize())}
                     </td>
                     <td>
                       <j:if test="${x.readable}">
