@@ -29,7 +29,9 @@ THE SOFTWARE.
       <l:task icon="images/24x24/document.gif" href="systemProperties" title="${%System Properties}" />
       <l:task icon="images/24x24/document.gif" href="envVars" title="${%Environment Variables}" />
       <l:task icon="images/24x24/document.gif" href="threads" title="${%Thread Dump}" />
-      <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
+      <l:hasPermission permission="${app.RUN_SCRIPTS}">
+        <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
+      </l:hasPermission>
     </l:tasks>
   </l:side-panel>
 </j:jelly>
