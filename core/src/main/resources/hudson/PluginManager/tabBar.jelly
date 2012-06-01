@@ -32,6 +32,8 @@ THE SOFTWARE.
     <l:tab name="${%Available}" active="${page=='available'}" href="./available" />
     <l:tab name="${%Installed}" active="${page=='installed'}" href="./installed" />
     <!--<l:tab name="${%Sites}" active="${page=='sites'}" href="./sites" />-->
+  <j:if test="${h.hasPermission(app.pluginManager.UPLOAD_PLUGINS) || h.hasPermission(app.pluginManager.CONFIGURE_UPDATECENTER)}"> 
     <l:tab name="${%Advanced}" active="${page=='advanced'}" href="./advanced" />
+  </j:if>
   </l:tabBar>
 </j:jelly>
