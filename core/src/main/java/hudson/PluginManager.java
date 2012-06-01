@@ -611,7 +611,7 @@ public abstract class PluginManager extends AbstractModelObject {
     }
 
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
         if (req.hasParameter("remove")) {
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
@@ -658,7 +658,7 @@ public abstract class PluginManager extends AbstractModelObject {
      */
     public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
         Jenkins hudson = Jenkins.getInstance();
-        hudson.checkPermission(Jenkins.ADMINISTER);
+        hudson.checkPermission(CONFIGURE_UPDATECENTER);
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
@@ -673,7 +673,7 @@ public abstract class PluginManager extends AbstractModelObject {
 
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
         Jenkins jenkins = Jenkins.getInstance();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
+        jenkins.checkPermission(CONFIGURE_UPDATECENTER);
 
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
         if (pc.name==null) {
@@ -834,6 +834,7 @@ public abstract class PluginManager extends AbstractModelObject {
     public static boolean FAST_LOOKUP = !Boolean.getBoolean(PluginManager.class.getName()+".noFastLookup");
     
     public static final Permission UPLOAD_PLUGINS = new Permission(Jenkins.PERMISSIONS, "UploadPlugins", Messages._PluginManager_UploadPluginsPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
+    public static final Permission CONFIGURE_UPDATECENTER = new Permission(Jenkins.PERMISSIONS, "ConfigureUpdateCenter", Messages._PluginManager_ConfigureUpdateCenterPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
     
     /**
      * Remembers why a plugin failed to deploy.
