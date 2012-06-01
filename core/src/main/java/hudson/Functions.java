@@ -93,6 +93,7 @@ import java.lang.reflect.ParameterizedType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1493,5 +1494,31 @@ public class Functions {
      */
     public String getUserAvatar(User user, String avatarSize) {
         return getAvatar(user,avatarSize);
+    }
+    
+    
+    /**
+     * Returns human readable information about file size
+     * 
+     * @param file size in bytes
+     * @return file size in appropriate unit
+     */
+    public static String humanReadableByteSize(long size){
+        String measure = "B";
+        Double number = new Double(size);
+        if(number>=1024){
+            number = number/1024;
+            measure = "KB";
+            if(number>=1024){
+                number = number/1024;
+                measure = "MB";
+                if(number>=1024){
+                    number=number/1024;
+                    measure = "GB";
+                }
+            }
+        }
+        DecimalFormat format = new DecimalFormat("##.00");
+        return format.format(number) + " " + measure;
     }
 }
