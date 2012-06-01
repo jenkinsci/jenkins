@@ -704,6 +704,7 @@ public abstract class PluginManager extends AbstractModelObject {
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             }
             final String baseName = FilenameUtils.getBaseName(fileName);
+            new File(rootDir, baseName + ".hpi").delete(); // don't keep confusing legacy *.hpi
             fileItem.write(new File(rootDir, baseName + ".jpi")); // rename all new plugins to *.jpi
             fileItem.delete();
 
