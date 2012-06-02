@@ -23,15 +23,14 @@
  */
 package hudson.bugs.seasar;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
+import hudson.model.Item;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
-import hudson.tasks.BuildTrigger.DescriptorImpl;
-import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.Collections;
+
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * See http://ml.seasar.org/archives/operation/2008-November/004003.html
@@ -40,7 +39,7 @@ import java.util.Collections;
  */
 public class Operation2174Test extends HudsonTestCase {
     /**
-     * Upstream/downstream relationship lost.
+     * Tests that configuring a dependency from a freestyle to a maven project actually works.
      */
     public void testBuildChains() throws Exception {
         FreeStyleProject up = createFreeStyleProject("up");
@@ -48,20 +47,18 @@ public class Operation2174Test extends HudsonTestCase {
 
         // designate 'dp' as the downstream in 'up'
         WebClient webClient = new WebClient();
-        HtmlPage page = webClient.getPage(up,"configure");
-
-        HtmlForm form = page.getFormByName("config");
+        webClient.getPage(up,"configure");
 
         // configure downstream build
         up.getPublishersList().add(new BuildTrigger("dp",false));
-        configRoundtrip(up);
+        configRoundtrip((Item)up);
 
         // verify that the relationship is set up
         BuildTrigger trigger = up.getPublishersList().get(BuildTrigger.class);
         assertEquals(trigger.getChildProjects(up), Collections.singletonList(dp));
 
         // now go ahead and edit the downstream
-        configRoundtrip(dp);
+        configRoundtrip((Item)dp);
 
         // verify that the relationship is set up
         trigger = up.getPublishersList().get(BuildTrigger.class);
