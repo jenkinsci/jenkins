@@ -54,7 +54,18 @@ public class JavaScriptDebugger implements Debugger {
      * Call stack as a list. The list grows at the end, so the first element in the list
      * is the oldest stack frame.
      */
-    public final List<CallStackFrame> callStack = new ArrayList<CallStackFrame>();
+    private final List<CallStackFrame> callStack = new ArrayList<CallStackFrame>();
+    
+    synchronized void addCallStackFrame(CallStackFrame frame) {
+        this.callStack.add(frame);
+    }
+    
+    synchronized void removeCallStackFrame(CallStackFrame frame) {
+        // can't simply call removeFirst, because due to tail call elimination,
+        // intermediate frames can be dropped at any time
+        // TODO: shouldn't it be suffice to just check the end?
+        this.callStack.remove(frame);
+    }
 
     public void handleCompilationDone(Context cx, DebuggableScript fnOrScript, String source) {
     }
@@ -68,8 +79,10 @@ public class JavaScriptDebugger implements Debugger {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        for( int i=callStack.size()-1; i>=0; i-- )
-            buf.append(callStack.get(i)).append('\n');
+        synchronized (this) {
+            for( int i=callStack.size()-1; i>=0; i-- )
+                buf.append(callStack.get(i)).append('\n');
+        }
         return buf.toString();
     }
 }
