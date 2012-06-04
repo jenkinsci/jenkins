@@ -1,0 +1,40 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set var="q" value="${request.getParameter('q')}"/>
+  <j:set var="items" value="${it.getAllSearchedItems(request,q)}"/>
+  <j:set var="filteredItems" value="${request.getAttribute('filteredItems')}"/>  
+  <j:new var="h" className="hudson.Functions" /><!-- needed for printing title. -->
+  <l:layout title="${%Search for} '${q}'">
+    <l:main-panel>
+      <h1>${%All possible results for} '${q}'</h1>
+      
+      <!-- filter -->
+        <f:form method="post" action="?q=${q}">	   	      
+                <tr>
+                    <td><f:checkbox name="job" checked="${filteredItems.contains('all') || filteredItems.contains('job')}"/>  jobs
+                    <f:checkbox name="user" checked="${filteredItems.contains('all') || filteredItems.contains('user')}"/>  users
+                    <f:checkbox name="computer" checked="${filteredItems.contains('all') || filteredItems.contains('computer')}"/>  computers
+                    <f:checkbox name="view" checked="${filteredItems.contains('all') || filteredItems.contains('view')}"/>  views
+                    <f:checkbox name="other" checked="${filteredItems.contains('all') || filteredItems.contains('other')}"/>  others    
+                    <input type="submit" name="submit" value="Filter"/></td> 
+                </tr>              
+        </f:form>    
+        <j:choose>
+            <j:when test="${items.size()==0}">
+            <div class='error'>
+                ${%Nothing seems to match.}
+            </div>
+        </j:when>
+            <j:otherwise>
+                <ol>
+                <j:forEach var="i" items="${items}" >
+                    <li title="${i.getDescription()}">
+                    <img src="${i.getIconUrl()}" alt="${i.getDescription()}" /><a href="${i.getUrl()}"><b style="padding: 4px">${i.name}</b></a> <i style="color: #888; padding: 4px">(${i.getDescription()})</i>
+                   </li>
+                </j:forEach>
+                </ol>
+            </j:otherwise>
+        </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

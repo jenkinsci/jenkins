@@ -32,8 +32,10 @@ import java.io.IOException;
 
 import hudson.search.SearchableModelObject;
 import hudson.search.Search;
+import hudson.search.SearchAllResults;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchIndex;
+import hudson.search.UserSearchProperty;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -99,6 +101,9 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     }
 
     public Search getSearch() {
+        if(UserSearchProperty.showAllPossibleResults()){ 
+            return new SearchAllResults();
+        }
         return new Search();
     }
 
