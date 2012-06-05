@@ -162,12 +162,18 @@ function findNearBy(e,name) {
     var owner = findFormParent(e,null,true);
 
     p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null,true)==owner)
-        return p;
+    if (p!=null) {
+        var ancestors = findFormAncestors(p,null,true);
+        if (ancestors!=null && ancestors.indexOf(owner)>=0)
+            return p;
+    }
 
     var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null,true)==owner)
-        return n;
+    if (n!=null) {
+        var ancestors = findFormAncestors(n,null,true);
+        if (ancestors!=null && ancestors.indexOf(owner)>=0)
+            return n;
+    }
 
     return null; // not found
 }
@@ -2174,11 +2180,27 @@ function createSearchBox(searchURL) {
  *      if the given element shouldn't be a part of the final submission.
  */
 function findFormParent(e,form,static) {
+    var ancestors = findFormAncestors(e,form,static);
+    return (ancestors!=null && ancestors.length > 0) ? ancestors[0] : null;
+}
+
+/**
+ * Finds the DOM nodes of the given DOM node that acts as a parent or n-grandparent 
+ * in the form submission.
+ *
+ * @param {HTMLElement} e
+ *      The node whose parent we are looking for.
+ * @param {HTMLFormElement} form
+ *      The form element that owns 'e'. Passed in as a performance improvement. Can be null.
+ * @return null
+ *      if the given element shouldn't be a part of the final submission.
+ */
+function findFormAncestors(e,form,static) {
     static = static || false;
 
     if (form==null) // caller can pass in null to have this method compute the owning form
         form = findAncestor(e,"FORM");
-
+    var ancestors = [];
     while(e!=form) {
         // this is used to create a group where no single containing parent node exists,
         // like <optionalBlock>
@@ -2196,11 +2218,12 @@ function findFormParent(e,form,static) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
-            return e;
+            ancestors.push(e);
         }
     }
-
-    return form;
+    if (ancestors.indexOf(form)<0)
+        ancestors.push(form);
+    return ancestors;
 }
 
 // compute the form field name from the control name
