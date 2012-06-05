@@ -27,4 +27,17 @@ THE SOFTWARE.
   <f:entry title="Case-sensitivity">
     <f:checkbox name="insensitiveSearch" checked="${instance.insensitiveSearch}" title="Insensitive search tool"/>
   </f:entry>
+  <f:entry title="Showed results">
+      <table width="100%">
+        <f:optionalBlock name="showAllPossibleResults" checked="${instance.showAllPossibleResults()}" title="Show all possible result">
+          <f:entry title="Filter: ">
+	    <f:checkbox name="job" checked="${instance.filter ==null ? 'true' : instance.filter.contains('job')}" title="jobs"/>
+            <f:checkbox name="user" checked="${instance.filter ==null ? 'true' : instance.filter.contains('user')}" title="users"/>
+            <f:checkbox name="computer" checked="${instance.filter ==null ? 'true' : instance.filter.contains('computer')}" title="computers"/>
+            <f:checkbox name="view" checked="${instance.filter ==null ? 'true' : instance.filter.contains('view')}" title="view"/>
+            <f:checkbox name="other" checked="${instance.filter ==null ? 'true' : instance.filter.contains('other')}" title="others"/>   
+          </f:entry>
+       </f:optionalBlock>
+     </table>
+  </f:entry>
 </j:jelly>
