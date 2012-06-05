@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.search.SearchFactory;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
@@ -99,6 +100,11 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     }
 
     public Search getSearch() {
+        for (SearchFactory sf : SearchFactory.all()) {
+            Search s = sf.createFor(this);
+            if (s!=null)
+                return s;
+        }
         return new Search();
     }
 
