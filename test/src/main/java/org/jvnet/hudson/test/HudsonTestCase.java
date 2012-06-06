@@ -300,6 +300,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected void  setUp() throws Exception {
         env.pin();
         recipe();
+        for (Runner r : recipes) {
+            if (r instanceof WithoutJenkins.RunnerImpl)
+                return; // no setup
+        }
         AbstractProject.WORKSPACE.toString();
         User.clear();
 
@@ -404,11 +408,13 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
 
         } finally {
-            server.stop();
+            if (server!=null)
+                server.stop();
             for (LenientRunnable r : tearDowns)
                 r.run();
 
-            jenkins.cleanUp();
+            if (jenkins!=null)
+                jenkins.cleanUp();
             env.dispose();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
