@@ -568,6 +568,13 @@ THE SOFTWARE.
       <artifactId>owasp-html-sanitizer</artifactId>
       <version>r88</version>
     </dependency>
+
+    <dependency>
+        <groupId>org.mindrot</groupId>
+        <artifactId>jbcrypt</artifactId>
+        <version>0.3m</version>
+    </dependency>
+
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>

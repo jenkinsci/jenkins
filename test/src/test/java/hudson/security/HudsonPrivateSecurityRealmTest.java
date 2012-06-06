@@ -2,9 +2,12 @@ package hudson.security;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
+import static hudson.security.HudsonPrivateSecurityRealm.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -34,5 +37,16 @@ public class HudsonPrivateSecurityRealmTest extends HudsonTestCase {
 
         // verify that we can still login
         new WebClient().login("alice", "alice");
+    }
+
+    @WithoutJenkins
+    public void testHashCompatibility() {
+        String old = CLASSIC.encodePassword("hello world", null);
+        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
+
+        String secure = PASSWORD_ENCODER.encodePassword("hello world", null);
+        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
+
+        assertTrue(!secure.equals(old));
     }
 }
