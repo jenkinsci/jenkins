@@ -49,9 +49,14 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
 
 /**
- * Web-bound object that serves QuickSilver-like search requests.
+ * Web-bound object that provides search/navigation capability.
+ *
+ * <p>
+ * This object is bound to "./search" of a model object via {@link SearchableModelObject} and serves
+ * HTTP requests coming from JavaScript to provide search result and auto-completion.
  *
  * @author Kohsuke Kawaguchi
+ * @see SearchableModelObject
  */
 public class Search {
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

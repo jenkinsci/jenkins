@@ -45,6 +45,8 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -142,7 +144,8 @@ public class Api extends AbstractModelObject {
             }
 
         } catch (DocumentException e) {
-            throw new IOException2("Failed to do XPath/wrapper handling. XML is as follows:"+sw,e);
+            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:"+sw, e);
+            throw new IOException2("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
         }
 
         OutputStream o = rsp.getCompressedOutputStream(req);
@@ -191,5 +194,6 @@ public class Api extends AbstractModelObject {
         rsp.serveExposedBean(req,bean, Flavor.PYTHON);
     }
 
+    private static final Logger LOGGER = Logger.getLogger(Api.class.getName());
     private static final ModelBuilder MODEL_BUILDER = new ModelBuilder();
 }
