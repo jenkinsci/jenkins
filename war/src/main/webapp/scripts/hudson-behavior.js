@@ -161,15 +161,16 @@ function findNearBy(e,name) {
 
     var owner = findFormParent(e,null,true);
 
-    p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null,true)==owner)
-        return p;
+    function locate(iterator,e) {
+        while (true) {
+            e = iterator(e,name);
+            if (e==null)    return null;
+            if (findFormParent(e,null,true)==owner)
+                return e;
+        }
+    }
 
-    var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null,true)==owner)
-        return n;
-
-    return null; // not found
+    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
 }
 
 function controlValue(e) {
