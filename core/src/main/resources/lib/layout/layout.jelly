@@ -115,7 +115,9 @@ THE SOFTWARE.
     <script type="text/javascript"><![CDATA[
     jQuery.noConflict();
     ]]></script>
+    <script src="${resURL}/scripts/bootstrap-transition.js" type="text/javascript"/>
     <script src="${resURL}/scripts/bootstrap-dropdown.js" type="text/javascript"/>
+    <script src="${resURL}/scripts/bootstrap-collapse.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
@@ -158,6 +160,7 @@ THE SOFTWARE.
 
     <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:forEach var="pd" items="${h.pageDecorators}">
@@ -169,7 +172,7 @@ THE SOFTWARE.
     <a href="#skip2content" class="skiplink">Skip to content</a>
     <div class="navbar">
         <div class="navbar-inner">
-            <div class="container-fluid">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></a>
                 <a class="brand" href="${rootURL}/">Jenkins</a>
                 <div class="nav-collapse">
                     <!-- login field -->
@@ -223,7 +226,6 @@ THE SOFTWARE.
                         </div>
                     </form>
                 </div>
-            </div>
           </div>
     </div>
     <l:breadcrumbBar>
