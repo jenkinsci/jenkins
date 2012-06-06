@@ -144,6 +144,9 @@ var FormChecker = {
  * @param {string} name
  *      Name of the control to find. Can include "../../" etc in the prefix.
  *      See @RelativePath.
+ *
+ *      We assume that the name is normalized and doesn't contain any redundant component.
+ *      That is, ".." can only appear as prefix, and "foo/../bar" is not OK (because it can be reduced to "bar")
  */
 function findNearBy(e,name) {
     while (name.startsWith("../")) {
@@ -151,25 +154,38 @@ function findNearBy(e,name) {
         e = findFormParent(e,null,true);
     }
 
+    // name="foo/bar/zot"  -> prefixes=["bar","foo"] & name="zot"
+    var prefixes = name.split("/");
+    name = prefixes.pop();
+    prefixes = prefixes.reverse();
+
     // does 'e' itself match the criteria?
     // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
-        if (filter(e))    return e;
-        return null;
+        return filter(e) ? e : null;
     });
-    if (p!=null)    return p;
+    if (p!=null && prefixes.length==0)    return p;
 
     var owner = findFormParent(e,null,true);
 
-    p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null,true)==owner)
-        return p;
+    function locate(iterator,e) {// keep finding elements until we find the good match
+        while (true) {
+            e = iterator(e,name);
+            if (e==null)    return null;
 
-    var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null,true)==owner)
-        return n;
+            // make sure this candidate element 'e' is in the right point in the hierarchy
+            var p = e;
+            for (var i=0; i<prefixes.length; i++) {
+                p = findFormParent(p,null,true);
+                if (p.getAttribute("name")!=prefixes[i])
+                    return null;
+            }
+            if (findFormParent(p,null,true)==owner)
+                return e;
+        }
+    }
 
-    return null; // not found
+    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
 }
 
 function controlValue(e) {
