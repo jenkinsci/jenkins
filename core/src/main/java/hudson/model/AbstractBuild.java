@@ -439,6 +439,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return Executor.currentExecutor().getOwner().getNode();
         }
 
+        public Launcher getLauncher() {
+            return launcher;
+        }
+
+        public BuildListener getListener() {
+            return listener;
+        }
+
         /**
          * Allocates the workspace from {@link WorkspaceList}.
          *
@@ -482,8 +490,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);
                 }
 
-                getProject().getSCMCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
-                getProject().getSCMCheckoutStrategy().checkout(this);
+                getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
+                getProject().getScmCheckoutStrategy().checkout(this);
 
                 if (!preBuild(listener,project.getProperties()))
                     return Result.FAILURE;

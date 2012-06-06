@@ -531,11 +531,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return quietPeriod!=null ? quietPeriod : Jenkins.getInstance().getQuietPeriod();
     }
 
-    public SCMCheckoutStrategy getSCMCheckoutStrategy() {
+    public SCMCheckoutStrategy getScmCheckoutStrategy() {
         return scmCheckoutStrategy == null ? new DefaultSCMCheckoutStrategyImpl() : scmCheckoutStrategy;
     }
 
-    public void setSCMCheckoutStrategy(SCMCheckoutStrategy scmCheckoutStrategy) throws IOException {
+    public void setScmCheckoutStrategy(SCMCheckoutStrategy scmCheckoutStrategy) throws IOException {
         this.scmCheckoutStrategy = scmCheckoutStrategy;
         save();
     }
@@ -1988,9 +1988,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return c;
         }
 
-        public List<SCMCheckoutStrategyDescriptor> getApplicableSCMCheckoutStrategyDescriptors(@AncestorInPath AbstractProject p) {
+        public List<SCMCheckoutStrategyDescriptor> getApplicableSCMCheckoutStrategyDescriptors(AbstractProject p) {
             return SCMCheckoutStrategyDescriptor._for(p);
-
         }
 
         /**
