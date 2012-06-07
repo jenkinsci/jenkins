@@ -175,7 +175,7 @@ THE SOFTWARE.
         <div class="navbar-inner">
                 <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></a>
                 <a class="brand" href="${rootURL}/">Jenkins</a>
-                <div class="nav-collapse">
+                <div class="">
                     <!-- login field -->
                     <p class="navbar-text pull-right">
                     <j:if test="${app.useSecurity}">
@@ -195,7 +195,8 @@ THE SOFTWARE.
                         </j:choose>
                     </j:if>
                     </p>
-
+                </div>
+                <div class="nav-collapse">
                     <ul class="nav pull-right">
                         <li class="divider-vertical"></li>
                         <li class="dropdown">
