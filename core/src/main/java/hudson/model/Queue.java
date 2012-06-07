@@ -692,6 +692,13 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Counts all the {@link BuildableItem}s currently in the queue.
+     */
+    public synchronized int countBuildableItems() {
+        return buildables.size()+pendings.size();
+    }
+
+    /**
      * Gets the information about the queue item for the given project.
      *
      * @return null if the project is not in the queue.
@@ -1260,6 +1267,14 @@ public class Queue extends ResourceController implements Saveable {
          */
         public Future<Executable> getFuture() { return future; }
 
+        /**
+         * If this task needs to be run on a node with a particular label,
+         * return that {@link Label}. Otherwise null, indicating
+         * it can run on anywhere.
+         * 
+         * <p>
+         * This code takes {@link LabelAssignmentAction} into account, then fall back to {@link SubTask#getAssignedLabel()}
+         */
         public Label getAssignedLabel() {
             for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
                 Label l = laa.getAssignedLabel(task);
@@ -1627,6 +1642,26 @@ public class Queue extends ResourceController implements Saveable {
 			public String toString(Object object) {
 				Run<?,?> run = (Run<?,?>) object;
 				return run.getParent().getFullName() + "#" + run.getNumber();
+			}
+        });
+
+        /**
+         * Reconnect every reference to {@link Queue} by the singleton.
+         */
+        XSTREAM.registerConverter(new AbstractSingleValueConverter() {
+			@Override
+			public boolean canConvert(Class klazz) {
+				return Queue.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+                return Jenkins.getInstance().getQueue();
+			}
+
+			@Override
+			public String toString(Object item) {
+                return "queue";
 			}
         });
     }

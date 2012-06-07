@@ -245,7 +245,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("subversion","1.310","1.0"),
         new DetachedPlugin("cvs","1.340","0.1"),
         new DetachedPlugin("ant","1.430.*","1.0"),
-        new DetachedPlugin("javadoc","1.430.*","1.0")
+        new DetachedPlugin("javadoc","1.430.*","1.0"),
+        new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
+        new DetachedPlugin("ldap","1.467.*","1.0"),
+        new DetachedPlugin("pam-auth","1.467.*","1.0")
     );
 
     /**

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.464-SNAPSHOT</version>
+    <version>1.469-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -99,13 +99,13 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-36</version>
+      <version>0.9.10-jenkins-37</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -276,6 +276,24 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>translation</artifactId>
                   <version>1.8</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>external-monitor-job</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ldap</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>pam-auth</artifactId>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>

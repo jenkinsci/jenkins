@@ -112,7 +112,7 @@ public abstract class DirScanner implements Serializable {
 
                     if (visitor.understandsSymlink()) {
                         try {
-                            String target = Util.resolveSymlink(file,TaskListener.NULL);
+                            String target = Util.resolveSymlink(file);
                             if (target!=null) {
                                 visitor.visitSymlink(file,target,f);
                                 continue;

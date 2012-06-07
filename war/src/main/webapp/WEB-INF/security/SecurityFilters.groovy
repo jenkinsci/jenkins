@@ -63,6 +63,12 @@ filter(ChainedServletFilter) {
     filters = [
         // this persists the authentication across requests by using session
         bean(HttpSessionContextIntegrationFilter2) {
+            // not allowing filter to create sessions, as it potentially tries to create
+            // sessions for any request (although it usually fails
+            // I suspect this is related to JENKINS-12585, in that
+            // it ends up setting Set-Cookie for image responses.
+            // Instead, we use layout.jelly to create sessions.
+            allowSessionCreation = false;
         },
         bean(ApiTokenFilter),
         // allow clients to submit basic authentication credential

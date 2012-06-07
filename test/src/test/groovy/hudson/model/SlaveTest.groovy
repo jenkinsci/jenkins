@@ -39,7 +39,7 @@ public class SlaveTest extends GroovyHudsonTestCase {
      */
     void testFormValidation() {
         executeOnServer {
-            assertNotNull(hudson.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"))
+            assertNotNull(jenkins.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"))
         }
     }
 

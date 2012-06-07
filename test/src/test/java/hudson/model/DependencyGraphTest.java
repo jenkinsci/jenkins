@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
@@ -54,15 +53,15 @@ public class DependencyGraphTest extends HudsonTestCase {
                 new BuildTrigger(Collections.singletonList(down1), Result.SUCCESS));
         // Add one downstream job with custom Dependency impl:
         p.getBuildersList().add(new TestDeclarer(Result.UNSTABLE, down2));
-        hudson.rebuildDependencyGraph();
+        jenkins.rebuildDependencyGraph();
         // First build won't trigger down1 (Unstable doesn't meet threshold)
         // but will trigger down2 (build #1 is odd).
         Build b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
         String log = getLog(b);
-        Queue.Item q = hudson.getQueue().getItem(down1);
+        Queue.Item q = jenkins.getQueue().getItem(down1);
         assertNull("down1 should not be triggered: " + log, q);
         assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
-        q = hudson.getQueue().getItem(down2);
+        q = jenkins.getQueue().getItem(down2);
         assertNotNull("down2 should be in queue (quiet period): " + log, q);
         Run r = (Run)q.getFuture().get(6, TimeUnit.SECONDS);
         assertNotNull("down2 should be triggered: " + log, r);
@@ -70,16 +69,16 @@ public class DependencyGraphTest extends HudsonTestCase {
                       r.getAction(MailMessageIdAction.class));
         // Now change to success result..
         p.getBuildersList().replace(new TestDeclarer(Result.SUCCESS, down2));
-        hudson.rebuildDependencyGraph();
+        jenkins.rebuildDependencyGraph();
         // ..and next build will trigger down1 (Success meets threshold),
         // but not down2 (build #2 is even)
         b = (Build)p.scheduleBuild2(0, new Cause.UserCause()).get();
         log = getLog(b);
-        q = hudson.getQueue().getItem(down2);
+        q = jenkins.getQueue().getItem(down2);
         assertNull("down2 should not be triggered: " + log, q);
         assertEquals("down2 should not be triggered: " + log, 1,
                      down2.getLastBuild().getNumber());
-        q = hudson.getQueue().getItem(down1);
+        q = jenkins.getQueue().getItem(down1);
         assertNotNull("down1 should be in queue (quiet period): " + log, q);
         r = (Run)q.getFuture().get(6, TimeUnit.SECONDS);
         assertNotNull("down1 should be triggered", r);
@@ -113,14 +112,14 @@ public class DependencyGraphTest extends HudsonTestCase {
     @LocalData @Bug(5265)
     public void testItemReadPermission() throws Exception {
         // Rebuild dependency graph as anonymous user:
-        hudson.rebuildDependencyGraph();
+        jenkins.rebuildDependencyGraph();
         try {
             // Switch to full access to check results:
             ACL.impersonate(ACL.SYSTEM);
             // @LocalData for this test has jobs w/o anonymous Item.READ
-            AbstractProject up = (AbstractProject)hudson.getItem("hiddenUpstream");
+            AbstractProject up = (AbstractProject) jenkins.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);
-            List<AbstractProject> down = hudson.getDependencyGraph().getDownstream(up);
+            List<AbstractProject> down = jenkins.getDependencyGraph().getDownstream(up);
             assertEquals("Should have one downstream project", 1, down.size());
         } finally {
             SecurityContextHolder.clearContext();

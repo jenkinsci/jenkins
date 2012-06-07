@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.464-SNAPSHOT</version>
+    <version>1.469-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.188</stapler.version>
+    <stapler.version>1.192</stapler.version>
   </properties>
 
   <dependencies>
@@ -119,12 +119,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>
-      <version>1.0</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build212-hudson-5</version>
+      <version>build214-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -579,6 +579,13 @@ THE SOFTWARE.
       <artifactId>owasp-html-sanitizer</artifactId>
       <version>r88</version>
     </dependency>
+
+    <dependency>
+        <groupId>org.mindrot</groupId>
+        <artifactId>jbcrypt</artifactId>
+        <version>0.3m</version>
+    </dependency>
+
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>

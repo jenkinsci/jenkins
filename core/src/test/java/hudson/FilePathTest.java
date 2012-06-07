@@ -301,7 +301,23 @@ public class FilePathTest extends ChannelTestCase {
             Util.deleteRecursive(baseDir);
         }
     }
-    
+
+    public void testListWithDefaultExcludes() throws Exception {
+        File baseDir = Util.createTempDir();
+        try {
+            final Set<FilePath> expected = new HashSet<FilePath>();
+            expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
+            expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
+            expected.add(createFilePath(baseDir, "top", ".git", "config"));
+            // none of the files are included by default (default includes true)
+            assertEquals(0, new FilePath(baseDir).list("**", "").length);
+            final FilePath[] result = new FilePath(baseDir).list("**", "", false);
+            assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
+        } finally {
+            Util.deleteRecursive(baseDir);
+        }
+    }
+
     @Bug(11073)
     public void testIsUnix() {
         FilePath winPath = new FilePath(new LocalChannel(null),
@@ -365,8 +381,8 @@ public class FilePathTest extends ChannelTestCase {
         try {
             FilePath in = tmp.child("in");
             in.mkdirs();
-            in.child("a").touch(0);
-            in.child("b").symlinkTo("a", TaskListener.NULL);
+            in.child("c").touch(0);
+            in.child("b").symlinkTo("c", TaskListener.NULL);
                         
             FilePath tar = tmp.child("test.tar");
             in.tar(tar.write(), "**/*");
@@ -374,9 +390,22 @@ public class FilePathTest extends ChannelTestCase {
             FilePath dst = in.child("dst");
             tar.untar(dst, TarCompression.NONE);
 
-            assertEquals("a",dst.child("b").readLink());
+            assertEquals("c",dst.child("b").readLink());
         } finally {
             tmp.deleteRecursive();
         }
+    }
+
+    @Bug(13649)
+    public void testMultiSegmentRelativePaths() throws Exception {
+        FilePath winPath = new FilePath(new LocalChannel(null), "c:\\app\\jenkins\\workspace");
+        FilePath nixPath = new FilePath(new LocalChannel(null), "/opt/jenkins/workspace");
+
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo/bar/manchu").getRemote());
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo\\bar/manchu").getRemote());
+        assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo\\bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo\\bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar\\manchu").getRemote());
+        assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar/manchu").getRemote());
     }
 }

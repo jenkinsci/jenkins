@@ -51,13 +51,13 @@ public class NodePropertyTest extends HudsonTestCase {
         HtmlForm f = createWebClient().goTo("/computer/" + s.getNodeName() + "/configure").getFormByName("config");
         ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Some Property']")).click();
         submit(f);
-        PropertyImpl p = hudson.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
+        PropertyImpl p = jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
         assertEquals("Duke",p.name);
 
         p.name = "Kohsuke";
         configRoundtrip(s);
 
-        PropertyImpl p2 = hudson.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
+        PropertyImpl p2 = jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
         assertNotSame(p,p2);
         assertEqualDataBoundBeans(p,p2);
     }

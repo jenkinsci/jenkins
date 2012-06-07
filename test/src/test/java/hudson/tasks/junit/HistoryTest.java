@@ -42,7 +42,7 @@ public class HistoryTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        List<Project> projects = this.hudson.getProjects();
+        List<Project> projects = this.jenkins.getProjects();
         Project theProject = null;
         for (Project p : projects) {
             if (p.getName().equals(PROJECT_NAME)) theProject = p;

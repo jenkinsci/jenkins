@@ -62,7 +62,7 @@ public class BuildTriggerTest extends HudsonTestCase {
                 dp = createDownstreamProject();
         p.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
         p.getBuildersList().add(new MockBuilder(dontTriggerResult));
-        hudson.rebuildDependencyGraph();
+        jenkins.rebuildDependencyGraph();
 
         // First build should not trigger downstream job
         FreeStyleBuild b = p.scheduleBuild2(0).get();

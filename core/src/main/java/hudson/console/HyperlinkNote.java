@@ -36,6 +36,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.362
+ * @see ModelHyperlinkNote
  */
 public class HyperlinkNote extends ConsoleNote {
     /**
@@ -54,8 +55,12 @@ public class HyperlinkNote extends ConsoleNote {
         String url = this.url;
         if (url.startsWith("/"))
             url = Jenkins.getInstance().getRootUrl()+url.substring(1);
-        text.addHyperlink(charPos,charPos+length,url);
+        text.addMarkup(charPos, charPos + length, "<a href='" + url + "'"+extraAttributes()+">", "</a>");
         return null;
+    }
+
+    protected String extraAttributes() {
+        return "";
     }
 
     public static String encodeTo(String url, String text) {
@@ -69,7 +74,7 @@ public class HyperlinkNote extends ConsoleNote {
     }
 
     @Extension
-    public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+    public static class DescriptorImpl extends ConsoleAnnotationDescriptor {
         public String getDisplayName() {
             return "Hyperlinks";
         }

@@ -25,8 +25,9 @@
 package hudson.matrix;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.Util;
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -34,7 +35,9 @@ import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -62,7 +65,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      * If non-null, the {@link MatrixBuild} originates from the given build number.
      */
     private Integer baseBuild;
-
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -122,6 +124,23 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
         public MatrixRun getRun() {
             return MatrixBuild.this.getRun(combination);
+        }
+        
+        /**
+         * Return the URL to the run that this pointer references.
+         *
+         * In the typical case, this creates {@linkplain #getShortUrl() a very short relative url}.
+         * If the referenced run is a nearest previous build, this method returns a longer URL to that exact build.
+         * {@link MatrixRun} which belongs to a given build {@link MatrixBuild}.
+         * If there is no run which belongs to the build, return url of run, which belongs to the nearest previous build.
+         */
+        public String getNearestRunUrl() {
+            MatrixRun r = getRun();
+            if (r==null)    return null;
+            if (getNumber()==r.getNumber())
+                return getShortUrl()+'/';
+            else
+                return Stapler.getCurrentRequest().getContextPath()+'/'+r.getUrl();
         }
 
         public String getShortUrl() {
@@ -235,8 +254,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
-            if(item!=null)
-                return item;
+            if(item!=null) {
+                if (item.getNumber()==this.getNumber())
+                    return item;
+                else {
+                    // redirect the user to the correct URL
+                    String url = Functions.joinPath(item.getUrl(), req.getRestOfPath());
+                    String qs = req.getQueryString();
+                    if (qs!=null)   url+='?'+qs;
+                    throw HttpResponses.redirectViaContextPath(url);
+                }
+            }
         } catch (IllegalArgumentException _) {
             // failed to parse the token as Combination. Must be something else
         }
@@ -245,7 +273,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixBuildExecution());
     }
 
     @Override
@@ -256,7 +284,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    private class RunnerImpl extends AbstractRunner {
+    private class MatrixBuildExecution extends AbstractBuildExecution {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
 
         protected Result doRun(BuildListener listener) throws Exception {
@@ -287,12 +315,12 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     final int n = getNumber();
                     for (MatrixConfiguration c : p.getActiveConfigurations()) {
                         if(q.cancel(c))
-                            logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
+                            logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null && b.isBuilding()) {// executor can spend some time in post production state, so only cancel in-progress builds.
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
-                                logger.println(Messages.MatrixBuild_Interrupting(HyperlinkNote.encodeTo('/'+ b.getUrl(),b.getDisplayName())));
+                                logger.println(Messages.MatrixBuild_Interrupting(ModelHyperlinkNote.encodeTo(b)));
                                 exe.interrupt();
                             }
                         }

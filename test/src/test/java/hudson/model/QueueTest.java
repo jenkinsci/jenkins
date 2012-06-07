@@ -31,6 +31,7 @@ import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
+import hudson.model.Queue.*;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -43,6 +44,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -67,17 +69,17 @@ public class QueueTest extends HudsonTestCase {
      * Checks the persistence of queue.
      */
     public void testPersistence() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -95,17 +97,17 @@ public class QueueTest extends HudsonTestCase {
      * Can {@link Queue} successfully recover removal?
      */
     public void testPersistence2() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -115,6 +117,38 @@ public class QueueTest extends HudsonTestCase {
         testProject.delete();
         q.load();
         assertEquals(0,q.getItems().length);
+    }
+
+    /**
+     * {@link Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
+     */
+    public void testPersistenceBlockedItem() throws Exception {
+        Queue q = jenkins.getQueue();
+        final SequenceLock seq = new SequenceLock();
+
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                seq.phase(0);   // first, we let one build going
+
+                seq.phase(2);
+                return true;
+            }
+        });
+
+        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        seq.phase(1);   // and make sure we have one build under way
+
+        // get another going
+        Future<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+
+        Thread.sleep(1000);
+        Queue.Item[] items = q.getItems();
+        assertEquals(1,items.length);
+        assertTrue(items[0] instanceof BlockedItem);
+
+        q.save();
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {

@@ -23,13 +23,13 @@
  */
 package hudson.matrix;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
-import static hudson.matrix.MatrixConfiguration.useShortWorkspaceName;
 import hudson.model.Build;
 import hudson.model.Node;
+import hudson.slaves.WorkspaceList;
+import hudson.slaves.WorkspaceList.Lease;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -143,33 +143,43 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixRunExecution());
     }
 
-    protected class RunnerImpl extends Build<MatrixConfiguration,MatrixRun>.RunnerImpl {
+    private class MatrixRunExecution extends BuildExecution {
+        protected Lease getParentWorkspaceLease(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+            MatrixProject mp = getParent().getParent();
+
+            String customWorkspace = mp.getCustomWorkspace();
+            if (customWorkspace != null) {
+                // we allow custom workspaces to be concurrently used between jobs.
+                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+            }
+            return wsl.allocate(n.getWorkspaceFor(mp), getParentBuild());
+        }
+
         @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
-            // Map current combination to a directory subtree, e.g. 'axis1=a,axis2=b' to 'axis1/a/axis2/b'.
-            String subtree;
-            if(useShortWorkspaceName) {
-                subtree = getParent().getDigestName(); 
-            } else {
-                subtree = getParent().getCombination().toString('/','/');
-            }
-            
-            String customWorkspace = getParent().getParent().getCustomWorkspace();
-            if (customWorkspace != null) {
-                // Use custom workspace as defined in the matrix project settings.
-                FilePath ws = n.getRootPath().child(getEnvironment(listener).expand(customWorkspace));
-                // We allow custom workspaces to be used concurrently between jobs.
-                return Lease.createDummyLease(ws.child(subtree));
-            } else {
-                // Use default workspace as assigned by Hudson.
-                Node node = getBuiltOn();
-                FilePath ws = node.getWorkspaceFor(getParent().getParent());
-                // Allocate unique workspace (not to be shared between jobs and runs).
-                return wsl.allocate(ws.child(subtree));
-            }
+            MatrixProject mp = getParent().getParent();
+
+            // lock is done at the parent level, so that concurrent MatrixProjects get respective workspace,
+            // but within MatrixConfigurations that belong to the same MatrixBuild.
+            // if MatrixProject is configured with custom workspace, we assume that the user knows what he's doing
+            // and try not to append unique random suffix.
+            Lease baseLease = getParentWorkspaceLease(n,wsl);
+
+            // resolve the relative path against the parent workspace, which needs locking
+            FilePath baseDir = baseLease.path;
+
+            // prepare variables that can be used in the child workspace setting
+            EnvVars env = getEnvironment(listener);
+            env.put("COMBINATION",getParent().getCombination().toString('/','/'));  // e.g., "axis1/a/axis2/b"
+            env.put("SHORT_COMBINATION",getParent().getDigestName());               // e.g., "0fbcab35"
+            env.put("PARENT_WORKSPACE",baseDir.getRemote());
+
+            // child workspace need no individual locks, whether or not we use custom workspace
+            String childWs = mp.getChildCustomWorkspace();
+            return Lease.createLinkedDummyLease(baseDir.child(env.expand(childWs)),baseLease);
         }
     }
 }

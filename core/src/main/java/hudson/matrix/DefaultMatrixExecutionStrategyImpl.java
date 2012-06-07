@@ -2,7 +2,7 @@ package hudson.matrix;
 
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
@@ -159,7 +159,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
                 scheduleConfigurationBuild(build, listener, c);
             MatrixRun run = waitForCompletion(build, listener, c);
             notifyEndBuild(run,aggregators);
-            logger.println(Messages.MatrixBuild_Completed(HyperlinkNote.encodeTo('/' + c.getUrl(), c.getDisplayName()), getResult(run)));
+            logger.println(Messages.MatrixBuild_Completed(ModelHyperlinkNote.encodeTo(c), getResult(run)));
             r = r.combine(getResult(run));
         }
 
@@ -192,7 +192,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
     }
 
     private void scheduleConfigurationBuild(MatrixBuild build, BuildListener listener, MatrixConfiguration c) {
-        listener.getLogger().println(Messages.MatrixBuild_Triggering(HyperlinkNote.encodeTo('/' + c.getUrl(), c.getDisplayName())));
+        listener.getLogger().println(Messages.MatrixBuild_Triggering(ModelHyperlinkNote.encodeTo(c)));
         c.scheduleBuild(build.getAction(ParametersAction.class), new UpstreamCause((Run)build));
     }
 
@@ -226,7 +226,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
                 // http://www.nabble.com/Anyone-using-AccuRev-plugin--tt21634577.html#a21671389
                 // because of this, we really make sure that the build is cancelled by doing this 5
                 // times over 5 seconds
-                listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
+                listener.getLogger().println(Messages.MatrixBuild_AppearsCancelled(ModelHyperlinkNote.encodeTo(c)));
                 return null;
             }
 
@@ -234,7 +234,8 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
                 // if the build seems to be stuck in the queue, display why
                 String why = qi.getWhy();
                 if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
-                    listener.getLogger().println(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())+" is still in the queue: "+why);
+                    listener.getLogger().print("Configuration " + ModelHyperlinkNote.encodeTo(c)+" is still in the queue: ");
+                    qi.getCauseOfBlockage().print(listener); //this is still shown on the same line
                     whyInQueue = why;
                 }
             }

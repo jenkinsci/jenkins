@@ -105,7 +105,7 @@ public class TestResultLinksTest extends HudsonTestCase {
         // I know that in a HudsonTestCase we don't have a meaningful root url, so I expect an empty string here.
         // If somehow we start being able to produce a root url, then I'll also tolerate a url that starts with that.
         boolean pathIsEmptyOrNull = relativePath2 == null || relativePath2.isEmpty();
-        boolean pathStartsWithRootUrl = !pathIsEmptyOrNull && relativePath2.startsWith(hudson.getRootUrl());
+        boolean pathStartsWithRootUrl = !pathIsEmptyOrNull && relativePath2.startsWith(jenkins.getRootUrl());
         assertTrue("relative path is empty OR begins with the app root", pathIsEmptyOrNull || pathStartsWithRootUrl ); 
     }
 }

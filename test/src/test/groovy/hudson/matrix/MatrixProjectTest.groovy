@@ -54,6 +54,8 @@ import hudson.model.Cause.LegacyCodeCause
 import hudson.model.ParametersAction
 import hudson.model.FileParameterValue
 
+import java.util.concurrent.CountDownLatch
+
 /**
  *
  *
@@ -206,7 +208,7 @@ public class MatrixProjectTest extends HudsonTestCase {
      * Makes sure that the configuration correctly roundtrips.
      */
     public void testConfigRoundtrip() {
-        hudson.getJDKs().addAll([
+        jenkins.getJDKs().addAll([
                 new JDK("jdk1.7","somewhere"),
                 new JDK("jdk1.6","here"),
                 new JDK("jdk1.5","there")]);
@@ -252,10 +254,10 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         System.out.println(p.labels);
         assertEquals(4,p.labels.size());
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave3")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave3")));
     }
 
     /**
@@ -280,7 +282,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         // have foo=1 block to make sure the 2nd configuration is in the queue
         firstStarted.block();
         // enter into the quiet down while foo=2 is still in the queue
-        hudson.doQuietDown();
+        jenkins.doQuietDown();
         buildCanProceed.signal();
 
         // make sure foo=2 still completes. use time out to avoid hang
@@ -326,5 +328,42 @@ public class MatrixProjectTest extends HudsonTestCase {
         ))
         
         assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+    }
+
+    /**
+     * Verifies that the concurrent build feature works, and makes sure
+     * that each gets its own unique workspace.
+     */
+    void testConcurrentBuild() {
+        jenkins.numExecutors = 10
+        jenkins.updateComputerList()
+
+        def p = createMatrixProject()
+        p.axes = new AxisList(new TextAxis("foo","1","2"))
+        p.concurrentBuild = true;
+        def latch = new CountDownLatch(4)
+        def dirs = Collections.synchronizedSet(new HashSet())
+        
+        p.buildersList.add(new TestBuilder() {
+            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+                dirs << build.workspace.getRemote()
+                def marker = build.workspace.child("file")
+                def name = build.fullDisplayName
+                marker.write(name,"UTF-8")
+                latch.countDown()
+                latch.await()
+                assertEquals(name,marker.readToString())
+                return true
+            }
+        })
+
+        // should have gotten all unique names
+        def f1 = p.scheduleBuild2(0)
+        // get one going
+        Thread.sleep(1000)
+        def f2 = p.scheduleBuild2(0)
+        [f1,f2]*.get().each{ assertBuildStatusSuccess(it)}
+
+        assertEquals 4, dirs.size()
     }
 }

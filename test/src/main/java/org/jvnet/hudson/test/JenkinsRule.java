@@ -187,6 +187,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -285,6 +287,13 @@ public class JenkinsRule implements TestRule, RootAction {
     public boolean useLocalPluginManager;
 
     /**
+     * Number of seconds until the test times out.
+     */
+    public int timeout = 90;
+
+    private volatile Timer timeoutTimer;
+
+    /**
      * Set the plugin manager to be passed to {@link Jenkins} constructor.
      *
      * For historical reasons, {@link #useLocalPluginManager}==true will take the precedence.
@@ -359,11 +368,30 @@ public class JenkinsRule implements TestRule, RootAction {
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
 
+    protected void setUpTimeout() {
+        if (timeout<=0)     return; // no timeout
+
+        final Thread testThread = Thread.currentThread();
+        timeoutTimer = new Timer();
+        timeoutTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (timeoutTimer!=null)
+                    testThread.interrupt();
+            }
+        }, TimeUnit.SECONDS.toMillis(timeout));
+    }
+
     /**
      * Override to tear down your specific external resource.
      */
     protected void after() {
         try {
+            if (timeoutTimer!=null) {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
+            }
+
             // cancel pending asynchronous operations, although this doesn't really seem to be working
             for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations

@@ -49,6 +49,10 @@ THE SOFTWARE.
     <filter-class>hudson.util.CharacterEncodingFilter</filter-class>
   </filter>
   <filter>
+    <filter-name>compression-filter</filter-name>
+    <filter-class>org.kohsuke.stapler.compression.CompressionFilter</filter-class>
+  </filter>
+  <filter>
     <filter-name>authentication-filter</filter-name>
     <filter-class>hudson.security.HudsonFilter</filter-class>
   </filter>
@@ -108,6 +112,10 @@ THE SOFTWARE.
   
   <filter-mapping>
     <filter-name>encoding-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>compression-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
