@@ -237,10 +237,10 @@ THE SOFTWARE.
     <div class="container-fluid">
         <div class="row-fluid" id="main-table">
             <div class="span3" id="side-panel">
-                <div class="hidden-desktop">
-                    <button class="btn" data-toggle="button" onclick="$('navigation').toggleClassName('visible-desktop'); return false;" >${%Show Navigation}</button>
+                <div class="visible-phone">
+                    <button class="btn" data-toggle="button" onclick="$('navigation').toggleClassName('hidden-phone'); return false;" >${%Show Navigation}</button>
                 </div>
-                <div id="navigation" class="visible-desktop">
+                <div id="navigation" class="hidden-phone">
                     <j:set var="mode" value="side-panel" />
                     <d:invokeBody />
 
