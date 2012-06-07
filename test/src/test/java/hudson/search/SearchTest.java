@@ -173,7 +173,7 @@ public class SearchTest extends HudsonTestCase {
         project1.setDisplayName(displayName);
         
         WebClient wc = new WebClient();
-        Page result = wc.goTo("search/suggest?query=name", "application/javascript");
+        Page result = wc.goTo("search/suggest?query=name", "application/json");
         Assert.assertNotNull(result);
         assertGoodStatus(result);
         
