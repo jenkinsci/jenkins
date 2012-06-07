@@ -59,7 +59,6 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
@@ -169,7 +168,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     protected Details authenticate(String username, String password) throws AuthenticationException {
         Details u = loadUserByUsername(username);
-        if (!u.isPasswordCorrect(password))
+        if (!PASSWORD_ENCODER.isPasswordValid(u.getPassword(),password,null))
             throw new BadCredentialsException("Failed to login as "+username);
         return u;
     }
@@ -450,10 +449,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return passwordHash;
         }
 
-        public boolean isPasswordCorrect(String candidate) {
-            return PASSWORD_ENCODER.isPasswordValid(getPassword(),candidate,null);
-        }
-
         public String getProtectedPassword() {
             // put session Id in it to prevent a replay attack.
             return Protector.protect(Stapler.getCurrentRequest().getSession().getId()+':'+getPassword());
@@ -574,7 +569,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling
      * in this little class. The rest of the Acegi thinks that we are not using salt.
      */
-    /*package*/ static final PasswordEncoder CLASSIC = new PasswordEncoder() {
+    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
         private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
 
         public String encodePassword(String rawPass, Object _) throws DataAccessException {
@@ -611,44 +606,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
             return buf.toString();
         }
-    };
-
-    /**
-     * {@link PasswordEncoder} that uses jBCrypt.
-     */
-    private static final PasswordEncoder JBCRYPT_ENCODER = new PasswordEncoder() {
-        public String encodePassword(String rawPass, Object _) throws DataAccessException {
-            return BCrypt.hashpw(rawPass,BCrypt.gensalt());
-        }
-
-        public boolean isPasswordValid(String encPass, String rawPass, Object _) throws DataAccessException {
-            return BCrypt.checkpw(rawPass,encPass);
-        }
-    };
-
-    /**
-     * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
-     * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
-     */
-    public static final PasswordEncoder PASSWORD_ENCODER = new PasswordEncoder() {
-        /*
-            CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
-            to designate JBCRYPT-format hash.
-
-            '#' is neither in base64 nor hex, which makes it a good choice.
-         */
-        public String encodePassword(String rawPass, Object salt) throws DataAccessException {
-            return JBCRYPT_HEADER+JBCRYPT_ENCODER.encodePassword(rawPass,salt);
-        }
-
-        public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
-            if (encPass.startsWith(JBCRYPT_HEADER))
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()),rawPass,salt);
-            else
-                return CLASSIC.isPasswordValid(encPass,rawPass,salt);
-        }
-
-        private static final String JBCRYPT_HEADER = "#jbcrypt:";
     };
 
     @Extension
