@@ -116,6 +116,7 @@ THE SOFTWARE.
     jQuery.noConflict();
     ]]></script>
     <script src="${resURL}/scripts/bootstrap-transition.js" type="text/javascript"/>
+    <script src="${resURL}/scripts/bootstrap-button.js" type="text/javascript"/>
     <script src="${resURL}/scripts/bootstrap-dropdown.js" type="text/javascript"/>
     <script src="${resURL}/scripts/bootstrap-collapse.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
@@ -235,7 +236,10 @@ THE SOFTWARE.
     <div class="container-fluid">
         <div class="row-fluid" id="main-table">
             <div class="span3" id="side-panel">
-                <div id="navigation">
+                <div class="hidden-desktop">
+                    <button class="btn" data-toggle="button" onclick="$('navigation').toggleClassName('visible-desktop'); return false;" >${%Show Navigation}</button>
+                </div>
+                <div id="navigation" class="visible-desktop">
                     <j:set var="mode" value="side-panel" />
                     <d:invokeBody />
 
