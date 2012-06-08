@@ -103,11 +103,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -825,6 +821,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     // I really messed this up. I'm hoping to fix this some time
     // it shouldn't have trailing '/', and instead it should have leading '/'
     public String getUrl() {
+
+        // RUN may be accessed using permalinks, as "/lastSuccessful" or other, so try to retrieve this base URL
+        // looking for "this" in the current request ancestors
+        // @see also {@link AbstractItem#getUrl}
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req != null) {
+            String seed = Functions.getNearestAncestorUrl(req,this);
+            if(seed!=null) {
+                // trim off the context path portion and leading '/', but add trailing '/'
+                return seed.substring(req.getContextPath().length()+1)+'/';
+            }
+        }
+
         return project.getUrl()+getNumber()+'/';
     }
 
