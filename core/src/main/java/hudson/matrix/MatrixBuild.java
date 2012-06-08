@@ -192,6 +192,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         if(config==null)    return null;
         return getRunForConfiguration(config);
     }
+
+    /**
+     * Like {@link #getRun(Combination)}, but do not approximate the result by earlier execution
+     * of the given combination (which is done for partial rebuild of the matrix.)
+     */
+    public MatrixRun getExactRun(Combination c) {
+        MatrixConfiguration config = getParent().getItem(c);
+        if(config==null)    return null;
+        return config.getBuildByNumber(getNumber());
+    }
     
     /**
      * Returns all {@link MatrixRun}s for this {@link MatrixBuild}.
