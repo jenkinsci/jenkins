@@ -76,6 +76,9 @@ public class BuildCommand extends CLICommand {
     @Option(name="-p",usage="Specify the build parameters in the key=value format.")
     public Map<String,String> parameters = new HashMap<String, String>();
 
+    @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
+    public boolean consoleOutput = false;
+
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
@@ -107,17 +110,19 @@ public class BuildCommand extends CLICommand {
 
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
 
-        if (wait) {
+        if (wait || sync) {
             AbstractBuild b = f.waitForStart();    // wait for the start
-            stdout.println("Started "+b.getFullDisplayName()+" : "+b.getResult());
-            return 0;
-        }
+            stdout.println("Started "+b.getFullDisplayName());
 
-        if (sync) {
-            // TODO: should we abort the build if the CLI is cancelled?
-            AbstractBuild b = f.get();    // wait for the completion
-            stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
-            return b.getResult().ordinal;
+            if (sync) {
+                if (consoleOutput) {
+                    b.writeWholeLogTo(stdout);
+                }
+                // TODO: should we abort the build if the CLI is cancelled?
+                f.get();    // wait for the completion
+                stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
+                return b.getResult().ordinal;
+            }
         }
 
         return 0;

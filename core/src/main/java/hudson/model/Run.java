@@ -1197,6 +1197,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Writes the complete log from the start to finish to the {@link OutputStream}.
+     *
+     * If someone is still writing to the log, this method will not return until the whole log
+     * file gets written out.
+     */
+    public void writeWholeLogTo(OutputStream out) throws IOException, InterruptedException {
+        long pos = 0;
+        AnnotatedLargeText logText;
+        do {
+            logText = getLogText();
+            pos = logText.writeLogTo(pos, out);
+        } while (!logText.isComplete());
+    }
+
+    /**
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText getLogText() {
