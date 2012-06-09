@@ -27,6 +27,7 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -45,6 +46,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import hudson.model.listeners.SCMListener;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
@@ -791,7 +794,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @param actions
      *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
         return scheduleBuild2(quietPeriod,c,Arrays.asList(actions));
     }
 
@@ -804,7 +808,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.383
      */
     @SuppressWarnings("unchecked")
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         if (!isBuildable())
             return null;
 
@@ -819,7 +824,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
         if(i!=null)
-            return (Future)i.getFuture();
+            return (QueueTaskFuture)i.getFuture();
         return null;
     }
 
@@ -854,7 +859,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * as deprecated.
      */
     @SuppressWarnings("deprecation")
-    public Future<R> scheduleBuild2(int quietPeriod) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod) {
         return scheduleBuild2(quietPeriod, new LegacyCodeCause());
     }
     
@@ -862,7 +868,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c) {
         return scheduleBuild2(quietPeriod, c, new Action[0]);
     }
 
