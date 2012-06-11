@@ -24,8 +24,10 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -37,6 +39,21 @@ import java.io.IOException;
  * This extension point can be used to externally add environment variables. Aside from adding environment variables
  * of the fixed name, a typical strategy is to look for specific {@link JobProperty}s and other similar configurations
  * of {@link Job}s to compute values.
+ *
+ * <h2>Views</h2>
+ * <h4>buildEnv.groovy/.jelly</h4>
+ * <p>
+ * When Jenkins displays the help page listing all the environment variables available for a build, it does
+ * so by combining all the {@code buildEnv} views from this extension point. This view should use the &lt;t:buildEnvVar> tag
+ * to render a variable.
+ *
+ * <p>
+ * In this view, {@code it} points to {@link EnvironmentContributor} and {@code job} points to {@link Job} for which
+ * the help is being rendered.
+ *
+ * <p>
+ * Jenkins provides other extension points (such as {@link SCM}) to contribute environment variables to builds,
+ * and for those plugins, Jenkins also looks for {@code /buildEnv.groovy} and aggregates them.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.392
@@ -71,5 +88,25 @@ public abstract class EnvironmentContributor implements ExtensionPoint {
      */
     public static ExtensionList<EnvironmentContributor> all() {
         return Jenkins.getInstance().getExtensionList(EnvironmentContributor.class);
+    }
+
+    /**
+     * Serves the combined list of environment variables available from this plugin.
+     *
+     * Served from "/env-vars.html"
+     */
+    @Extension
+    public static class EnvVarsHtml implements RootAction {
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "env-vars.html";
+        }
     }
 }
