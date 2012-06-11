@@ -23,15 +23,16 @@
  */
 package hudson.matrix;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.thoughtworks.xstream.XStream;
 import hudson.Util;
 import hudson.util.RobustCollectionConverter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Arrays;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * List of {@link Axis}.
@@ -74,43 +75,16 @@ public class AxisList extends ArrayList<Axis> {
      * List up all the possible combinations of this list.
      */
     public Iterable<Combination> list() {
-        final int[] base = new int[size()];
-        if (base.length==0) return Collections.<Combination>emptyList();
+        List<Set<String>> axesList = Lists.newArrayList();
+        for (Axis axis : this)
+            axesList.add(new LinkedHashSet<String>(axis.getValues()));
 
-        int b = 1;
-        for( int i=size()-1; i>=0; i-- ) {
-            base[i] = b;
-            b *= get(i).size();
-        }
-
-        final int total = b;    // number of total combinations
-
-        return new Iterable<Combination>() {
-            public Iterator<Combination> iterator() {
-                return new Iterator<Combination>() {
-                    private int counter = 0;
-
-                    public boolean hasNext() {
-                        return counter<total;
-                    }
-
-                    public Combination next() {
-                        String[] data = new String[size()];
-                        int x = counter++;
-                        for( int i=0; i<data.length; i++) {
-                            data[i] = get(i).value(x/base[i]);
-                            x %= base[i];
-                        }
-                        assert x==0;
-                        return new Combination(AxisList.this,data);
-                    }
-
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
+        return Iterables.transform(Sets.cartesianProduct(axesList), new Function<List<String>, Combination>() {
+            public Combination apply(@Nullable List<String> strings) {
+                assert strings != null;
+                return new Combination(AxisList.this, (String[]) strings.toArray(new String[0]));
             }
-        };
+        });
     }
 
     /**
