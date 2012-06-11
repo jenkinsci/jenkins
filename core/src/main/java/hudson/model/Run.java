@@ -1918,7 +1918,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = getCharacteristicEnvVars();
 
-        for (EnvironmentContributor ec : EnvironmentContributor.all())
+        // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,log);
 
         return env;
