@@ -32,6 +32,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
 import hudson.model.Queue.*;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -286,5 +287,27 @@ public class QueueTest extends HudsonTestCase {
 
         for (Future<MatrixBuild> f : r)
             assertBuildStatusSuccess(f);
+    }
+
+    public void testWaitForStart() throws Exception {
+        final OneShotEvent ev = new OneShotEvent();
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                ev.block();
+                return true;
+            }
+        });
+
+        QueueTaskFuture<FreeStyleBuild> v = p.scheduleBuild2(0);
+        FreeStyleBuild b = v.waitForStart();
+        assertEquals(1,b.getNumber());
+        assertTrue(b.isBuilding());
+        assertSame(p,b.getProject());
+
+        ev.signal();    // let the build complete
+        FreeStyleBuild b2 = assertBuildStatusSuccess(v);
+        assertSame(b,b2);
     }
 }
