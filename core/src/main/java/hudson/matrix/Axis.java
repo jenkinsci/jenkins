@@ -27,6 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.RestrictedSince;
 import hudson.Util;
+import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.model.AbstractDescribableImpl;
 import jenkins.model.Jenkins;
 import hudson.util.QuotedStringTokenizer;
@@ -149,11 +150,34 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
         return Collections.unmodifiableList(values);
     }
 
-    public boolean isComputable() {
-        return false;
-    }
-
-    public List<String> computeValues() {
+    /**
+     * Called right at the beginning of {@link MatrixBuild} execution to allow {@link Axis} to update {@link #values}
+     * based on the current build.
+     *
+     * <p>
+     * Historically, axes values are considered static. They were assumed to reflect what the user has typed in,
+     * and their values are changed only when the project is reconfigured. So abstractions are built around this
+     * notion, and so for example {@link MatrixProject} has the current axes and their values, which it uses
+     * to render its UI.
+     *
+     * <p>
+     * So when the need was identified to change the values of axes per build, we decided that this be represented
+     * as a kind of project configuration update (where a project gets reconfigured every time a build runs), and
+     * this call back was added to allow {@link Axis} to update the next return value from the {@link #getValues()}
+     * (which is typically done by updating {@link #values}.)
+     *
+     * <p>
+     * While it is not strictly required, because of these historical reasons, UI will look better if
+     * Future calls to {@link Axis#getValues()} return the same values as what this method returns (until
+     * the next rebuild call).
+     *
+     * @param context
+     *      The ongoing build. Never null.
+     * @return
+     *      Never null. Returns the updated set of values.
+     * @since 1.471
+     */
+    public List<String> rebuild(MatrixBuildExecution context) {
         return getValues();
     }
 

@@ -75,26 +75,16 @@ public class AxisList extends ArrayList<Axis> {
      * List up all the possible combinations of this list.
      */
     public Iterable<Combination> list() {
-
         List<Set<String>> axesList = Lists.newArrayList();
+        for (Axis axis : this)
+            axesList.add(new LinkedHashSet<String>(axis.getValues()));
 
-        for (Axis axis : this) {
-            if (axis.isComputable()) {
-                axesList.add(new HashSet<String>(axis.computeValues()));
-            } else {
-                axesList.add(new HashSet<String>(axis.getValues()));
-            }
-        }
-
-        Set<List<String>> combinations = Sets.cartesianProduct(axesList);
-
-        return Iterables.transform(combinations, new Function<List<String>, Combination>() {
+        return Iterables.transform(Sets.cartesianProduct(axesList), new Function<List<String>, Combination>() {
             public Combination apply(@Nullable List<String> strings) {
                 assert strings != null;
                 return new Combination(AxisList.this, (String[]) strings.toArray(new String[0]));
             }
         });
-
     }
 
     /**

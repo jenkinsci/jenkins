@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 
@@ -294,22 +295,47 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    private class MatrixBuildExecution extends AbstractBuildExecution {
+    /**
+     * Object that lives from the start of {@link MatrixBuild} execution to its end.
+     *
+     * Used to keep track of things that are needed only during the build.
+     */
+    public class MatrixBuildExecution extends AbstractBuildExecution {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
+        private Set<MatrixConfiguration> activeConfigurations;
+
+        /**
+         * Snapshot of {@link MatrixProject#getActiveConfigurations()} to ensure
+         * that the build will use a consistent view of it.
+         */
+        public Set<MatrixConfiguration> getActiveConfigurations() {
+            return activeConfigurations;
+        }
+
+        /**
+         * Aggregators attached to this build execution, that are notified
+         * of every start/end of {@link MatrixRun}.
+         */
+        public List<MatrixAggregator> getAggregators() {
+            return aggregators;
+        }
 
         protected Result doRun(BuildListener listener) throws Exception {
             MatrixProject p = getProject();
             PrintStream logger = listener.getLogger();
 
+            // give axes a chance to rebuild themselves
+            activeConfigurations = p.rebuildConfigurations(this);
+
             // list up aggregators
-            listUpAggregators(listener, p.getPublishers().values());
-            listUpAggregators(listener, p.getProperties().values());
-            listUpAggregators(listener, p.getBuildWrappers().values());
+            listUpAggregators(p.getPublishers().values());
+            listUpAggregators(p.getProperties().values());
+            listUpAggregators(p.getBuildWrappers().values());
 
             axes = p.getAxes();
 
             try {
-                return p.getExecutionStrategy().run(MatrixBuild.this, aggregators, listener);
+                return p.getExecutionStrategy().run(this);
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
                 Executor x = Executor.currentExecutor();
@@ -323,7 +349,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     final int n = getNumber();
-                    for (MatrixConfiguration c : p.getActiveConfigurations()) {
+                    for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))
                             logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                         MatrixRun b = c.getBuildByNumber(n);
@@ -339,7 +365,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
         }
 
-        private void listUpAggregators(BuildListener listener, Collection<?> values) {
+        private void listUpAggregators(Collection<?> values) {
             for (Object v : values) {
                 if (v instanceof MatrixAggregatable) {
                     MatrixAggregatable ma = (MatrixAggregatable) v;
