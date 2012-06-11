@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
@@ -87,5 +88,25 @@ public abstract class EnvironmentContributor implements ExtensionPoint {
      */
     public static ExtensionList<EnvironmentContributor> all() {
         return Jenkins.getInstance().getExtensionList(EnvironmentContributor.class);
+    }
+
+    /**
+     * Serves the combined list of environment variables available from this plugin.
+     *
+     * Served from "/env-vars.html"
+     */
+    @Extension
+    public static class EnvVarsHtml implements RootAction {
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "env-vars.html";
+        }
     }
 }
