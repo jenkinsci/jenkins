@@ -24,6 +24,7 @@
 package hudson.matrix;
 
 import hudson.ExtensionPoint;
+import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -40,7 +41,17 @@ import java.util.List;
  * @sicne 1.456
  */
 public abstract class MatrixExecutionStrategy extends AbstractDescribableImpl<MatrixExecutionStrategy> implements ExtensionPoint {
-    public abstract Result run(MatrixBuild build, List<MatrixAggregator> aggregators, BuildListener listener) throws InterruptedException, IOException;
+    public Result run(MatrixBuildExecution execution) throws InterruptedException, IOException {
+        return run(execution.getBuild(), execution.getAggregators(), execution.getListener());
+    }
+
+    /**
+     * @deprecated
+     *      Override {@link #run(MatrixBuildExecution)}
+     */
+    public Result run(MatrixBuild build, List<MatrixAggregator> aggregators, BuildListener listener) throws InterruptedException, IOException {
+        throw new UnsupportedOperationException(getClass()+" needs to override run(MatrixBuildExecution)");
+    }
 
     @Override
     public MatrixExecutionStrategyDescriptor getDescriptor() {
