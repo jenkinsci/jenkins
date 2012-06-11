@@ -1,4 +1,5 @@
 import hudson.model.EnvironmentContributor
+import hudson.scm.SCM
 
 def st = namespace("jelly:stapler")
 
@@ -12,6 +13,9 @@ html {
 
         dl {
             EnvironmentContributor.all().each { e -> st.include(it:e, page:"buildEnv", optional:true) }
+
+            // allow SCM classes to have buildEnv.groovy since SCM can contirbute environment variables
+            SCM.all().each { e -> st.include(class:e.clazz, page:"buildEnv", optional:true) }
         }
     }
 }
