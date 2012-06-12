@@ -1393,11 +1393,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         public abstract void cleanUp(BuildListener listener) throws Exception;
 
-        public final RunT getBuild() {
+        public RunT getBuild() {
             return _this();
         }
 
-        public final JobT getProject() {
+        public JobT getProject() {
             return _this().getParent();
         }
     }
