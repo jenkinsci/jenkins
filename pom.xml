@@ -595,7 +595,7 @@ THE SOFTWARE.
         -->
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <version>6.1.26-jenkins-2</version>
+        <version>8.1.4.v20120524-jenkins-1</version>
       </plugin>
 
       <!--<plugin>
