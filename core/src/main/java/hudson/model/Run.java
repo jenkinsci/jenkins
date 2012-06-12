@@ -1408,8 +1408,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         public abstract void cleanUp(BuildListener listener) throws Exception;
 
-        protected final RunT getBuild() {
+        public RunT getBuild() {
             return _this();
+        }
+
+        public JobT getProject() {
+            return _this().getParent();
         }
     }
 
@@ -1928,35 +1932,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = getCharacteristicEnvVars();
-        Computer c = Computer.currentComputer();
-        if (c!=null)
-            env = c.getEnvironment().overrideAll(env);
-        String rootUrl = Jenkins.getInstance().getRootUrl();
-        if(rootUrl!=null) {
-            env.put("JENKINS_URL", rootUrl);
-            env.put("HUDSON_URL", rootUrl); // Legacy compatibility
-            env.put("BUILD_URL", rootUrl+getUrl());
-            env.put("JOB_URL", rootUrl+getParent().getUrl());
-        }
-        
-        env.put("JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath() );
-        env.put("HUDSON_HOME", Jenkins.getInstance().getRootDir().getPath() );   // legacy compatibility
 
-        Thread t = Thread.currentThread();
-        if (t instanceof Executor) {
-            Executor e = (Executor) t;
-            env.put("EXECUTOR_NUMBER",String.valueOf(e.getNumber()));
-	    if(e.getOwner() instanceof MasterComputer) {
-		env.put("NODE_NAME", "master");
-	    } else {
-	    	env.put("NODE_NAME",e.getOwner().getName());
-	    }
-            Node n = e.getOwner().getNode();
-            if (n!=null)
-                env.put("NODE_LABELS",Util.join(n.getAssignedLabels()," "));
-        }
-
-        for (EnvironmentContributor ec : EnvironmentContributor.all())
+        // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,log);
 
         return env;

@@ -645,6 +645,16 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         private List<MavenReporter> reporters;
 
         @Override
+        public MavenBuild getBuild() {
+            return (MavenBuild)super.getBuild();
+        }
+
+        @Override
+        public MavenModule getProject() {
+            return (MavenModule)super.getProject();
+        }
+
+        @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             return wsl.allocate(getModuleSetBuild().getModuleRoot().child(getProject().getRelativePath()));
         }

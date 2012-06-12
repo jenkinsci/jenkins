@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.469-SNAPSHOT</version>
+  <version>1.471-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -595,7 +595,7 @@ THE SOFTWARE.
         -->
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <version>6.1.26-jenkins-2</version>
+        <version>8.1.4.v20120524-jenkins-1</version>
       </plugin>
 
       <!--<plugin>
