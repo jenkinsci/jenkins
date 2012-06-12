@@ -372,7 +372,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * This method is intended to be used to pick up a Acegi object from
      * spring once the bean definition file is parsed.
      */
-    protected static <T> T findBean(Class<T> type, ApplicationContext context) {
+    public static <T> T findBean(Class<T> type, ApplicationContext context) {
         Map m = context.getBeansOfType(type);
         switch(m.size()) {
         case 0:
