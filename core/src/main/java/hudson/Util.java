@@ -703,14 +703,14 @@ public class Util {
     private static final boolean[] uriMap = new boolean[123];
     static {
         String raw =
-    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %         /          :;< >?                           [\]^ `                          {|}~
+    "!  $  '()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %&        /          :;< >?                           [\]^ `                          {|}~
   //  ^--so these are encoded
         int i;
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ' || raw.charAt(j) =='&');
+            uriMap[i] = (raw.charAt(j) == ' ');
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
