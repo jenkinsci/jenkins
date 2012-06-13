@@ -710,7 +710,7 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = (raw.charAt(j) == ' ' || raw.charAt(j) =='&');
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
