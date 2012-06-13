@@ -678,7 +678,7 @@ public class Util {
 
             for (int i = 0; i < s.length(); i++) {
                 int c = s.charAt(i);
-                if (c<128 && c!=' ') {
+                if (c<128 && (c!=' ' && c!='&')) {
                     out.append((char) c);
                 } else {
                     // 1 char -> UTF8
