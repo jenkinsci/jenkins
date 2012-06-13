@@ -703,8 +703,8 @@ public class Util {
     private static final boolean[] uriMap = new boolean[123];
     static {
         String raw =
-    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %         /          :;< >?                           [\]^ `                          {|}~
+    "!  $  '()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %&        /          :;< >?                           [\]^ `                          {|}~
   //  ^--so these are encoded
         int i;
         // Encode control chars and space
@@ -719,9 +719,11 @@ public class Util {
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
      * and HTTP special characters (/;:?) as specified in RFC1738.
-     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
+     * Also escapes & for convenience.
+     * (so alphanumeric and !@$*()-_=+',. are not encoded)
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
+     * Do not use this method for encoding query parameters.
      * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {
