@@ -1,0 +1,6 @@
+What needs to be done next :
+
+- Generic compression code (thru a user-defined command)
+- Collect names of directories potentially containing md5 program. GUESS_MD5_PATH
+
+Stéphane Peter <megastep@megastep.org>

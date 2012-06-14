@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Usage
 if [ -z "$1" ]; then
@@ -7,13 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 # Set up build tools
-PACKAGEMAKER_APP=$(mdfind "kMDItemCFBundleIdentifier == com.apple.PackageMaker")
-if [ -z "$PACKAGEMAKER_APP" ]; then
-    echo "Error: PackageMaker.app not found" >&2
-    exit 1
-fi
-
-PACKAGEMAKER="${PACKAGEMAKER_APP}/Contents/MacOS/PackageMaker"
+makeself=$(dirname $0)/makeself/makeself.sh
 
 # Get the Jenkins version number
 cp "$1" $(dirname $0)/jenkins.war.tmp
@@ -23,24 +17,19 @@ else
   version="$2"
 fi
 echo Version is $version
-PKG_NAME="jenkins-${version}.pkg"
+PKG_NAME="jenkins-${version}.command"
 PKG_TITLE="Jenkins ${version}"
 rm $(dirname $0)/jenkins.war.tmp
 
-# Fiddle with the package document so it points to the jenkins.war file provided
-PACKAGEMAKER_DOC="$(dirname $0)/JenkinsInstaller.pmdoc"
-mv $PACKAGEMAKER_DOC/01jenkins-contents.xml $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig
-sed s,"pt=\".*\" m=","pt=\"${1}\" m=",g $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig > $PACKAGEMAKER_DOC/01jenkins-contents.xml
-mv $PACKAGEMAKER_DOC/01jenkins.xml $PACKAGEMAKER_DOC/01jenkins.xml.orig
-sed s,"<installFrom mod=\"true\">.*</installFrom>","<installFrom mod=\"true\">${1}</installFrom>",g $PACKAGEMAKER_DOC/01jenkins.xml.orig > $PACKAGEMAKER_DOC/01jenkins.xml
+pkgroot=$(mktemp -d -t jenkins) || exit 1
 
-# Build the package
-"${PACKAGEMAKER}" \
-	--doc "${PACKAGEMAKER_DOC}" \
-	--out "${PKG_NAME}" \
-	--version "${version}" \
-	--title "${PKG_TITLE}"
+cp "$1" jenkins-runner.sh command-line-preferences.html org.jenkins-ci.plist \
+"$pkgroot"
 
-# Reset the fiddling so git doesn't get confused
-mv $PACKAGEMAKER_DOC/01jenkins.xml.orig $PACKAGEMAKER_DOC/01jenkins.xml
-mv $PACKAGEMAKER_DOC/01jenkins-contents.xml.orig $PACKAGEMAKER_DOC/01jenkins-contents.xml
+sed -e "s/@VERSION@/$version/" setup-jenkins.sh > "$pkgroot"/setup-jenkins
+chmod 755 "$pkgroot"/setup-jenkins
+
+# makeself  archivedir archivename title        startupscript
+"$makeself" "$pkgroot" "$PKG_NAME" "$PKG_TITLE" ./setup-jenkins
+
+rm -rf "$pkgroot"
