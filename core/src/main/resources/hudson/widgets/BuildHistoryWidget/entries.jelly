@@ -63,6 +63,25 @@ THE SOFTWARE.
       </tr>
     </j:forEach>
   </j:if>
+  <j:if test="${it.isWaiting()}">
+      <tr class="build-row transitive" id="${id}">
+        <td nowrap="nowrap">
+          <img width="16" height="16" src="${imagesURL}/16x16/grey.png" alt="${%pending}"/>
+          <st:nbsp/>
+          #${it.owner.getParent().getLastBuild().getNumber()}
+        </td>
+        <td style="white-space:normal;" colspan="2">
+          <div style="float:right">
+           <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
+              <a href="${rootURL}/${it.owner.getUrl()}/cancelWaiting">
+                <img src="${imagesURL}/16x16/stop.png" alt="stop waiting" height="16" width="16"/>
+              </a>
+           </j:if>
+          </div>
+          (waiting until other configuration is build)
+        </td>
+      </tr>
+  </j:if>
 
   <st:include page="/hudson/widgets/HistoryWidget/entries.jelly" />
 </j:jelly>

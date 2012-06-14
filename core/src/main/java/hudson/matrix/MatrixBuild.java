@@ -333,7 +333,10 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             listUpAggregators(p.getBuildWrappers().values());
 
             axes = p.getAxes();
-
+            
+            for(MatrixConfiguration c: getParent().getActiveConfigurations()){
+                c.setWaiting(true); // configuration waiting for adding to a queue
+            }           
             try {
                 return p.getExecutionStrategy().run(this);
             } catch( InterruptedException e ) {
