@@ -22,15 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  listbox for choosing the slave's usage.
-
-  @name : name of the <select> element
-  @node : Node object
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    listbox for choosing the slave's usage.
+
+    <st:attribute name="name">
+      Name of the &lt;select> element.
+    </st:attribute>
+    <st:attribute name="node">
+      Node object.
+    </st:attribute>
+  </st:documentation>
   <f:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
     <select class="setting-input" name="${name}">
       <j:forEach var="m" items="${h.getNodeModes()}">
