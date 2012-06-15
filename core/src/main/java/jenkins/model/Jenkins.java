@@ -3482,7 +3482,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             for (Action a : getActions()) {
                 if (a instanceof UnprotectedRootAction) {
-                    if (rest.startsWith("/"+a.getUrlName()+"/"))
+                    if (rest.startsWith("/"+a.getUrlName()+"/") || rest.equals("/"+a.getUrlName()))
                         return this;
                 }
             }
