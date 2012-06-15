@@ -23,12 +23,24 @@
  */
 package jenkins.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
+import hudson.model.UnprotectedRootAction;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.util.HttpResponses;
 import junit.framework.Assert;
 import hudson.model.FreeStyleProject;
 import hudson.util.FormValidation;
 
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.HttpResponse;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 /**
  * @author kingfai
@@ -160,5 +172,70 @@ public class JenkinsTest extends HudsonTestCase {
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
         Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);                
+    }
+
+    /**
+     * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
+     */
+    @Bug(14113)
+    public void testUnprotectedRootAction() throws Exception {
+        jenkins.setSecurityRealm(createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        WebClient wc = createWebClient();
+        wc.goTo("/foobar");
+        wc.goTo("/foobar/");
+        wc.goTo("/foobar/zot");
+
+        // and make sure this fails
+        try {
+            wc.goTo("/foobar-zot/");
+            fail();
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(500,e.getStatusCode());
+        }
+
+        assertEquals(3,jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
+    }
+
+    @TestExtension("testUnprotectedRootAction")
+    public static class RootActionImpl implements UnprotectedRootAction {
+        private int count;
+
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "foobar";
+        }
+
+        public HttpResponse doDynamic() {
+            assertTrue(Jenkins.getInstance().getAuthentication().getName().equals("anonymous"));
+            count++;
+            return HttpResponses.html("OK");
+        }
+    }
+
+    @TestExtension("testUnprotectedRootAction")
+    public static class ProtectedRootActionImpl implements RootAction {
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "foobar-zot";
+        }
+
+        public HttpResponse doDynamic() {
+            throw new AssertionError();
+        }
     }
 }
