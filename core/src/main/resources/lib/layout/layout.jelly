@@ -118,9 +118,9 @@ THE SOFTWARE.
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
-    <script src="${resURL}/scripts/jquery.min.js" type="text/javascript"/>
+    <st:adjunct includes="org.kohsuke.stapler.jquery" />
     <script type="text/javascript"><![CDATA[
-    jQuery.noConflict();
+    var Q = jQuery.noConflict();
     ]]></script>
     <script src="${resURL}/scripts/bootstrap-transition.js" type="text/javascript"/>
     <script src="${resURL}/scripts/bootstrap-button.js" type="text/javascript"/>

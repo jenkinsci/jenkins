@@ -175,6 +175,11 @@ THE SOFTWARE.
       <artifactId>stapler-adjunct-codemirror</artifactId>
       <version>1.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-jquery</artifactId>
+      <version>1.7.2-0</version>
+    </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
