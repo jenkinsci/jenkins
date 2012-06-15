@@ -2055,14 +2055,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         for (ExtensionFinder ef : finders) {
             fragments.add(ef.refresh());
         }
-        ExtensionComponentSet delta = ExtensionComponentSet.union(fragments);
+        ExtensionComponentSet delta = ExtensionComponentSet.union(fragments).filtered();
 
         // if we find a new ExtensionFinder, we need it to list up all the extension points as well
         List<ExtensionComponent<ExtensionFinder>> newFinders = Lists.newArrayList(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
             ExtensionFinder f = newFinders.remove(newFinders.size()-1).getInstance();
 
-            ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f);
+            ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f).filtered();
             newFinders.addAll(ecs.find(ExtensionFinder.class));
             delta = ExtensionComponentSet.union(delta, ecs);
         }
