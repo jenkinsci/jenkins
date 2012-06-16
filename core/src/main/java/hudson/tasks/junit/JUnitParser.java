@@ -77,9 +77,11 @@ public class JUnitParser extends TestResultParser {
         final long buildTime = build.getTimestamp().getTimeInMillis();
         final long timeOnMaster = System.currentTimeMillis();
 
+        testResultLocations = build.getEnvironment(listener).expand(testResultLocations);
+
         // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
         // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
-        
+
         TestResult testResult = build.getWorkspace().act( new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
         return testResult;        
     }
