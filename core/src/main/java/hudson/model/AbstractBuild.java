@@ -458,8 +458,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
-                // we allow custom workspaces to be concurrently used between jobs.
-                return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+		//Pass the custom workspace through the concurrency codepath if job settings tell us to
+            	if (getProject().customWorkspaceConcurrent())
+            	{
+            		return wsl.allocate(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)), getBuild());
+            	}
+		//Otherwise, allow custom workspaces to be concurrently used between jobs (default)
+            	else
+            	{
+            		return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
+            	}
             }
             // TODO: this cast is indicative of abstraction problem
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
