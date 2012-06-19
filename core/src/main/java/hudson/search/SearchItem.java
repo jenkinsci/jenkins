@@ -57,6 +57,7 @@ public interface SearchItem {
      *
      * @return
      *      {@link SearchIndex#EMPTY} if this is a leaf.
+     * @see SearchIndexBuilder
      */
     SearchIndex getSearchIndex();
 }
