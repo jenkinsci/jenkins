@@ -133,6 +133,7 @@ import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
+import hudson.search.SearchItem;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
@@ -1761,6 +1762,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
             .add("configure", "config","configure")
             .add("manage")
             .add("log")
+            .add(new CollectionSearchIndex<TopLevelItem>() {
+                protected SearchItem get(String key) { return getItem(key); }
+                protected Collection<TopLevelItem> all() { return getItems(); }
+            })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
                 protected Computer get(String key) { return getComputer(key); }
