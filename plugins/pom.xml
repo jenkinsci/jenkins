@@ -10,7 +10,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.472-SNAPSHOT</version>
+  <version>1.473-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -33,7 +33,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.472-SNAPSHOT</version>
+        <version>1.473-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -43,25 +43,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.472-SNAPSHOT</version>
+      <version>1.473-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.472-SNAPSHOT</version>
+      <version>1.473-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.472-SNAPSHOT</version>
+      <version>1.473-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.472-SNAPSHOT</version>
+      <version>1.473-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
