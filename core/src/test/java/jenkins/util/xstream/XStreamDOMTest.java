@@ -87,4 +87,14 @@ public class XStreamDOMTest extends TestCase {
         String[] out = dom.unmarshal(xs);
         assertEquals(in.length, out.length);
     }
+
+    public void testNameEscape() {
+        Object o = new Name_That_Gets_Escaped();
+        XStreamDOM dom = XStreamDOM.from(xs, o);
+        System.out.println(xs.toXML(dom));
+        Object out = dom.unmarshal(xs);
+        assertEquals(o.getClass(),out.getClass());
+    }
+
+    public static class Name_That_Gets_Escaped {}
 }
