@@ -80,4 +80,11 @@ public class XStreamDOMTest extends TestCase {
         assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
     }
 
+    public void testNoChild() {
+        String[] in = new String[0];
+        XStreamDOM dom = XStreamDOM.from(xs, in);
+        System.out.println(xs.toXML(dom));
+        String[] out = dom.unmarshal(xs);
+        assertEquals(in.length, out.length);
+    }
 }
