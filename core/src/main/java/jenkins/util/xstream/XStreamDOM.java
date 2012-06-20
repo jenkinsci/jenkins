@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ErrorWriter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.AttributeNameIterator;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
@@ -137,18 +138,6 @@ public class XStreamDOM {
         return attributes[index*2+1];
     }
 
-    public Iterator<String> getAttributeNames() {
-        return new AbstractList<String>() {
-            public String get(int index) {
-                return getAttributeName(index);
-            }
-
-            public int size() {
-                return getAttributeCount();
-            }
-        }.iterator();
-    }
-
     public String getValue() {
         return value;
     }
@@ -250,7 +239,7 @@ public class XStreamDOM {
         }
 
         public Iterator getAttributeNames() {
-            return current().node.getAttributeNames();
+            return new AttributeNameIterator(this);
         }
 
         public void appendErrors(ErrorWriter errorWriter) {
@@ -275,7 +264,7 @@ public class XStreamDOM {
         }
 
         public String getNodeName() {
-            return current().node.tagName;
+            return unescapeXmlName(current().node.tagName);
         }
 
         public String getValue() {
@@ -295,7 +284,7 @@ public class XStreamDOM {
         }
 
         public String getAttributeName(int index) {
-            return current().node.getAttributeName(index);
+            return unescapeXmlName(current().node.getAttributeName(index));
         }
     }
 
