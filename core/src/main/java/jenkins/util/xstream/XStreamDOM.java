@@ -377,7 +377,7 @@ public class XStreamDOM {
             if (dom.value!=null)
                 w.setValue(dom.value);
             else {
-                for (XStreamDOM c : dom.children) {
+                for (XStreamDOM c : Util.fixNull(dom.children)) {
                     marshal(c, w, context);
                 }
             }
