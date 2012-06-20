@@ -23,7 +23,7 @@
  */
 package hudson.search;
 
-import jenkins.model.Jenkins;
+import hudson.model.ListView;
 import hudson.model.FreeStyleProject;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -33,11 +33,13 @@ import com.gargoylesoftware.htmlunit.AlertHandler;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
-import net.sf.json.util.JSONBuilder;
 
 import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -202,5 +204,43 @@ public class SearchTest extends HudsonTestCase {
         
         Assert.assertTrue(foundProjectName);
         Assert.assertTrue(foundDispayName);
+    }
+
+    /**
+     * Disable/enable status shouldn't affect the search
+     */
+    @Bug(13148)
+    public void testDisabledJobShouldBeSearchable() throws Exception {
+        FreeStyleProject j = createFreeStyleProject("foo-bar");
+        assertTrue(suggest(jenkins.getSearchIndex(), "foo").contains(j));
+
+        j.disable();
+        assertTrue(suggest(jenkins.getSearchIndex(), "foo").contains(j));
+    }
+
+    /**
+     * All top-level jobs should be searchable, not just jobs in the current view.
+     */
+    @Bug(13148)
+    public void testCompletionOutsideView() throws Exception {
+        FreeStyleProject j = createFreeStyleProject("foo-bar");
+        ListView v = new ListView("empty1",jenkins);
+        ListView w = new ListView("empty2",jenkins);
+        jenkins.addView(v);
+        jenkins.addView(w);
+        jenkins.setPrimaryView(w);
+
+        // new view should be empty
+        assertFalse(v.contains(j));
+        assertFalse(w.contains(j));
+        assertFalse(jenkins.getPrimaryView().contains(j));
+
+        assertTrue(suggest(jenkins.getSearchIndex(),"foo").contains(j));
+    }
+
+    private List<SearchItem> suggest(SearchIndex index, String term) {
+        List<SearchItem> result = new ArrayList<SearchItem>();
+        index.suggest(term, result);
+        return result;
     }
 }

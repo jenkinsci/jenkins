@@ -28,10 +28,10 @@ DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$J
 SU=/bin/su
 
 # Exit if the package is not installed
-[ -x "$DAEMON" ] || exit 0
+[ -x "$DAEMON" ] || (echo "daemon package not installed" && exit 0)
 
 # Exit if not supposed to run standalone
-[ "$RUN_STANDALONE" = "false" ] && exit 0
+[ "$RUN_STANDALONE" = "false" ] && echo "Not configured to run standalone" && exit 0
 
 # load environments
 if [ -r /etc/default/locale ]; then

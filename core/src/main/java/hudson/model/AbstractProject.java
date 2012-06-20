@@ -273,7 +273,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        this.builds = new RunMap<R>();
+        if (this.builds==null)
+            this.builds = new RunMap<R>();
         this.builds.load(this,new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
