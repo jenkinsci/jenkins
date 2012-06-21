@@ -3,6 +3,7 @@ package hudson.matrix;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.console.ModelHyperlinkNote;
+import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
@@ -109,23 +110,25 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
         this.sorter = sorter;
     }
 
-    public Result run(MatrixBuild build, List<MatrixAggregator> aggregators, BuildListener listener) throws InterruptedException, IOException {
-        MatrixProject p = build.getProject();
-        PrintStream logger = listener.getLogger();
+    @Override
+    public Result run(MatrixBuildExecution execution) throws InterruptedException, IOException {
+        MatrixBuild build = execution.getBuild();
+        MatrixProject p = execution.getProject();
+        PrintStream logger = execution.getListener().getLogger();
 
         Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
         Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
-        for (MatrixConfiguration c: p.getActiveConfigurations()) {
+        for (MatrixConfiguration c: execution.getActiveConfigurations()) {
             if (!MatrixBuildListener.buildConfiguration(build, c))
                 continue; // skip rebuild
-            if (touchStoneCombinationFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), p.getTouchStoneCombinationFilter())) {
+            if (touchStoneCombinationFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), getTouchStoneCombinationFilter())) {
                 touchStoneConfigurations.add(c);
             } else {
                 delayedConfigurations.add(c);
             }
         }
 
-        if (notifyStartBuild(aggregators)) return Result.FAILURE;
+        if (notifyStartBuild(execution.getAggregators())) return Result.FAILURE;
 
         if (sorter != null) {
             touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
@@ -134,14 +137,14 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
 
         if(!runSequentially)
             for(MatrixConfiguration c : touchStoneConfigurations)
-                scheduleConfigurationBuild(build, listener, c);
+                scheduleConfigurationBuild(execution, c);
 
         Result r = Result.SUCCESS;
         for (MatrixConfiguration c : touchStoneConfigurations) {
             if(runSequentially)
-                scheduleConfigurationBuild(build, listener, c);
-            MatrixRun run = waitForCompletion(build, listener, c);
-            notifyEndBuild(run,aggregators);
+                scheduleConfigurationBuild(execution, c);
+            MatrixRun run = waitForCompletion(execution, c);
+            notifyEndBuild(run,execution.getAggregators());
             r = r.combine(getResult(run));
         }
         
@@ -150,15 +153,15 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             return r;
         }
         
-        if(!p.isRunSequentially())
+        if(!runSequentially)
             for(MatrixConfiguration c : delayedConfigurations)
-                scheduleConfigurationBuild(build, listener, c);
+                scheduleConfigurationBuild(execution, c);
 
         for (MatrixConfiguration c : delayedConfigurations) {
-            if(p.isRunSequentially())
-                scheduleConfigurationBuild(build, listener, c);
-            MatrixRun run = waitForCompletion(build, listener, c);
-            notifyEndBuild(run,aggregators);
+            if(runSequentially)
+                scheduleConfigurationBuild(execution, c);
+            MatrixRun run = waitForCompletion(execution, c);
+            notifyEndBuild(run,execution.getAggregators());
             logger.println(Messages.MatrixBuild_Completed(ModelHyperlinkNote.encodeTo(c), getResult(run)));
             r = r.combine(getResult(run));
         }
@@ -191,19 +194,21 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
         return r;
     }
 
-    private void scheduleConfigurationBuild(MatrixBuild build, BuildListener listener, MatrixConfiguration c) {
-        listener.getLogger().println(Messages.MatrixBuild_Triggering(ModelHyperlinkNote.encodeTo(c)));
+    private void scheduleConfigurationBuild(MatrixBuildExecution exec, MatrixConfiguration c) {
+        MatrixBuild build = exec.getBuild();
+        exec.getListener().getLogger().println(Messages.MatrixBuild_Triggering(ModelHyperlinkNote.encodeTo(c)));
         c.scheduleBuild(build.getAction(ParametersAction.class), new UpstreamCause((Run)build));
     }
 
-    private MatrixRun waitForCompletion(MatrixBuild build, BuildListener listener, MatrixConfiguration c) throws InterruptedException, IOException {
+    private MatrixRun waitForCompletion(MatrixBuildExecution exec, MatrixConfiguration c) throws InterruptedException, IOException {
+        BuildListener listener = exec.getListener();
         String whyInQueue = "";
         long startTime = System.currentTimeMillis();
 
         // wait for the completion
         int appearsCancelledCount = 0;
         while(true) {
-            MatrixRun b = c.getBuildByNumber(build.getNumber());
+            MatrixRun b = c.getBuildByNumber(exec.getBuild().getNumber());
 
             // two ways to get beyond this. one is that the build starts and gets done,
             // or the build gets cancelled before it even started.

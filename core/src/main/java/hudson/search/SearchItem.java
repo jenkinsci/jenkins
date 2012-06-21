@@ -53,10 +53,11 @@ public interface SearchItem {
     String getSearchUrl();
 
     /**
-     * Returns the {@link SearchIndex} to further search into this item.
+     * Returns the {@link SearchIndex} to further search sub items inside this item.
      *
      * @return
      *      {@link SearchIndex#EMPTY} if this is a leaf.
+     * @see SearchIndexBuilder
      */
     SearchIndex getSearchIndex();
 }

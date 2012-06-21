@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
@@ -33,6 +35,7 @@ import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
 import jenkins.ClassLoaderReflectionToolkit;
+import jenkins.ExtensionFilter;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -54,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
@@ -286,7 +290,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finder.scout(type, hudson);
         }
 
-        List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>();
+        List<ExtensionComponent<T>> r = Lists.newArrayList();
         for (ExtensionFinder finder : finders) {
             try {
                 r.addAll(finder._find(type, hudson));
@@ -296,7 +300,14 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     r.add(new ExtensionComponent<T>(t));
             }
         }
-        return r;
+
+        List<ExtensionComponent<T>> filtered = Lists.newArrayList();
+        for (ExtensionComponent<T> e : r) {
+            if (ExtensionFilter.isAllowed(type,e))
+                filtered.add(e);
+        }
+
+        return filtered;
     }
 
     public void load(PluginWrapper wrapper) throws IOException {

@@ -23,11 +23,19 @@
  */
 package hudson.search;
 
+import hudson.model.AbstractModelObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Builds {@link SearchIndex}.
+ *
+ * This object is also used to represent partially build search index, much like {@link StringBuilder} is often
+ * passed around to cooperatively build search index.
+ *
  * @author Kohsuke Kawaguchi
+ * @see AbstractModelObject#makeSearchIndex()
  */
 public final class SearchIndexBuilder {
     private final List<SearchItem> items = new ArrayList<SearchItem>();

@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.469-SNAPSHOT</version>
+  <version>1.473-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -189,7 +189,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.13</version>
+        <version>2.16</version>
       </dependency>
 
       <dependency>
@@ -418,7 +418,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.3</version>
+          <version>1.6</version>
           <executions>
             <execution>
               <goals>
@@ -595,7 +595,7 @@ THE SOFTWARE.
         -->
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <version>6.1.26-jenkins-2</version>
+        <version>8.1.4.v20120524-jenkins-1</version>
       </plugin>
 
       <!--<plugin>

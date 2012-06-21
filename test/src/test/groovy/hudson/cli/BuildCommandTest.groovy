@@ -33,6 +33,7 @@ import hudson.model.BuildListener
 import hudson.model.ParametersDefinitionProperty
 import hudson.model.StringParameterDefinition
 import hudson.model.ParametersAction
+import org.apache.commons.io.output.TeeOutputStream
 
 /**
  * {@link BuildCommand} test.
@@ -94,7 +95,20 @@ public class BuildCommandTest extends HudsonTestCase {
             assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
         } finally {
             cli.close();
-        };
+        }
+    }
 
+    void testConsoleOutput() {
+        def p = createFreeStyleProject()
+        def cli = new CLI(getURL())
+        try {
+            def o = new ByteArrayOutputStream()
+            cli.execute(["build","-s","-v",p.name],System.in,new TeeOutputStream(System.out,o),System.err)
+            assertBuildStatusSuccess(p.getBuildByNumber(1))
+            assertTrue(o.toString().contains("Started by command line by anonymous"))
+            assertTrue(o.toString().contains("Finished: SUCCESS"))
+        } finally {
+            cli.close()
+        }
     }
 }

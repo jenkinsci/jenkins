@@ -53,7 +53,7 @@ public class MatrixTestResult extends AggregatedTestResultAction {
     @Override
     public AbstractBuild<?,?> resolveChild(Child child) {
         MatrixBuild b = (MatrixBuild)owner;
-        return b.getRun(Combination.fromString(child.name));
+        return b.getProject().getItem(Combination.fromString(child.name)).getBuildByNumber(child.build);
     }
 
     @Override

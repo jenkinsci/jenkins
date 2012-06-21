@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.469-SNAPSHOT</version>
+    <version>1.473-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -281,19 +281,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
-                  <version>1.0-SNAPSHOT</version>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.0-SNAPSHOT</version>
+                  <version>1.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>pam-auth</artifactId>
-                  <version>1.0-SNAPSHOT</version>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -360,7 +360,7 @@ THE SOFTWARE.
           -->
           <reload>manual</reload>
           <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
                 <port>${port}</port>
             </connector>
           </connectors>
@@ -374,12 +374,12 @@ THE SOFTWARE.
             -->
             <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
           </additionalClassesDirectories>
-          <userRealms>
-            <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
+          <loginServices>
+            <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
               <config>${basedir}/src/realm.properties</config>
-            </userRealm>
-          </userRealms>
+            </loginService>
+          </loginServices>
           <systemProperties>
             <systemProperty>
               <name>JENKINS_HOME</name>
@@ -433,6 +433,9 @@ THE SOFTWARE.
               <value>true</value>
             </systemProperty>
           </systemProperties>
+          <webApp>
+            <configurationDiscovered>false</configurationDiscovered>
+          </webApp>
         </configuration>
       </plugin>
     </plugins>

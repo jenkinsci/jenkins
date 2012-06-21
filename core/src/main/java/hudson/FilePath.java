@@ -1456,6 +1456,16 @@ public final class FilePath implements Serializable {
      * Writes to this file.
      * If this file already exists, it will be overwritten.
      * If the directory doesn't exist, it will be created.
+     *
+     * <P>
+     * I/O operation to remote {@link FilePath} happens asynchronously, meaning write operations to the returned
+     * {@link OutputStream} will return without receiving a confirmation from the remote that the write happened.
+     * I/O operations also happens asynchronously from the {@link Channel#call(Callable)} operations, so if
+     * you write to a remote file and then execute {@link Channel#call(Callable)} and try to access the newly copied
+     * file, it might not be fully written yet.
+     *
+     * <p>
+     *
      */
     public OutputStream write() throws IOException, InterruptedException {
         if(channel==null) {
@@ -1596,10 +1606,16 @@ public final class FilePath implements Serializable {
             }
         });
 
-        // make sure the write fully happens before we return.
+        // make sure the writes fully got delivered to 'os' before we return.
+        // this is needed because I/O operation is asynchronous
         syncIO();
     }
 
+    /**
+     * With fix to JENKINS-11251 (remoting 2.15), this is no longer necessary.
+     * But I'm keeping it for a while so that users who manually deploy slave.jar has time to deploy new version
+     * before this goes away.
+     */
     private void syncIO() throws InterruptedException {
         try {
             if (channel!=null)
