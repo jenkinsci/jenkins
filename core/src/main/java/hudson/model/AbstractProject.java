@@ -53,6 +53,7 @@ import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
 import hudson.scm.ChangeLogSet;
@@ -1323,6 +1324,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
+        	try {
+        		SCMPollListener.fireBeforePolling(this, listener);
+        	} catch( Exception e ) {
+        		/* Make sure, that the listeners do not have any impact on the actual poll */
+        	}
             if (scm.requiresWorkspaceForPolling()) {
                 // lock the workspace of the last build
                 FilePath ws=lb.getWorkspace();
@@ -1388,6 +1394,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } catch (InterruptedException e) {
             e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
             return NO_CHANGES;
+        } finally {
+        	/* Do this no matter what */
+        	try {
+        		SCMPollListener.fireAfterPolling(this, listener);
+        	} catch( Exception e ) {
+        		/* Make sure, that the listeners do not have any impact on the actual poll */
+        	}
         }
     }
     
