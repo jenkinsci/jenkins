@@ -36,6 +36,42 @@ function object(o) {
     return new F();
 }
 
+// @see https://developer.mozilla.org/en/DOM/Using_the_Page_Visibility_API
+// Set the name of the hidden property and the change event for visibility
+var hidden, visibilityChange; 
+if (typeof document.hidden !== "undefined") {
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+} else if (typeof document.mozHidden !== "undefined") {
+    hidden = "mozHidden";
+    visibilityChange = "mozvisibilitychange";
+} else if (typeof document.msHidden !== "undefined") {
+    hidden = "msHidden";
+    visibilityChange = "msvisibilitychange";
+} else if (typeof document.webkitHidden !== "undefined") {
+    hidden = "webkitHidden";
+    visibilityChange = "webkitvisibilitychange";
+}
+
+// By default, visibility set to true
+var pageIsVisible = true;
+
+// If the page is hidden, prevent any polling
+// if the page is shown, restore pollings
+function onVisibilityChange() {
+    pageIsVisible = !document[hidden];
+}
+
+// Warn if the browser doesn't support addEventListener or the Page Visibility API
+if (typeof document.addEventListener !== "undefined" && typeof hidden !== "undefined") {
+
+    // Init the value to the real state of the page
+    pageIsVisible = !document[hidden];
+
+    // Handle page visibility change   
+    document.addEventListener(visibilityChange, onVisibilityChange, false);
+}
+
 // id generator
 var iota = 0;
 
@@ -1784,26 +1820,32 @@ function expandTextArea(button,id) {
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
     var f = function() {
-        new Ajax.Request(url, {
-            onSuccess: function(rsp) {
-                var hist = $(id);
-                var p = hist.up();
-                var next = hist.next();
-                p.removeChild(hist);
+        if(pageIsVisible){
+            new Ajax.Request(url, {
+                onSuccess: function(rsp) {
+                    var hist = $(id);
+                    var p = hist.up();
+                    var next = hist.next();
+                    p.removeChild(hist);
 
-                var div = document.createElement('div');
-                div.innerHTML = rsp.responseText;
+                    var div = document.createElement('div');
+                    div.innerHTML = rsp.responseText;
 
-                var node = $(div).firstDescendant();
-                p.insertBefore(node, next);
+                    var node = $(div).firstDescendant();
+                    p.insertBefore(node, next);
 
-                Behaviour.applySubtree(node);
-                layoutUpdateCallback.call();
+                    Behaviour.applySubtree(node);
+                    layoutUpdateCallback.call();
 
-                if(isRunAsTest) return;
-                refreshPart(id,url);
-            }
-        });
+                    if(isRunAsTest) return;
+                    refreshPart(id,url);
+                }
+            });    
+        } else {
+            // Reschedule
+            refreshPart(id,url);
+        }
+        
     };
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
@@ -2002,35 +2044,40 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
-        var bh = $('buildHistory');
-        if (bh.headers == null) {
-            // Yahoo.log("Missing headers in buildHistory element");
-        }
-        new Ajax.Request(ajaxUrl, {
-            requestHeaders: bh.headers,
-            onSuccess: function(rsp) {
-                var rows = bh.rows;
-
-                //delete rows with transitive data
-                while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
-                    Element.remove(rows[1]);
-
-                // insert new rows
-                var div = document.createElement('div');
-                div.innerHTML = rsp.responseText;
-                Behaviour.applySubtree(div);
-
-                var pivot = rows[0];
-                var newRows = $(div).firstDescendant().rows;
-                for (var i = newRows.length - 1; i >= 0; i--) {
-                    pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
-                }
-
-                // next update
-                bh.headers = ["n",rsp.getResponseHeader("n")];
-                window.setTimeout(updateBuilds, 5000);
+        if(pageIsVisible){
+            var bh = $('buildHistory');
+            if (bh.headers == null) {
+                // Yahoo.log("Missing headers in buildHistory element");
             }
-        });
+            new Ajax.Request(ajaxUrl, {
+                requestHeaders: bh.headers,
+                onSuccess: function(rsp) {
+                    var rows = bh.rows;
+
+                    //delete rows with transitive data
+                    while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
+                        Element.remove(rows[1]);
+
+                    // insert new rows
+                    var div = document.createElement('div');
+                    div.innerHTML = rsp.responseText;
+                    Behaviour.applySubtree(div);
+
+                    var pivot = rows[0];
+                    var newRows = $(div).firstDescendant().rows;
+                    for (var i = newRows.length - 1; i >= 0; i--) {
+                        pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
+                    }
+
+                    // next update
+                    bh.headers = ["n",rsp.getResponseHeader("n")];
+                    window.setTimeout(updateBuilds, 5000);
+                }
+            });
+        } else {
+            // Reschedule again
+            window.setTimeout(updateBuilds, 5000);
+        }
     }
     window.setTimeout(updateBuilds, 5000);
 }
