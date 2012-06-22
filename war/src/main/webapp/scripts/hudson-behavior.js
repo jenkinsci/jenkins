@@ -557,6 +557,7 @@ var jenkinsRules = {
         var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
 
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-") });
+        $(menuEvent._button).addClassName(btn.className)    // copy class names
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
             var item = args[1];
             if (item.cfg.getProperty("disabled"))   return;
