@@ -29,5 +29,5 @@ THE SOFTWARE.
     See hudson.util.FormApply for the server-side code.
   </s:documentation>
   <input type="hidden" name="core:apply" value="" />
-  <input type="button" value="${%Apply}" class="applyButton" />
+  <input type="button" value="${%Apply}" class="apply-button applyButton" /><!-- applyButton is legacy -->
 </j:jelly>

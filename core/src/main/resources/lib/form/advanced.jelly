@@ -43,7 +43,7 @@ THE SOFTWARE.
 	<tr><td/><td/>
 	  <td>
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
-	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advancedButton" />
+	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>
 	    <table class="advancedBody"><tbody>
 	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
