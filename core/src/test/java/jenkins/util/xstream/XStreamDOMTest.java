@@ -112,6 +112,4 @@ public class XStreamDOMTest extends TestCase {
         Object v2 = xs.fromXML(xml);
         System.out.println(v2);
     }
-
-    public void test
 }
