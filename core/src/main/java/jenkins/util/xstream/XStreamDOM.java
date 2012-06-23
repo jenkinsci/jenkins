@@ -36,8 +36,8 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
 import hudson.Util;
+import hudson.util.VariableResolver;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -117,6 +117,29 @@ public class XStreamDOM {
 
     public <T> T unmarshal(XStream xs, T root) {
         return (T)xs.unmarshal(newReader(),root);
+    }
+
+    /**
+     * Recursively expands the variables in text and attribute values and return the new DOM.
+     *
+     * The expansion uses {@link Util#replaceMacro(String, VariableResolver)}, so any unresolved
+     * references will be left as-is.
+     */
+    public XStreamDOM expandMacro(VariableResolver<String> vars) {
+        String[] newAttributes = new String[attributes.length];
+        for (int i=0; i<attributes.length; i+=2) {
+            newAttributes[i+0] = attributes[i]; // name
+            newAttributes[i+1] = Util.replaceMacro(attributes[i+1],vars);
+        }
+
+        List<XStreamDOM> newChildren = null;
+        if (children!=null) {
+            newChildren = new ArrayList<XStreamDOM>(children.size());
+            for (XStreamDOM d : children)
+                newChildren.add(d.expandMacro(vars));
+        }
+
+        return new XStreamDOM(tagName,newAttributes,newChildren,Util.replaceMacro(value,vars));
     }
 
     public String getAttribute(String name) {

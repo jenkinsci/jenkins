@@ -29,6 +29,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -97,4 +99,19 @@ public class XStreamDOMTest extends TestCase {
     }
 
     public static class Name_That_Gets_Escaped {}
+
+    public static class DomInMap {
+        Map<String,XStreamDOM> values = new HashMap<String, XStreamDOM>();
+    }
+
+    public void testDomInMap() {
+        DomInMap v = new DomInMap();
+        v.values.put("foo",createSomeFoo().bar);
+        String xml = xs.toXML(v);
+        System.out.println(xml);
+        Object v2 = xs.fromXML(xml);
+        System.out.println(v2);
+    }
+
+    public void test
 }
