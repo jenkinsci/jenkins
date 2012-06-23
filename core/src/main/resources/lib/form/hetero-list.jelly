@@ -131,7 +131,7 @@ THE SOFTWARE.
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}"/>
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
   </div>
 </j:jelly>
