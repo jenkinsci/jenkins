@@ -2,6 +2,8 @@ package jenkins.scm;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import hudson.model.AbstractProject;
@@ -33,7 +35,7 @@ public class SCMCheckoutStrategyTest extends HudsonTestCase {
 
         TestSCMCheckoutStrategy before = new TestSCMCheckoutStrategy();
         p.setScmCheckoutStrategy(before);
-        configRoundtrip(p);
+        configRoundtrip((Item)p);
         SCMCheckoutStrategy after = p.getScmCheckoutStrategy();
         assertNotSame(before,after);
         assertSame(before.getClass(), after.getClass());
@@ -46,6 +48,7 @@ public class SCMCheckoutStrategyTest extends HudsonTestCase {
         return page.getWebResponse().getContentAsString().contains("Advanced Source Code Management");
     }
 
+    @SuppressWarnings("rawtypes")
     public static class TestSCMCheckoutStrategy extends SCMCheckoutStrategy {
         @DataBoundConstructor
         public TestSCMCheckoutStrategy() {
