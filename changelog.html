@@ -604,6 +604,9 @@ Upcoming changes</a>
   <li class=bug>
     Link to user profile from console output should go to the user ID, not the user name
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12279">issue 12279</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
 </ul>
 <h3><a name=v1.446>What's new in 1.446</a> (2012/01/02)</h3>
 <ul class=image>
@@ -706,9 +709,6 @@ Upcoming changes</a>
   <li class=bug>
     Fixed ConcurrentModificationException in parallel Maven 3 builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Upgrade aether version to 1.13 and sisu to 2.3.0 .
   <li class=rfe>
