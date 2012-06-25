@@ -77,6 +77,13 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
     }
+    
+    @Override
+    protected void updateTransientActions(){
+        // This method is exactly the same as in {@link #AbstractProject}. 
+        // Enabling to call this method from MatrixProject is the only reason for overriding.
+        super.updateTransientActions();
+    }
 
     /**
      * Used during loading to set the combination back.
