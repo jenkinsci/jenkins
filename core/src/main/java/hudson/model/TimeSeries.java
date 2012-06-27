@@ -27,6 +27,8 @@ import hudson.CopyOnWrite;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
+import java.io.Serializable;
+
 /**
  * Scalar value that changes over the time (such as load average, Q length, # of executors, etc.)
  *
@@ -37,7 +39,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class TimeSeries {
+public final class TimeSeries implements Serializable {
     /**
      * Decay ratio. Normally 1-e for some small e.
      */
@@ -101,4 +103,6 @@ public final class TimeSeries {
     public String toString() {
         return Float.toString(history[0]);
     }
+
+    private static final long serialVersionUID = 1L;
 }
