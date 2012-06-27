@@ -27,6 +27,7 @@ import hudson.util.TimeUnit2;
 import hudson.util.NoOverlapCategoryAxis;
 import hudson.util.ChartUtil;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -65,7 +66,7 @@ import javax.servlet.ServletException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class MultiStageTimeSeries {
+public class MultiStageTimeSeries implements Serializable {
     /**
      * Name of this data series.
      */
@@ -281,4 +282,6 @@ public class MultiStageTimeSeries {
     public static TrendChart createTrendChart(TimeScale scale, MultiStageTimeSeries... data) {
         return new TrendChart(scale,data);
     }
+
+    private static final long serialVersionUID = 1L;
 }
