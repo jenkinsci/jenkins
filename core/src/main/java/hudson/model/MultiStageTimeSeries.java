@@ -190,7 +190,7 @@ public class MultiStageTimeSeries implements Serializable {
      * <p>
      * This object is renderable as HTTP response.
      */
-    public static final class TrendChart implements HttpResponse {
+    public static class TrendChart implements HttpResponse {
         public final TimeScale timeScale;
         public final List<MultiStageTimeSeries> series;
         public final DefaultCategoryDataset dataset;
@@ -204,7 +204,7 @@ public class MultiStageTimeSeries implements Serializable {
         /**
          * Creates a {@link DefaultCategoryDataset} for rendering a graph from a set of {@link MultiStageTimeSeries}.
          */
-        private DefaultCategoryDataset createDataset() {
+        protected DefaultCategoryDataset createDataset() {
             float[][] dataPoints = new float[series.size()][];
             for (int i = 0; i < series.size(); i++)
                 dataPoints[i] = series.get(i).pick(timeScale).getHistory();
@@ -244,31 +244,49 @@ public class MultiStageTimeSeries implements Serializable {
             chart.setBackgroundPaint(Color.white);
 
             final CategoryPlot plot = chart.getCategoryPlot();
-            plot.setBackgroundPaint(Color.WHITE);
-            plot.setOutlinePaint(null);
-            plot.setRangeGridlinesVisible(true);
-            plot.setRangeGridlinePaint(Color.black);
+            configurePlot(plot);
 
-            final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-            renderer.setBaseStroke(new BasicStroke(3));
+            configureRangeAxis((NumberAxis) plot.getRangeAxis());
 
-            for (int i = 0; i < series.size(); i++)
-                renderer.setSeriesPaint(i, series.get(i).color);
+            crop(plot);
 
+            return chart;
+        }
+
+        protected void configureRangeAxis(NumberAxis rangeAxis) {
+            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        }
+
+        protected void crop(CategoryPlot plot) {
+            // crop extra space around the graph
+            plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
+        }
+
+        protected CategoryAxis configureDomainAxis(CategoryPlot plot) {
             final CategoryAxis domainAxis = new NoOverlapCategoryAxis(null);
             plot.setDomainAxis(domainAxis);
             domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
             domainAxis.setLowerMargin(0.0);
             domainAxis.setUpperMargin(0.0);
             domainAxis.setCategoryMargin(0.0);
+            return domainAxis;
+        }
 
-            final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-            rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        protected void configureRenderer(LineAndShapeRenderer renderer) {
+            renderer.setBaseStroke(new BasicStroke(3));
 
-            // crop extra space around the graph
-            plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
+            for (int i = 0; i < series.size(); i++)
+                renderer.setSeriesPaint(i, series.get(i).color);
+        }
 
-            return chart;
+        protected void configurePlot(CategoryPlot plot) {
+            plot.setBackgroundPaint(Color.WHITE);
+            plot.setOutlinePaint(null);
+            plot.setRangeGridlinesVisible(true);
+            plot.setRangeGridlinePaint(Color.black);
+
+            configureRenderer((LineAndShapeRenderer) plot.getRenderer());
+            configureDomainAxis(plot);
         }
 
         /**
