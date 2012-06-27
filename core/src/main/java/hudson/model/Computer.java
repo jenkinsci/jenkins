@@ -181,6 +181,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     	return result;
     }
 
+    @Override
+    public void addAction(Action a) {
+        if(a==null) throw new IllegalArgumentException();
+        super.getActions().add(a);
+    }
+
     /**
      * This is where the log from the remote agent goes.
      */
