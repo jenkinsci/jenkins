@@ -41,6 +41,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -323,7 +324,7 @@ public class JDKInstaller extends ToolInstaller {
      */
     public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
         File cache = getLocalCacheFile(platform, cpu);
-        if (cache.exists()) return cache.toURL();
+        if (cache.exists() && cache.length()>1*1024*1024) return cache.toURL(); // if the file is too small, don't trust it. In the past, the download site served error message in 200 status code
 
         log.getLogger().println("Installing JDK "+id);
         JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
@@ -370,6 +371,7 @@ public class JDKInstaller extends ToolInstaller {
         int authCount=0, totalPageCount=0;  // counters for avoiding infinite loop
 
         HttpMethodBase m = new GetMethod(primary.filepath);
+        hc.getState().addCookie(new Cookie(".oracle.com","gpw_e24",".", "/", -1, false));
         try {
             while (true) {
                 if (totalPageCount++>16) // looping too much

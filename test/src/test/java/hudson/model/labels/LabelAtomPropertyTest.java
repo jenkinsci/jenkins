@@ -52,7 +52,7 @@ public class LabelAtomPropertyTest extends HudsonTestCase {
      * Tests the configuration persistence between disk, memory, and UI.
      */
     public void testConfigRoundtrip() throws Exception {
-        LabelAtom foo = hudson.getLabelAtom("foo");
+        LabelAtom foo = jenkins.getLabelAtom("foo");
         LabelAtomPropertyImpl old = new LabelAtomPropertyImpl("value");
         foo.getProperties().add(old);
         assertTrue(foo.getConfigFile().exists());

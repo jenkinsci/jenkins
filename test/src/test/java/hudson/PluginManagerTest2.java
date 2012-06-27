@@ -31,13 +31,13 @@ public class PluginManagerTest2 extends HudsonTestCase {
 
     @WithPlugin("tasks.jpi")
     public void testPinned() throws Exception {
-        PluginWrapper tasks = hudson.getPluginManager().getPlugin("tasks");
+        PluginWrapper tasks = jenkins.getPluginManager().getPlugin("tasks");
         assertFalse("tasks shouldn't be bundled",tasks.isBundled());
         assertFalse("tasks shouldn't be pinned before update",tasks.isPinned());
         uploadPlugin("tasks.jpi", false);
         assertFalse("tasks shouldn't be pinned after update",tasks.isPinned());
 
-        PluginWrapper cvs = hudson.getPluginManager().getPlugin("cvs");
+        PluginWrapper cvs = jenkins.getPluginManager().getPlugin("cvs");
         assertTrue("cvs should be bundled",cvs.isBundled());
         assertFalse("cvs shouldn't be pinned before update",cvs.isPinned());
         uploadPlugin("cvs.hpi", true);

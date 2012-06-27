@@ -75,7 +75,7 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
         DumbSlave s = createOnlineSlave();
         project.setAssignedLabel(s.getSelfLabel());
 
-        FilePath src = new FilePath(hudson.getRootPath(), "jobs/junit/workspace/");
+        FilePath src = new FilePath(jenkins.getRootPath(), "jobs/junit/workspace/");
         assertNotNull(src);
         FilePath dest = s.getWorkspaceFor(project);
         assertNotNull(dest);
@@ -110,8 +110,8 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	}
 
 	private void reloadJenkins() throws Exception {
-        hudson.reload();
-		project = (FreeStyleProject) hudson.getItem("junit");
+        jenkins.reload();
+		project = (FreeStyleProject) jenkins.getItem("junit");
 	}
 	
 	@LocalData

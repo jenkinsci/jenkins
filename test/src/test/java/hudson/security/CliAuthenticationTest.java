@@ -18,7 +18,7 @@ import junit.framework.Assert;
 public class CliAuthenticationTest extends HudsonTestCase {
     public void test1() throws Exception {
         // dummy security realm that authenticates when username==password
-        hudson.setSecurityRealm(createDummySecurityRealm());
+        jenkins.setSecurityRealm(createDummySecurityRealm());
 
         successfulCommand("test","--username","abc","--password","abc");
     }
@@ -69,7 +69,7 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
     @For({LoginCommand.class, LogoutCommand.class, ClientAuthenticationCache.class})
     public void testLogin() throws Exception {
-        hudson.setSecurityRealm(createDummySecurityRealm());
+        jenkins.setSecurityRealm(createDummySecurityRealm());
 
         successfulCommand("login","--username","abc","--password","abc");
         successfulCommand("test"); // now we can run without an explicit credential

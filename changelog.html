@@ -55,15 +55,221 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=bug>
-    Custom workspace validation not working.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13404">issue 13404</a>)
+  <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.460>What's new in 1.460</a> <!--=DATE=--></h3>
+<h3><a name=v1.473>What's new in 1.473</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Updating job config.xml shouldn't clobber in-progress builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12318">issue 12318</a>)
+  <li class=rfe>
+    Search index includes all top-level jobs, not just jobs in the current view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13148">issue 13148</a>)
+  <li class="bug">
+    Updated typo in Serbian translation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13695">issue 13695</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.472>What's new in 1.472</a> (2012/06/24)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a synchronization problem between master/slave data communication.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11251">issue 11251</a>)
+  <li class=rfe>
+    Added a mechanism to filter extension points as they are discovered.
+  <li class=rfe>
+    Exposed the master's own node properties to be configured in <tt>/computer/(master)/configure</tt>
+    (whereas <tt>/configure</tt> controls global node properties that apply to all nodes.)
+  <li class=rfe>
+    Made the list of environment variables in the help page pluggable
+    (<a href="https://github.com/jenkinsci/jenkins/pull/434">pull 434</a>)
+  <li class=rfe>
+    Added a new hook to enable matrix project axes to change its values per build.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/449">pull 449</a>)
+</ul>
+<h3><a name=v1.471>What's new in 1.471</a> (2012/06/18)</h3>
+<ul class=image>
+  <li class=bug>
+    JSON MIME type should be "application/json"
+    (<a href="http://java.net/jira/browse/STAPLER-17">STAPLER-17</a>)
+  <li class=bug>
+    Fixed: XML API Logs Too Much Information When Invalid Char is Present
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13378">issue 13378</a>)
+  <li class=rfe>
+    Improved the way we store hashed passwords.
+    (<a href="http://blog.linkedin.com/2012/06/06/linkedin-member-passwords-compromised/">motivation</a>)
+  <li class=rfe>
+    Reduce the total height of items shown in the view configuration page.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/488">pull 488</a>)
+  <li class=rfe>
+     The CLI <tt>build</tt> command now has the <tt>-v</tt> option that reports the console output of the build in progress.
+  <li class=rfe>
+    The CLI <tt>build</tt> command can now wait until the start of the build.
+</ul>
+<h3><a name=v1.470>What's new in 1.470</a> (2012/06/13)</h3>
+<ul class=image>
+  <li class=bug>
+    Problem in syncing mirrors with native packages. Re-releasing the same bits as 1.469 as 1.470.
+</ul>
+<h3><a name=v1.469>What's new in 1.469</a> (2012/06/11)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a regression in 1.468 that broke LDAP
+</ul>
+<h3><a name=v1.468>What's new in 1.468</a> (2012/06/11)</h3>
+<ul class=image>
+  <li class=bug>
+    Added more MIME type mapping for Winstone.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13496">issue 13496</a>)
+  <li class=bug>
+    Winstone wasn't handling downloads bigger than 2GB.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12854">issue 12854</a>)
+  <li class=bug>
+    With 'on-demand' retention strategy, wrong slave can be started for jobs restricted to specific slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13735">issue 13735</a>)
+  <li class=bug>
+    Fixed encoding handling in e-mail headers.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/486">pull 486</a>)
+  <li class=rfe>
+    Added a new extension point for custom checkout behaviour, especially targeted for matrix projects.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/482">pull 482</a>)
+  <li class=rfe>
+    REST API now supports pretty printing of JSON and other formats.
+  <li class=rfe>
+    Allow the tree parameter and the xpath parameter to be used together in the REST API.
+  <li class=rfe>
+    Improved the background transparency of the animating ball icon
+</ul>
+<h3><a name=v1.467>What's new in 1.467</a> (2012/06/04)</h3>
+<ul class=image>
+  <li class=bug>
+    When accessing a page that requires authentication, redirection to start authentication results in a content decoding failure.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13625">issue 13625</a>)
+  <li class=bug>
+    Fixed a bug in the way cloud support handles free-roaming jobs.
+    (<a href="https://groups.google.com/forum/?fromgroups#!topic/jenkinsci-dev/bUwGEgOwv4Q">discussion</a>)
+  <li class=bug>
+    Fixed a regression in untar operation in exotic platforms
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13202">issue 13202</a>)
+  <li class=bug>
+    Fixed a possible race condition
+  <li class=bug>
+    Fixed nested view not showing up with just read perm for View
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13429">issue 13429</a>)
+  <li class=rfe>
+    Allow file parameters to be viewed as plain text.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13640">issue 13640</a>)
+  <li class=rfe>
+    CLI connection to the master is now encrypted.
+  <li class=rfe>
+    Improve the low disk space warning message.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13826">issue 13826</a>)
+  <li class=rfe>
+    Matrix custom workspace support is improved to allow configuration builds to share workspace
+  <li class=rfe>
+    Added more context menus to hyperlinks in the console output
+  <li class=rfe>
+    Exposed plugin manager and update center to the REST API
+  <li class=rfe>
+    Added a new extension point for agent protocols.
+  <li class=rfe>
+    Enabled concurrent build support for matrix projects
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6747">issue 6747</a>)
+</ul>
+<h3><a name=v1.466>What's new in 1.466</a> (2012/05/28)</h3>
+<ul class=image>
+  <li class=bug>
+    Maven plugin: expand variables in "Room POM" field
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13822">issue 13822</a>)
+  <li class=rfe>
+    Exposed plugin manager and update center to the REST API
+  <li class=rfe>
+    Enabled concurrent build support for matrix projects
+</ul>
+<h3><a name=v1.465>What's new in 1.465</a> (2012/05/21)</h3>
+<ul class=image>
+  <li class=bug>
+    Artifact archiving from an ssh slave fails if symlinks are present
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13202">issue 13202</a>)
+</ul>
+<h3><a name=v1.464>What's new in 1.464</a> (2012/05/14)</h3>
+<ul class=image>
+  <li class=bug>
+    Don't try to set cookies on cachable requests.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12585">issue 12585</a>)
+  <li class=bug>
+    Fixed a regression in 1.462 that introduced Java6 dependency.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13659">issue 13659</a>)
+  <li class=bug>
+    Fixed JDK auto-installer
+  <li class=bug>
+    missing search image on plugin manager.
+</ul>
+<h3><a name=v1.463>What's new in 1.463</a> (2012/05/07)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a bug in the Content-Range header handling.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13125">issue 13125</a>)
+  <li class=bug>
+    Ant's default exclusion was preventing plugins from archiving some files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13165">issue 13165</a>)
+  <li class=bug>
+    Fixed NPE in PAM authentication if the user is in a group that doesn't exist anymore.
+  <li class=bug>
+    End up more gracefully if there's some problem when searching for user partipication in the build
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13564">issue 13564</a>)
+  <li class=rfe>
+    Improved the performance of the fingerprint persistence.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13154">issue 13154</a>)
+  <li class=rfe>
+    PAM authentication supports '@group' to force interpretation as a group instead of user.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13526">issue 13526</a>)
+  <li class=rfe>
+    Honor the <tt>Accept</tt> header in the <tt>job/name/build</tt> URL. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13546">issue 13546</a>)
+  <li class=rfe>
+    Added a DISCOVER permission to allow anonymous users to be presented the login screen
+    when accessing job URLs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8214">issue 8214</a>)
+  <li class='major rfe'>
+    Publishers can be now reordered by the user.
+    (<a href="https://groups.google.com/forum/?fromgroups#!topic/jenkinsci-dev/UQLvxQclyb4">discussion</a>)
+</ul>
+<h3><a name=v1.462>What's new in 1.462</a> (2012/04/30)</h3>
+<ul class=image>
+  <li class=bug>
+    API token authentication was broken in 1.461
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13600">issue 13600</a>)
+  <li class=rfe>
+    Added the filter textbox to the update center selector.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13476">issue 13476</a>)
+  <li class=rfe>
+    Move "View as plain text" link on console output page from top right to the sidepanel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13389">issue 13389</a>)
+  <li class=rfe>
+    Convert "Delete this build" buttons into links in the sidepanel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13387">issue 13387</a>)
+  <li class=rfe>
+    Validate project naming regex immediately.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13524">issue 13524</a>)
+</ul>
+<h3><a name=v1.461>What's new in 1.461</a> (2012/04/23)</h3>
+<ul class=image>
+  <li class=bug>
+    Flag -U is not used during the parsing step of a Maven Job
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8663">issue 8663</a>)
+  <li class=bug>
+    Custom workspace validation not working.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13404">issue 13404</a>)
+  <li class=rfe>
+    allow j/k navigation for search results
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13105">issue 13105</a>)    
+</ul>
+<h3><a name=v1.460>What's new in 1.460</a> (2012/04/14)</h3>
 <ul class=image>
   <li class=bug>
     Fixed: tests with the same name are no longer counted correctly.
@@ -75,7 +281,6 @@ Upcoming changes</a>
   <li class=rfe>
     Supported hash token in the crontab syntax to distribute workload and avoid spikes.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.459>What's new in 1.459</a> (2012/04/09)</h3>
 <ul class=image>
   <li class=bug>
@@ -403,6 +608,9 @@ Upcoming changes</a>
   <li class=bug>
     Link to user profile from console output should go to the user ID, not the user name
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12279">issue 12279</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
 </ul>
 <h3><a name=v1.446>What's new in 1.446</a> (2012/01/02)</h3>
 <ul class=image>
@@ -505,9 +713,6 @@ Upcoming changes</a>
   <li class=bug>
     Fixed ConcurrentModificationException in parallel Maven 3 builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Upgrade aether version to 1.13 and sisu to 2.3.0 .
   <li class=rfe>
@@ -796,7 +1001,7 @@ Upcoming changes</a>
     Project names in fingerprint records weren't updated when a project is renamed.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10330">issue 10330</a>)
   <li class=rfe>
-    External job submision now supports &ly;displayName> and &lt;description> elements
+    External job submision now supports &lt;displayName&gt; and &lt;description&gt; elements
     (<a href="https://github.com/jenkinsci/jenkins/pull/215">pull 215</a>)
 </ul>
 <h3><a name=v1.428>What's new in 1.428</a> (2011/08/29)</h3>
@@ -884,6 +1089,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10556">issue 10556</a>)
   <li class=rfe>
     Record and display who aborted builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5754">issue 5754</a>)
   <li class=rfe>
     Added API token support.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9363">issue 9363</a>)

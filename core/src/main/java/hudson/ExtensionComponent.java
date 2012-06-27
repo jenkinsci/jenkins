@@ -24,7 +24,9 @@
 
 package hudson;
 
+import hudson.model.Describable;
 import hudson.model.Descriptor;
+import jenkins.ExtensionFilter;
 
 /**
  * Discovered {@link Extension} object with a bit of metadata for Hudson.
@@ -32,6 +34,8 @@ import hudson.model.Descriptor;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.356
+ * @see ExtensionFinder
+ * @see ExtensionFilter
  */
 public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> {
     private final T instance;
@@ -64,6 +68,15 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
      */
     public T getInstance() {
         return instance;
+    }
+
+    /**
+     * Checks if this component is a {@link Descriptor} describing the given type
+     *
+     * For example, {@code component.isDescriptorOf(Builder.class)}
+     */
+    public boolean isDescriptorOf(Class<? extends Describable> c) {
+        return instance instanceof Descriptor && ((Descriptor)instance).isSubTypeOf(c);
     }
 
     /**

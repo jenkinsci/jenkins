@@ -48,23 +48,31 @@ THE SOFTWARE.
             
             For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
             to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
-         </p>
+          </p>
           <p>
             Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
             that match the given XPath from the result. This is useful for
             trimming down the amount of data you fetch (but again see <a href="#tree">below</a>). This query parameter can be specified
             multiple times.
           </p>
+          <p>
+            XPath filtering is powerful, and you can have it only return a very small data, but note that
+            the server still has to build a full DOM of the raw data, which could cause a large memory spike.
+            To avoid overloading the server, consider using the <tt>tree</tt> parameter, or use the <tt>xpath</tt> parameter
+            in conjunction with the <tt>tree</tt> parameter. When used together, the result of the <tt>tree</tt> parameter
+            filtering is built into DOM, then the XPath is applied to compute the final return value. In this way,
+            you can often substantially reduce the size of DOM built in memory.
+          </p>
         </dd>
 
-        <dt><a href="json">JSON API</a></dt>
+        <dt><a href="json?pretty=true">JSON API</a></dt>
         <dd>
           Access the same data as JSON for JavaScript-based access. Supports
           <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
           the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
         </dd>
 
-        <dt><a href="python">Python API</a></dt>
+        <dt><a href="python?pretty=true">Python API</a></dt>
         <dd>
          <p>
            Access the same data as Python for Python clients. This can be parsed into Python
@@ -79,6 +87,18 @@ THE SOFTWARE.
            <tt>ast.literal_eval(urllib.urlopen("...").read())</tt>
          </p>
         </dd>
+
+        <!--
+        <dt><a href="ruby?pretty=true">Ruby API</a></dt>
+        <dd>
+         <p>
+           Access the same data as Ruby literals that can be <tt>eval</tt>ed.
+
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs.
+         </p>
+        </dd>
+        -->
       </dl>
 
       <p>

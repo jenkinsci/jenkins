@@ -8,7 +8,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  */
 public class ListViewColumnTest extends HudsonTestCase {
     public void testCreateView() throws Exception {
-        hudson.addView(new ListView("test"));
+        jenkins.addView(new ListView("test"));
         submit(createWebClient().goTo("view/test/configure").getFormByName("viewConfig"));
     }
 }

@@ -30,19 +30,16 @@ import hudson.model.ParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
-import hudson.model.TaskListener;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
-import hudson.scm.PollingResult;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import java.nio.charset.Charset;
-import java.util.concurrent.Future;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -70,11 +67,17 @@ public class BuildCommand extends CLICommand {
     @Option(name="-s",usage="Wait until the completion/abortion of the command")
     public boolean sync = false;
 
+    @Option(name="-w",usage="Wait until the start of the command")
+    public boolean wait = false;
+
     @Option(name="-c",usage="Check for SCM changes before starting the build, and if there's no change, exit without doing a build")
     public boolean checkSCM = false;
 
     @Option(name="-p",usage="Specify the build parameters in the key=value format.")
     public Map<String,String> parameters = new HashMap<String, String>();
+
+    @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
+    public boolean consoleOutput = false;
 
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
@@ -105,12 +108,24 @@ public class BuildCommand extends CLICommand {
             }
         }
 
-        Future<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
-        if (!sync)  return 0;
+        QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
 
-        AbstractBuild b = f.get();    // wait for the completion
-        stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
-        return b.getResult().ordinal;
+        if (wait || sync) {
+            AbstractBuild b = f.waitForStart();    // wait for the start
+            stdout.println("Started "+b.getFullDisplayName());
+
+            if (sync) {
+                if (consoleOutput) {
+                    b.writeWholeLogTo(stdout);
+                }
+                // TODO: should we abort the build if the CLI is cancelled?
+                f.get();    // wait for the completion
+                stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
+                return b.getResult().ordinal;
+            }
+        }
+
+        return 0;
     }
 
     @Override

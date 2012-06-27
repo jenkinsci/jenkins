@@ -38,6 +38,9 @@ THE SOFTWARE.
       </p>
       <!-- this is where the example goes -->
       <d:invokeBody />
+      <p>
+        ${%description2}
+      </p>
 
       <form action="script" method="post">
         <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>

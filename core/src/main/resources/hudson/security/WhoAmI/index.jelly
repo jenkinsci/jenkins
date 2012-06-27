@@ -1,0 +1,93 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!-- show debug information about the current user -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+
+  <l:layout title="Who Am I">
+    <l:hasPermission permission="${app.READ}">
+      <st:include page="sidepanel.jelly" it="${app}" />
+   </l:hasPermission>
+    <l:main-panel>
+      <j:set var="auth" value="${app.authentication}" />
+      <h1>Who Am I?</h1>
+      <table>
+        <tr>
+          <td>Name:</td>
+          <td>${auth.name}</td>
+        </tr>
+        <tr>
+          <td>IsAuthenticated?:</td>
+          <td>${auth.authenticated}</td>
+        </tr>
+        <tr>
+          <td>Authorities:</td>
+          <td>
+            <ul>
+              <j:forEach var="a" items="${auth.authorities}">
+                <li>
+                  <j:choose>
+                    <j:when test="${a==null}">
+                      null
+                    </j:when>
+                    <j:otherwise>
+                      "${a}"
+                    </j:otherwise>
+                  </j:choose>
+                </li>
+              </j:forEach>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>Details:</td>
+          <td>${auth.details}</td>
+        </tr>
+        <tr>
+          <td>toString:</td>
+          <td>${auth}</td>
+        </tr>
+      </table>
+
+      <h2>Request Headers</h2>
+      <table>
+        <j:forEach var="n" items="${request.getHeaderNames()}">
+          <j:set var="values" value="${h.getRequestHeaders(n)}"/>
+          <tr>
+            <td rowspan="${values.size()}">${n}</td>
+            <td>
+              ${values[0]}
+            </td>
+          </tr>
+          <j:forEach var="v" items="${values.subList(1,values.size())}">
+            <tr>
+              <td>${v}</td>
+            </tr>
+          </j:forEach>
+        </j:forEach>
+      </table>
+     </l:main-panel>
+    </l:layout>
+</j:jelly>

@@ -49,7 +49,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * Called once the changelog is determined.
      *
      * <p>
-     * During a build, Hudson fetches the update of the workspace from SCM,
+     * During a build, Jenkins fetches the update of the workspace from SCM,
      * and determines the changelog (see {@link SCM#checkout}). Immediately
      * after that, a build will invoke this method on all registered
      * {@link SCMListener}s.

@@ -32,7 +32,7 @@ div(name:field) {
 
     label {
         f.radio(name:type, value:"random",
-                checked:port==0, onclick:"\$('{id}').disabled=true")
+                checked:port==0, onclick:"\$('${id}').disabled=true")
         text(_("Random"))
     }
 
@@ -40,7 +40,7 @@ div(name:field) {
 
     label {
         f.radio(name:type, value:"disable",
-                checked:port==-1, onclick:"\$('{id}').disabled=true")
+                checked:port==-1, onclick:"\$('${id}').disabled=true")
         text(_("Disable"))
     }
 }

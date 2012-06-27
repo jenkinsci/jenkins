@@ -222,7 +222,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
     }
 
     /**
-     * Creates compact string representataion suitable for display purpose.
+     * Creates compact string representation suitable for display purpose.
      *
      * <p>
      * The string is made compact by looking for {@link Axis} whose values

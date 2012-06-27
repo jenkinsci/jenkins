@@ -26,7 +26,7 @@ package hudson.tasks;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -205,14 +205,14 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
         for (Dependency dep : downstreamProjects) {
             AbstractProject p = dep.getDownstreamProject();
             if (p.isDisabled()) {
-                logger.println(Messages.BuildTrigger_Disabled(HyperlinkNote.encodeTo('/'+ p.getUrl(),p.getName())));
+                logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                 continue;
             }
             List<Action> buildActions = new ArrayList<Action>();
             if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
-                String name = HyperlinkNote.encodeTo('/'+ p.getUrl(), p.getName())+" #"+p.getNextBuildNumber();
+                String name = ModelHyperlinkNote.encodeTo(p)+" #"+p.getNextBuildNumber();
                 if(p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build),
                                    buildActions.toArray(new Action[buildActions.size()]))) {
                     logger.println(Messages.BuildTrigger_Triggering(name));
@@ -362,7 +362,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             public void onRenamed(Item item, String oldName, String newName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Jenkins.getInstance().getProjects() ) {
+                for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
                         if(t.onJobRenamed(oldName,newName)) {

@@ -33,11 +33,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * For anonymous requests to pages that require authentication,
@@ -78,8 +82,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out;
             try {
-                ServletOutputStream sout = rsp.getOutputStream();
-                out = new PrintWriter(new OutputStreamWriter(sout));
+                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
@@ -95,7 +98,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // See http://support.microsoft.com/kb/294807
             for (int i=0; i < 10; i++)
                 out.print("                              ");
-            out.flush();
+            out.close();
         }
     }
 }

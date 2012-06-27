@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Jorg Heymans, Red Hat, Inc., id:cactusman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,16 +24,23 @@
  */
 package hudson.matrix;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Node;
+import hudson.slaves.WorkspaceList;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -47,7 +54,6 @@ import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
@@ -57,6 +63,7 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -64,6 +71,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.TokenList;
 import org.kohsuke.stapler.export.Exported;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileFilter;
@@ -92,7 +100,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      * Configuration axes.
      */
     private volatile AxisList axes = new AxisList();
-    
+
     /**
      * The filter that is applied to combinations. It is a Groovy if condition.
      * This can be null, which means "true".
@@ -135,14 +143,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
      */
     private transient Boolean runSequentially;
-    
+
     /**
      * Filter to select a number of combinations to build first
      * @deprecated as of 1.456
      *      Moved to {@link DefaultMatrixExecutionStrategyImpl}
      */
     private transient String touchStoneCombinationFilter;
-    
+
     /**
      * Required result on the touchstone combinations, in order to
      * continue with the rest
@@ -159,6 +167,20 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     private MatrixExecutionStrategy executionStrategy;
 
+    /**
+     * Custom workspace location for {@link MatrixConfiguration}s.
+     *
+     * <p>
+     * (Historically, we used {@link AbstractProject#customWorkspace} + some unique suffix (see {@link MatrixConfiguration#useShortWorkspaceName})
+     * for custom workspace, but we now separated that so that the user has more control.
+     *
+     * <p>
+     * If null, the historical semantics is assumed.
+     *
+     * @since 1.466
+     */
+    private String childCustomWorkspace;
+
     public MatrixProject(String name) {
         this(Jenkins.getInstance(), name);
     }
@@ -167,7 +189,38 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         super(parent, name);
     }
 
+    /**
+     * Gets the workspace location that {@link MatrixConfiguration} uses.
+     *
+     * @see MatrixRun.MatrixRunExecution#decideWorkspace(Node, WorkspaceList)
+     *
+     * @return never null
+     *      even when {@link MatrixProject} uses no custom workspace, this method still
+     *      returns something like "${PARENT_WORKSPACE}/${COMBINATION}" that controls
+     *      how the workspace should be laid out.
+     *
+     *      The return value can be absolute or relative. If relative, it is resolved
+     *      against the working directory of the overarching {@link MatrixBuild}.
+     */
+    public String getChildCustomWorkspace() {
+        String ws = childCustomWorkspace;
+        if (ws==null) {
+            ws = MatrixConfiguration.useShortWorkspaceName?"${SHORT_COMBINATION}":"${COMBINATION}";
+        }
+        return ws;
+    }
 
+    /**
+     * Do we have an explicit child custom workspace setting (true)? Or just using the default value (false)?
+     */
+    public boolean hasChildCustomWorkspace() {
+        return childCustomWorkspace!=null;
+    }
+
+    public void setChildCustomWorkspace(String childCustomWorkspace) throws IOException {
+        this.childCustomWorkspace = Util.fixEmptyAndTrim(childCustomWorkspace);
+        save();
+    }
 
     /**
      * {@link MatrixProject} is relevant with all the labels its configurations are relevant.
@@ -210,7 +263,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             save();
         }
     }
-    
+
     public AxisList getAxes() {
         return axes;
     }
@@ -220,7 +273,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     public void setAxes(AxisList axes) throws IOException {
         this.axes = new AxisList(axes);
-        rebuildConfigurations();
+        rebuildConfigurations(null);
         save();
     }
 
@@ -271,7 +324,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      */
     public void setCombinationFilter(String combinationFilter) throws IOException {
         this.combinationFilter = combinationFilter;
-        rebuildConfigurations();
+        rebuildConfigurations(null);
         save();
     }
 
@@ -284,7 +337,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
      *
      * <p>
      * Namely, this expression is evaluated for each axis value combination, and only when it evaluates to true,
-     * a corresponding {@link MatrixConfiguration} will be created and built. 
+     * a corresponding {@link MatrixConfiguration} will be created and built.
      *
      * @return can be null.
      * @since 1.279
@@ -370,6 +423,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         return r;
     }
+    
+    @Override
+    protected void updateTransientActions(){
+        super.updateTransientActions();
+        // update all transient actions in configurations too.
+        for(MatrixConfiguration configuration: getActiveConfigurations()){
+            configuration.updateTransientActions();
+        }
+    }
 
     /**
      * Gets the subset of {@link AxisList} that are not system axes.
@@ -410,14 +472,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         if (executionStrategy ==null)
             executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially,touchStoneCombinationFilter,touchStoneResultCondition,sorter);
 
-        rebuildConfigurations();
+        rebuildConfigurations(null);
     }
 
     @Override
     public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
         // perform the log rotation of inactive configurations to make sure
-        // their logs get eventually discarded 
+        // their logs get eventually discarded
         for (MatrixConfiguration config : configurations.values()) {
             if(!config.isActiveConfiguration())
                 config.logRotate();
@@ -489,8 +551,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     /**
      * Rebuilds the {@link #configurations} list and {@link #activeConfigurations}.
+     *
+     * @param context
+     *      We rebuild configurations right before a build, to allow configurations to be adjusted for the build.
+     *      (think of it as reconfiguring a project right before a build.) And when that happens, this value is the
+     *      build in progress. Otherwise this value is null (for example, when Jenkins is booting up.)
      */
-    private void rebuildConfigurations() throws IOException {
+    /*package*/ Set<MatrixConfiguration> rebuildConfigurations(MatrixBuildExecution context) throws IOException {
         {
             // backward compatibility check to see if there's any data in the old structure
             // if so, bring them to the newer structure.
@@ -517,9 +584,25 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         loadConfigurations(getConfigurationsDir(),configurations,Collections.<String,String>emptyMap());
         this.configurations = configurations;
 
+        Iterable<Combination> activeCombinations;
+        if (context!=null) {
+            List<Set<String>> axesList = Lists.newArrayList();
+            for (Axis axis : axes)
+                axesList.add(new LinkedHashSet<String>(axis.getValues()));
+
+            activeCombinations = Iterables.transform(Sets.cartesianProduct(axesList), new Function<List<String>, Combination>() {
+                public Combination apply(@Nullable List<String> strings) {
+                    assert strings != null;
+                    return new Combination(axes, (String[]) strings.toArray(new String[0]));
+                }
+            });
+        } else {
+            activeCombinations = axes.list();
+        }
+
         // find all active configurations
         Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
-        for (Combination c : axes.list()) {
+        for (Combination c : activeCombinations) {
             if(c.evalGroovyExpression(axes,combinationFilter)) {
         		LOGGER.fine("Adding configuration: " + c);
 	            MatrixConfiguration config = configurations.get(c);
@@ -532,6 +615,8 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         	}
         }
         this.activeConfigurations = active;
+
+        return active;
     }
 
     private File getConfigurationsDir() {
@@ -540,9 +625,15 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     /**
      * Gets all active configurations.
+     *
      * <p>
      * In contract, inactive configurations are those that are left for archival purpose
      * and no longer built when a new {@link MatrixBuild} is executed.
+     *
+     * <p>
+     * During a build, {@link MatrixBuildExecution#getActiveConfigurations()} should be used
+     * to make sure that a build is using the consistent set of active configurations from
+     * the start to the end.
      */
     @Exported
     public Collection<MatrixConfiguration> getActiveConfigurations() {
@@ -565,7 +656,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(String name) {
-        return getItem(Combination.fromString(name));
+        try {
+            return getItem(Combination.fromString(name));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public MatrixConfiguration getItem(Combination c) {
@@ -701,6 +796,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             this.combinationFilter = null;
         }
 
+        if(req.hasParameter("customWorkspace")) {
+            setChildCustomWorkspace(Util.fixEmptyAndTrim(req.getParameter("childCustomWorkspace.directory")));
+        } else {
+            setChildCustomWorkspace(null);
+        }
+
         List<MatrixExecutionStrategyDescriptor> esd = getDescriptor().getExecutionStrategyDescriptors();
         if (esd.size()>1)
             executionStrategy = req.bindJSON(MatrixExecutionStrategy.class,json.getJSONObject("executionStrategy"));
@@ -712,12 +813,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         newAxes.rebuildHetero(req, json, Axis.all(),"axis");
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
-        
+
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         builders.rebuildHetero(req, json, Builder.all(), "builder");
-        publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
+        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
 
-        rebuildConfigurations();
+        rebuildConfigurations(null);
     }
 
     /**
@@ -786,6 +887,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         public List<MatrixExecutionStrategyDescriptor> getExecutionStrategyDescriptors() {
             return MatrixExecutionStrategyDescriptor.all();
+        }
+
+        public List<SCMCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
+            return SCMCheckoutStrategyDescriptor.all();
         }
     }
 

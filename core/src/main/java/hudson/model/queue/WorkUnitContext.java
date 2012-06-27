@@ -45,7 +45,7 @@ public final class WorkUnitContext {
     public final Task task;
 
     /**
-     * Once the execution is complete, update this future object with the outcome.
+     * Once the execution starts and completes, update this future object with the outcome.
      */
     public final FutureImpl future;
 
@@ -110,6 +110,12 @@ public final class WorkUnitContext {
      */
     public void synchronizeStart() throws InterruptedException {
         startLatch.synchronize();
+        // the main thread will send a notification
+        Executor e = Executor.currentExecutor();
+        WorkUnit wu = e.getCurrentWorkUnit();
+        if (wu.isMainWork()) {
+            future.start.set(e.getCurrentExecutable());
+        }
     }
 
     /**

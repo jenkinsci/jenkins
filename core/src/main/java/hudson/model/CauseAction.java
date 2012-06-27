@@ -47,19 +47,29 @@ public class CauseAction implements FoldableAction, RunAction {
 	
     private List<Cause> causes = new ArrayList<Cause>();
 
+    public CauseAction(Cause c) {
+   		this.causes.add(c);
+   	}
+   	
+   	public CauseAction(CauseAction ca) {
+   		this.causes.addAll(ca.causes);
+   	}
+   	
 	@Exported(visibility=2)
 	public List<Cause> getCauses() {
 		return causes;
 	}
+
+    /**
+     * Finds the cause of the specific type.
+     */
+    public <T extends Cause> T findCause(Class<T> type) {
+        for (Cause c : causes)
+            if (type.isInstance(c))
+                return type.cast(c);
+        return null;
+    }
 		
-	public CauseAction(Cause c) {
-		this.causes.add(c);
-	}
-	
-	public CauseAction(CauseAction ca) {
-		this.causes.addAll(ca.causes);
-	}
-	
 	public String getDisplayName() {
 		return "Cause";
 	}

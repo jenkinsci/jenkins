@@ -52,6 +52,16 @@ THE SOFTWARE.
       For each item, add a caption from descriptor.getDisplayName().
       This also activates drag&amp;drop (where the header is a grip), and help text support.
     </st:attribute>
+    <st:attribute name="oneEach">
+      If true, only allow up to one instance per descriptor.
+    </st:attribute>
+    <st:attribute name="menuAlign">
+      Menu alignment against the button. Defaults to tl-bl
+    </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -90,12 +100,12 @@ THE SOFTWARE.
   </d:taglib>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container${hasHeader?' with-drag-drop':''}">
+  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" class="repeated-chunk">
+      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
         <local:body deleteCaption="${attrs.deleteCaption}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>
@@ -121,7 +131,7 @@ THE SOFTWARE.
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" />
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
   </div>
 </j:jelly>

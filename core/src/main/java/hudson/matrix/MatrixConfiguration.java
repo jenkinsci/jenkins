@@ -77,6 +77,23 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
     }
+    
+    @Override
+    protected void updateTransientActions(){
+        // This method is exactly the same as in {@link #AbstractProject}. 
+        // Enabling to call this method from MatrixProject is the only reason for overriding.
+        super.updateTransientActions();
+    }
+
+    @Override
+    public boolean isConcurrentBuild() {
+        return getParent().isConcurrentBuild();
+    }
+
+    @Override
+    public void setConcurrentBuild(boolean b) throws IOException {
+        throw new UnsupportedOperationException("The setting can be only changed at MatrixProject");
+    }
 
     /**
      * Used during loading to set the combination back.
@@ -306,7 +323,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * See http://cygwin.com/ml/cygwin/2005-04/msg00395.html and
      * http://www.nabble.com/Windows-Filename-too-long-errors-t3161089.html for
      * the background of this issue. Setting this flag to true would
-     * cause Hudson to use cryptic but short path name, giving more room for
+     * cause Jenkins to use cryptic but short path name, giving more room for
      * jobs to use longer path names.
      */
     public static boolean useShortWorkspaceName = Boolean.getBoolean(MatrixConfiguration.class.getName()+".useShortWorkspaceName");

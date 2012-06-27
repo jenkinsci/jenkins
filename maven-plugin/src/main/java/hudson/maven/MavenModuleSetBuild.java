@@ -474,7 +474,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     public void run() {
-        run(new RunnerImpl());
+        execute(new MavenModuleSetBuildExecution());
         getProject().updateTransientActions();
     }
 
@@ -554,7 +554,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * The sole job of the {@link MavenModuleSet} build is to update SCM
      * and triggers module builds.
      */
-    private class RunnerImpl extends AbstractRunner {
+    private class MavenModuleSetBuildExecution extends AbstractBuildExecution {
         private Map<ModuleName,MavenBuild.ProxyImpl2> proxies;
 
         protected Result doRun(final BuildListener listener) throws Exception {
@@ -688,7 +688,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // choice of module root ('ws' in this method) is somewhat arbitrary
                         // when multiple CVS/SVN modules are checked out, so also check
                         // the path against the workspace root if that seems like what the user meant (see issue #1293)
-                        String rootPOM = project.getRootPOM();
+                        String rootPOM = project.getRootPOM(envVars); // JENKINS-13822
                         FilePath pom = getModuleRoot().child(rootPOM);
                         FilePath parentLoc = getWorkspace().child(rootPOM);
                         if(!pom.exists() && parentLoc.exists())
@@ -1069,6 +1069,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         private int mavenValidationLevel = -1;
         
+        private boolean updateSnapshots = false;
+        
         String rootPOMRelPrefix;
         
         public PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
@@ -1076,9 +1078,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             MavenModuleSet project = build.getProject();
             this.listener = listener;
             this.mavenHome = mavenHome;
-            this.rootPOM = project.getRootPOM();
+            this.rootPOM = project.getRootPOM(envVars); // JENKINS-13822
             this.profiles = project.getProfiles();
             this.properties = project.getMavenProperties();
+            this.updateSnapshots = isUpdateSnapshots(project.getGoals());
             ParametersDefinitionProperty parametersDefinitionProperty = project.getProperty( ParametersDefinitionProperty.class );
             if (parametersDefinitionProperty != null && parametersDefinitionProperty.getParameterDefinitions() != null) {
                 for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.getParameterDefinitions()) {
@@ -1120,7 +1123,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             this.globalSetings = project.globalSettingConfigPath;
         }
 
-        
+        private boolean isUpdateSnapshots(String goals) {
+          return StringUtils.contains(goals, "-U") || StringUtils.contains(goals, "--update-snapshots");
+        }
+
         public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
             
@@ -1186,6 +1192,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
                 mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
+                mavenEmbedderRequest.setUpdateSnapshots( this.updateSnapshots );
                 
                 mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
                 mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );

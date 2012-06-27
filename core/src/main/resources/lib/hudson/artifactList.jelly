@@ -57,7 +57,7 @@ THE SOFTWARE.
                     <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
                   </td>
                   <td class="fileSize">
-                    ${f.length}
+                    ${h.humanReadableByteSize(f.getFileSize())}
                   </td>
                   <td>
                     <a href="${baseURL}artifact/${f.href}/*fingerprint*/">

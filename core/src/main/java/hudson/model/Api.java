@@ -35,6 +35,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.*;
+import org.kohsuke.stapler.export.TreePruner.ByDepth;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +45,8 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -79,6 +82,7 @@ public class Api extends AbstractModelObject {
     public void doXml(StaplerRequest req, StaplerResponse rsp,
                       @QueryParameter String xpath,
                       @QueryParameter String wrapper,
+                      @QueryParameter String tree,
                       @QueryParameter int depth) throws IOException, ServletException {
         String[] excludes = req.getParameterValues("exclude");
 
@@ -92,7 +96,8 @@ public class Api extends AbstractModelObject {
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
-        p.writeTo(bean,depth,Flavor.XML.createDataWriter(bean,sw));
+        TreePruner pruner = (tree!=null) ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
+        p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
         Object result;
@@ -139,7 +144,8 @@ public class Api extends AbstractModelObject {
             }
 
         } catch (DocumentException e) {
-            throw new IOException2("Failed to do XPath/wrapper handling. XML is as follows:"+sw,e);
+            LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:"+sw, e);
+            throw new IOException2("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
         }
 
         OutputStream o = rsp.getCompressedOutputStream(req);
@@ -188,5 +194,6 @@ public class Api extends AbstractModelObject {
         rsp.serveExposedBean(req,bean, Flavor.PYTHON);
     }
 
+    private static final Logger LOGGER = Logger.getLogger(Api.class.getName());
     private static final ModelBuilder MODEL_BUILDER = new ModelBuilder();
 }

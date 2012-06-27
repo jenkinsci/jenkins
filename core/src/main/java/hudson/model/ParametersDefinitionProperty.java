@@ -44,6 +44,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
+import org.kohsuke.stapler.export.Flavor;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -144,11 +145,22 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         	}
         }
 
-    	Jenkins.getInstance().getQueue().schedule(
+        Jenkins.getInstance().getQueue().schedule(
                 owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
 
-        // send the user back to the job top page.
-        rsp.sendRedirect(".");
+        if (requestWantsJson(req)) {
+            rsp.setContentType("application/json");
+            rsp.serveExposedBean(req, owner, Flavor.JSON);
+        } else {
+            // send the user back to the job top page.
+            rsp.sendRedirect(".");
+        }
+    }
+
+    private boolean requestWantsJson(StaplerRequest req) {
+        String a = req.getHeader("Accept");
+        if (a==null)    return false;
+        return !a.contains("text/html") && a.contains("application/json");
     }
 
     /**

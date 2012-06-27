@@ -144,6 +144,9 @@ var FormChecker = {
  * @param {string} name
  *      Name of the control to find. Can include "../../" etc in the prefix.
  *      See @RelativePath.
+ *
+ *      We assume that the name is normalized and doesn't contain any redundant component.
+ *      That is, ".." can only appear as prefix, and "foo/../bar" is not OK (because it can be reduced to "bar")
  */
 function findNearBy(e,name) {
     while (name.startsWith("../")) {
@@ -151,25 +154,38 @@ function findNearBy(e,name) {
         e = findFormParent(e,null,true);
     }
 
+    // name="foo/bar/zot"  -> prefixes=["bar","foo"] & name="zot"
+    var prefixes = name.split("/");
+    name = prefixes.pop();
+    prefixes = prefixes.reverse();
+
     // does 'e' itself match the criteria?
     // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
-        if (filter(e))    return e;
-        return null;
+        return filter(e) ? e : null;
     });
-    if (p!=null)    return p;
+    if (p!=null && prefixes.length==0)    return p;
 
     var owner = findFormParent(e,null,true);
 
-    p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null,true)==owner)
-        return p;
+    function locate(iterator,e) {// keep finding elements until we find the good match
+        while (true) {
+            e = iterator(e,name);
+            if (e==null)    return null;
 
-    var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null,true)==owner)
-        return n;
+            // make sure this candidate element 'e' is in the right point in the hierarchy
+            var p = e;
+            for (var i=0; i<prefixes.length; i++) {
+                p = findFormParent(p,null,true);
+                if (p.getAttribute("name")!=prefixes[i])
+                    return null;
+            }
+            if (findFormParent(p,null,true)==owner)
+                return e;
+        }
+    }
 
-    return null; // not found
+    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
 }
 
 function controlValue(e) {
@@ -510,6 +526,7 @@ var jenkinsRules = {
 // other behavior rules change them (like YUI buttons.)
 
     "DIV.hetero-list-container" : function(e) {
+        e=$(e);
         if(isInsideRemovable(e))    return;
 
         // components for the add button
@@ -537,24 +554,86 @@ var jenkinsRules = {
 
         var withDragDrop = initContainerDD(e);
 
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
+        var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
+
+        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-") });
+        $(menuButton._button).addClassName(btn.className);    // copy class names
+        $(menuButton._button).setAttribute("suffix",btn.getAttribute("suffix"));
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
-            var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
+            var item = args[1];
+            if (item.cfg.getProperty("disabled"))   return;
+            var t = templates[parseInt(item.value)];
 
             var nc = document.createElement("div");
             nc.className = "repeated-chunk";
             nc.setAttribute("name",t.name);
+            nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
+            $(nc).setOpacity(0);
+
+            var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
-                insertionPoint.parentNode.insertBefore(nc, insertionPoint);
+                function findInsertionPoint() {
+                    // given the element to be inserted 'prospect',
+                    // and the array of existing items 'current',
+                    // and preferred ordering function, return the position in the array
+                    // the prospect should be inserted.
+                    // (for example 0 if it should be the first item)
+                    function findBestPosition(prospect,current,order) {
+                        function desirability(pos) {
+                            var count=0;
+                            for (var i=0; i<current.length; i++) {
+                                if ((i<pos) == (order(current[i])<=order(prospect)))
+                                    count++;
+                            }
+                            return count;
+                        }
+
+                        var bestScore = -1;
+                        var bestPos = 0;
+                        for (var i=0; i<=current.length; i++) {
+                            var d = desirability(i);
+                            if (bestScore<=d) {// prefer to insert them toward the end
+                                bestScore = d;
+                                bestPos = i;
+                            }
+                        }
+                        return bestPos;
+                    }
+
+                    var current = e.childElements().findAll(function(e) {return e.match("DIV.repeated-chunk")});
+
+                    function o(did) {
+                        if (Object.isElement(did))
+                            did = did.getAttribute("descriptorId");
+                        for (var i=0; i<templates.length; i++)
+                            if (templates[i].descriptorId==did)
+                                return i;
+                        return 0; // can't happen
+                    }
+
+                    var bestPos = findBestPosition(t.descriptorId, current, o);
+                    if (bestPos<current.length)
+                        return current[bestPos];
+                    else
+                        return insertionPoint;
+                }
+                (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
+
                 if(withDragDrop)    prepareDD(nc);
 
+                new YAHOO.util.Anim(nc, {
+                    opacity: { to:1 }
+                }, 0.2, YAHOO.util.Easing.easeIn).animate();
+
                 Behaviour.applySubtree(nc,true);
+                ensureVisible(nc);
+                layoutUpdateCallback.call();
             },true);
         });
 
-        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
+        menuButton.getMenu().renderEvent.subscribe(function() {
             // hook up tooltip for menu items
             var items = menuButton.getMenu().getItems();
             for(i=0; i<items.length; i++) {
@@ -563,6 +642,20 @@ var jenkinsRules = {
                     applyTooltip(items[i].element,t);
             }
         });
+
+        if (e.hasClassName("one-each")) {
+            // does this container already has a ocnfigured instance of the specified descriptor ID?
+            function has(id) {
+                return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
+            }
+
+            menuButton.getMenu().showEvent.subscribe(function() {
+                var items = menuButton.getMenu().getItems();
+                for(i=0; i<items.length; i++) {
+                    items[i].cfg.setProperty("disabled",has(templates[i].descriptorId));
+                }
+            });
+        }
     },
 
     "DIV.repeated-container" : function(e) {
@@ -589,7 +682,7 @@ var jenkinsRules = {
         e = null; // avoid memory leak
     },
 
-    "INPUT.applyButton":function (e) {
+    "INPUT.apply-button":function (e) {
         var id;
         var containerId = "container"+(iota++);
 
@@ -655,7 +748,7 @@ var jenkinsRules = {
         });
     },
 
-    "INPUT.advancedButton" : function(e) {
+    "INPUT.advanced-button" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
             while(!Element.hasClassName(link,"advancedLink"))
@@ -676,17 +769,19 @@ var jenkinsRules = {
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
                 tr.parentNode.insertBefore(row, $(tr).next());
             }
+            layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
     },
 
-    "INPUT.expandButton" : function(e) {
+    "INPUT.expand-button" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
             while(!Element.hasClassName(link,"advancedLink"))
                 link = link.parentNode;
             link.style.display = "none";
             $(link).next().style.display="block";
+            layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
     },
@@ -1324,6 +1419,7 @@ var jenkinsRules = {
         e.onclick = function() {
             this.style.display = 'none';
             $(this).next().style.display = 'block';
+            layoutUpdateCallback.call();
             return false;
         };
         e = null; // avoid memory leak
@@ -1577,6 +1673,7 @@ function updateOptionalBlock(c,scroll) {
             var tr = findAncestor(homeField, 'TR');
             if (tr != null) {
                 tr.style.display = c.checked ? 'none' : '';
+                layoutUpdateCallback.call();
             }
         }
     }
@@ -1682,6 +1779,7 @@ function expandTextArea(button,id) {
 
     n.parentNode.innerHTML = 
         "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    layoutUpdateCallback.call();
 }
 
 // refresh a part of the HTML specified by the given ID,
@@ -1846,10 +1944,17 @@ var repeatableSupport = {
     // called when 'delete' button is clicked
     onDelete : function(n) {
         n = findAncestorClass(n,"repeated-chunk");
-        var p = n.parentNode;
-        p.removeChild(n);
-        if (p.tag)
-            p.tag.update();
+        var a = new YAHOO.util.Anim(n, {
+            opacity: { to:0 },
+            height: {to:0 }
+        }, 0.2, YAHOO.util.Easing.easeIn);
+        a.onComplete.subscribe(function() {
+            var p = n.parentNode;
+            p.removeChild(n);
+            if (p.tag)
+                p.tag.update();
+        });
+        a.animate();
     },
 
     // called when 'add' button is clicked
@@ -1890,6 +1995,7 @@ var radioBlockSupport = {
         while((n = n.next()) != blockEnd) {
           n.style.display = show ? "" : "none";
         }
+        layoutUpdateCallback.call();
     }
 };
 
@@ -1980,7 +2086,49 @@ function getStyle(e,a){
   if(e.currentStyle)
     return e.currentStyle[a];
   return null;
-};
+}
+
+/**
+ * Makes sure the given element is within the viewport.
+ *
+ * @param {HTMLElement} e
+ *      The element to bring into the viewport.
+ */
+function ensureVisible(e) {
+    var viewport = YAHOO.util.Dom.getClientRegion();
+    var pos      = YAHOO.util.Dom.getRegion(e);
+
+    var Y = viewport.top;
+    var H = viewport.height;
+
+    function handleStickers(name,f) {
+        var e = $(name);
+        if (e) f(e);
+        document.getElementsBySelector("."+name).each(f);
+    }
+
+    // if there are any stickers around, subtract them from the viewport
+    handleStickers("top-sticker",function (t) {
+        t = t.clientHeight;
+        Y+=t; H-=t;
+    });
+
+    handleStickers("bottom-sticker",function (b) {
+        b = b.clientHeight;
+        H-=b;
+    });
+
+    var y = pos.top;
+    var h = pos.height;
+
+    var d = (y+h)-(Y+H);
+    if (d>0) {
+        document.body.scrollTop += d;
+    } else {
+        var d = Y-y;
+        if (d>0)    document.body.scrollTop -= d;
+    }
+}
 
 // set up logic behind the search box
 function createSearchBox(searchURL) {

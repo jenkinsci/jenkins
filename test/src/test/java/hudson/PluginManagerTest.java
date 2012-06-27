@@ -60,7 +60,7 @@ public class PluginManagerTest extends HudsonTestCase {
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         submit(f);
 
-        assertTrue( new File(hudson.getRootDir(),"plugins/tasks.jpi").exists() );
+        assertTrue( new File(jenkins.getRootDir(),"plugins/tasks.jpi").exists() );
     }
 
     /**
@@ -76,7 +76,7 @@ public class PluginManagerTest extends HudsonTestCase {
         submit(f);
 
         // uploaded legacy plugins get renamed to *.jpi
-        assertTrue( new File(hudson.getRootDir(),"plugins/legacy.jpi").exists() );
+        assertTrue( new File(jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
     }
     
     /**
@@ -84,7 +84,7 @@ public class PluginManagerTest extends HudsonTestCase {
      */
     @WithPlugin("tasks.jpi")
     public void testWithRecipeJpi() throws Exception {
-        assertNotNull(hudson.getPlugin("tasks"));
+        assertNotNull(jenkins.getPlugin("tasks"));
     }
     
     /**
@@ -92,7 +92,7 @@ public class PluginManagerTest extends HudsonTestCase {
      */
     @WithPlugin("legacy.hpi")
     public void testWithRecipeHpi() throws Exception {
-        assertNotNull(hudson.getPlugin("legacy"));
+        assertNotNull(jenkins.getPlugin("legacy"));
     }
 
     /**
@@ -101,7 +101,7 @@ public class PluginManagerTest extends HudsonTestCase {
     @WithPlugin("tasks.jpi")
     public void testOptionalMavenDependency() throws Exception {
         PluginWrapper.Dependency m2=null;
-        PluginWrapper tasks = hudson.getPluginManager().getPlugin("tasks");
+        PluginWrapper tasks = jenkins.getPluginManager().getPlugin("tasks");
         for( PluginWrapper.Dependency d : tasks.getOptionalDependencies() ) {
             if(d.shortName.equals("maven-plugin")) {
                 assertNull(m2);
@@ -125,7 +125,7 @@ public class PluginManagerTest extends HudsonTestCase {
     @WithPlugin("tasks.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
     public void testUberClassLoaderIsAvailableDuringStart() {
-        assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart)hudson.pluginManager).tested);
+        assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) jenkins.pluginManager).tested);
     }
 
     public class PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart extends LocalPluginManager {
@@ -163,7 +163,7 @@ public class PluginManagerTest extends HudsonTestCase {
     public void testUberClassLoaderDoesntUseContextClassLoader() throws Exception {
         Thread t = Thread.currentThread();
 
-        URLClassLoader ucl = new URLClassLoader(new URL[0],hudson.pluginManager.uberClassLoader);
+        URLClassLoader ucl = new URLClassLoader(new URL[0], jenkins.pluginManager.uberClassLoader);
 
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);

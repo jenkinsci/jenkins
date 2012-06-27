@@ -31,6 +31,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
@@ -70,6 +71,17 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 		String whereFrom = request.getParameter("from");
 		request.getSession().setAttribute("from", whereFrom);
 		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
+    }
+
+    @Override
+    protected void onSuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
+        super.onSuccessfulAuthentication(request,response,authResult);
+        // make sure we have a session to store this successful authentication, given that we no longer
+        // let HttpSessionContextIntegrationFilter2 to create sessions.
+        // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
+        // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
+        // doFilter method.
+        request.getSession();
     }
 
     /**

@@ -60,7 +60,13 @@ THE SOFTWARE.
 <!-- The path starts with a "/" character but does not end with a "/" character. -->
 <j:set var="rootURL" value="${request.contextPath}" />
 <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-<j:set var="_" value="${request.getSession()}"/><!-- depending on what tags are used, we can later end up discovering that we needed a session, but it's too late because the headers are already committed. so ensure we always have a session -->
+<!--
+  depending on what tags are used, we can later end up discovering that we needed a session,
+  but it's too late because the headers are already committed. so ensure we always have a session.
+  this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
+  which I suspect can end up creating sessions for wrong resource types (such as static resources.)
+-->
+<j:set var="_" value="${request.getSession()}"/>
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 <!--
   load static resources from the path dedicated to a specific version.
@@ -78,6 +84,7 @@ THE SOFTWARE.
       <!-- advertise the CLI TCP port -->
       <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
       <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:header name="X-Jenkins-CLI2-Port" value="${app.tcpSlaveAgentListener.port}"/>
       <st:header name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
     </j:if>
     <j:forEach var="pd" items="${h.pageDecorators}">

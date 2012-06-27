@@ -157,6 +157,23 @@ public class ExtensionList<T> extends AbstractList<T> {
         return ensureLoaded().size();
     }
 
+    /**
+     * Gets the read-only view of this {@link ExtensionList} where components are reversed.
+     */
+    public List<T> reverseView() {
+        return new AbstractList<T>() {
+            @Override
+            public T get(int index) {
+                return ExtensionList.this.get(size()-index-1);
+            }
+
+            @Override
+            public int size() {
+                return ExtensionList.this.size();
+            }
+        };
+    }
+
     @Override
     public synchronized boolean remove(Object o) {
         removeComponent(legacyInstances,o);

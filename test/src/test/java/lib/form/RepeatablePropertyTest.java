@@ -103,7 +103,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     }
 
     public DescriptorImpl getDescriptor() {
-        return hudson.getDescriptorByType(DescriptorImpl.class);
+        return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
 
     @Extension

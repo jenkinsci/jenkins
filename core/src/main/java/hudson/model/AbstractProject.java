@@ -27,6 +27,7 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -45,6 +46,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import hudson.model.listeners.SCMListener;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
@@ -54,6 +57,7 @@ import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.NullChangeLogParser;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
 import hudson.scm.SCM;
@@ -76,14 +80,19 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
+import hudson.util.IOException2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -97,6 +106,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +146,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * access to this variable should always go through {@link #getScm()}.
      */
     private volatile SCM scm = new NullSCM();
+
+    /**
+     * Controls how the checkout is done.
+     */
+    private volatile SCMCheckoutStrategy scmCheckoutStrategy;
 
     /**
      * State returned from {@link SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)}.
@@ -257,7 +273,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        this.builds = new RunMap<R>();
+        if (this.builds==null)
+            this.builds = new RunMap<R>();
         this.builds.load(this,new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
@@ -299,7 +316,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Exported
     public boolean isConcurrentBuild() {
-        return Jenkins.CONCURRENT_BUILD && concurrentBuild;
+        return concurrentBuild;
     }
 
     public void setConcurrentBuild(boolean b) throws IOException {
@@ -516,7 +533,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : Jenkins.getInstance().getQuietPeriod();
     }
-    
+
+    public SCMCheckoutStrategy getScmCheckoutStrategy() {
+        return scmCheckoutStrategy == null ? new DefaultSCMCheckoutStrategyImpl() : scmCheckoutStrategy;
+    }
+
+    public void setScmCheckoutStrategy(SCMCheckoutStrategy scmCheckoutStrategy) throws IOException {
+        this.scmCheckoutStrategy = scmCheckoutStrategy;
+        save();
+    }
+
+
     public int getScmCheckoutRetryCount() {
         return scmCheckoutRetryCount !=null ? scmCheckoutRetryCount : Jenkins.getInstance().getScmCheckoutRetryCount();
     }
@@ -790,7 +817,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @param actions
      *      For the convenience of the caller, this array can contain null, and those will be silently ignored.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Action... actions) {
         return scheduleBuild2(quietPeriod,c,Arrays.asList(actions));
     }
 
@@ -803,7 +831,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.383
      */
     @SuppressWarnings("unchecked")
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         if (!isBuildable())
             return null;
 
@@ -818,7 +847,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
         if(i!=null)
-            return (Future)i.getFuture();
+            return (QueueTaskFuture)i.getFuture();
         return null;
     }
 
@@ -853,7 +882,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * as deprecated.
      */
     @SuppressWarnings("deprecation")
-    public Future<R> scheduleBuild2(int quietPeriod) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod) {
         return scheduleBuild2(quietPeriod, new LegacyCodeCause());
     }
     
@@ -861,7 +891,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
      */
-    public Future<R> scheduleBuild2(int quietPeriod, Cause c) {
+    @WithBridgeMethods(Future.class)
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c) {
         return scheduleBuild2(quietPeriod, c, new Action[0]);
     }
 
@@ -1688,6 +1719,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
+        JSONObject json = req.getSubmittedForm();
 
         makeDisabled(req.getParameter("disable")!=null);
 
@@ -1707,11 +1739,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(req.hasParameter("customWorkspace")) {
             customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
-            if(customWorkspace==null)
-            	throw new FormException("Custom workspace is empty", "customWorkspace");
         } else {
             customWorkspace = null;
         }
+
+        if (json.has("scmCheckoutStrategy"))
+            scmCheckoutStrategy = req.bindJSON(SCMCheckoutStrategy.class,
+                json.getJSONObject("scmCheckoutStrategy"));
+        else
+            scmCheckoutStrategy = null;
+
         
         if(req.getParameter("hasSlaveAffinity")!=null) {
             assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
@@ -1956,6 +1993,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return c;
+        }
+
+        public List<SCMCheckoutStrategyDescriptor> getApplicableSCMCheckoutStrategyDescriptors(AbstractProject p) {
+            return SCMCheckoutStrategyDescriptor._for(p);
         }
 
         /**

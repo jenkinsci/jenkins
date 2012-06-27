@@ -41,6 +41,7 @@ import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
+import jenkins.ExtensionFilter;
 import jenkins.ExtensionRefreshException;
 import jenkins.ProxyInjector;
 import jenkins.model.Jenkins;
@@ -72,10 +73,11 @@ import java.lang.reflect.Method;
  *
  * <p>
  * {@link ExtensionFinder} itself is an extension point, but to avoid infinite recursion,
- * Hudson discovers {@link ExtensionFinder}s through {@link Sezpoz} and that alone.
+ * Jenkins discovers {@link ExtensionFinder}s through {@link Sezpoz} and that alone.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
+ * @see ExtensionFilter
  */
 public abstract class ExtensionFinder implements ExtensionPoint {
     /**
@@ -126,7 +128,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * <p>
      * This method should return all the known components at the time of the call, including
      * those that are discovered later via {@link #refresh()}, even though those components
-     * are separately retruend in {@link ExtensionComponentSet}.
+     * are separately returned in {@link ExtensionComponentSet}.
      *
      * @param <T>
      *      The type of the extension points. This is not bound to {@link ExtensionPoint} because
@@ -462,7 +464,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     m.setAccessible(true);
                     m.invoke(ecl, c);
                     c.getMethods();
-                    c.getFields();
+                    c.getFields();       
+                    while (c != Object.class) {
+                        c.getGenericSuperclass();
+                        c = c.getSuperclass();
+                    }
                 } catch (Exception x) {
                     throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
                 }

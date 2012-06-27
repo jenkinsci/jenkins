@@ -30,6 +30,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
 
   <p:config-disableBuild/>
+  <p:config-concurrentBuild />
 
   <f:section title="${%Advanced Project Options}">
     <f:advanced>
@@ -37,7 +38,17 @@ THE SOFTWARE.
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
       <p:config-blockWhenDownstreamBuilding />
-      <p:config-customWorkspace />
+      <f:optionalBlock name="customWorkspace" title="${%Use custom workspace}"
+                       checked="${instance.customWorkspace!=null or instance.hasChildCustomWorkspace()}"
+                       help="/help/project-config/custom-workspace.html">
+        <f:entry title="${%Directory}">
+          <f:textbox name="customWorkspace.directory" field="customWorkspace" />
+        </f:entry>
+        <f:entry title="${%Directory for sub-builds}">
+          <f:textbox name="childCustomWorkspace.directory" field="childCustomWorkspace"  value="${instance.hasChildCustomWorkspace()?instance.childCustomWorkspace:''}" />
+        </f:entry>
+      </f:optionalBlock>
+
       <f:entry title="${%Display Name}" field="displayNameOrNull">
          <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
       </f:entry>
@@ -83,5 +94,5 @@ THE SOFTWARE.
 
   <p:config-buildWrappers />
   <p:config-builders />
-  <p:config-publishers />
+  <p:config-publishers2 />
 </j:jelly>

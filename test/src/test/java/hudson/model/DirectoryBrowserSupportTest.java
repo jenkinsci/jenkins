@@ -64,7 +64,9 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
     }
 
     /**
-     * Also makes sure '\\' in the file name for Unix is handled correctly.
+     * <strike>Also makes sure '\\' in the file name for Unix is handled correctly</strike>.
+     *
+     * To prevent directory traversal attack, we now treat '\\' just like '/'.
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     public void testDoubleDots2() throws Exception {
@@ -72,7 +74,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
 
         // create a problematic file name in the workspace
         FreeStyleProject p = createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch abc\\\\def.bin"));
+        p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         p.scheduleBuild2(0).get();
 
         // can we see it?

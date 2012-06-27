@@ -25,8 +25,9 @@
 package hudson.matrix;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.Util;
-import hudson.console.HyperlinkNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -34,7 +35,9 @@ import hudson.model.Executor;
 import hudson.model.Fingerprint;
 import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -47,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 
@@ -62,7 +66,6 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      * If non-null, the {@link MatrixBuild} originates from the given build number.
      */
     private Integer baseBuild;
-
 
     public MatrixBuild(MatrixProject job) throws IOException {
         super(job);
@@ -123,6 +126,23 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         public MatrixRun getRun() {
             return MatrixBuild.this.getRun(combination);
         }
+        
+        /**
+         * Return the URL to the run that this pointer references.
+         *
+         * In the typical case, this creates {@linkplain #getShortUrl() a very short relative url}.
+         * If the referenced run is a nearest previous build, this method returns a longer URL to that exact build.
+         * {@link MatrixRun} which belongs to a given build {@link MatrixBuild}.
+         * If there is no run which belongs to the build, return url of run, which belongs to the nearest previous build.
+         */
+        public String getNearestRunUrl() {
+            MatrixRun r = getRun();
+            if (r==null)    return null;
+            if (getNumber()==r.getNumber())
+                return getShortUrl()+'/';
+            else
+                return Stapler.getCurrentRequest().getContextPath()+'/'+r.getUrl();
+        }
 
         public String getShortUrl() {
             return Util.rawEncode(combination.toString());
@@ -172,6 +192,16 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         MatrixConfiguration config = getParent().getItem(c);
         if(config==null)    return null;
         return getRunForConfiguration(config);
+    }
+
+    /**
+     * Like {@link #getRun(Combination)}, but do not approximate the result by earlier execution
+     * of the given combination (which is done for partial rebuild of the matrix.)
+     */
+    public MatrixRun getExactRun(Combination c) {
+        MatrixConfiguration config = getParent().getItem(c);
+        if(config==null)    return null;
+        return config.getBuildByNumber(getNumber());
     }
     
     /**
@@ -235,8 +265,17 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         try {
             MatrixRun item = getRun(Combination.fromString(token));
-            if(item!=null)
-                return item;
+            if(item!=null) {
+                if (item.getNumber()==this.getNumber())
+                    return item;
+                else {
+                    // redirect the user to the correct URL
+                    String url = Functions.joinPath(item.getUrl(), req.getRestOfPath());
+                    String qs = req.getQueryString();
+                    if (qs!=null)   url+='?'+qs;
+                    throw HttpResponses.redirectViaContextPath(url);
+                }
+            }
         } catch (IllegalArgumentException _) {
             // failed to parse the token as Combination. Must be something else
         }
@@ -245,7 +284,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new MatrixBuildExecution());
     }
 
     @Override
@@ -256,22 +295,47 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         return rs;
     }
 
-    private class RunnerImpl extends AbstractRunner {
+    /**
+     * Object that lives from the start of {@link MatrixBuild} execution to its end.
+     *
+     * Used to keep track of things that are needed only during the build.
+     */
+    public class MatrixBuildExecution extends AbstractBuildExecution {
         private final List<MatrixAggregator> aggregators = new ArrayList<MatrixAggregator>();
+        private Set<MatrixConfiguration> activeConfigurations;
+
+        /**
+         * Snapshot of {@link MatrixProject#getActiveConfigurations()} to ensure
+         * that the build will use a consistent view of it.
+         */
+        public Set<MatrixConfiguration> getActiveConfigurations() {
+            return activeConfigurations;
+        }
+
+        /**
+         * Aggregators attached to this build execution, that are notified
+         * of every start/end of {@link MatrixRun}.
+         */
+        public List<MatrixAggregator> getAggregators() {
+            return aggregators;
+        }
 
         protected Result doRun(BuildListener listener) throws Exception {
             MatrixProject p = getProject();
             PrintStream logger = listener.getLogger();
 
+            // give axes a chance to rebuild themselves
+            activeConfigurations = p.rebuildConfigurations(this);
+
             // list up aggregators
-            listUpAggregators(listener, p.getPublishers().values());
-            listUpAggregators(listener, p.getProperties().values());
-            listUpAggregators(listener, p.getBuildWrappers().values());
+            listUpAggregators(p.getPublishers().values());
+            listUpAggregators(p.getProperties().values());
+            listUpAggregators(p.getBuildWrappers().values());
 
             axes = p.getAxes();
 
             try {
-                return p.getExecutionStrategy().run(MatrixBuild.this, aggregators, listener);
+                return p.getExecutionStrategy().run(this);
             } catch( InterruptedException e ) {
                 logger.println("Aborted");
                 Executor x = Executor.currentExecutor();
@@ -285,14 +349,14 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                 Queue q = Jenkins.getInstance().getQueue();
                 synchronized(q) {// avoid micro-locking in q.cancel.
                     final int n = getNumber();
-                    for (MatrixConfiguration c : p.getActiveConfigurations()) {
+                    for (MatrixConfiguration c : activeConfigurations) {
                         if(q.cancel(c))
-                            logger.println(Messages.MatrixBuild_Cancelled(HyperlinkNote.encodeTo('/'+ c.getUrl(),c.getDisplayName())));
+                            logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                         MatrixRun b = c.getBuildByNumber(n);
                         if(b!=null && b.isBuilding()) {// executor can spend some time in post production state, so only cancel in-progress builds.
                             Executor exe = b.getExecutor();
                             if(exe!=null) {
-                                logger.println(Messages.MatrixBuild_Interrupting(HyperlinkNote.encodeTo('/'+ b.getUrl(),b.getDisplayName())));
+                                logger.println(Messages.MatrixBuild_Interrupting(ModelHyperlinkNote.encodeTo(b)));
                                 exe.interrupt();
                             }
                         }
@@ -301,7 +365,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             }
         }
 
-        private void listUpAggregators(BuildListener listener, Collection<?> values) {
+        private void listUpAggregators(Collection<?> values) {
             for (Object v : values) {
                 if (v instanceof MatrixAggregatable) {
                     MatrixAggregatable ma = (MatrixAggregatable) v;

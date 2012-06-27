@@ -49,6 +49,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
@@ -113,6 +115,16 @@ public class UpdateSite {
      * to avoid overloading the server.
      */
     private transient volatile long retryWindow;
+
+    /**
+     * lastModified time of the data file when it was last read.
+     */
+    private transient long dataLastReadFromFile;
+
+    /**
+     * Latest data as read from the data file.
+     */
+    private Data data;
 
     /**
      * ID string for this update source.
@@ -309,14 +321,22 @@ public class UpdateSite {
     }
 
     /**
-     * Loads the update center data, if any.
+     * Loads the update center data, if any and if modified since last read.
      *
      * @return  null if no data is available.
      */
     public Data getData() {
-        JSONObject o = getJSONObject();
-        if (o!=null)    return new Data(o);
-        return null;
+        TextFile df = getDataFile();
+        if (df.exists() && dataLastReadFromFile != df.file.lastModified()) {
+            JSONObject o = getJSONObject();
+            if (o!=null) {
+                data = new Data(o);
+                dataLastReadFromFile = df.file.lastModified();
+            } else {
+                data = null;
+            }
+        }
+        return data;
     }
 
     /**
@@ -515,23 +535,28 @@ public class UpdateSite {
         }
     }
 
+    @ExportedBean
     public static class Entry {
         /**
          * {@link UpdateSite} ID.
          */
+        @Exported
         public final String sourceId;
 
         /**
          * Artifact ID.
          */
+        @Exported
         public final String name;
         /**
          * The version.
          */
+        @Exported
         public final String version;
         /**
          * Download URL.
          */
+        @Exported
         public final String url;
 
         public Entry(String sourceId, JSONObject o) {
@@ -559,12 +584,17 @@ public class UpdateSite {
             }
         }
 
+        public Api getApi() {
+            return new Api(this);
+        }
+
     }
 
     public final class Plugin extends Entry {
         /**
          * Optional URL to the Wiki page that discusses this plugin.
          */
+        @Exported
         public final String wiki;
         /**
          * Human readable title of the plugin, taken from Wiki page.
@@ -573,28 +603,34 @@ public class UpdateSite {
          * <p>
          * beware of XSS vulnerability since this data comes from Wiki
          */
+        @Exported
         public final String title;
         /**
          * Optional excerpt string.
          */
+        @Exported
         public final String excerpt;
         /**
          * Optional version # from which this plugin release is configuration-compatible.
          */
+        @Exported
         public final String compatibleSinceVersion;
         /**
          * Version of Jenkins core this plugin was compiled against.
          */
+        @Exported
         public final String requiredCore;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
          */
+        @Exported
         public final String[] categories;
 
         /**
          * Dependencies of this plugin.
          */
+        @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
         
         @DataBoundConstructor
@@ -636,6 +672,7 @@ public class UpdateSite {
          * If some version of this plugin is currently installed, return {@link PluginWrapper}.
          * Otherwise null.
          */
+        @Exported
         public PluginWrapper getInstalled() {
             PluginManager pm = Jenkins.getInstance().getPluginManager();
             return pm.getPlugin(name);
@@ -648,6 +685,7 @@ public class UpdateSite {
          * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
          * specified, it'll return true.
          */
+        @Exported
         public boolean isCompatibleWithInstalledVersion() {
             PluginWrapper installedVersion = getInstalled();
             if (installedVersion != null) {
@@ -664,6 +702,7 @@ public class UpdateSite {
         /**
          * Returns a list of dependent plugins which need to be installed or upgraded for this plugin to work.
          */
+        @Exported
         public List<Plugin> getNeededDependencies() {
             List<Plugin> deps = new ArrayList<Plugin>();
 

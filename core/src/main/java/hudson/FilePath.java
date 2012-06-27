@@ -213,17 +213,24 @@ public final class FilePath implements Serializable {
      */
     public FilePath(FilePath base, String rel) {
         this.channel = base.channel;
-        if(isAbsolute(rel)) {
-            // absolute
-            this.remote = normalize(rel);
-        } else 
+        this.remote = normalize(resolvePathIfRelative(base, rel));
+    }
+
+    private String resolvePathIfRelative(FilePath base, String rel) {
+        if(isAbsolute(rel)) return rel;
         if(base.isUnix()) {
-            this.remote = normalize(base.remote+'/'+rel);
+            // shouldn't need this replace, but better safe than sorry
+            return base.remote+'/'+rel.replace('\\','/');
         } else {
-            this.remote = normalize(base.remote+'\\'+rel);
+            // need this replace, see Slave.getWorkspaceFor and AbstractItem.getFullName, nested jobs on Windows
+            // slaves will always have a rel containing at least one '/' character. JENKINS-13649
+            return base.remote+'\\'+rel.replace('/','\\');
         }
     }
 
+    /**
+     * Is the given path name an absolute path?
+     */
     private static boolean isAbsolute(String rel) {
         return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
     }
@@ -778,8 +785,11 @@ public final class FilePath implements Serializable {
             try {
                 IOUtils.copy(i,o);
             } finally {
-                o.close();
-                i.close();
+                try {
+                    o.close();
+                } finally {
+                    i.close();
+                }
             }
         }
     }
@@ -1361,9 +1371,24 @@ public final class FilePath implements Serializable {
      * @since 1.407
      */
     public FilePath[] list(final String includes, final String excludes) throws IOException, InterruptedException {
+        return list(includes, excludes, true);
+    }
+
+    /**
+     * List up files in this directory that matches the given Ant-style filter.
+     *
+     * @param includes
+     * @param excludes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
+     * @param defaultExcludes whether to use the ant default excludes
+     * @return
+     *      can be empty but always non-null.
+     * @since 1.465
+     */
+    public FilePath[] list(final String includes, final String excludes, final boolean defaultExcludes) throws IOException, InterruptedException {
         return act(new FileCallable<FilePath[]>() {
             public FilePath[] invoke(File f, VirtualChannel channel) throws IOException {
-                String[] files = glob(f,includes,excludes);
+                String[] files = glob(f, includes, excludes, defaultExcludes);
 
                 FilePath[] r = new FilePath[files.length];
                 for( int i=0; i<r.length; i++ )
@@ -1380,10 +1405,11 @@ public final class FilePath implements Serializable {
      * @return
      *      A set of relative file names from the base directory.
      */
-    private static String[] glob(File dir, String includes, String excludes) throws IOException {
+    private static String[] glob(File dir, String includes, String excludes, boolean defaultExcludes) throws IOException {
         if(isAbsolute(includes))
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
         FileSet fs = Util.createFileSet(dir,includes,excludes);
+        fs.setDefaultexcludes(defaultExcludes);
         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
         String[] files = ds.getIncludedFiles();
         return files;
@@ -1430,6 +1456,16 @@ public final class FilePath implements Serializable {
      * Writes to this file.
      * If this file already exists, it will be overwritten.
      * If the directory doesn't exist, it will be created.
+     *
+     * <P>
+     * I/O operation to remote {@link FilePath} happens asynchronously, meaning write operations to the returned
+     * {@link OutputStream} will return without receiving a confirmation from the remote that the write happened.
+     * I/O operations also happens asynchronously from the {@link Channel#call(Callable)} operations, so if
+     * you write to a remote file and then execute {@link Channel#call(Callable)} and try to access the newly copied
+     * file, it might not be fully written yet.
+     *
+     * <p>
+     *
      */
     public OutputStream write() throws IOException, InterruptedException {
         if(channel==null) {
@@ -1570,10 +1606,16 @@ public final class FilePath implements Serializable {
             }
         });
 
-        // make sure the write fully happens before we return.
+        // make sure the writes fully got delivered to 'os' before we return.
+        // this is needed because I/O operation is asynchronous
         syncIO();
     }
 
+    /**
+     * With fix to JENKINS-11251 (remoting 2.15), this is no longer necessary.
+     * But I'm keeping it for a while so that users who manually deploy slave.jar has time to deploy new version
+     * before this goes away.
+     */
     private void syncIO() throws InterruptedException {
         try {
             if (channel!=null)
@@ -1805,12 +1847,12 @@ public final class FilePath implements Serializable {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
                         IOUtils.copy(t,f);
+
+                        f.setLastModified(te.getModTime().getTime());
+                        int mode = te.getMode()&0777;
+                        if(mode!=0 && !Functions.isWindows()) // be defensive
+                            _chmod(f,mode);
                     }
-                    
-                    f.setLastModified(te.getModTime().getTime());
-                    int mode = te.getMode()&0777;
-                    if(mode!=0 && !Functions.isWindows()) // be defensive
-                        _chmod(f,mode);
                 }
             }
         } catch(IOException e) {

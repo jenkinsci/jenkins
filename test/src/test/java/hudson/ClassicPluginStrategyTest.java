@@ -24,7 +24,6 @@
  */
 package hudson;
 
-import hudson.PluginWrapper;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -49,7 +48,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
     public void testDependencyClassLoader() throws Exception {
         // Test data has: foo3 depends on foo2,foo1; foo2 depends on foo1
         // (thus findResources from foo3 can find foo1 resources via 2 dependency paths)
-        PluginWrapper p = hudson.getPluginManager().getPlugin("foo3");
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo3");
         String res = p.getIndexPage().toString();
         assertTrue(res + "should be foo3", res.contains("/foo3/"));
 

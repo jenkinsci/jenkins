@@ -54,7 +54,7 @@ public class MatrixTest extends HudsonTestCase {
      */
     @Bug(9293)
     public void testConfigurationACL() throws Exception {
-        hudson.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy());
+        jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy());
         MatrixProject mp = createMatrixProject();
         mp.setAxes(new AxisList(new Axis("foo", "a", "b")));
         MatrixConfiguration mc = mp.getItem("foo=a");

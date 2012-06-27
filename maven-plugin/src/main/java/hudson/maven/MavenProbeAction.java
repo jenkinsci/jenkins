@@ -99,7 +99,7 @@ public final class MavenProbeAction implements Action {
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous,
         // so tie it to the admin access
-        owner.checkPermission(Jenkins.ADMINISTER);
+        owner.checkPermission(Jenkins.RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if(text!=null) {
