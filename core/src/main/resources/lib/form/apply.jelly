@@ -23,11 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form"
+         xmlns:st="jelly:stapler">
   <s:documentation>
     "Apply" button that submits the form but without a page transition.
     See hudson.util.FormApply for the server-side code.
   </s:documentation>
+  <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
   <input type="button" value="${%Apply}" class="apply-button applyButton" /><!-- applyButton is legacy -->
 </j:jelly>

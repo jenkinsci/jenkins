@@ -103,6 +103,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <!--
     If bi-directional binding, fill in the rest of attributes automatically
   -->
