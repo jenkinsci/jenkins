@@ -24,7 +24,10 @@ var radioBlockSupport = {
     }
 };
 
-Behaviour.register({
+Behaviour.list.unshift({
+    // this needs to happen before TR.row-set-end rule kicks in.
+    // but this is a hack.
+    // TODO: how do we handle ordering?
     "INPUT.radio-block-control" : function(r) {
         r.id = "radio-block-"+(iota++);
 
