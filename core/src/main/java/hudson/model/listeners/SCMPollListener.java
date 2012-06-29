@@ -25,27 +25,77 @@ package hudson.model.listeners;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.scm.PollingResult;
 import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
 
-public abstract class SCMPollListener implements ExtensionPoint {
+import java.io.IOException;
 
+/**
+ * A hook for listening to polling activities in Jenkins.
+ *
+ * @author Christian Wolfgang
+ * @author Kohsuke Kawaguchi
+ * @since 1.474
+ */
+public abstract class SCMPollListener implements ExtensionPoint {
+    /**
+     * Called before the polling execution.
+     *
+     * @param project
+     *      Project that's about to run polling.
+     * @param listener
+     *      Connected to the polling log.
+     */
 	public void onBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {}
 
-	public void onAfterPolling( AbstractProject<?, ?> project, TaskListener listener ) {}
+    /**
+     * Called when the polling successfully concluded.
+     *
+     * @param result
+     *      The result of the polling.
+     */
+	public void onPollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result) {}
+
+    /**
+     * Called when the polling concluded with an error.
+     *
+     * @param exception
+     *      The problem reported. This can include {@link InterruptedException} (that corresponds to the user cancelling it),
+     *      some anticipated problems like {@link IOException}, or bug in the code ({@link RuntimeException})
+     */
+    public void onPollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
 
 	public static void fireBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {
+        for (SCMPollListener l : all()) {
+            try {
+                l.onBeforePolling(project, listener);
+            } catch (Exception e) {
+                /* Make sure, that the listeners do not have any impact on the actual poll */
+            }
+        }
+    }
+
+	public static void firePollingSuccess( AbstractProject<?, ?> project, TaskListener listener, PollingResult result ) {
 		for( SCMPollListener l : all() ) {
-			l.onBeforePolling( project, listener );
+            try {
+                l.onPollingSuccess(project, listener, result);
+            } catch (Exception e) {
+                /* Make sure, that the listeners do not have any impact on the actual poll */
+            }
 		}
 	}
 
-	public static void fireAfterPolling( AbstractProject<?, ?> project, TaskListener listener ) {
-		for( SCMPollListener l : all() ) {
-			l.onAfterPolling( project, listener );
-		}
-	}
+    public static void firePollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception ) {
+   		for( SCMPollListener l : all() ) {
+               try {
+                   l.onPollingFailed(project, listener, exception);
+               } catch (Exception e) {
+                   /* Make sure, that the listeners do not have any impact on the actual poll */
+               }
+   		}
+   	}
 
 	/**
 	 * Returns all the registered {@link SCMPollListener}s.
