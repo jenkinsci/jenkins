@@ -81,6 +81,7 @@ THE SOFTWARE.
             class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
             checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
             rows="${h.determineRows(value)}"
+            readonly="${attrs.readonly}"
             codemirror-mode="${attrs['codemirror-mode']}"
             codemirror-config="${attrs['codemirror-config']}">
     <st:out value="${value}" />
