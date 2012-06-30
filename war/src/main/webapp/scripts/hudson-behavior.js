@@ -36,41 +36,49 @@ function object(o) {
     return new F();
 }
 
-// @see https://developer.mozilla.org/en/DOM/Using_the_Page_Visibility_API
-// Set the name of the hidden property and the change event for visibility
-var hidden, visibilityChange; 
-if (typeof document.hidden !== "undefined") {
-    hidden = "hidden";
-    visibilityChange = "visibilitychange";
-} else if (typeof document.mozHidden !== "undefined") {
-    hidden = "mozHidden";
-    visibilityChange = "mozvisibilitychange";
-} else if (typeof document.msHidden !== "undefined") {
-    hidden = "msHidden";
-    visibilityChange = "msvisibilitychange";
-} else if (typeof document.webkitHidden !== "undefined") {
-    hidden = "webkitHidden";
-    visibilityChange = "webkitvisibilitychange";
-}
+/**
+ * A function that returns false if the page is known to be invisible.
+ */
+var isPageVisible = (function(){
+    // @see https://developer.mozilla.org/en/DOM/Using_the_Page_Visibility_API
+    // Set the name of the hidden property and the change event for visibility
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") {
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.mozHidden !== "undefined") {
+        hidden = "mozHidden";
+        visibilityChange = "mozvisibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
 
-// By default, visibility set to true
-var pageIsVisible = true;
+    // By default, visibility set to true
+    var pageIsVisible = true;
 
-// If the page is hidden, prevent any polling
-// if the page is shown, restore pollings
-function onVisibilityChange() {
-    pageIsVisible = !document[hidden];
-}
+    // If the page is hidden, prevent any polling
+    // if the page is shown, restore pollings
+    function onVisibilityChange() {
+        pageIsVisible = !document[hidden];
+    }
 
-// Warn if the browser doesn't support addEventListener or the Page Visibility API
-if (typeof document.addEventListener !== "undefined" && typeof hidden !== "undefined") {
+    // Warn if the browser doesn't support addEventListener or the Page Visibility API
+    if (typeof document.addEventListener !== "undefined" && typeof hidden !== "undefined") {
+        // Init the value to the real state of the page
+        pageIsVisible = !document[hidden];
 
-    // Init the value to the real state of the page
-    pageIsVisible = !document[hidden];
+        // Handle page visibility change
+        document.addEventListener(visibilityChange, onVisibilityChange, false);
+    }
 
-    // Handle page visibility change   
-    document.addEventListener(visibilityChange, onVisibilityChange, false);
-}
+    return function() {
+        return pageIsVisible;
+    }
+})();
 
 // id generator
 var iota = 0;
@@ -1475,7 +1483,7 @@ function expandTextArea(button,id) {
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
     var f = function() {
-        if(pageIsVisible){
+        if(isPageVisible()) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
@@ -1498,6 +1506,7 @@ function refreshPart(id,url) {
             });    
         } else {
             // Reschedule
+            if(isRunAsTest) return;
             refreshPart(id,url);
         }
         
@@ -1576,7 +1585,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
-        if(pageIsVisible){
+        if(isPageVisible()){
             var bh = $('buildHistory');
             if (bh.headers == null) {
                 // Yahoo.log("Missing headers in buildHistory element");
