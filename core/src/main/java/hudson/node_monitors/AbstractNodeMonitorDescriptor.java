@@ -130,6 +130,19 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
     }
 
     /**
+     * Utility method to mark the computer online for derived classes.
+     * 
+     * @return true 
+     *      if the node was actually taken online by this act (as opposed to us deciding not to do it,
+     *      or the computer was already online.)
+     */
+    protected boolean markOnline(Computer c) {
+        if(isIgnored() || c.isOnline()) return false; // noop
+        c.setTemporarilyOffline(false,null);
+        return true;
+    }
+    
+    /**
      * Utility method to mark the computer offline for derived classes.
      *
      * @return true
