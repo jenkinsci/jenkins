@@ -427,9 +427,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @Override
     protected void updateTransientActions(){
         super.updateTransientActions();
-        // update all transient actions in configurations too.
-        for(MatrixConfiguration configuration: getActiveConfigurations()){
-            configuration.updateTransientActions();
+        if(getActiveConfigurations() !=null){
+            // update all transient actions in configurations too.
+            for(MatrixConfiguration configuration: getActiveConfigurations()){
+                configuration.updateTransientActions();
+            }
         }
     }
 
