@@ -163,6 +163,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String icon;
 
+        /**
+         * If this is a submenu, definition of subitems.
+         */
+        @Exported(inline=true)
+        public ContextMenu subMenu;
+
         public MenuItem(String url, String icon, String displayName) {
             this.url = URI.create(Stapler.getCurrentRequest().getRequestURI()).resolve(url).toString();
             this.icon = icon;
