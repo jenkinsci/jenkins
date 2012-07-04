@@ -23,6 +23,7 @@
  */
 package hudson.console;
 
+import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
@@ -120,7 +121,7 @@ import java.util.zip.GZIPOutputStream;
  * @see Functions#generateConsoleAnnotationScriptAndStylesheet()
  * @since 1.349
  */
-public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>> {
+public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>>, ExtensionPoint {
     /**
      * When the line of a console output that this annotation is attached is read by someone,
      * a new {@link ConsoleNote} is de-serialized and this method is invoked to annotate that line.
