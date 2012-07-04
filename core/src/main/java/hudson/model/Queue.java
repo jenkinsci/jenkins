@@ -69,12 +69,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,14 +96,26 @@ import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.jelly.Jelly;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import org.kohsuke.stapler.jelly.HTMLWriterOutput;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
  * Build queue.
@@ -1012,6 +1026,43 @@ public class Queue extends ResourceController implements Saveable {
 
     public Api getApi() {
         return new Api(this);
+    }
+
+    /**
+     * Serves the JSON data for front-end rendering
+     */
+    public JSONArray doDisplay() throws JellyException {
+        Item[] items = getItems();
+        Arrays.sort(items,new Comparator<Item>() {// sort newer ones first
+            public int compare(Item o1, Item o2) {
+                return o2.id-o1.id;
+            }
+        });
+
+        Script s = WebApp.getCurrent().getMetaClass(Item.class).loadTearOff(JellyClassTearOff.class).resolveScript("/lib/hudson/queue-item");
+
+        JSONArray a = new JSONArray();
+        for (Item i : items) {
+            StringWriter html = new StringWriter();
+            JellyContext context = new JellyContext();
+            context.setVariable("item",i);
+            s.run(context, HTMLWriterOutput.createXMLOutput(html));
+
+            a.add(new JSONObject()
+                    .accumulate("id",i.id)
+                    .accumulate("html",html.toString()));
+        }
+        if (items.length==0) {
+            s = WebApp.getCurrent().getMetaClass(Item.class).loadTearOff(JellyClassTearOff.class).resolveScript("/lib/hudson/queue-item-empty");
+            StringWriter html = new StringWriter();
+            JellyContext context = new JellyContext();
+            s.run(context, HTMLWriterOutput.createXMLOutput(html));
+
+            a.add(new JSONObject()
+                .accumulate("id",-1)
+                .accumulate("html",html.toString()));
+        }
+        return a;
     }
 
     /**

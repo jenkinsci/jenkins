@@ -1,0 +1,11 @@
+#buildQueue TD {
+    overflow: hidden;
+}
+
+#buildQueue TD.pane.jobname {
+    white-space: normal;
+    border-right: none;
+}
+#buildQueue TD.pane.stop-button {
+    border-left: none;
+}

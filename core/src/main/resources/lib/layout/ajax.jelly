@@ -42,7 +42,9 @@ THE SOFTWARE.
     <j:otherwise>
       <!-- called to generate partial HTML. set up HTML headers and etc -->
       <!-- copied from layout.jelly -->
-      <st:contentType value="text/html;charset=UTF-8" />
+      <j:if test="${response!=null}">
+        <st:contentType value="text/html;charset=UTF-8" />
+      </j:if>
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
       ${h.initPageVariables(context)}
       <j:set var="ajax" value="true"/>

@@ -27,24 +27,38 @@ THE SOFTWARE.
   <st:documentation>
     Displays the build queue as &lt;l:pane>
 
-    <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.items},
-      but for example you can specify a sublist after some filtering to narrow down
-      the list.
+    <st:attribute name="item" use="required">
+      Queue Item
     </st:attribute>
   </st:documentation>
-  <t:setIconSize/>
-  <l:pane title="${%Build Queue}" width="2" id="buildQueue">
-    <j:if test="${app.quietingDown}">
-      <tr>
-        <td class="pane" colspan="2" style="white-space: normal;">
-          ${%Jenkins is going to shut down. No further builds will be performed.}
-          <j:if test="${h.hasPermission(app.ADMINISTER)}">
-            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
-          </j:if>
-        </td>
-      </tr>
-    </j:if>
-  </l:pane>
-  <st:adjunct includes="lib.hudson.queue.queue"/>
+  <l:ajax>
+    <td class="pane jobname" width="100%" tooltip="${item.why}${h.escape(item.params)}&lt;br&gt;${%WaitingFor(item.inQueueForString)}">
+      <div>
+        <j:set var="stuck" value="${item.isStuck()}"/>
+        <j:choose>
+          <j:when test="${h.hasPermission(item.task,item.task.READ)}">
+            <a href="${rootURL}/${item.task.url}" class="model-link">
+              ${item.task.fullDisplayName}
+            </a>
+            <j:if test="${stuck}">
+              &#160;
+              <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
+                <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
+              </a>
+            </j:if>
+          </j:when>
+          <j:otherwise>
+            <span>${%Unknown Task}</span>
+          </j:otherwise>
+        </j:choose>
+      </div>
+    </td>
+    <td class="pane stop-button" align="right" valign="middle">
+      <div>
+        <j:if test="${item.hasCancelPermission()}">
+          <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.png" alt="cancel this build" height="16" width="16"/></a>
+        </j:if>
+      </div>
+     </td>
+  </l:ajax>
 </j:jelly>
