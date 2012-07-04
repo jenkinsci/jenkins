@@ -58,6 +58,7 @@ import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithContextMenu;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -144,6 +145,10 @@ public class Functions {
 
     public static boolean isModel(Object o) {
         return o instanceof ModelObject;
+    }
+
+    public static boolean isModelWithContextMenu(Object o) {
+        return o instanceof ModelObjectWithContextMenu;
     }
 
     public static String xsDate(Calendar cal) {
