@@ -1377,6 +1377,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         private final CheckpointSet checkpoints = new CheckpointSet();
 
+        private final Map<Object,Object> attributes = new HashMap<Object, Object>();
+
         /**
          * Performs the main build and returns the status code.
          *
@@ -1415,6 +1417,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public JobT getProject() {
             return _this().getParent();
+        }
+
+        /**
+         * Bag of stuff to allow plugins to store state for the duration of a build
+         * without persisting it.
+         *
+         * @since 1.473
+         */
+        public Map<Object,Object> getAttributes() {
+            return attributes;
         }
     }
 
