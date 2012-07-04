@@ -116,7 +116,9 @@ var breadcrumbs = (function() {
 
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
-        $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
+        e = $(e);
+        if (e.hasClassName("no-context-menu"))  return;
+        e.observe("mouseover", function () { handleHover(e.firstChild,0) });
     };
 
     jenkinsRules["A.model-link"] = function (a) {
