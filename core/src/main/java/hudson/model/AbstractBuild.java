@@ -433,7 +433,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected BuildListener listener;
 
         /**
-         * Returns the current {@link Node} on which we are buildling.
+         * Returns the current {@link Node} on which we are building.
          */
         protected final Node getCurrentNode() {
             return Executor.currentExecutor().getOwner().getNode();
