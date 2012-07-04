@@ -46,6 +46,7 @@ import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
+import jenkins.util.io.OnMaster;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -99,7 +100,7 @@ import static hudson.init.InitMilestone.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class PluginManager extends AbstractModelObject {
+public abstract class PluginManager extends AbstractModelObject implements OnMaster {
     /**
      * All discovered plugins.
      */
