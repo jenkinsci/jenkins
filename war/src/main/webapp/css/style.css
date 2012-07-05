@@ -953,6 +953,18 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
+.hetero-list-container.with-drag-drop .repeated-chunk.hover {
+    border: 2px dashed #CCC;
+}
+
+.hetero-list-container.with-drag-drop .repeated-chunk {
+    border: 2px dashed transparent;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+
 /* ========================= plugin update center ========================= */
 
 #plugins .excerpt {
