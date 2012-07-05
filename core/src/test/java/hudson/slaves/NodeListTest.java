@@ -86,6 +86,10 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        public void setLabelString(String labelString) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
         public FilePath getWorkspaceFor(TopLevelItem item) {
             throw new UnsupportedOperationException();
         }

@@ -121,6 +121,20 @@ public class LabelExpressionTest extends HudsonTestCase {
     }
 
     /**
+     * Make sure we can reset the label of an existing slave.
+     */
+    public void testSetLabelString() throws Exception {
+        DumbSlave s = createSlave("foo","",null);
+
+        assertSame(s.getLabelString(), "");
+        
+        s.setLabelString("bar");
+
+        assertSame(s.getLabelString(), "bar");
+
+    }
+
+    /**
      * Tests the expression parser.
      */
     public void testParser() throws Exception {
