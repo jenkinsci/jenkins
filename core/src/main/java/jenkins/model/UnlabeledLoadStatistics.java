@@ -39,9 +39,9 @@ import hudson.model.Queue.Task;
  * @see OverallLoadStatistics
  * @author Kohsuke Kawaguchi
  */
-public class UnlabeldLoadStatistics extends LoadStatistics {
+public class UnlabeledLoadStatistics extends LoadStatistics {
 
-    UnlabeldLoadStatistics() {
+    UnlabeledLoadStatistics() {
         super(0, 0);
     }
 
