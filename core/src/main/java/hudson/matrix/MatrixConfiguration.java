@@ -344,4 +344,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
         return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
     }
+
+    @Override
+    public boolean supportsMakeDisabled() {
+        return false;
+    }
+
 }

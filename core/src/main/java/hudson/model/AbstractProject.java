@@ -620,6 +620,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    /**
+     * Specifies whether this project may be disabled by the user.
+     * By default, it can, but specialized project types contained in another
+     * (such as Maven modules or matrix configurations) should return false.
+     * @return true if the GUI should allow {@link #doDisable} and the like
+     * @since 1.475
+     */
+    public boolean supportsMakeDisabled() {
+        return true;
+    }
+
     public void disable() throws IOException {
         makeDisabled(true);
     }
