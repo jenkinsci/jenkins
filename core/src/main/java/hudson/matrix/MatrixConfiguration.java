@@ -46,6 +46,7 @@ import hudson.model.SCMedItem;
 import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
+import jenkins.scm.SCMCheckoutStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.LogRotator;
@@ -185,6 +186,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return getParent().getScmCheckoutRetryCount();
     }
 
+    /**
+     * Inherit the value from the parent.
+     */
+    @Override
+    public SCMCheckoutStrategy getScmCheckoutStrategy() {
+        return getParent().getScmCheckoutStrategy();
+    }
+ 
     @Override
     public boolean isConfigurable() {
         return false;
