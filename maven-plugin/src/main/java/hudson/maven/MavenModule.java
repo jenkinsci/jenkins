@@ -167,11 +167,6 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
     }
 
     @Override
-    public boolean supportsMakeDisabled() {
-        return false;
-    }
-
-    @Override
     public boolean isBuildable() {
         // not buildable if the parent project is disabled
         return super.isBuildable() && getParent().isBuildable();
