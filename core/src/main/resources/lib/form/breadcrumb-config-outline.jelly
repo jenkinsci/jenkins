@@ -36,16 +36,31 @@ THE SOFTWARE.
     TODO: use human-readable ID
   -->
   <script>
-    Event.observe(window,"load",function(){
+    Event.observe(window, "load", function () {
       /** @type section.SectionNode */
       var outline = section.buildTree();
       var menu = new breadcrumbs.ContextMenu();
       $A(outline.children).each(function (e) {
-        if (!e.section.id)
-            e.section.setAttribute("id","section"+(iota++));
-        menu.add('#'+e.section.id,null,e.getHTML());
+        var id = "section" + (iota++);
+        var caption = e.getHTML();
+        var cur = $(e.section).down("A.section-anchor");
+        if (cur != null) {
+            id = cur.id;
+          caption = caption.substring(caption.indexOf("&lt;/a>")+4);
+        } else
+            $(e.section).insert({top:"&lt;a id=" + id + " class='section-anchor'>#&lt;/a>"});
+        menu.add('#' + id, null, caption);
       });
-      breadcrumbs.attachMenu('inpage-nav',menu);
+      breadcrumbs.attachMenu('inpage-nav', menu);
     });
   </script>
+  <style>
+    A.section-anchor {
+      position: relative;
+      top: -2em;
+      visibility: hidden;
+      display: inline-block;
+      width: 0px;
+    }
+  </style>
 </j:jelly>
