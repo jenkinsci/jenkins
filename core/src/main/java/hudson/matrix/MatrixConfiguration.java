@@ -42,6 +42,7 @@ import hudson.model.SCMedItem;
 import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
+import jenkins.scm.SCMCheckoutStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.LogRotator;
