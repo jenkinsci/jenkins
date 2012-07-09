@@ -61,7 +61,7 @@ public class Items {
     }
 
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
-        return Descriptor.find(all(),fqcn);
+        return Descriptor.find(all(), fqcn);
     }
 
     /**
@@ -135,7 +135,7 @@ public class Items {
     }
 
     /**
-     * Compute the relative name of an item after a rename occurred. Used to manage job references as names in
+     * Compute the relative name of list of items after a rename occurred. Used to manage job references as names in
      * plugins to support {@link hudson.model.listeners.ItemListener#onRenamed(hudson.model.Item, String, String)}.
      * <p>
      * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
@@ -147,7 +147,7 @@ public class Items {
      * @param context the {link ItemGroup} relative names refer to
      * @return relative name for the renamed item, based on the same ItemGroup context
      */
-    public static String rename(String oldFullName, String newFullName, String relativeNames, ItemGroup context) {
+    public static String computeRelativeNamesAfterRenaming(String oldFullName, String newFullName, String relativeNames, ItemGroup context) {
 
         StringTokenizer tokens = new StringTokenizer(relativeNames,",");
         List<String> newValue = new ArrayList<String>();
@@ -157,7 +157,7 @@ public class Items {
             if (canonicalName.startsWith(oldFullName)) {
                 String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
                 // relative name points to the renamed item, let's compute the new relative name
-                newValue.add( rename(canonicalName, newCanonicalName, relativeName) );
+                newValue.add( computeRelativeNameAfterRenaming(canonicalName, newCanonicalName, relativeName) );
             } else {
                 newValue.add(relativeName);
             }
@@ -168,7 +168,7 @@ public class Items {
     /**
      * Compute the relative name of an Item after renaming
      */
-    private static String rename(String oldFullName, String newFullName, String relativeName) {
+    private static String computeRelativeNameAfterRenaming(String oldFullName, String newFullName, String relativeName) {
 
         String[] a = oldFullName.split("/");
         String[] n = newFullName.split("/");
