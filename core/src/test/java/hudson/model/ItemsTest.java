@@ -47,16 +47,16 @@ public class ItemsTest {
     }
 
     @Test
-    public void rename() {
-        assertEquals("meu,bu,zo", Items.rename("ga", "meu", "ga,bu,zo", root ));
-        assertEquals("ga,bu,zo", Items.rename("ga", "meu", "ga,bu,zo", foo_bar ));
-        assertEquals("meu,bu,zo", Items.rename("foo/ga", "foo/meu", "ga,bu,zo", foo ));
+    public void computeRelativeNamesAfterRenaming() {
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", root ));
+        assertEquals("ga,bu,zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "ga,bu,zo", foo_bar ));
+        assertEquals("meu,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/ga", "foo/meu", "ga,bu,zo", foo ));
 
-        assertEquals("/meu,/bu,/zo", Items.rename("ga", "meu", "/ga,/bu,/zo", root ));
-        assertEquals("/meu,/bu,/zo", Items.rename("ga", "meu", "/ga,/bu,/zo", foo_bar ));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", root ));
+        assertEquals("/meu,/bu,/zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "/ga,/bu,/zo", foo_bar ));
 
-        assertEquals("../meu,../bu,../zo", Items.rename("ga", "meu", "../ga,../bu,../zo", foo ));
-        assertEquals("../qux/ga,bu,zo", Items.rename("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar ));
+        assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo ));
+        assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar ));
     }
 
 }
