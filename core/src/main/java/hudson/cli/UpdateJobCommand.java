@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import org.kohsuke.args4j.Argument;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 /**
@@ -43,7 +44,7 @@ public class UpdateJobCommand extends CLICommand {
     }
 
     protected int run() throws Exception {
-        job.updateByXml(new StreamSource(stdin));
+        job.updateByXml((Source)new StreamSource(stdin));
         return 0;
     }
 }

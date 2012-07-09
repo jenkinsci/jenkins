@@ -24,8 +24,10 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
     @Override
     public void buildEnvironmentFor(Run r, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
-        if (c!=null)
-            c.getEnvironment().overrideAll(env);
+        if (c!=null){
+            EnvVars compEnv = c.getEnvironment().overrideAll(env);
+            env.putAll(compEnv);
+        }
 
         Jenkins j = Jenkins.getInstance();
         String rootUrl = j.getRootUrl();

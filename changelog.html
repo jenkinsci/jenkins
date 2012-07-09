@@ -55,6 +55,47 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.474>What's new in 1.474</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fix French translation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13274">issue 13274</a>)
+  <li class=rfe>
+    Avoid doing AJAX updates if the page becomes invisible.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/506">pull 506</a>)
+  <li class=rfe>
+    Added a new extension point to listen to polling activities.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14178">issue 14178</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.473>What's new in 1.473</a> (2012/07/01)</h3>
+<ul class=image>
+  <li class=bug>
+    Updating job config.xml shouldn't clobber in-progress builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12318">issue 12318</a>)
+  <li class=rfe>
+    Search index includes all top-level jobs, not just jobs in the current view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13148">issue 13148</a>)
+  <li class="bug">
+    Updated typo in Serbian translation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13695">issue 13695</a>)
+</ul>
+<h3><a name=v1.472>What's new in 1.472</a> (2012/06/24)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a synchronization problem between master/slave data communication.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11251">issue 11251</a>)
+  <li class=rfe>
+    Added a mechanism to filter extension points as they are discovered.
+  <li class=rfe>
+    Exposed the master's own node properties to be configured in <tt>/computer/(master)/configure</tt>
+    (whereas <tt>/configure</tt> controls global node properties that apply to all nodes.)
   <li class=rfe>
     Made the list of environment variables in the help page pluggable
     (<a href="https://github.com/jenkinsci/jenkins/pull/434">pull 434</a>)
@@ -62,11 +103,7 @@ Upcoming changes</a>
     Added a new hook to enable matrix project axes to change its values per build.
     (<a href="https://github.com/jenkinsci/jenkins/pull/449">pull 449</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.470>what's new in 1.470</a> <!--=date=--></h3>
+<h3><a name=v1.471>What's new in 1.471</a> (2012/06/18)</h3>
 <ul class=image>
   <li class=bug>
     JSON MIME type should be "application/json"
@@ -85,7 +122,11 @@ Upcoming changes</a>
   <li class=rfe>
     The CLI <tt>build</tt> command can now wait until the start of the build.
 </ul>
-</div><!--=END=-->
+<h3><a name=v1.470>What's new in 1.470</a> (2012/06/13)</h3>
+<ul class=image>
+  <li class=bug>
+    Problem in syncing mirrors with native packages. Re-releasing the same bits as 1.469 as 1.470.
+</ul>
 <h3><a name=v1.469>What's new in 1.469</a> (2012/06/11)</h3>
 <ul class=image>
   <li class=bug>
@@ -579,6 +620,9 @@ Upcoming changes</a>
   <li class=bug>
     Link to user profile from console output should go to the user ID, not the user name
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12279">issue 12279</a>)
+  <li class=bug>
+    Copy artifacts fails on windows slaves due to failing to set a timestamp.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
 </ul>
 <h3><a name=v1.446>What's new in 1.446</a> (2012/01/02)</h3>
 <ul class=image>
@@ -681,9 +725,6 @@ Upcoming changes</a>
   <li class=bug>
     Fixed ConcurrentModificationException in parallel Maven 3 builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11256">issue 11256</a>)
-  <li class=bug>
-    Copy artifacts fails on windows slaves due to failing to set a timestamp.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11073">issue 11073</a>)
   <li class=rfe>
     Upgrade aether version to 1.13 and sisu to 2.3.0 .
   <li class=rfe>

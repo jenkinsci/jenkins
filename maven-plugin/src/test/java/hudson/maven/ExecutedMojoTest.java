@@ -38,6 +38,7 @@ public class ExecutedMojoTest {
         descriptor.setPluginDescriptor(pluginDescriptor);
         this.mojoDescriptor = descriptor;
         
+        // suppress the WARNING logs we expect
         this.oldLevel = Logger.getLogger(ExecutedMojo.class.getName()).getLevel();
         Logger.getLogger(ExecutedMojo.class.getName()).setLevel(Level.SEVERE);
     }

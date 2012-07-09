@@ -121,6 +121,10 @@ public final class XmlFile {
         return file;
     }
 
+    public XStream getXStream() {
+        return xs;
+    }
+
     /**
      * Loads the contents of this file into a new object.
      */
