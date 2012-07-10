@@ -937,7 +937,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * <p>
      * This mechanism is used by {@link MatrixConfiguration} to pass
      * the configuration values to the current build. It is up to
-     * {@link Builder}s to decide whether it wants to recognize the values
+     * {@link Builder}s to decide whether they want to recognize the values
      * or how to use them.
      *
      * <p>
