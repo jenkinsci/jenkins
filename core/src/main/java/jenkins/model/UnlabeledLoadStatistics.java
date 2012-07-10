@@ -39,18 +39,21 @@ import hudson.model.Queue.Task;
  * @see OverallLoadStatistics
  * @author Kohsuke Kawaguchi
  */
-public class UnlabeldLoadStatistics extends LoadStatistics {
+public class UnlabeledLoadStatistics extends LoadStatistics {
 
-    UnlabeldLoadStatistics() {
+    UnlabeledLoadStatistics() {
         super(0, 0);
     }
 
     @Override
     public int computeIdleExecutors() {
         int r=0;
-        for (Computer c : Jenkins.getInstance().getComputers())
-            if(c.getNode().getMode()== Mode.NORMAL && (c.isOnline() || c.isConnecting()))
+        for (Computer c : Jenkins.getInstance().getComputers()) {
+            Node node = c.getNode();
+            if (node != null && node.getMode() == Mode.NORMAL && (c.isOnline() || c.isConnecting())) {
                 r += c.countIdle();
+            }
+        }
         return r;
     }
 
@@ -58,8 +61,10 @@ public class UnlabeldLoadStatistics extends LoadStatistics {
     public int computeTotalExecutors() {
         int r=0;
         for (Computer c : Jenkins.getInstance().getComputers()) {
-            if(c.getNode().getMode()==Mode.NORMAL && c.isOnline())
+            Node node = c.getNode();
+            if (node != null && node.getMode() == Mode.NORMAL && c.isOnline()) {
                 r += c.countExecutors();
+            }
         }
         return r;
     }
