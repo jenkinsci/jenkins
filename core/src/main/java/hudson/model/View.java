@@ -465,6 +465,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	return result;
     }
     
+    public synchronized void updateTransientActions() {
+        transientActions = TransientViewActionFactory.createAllFor(this); 
+    }
+    
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -743,6 +747,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+        updateTransientActions();  
 
         save();
 
