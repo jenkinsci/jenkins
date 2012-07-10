@@ -24,20 +24,25 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <h1>${it.pronoun} ${it.displayName}</h1>
-      <j:if test="${(it.name!=it.displayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}">
-        ${%Project name}: ${it.name}
-      </j:if>
-      <t:editableDescription permission="${it.CONFIGURE}"/>
-
-      <st:include page="jobpropertysummaries.jelly" />
-      <!-- inject main part here -->
-      <st:include page="main.jelly" />
-
-      <st:include page="permalinks.jelly" />
-    </l:main-panel>
-  </l:layout>
+  <j:choose>
+    <j:when test="${it.disabled}">
+      <div class="warning">
+        <form method="post" action="enable">
+          ${%This project is currently disabled}
+          <l:hasPermission permission="${it.CONFIGURE}">
+            <f:submit value="${%Enable}" />
+          </l:hasPermission>
+        </form>
+      </div>
+    </j:when>
+    <j:otherwise>
+      <div align="right">
+        <form method="post" action="disable">
+          <l:hasPermission permission="${it.CONFIGURE}">
+            <f:submit value="${%Disable Project}" />
+          </l:hasPermission>
+        </form>
+      </div>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
