@@ -620,6 +620,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    /**
+     * Specifies whether this project may be disabled by the user.
+     * By default, it can be only if this is a {@link TopLevelItem};
+     * would be false for matrix configurations, etc.
+     * @return true if the GUI should allow {@link #doDisable} and the like
+     * @since 1.475
+     */
+    public boolean supportsMakeDisabled() {
+        return this instanceof TopLevelItem;
+    }
+
     public void disable() throws IOException {
         makeDisabled(true);
     }
