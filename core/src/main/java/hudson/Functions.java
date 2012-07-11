@@ -110,8 +110,10 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -801,6 +803,29 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
+    /**
+     *
+     * @param supertype binary name of supertype within Jenkins core
+     * @param include true to include all subtypes and nothing else, false to include everything except subtypes
+     * @return same as {@link #getSortedDescriptorsForGlobalConfig} except restricted according to parameters
+     * @since 1.475
+     */
+    @SuppressWarnings("rawtypes")
+    public static Collection<Descriptor> getFilteredSortedDescriptorsForGlobalConfig(String supertype, boolean include) {
+        Class clazz = Describable.class;
+        try {
+            clazz = Class.forName(supertype);
+        } catch (ClassNotFoundException x) {
+            Logger.getLogger(Functions.class.getName()).log(Level.WARNING, null, x);
+        }
+        Collection<Descriptor> r = new ArrayList<Descriptor>();
+        for (Descriptor d : getSortedDescriptorsForGlobalConfig()) {
+            if (d.isSubTypeOf(clazz) == include) {
+                r.add(d);
+            }
+        }
+        return r;
+    }
 
     /**
      * Computes the path to the icon of the given action

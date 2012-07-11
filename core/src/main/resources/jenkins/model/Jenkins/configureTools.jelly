@@ -22,44 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Config page
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout norefresh="true" permission="${it.ADMINISTER}" title="${%Configure System}">
+<l:layout norefresh="true" permission="${it.ADMINISTER}" title="${%Configure Tools}">
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
-    <f:form method="post" name="config" action="configSubmit">
-      <j:set var="instance" value="${it}" />
-      <j:set var="descriptor" value="${instance.descriptor}" />
-
-      <f:entry title="${%Home directory}" help="/help/system-config/homeDirectory.html">
-        ${it.rootDir}
-      </f:entry>
-      <f:advanced>
-        <f:entry field="rawWorkspaceDir" title="${%Workspace Root Directory}">
-          <f:textbox/>
-        </f:entry>
-        <f:entry field="rawBuildsDir" title="${%Build Record Root Directory}">
-          <f:textbox/>
-        </f:entry>
-      </f:advanced>
-      <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
-        <f:textarea name="system_message" value="${it.systemMessage}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-      </f:entry>
-
-      <!-- global configuration from everyone -->
-      <j:forEach var="descriptor" items="${h.getFilteredSortedDescriptorsForGlobalConfig('hudson.tools.ToolInstallation', false)}">
-        <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
+    <f:form method="post" name="config" action="configToolsSubmit">
+      <j:forEach var="descriptor" items="${h.getFilteredSortedDescriptorsForGlobalConfig('hudson.tools.ToolInstallation', true)}">
+        <j:set var="instance" value="${descriptor}" />
         <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>
-
+      <!-- XXX try to grab ToolLocationNodeProperty too -->
       <f:block>
         <div id="bottom-sticker" >
           <div class="bottom-sticker-inner">
