@@ -99,6 +99,25 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
+    /**
+     * Binds items in the collection to URL.
+     */
+    public T getDynamic(String id) {
+        // by ID
+        for (T t : data)
+            if(t.getDescriptor().getId().equals(id))
+                return t;
+
+        // by position
+        try {
+            return data.get(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            // fall through
+        }
+
+        return null;
+    }
+
     public T get(D descriptor) {
         for (T t : data)
             if(t.getDescriptor()==descriptor)

@@ -99,6 +99,8 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
+  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
+
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->

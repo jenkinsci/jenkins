@@ -52,11 +52,15 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
+
 	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
-	    <input type="radio" name="${name}" value="${value}"
+      <label>
+	      <input type="radio" name="${name}" value="${value}"
              class="radio-block-control" checked="${checked?'true':null}" />
-      <label class="attach-previous">${title}</label>
+        ${title}
+      </label>
     </td>
     <j:if test="${attrs.help!=null}">
       <td>
