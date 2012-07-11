@@ -69,7 +69,6 @@ import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
-import hudson.model.Saveable;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
@@ -223,7 +222,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -251,6 +249,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static hudson.init.InitMilestone.*;
+import hudson.tools.ToolInstallation;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -259,7 +258,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Type;
 import java.net.BindException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -2646,11 +2644,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
-            jdks.clear();
-            jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
-
             boolean result = true;
-            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
+            for( Descriptor<?> d : Functions.getFilteredSortedDescriptorsForGlobalConfig(ToolInstallation.class.getName(), false) )
                 result &= configureDescriptor(req,json,d);
 
             version = VERSION;
@@ -2661,6 +2656,31 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
                 FormApply.success(req.getContextPath()+'/').generateResponse(req, rsp, null);
             else
                 FormApply.success("configure").generateResponse(req, rsp, null);    // back to config
+        } finally {
+            bc.commit();
+        }
+    }
+
+    /**
+     * Accepts submission from the tool configuration page.
+     */
+    public synchronized void doConfigToolsSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        BulkChange bc = new BulkChange(this);
+        try {
+            checkPermission(ADMINISTER);
+            JSONObject json = req.getSubmittedForm();
+            jdks.clear();
+            jdks.addAll(req.bindJSONToList(JDK.class, json.get("jdks")));
+            boolean result = true;
+            for (Descriptor<?> d : Functions.getFilteredSortedDescriptorsForGlobalConfig(ToolInstallation.class.getName(), true)) {
+                result &= configureDescriptor(req, json, d);
+            }
+            save();
+            if (result) {
+                FormApply.success(req.getContextPath() + '/').generateResponse(req, rsp, null);
+            } else {
+                FormApply.success("configureTools").generateResponse(req, rsp, null);
+            }
         } finally {
             bc.commit();
         }
