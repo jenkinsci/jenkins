@@ -422,6 +422,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
      * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
+    @Exported 
     public Executor getExecutor() {
         for( Computer c : Jenkins.getInstance().getComputers() ) {
             for (Executor e : c.getExecutors()) {
