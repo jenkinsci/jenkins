@@ -62,7 +62,7 @@ import static jenkins.YesNoMaybe.MAYBE;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see <a href="https://sezpoz.dev.java.net/nonav/">SezPoz</a>
+ * @see <a href="http://sezpoz.java.net/">SezPoz</a>
  * @see ExtensionFinder
  * @see ExtensionList
  */
