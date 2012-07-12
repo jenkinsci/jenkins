@@ -42,6 +42,8 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.metadata.GroupRepositoryMetadata;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.export.Exported;
@@ -172,6 +174,12 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         if (!isPOM())
             main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent)));
 
+        if (main.getType().equals("maven-plugin")) {
+            GroupRepositoryMetadata metadata = new GroupRepositoryMetadata(main.getGroupId());
+            String goalPrefix = PluginDescriptor.getGoalPrefixFromArtifactId(main.getArtifactId());
+            metadata.addPluginMapping(goalPrefix, main.getArtifactId(), null);
+            main.addMetadata(metadata);
+        }
 
         ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class, uniqueVersion ? "default" : "maven2");
         logger.println(
