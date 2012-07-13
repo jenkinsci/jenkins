@@ -25,7 +25,7 @@ package hudson.cli;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Cause;
+import hudson.model.Cause.UserIdCause;
 import hudson.model.ParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
@@ -141,18 +141,21 @@ public class BuildCommand extends CLICommand {
         );
     }
 
-    public static class CLICause extends Cause {
+    public static class CLICause extends UserIdCause {
     	
     	private String startedBy;
     	
     	public CLICause(){
-    		startedBy = "unknown"; 
+            super();
+    		startedBy = "unknown";
     	}
     	
     	public CLICause(String startedBy){
+            super();
     		this.startedBy = startedBy;
     	}
     	
+        @Override
         public String getShortDescription() {
             return "Started by command line by " + startedBy;
         }
