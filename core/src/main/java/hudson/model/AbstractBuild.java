@@ -359,9 +359,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try{
                 if (e.getAuthor()==user)
                     return true;
-            } catch (RuntimeException re) {
-                // no-op, just remove exception thrown e.g. from git plugin. 
-                // It there's some problem to determine committer, user probably doesn't participate in the build.
+            } catch (RuntimeException re) { 
+                LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + getParent().getDisplayName() + ", " + getDisplayName(), re);
             }
         return false;
     }
