@@ -44,8 +44,8 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import jenkins.model.Jenkins;
 
 /**
- * Formalization of a tool installed in nodes used for builds
- * (examples include things like JDKs, Ants, Mavens, and Groovys)
+ * Formalization of a tool installed in nodes used for builds.
+ * (Examples include things like JDKs, Ants, Mavens, and Groovys.)
  *
  * <p>
  * You can define such a concept in your plugin entirely on your own, without extending from
@@ -64,6 +64,9 @@ import jenkins.model.Jenkins;
  * Implementations of this class are strongly encouraged to also implement {@link NodeSpecific}
  * (by using {@link #translateFor(Node, TaskListener)}) and
  * {@link EnvironmentSpecific} (by using {@link EnvVars#expand(String)}.)
+ * Callers such as build steps can then use {@link #translate(AbstractBuild,TaskListener)}
+ * and cast to the desired {@link ToolInstallation} subtype, or just call
+ * {@link NodeSpecific#forNode} and {@link EnvironmentSpecific#forEnvironment} directly.
  *
  * <p>
  * To contribute an extension point, put {@link Extension} on your {@link ToolDescriptor} class.
@@ -155,6 +158,8 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      *      Any lengthy operation (such as auto-installation) will report its progress here.
      * @return
      *      {@link ToolInstallation} object that is fully specialized.
+     * @see NodeSpecific
+     * @see EnvironmentSpecific
      * @since 1.460
      */
     public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
