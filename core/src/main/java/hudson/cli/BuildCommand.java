@@ -146,12 +146,10 @@ public class BuildCommand extends CLICommand {
     	private String startedBy;
     	
     	public CLICause(){
-            super();
     		startedBy = "unknown";
     	}
     	
     	public CLICause(String startedBy){
-            super();
     		this.startedBy = startedBy;
     	}
     	
