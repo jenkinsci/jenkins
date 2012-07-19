@@ -88,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -249,7 +250,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      no longer show a workspace as it was used for this build.
      * @since 1.319
      */
-    public final FilePath getWorkspace() {
+    public final @CheckForNull FilePath getWorkspace() {
         if (workspace==null) return null;
         Node n = getBuiltOn();
         if (n==null) return null;
