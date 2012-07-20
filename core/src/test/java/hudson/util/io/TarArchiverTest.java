@@ -70,7 +70,7 @@ public class TarArchiverTest extends TestCase {
             e.mkdirs();
 
             // extract via the tar command
-            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("tar", "xvf", tar.getAbsolutePath()).pwd(e).join());
+            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("tar", "xvpf", tar.getAbsolutePath()).pwd(e).join());
 
             assertEquals(0100755,e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
