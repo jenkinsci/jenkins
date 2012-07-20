@@ -55,7 +55,7 @@ THE SOFTWARE.
     </f:optionalBlock>
   </j:if>
 
-  <f:section title="${%Advanced Project Options configure-common}">
+  <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
