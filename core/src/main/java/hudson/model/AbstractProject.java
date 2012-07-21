@@ -53,11 +53,11 @@ import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
-import hudson.scm.NullChangeLogParser;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
 import hudson.scm.SCM;
@@ -80,7 +80,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
-import hudson.util.IOException2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
@@ -92,7 +91,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -106,8 +104,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -622,6 +618,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
         save();
+    }
+
+    /**
+     * Specifies whether this project may be disabled by the user.
+     * By default, it can be only if this is a {@link TopLevelItem};
+     * would be false for matrix configurations, etc.
+     * @return true if the GUI should allow {@link #doDisable} and the like
+     * @since 1.475
+     */
+    public boolean supportsMakeDisabled() {
+        return this instanceof TopLevelItem;
     }
 
     public void disable() throws IOException {
@@ -1324,74 +1331,93 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         try {
-            if (scm.requiresWorkspaceForPolling()) {
-                // lock the workspace of the last build
-                FilePath ws=lb.getWorkspace();
-
-                if (workspaceOffline(lb)) {
-                    // workspace offline. build now, or nothing will ever be built
-                    Label label = getAssignedLabel();
-                    if (label != null && label.isSelfLabel()) {
-                        // if the build is fixed on a node, then attempting a build will do us
-                        // no good. We should just wait for the slave to come back.
-                        listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
-                        return NO_CHANGES;
-                    }
-                    listener.getLogger().println( ws==null
-                        ? Messages.AbstractProject_WorkspaceOffline()
-                        : Messages.AbstractProject_NoWorkspace());
-                    if (isInQueue()) {
-                        listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
-                        return NO_CHANGES;
-                    } else {
-                        listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
-                        return BUILD_NOW;
-                    }
-                } else {
-                    WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                    // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
-                    // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
-                    //
-                    // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
-                    // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
-                    // by having multiple workspaces
-                    WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-                    Launcher launcher = ws.createLauncher(listener);
-                    try {
-                        LOGGER.fine("Polling SCM changes of " + getName());
-                        if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                            calcPollingBaseline(lb,launcher,listener);
-                        PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
-                        pollingBaseline = r.remote;
-                        return r;
-                    } finally {
-                        lease.release();
-                    }
-                }
-            } else {
-                // polling without workspace
-                LOGGER.fine("Polling SCM changes of " + getName());
-
-                if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                    calcPollingBaseline(lb,null,listener);
-                PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
-                pollingBaseline = r.remote;
-                return r;
-            }
+            SCMPollListener.fireBeforePolling(this, listener);
+            PollingResult r = _poll(listener, scm, lb);
+            SCMPollListener.firePollingSuccess(this,listener, r);
+            return r;
         } catch (AbortException e) {
             listener.getLogger().println(e.getMessage());
             listener.fatalError(Messages.AbstractProject_Aborted());
             LOGGER.log(Level.FINE, "Polling "+this+" aborted",e);
+            SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (IOException e) {
             e.printStackTrace(listener.fatalError(e.getMessage()));
+            SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (InterruptedException e) {
             e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
+            SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
+        } catch (RuntimeException e) {
+            SCMPollListener.firePollingFailed(this, listener,e);
+            throw e;
+        } catch (Error e) {
+            SCMPollListener.firePollingFailed(this, listener,e);
+            throw e;
         }
     }
-    
+
+    /**
+     * {@link #poll(TaskListener)} method without the try/catch block that does listener notification and .
+     */
+    private PollingResult _poll(TaskListener listener, SCM scm, R lb) throws IOException, InterruptedException {
+        if (scm.requiresWorkspaceForPolling()) {
+            // lock the workspace of the last build
+            FilePath ws=lb.getWorkspace();
+
+            if (workspaceOffline(lb)) {
+                // workspace offline. build now, or nothing will ever be built
+                Label label = getAssignedLabel();
+                if (label != null && label.isSelfLabel()) {
+                    // if the build is fixed on a node, then attempting a build will do us
+                    // no good. We should just wait for the slave to come back.
+                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    return NO_CHANGES;
+                }
+                listener.getLogger().println( ws==null
+                    ? Messages.AbstractProject_WorkspaceOffline()
+                    : Messages.AbstractProject_NoWorkspace());
+                if (isInQueue()) {
+                    listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
+                    return NO_CHANGES;
+                } else {
+                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                    return BUILD_NOW;
+                }
+            } else {
+                WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
+                // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
+                // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
+                //
+                // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
+                // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
+                // by having multiple workspaces
+                WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
+                Launcher launcher = ws.createLauncher(listener);
+                try {
+                    LOGGER.fine("Polling SCM changes of " + getName());
+                    if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                        calcPollingBaseline(lb,launcher,listener);
+                    PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
+                    pollingBaseline = r.remote;
+                    return r;
+                } finally {
+                    lease.release();
+                }
+            }
+        } else {
+            // polling without workspace
+            LOGGER.fine("Polling SCM changes of " + getName());
+
+            if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                calcPollingBaseline(lb,null,listener);
+            PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
+            pollingBaseline = r.remote;
+            return r;
+        }
+    }
+
     private boolean workspaceOffline(R build) throws IOException, InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws==null || !ws.exists()) {

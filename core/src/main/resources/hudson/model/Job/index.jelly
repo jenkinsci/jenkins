@@ -33,30 +33,6 @@ THE SOFTWARE.
       </j:if>
       <t:editableDescription permission="${it.CONFIGURE}"/>
 
-      <j:if test="${it.parent == app}">
-          <j:choose>
-              <j:when test="${it.disabled}">
-                <div class="warning">
-                  <form method="post" action="enable">
-                    ${%This project is currently disabled}
-                    <l:hasPermission permission="${it.CONFIGURE}">
-                      <f:submit value="${%Enable}" />
-                    </l:hasPermission>
-                  </form>
-                </div>
-                </j:when>
-                <j:otherwise>
-                 <div align="right">
-                  <form method="post" action="disable">
-                    <l:hasPermission permission="${it.CONFIGURE}">
-                      <f:submit value="${%Disable Project}" />
-                    </l:hasPermission>
-                  </form>
-                  </div>
-               </j:otherwise>
-          </j:choose>
-      </j:if>
-
       <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->
       <st:include page="main.jelly" />

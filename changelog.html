@@ -56,14 +56,39 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
-    Fix French translation
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13274">issue 13274</a>)
+    <code>NullPointerException</code> from <code>JUnitParser.parse</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14507">issue 14507</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.473>What's new in 1.473</a> <!--=DATE=--></h3>
+<h3><a name=v1.475>What's new in 1.475</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Enable/disable GUI for jobs either did not appear, or threw exceptions, for jobs inside folders
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14325">issue 14325</a>)
+  <li class=bug>
+      <code>NullPointerException</code> from <code>UnlabeldLoadStatistics</code> <i>[sic]</i>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14330">issue 14330</a>)
+  <li class=bug>
+      Incorrect display of list items in project changes for SCMs such as Mercurial.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14365">issue 14365</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.474>What's new in 1.474</a> (2012/07/09)</h3>
+<ul class=image>
+  <li class=bug>
+    Fix French translation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13274">issue 13274</a>)
+  <li class=rfe>
+    Avoid doing AJAX updates if the page becomes invisible.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/506">pull 506</a>)
+  <li class=rfe>
+    Added a new extension point to listen to polling activities.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14178">issue 14178</a>)
+</ul>
+<h3><a name=v1.473>What's new in 1.473</a> (2012/07/01)</h3>
 <ul class=image>
   <li class=bug>
     Updating job config.xml shouldn't clobber in-progress builds.
@@ -75,7 +100,6 @@ Upcoming changes</a>
     Updated typo in Serbian translation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13695">issue 13695</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.472>What's new in 1.472</a> (2012/06/24)</h3>
 <ul class=image>
   <li class=bug>

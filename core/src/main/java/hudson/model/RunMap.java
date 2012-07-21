@@ -24,10 +24,11 @@
 package hudson.model;
 
 import com.google.common.collect.Maps;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,9 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -245,18 +245,21 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
                 // if the build result file isn't in the directory, ignore it.
                 try {
                     R b = cons.create(d);
-                    builds.put( b.getNumber(), b );
+                    R existing = builds.put(b.getNumber(), b);
+                    if (existing != null) {
+                        LOGGER.log(Level.WARNING, "multiple runs claiming to be #{0}; using run from {1}", new Object[] {b.getNumber(), d});
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.WARNING, "could not load " + d, e);
                 } catch (InstantiationError e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.WARNING, "could not load " + d, e);
                 }
             }
         }
 
         // overlay what's currently building on top of what's loaded
         builds.putAll(building);
-        if (false) {
+        /*
             // we probably aren't saving every little changes during the build to disk,
             // so it's risky to reload these from disk.
             for (R b : building.values()) {
@@ -268,7 +271,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
                     e.printStackTrace();
                 }
             }
-        }
+        */
 
         reset(builds);
 

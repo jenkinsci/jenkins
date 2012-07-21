@@ -42,6 +42,8 @@ THE SOFTWARE.
 
 	<tr><td/><td/>
 	  <td>
+      <st:adjunct includes="lib.form.advanced.advanced"/>
+
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>
