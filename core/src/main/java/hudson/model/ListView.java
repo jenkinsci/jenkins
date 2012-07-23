@@ -30,12 +30,15 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.ViewJobFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
@@ -215,13 +218,9 @@ public class ListView extends View implements Saveable {
         return null;
     }
 
-    public void doAddJobToView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @RequirePOST
+    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
-        if (!req.getMethod().equals("POST")) {
-            throw new Failure("Request must be a POST request");
-        }
-
-        String name = req.getParameter("name");
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
@@ -231,23 +230,19 @@ public class ListView extends View implements Saveable {
         if (jobNames.add(name))
             owner.save();
 
-        rsp.setStatus(HttpServletResponse.SC_OK);
+        return HttpResponses.ok();
     }
 
-    public void doRemoveJobFromView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @RequirePOST
+    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
-        if (!req.getMethod().equals("POST")) {
-            throw new Failure("Request must be a POST request");
-        }
-
-        String name = req.getParameter("name");
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
         if (jobNames.remove(name))
             owner.save();
 
-        rsp.setStatus(HttpServletResponse.SC_OK);
+        return HttpResponses.ok();
     }
 
     @Override

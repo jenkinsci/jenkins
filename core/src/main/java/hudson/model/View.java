@@ -58,6 +58,8 @@ import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
@@ -842,27 +844,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Accepts <tt>config.xml</tt> submission, as well as serve it.
      */
     @WebMethod(name = "config.xml")
-    public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
-            throws IOException {
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
             checkPermission(READ);
-            rsp.setContentType("application/xml");
-            // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
-            XStream2 xStream2 = new XStream2();
-            xStream2.omitField(View.class, "owner");
-            rsp.getOutputStream().write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
-            xStream2.toXML(this,  rsp.getOutputStream());
-            return;
+            return new HttpResponse() {
+                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                    rsp.setContentType("application/xml");
+                    // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
+                    XStream2 xStream2 = new XStream2();
+                    xStream2.omitField(View.class, "owner");
+                    rsp.getOutputStream().write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+                    xStream2.toXML(this,  rsp.getOutputStream());
+                }
+            };
         }
         if (req.getMethod().equals("POST")) {
             // submission
             updateByXml((Source)new StreamSource(req.getReader()));
-            return;
+            return HttpResponses.ok();
         }
 
         // huh?
-        rsp.sendError(SC_BAD_REQUEST);
+        return HttpResponses.error(SC_BAD_REQUEST, "Unexpected request method " + req.getMethod());
     }
 
     /**
