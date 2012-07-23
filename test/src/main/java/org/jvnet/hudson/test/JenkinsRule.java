@@ -217,6 +217,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  *
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test+JUnit4">Wiki article about unit testing in Jenkins</a>
  * @author Stephen Connolly
+ * @since 1.436
  */
 public class JenkinsRule implements TestRule, RootAction {
 

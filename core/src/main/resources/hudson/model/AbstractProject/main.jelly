@@ -27,6 +27,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <p:projectActionFloatingBox />
 
+  <j:if test="${it.supportsMakeDisabled()}">
+    <st:include page="makeDisabled.jelly" />
+  </j:if>
+
   <table style="margin-top: 1em; margin-left:1em;">
 
     <j:forEach var="act" items="${it.prominentActions}">
