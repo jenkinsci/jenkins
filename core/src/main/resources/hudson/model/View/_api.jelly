@@ -30,18 +30,4 @@ THE SOFTWARE.
     You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
     update the configuration of a view.
   </p>
-
-  <h2>Add Job to View</h2>
-  <p>
-    To add a job to this view, send a POST request to <a href="../addJobToView">this URL</a> with
-    query parameter <tt>name=<i>JOBNAME</i></tt>. You'll get 200 status code if the job was successfully added to
-    this view, or 4xx/5xx code if it fails.
-  </p>
-
-  <h2>Remove Job from View</h2>
-  <p>
-    To remove a job from this view, send a POST request to <a href="../removeJobFromView">this URL</a> with
-    query parameter <tt>name=<i>JOBNAME</i></tt>. You'll get 200 status code if the job was successfully removed
-    from this view, or 4xx/5xx code if it fails.
-  </p>
 </j:jelly>
