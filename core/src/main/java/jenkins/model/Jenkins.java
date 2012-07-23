@@ -590,7 +590,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @since 1.467
      */
     @Exported
-    public transient final LoadStatistics unlabeledLoad = new UnlabeldLoadStatistics();
+    public transient final LoadStatistics unlabeledLoad = new UnlabeledLoadStatistics();
 
     /**
      * {@link NodeProvisioner} that reacts to {@link #unlabeledLoad}.

@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.475-SNAPSHOT</version>
+    <version>1.476-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -43,6 +43,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <stapler.version>1.192</stapler.version>
+    <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
   </properties>
 
   <dependencies>
