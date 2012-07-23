@@ -39,6 +39,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -212,6 +213,41 @@ public class ListView extends View implements Saveable {
             return item;
         }
         return null;
+    }
+
+    public void doAddJobToView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if (!req.getMethod().equals("POST")) {
+            throw new Failure("Request must be a POST request");
+        }
+
+        String name = req.getParameter("name");
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (getOwnerItemGroup().getItem(name) == null)
+            throw new Failure("Query parameter 'name' does not correspond to a known item");
+
+        if (jobNames.add(name))
+            owner.save();
+
+        rsp.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    public void doRemoveJobFromView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if (!req.getMethod().equals("POST")) {
+            throw new Failure("Request must be a POST request");
+        }
+
+        String name = req.getParameter("name");
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (jobNames.remove(name))
+            owner.save();
+
+        rsp.setStatus(HttpServletResponse.SC_OK);
     }
 
     @Override
