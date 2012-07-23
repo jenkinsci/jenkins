@@ -24,7 +24,10 @@
 package hudson.matrix;
 
 import hudson.Util;
-import hudson.remoting.LocalChannel;
+import hudson.model.Action;
+import hudson.model.Executor;
+import hudson.model.InvisibleAction;
+import hudson.model.Queue.QueueAction;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
@@ -32,7 +35,6 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
-import hudson.util.RemotingDiagnostics;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -48,11 +50,8 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
-import jenkins.model.Jenkins.MasterComputer;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -127,12 +126,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     @Override
     public int getNextBuildNumber() {
-        AbstractBuild lb = getParent().getLastBuild();
-        if(lb==null)    return 0;
-        
+        AbstractBuild<?,?> lb = getParent().getLastBuild();
 
-        int n=lb.getNumber();
-        if(!lb.isBuilding())    n++;
+        while (lb!=null && lb.isBuilding()) {
+            lb = lb.getPreviousBuild();
+        }
+        if(lb==null)    return 0;
+
+        int n=lb.getNumber()+1;
 
         lb = getLastBuild();
         if(lb!=null)
@@ -196,9 +197,17 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     protected MatrixRun newBuild() throws IOException {
-        // for every MatrixRun there should be a parent MatrixBuild
+        List<Action> actions = Executor.currentExecutor().getCurrentWorkUnit().context.actions;
         MatrixBuild lb = getParent().getLastBuild();
+        for (Action a : actions) {
+            if (a instanceof ParentBuildAction) {
+                lb = ((ParentBuildAction) a).parent;
+            }
+        }
+
+        // for every MatrixRun there should be a parent MatrixBuild
         MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
+
         lastBuild.number = lb.getNumber();
 
         builds.put(lastBuild);
@@ -347,6 +356,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Can be null.
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c), new ParentBuildAction())!=null;
+    }
+
+    /**
+     *
+     */
+    public static class ParentBuildAction extends InvisibleAction implements QueueAction {
+        public transient MatrixBuild parent = (MatrixBuild)Executor.currentExecutor().getCurrentExecutable();
+        public boolean shouldSchedule(List<Action> actions) {
+            return true;
+        }
     }
 }
