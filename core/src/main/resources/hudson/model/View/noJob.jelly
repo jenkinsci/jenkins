@@ -36,7 +36,13 @@ THE SOFTWARE.
 <div id="noJobDiv">
   ${%description_1}
   <j:if test="${it.hasPermission(it.CONFIGURE)}">
+    <j:set var="noJobs" value="${it.ownerItemGroup.items.isEmpty()}"/>
+    <j:if test="${!noJobs}">
       ${%description_2}
+    </j:if>
+    <j:if test="${noJobs}">
+      ${%description_3}
+    </j:if>
   </j:if>
 </div>
 </j:jelly>
