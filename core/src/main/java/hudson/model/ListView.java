@@ -217,6 +217,9 @@ public class ListView extends View implements Saveable {
 
     public void doAddJobToView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
+        if (!req.getMethod().equals("POST")) {
+            throw new Failure("Request must be a POST request");
+        }
 
         String name = req.getParameter("name");
         if(name==null)
@@ -233,6 +236,9 @@ public class ListView extends View implements Saveable {
 
     public void doRemoveJobFromView(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
+        if (!req.getMethod().equals("POST")) {
+            throw new Failure("Request must be a POST request");
+        }
 
         String name = req.getParameter("name");
         if(name==null)
