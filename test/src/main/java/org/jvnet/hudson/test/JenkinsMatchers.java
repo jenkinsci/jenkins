@@ -10,8 +10,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
-import static org.hamcrest.Matchers.allOf;
-
 /**
  * Some handy matchers.
  *
