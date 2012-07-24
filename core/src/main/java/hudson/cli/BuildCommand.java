@@ -32,7 +32,9 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.Item;
+import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
@@ -156,6 +158,12 @@ public class BuildCommand extends CLICommand {
         @Override
         public String getShortDescription() {
             return "Started by command line by " + startedBy;
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println("Started by command line by " +
+                    ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName()));
         }
 
         @Override

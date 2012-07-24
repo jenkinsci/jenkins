@@ -105,7 +105,7 @@ public class BuildCommandTest extends HudsonTestCase {
             def o = new ByteArrayOutputStream()
             cli.execute(["build","-s","-v",p.name],System.in,new TeeOutputStream(System.out,o),System.err)
             assertBuildStatusSuccess(p.getBuildByNumber(1))
-            assertTrue(o.toString().contains("Started by command line by anonymous"))
+            assertTrue(o.toString(), o.toString().contains("Started by command line by anonymous"))
             assertTrue(o.toString().contains("Finished: SUCCESS"))
         } finally {
             cli.close()
