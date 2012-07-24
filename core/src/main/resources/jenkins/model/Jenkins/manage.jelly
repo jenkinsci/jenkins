@@ -70,10 +70,6 @@ THE SOFTWARE.
       <local:feature icon="setting.png"          href="configure"    title="${%Configure System}">
         ${%Configure global settings and paths.}
       </local:feature>
-      <!-- XXX icon TBD -->
-      <local:feature icon="setting.png"          href="configureTools"    title="${%Manage Tools}">
-        ${%Manage available JDKs, build tools, and more.}
-      </local:feature>
       <local:feature icon="refresh.png"          href="reload"       title="${%Reload Configuration from Disk}">
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.}
