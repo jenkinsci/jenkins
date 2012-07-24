@@ -53,10 +53,19 @@ THE SOFTWARE.
       </f:entry>
 
       <!-- global configuration from everyone -->
-      <j:forEach var="descriptor" items="${h.getFilteredSortedDescriptorsForGlobalConfig('hudson.tools.ToolInstallation', false)}">
+      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
         <f:rowSet name="${descriptor.jsonSafeClassName}">
-          <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+          <j:choose>
+            <j:when test="${descriptor.isSubTypeOf('hudson.tools.ToolInstallation')}">
+              <f:advanced title="${%tool.installations(descriptor.displayName)}" align="left">
+                <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+              </f:advanced>
+            </j:when>
+            <j:otherwise>
+              <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+            </j:otherwise>
+          </j:choose>
         </f:rowSet>
       </j:forEach>
 
