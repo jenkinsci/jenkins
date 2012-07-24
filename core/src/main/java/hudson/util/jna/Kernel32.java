@@ -26,6 +26,7 @@ package hudson.util.jna;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.WString;
 import com.sun.jna.Native;
 
 /**
@@ -47,8 +48,11 @@ public interface Kernel32 extends StdCallLibrary {
     int MOVEFILE_FAIL_IF_NOT_TRACKABLE = 32;
     int MOVEFILE_REPLACE_EXISTING = 1;
     int MOVEFILE_WRITE_THROUGH = 8;
+    
+    int FILE_ATTRIBUTE_REPARSE_POINT = 0x400;
 
     int WaitForSingleObject(Pointer handle, int milliseconds);
+    int GetFileAttributesW(WString lpFileName);
     boolean GetExitCodeProcess(Pointer handle, IntByReference r);
 
     int STILL_ACTIVE = 259;
