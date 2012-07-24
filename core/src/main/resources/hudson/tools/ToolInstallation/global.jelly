@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
-  <d:taglib uri="local">
-    <d:tag name="section">
-      <f:section title="${descriptor.displayName}">
+  <f:section title="${descriptor.displayName}">
+    <d:taglib uri="local">
+      <d:tag name="section">
         <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
                         add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
@@ -41,27 +41,27 @@ THE SOFTWARE.
             </table>
           </f:repeatable>
         </f:entry>
-      </f:section>
-    </d:tag>
-  </d:taglib>
-  <j:choose>
-    <j:when test="${size(descriptor.installations)==0}">
-      <local:section/>
-    </j:when>
-    <j:otherwise>
-      <tr> <!-- f:advanced does not work well here because of placement in third column -->
-        <td colspan="3">
-          <st:adjunct includes="lib.form.advanced.advanced"/>
-          <div class="advancedLink" style="text-align:left">
-            <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
-          </div>
-          <table class="advancedBody">
-            <tbody>
-              <local:section/>
-            </tbody>
-          </table>
-        </td>
-      </tr>
-    </j:otherwise>
-  </j:choose>
+      </d:tag>
+    </d:taglib>
+    <j:choose>
+      <j:when test="${size(descriptor.installations)==0}">
+        <local:section/>
+      </j:when>
+      <j:otherwise>
+        <tr> <!-- f:advanced does not work well here because of placement in third column -->
+          <td colspan="3">
+            <st:adjunct includes="lib.form.advanced.advanced"/>
+            <div class="advancedLink" style="text-align:left">
+              <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
+            </div>
+            <table class="advancedBody">
+              <tbody>
+                <local:section/>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </j:otherwise>
+    </j:choose>
+  </f:section>
 </j:jelly>
