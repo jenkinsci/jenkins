@@ -36,6 +36,7 @@ import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.QueryParameter;
  * 
  * @see jenkins.model.Jenkins#proxy
  */
-public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable {
+public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
     public final String name;
     public final int port;
 
@@ -249,6 +250,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     private static final XStream XSTREAM = new XStream2();
+
+    private static final long serialVersionUID = 1L;
 
     static {
         XSTREAM.alias("proxy", ProxyConfiguration.class);

@@ -88,6 +88,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -249,7 +250,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      no longer show a workspace as it was used for this build.
      * @since 1.319
      */
-    public final FilePath getWorkspace() {
+    public final @CheckForNull FilePath getWorkspace() {
         if (workspace==null) return null;
         Node n = getBuiltOn();
         if (n==null) return null;
@@ -359,9 +360,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try{
                 if (e.getAuthor()==user)
                     return true;
-            } catch (RuntimeException re) {
-                // no-op, just remove exception thrown e.g. from git plugin. 
-                // It there's some problem to determine committer, user probably doesn't participate in the build.
+            } catch (RuntimeException re) { 
+                LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + getParent().getDisplayName() + ", " + getDisplayName(), re);
             }
         return false;
     }
@@ -433,7 +433,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected BuildListener listener;
 
         /**
-         * Returns the current {@link Node} on which we are buildling.
+         * Returns the current {@link Node} on which we are building.
          */
         protected final Node getCurrentNode() {
             return Executor.currentExecutor().getOwner().getNode();

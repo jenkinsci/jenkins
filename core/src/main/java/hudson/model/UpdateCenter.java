@@ -47,6 +47,7 @@ import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
+import jenkins.util.io.OnMaster;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.io.input.CountingInputStream;
@@ -104,7 +105,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable {
+public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 	

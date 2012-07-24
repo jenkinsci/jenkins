@@ -58,7 +58,7 @@ THE SOFTWARE.
           <ul id="breadcrumbs">
             <j:forEach var="anc" items="${request.ancestors}">
               <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                <li>
+                <li class="${h.isModelWithContextMenu(anc.object)}?null:'no-context-menu'}">
                   <a href="${anc.url}/">
                     ${anc.object.displayName}
                   </a>

@@ -973,11 +973,11 @@ public final class FilePath implements Serializable {
 
     /**
      * The same as {@link FilePath#FilePath(FilePath,String)} but more OO.
-     * @param rel a relative or absolute path
+     * @param relOrAbsolute a relative or absolute path
      * @return a file on the same channel
      */
-    public FilePath child(String rel) {
-        return new FilePath(this,rel);
+    public FilePath child(String relOrAbsolute) {
+        return new FilePath(this,relOrAbsolute);
     }
 
     /**

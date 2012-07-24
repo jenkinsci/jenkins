@@ -31,6 +31,8 @@ Behaviour.register({
                 items[i].style.display = (visible ? "" : "none");
             }
           });
+
+          layoutUpdateCallback.call();
       }
 
       e.onkeyup = applyFilter;

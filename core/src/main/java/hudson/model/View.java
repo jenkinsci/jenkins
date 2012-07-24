@@ -24,15 +24,20 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.io.StreamException;
+import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import hudson.model.listeners.SaveableListener;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -43,20 +48,39 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
+import hudson.util.AtomicFileWriter;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
+import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.RunList;
+import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -72,6 +96,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
 
 /**
@@ -816,6 +841,70 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     */
+    @WebMethod(name = "config.xml")
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        if (req.getMethod().equals("GET")) {
+            // read
+            checkPermission(READ);
+            return new HttpResponse() {
+                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                    rsp.setContentType("application/xml");
+                    // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
+                    XStream2 xStream2 = new XStream2();
+                    xStream2.omitField(View.class, "owner");
+                    rsp.getOutputStream().write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+                    xStream2.toXML(this,  rsp.getOutputStream());
+                }
+            };
+        }
+        if (req.getMethod().equals("POST")) {
+            // submission
+            updateByXml((Source)new StreamSource(req.getReader()));
+            return HttpResponses.ok();
+        }
+
+        // huh?
+        return HttpResponses.error(SC_BAD_REQUEST, "Unexpected request method " + req.getMethod());
+    }
+
+    /**
+     * Updates Job by its XML definition.
+     */
+    public void updateByXml(Source source) throws IOException {
+        checkPermission(CONFIGURE);
+        StringWriter out = new StringWriter();
+        try {
+            // this allows us to use UTF-8 for storing data,
+            // plus it checks any well-formedness issue in the submitted
+            // data
+            Transformer t = TransformerFactory.newInstance()
+                    .newTransformer();
+            t.transform(source,
+                    new StreamResult(out));
+            out.close();
+        } catch (TransformerException e) {
+            throw new IOException2("Failed to persist configuration.xml", e);
+        }
+
+        // try to reflect the changes by reloading
+        InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
+        try {
+            Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+        } catch (StreamException e) {
+            throw new IOException2("Unable to read",e);
+        } catch(ConversionException e) {
+            throw new IOException2("Unable to read",e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException2("Unable to read",e);
+        } finally {
+            in.close();
+        }
+    }
+
+
+    /**
      * A list of available view types.
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
@@ -859,14 +948,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
+        String requestContentType = req.getContentType();
+        if(requestContentType==null)
+            throw new Failure("No Content-Type header set");
+
+        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
 
         String mode = req.getParameter("mode");
-        if (mode==null || mode.length()==0)
-            throw new FormException(Messages.View_MissingMode(),"mode");
+        if (mode==null || mode.length()==0) {
+            if(isXmlSubmission) {
+                View v;
+                v = createViewFromXML(name, req.getInputStream());
+                v.owner = owner;
+                rsp.setStatus(HttpServletResponse.SC_OK);
+                return v;
+            } else
+                throw new FormException(Messages.View_MissingMode(),"mode");
+        }
 
         // create a view
         View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
@@ -876,6 +979,23 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
         return v;
+    }
+
+    public static View createViewFromXML(String name, InputStream xml) throws IOException {
+        InputStream in = new BufferedInputStream(xml);
+        try {
+            View v = (View) Jenkins.XSTREAM.fromXML(in);
+            v.name = name;
+            return v;
+        } catch(StreamException e) {
+            throw new IOException2("Unable to read",e);
+        } catch(ConversionException e) {
+            throw new IOException2("Unable to read",e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException2("Unable to read",e);
+        } finally {
+            in.close();
+        }
     }
 
     public static class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {

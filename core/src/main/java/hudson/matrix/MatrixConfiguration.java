@@ -24,6 +24,10 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.model.Action;
+import hudson.model.Executor;
+import hudson.model.InvisibleAction;
+import hudson.model.Queue.QueueAction;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
@@ -122,12 +126,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     @Override
     public int getNextBuildNumber() {
-        AbstractBuild lb = getParent().getLastBuild();
-        if(lb==null)    return 0;
-        
+        AbstractBuild<?,?> lb = getParent().getLastBuild();
 
-        int n=lb.getNumber();
-        if(!lb.isBuilding())    n++;
+        while (lb!=null && lb.isBuilding()) {
+            lb = lb.getPreviousBuild();
+        }
+        if(lb==null)    return 0;
+
+        int n=lb.getNumber()+1;
 
         lb = getLastBuild();
         if(lb!=null)
@@ -191,9 +197,17 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     protected MatrixRun newBuild() throws IOException {
-        // for every MatrixRun there should be a parent MatrixBuild
+        List<Action> actions = Executor.currentExecutor().getCurrentWorkUnit().context.actions;
         MatrixBuild lb = getParent().getLastBuild();
+        for (Action a : actions) {
+            if (a instanceof ParentBuildAction) {
+                lb = ((ParentBuildAction) a).parent;
+            }
+        }
+
+        // for every MatrixRun there should be a parent MatrixBuild
         MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
+
         lastBuild.number = lb.getNumber();
 
         builds.put(lastBuild);
@@ -342,6 +356,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Can be null.
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c), new ParentBuildAction())!=null;
+    }
+
+    /**
+     *
+     */
+    public static class ParentBuildAction extends InvisibleAction implements QueueAction {
+        public transient MatrixBuild parent = (MatrixBuild)Executor.currentExecutor().getCurrentExecutable();
+        public boolean shouldSchedule(List<Action> actions) {
+            return true;
+        }
     }
 }

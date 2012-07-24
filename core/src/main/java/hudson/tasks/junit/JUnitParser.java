@@ -80,8 +80,11 @@ public class JUnitParser extends TestResultParser {
         // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
         // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
         
-        TestResult testResult = build.getWorkspace().act( new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
-        return testResult;        
+        FilePath workspace = build.getWorkspace();
+        if (workspace == null) {
+            throw new AbortException(Messages.JUnitParser_no_workspace_found(build));
+        }
+        return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
     }
 
     private static final class ParseResultCallable implements
