@@ -23,8 +23,11 @@
  */
 package hudson.util.jna;
 
+import java.io.*;
+
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.WString;
 
 /**
  *
@@ -49,5 +52,13 @@ public class Kernel32Utils {
                 return v;
             }
         }
+    }
+
+    public static int getWin32FileAttributes(File file) throws IOException {
+      return Kernel32.INSTANCE.GetFileAttributesW(new WString(file.getCanonicalPath()));
+    }
+
+    public static boolean isJunctionOrSymlink(File file) throws IOException {
+      return (file.exists() && (Kernel32.INSTANCE.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
     }
 }
