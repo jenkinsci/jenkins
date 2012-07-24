@@ -57,12 +57,22 @@ THE SOFTWARE.
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
         <f:rowSet name="${descriptor.jsonSafeClassName}">
           <j:choose>
-            <j:when test="${descriptor.isSubTypeOf('hudson.tools.ToolInstallation')}">
-              <f:advanced title="${%tool.installations(descriptor.displayName)}" align="left">
-                <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
-              </f:advanced>
+            <j:when test="${descriptor.isSubTypeOf('hudson.tools.ToolInstallation')}"> <!-- JENKINS-14538: shown specially -->
+              <tr>
+                <td colspan="3"> <!-- f:advanced does not work well here because of placement in third column -->
+                  <st:adjunct includes="lib.form.advanced.advanced"/>
+                  <div class="advancedLink" style="text-align:left">
+                    <input type="button" value="${%tool.installations(descriptor.displayName)}" class="advanced-button advancedButton"/>
+                  </div>
+                  <table class="advancedBody">
+                    <tbody>
+                      <st:include page="${descriptor.globalConfigPage}" from="${descriptor}"/>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
             </j:when>
-            <j:otherwise>
+            <j:otherwise> <!-- most global descriptors -->
               <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
             </j:otherwise>
           </j:choose>
