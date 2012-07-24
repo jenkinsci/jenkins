@@ -408,7 +408,11 @@ public class MailSender {
             if(debug)
                 listener.getLogger().println("  User "+a.getId()+" -> "+adrs);
             if (adrs != null)
-                r.add(Mailer.StringToAddress(adrs, charset));
+            	try {
+                    r.add(Mailer.StringToAddress(adrs, charset));
+                } catch(AddressException e) {
+                    listener.getLogger().println("Invalid address: " + adrs);
+                }
             else {
                 listener.getLogger().println(Messages.MailSender_NoAddress(a.getFullName()));
             }
