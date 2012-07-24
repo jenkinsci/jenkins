@@ -680,18 +680,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Like {@link #isSubTypeOf(Class)} but usable from Jelly scripts.
-     * @since XXX
-     */
-    public final boolean isSubTypeOf(String type) {
-        try {
-            return Class.forName(type, true, clazz.getClassLoader()).isAssignableFrom(clazz);
-        } catch (ClassNotFoundException x) {
-            return false;
-        }
-    }
-
-    /**
      * @deprecated
      *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
