@@ -9,7 +9,12 @@ chmod 644 ${JENKINS_PLIST}
 JENKINS_HOMEDIR="/Users/Shared/Jenkins"
 mkdir -p $JENKINS_HOMEDIR
 
-if ! dscl . -list /Users/jenkins; then
+if dscl . -list /Users/jenkins; then
+    echo 'jenkins user already exists, attempting to change the shell to /bin/bash'
+    # Will fail if UserShell is not /usr/bin/false, but that's ok.
+    # Then we will assume an admin has changed it.
+    dscl . -change /Users/jenkins UserShell /usr/bin/false /bin/bash
+else
     echo 'No jenkins user found, creating jenkins user and group'
 
 # Find free uid under 500
@@ -29,7 +34,7 @@ if ! dscl . -list /Users/jenkins; then
 
     dscl . -create /Groups/jenkins PrimaryGroupID $gid
 
-    dscl . -create /Users/jenkins UserShell /usr/bin/false
+    dscl . -create /Users/jenkins UserShell /bin/bash
     dscl . -create /Users/jenkins Password '*'
     dscl . -create /Users/jenkins UniqueID $uid
     dscl . -create /Users/jenkins PrimaryGroupID $gid
