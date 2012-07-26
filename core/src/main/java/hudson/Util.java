@@ -68,6 +68,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import hudson.util.jna.Kernel32Utils;
+
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
@@ -308,6 +310,9 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(File file) throws IOException {
+        if (Functions.isWindows()) {
+          return Kernel32Utils.isJunctionOrSymlink(file);
+        }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
             return false;
