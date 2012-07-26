@@ -4,8 +4,6 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-sudo apt-get install -y rpm expect || true
-
 # figure out the version to package
 cp "$1" $(dirname $0)/SOURCES/jenkins.war
 pushd $(dirname $0)
