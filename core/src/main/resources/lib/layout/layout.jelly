@@ -244,6 +244,11 @@ THE SOFTWARE.
           ${%Page generated}:
           <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
         </span>
+        <j:if test="${it.api!=null}">
+          <span style="padding-right:2em">
+            <a href="api/">REST API</a>
+          </span>
+        </j:if>
         <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
       </td></tr>
     </table>
