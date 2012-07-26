@@ -96,6 +96,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     public final String vmargs;
 
+    public final String javaPath;
+
     /**
      * @deprecated Use {@link #account}
      */
@@ -156,11 +158,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         this(userName,password,host,account==null ? new LocalSystem() : new AnotherUser(account.userName,account.password), null);
     }
     
-    @DataBoundConstructor
     public ManagedWindowsServiceLauncher(String userName, String password, String host, ManagedWindowsServiceAccount account, String vmargs) {
+        this(userName, password, host, account, vmargs, "");
+    }
+    @DataBoundConstructor
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, ManagedWindowsServiceAccount account, String vmargs, String javaPath) {
         this.userName = userName;
         this.password = Secret.fromString(password);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
+        this.javaPath = Util.fixEmptyAndTrim(javaPath);
         this.host = Util.fixEmptyAndTrim(host);
         this.account = account==null ? new LocalSystem() : account;
         this.logOn = null;
@@ -230,7 +236,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             try {// does Java exist?
                 logger.println("Checking if Java exists");
                 WindowsRemoteProcessLauncher wrpl = new WindowsRemoteProcessLauncher(name,auth);
-                Process proc = wrpl.launch("java -fullversion","c:\\");
+                Process proc = wrpl.launch(StringUtils.defaultIfEmpty(javaPath,"java") + " -fullversion","c:\\");
                 proc.getOutputStream().close();
                 IOUtils.copy(proc.getInputStream(),logger);
                 proc.getInputStream().close();
@@ -405,7 +411,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     private String createAndCopyJenkinsSlaveXml(String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
         logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
-        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,"javaw.exe",vmargs,"-tcp %BASE%\\port.txt");
+        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,
+                StringUtils.defaultIfEmpty(javaPath,"java")+"w.exe", vmargs, "-tcp %BASE%\\port.txt");
         copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
         return xml;
     }

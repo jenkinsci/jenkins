@@ -35,6 +35,9 @@ THE SOFTWARE.
   </f:entry>
   <f:dropdownDescriptorSelector field="account" title="${%Run service as}"/>
   <f:advanced>
+    <f:entry title="${%Path to java executable}" field="javaPath">
+      <f:textbox />
+    </f:entry>
     <f:entry title="${%JVM options}" field="vmargs">
       <f:textbox />
     </f:entry>
