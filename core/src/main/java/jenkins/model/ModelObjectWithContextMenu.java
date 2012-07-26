@@ -110,8 +110,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * directly to provide alternative semantics.
          */
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
+            return from(self,request,response,"sidepanel");
+        }
+
+        public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
             WebApp webApp = WebApp.getCurrent();
-            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript("sidepanel");
+            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
             if (s!=null) {
                 JellyFacet facet = webApp.getFacet(JellyFacet.class);
                 request.setAttribute("taskTags",this); // <l:task> will look for this variable and populate us

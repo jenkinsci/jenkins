@@ -3024,7 +3024,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
-        return new ContextMenu().from(this,request,response);
+        ContextMenu menu = new ContextMenu().from(this, request, response);
+        for (MenuItem i : menu.items) {
+            if (i.url.equals("/manage")) {
+                // add "Manage Jenkins" subitems
+                i.subMenu = new ContextMenu().from(this, request, response, "manage");
+            }
+        }
+        return menu;
     }
 
     /**

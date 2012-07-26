@@ -102,9 +102,12 @@ var breadcrumbs = (function() {
             xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
-                    a.each(function (e) {
+                    function fillMenuItem(e) {
                         e.text = makeMenuHtml(e.icon, e.displayName);
-                    });
+                        if (e.subMenu!=null)
+                            e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
+                    }
+                    a.each(fillMenuItem);
                     e.items = function() { return a };
                     showMenu(a);
                 }
