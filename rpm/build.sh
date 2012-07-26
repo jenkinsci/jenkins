@@ -4,7 +4,11 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-sudo apt-get install -y rpm expect || true
+which rpm > /dev/null 2>&1 
+if [ $? != 0 ]; then
+  sudo apt-get install -y rpm expect || true
+fi
+
 
 # figure out the version to package
 cp "$1" $(dirname $0)/SOURCES/jenkins.war
