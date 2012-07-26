@@ -25,24 +25,23 @@ package hudson.os.windows;
 
 import static hudson.Util.copyStreamAndClose;
 import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
+
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
 import hudson.lifecycle.WindowsSlaveInstaller;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Computer;
-import hudson.model.Descriptor;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.os.windows.ManagedWindowsServiceAccount.AnotherUser;
 import hudson.os.windows.ManagedWindowsServiceAccount.LocalSystem;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.SlaveComputer;
+import hudson.slaves.*;
 import hudson.tools.JDKInstaller;
 import hudson.tools.JDKInstaller.CPU;
 import hudson.tools.JDKInstaller.Platform;
+import hudson.util.DescribableList;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
@@ -236,7 +235,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             try {// does Java exist?
                 logger.println("Checking if Java exists");
                 WindowsRemoteProcessLauncher wrpl = new WindowsRemoteProcessLauncher(name,auth);
-                Process proc = wrpl.launch(StringUtils.defaultIfEmpty(javaPath,"java") + " -fullversion","c:\\");
+                Process proc = wrpl.launch(resolveJava(computer) + " -fullversion","c:\\");
                 proc.getOutputStream().close();
                 IOUtils.copy(proc.getInputStream(),logger);
                 proc.getInputStream().close();
@@ -385,6 +384,51 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
 
+    private String resolveJava(SlaveComputer computer) {
+        if (StringUtils.isNotBlank(javaPath)) {
+            return getEnvVars(computer).expand(javaPath);
+        }
+    }
+
+    // -- duplicates code from ssh-slaves-plugin
+    private EnvVars getEnvVars(SlaveComputer computer) {
+        final EnvVars global = getEnvVars(Jenkins.getInstance());
+
+        final EnvVars local = getEnvVars(computer.getNode());
+
+        if (global != null) {
+            if (local != null) {
+                final EnvVars merged = new EnvVars(global);
+                merged.overrideAll(local);
+
+                return merged;
+            } else {
+                return global;
+            }
+        } else if (local != null) {
+            return local;
+        } else {
+            return new EnvVars();
+        }
+    }
+
+    private EnvVars getEnvVars(Hudson h) {
+        return getEnvVars(h.getGlobalNodeProperties());
+    }
+
+    private EnvVars getEnvVars(Node n) {
+        return getEnvVars(n.getNodeProperties());
+    }
+
+    private EnvVars getEnvVars(DescribableList<NodeProperty<?>, NodePropertyDescriptor> dl) {
+        final EnvironmentVariablesNodeProperty evnp = dl.get(EnvironmentVariablesNodeProperty.class);
+        if (evnp == null) {
+            return null;
+        }
+        return evnp.getEnvVars();
+    }
+
+
     private void checkPort135Access(PrintStream logger, String name, InetAddress host) throws IOException {
         Socket s = new Socket();
         try {
@@ -412,7 +456,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     private String createAndCopyJenkinsSlaveXml(String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
         logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
         String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,
-                StringUtils.defaultIfEmpty(javaPath,"java")+"w.exe", vmargs, "-tcp %BASE%\\port.txt");
+                resolveJava(computer)+"w.exe", vmargs, "-tcp %BASE%\\port.txt");
         copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
         return xml;
     }
