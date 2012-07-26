@@ -483,7 +483,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	result.addAll(getOwnerViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
-    			transientActions = TransientViewActionFactory.createAllFor(this); 
+                updateTransientActions();
     		}
     		result.addAll(transientActions);
     	}
