@@ -276,10 +276,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @param labelString
      *      The new label string to use.
-     * @since 1.475
+     * @since 1.477
      */
     public void setLabelString(String labelString) throws IOException {
-        // noop
+        throw new UnsupportedOperationException();
     }
 
     /**
