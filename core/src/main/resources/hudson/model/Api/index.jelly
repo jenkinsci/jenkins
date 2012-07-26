@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<l:layout title="Remote API">
 		<l:main-panel>
-      <h1>Remote API</h1>
+      <h1>REST API</h1>
 
       <p>
         Many objects of Jenkins provide the remote access API. They are available
