@@ -570,7 +570,7 @@ var jenkinsRules = {
         ts_makeSortable(e);
     },
 
-    "TABLE.progress-bar" : function(e) {// sortable table
+    "TABLE.progress-bar" : function(e) { // progressBar.jelly
         e.onclick = function() {
             var href = this.getAttribute("href");
             if(href!=null)      window.location = href;
