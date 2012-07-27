@@ -51,6 +51,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
@@ -314,6 +315,7 @@ public class UpdateSite {
      *
      * @since 1.432
      */
+    @RequirePOST
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         dataTimestamp = 0;
@@ -779,11 +781,13 @@ public class UpdateSite {
         /**
          * Making the installation web bound.
          */
+        @RequirePOST
         public HttpResponse doInstall() throws IOException {
             deploy(false);
             return HttpResponses.redirectTo("../..");
         }
 
+        @RequirePOST
         public HttpResponse doInstallNow() throws IOException {
             deploy(true);
             return HttpResponses.redirectTo("../..");
@@ -792,6 +796,7 @@ public class UpdateSite {
         /**
          * Performs the downgrade of the plugin.
          */
+        @RequirePOST
         public HttpResponse doDowngrade() throws IOException {
             deployBackup();
             return HttpResponses.redirectTo("../..");
