@@ -213,9 +213,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return
      *      can be empty but never null.
      */
-    @Exported
     public PersistedList<UpdateSite> getSites() {
         return sites;
+    }
+
+    /**
+     * The same as {@link #getSites()} but for REST API.
+     */
+    @Exported(name="sites")
+    public List<UpdateSite> getSiteList() {
+        return sites.toList();
     }
 
     public UpdateSite getSite(String id) {
@@ -971,7 +978,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Get the user that initiated this job
          */
-        @Exported
         public Authentication getUser() {
             return this.authentication;
         }
@@ -1031,6 +1037,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * <p>
          * Instances of this class is immutable.
          */
+        @ExportedBean
         public abstract class InstallationStatus extends Throwable {
             public final int id = iota.incrementAndGet();
             @Exported
