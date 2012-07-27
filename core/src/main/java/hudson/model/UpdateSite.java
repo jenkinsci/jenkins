@@ -95,6 +95,7 @@ import static hudson.util.TimeUnit2.*;
  * @author Kohsuke Kawaguchi
  * @since 1.333
  */
+@ExportedBean
 public class UpdateSite {
     /**
      * What's the time stamp of data file?
@@ -153,10 +154,12 @@ public class UpdateSite {
     /**
      * Get ID string.
      */
+    @Exported
     public String getId() {
         return id;
     }
 
+    @Exported
     public long getDataTimestamp() {
         return dataTimestamp;
     }
@@ -367,6 +370,7 @@ public class UpdateSite {
      * Returns a list of plugins that should be shown in the "available" tab.
      * These are "all plugins - installed plugins".
      */
+    @Exported
     public List<Plugin> getAvailables() {
         List<Plugin> r = new ArrayList<Plugin>();
         Data data = getData();
@@ -393,9 +397,14 @@ public class UpdateSite {
         return dt.plugins.get(artifactId);
     }
 
+    public Api getApi() {
+        return new Api(this);
+    }
+
     /**
      * Returns an "always up" server for Internet connectivity testing, or null if we are going to skip the test.
      */
+    @Exported
     public String getConnectionCheckUrl() {
         Data dt = getData();
         if(dt==null)    return "http://www.google.com/";
@@ -416,6 +425,7 @@ public class UpdateSite {
      * @return
      *      can be empty but never null.
      */
+    @Exported
     public List<Plugin> getUpdates() {
         Data data = getData();
         if(data==null)      return Collections.emptyList(); // fail to determine
@@ -432,6 +442,7 @@ public class UpdateSite {
     /**
      * Does any of the plugin has updates?
      */
+    @Exported
     public boolean hasUpdates() {
         Data data = getData();
         if(data==null)      return false;
@@ -450,6 +461,7 @@ public class UpdateSite {
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
      * in Javascript.
      */
+    @Exported
     public String getUrl() {
         return url;
     }
