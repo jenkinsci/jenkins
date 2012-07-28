@@ -75,6 +75,15 @@ THE SOFTWARE.
               <f:submit value="${%Submit}" />
             </f:block>
           </f:form>
+          <h1>${%Install Method}</h1>
+          <f:form method="post" action="pluginInstallJobConfigure">
+            <f:entry title="${%Plugin InstallJob Factory}" >
+                <f:dropdownDescriptorSelector field="pluginIntallationJobFactory" descriptors="${app.pluginManager.pluginIntallationJobFactoryDescriptors}" />
+            </f:entry>                   
+            <f:block>
+              <f:submit value="${%Submit}" />
+            </f:block>
+          </f:form>          
        </l:hasPermission>
         </td>
       </tr>

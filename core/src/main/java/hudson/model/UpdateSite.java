@@ -641,6 +641,11 @@ public class UpdateSite {
          */
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
+        /**
+         * The maven coordinates for this plugin: groupId:artifactId:version 
+         */
+        @Exported
+        public final String gav;
         
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
@@ -648,6 +653,7 @@ public class UpdateSite {
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
+            this.gav = get(o,"gav");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
             this.requiredCore = get(o,"requiredCore");
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
@@ -778,7 +784,11 @@ public class UpdateSite {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
                 dep.deploy(dynamicLoad);
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
+            // add Repo Resolver Job
+//            final UpdateCenterJob installJob = Jenkins.getInstance().getPluginManager().getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            final UpdateCenterJob installJob = uc.getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+//            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
+            return uc.addJob(installJob);
         }
 
         /**

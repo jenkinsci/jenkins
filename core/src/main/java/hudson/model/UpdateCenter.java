@@ -24,7 +24,9 @@
 package hudson.model;
 
 import hudson.BulkChange;
+import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.PluginManager;
@@ -38,6 +40,9 @@ import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
+import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
@@ -111,6 +116,23 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+    
+    private PluginIntallationJobFactory pluginIntallationJobFactory;
+
+    
+    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
+        if(this.pluginIntallationJobFactory == null){
+            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory();
+        }
+        return this.pluginIntallationJobFactory;
+    }
+    
+    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
+        if(pluginIntallationJobFactory != null) {
+            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
+        }
+    }
+    
 	
     /**
      * {@link ExecutorService} that performs installation.
@@ -139,7 +161,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * List of {@link UpdateSite}s to be used.
      */
     private final PersistedList<UpdateSite> sites = new PersistedList<UpdateSite>(this);
-
+    
     /**
      * Update center configuration data
      */
@@ -1184,7 +1206,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String getName() {
             return plugin.getDisplayName();
         }
-
+        
         @Override
         public void _run() throws IOException, InstallationStatus {
             super._run();
@@ -1245,7 +1267,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
     }
-
+    
     /**
      * Represents the state of the downgrading activity of plugin.
      */
@@ -1430,7 +1452,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Extension
     public static class PageDecoratorImpl extends PageDecorator {
     }
-
+    
     /**
      * Initializes the update center.
      *

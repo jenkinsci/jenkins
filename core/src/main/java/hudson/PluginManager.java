@@ -32,7 +32,11 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
+import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor;
 import hudson.model.UpdateSite;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
@@ -47,6 +51,8 @@ import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -148,6 +154,57 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * as the 2nd part can be repeated for each Hudson instance.
      */
     private boolean pluginListed = false;
+    
+    
+    public DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> getPluginIntallationJobFactoryDescriptors() {
+        Hudson.getInstance().getDescriptorList(PluginIntallationJobFactory.class);
+        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> dl = Hudson.getInstance().getDescriptorList(PluginIntallationJobFactory.class);
+        System.out.println("-->"+dl);
+        System.out.println("-->"+dl.size()+"...");
+        
+        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> descriptorList = Jenkins.getInstance().<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor>getDescriptorList(PluginIntallationJobFactory.class);
+        System.out.println("--->"+descriptorList);
+        System.out.println("--->"+descriptorList.size());
+        final ExtensionList<PluginIntallationJobFactory> all = PluginIntallationJobFactory.all();
+        System.out.println("->"+all);
+        System.out.println("->"+all.size());
+        List<PluginIntallationJobFactoryDescriptor> descs = new ArrayList<PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor>();
+        for (PluginIntallationJobFactory jobFactory : all) {
+            descs.add(jobFactory.getDescriptor());
+            System.out.println("add: "+jobFactory.getDescriptor());
+        }
+        return descriptorList;
+    }       
+    
+    
+    public HttpResponse doPluginInstallJobConfigure(StaplerRequest req) throws IOException, ServletException {
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(CONFIGURE_UPDATECENTER);
+
+        final JSONObject form = req.getSubmittedForm();
+        System.out.println("**>"+form);
+        final JSONObject factoryJsonObject = form.getJSONObject("pluginIntallationJobFactory");
+        if(factoryJsonObject != null) {
+            final String className = factoryJsonObject.getString("stapler-class");
+            try {
+                PluginIntallationJobFactory factory = (PluginIntallationJobFactory)req.bindJSON(PluginManager.class.forName(className), form);
+                if(factory != null) {
+        //            Jenkins.getInstance().setpluginIntallationJobFactory = factory;
+                    System.out.println("+++"+factory);
+                    final UpdateCenter updateCenter = Jenkins.getInstance().getUpdateCenter();
+                    updateCenter.setPluginIntallationJobFactory(factory);
+                    // FIXME only sites get saved on the UpdateCenter
+                    updateCenter.save();
+                }
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+        }
+        return new HttpRedirect("advanced");
+    }
+    
     
     /**
      * Strategy for creating and initializing plugins
@@ -657,7 +714,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Bare-minimum configuration mechanism to change the update center.
      */
-    public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
+    public HttpResponse doSiteConfigure(@QueryParameter String site, @QueryParameter String pluginInstallFactory) throws IOException {
         Jenkins hudson = Jenkins.getInstance();
         hudson.checkPermission(CONFIGURE_UPDATECENTER);
         UpdateCenter uc = hudson.getUpdateCenter();
@@ -666,6 +723,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (s.getId().equals("default"))
                 sites.remove(s);
         }
+        final ExtensionList<PluginIntallationJobFactory> all = PluginIntallationJobFactory.all();
+//        for (PluginIntallationJobFactory jobFactory : all) {
+//            if(jobFactory.getId().equals(pluginInstallFactory)){
+//                uc.setPluginIntallationJobFactory(jobFactory);
+//                break;
+//            }
+//        }
         sites.add(new UpdateSite("default",site));
         
         return HttpResponses.redirectToContextRoot();
