@@ -98,8 +98,9 @@ THE SOFTWARE.
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
       </tr>
       <tbody>
+        <j:set var="prevAll" value="${it.previousResult}" />
         <j:forEach var="p" items="${it.children}">
-          <j:set var="prev" value="${p.previousResult}" />
+          <j:set var="prev" value="${prevAll.findCorrespondingResult(p.id)}" />
           <tr>
             <td class="pane">
               <a href="${p.safeName}/" class="model-link"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
