@@ -43,7 +43,7 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <j:if test="${taskTags!=null}">
+  <j:if test="${taskTags==null}">
     <st:include page="sidepanel.jelly" />
   </j:if>
   <l:main-panel>
