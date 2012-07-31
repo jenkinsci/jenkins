@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
@@ -33,6 +34,7 @@ import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
+import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
@@ -155,7 +157,13 @@ public class BuildCommand extends CLICommand {
     	
         @Override
         public String getShortDescription() {
-            return "Started by command line by " + startedBy;
+            return Messages.BuildCommand_CLICause_ShortDescription(startedBy);
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.BuildCommand_CLICause_ShortDescription(
+                    ModelHyperlinkNote.encodeTo("/user/" + startedBy, startedBy)));
         }
 
         @Override
