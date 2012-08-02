@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+ * Vincent Latombe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +30,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 
 public class UserTestCase extends HudsonTestCase {
 
-    public static class UserPropertyImpl extends UserProperty {
+    public static class UserPropertyImpl extends UserProperty implements Action {
 
         private final String testString;
         private UserPropertyDescriptor descriptorImpl = new UserPropertyDescriptorImpl();
@@ -47,23 +48,35 @@ public class UserTestCase extends HudsonTestCase {
             return descriptorImpl;
         }
         
-        public static class UserPropertyDescriptorImpl extends UserPropertyDescriptor {
-            @Override
-            public UserProperty newInstance(User user) {
-                return null;
-            }
-
-            @Override
-            public String getDisplayName() {
-                return "Property";
-            }
+        public String getIconFileName() {
+          return "/images/24x24/gear.png";
         }
+
+        public String getDisplayName() {
+          return "UserPropertyImpl";
+        }
+
+        public String getUrlName() {
+          return "userpropertyimpl";
+        }
+        
+        public static class UserPropertyDescriptorImpl extends UserPropertyDescriptor {
+          @Override
+          public UserProperty newInstance(User user) {
+              return null;
+          }
+
+          @Override
+          public String getDisplayName() {
+              return "Property";
+          }
+      }
     }
 
     /**
      * Asserts that bug# is fixed.
      */
-    public void testUserPropertySummaryIsShownInUserPage() throws Exception {
+    public void testUserPropertySummaryAndActionAreShownInUserPage() throws Exception {
         
         UserProperty property = new UserPropertyImpl("NeedleInPage");
         UserProperty.all().add(property.getDescriptor());
@@ -72,9 +85,12 @@ public class UserTestCase extends HudsonTestCase {
         user.addProperty(property);
         
         HtmlPage page = new WebClient().goTo("user/user-test-case");
-        WebAssert.assertTextPresent(page, "NeedleInPage");
+        
+        WebAssert.assertTextPresentInElement(page, "NeedleInPage", "main-panel");
+        WebAssert.assertTextPresentInElement(page, ((Action) property).getDisplayName(), "side-panel");
+        
     }
-
+    
     /**
      * Asserts that the default user avatar can be fetched (ie no 404)
      */
