@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+ * Tom Huybrechts, Vincent Latombe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +102,7 @@ import java.util.logging.Logger;
  */
 @ExportedBean
 public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User> {
-
+    
     private transient final String id;
 
     private volatile String fullName;
@@ -591,15 +592,45 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public Descriptor getDescriptorByName(String className) {
         return Jenkins.getInstance().getDescriptorByName(className);
     }
-
+    
     public Object getDynamic(String token) {
-        for (UserProperty property: getProperties().values()) {
-            if (property instanceof Action) {
-                Action a= (Action) property;
-            if(a.getUrlName().equals(token) || a.getUrlName().equals('/'+token))
-                return a;
-            }
+        for(Action action: getTransientActions()){
+            if(action.getUrlName().equals(token))
+                return action;
+        }
+        for(Action action: getPropertyActions()){
+            if(action.getUrlName().equals(token))
+                return action;
         }
         return null;
     }
+    
+    /**
+     * Return all properties that are also actions.
+     * 
+     * @return the list can be empty but never null. read only.
+     */
+    public List<Action> getPropertyActions() {
+        List<Action> actions = new ArrayList<Action>();
+        for (UserProperty userProp : getProperties().values()) {
+            if (userProp instanceof Action) {
+                actions.add((Action) userProp);
+            }
+        }
+        return Collections.unmodifiableList(actions);
+    }
+    
+    /**
+     * Return all transient actions associated with this user.
+     * 
+     * @return the list can be empty but never null. read only.
+     */
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<Action>();
+        for (TransientUserActionFactory factory: TransientUserActionFactory.all()) {
+            actions.addAll(factory.createFor(this));
+        }
+        return Collections.unmodifiableList(actions);
+    }
+    
 }
