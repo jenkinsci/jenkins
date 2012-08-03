@@ -44,7 +44,7 @@ public class ConfigProviderMediator implements ConfigProviderFacade {
     public List<SettingConfig> getAllMavenSettingsConfigs() {
         final ExtensionList<MavenSettingsConfigProvider> configProviders = Jenkins.getInstance().getExtensionList(MavenSettingsConfigProvider.class);
         List<SettingConfig> mavenSettingsConfigs = new ArrayList<SettingConfig>();
-        if (configProviders != null && configProviders.size() > 0) {
+        if (configProviders.size() > 0) {
             for (ConfigProvider configProvider : configProviders) {
                 for (Config config : configProvider.getAllConfigs()) {
                     mavenSettingsConfigs.add(new SettingConfig(config.id, config.name, config.comment, config.content));
@@ -62,7 +62,7 @@ public class ConfigProviderMediator implements ConfigProviderFacade {
         final ExtensionList<GlobalMavenSettingsConfigProvider> configProviders = Jenkins.getInstance()
                 .getExtensionList(GlobalMavenSettingsConfigProvider.class);
         List<SettingConfig> globalMavenSettingsConfigs = new ArrayList<SettingConfig>();
-        if (configProviders != null && configProviders.size() > 0) {
+        if (configProviders.size() > 0) {
             for (ConfigProvider configProvider : configProviders) {
                 for (Config config : configProvider.getAllConfigs()) {
                     globalMavenSettingsConfigs.add(new SettingConfig(config.id, config.name, config.comment, config.content));
@@ -81,7 +81,7 @@ public class ConfigProviderMediator implements ConfigProviderFacade {
      */
     public SettingConfig findConfig(String settingsConfigId) {
         ExtensionList<ConfigProvider> configProviders = ConfigProvider.all();
-        if (configProviders != null && configProviders.size() > 0) {
+        if (configProviders.size() > 0) {
             for (ConfigProvider configProvider : configProviders) {
                 if (configProvider.isResponsibleFor(settingsConfigId)) {
                     final Config config = configProvider.getConfigById(settingsConfigId);
