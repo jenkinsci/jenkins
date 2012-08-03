@@ -18,9 +18,6 @@ var repeatableSupport = {
     // do the initialization
     init : function(container,master,insertionPoint) {
         this.container = $(container);
-        if (this.container.tag != null) {
-            return;
-        }
         this.container.tag = this;
         master = $(master);
         this.blockHTML = master.innerHTML;
