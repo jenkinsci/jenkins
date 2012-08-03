@@ -71,6 +71,11 @@ THE SOFTWARE.
           <groupId>javax.servlet</groupId>
           <artifactId>jsp-api</artifactId>
         </exclusion>
+        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
+        <exclusion>
+          <artifactId>metainf-services</artifactId>
+          <groupId>org.kohsuke.metainf-services</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
