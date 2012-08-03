@@ -65,12 +65,22 @@ var Behaviour = {
      *      this semantics is preserved.
      */
     applySubtree : function(startNode,includeSelf) {
+        var behaviorsBySelector = {};
         Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
                 function apply(n) {
-                    var list = findElementsBySelector(n,selector,includeSelf);
-                    if (list.length>0)  // just to simplify setting of a breakpoint.
-                        list._each(sheet[selector]);
+                    var behavior = sheet[selector];
+                    var behaviors = behaviorsBySelector[selector];
+                    if (behaviors == null) {
+                        behaviors = [];
+                        behaviorsBySelector[selector] = behaviors;
+                    }
+                    if (behaviors.indexOf(behavior.toString()) == -1) {
+                        behaviors.push(behavior.toString());
+                        var list = findElementsBySelector(n,selector,includeSelf);
+                        if (list.length>0)  // just to simplify setting of a breakpoint.
+                            list._each(sheet[selector]);
+                    }
                 }
 
                 if (startNode instanceof Array) {
