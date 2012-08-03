@@ -14,8 +14,12 @@ Behaviour.list.unshift({
         YAHOO.util.Dom.insertAfter(menu,btn);
 
         var prototypes = $(e.lastChild);
-        while(!prototypes.hasClassName("prototypes"))
+        while(prototypes && !prototypes.hasClassName("prototypes"))
             prototypes = prototypes.previous();
+
+        // prototypes can be null if the element has already been processed
+        if(prototypes == null)
+            return;
         var insertionPoint = prototypes.previous();    // this is where the new item is inserted.
 
         // extract templates
