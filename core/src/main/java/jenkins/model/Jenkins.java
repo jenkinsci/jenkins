@@ -1,10 +1,10 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Koichi Fujikawa, Red Hat, Inc., Seiji Sogabe,
  * Stephen Connolly, Tom Huybrechts, Yahoo! Inc., Alan Harder, CloudBees, Inc.,
- * Yahoo!, Inc.
+ * Yahoo!, Inc., Daniel Khodaparast
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -373,7 +373,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
-    
+
+    /**
+     * Whether alternate commit name mapping is being utilized.
+     * 
+     * @return Boolean
+     * @since 1.477
+     */
+    private Boolean useCommitNames;
+
     /**
      * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
      */
@@ -1920,6 +1928,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     }
 
     /**
+     * Determines if alternate commit name mapping is being utilized.
+     * 
+     * @return Boolean
+     * @since 1.477
+     */
+    @Exported
+    public boolean isUseCommitNames() {
+        return useCommitNames != null;
+    }
+
+    /**
      * If true, all the POST requests to Hudson would have to have crumb in it to protect
      * Hudson from CSRF vulnerabilities.
      */
@@ -1986,6 +2005,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
         setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         authorizationStrategy = AuthorizationStrategy.UNSECURED;
         markupFormatter = null;
+    }
+
+    /**
+     * Defines if the utilization of alternate commit name mapping should be utilized.
+     * 
+     * @since 1.477
+     */
+    public void setUseCommitNames(Boolean useCommitNames) throws IOException {
+        this.useCommitNames = useCommitNames;
+        save();
     }
 
     public void setProjectNamingStrategy(ProjectNamingStrategy ns) {

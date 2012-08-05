@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2011-2012, CloudBees, Inc., Daniel Khodaparast
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,8 @@ import java.io.IOException;
  */
 @Extension(ordinal=200)
 public class GlobalSecurityConfiguration extends GlobalConfiguration {
-    public MarkupFormatter getMarkupFormatter() {
+
+	public MarkupFormatter getMarkupFormatter() {
         return Jenkins.getInstance().getMarkupFormatter();
     }
     
@@ -68,6 +69,12 @@ public class GlobalSecurityConfiguration extends GlobalConfiguration {
                 j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, security.getJSONObject("markupFormatter")));
             } else {
                 j.setMarkupFormatter(null);
+            }
+
+            try {
+                j.setUseCommitNames(security.has("useCommitNames") ? true : null);
+            } catch (IOException e) {
+                throw new FormException(e,"useCommitNames");
             }
         } else {
             j.disableSecurity();

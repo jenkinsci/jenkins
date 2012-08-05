@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+ * Tom Huybrechts, Daniel Khodaparast
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +40,9 @@ import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+
 import jenkins.model.Jenkins;
+import jenkins.security.CommitNamesProperty;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -61,6 +64,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -299,6 +303,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (Functions.isWindows()) id = id.replace(':','_');
 
         String idkey = id.toLowerCase(Locale.ENGLISH);
+
+        if (Jenkins.getInstance().isUseCommitNames() && create) {
+            for (User u : getAll()) {
+                String userId = u.getId();
+                if (userId == "unknown") {
+                    continue;
+                }
+
+                String names = u.getProperty(CommitNamesProperty.class).getNames();
+                if (names == null) {
+                    continue;
+                }
+
+                List<String> nameList = Arrays.asList(names.split(","));
+                if (nameList.contains(idkey)) {
+                    idkey = userId;
+                    break;
+                }
+            }
+        }
 
         User u = byName.get(idkey);
         if(u==null && (create || getConfigFileFor(id).exists())) {

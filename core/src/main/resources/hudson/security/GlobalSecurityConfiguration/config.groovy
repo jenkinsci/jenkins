@@ -18,4 +18,6 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
             f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
         }
     }
+
+    f.optionalBlock( field:"useCommitNames", title:_("Utilize commit name mapping to prevent duplicate user creation"), checked:app.useCommitNames )
 }
