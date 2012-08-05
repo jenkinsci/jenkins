@@ -478,12 +478,15 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         // not module.
         AbstractProject<?, ?> dest = getParent().isAggregatorStyleBuild() ? getParent() : this;
 
+        //Create a map of groupId:artifact id keys to modules for faster look ups in findMatchingDependentModule
+        Map<String, List<ModuleDependency>> mapModules = createModuleDependencyMap(data.allModules.keySet());
+
         for (ModuleDependency d : dependencies) {
             MavenModule src = myParentsModules.get(d);
-            if (src==null) {
-                src = data.allModules.get(d);
+            if (src == null) {
+                src = findMatchingDependentModule(mapModules, data.allModules, d);
             }
-            
+
             if(src!=null) {
                 DependencyGraph.Dependency dep = new MavenModuleDependency(
                         src.getParent().isAggregatorStyleBuild() ? src.getParent() : src,dest);
@@ -661,4 +664,75 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
 
     private static final Logger LOGGER = Logger.getLogger(MavenModule.class.getName());
     
+    /**
+     * Given a list of the same ModuleDependency objects for this MavenModule, this method finds the one that
+     * satisfies this MavenModule with the highest version defined.
+     *
+     * @param dependencyMap this map is defined by keys made up of groupId:artifactId and the value is a list of
+     * ModuleDependency objects that matches this.
+     * @param modules a map of all MavenModules in Jenkins keyed on ModuleDependency.
+     * @param dependencyDescription The ModuleDependency we are using as the search reference.
+     * @return The highest satisfying ModuleDependency for this MavenModule.
+     */
+    private MavenModule findMatchingDependentModule(
+            final Map<String, List<ModuleDependency>> dependencyMap,
+            final Map<ModuleDependency, MavenModule> modules,
+            final ModuleDependency dependencyDescription) {
+
+        MavenModule module = null;
+        String lookupKey = buildDependencyKey(dependencyDescription);
+        List<ModuleDependency> dependencyList = dependencyMap.get(lookupKey);
+
+        if (dependencyList != null) {
+
+            //Shortcut for size 1 list...this is most common?
+            if (dependencyList.size() == 1) {
+                ModuleDependency moduleDependency = dependencyList.get(0);
+                if (dependencyDescription.isSatisfiedBy(moduleDependency)) {
+                    module = modules.get(moduleDependency);
+                }
+            } else {
+
+                //We need to filter out the list to the set that is satisfied and then find sort this and
+                //get the highest one.
+                List<ModuleDependency> possibles = dependencyMap.get(buildDependencyKey(dependencyDescription));
+                if (possibles != null) {
+                    ModuleDependency satisfyingModule = dependencyDescription.findHighestSatisfyingModule(possibles);
+                    module = modules.get(satisfyingModule);
+                }
+            }
+        }
+        return module;
+    }
+
+    /**
+     * Builds a map of all the modules, keyed against the groupId and artifactId. The values are a list of modules
+     * that match this criteria.
+     *
+     * @param moduleSet The entire set in the Jenkins instance.
+     * @return A map of ModuleDependencies.
+     */
+    private static Map<String, List<ModuleDependency>> createModuleDependencyMap(Set<ModuleDependency> moduleSet) {
+        Map<String, List<ModuleDependency>> map = new HashMap<String, List<ModuleDependency>>();
+
+        for (ModuleDependency dependency : moduleSet) {
+            String compositeKey = buildDependencyKey(dependency);
+
+            List<ModuleDependency> moduleDependencies = map.get(compositeKey);
+            if (moduleDependencies == null) {
+                moduleDependencies = new ArrayList<ModuleDependency>();
+                moduleDependencies.add(dependency);
+            } else {
+                moduleDependencies.add(dependency);
+            }
+
+            map.put(compositeKey, moduleDependencies);
+        }
+
+        return map;
+    }
+
+    private static String buildDependencyKey(ModuleDependency moduleDependency) {
+        return moduleDependency.groupId + ':' + moduleDependency.artifactId;
+    }
 }
