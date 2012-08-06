@@ -466,7 +466,6 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent,name);
-        Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
         builders.setOwner(this);
         publishers.setOwner(this);
         buildWrappers.setOwner(this);
