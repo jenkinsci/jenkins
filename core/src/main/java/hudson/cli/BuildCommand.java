@@ -168,12 +168,6 @@ public class BuildCommand extends CLICommand {
         }
 
         @Override
-        public void print(TaskListener listener) {
-            listener.getLogger().println("Started by command line by " +
-                    ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName()));
-        }
-
-        @Override
         public boolean equals(Object o) {
             return o instanceof CLICause;
         }
