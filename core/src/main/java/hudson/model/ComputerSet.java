@@ -318,6 +318,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                     if(i!=null)
                         monitors.add(i);
                 }
+
+            // recompute the data
+            for (NodeMonitor nm : monitors) {
+                nm.triggerUpdate();
+            }
+
             rsp.sendRedirect2(".");
         } finally {
             bc.commit();
