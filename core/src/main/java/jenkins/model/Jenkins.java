@@ -297,6 +297,7 @@ import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 
 /**
  * Root object of the system.
@@ -2285,10 +2286,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLe
     /**
      * Gets the user of the given name.
      *
-     * @return
-     *      This method returns a non-null object for any user name, without validation.
+     * @return the user of the given name, if that person exists or the invoker {@link #hasPermission} on {@link #ADMINISTER}; else null
+     * @see User#get(String,boolean)
      */
-    public User getUser(String name) {
+    public @CheckForNull User getUser(String name) {
         return User.get(name,hasPermission(ADMINISTER));
     }
 

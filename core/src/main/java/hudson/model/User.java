@@ -74,6 +74,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represents a user.
@@ -278,7 +281,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * <p>
      * This is used to avoid null {@link User} instance.
      */
-    public static User getUnknown() {
+    public static @Nonnull User getUnknown() {
         return get("unknown");
     }
 
@@ -291,7 +294,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
      */
-    public static User get(String idOrFullName, boolean create) {
+    public static @Nullable User get(String idOrFullName, boolean create) {
         if(idOrFullName==null)
             return null;
         String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
@@ -313,7 +316,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the {@link User} object by its id or full name.
      */
-    public static User get(String idOrFullName) {
+    public static @Nonnull User get(String idOrFullName) {
         return get(idOrFullName,true);
     }
 
@@ -322,7 +325,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * if the current user is anonymous.
      * @since 1.172
      */
-    public static User current() {
+    public static @CheckForNull User current() {
         Authentication a = Jenkins.getAuthentication();
         if(a instanceof AnonymousAuthenticationToken)
             return null;
