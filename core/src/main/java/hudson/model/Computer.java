@@ -120,7 +120,7 @@ import static javax.servlet.http.HttpServletResponse.*;
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
-    // TODO: 
+    // TODO:
     private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
@@ -129,7 +129,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Contains info about reason behind computer being offline.
      */
     protected volatile OfflineCause offlineCause;
-    
+
     private long connectTime = 0;
 
     /**
@@ -166,7 +166,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public List<ComputerPanelBox> getComputerPanelBoxs(){
         return ComputerPanelBox.all(this);
     }
-    
+
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
@@ -241,6 +241,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * If the computer was offline (either temporarily or not),
+     * this method will return the cause as a string (without user info).
+     *
+     * @return
+     *      null if the system was put offline without given a cause.
+     */
+    @Exported
+    public String getOfflineCauseReason() {
+        String newString = offlineCause.toString().replaceAll(
+                "^Disconnected by [\\w]* \\: ","");
+        return newString.toString().replaceAll(
+                "^Disconnected by [\\w]*","");
+    }
+
+    /**
      * Gets the channel that can be used to run a program on this computer.
      *
      * @return
@@ -297,7 +312,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     	connectTime = System.currentTimeMillis();
     	return _connect(forceReconnect);
     }
-    
+
     /**
      * Allows implementing-classes to provide an implementation for the connect method.
      *
@@ -330,13 +345,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Gets the time (since epoch) when this computer connected.
-     *  
+     *
      * @return The time in ms since epoch when this computer last connected.
      */
     public final long getConnectTime() {
     	return connectTime;
     }
-    
+
     /**
      * Disconnect this computer.
      *
@@ -541,7 +556,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param cause
      *      If the first argument is true, specify the reason why the node is being put
-     *      offline. 
+     *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
@@ -880,7 +895,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because the slave is behind the firewall, etc.) 
+     *      because the slave is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
@@ -999,6 +1014,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return HttpResponses.redirectToDot();
     }
 
+    public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
+        checkPermission(DISCONNECT);
+        offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
+        setTemporarilyOffline(true,
+                OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                    Jenkins.getAuthentication().getName(),
+                    offlineMessage!=null ? " : " + offlineMessage : "")));
+        return HttpResponses.redirectToDot();
+    }
+
     public Api getApi() {
         return new Api(this);
     }
@@ -1078,7 +1103,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
-        
+
         Node result = getNode().reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
