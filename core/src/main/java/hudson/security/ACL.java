@@ -37,7 +37,6 @@ import hudson.model.Executor;
  * Gate-keeper that controls access to Hudson's model objects.
  *
  * @author Kohsuke Kawaguchi
- * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins">Making your plugin behave in secured Jenkins</a>
  */
 public abstract class ACL {
     /**

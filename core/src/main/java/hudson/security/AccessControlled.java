@@ -29,7 +29,6 @@ import org.acegisecurity.AccessDeniedException;
  * Object that has an {@link ACL}
  *
  * @since 1.220
- * @see http://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Hudson
  */
 public interface AccessControlled {
     /**
