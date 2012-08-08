@@ -129,7 +129,7 @@ public final class Permission {
      * <pre>
      * class Foo {
      *     private static final PermissionGroup PERMISSIONS = new PermissionGroup(Foo.class,...);
-     *     public static final Permission ABC = new Permisison(PERMISSION,...) ;
+     *     public static final Permission ABC = new Permission(PERMISSION,...) ;
      * }
      * </pre>
      *
