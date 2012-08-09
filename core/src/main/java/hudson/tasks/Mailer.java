@@ -224,7 +224,10 @@ public class Mailer extends Notifier {
         private String charset;
         
         /**
-         * If false do not try to resolve email addresses.
+         * If false do not try to resolve e-mail addresses.
+         *
+         * Setting this to false will effectively disable hudson.tasks.MailAddressResolver
+         * extension point.
          *
          * @see MailAddressResolver.resolve(User u)
          */

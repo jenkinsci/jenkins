@@ -23,32 +23,28 @@
  */
 package hudson.tasks;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Arrays;
-
-import jenkins.model.Jenkins;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import hudson.ExtensionList;
 import hudson.model.Hudson;
 import hudson.model.User;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
+import jenkins.model.Jenkins;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-
-import static org.mockito.Mockito.when;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest( {MailAddressResolver.class, Mailer.class, Mailer.DescriptorImpl.class})
