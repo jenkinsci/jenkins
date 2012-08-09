@@ -23,12 +23,19 @@
  */
 package hudson.maven;
 
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Extension;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import hudson.Functions;
 
@@ -163,4 +170,77 @@ public final class ModuleDependency implements Serializable {
     public static final String NONE = "-";
 
     private static final long serialVersionUID = 1L;
+    /**
+     * Checks whether this ModuleDependency is satisfied by the dependency of the given ModuleDependency.
+     * This caters for versions where the version string defines a version range. It is assumed that the given
+     * ModuleDependency is of the same groupId and artifactId and only validates against the version.
+     *
+     * @param otherDependency The dependency to check for.
+     * @return true if contained false otherwise.
+     */
+    public boolean isSatisfiedBy(ModuleDependency otherDependency) {
+        if (otherDependency == null) {
+            return false;
+        }
+
+        boolean result = false;
+        try {
+            VersionRange myRange = VersionRange.createFromVersionSpec(version);
+            ArtifactVersion otherVersion = new DefaultArtifactVersion(otherDependency.version);
+            result = myRange.containsVersion(otherVersion);
+        } catch (InvalidVersionSpecificationException ivse) {
+            //Do nothing. Return false.
+        }
+
+        return result;
+    }
+
+    /**
+     * Given a list of ModuleDependencies of the same groupId and artifactId, it will sort this list using the
+     * version and finds the highest version that satisfies this ModuleDependency.
+     *
+     * @param listModuleDependencies The list of ModuleDependencies.
+     * @return The highest satisfying ModuleDependency or null if none can be found.
+     */
+    public ModuleDependency findHighestSatisfyingModule(List<ModuleDependency> listModuleDependencies) {
+
+        ModuleDependency highestDependency = null;
+
+        //Create a sorted map of the ModuleDependnecies sorted on version.
+        SortedMap<ArtifactVersion, ModuleDependency> sorted = new TreeMap<ArtifactVersion, ModuleDependency>();
+        for (ModuleDependency otherDependency : listModuleDependencies) {
+            sorted.put(new DefaultArtifactVersion(otherDependency.version), otherDependency);
+        }
+
+        try {
+            VersionRange myRange = VersionRange.createFromVersionSpec(version);
+
+            //Now find the highest version that satisfies this dependency.
+            ArtifactVersion highestVersion = null;
+            for (ArtifactVersion version : sorted.keySet()) {
+                if (myRange.containsVersion(version)) {
+                    highestVersion = version;
+                } else {
+                    break;
+                }
+            }
+
+            if (highestVersion != null) {
+                highestDependency = sorted.get(highestVersion);
+            }
+        } catch (InvalidVersionSpecificationException e) {
+            //Do nothing - return null.
+        }
+        return highestDependency;
+    }
+
+    @Override
+    public String toString() {
+        return "ModuleDependency{" +
+               "groupId='" + groupId + '\'' +
+               ", artifactId='" + artifactId + '\'' +
+               ", version='" + version + '\'' +
+               ", plugin=" + plugin +
+               '}';
+    }
 }
