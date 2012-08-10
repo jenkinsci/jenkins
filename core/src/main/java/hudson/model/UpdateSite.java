@@ -35,7 +35,6 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.IOUtils;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
@@ -46,20 +45,16 @@ import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -722,6 +717,10 @@ public class UpdateSite {
 
             for(Map.Entry<String,String> e : dependencies.entrySet()) {
                 Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                if (depPlugin == null) {
+                    LOGGER.log(Level.WARNING, "Could not find dependency {0} of {1}", new Object[] {e.getKey(), name});
+                    continue;
+                }
                 VersionNumber requiredVersion = new VersionNumber(e.getValue());
                 
                 // Is the plugin installed already? If not, add it.

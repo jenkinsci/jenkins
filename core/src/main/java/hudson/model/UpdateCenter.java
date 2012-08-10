@@ -83,6 +83,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -289,7 +290,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
      */
-    public Plugin getPlugin(String artifactId) {
+    public @CheckForNull Plugin getPlugin(String artifactId) {
         for (UpdateSite s : sites) {
             Plugin p = s.getPlugin(artifactId);
             if (p!=null) return p;
