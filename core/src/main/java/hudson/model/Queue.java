@@ -678,6 +678,28 @@ public class Queue extends ResourceController implements Saveable {
             unblockedTasks.add(t.task);
         return unblockedTasks;
     }
+    /**
+     * Gets all items that are in the queue that are blocked
+     *
+     * @since 1.xxx
+     */
+    public synchronized List<Item> getBlockedItems() {
+    	List<Item> queuedBlocked = new ArrayList<Item>();
+        queuedBlocked.addAll(blockedProjects);
+        return queuedBlocked;
+    }
+    /**
+     * Works just like {@link #getBlockedItems()} but return tasks.
+     *
+     * @since 1.xxx
+     */
+    public synchronized Set<Task> getBlockedTasks() {
+        List<Item> items = getBlockedItems();
+        Set<Task> blockedTasks = new HashSet<Task>(items.size());
+        for (Queue.Item t : items)
+            blockedTasks.add(t.task);
+        return blockedTasks;
+    }
 
     /**
      * Is the given task currently pending execution?

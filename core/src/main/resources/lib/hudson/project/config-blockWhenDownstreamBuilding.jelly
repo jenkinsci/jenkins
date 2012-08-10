@@ -28,5 +28,13 @@ THE SOFTWARE.
   <f:optionalBlock name="blockBuildWhenDownstreamBuilding"
 		   title="${%Block build when downstream project is building}"
 		   help="/help/project-config/block-downstream-building.html"
-		   checked="${it.blockBuildWhenDownstreamBuilding()}" />
+		   checked="${it.blockBuildWhenDownstreamBuilding()}" >
+    <f:entry help="/help/project-config/block-downstream-building-blocked.html">
+      <f:checkbox name="blockBuildWhenDownstreamBuildingAll"
+		   title="${%Block build when downstream projects are also blocked}"
+		   checked="${it.blockBuildWhenDownstreamBuildingAll()}"
+
+           default="false" />
+    </f:entry>
+  </f:optionalBlock>
 </j:jelly>
