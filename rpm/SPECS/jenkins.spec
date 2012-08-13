@@ -34,6 +34,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 #    do not have this virtual package declarations. So for now,
 #    I'm dropping this requirement.
 # Requires:	java >= 1:1.6.0
+Requires: java, dejavu-fonts-common, dejavu-sans-fonts
 Obsoletes:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
