@@ -70,7 +70,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -493,13 +495,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public List<Plugin> getAvailables() {
-        List<Plugin> plugins = new ArrayList<Plugin>();
-
-        for (UpdateSite s : sites) {
-            plugins.addAll(s.getAvailables());
+        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        for (UpdateSite site : sites) {
+            for (Plugin plugin: site.getAvailables()) {
+                final Plugin existing = pluginMap.get(plugin.name);
+                if (existing == null) {
+                    pluginMap.put(plugin.name, plugin);
+                } else if (!existing.version.equals(plugin.version)) {
+                    // allow secondary update centers to publish different versions
+                    // TODO refactor to consolidate multiple versions of the same plugin within the one row
+                    final String altKey = plugin.name + ":" + plugin.version;
+                    if (!pluginMap.containsKey(altKey)) {
+                        pluginMap.put(altKey, plugin);
+                    }
+                }
+            }
         }
 
-        return plugins;
+        return new ArrayList<Plugin>(pluginMap.values());
     }
 
     /**
@@ -530,13 +543,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public List<Plugin> getUpdates() {
-        List<Plugin> plugins = new ArrayList<Plugin>();
-
-        for (UpdateSite s : sites) {
-            plugins.addAll(s.getUpdates());
+        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        for (UpdateSite site : sites) {
+            for (Plugin plugin: site.getUpdates()) {
+                final Plugin existing = pluginMap.get(plugin.name);
+                if (existing == null) {
+                    pluginMap.put(plugin.name, plugin);
+                } else if (!existing.version.equals(plugin.version)) {
+                    // allow secondary update centers to publish different versions
+                    // TODO refactor to consolidate multiple versions of the same plugin within the one row
+                    final String altKey = plugin.name + ":" + plugin.version;
+                    if (!pluginMap.containsKey(altKey)) {
+                        pluginMap.put(altKey, plugin);
+                    }
+                }
+            }
         }
 
-        return plugins;
+        return new ArrayList<Plugin>(pluginMap.values());
     }
 
 
