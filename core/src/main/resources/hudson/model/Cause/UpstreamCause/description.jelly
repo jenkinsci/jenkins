@@ -23,6 +23,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <!-- upstreamUrl added in 1.284, so handle missing value -->
-    <span><j:out value='${it.upstreamUrl!=null ? "%started_by_project(it.upstreamProject,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)" : it.shortDescription}' /></span>
+    <!-- upstreamUrl added in 1.284, so handle missing value; also JENKINS-14816 (job/build may have been deleted) -->
+    <span><j:out value='${it.upstreamUrl!=null and
+                            app.getItemByFullName(it.upstreamProject)!=null and
+                            app.getItemByFullName(it.upstreamProject).getBuildByNumber(it.upstreamBuild)!=null ?
+                          "%started_by_project(it.upstreamProject,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)" :
+                          it.shortDescription}'/></span>
 </j:jelly>
