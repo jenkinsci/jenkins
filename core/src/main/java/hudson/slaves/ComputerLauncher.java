@@ -30,9 +30,10 @@ import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -159,4 +160,45 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
+
+    /**
+     * Given the output of "java -version" in <code>r</code>, determine if this
+     * version of Java is supported, or throw {@link IOException}.
+     *
+     * @param logger
+     *            where to log the output
+     * @param javaCommand
+     *            the command executed, used for logging
+     * @param r
+     *            the output of "java -version"
+     */
+    protected void checkJavaVersion(final PrintStream logger, String javaCommand,
+                                    final BufferedReader r)
+            throws IOException {
+        String line;
+        while (null != (line = r.readLine())) {
+            line = line.toLowerCase();
+            if (line.startsWith("java version \"")
+                    || line.startsWith("openjdk version \"")) {
+                final String versionStr = line.substring(
+                        line.indexOf('\"') + 1, line.lastIndexOf('\"'));
+                logger.println(Messages.ComputerLauncher_JavaVersionResult(javaCommand, versionStr));
+
+                // parse as a number and we should be OK as all we care about is up through the first dot.
+                try {
+                    final Number version =
+                            NumberFormat.getNumberInstance(Locale.US).parse(versionStr);
+                    if(version.doubleValue() < 1.5) {
+                        throw new IOException(Messages
+                                .ComputerLauncher_NoJavaFound(line));
+                    }
+                } catch(final ParseException e) {
+                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line));
+                }
+                return;
+            }
+        }
+        logger.println(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
+        throw new IOException(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
+    }
 }

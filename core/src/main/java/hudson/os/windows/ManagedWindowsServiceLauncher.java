@@ -46,13 +46,7 @@ import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -237,9 +231,10 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             try {// does Java exist?
                 logger.println("Checking if Java exists");
                 WindowsRemoteProcessLauncher wrpl = new WindowsRemoteProcessLauncher(name,auth);
-                Process proc = wrpl.launch("\"" +java + "\" -fullversion","c:\\");
+                Process proc = wrpl.launch("\"" +java + "\" -version","c:\\");
                 proc.getOutputStream().close();
-                IOUtils.copy(proc.getInputStream(),logger);
+                StringWriter console = new StringWriter();
+                IOUtils.copy(proc.getInputStream(), console);
                 proc.getInputStream().close();
                 int exitCode = proc.waitFor();
                 if (exitCode==1) {// we'll get this error code if Java is not found
@@ -254,12 +249,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
                     WindowsRemoteFileSystem fs = new WindowsRemoteFileSystem(name, createSmbAuth());
                     fs.mkdirs(javaDir);
-                    
+
                     jdki.install(new WindowsRemoteLauncher(listener,wrpl), Platform.WINDOWS,
                             fs, listener, javaDir ,path+"\\jdk.exe");
+                } else {
+                    checkJavaVersion(logger, java, new BufferedReader(new StringReader(console.toString())));
                 }
             } catch (Exception e) {
                 e.printStackTrace(listener.error("Failed to prepare Java"));
+                return;
             }
 
 // this just doesn't work --- trying to obtain the type or check the existence of smb://server/C$/ results in "access denied"    
