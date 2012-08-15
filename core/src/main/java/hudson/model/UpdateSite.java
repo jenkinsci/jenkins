@@ -30,6 +30,8 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
@@ -786,11 +788,12 @@ public class UpdateSite {
             }
             // add Repo Resolver Job
 //            final UpdateCenterJob installJob = Jenkins.getInstance().getPluginManager().getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
-            final UpdateCenterJob installJob = uc.getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+//            this.getPluginIntallationJobFactory();
+            final UpdateCenterJob installJob = UpdateSite.this.getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
 //            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
             return uc.addJob(installJob);
         }
-
+        
         /**
          * Schedules the downgrade of this plugin.
          */
@@ -824,6 +827,22 @@ public class UpdateSite {
         }
     }
 
+    private PluginIntallationJobFactory pluginIntallationJobFactory;
+
+    
+    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
+        if(this.pluginIntallationJobFactory == null){
+            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory("dummy");
+        }
+        return this.pluginIntallationJobFactory;
+    }
+    
+    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
+        if(pluginIntallationJobFactory != null) {
+            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
+        }
+    }        
+    
     private static final long DAY = DAYS.toMillis(1);
 
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());

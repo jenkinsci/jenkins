@@ -117,23 +117,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
     
-    private PluginIntallationJobFactory pluginIntallationJobFactory;
-
-    
-    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
-        if(this.pluginIntallationJobFactory == null){
-            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory();
-        }
-        return this.pluginIntallationJobFactory;
-    }
-    
-    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
-        if(pluginIntallationJobFactory != null) {
-            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
-        }
-    }
-    
-	
     /**
      * {@link ExecutorService} that performs installation.
      */
@@ -813,7 +796,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * This object will have the <tt>row.jelly</tt> which renders the job on UI.
      */
     @ExportedBean
-    public abstract class UpdateCenterJob implements Runnable {
+    public abstract static class UpdateCenterJob implements Runnable {
         /**
          * Which {@link UpdateSite} does this belong to?
          */
@@ -852,8 +835,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         public Future<UpdateCenterJob> submit() {
             LOGGER.fine("Scheduling "+this+" to installerService");
-            jobs.add(this);
-            return installerService.submit(this,this);
+            Jenkins.getInstance().getUpdateCenter().jobs.add(this);
+            return Jenkins.getInstance().getUpdateCenter().installerService.submit(this,this);
         }
 
         @Exported
@@ -989,7 +972,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
-    public abstract class DownloadJob extends UpdateCenterJob {
+    public static abstract class DownloadJob extends UpdateCenterJob {
         /**
          * Unique ID that identifies this job.
          */
@@ -1056,13 +1039,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         protected void _run() throws IOException, InstallationStatus {
             URL src = getURL();
 
-            config.preValidate(this, src);
+            final UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+            uc.config.preValidate(this, src);
 
             File dst = getDestination();
-            File tmp = config.download(this, src);
+            File tmp = downloadFile(uc.config, src); 
 
-            config.postValidate(this, tmp);
-            config.install(this, tmp, dst);
+            uc.config.postValidate(this, tmp);
+            uc.config.install(this, tmp, dst);
+        }
+        
+        
+        protected File downloadFile(UpdateCenterConfiguration config, URL src) throws IOException {
+            return config.download(this, src);
         }
 
         /**
@@ -1162,19 +1151,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob extends DownloadJob {
+    public static class InstallationJob extends DownloadJob {
         /**
          * What plugin are we trying to install?
          */
         @Exported
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
          */
-        private final boolean dynamicLoad;
+        protected final boolean dynamicLoad;
 
         /**
          * @deprecated as of 1.442

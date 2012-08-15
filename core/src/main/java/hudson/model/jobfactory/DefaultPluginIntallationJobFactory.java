@@ -11,13 +11,22 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class DefaultPluginIntallationJobFactory extends PluginIntallationJobFactory {
 
+    private String name;
+
+    // FIXME remove name parameter
     @DataBoundConstructor
-    public DefaultPluginIntallationJobFactory() {
+    public DefaultPluginIntallationJobFactory(String name) {
+        System.out.println(">>name: " + name);
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     public UpdateCenterJob createPluginInstallJob(Plugin plugin, UpdateSite updateSite, Authentication authentication, boolean dynamicLoad) {
-        return Jenkins.getInstance().getUpdateCenter().new InstallationJob(plugin, updateSite, authentication, dynamicLoad);
+        return new hudson.model.UpdateCenter.InstallationJob(plugin, updateSite, authentication, dynamicLoad);
     }
 
     @Override
@@ -33,6 +42,11 @@ public class DefaultPluginIntallationJobFactory extends PluginIntallationJobFact
             return "Default update center based installation";
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + ": " + name;
     }
 
 }

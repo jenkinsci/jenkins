@@ -24,5 +24,7 @@
   -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    
+    <f:entry title="${%name}">
+        <f:textbox name="name" value="${instance.name}" />
+    </f:entry>    
 </j:jelly>
