@@ -91,7 +91,7 @@ public class BuildCommand extends CLICommand {
             if (pdp==null)
                 throw new AbortException(job.getFullDisplayName()+" is not parameterized but the -p option was specified");
 
-            List<ParameterValue> values = new ArrayList<ParameterValue>(); 
+            List<ParameterValue> values = new ArrayList<ParameterValue>();
 
             for (Entry<String, String> e : parameters.entrySet()) {
                 String name = e.getKey();
@@ -101,7 +101,16 @@ public class BuildCommand extends CLICommand {
                             name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
                 values.add(pd.createValue(this,e.getValue()));
             }
-            
+
+            // handle missing parameters by adding as default values ISSUE JENKINS-7162
+            for(ParameterDefinition pd :  pdp.getParameterDefinitions()) {
+                if (parameters.containsKey(pd.getName()))
+                    continue;
+
+                // not passed in use default
+                values.add(pd.getDefaultParameterValue());
+            }
+
             a = new ParametersAction(values);
         }
 
@@ -145,17 +154,17 @@ public class BuildCommand extends CLICommand {
     }
 
     public static class CLICause extends UserIdCause {
-    	
+
     	private String startedBy;
-    	
+
     	public CLICause(){
     		startedBy = "unknown";
     	}
-    	
+
     	public CLICause(String startedBy){
     		this.startedBy = startedBy;
     	}
-    	
+
         @Override
         public String getShortDescription() {
             return Messages.BuildCommand_CLICause_ShortDescription(startedBy);
