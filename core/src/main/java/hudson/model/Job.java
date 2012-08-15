@@ -1207,9 +1207,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
-        // rename is essentially delete followed by a create
-        checkPermission(CREATE);
-        checkPermission(DELETE);
+
+        if (!hasPermission(CONFIGURE)) {
+            // rename is essentially delete followed by a create
+            checkPermission(CREATE);
+            checkPermission(DELETE);
+        }
 
         String newName = req.getParameter("newName");
         Jenkins.checkGoodName(newName);
