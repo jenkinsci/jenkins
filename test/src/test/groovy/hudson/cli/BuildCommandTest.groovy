@@ -98,6 +98,21 @@ public class BuildCommandTest extends HudsonTestCase {
         }
     }
 
+    void testDefaultParameters() {
+        def p = createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key","default"), new StringParameterDefinition("key2","default2") ]));
+
+        def cli = new CLI(getURL())
+        try {
+            cli.execute(["build","-s","-p","key=foobar",p.name])
+            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
+            assertEquals("default2",b.getAction(ParametersAction.class).getParameter("key2").value)
+        } finally {
+            cli.close();
+        }
+    }
+
     void testConsoleOutput() {
         def p = createFreeStyleProject()
         def cli = new CLI(getURL())
