@@ -172,7 +172,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @param r
      *            the output of "java -version"
      */
-    protected void checkJavaVersion(final PrintStream logger, String javaCommand,
+    protected static void checkJavaVersion(final PrintStream logger, String javaCommand,
                                     final BufferedReader r)
             throws IOException {
         String line;
