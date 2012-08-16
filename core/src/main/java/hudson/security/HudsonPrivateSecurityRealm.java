@@ -308,6 +308,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 si.errorMessage = "User name is already taken";
         }
 
+        // check if we utilize alternate commit name mapping
+        if (Jenkins.getInstance().isUseCommitNames() && si.errorMessage == null) {
+        	User user = User.getByCommitName(si.username, false);
+        	if (user != null) {
+        		si.errorMessage = "User name is already mapped to " + user.getId();
+        	}
+        }
+
         if(si.fullname==null || si.fullname.length()==0)
             si.fullname = si.username;
 

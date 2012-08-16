@@ -278,6 +278,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
+     * Takes the id or full name of a user and removes any
+     * offending string characters.
+     * 
+     * @return String
+     * @since 1.477
+     */
+    private static String filterIdName(String idOrFullName) {
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+                .replace('>','_');  // 4 replace() still faster than regex
+		if (Functions.isWindows()) id = id.replace(':','_');
+
+		return id;
+    }
+
+    /**
      * Gets the fallback "unknown" user instance.
      * <p>
      * This is used to avoid null {@link User} instance.
@@ -298,38 +313,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public static User get(String idOrFullName, boolean create) {
         if(idOrFullName==null)
             return null;
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
-                                .replace('>','_');  // 4 replace() still faster than regex
-        if (Functions.isWindows()) id = id.replace(':','_');
 
+        String id = filterIdName(idOrFullName);
         String idkey = id.toLowerCase(Locale.ENGLISH);
-
-        if (Jenkins.getInstance().isUseCommitNames() && create) {
-            for (User u : getAll()) {
-                String userId = u.getId();
-                if (userId == "unknown") {
-                    continue;
-                }
-
-                String names = u.getProperty(CommitNamesProperty.class).getNames();
-                if (names == null) {
-                    continue;
-                }
-
-                List<String> nameList = Arrays.asList(names.split(","));
-                if (nameList.contains(idkey)) {
-                    idkey = userId;
-                    break;
-                }
-            }
-        }
 
         User u = byName.get(idkey);
         if(u==null && (create || getConfigFileFor(id).exists())) {
             User tmp = new User(id, idOrFullName);
             User prev = byName.putIfAbsent(idkey, u = tmp);
             if (prev!=null)
-                u = prev;   // if somehas already put a value in the map, use it
+                u = prev;   // if someone already put a value in the map, use it
         }
         return u;
     }
@@ -383,6 +376,52 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         });
         return r;
+    }
+
+    /**
+     * Attempts to retrieve a user by their id or full name.  It will
+     * try looking at any alternate commit names defined for users.
+     * 
+     * @return User
+     * @since 1.477
+     */
+    public static User getByCommitName(String idOrFullName, boolean create) {
+        // could be lucky and the user exists
+        User u = get(idOrFullName, false);
+        if (u != null) {
+            return u;
+        }
+
+        // check if we utilize alternate commit name mapping
+        if (Jenkins.getInstance().isUseCommitNames()) {
+            String id = filterIdName(idOrFullName);
+
+            for (User a : getAll()) {
+                String userId = a.getId();
+                if (userId == "unknown") {
+                    continue;
+                }
+
+                String names = a.getProperty(CommitNamesProperty.class).getNames();
+                if (names == null) {
+                    continue;
+                }
+
+                List<String> nameList = Arrays.asList(names.split(","));
+                if (nameList.contains(id)) {
+                    idOrFullName = userId;
+                    break;
+                }
+            }
+        }
+
+        // pull a mapped user or make a new one
+        u = get(idOrFullName, create);
+        return u;
+    }
+    
+    public static User getByCommitName(String idOrFullName) {
+    	return getByCommitName(idOrFullName, true);
     }
 
     /**
