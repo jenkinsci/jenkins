@@ -32,9 +32,7 @@ import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
-import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
-import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
 import hudson.model.jobfactory.PluginIntallationJobFactory;
 import hudson.model.jobfactory.PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor;
 import hudson.model.UpdateSite;
@@ -66,8 +64,6 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -154,58 +150,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * as the 2nd part can be repeated for each Hudson instance.
      */
     private boolean pluginListed = false;
-    
-    
-    public DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> getPluginIntallationJobFactoryDescriptors() {
-        Hudson.getInstance().getDescriptorList(PluginIntallationJobFactory.class);
-        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> dl = Hudson.getInstance().getDescriptorList(PluginIntallationJobFactory.class);
-        
-        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> descriptorList = Jenkins.getInstance().<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor>getDescriptorList(PluginIntallationJobFactory.class);
-        final ExtensionList<PluginIntallationJobFactory> all = PluginIntallationJobFactory.all();
-        List<PluginIntallationJobFactoryDescriptor> descs = new ArrayList<PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor>();
-        for (PluginIntallationJobFactory jobFactory : all) {
-            descs.add(jobFactory.getDescriptor());
-        }
-        return descriptorList;
-    }       
-    
-    
-    public HttpResponse doPluginInstallJobConfigure(StaplerRequest req) throws IOException, ServletException {
-        Jenkins jenkins = Jenkins.getInstance();
-        jenkins.checkPermission(CONFIGURE_UPDATECENTER);
-        
-        UpdateCenter uc = jenkins.getUpdateCenter();
-        PersistedList<UpdateSite> sites = uc.getSites();
-        for (UpdateSite s : sites) {
-            if (s.getId().equals("default"))
-                sites.remove(s);
-        }
-
-        final JSONObject form = req.getSubmittedForm();
-        final String site = form.getString("site");
-        final UpdateSite us = new UpdateSite("default",site);
-                
-        final JSONObject factoryJsonObject = form.getJSONObject("pluginIntallationJobFactory");
-        if(factoryJsonObject != null) {
-            final String className = factoryJsonObject.getString("stapler-class");
-            try {
-                PluginIntallationJobFactory factory = (PluginIntallationJobFactory)req.bindJSON(PluginManager.class.forName(className), factoryJsonObject);
-                if(factory != null) {
-                    us.setPluginIntallationJobFactory(factory);
-                }
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-        }
-        
-        sites.add(us);
-        Jenkins.getInstance().getUpdateCenter().save();
-        
-        return new HttpRedirect("advanced");
-    }
-    
     
     /**
      * Strategy for creating and initializing plugins
@@ -522,6 +466,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.warning("Failed to rename " + legacyFile + " to " + newFile);
         }
     }
+    
+    /**
+     * Gets all available descriptors to create plugin install factories 
+     * @return list of descriptors
+     */
+    public DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> getPluginIntallationJobFactoryDescriptors() {
+        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> descriptorList = Jenkins.getInstance().<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor>getDescriptorList(PluginIntallationJobFactory.class);
+        return descriptorList;
+    }           
 
     /**
      * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
@@ -713,48 +666,39 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     
 
     /**
-     * Bare-minimum configuration mechanism to change the update center.
+     * Saves the UpdateSite configuration as the 'default' config. The current active 'default' config will be replaced by new one.
+     * 
      * @throws ServletException 
      */
-    public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
-    
-//    public HttpResponse doSiteConfigure(StaplerRequest req) throws IOException, ServletException {
-        Jenkins hudson = Jenkins.getInstance();
-        hudson.checkPermission(CONFIGURE_UPDATECENTER);
-        UpdateCenter uc = hudson.getUpdateCenter();
+    public HttpResponse doSiteConfigure(StaplerRequest req) throws IOException, ServletException {
+        
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(CONFIGURE_UPDATECENTER);
+        
+        UpdateCenter uc = jenkins.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
             if (s.getId().equals("default"))
                 sites.remove(s);
         }
+
+        final JSONObject form = req.getSubmittedForm();
+        final String site = form.getString("site");
+        final UpdateSite us = new UpdateSite("default",site);
+                
+        final JSONObject factoryJsonObject = form.getJSONObject("pluginIntallationJobFactory");
+        if(factoryJsonObject != null) {
+            PluginIntallationJobFactory factory = req.bindJSON(PluginIntallationJobFactory.class, factoryJsonObject);
+            if(factory != null) {
+                us.setPluginIntallationJobFactory(factory);
+            }
+        }
         
-//        final JSONObject form = req.getSubmittedForm();
-//        System.out.println("**>"+form);
-//        final JSONObject factoryJsonObject = form.getJSONObject("pluginIntallationJobFactory");
-//        if(factoryJsonObject != null) {
-//            final String className = factoryJsonObject.getString("stapler-class");
-//            try {
-//                PluginIntallationJobFactory factory = (PluginIntallationJobFactory)req.bindJSON(PluginManager.class.forName(className), form);
-//                if(factory != null) {
-//        //            Jenkins.getInstance().setpluginIntallationJobFactory = factory;
-//                    System.out.println("+++"+factory);
-//                    final UpdateCenter updateCenter = Jenkins.getInstance().getUpdateCenter();
-//                    updateCenter.setPluginIntallationJobFactory(factory);
-//                    // FIXME only sites get saved on the UpdateCenter
-//                    updateCenter.save();
-//                }
-//            } catch (ClassNotFoundException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-//            
-//        }        
-//        
-//        final String site = form.getString("site");
+        sites.add(us);
+        Jenkins.getInstance().getUpdateCenter().save();
         
-        sites.add(new UpdateSite("default",site));
-        
-        return HttpResponses.redirectToContextRoot();
+        return new HttpRedirect("advanced");
+
     }
 
 

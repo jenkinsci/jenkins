@@ -67,19 +67,10 @@ THE SOFTWARE.
         </l:hasPermission>
         <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
           <h1>${%Update Site}</h1>
-          <f:form method="post" action="siteConfigure">
-            <f:entry title="${%URL}" >
-              <f:textbox name="site" value="${app.updateCenter.getSite('default').url}" />
-            </f:entry>
-            <f:block>
-              <f:submit value="${%Submit}" />
-            </f:block>
-          </f:form>
-          <h1>${%Install Method}</h1>
-          <f:form method="post" action="pluginInstallJobConfigure" instance="${app.updateCenter.getSite('default')}" >
+          <f:form method="post" action="siteConfigure" instance="${app.updateCenter.getSite('default')}" >
             <f:entry title="${%URL}" >
               <f:textbox name="site" value="${instance.url}" />
-            </f:entry>          
+            </f:entry>
             <f:entry title="${%Plugin InstallJob Factory}" >
                 <f:dropdownDescriptorSelector field="pluginIntallationJobFactory" descriptors="${app.pluginManager.pluginIntallationJobFactoryDescriptors}" />
             </f:entry>                   

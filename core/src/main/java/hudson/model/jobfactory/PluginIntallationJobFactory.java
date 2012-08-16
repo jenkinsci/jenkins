@@ -11,9 +11,12 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 /**
- * Defines the factory to create the plugin installation job
+ * Defines the factory to create the plugin installation jobs. The idea behind this is to allow different implementations on how a plugin is downloaded.
+ * e.g.
+ * <li>default implementation uses a simple HTTP GET Request on a final URL
+ * <li>resolving of the plugin in a maven repository
+ * @see DefaultPluginIntallationJobFactory
  */
-//
 public abstract class PluginIntallationJobFactory implements Describable<PluginIntallationJobFactory> {
 
     public static ExtensionList<PluginIntallationJobFactory> all() {
@@ -42,12 +45,6 @@ public abstract class PluginIntallationJobFactory implements Describable<PluginI
 
     public static abstract class PluginIntallationJobFactoryDescriptor extends Descriptor<PluginIntallationJobFactory> {
         protected PluginIntallationJobFactoryDescriptor() {
-        }
-        
-        public String getConfigPage(){
-            final String cp = super.getConfigPage();
-            System.out.println("..."+cp);
-            return cp;
         }
     }
 }

@@ -9,19 +9,15 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Default implementation of a job factory - this is the extraction of the origin code before this extension point existed. 
+ *  
+ * @author Dominik Bartholdi (imod)
+ */
 public class DefaultPluginIntallationJobFactory extends PluginIntallationJobFactory {
 
-    private String name;
-
-    // FIXME remove name parameter
     @DataBoundConstructor
-    public DefaultPluginIntallationJobFactory(String name) {
-        System.out.println(">>name: " + name);
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    public DefaultPluginIntallationJobFactory() {
     }
 
     @Override
@@ -42,11 +38,6 @@ public class DefaultPluginIntallationJobFactory extends PluginIntallationJobFact
             return "Default update center based installation";
         }
 
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName() + ": " + name;
     }
 
 }

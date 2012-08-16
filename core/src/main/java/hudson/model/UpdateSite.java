@@ -134,6 +134,11 @@ public class UpdateSite {
      * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
      */
     private final String url;
+    
+    /**
+     * Factory creating the jobs to install a plugin.
+     */
+    private PluginIntallationJobFactory pluginIntallationJobFactory;
 
     public UpdateSite(String id, String url) {
         this.id = id;
@@ -409,6 +414,27 @@ public class UpdateSite {
     }
 
     /**
+     * Returns the job factory to create plugin installation jobs
+     * @return never <code>null</code>.
+     */
+    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
+        if(this.pluginIntallationJobFactory == null){
+            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory();
+        }
+        return this.pluginIntallationJobFactory;
+    }
+    
+    /**
+     * Set the job factory.
+     * @param pluginIntallationJobFactory only non <code>null</code> values are changing current setting.
+     */
+    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
+        if(pluginIntallationJobFactory != null) {
+            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
+        }
+    }        
+    
+    /**
      * This is where we store the update center data.
      */
     private TextFile getDataFile() {
@@ -643,6 +669,7 @@ public class UpdateSite {
          */
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
+        
         /**
          * The maven coordinates for this plugin: groupId:artifactId:version 
          */
@@ -786,11 +813,7 @@ public class UpdateSite {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
                 dep.deploy(dynamicLoad);
             }
-            // add Repo Resolver Job
-//            final UpdateCenterJob installJob = Jenkins.getInstance().getPluginManager().getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
-//            this.getPluginIntallationJobFactory();
             final UpdateCenterJob installJob = UpdateSite.this.getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
-//            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
             return uc.addJob(installJob);
         }
         
@@ -827,22 +850,6 @@ public class UpdateSite {
         }
     }
 
-    private PluginIntallationJobFactory pluginIntallationJobFactory;
-
-    
-    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
-        if(this.pluginIntallationJobFactory == null){
-            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory("dummy");
-        }
-        return this.pluginIntallationJobFactory;
-    }
-    
-    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
-        if(pluginIntallationJobFactory != null) {
-            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
-        }
-    }        
-    
     private static final long DAY = DAYS.toMillis(1);
 
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());

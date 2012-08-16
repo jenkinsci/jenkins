@@ -24,9 +24,7 @@
 package hudson.model;
 
 import hudson.BulkChange;
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.PluginManager;
@@ -40,9 +38,6 @@ import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
-import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
-import hudson.model.jobfactory.PluginIntallationJobFactory;
-import hudson.model.jobfactory.PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
@@ -1043,17 +1038,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             uc.config.preValidate(this, src);
 
             File dst = getDestination();
-            File tmp = downloadFile(uc.config, src); 
+            File tmp = uc.config.download(this, src);  
 
             uc.config.postValidate(this, tmp);
             uc.config.install(this, tmp, dst);
         }
         
-        
-        protected File downloadFile(UpdateCenterConfiguration config, URL src) throws IOException {
-            return config.download(this, src);
-        }
-
         /**
          * Called when the download is completed to overwrite
          * the old file with the new file.
