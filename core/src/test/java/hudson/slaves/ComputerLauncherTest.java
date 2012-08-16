@@ -57,6 +57,10 @@ public class ComputerLauncherTest {
         ComputerLauncher.checkJavaVersion(new PrintStream(new NullOutputStream()), "-", new BufferedReader(new StringReader("java version \"1.4.2_19\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.4.2_19-b04)\nJava HotSpot(TM) Client VM (build 1.4.2_19-b04, mixed mode)\n")));
     }
 
+    @Test public void jdk10() throws IOException { // predicted
+        assertChecked("java version \"1.10.0_02\"\nJava(TM) SE Runtime Environment (build 1.10.0_02-b01)\nJava HotSpot(TM) Server VM (build 23.1-b03, mixed mode)\n", "1.10");
+    }
+
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ComputerLauncher.checkJavaVersion(new PrintStream(os), "bin/java", new BufferedReader(new StringReader(text)));

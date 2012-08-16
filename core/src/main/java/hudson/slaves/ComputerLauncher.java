@@ -31,9 +31,9 @@ import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
 import java.io.*;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.tools.ant.util.DeweyDecimal;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -176,23 +176,18 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                                     final BufferedReader r)
             throws IOException {
         String line;
+        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\"");
         while (null != (line = r.readLine())) {
-            line = line.toLowerCase();
-            if (line.startsWith("java version \"")
-                    || line.startsWith("openjdk version \"")) {
-                final String versionStr = line.substring(
-                        line.indexOf('\"') + 1, line.lastIndexOf('\"'));
+            Matcher m = p.matcher(line);
+            if (m.matches()) {
+                final String versionStr = m.group(1);
                 logger.println(Messages.ComputerLauncher_JavaVersionResult(javaCommand, versionStr));
-
-                // parse as a number and we should be OK as all we care about is up through the first dot.
                 try {
-                    final Number version =
-                            NumberFormat.getNumberInstance(Locale.US).parse(versionStr);
-                    if(version.doubleValue() < 1.5) {
+                    if (new DeweyDecimal(versionStr).isLessThan(new DeweyDecimal("1.5"))) {
                         throw new IOException(Messages
                                 .ComputerLauncher_NoJavaFound(line));
                     }
-                } catch(final ParseException e) {
+                } catch (NumberFormatException x) {
                     throw new IOException(Messages.ComputerLauncher_NoJavaFound(line));
                 }
                 return;
