@@ -137,11 +137,12 @@ Behaviour.list.unshift({
     },
 
     "DIV.dd-handle" : function(e) {
-        e.addEventListener("mouseover",function() {
+        e=$(e);
+        e.on("mouseover",function() {
             $(this).up(".repeated-chunk").addClassName("hover");
-        },false);
-        e.addEventListener("mouseout",function() {
+        });
+        e.on("mouseout",function() {
             $(this).up(".repeated-chunk").removeClassName("hover");
-        },false);
+        });
     }
 });
