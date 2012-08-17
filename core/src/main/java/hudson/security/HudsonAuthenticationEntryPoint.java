@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
@@ -74,8 +75,10 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.sendError(SC_FORBIDDEN);
         } else {
             // give the opportunity to include the target URL
+            String uriFrom = req.getRequestURI();
+            if(!Strings.isNullOrEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath()+getLoginFormUrl();
-            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(req.getRequestURI(),"UTF-8"));
+            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
             rsp.setStatus(SC_FORBIDDEN);
