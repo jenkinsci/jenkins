@@ -58,6 +58,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -382,6 +383,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Attempts to retrieve a user by their id or full name.  It will
      * try looking at any alternate commit names defined for users.
      * 
+     * @param Boolean create
+     *      If true, it will attempt to create a user so that
+     *      there is something returned.
+     *      If false, this method will potentially return null.
+     * 
      * @return User
      * @since 1.477
      */
@@ -419,8 +425,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         u = get(idOrFullName, create);
         return u;
     }
-    
-    public static User getByCommitName(String idOrFullName) {
+
+    /**
+     * Attempts to retrieve a user by their id or full name.  It will
+     * try looking at any alternate commit names defined for users.
+     * 
+     * @return User
+     * @since 1.477
+     */
+    public static @Nonnull User getByCommitName(String idOrFullName) {
     	return getByCommitName(idOrFullName, true);
     }
 
