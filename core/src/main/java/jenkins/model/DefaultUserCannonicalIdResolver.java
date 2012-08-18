@@ -29,6 +29,8 @@ import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.User;
 
+import java.util.Map;
+
 /**
  * Default User.CannonicalIdResolver to escape unsupported characters and generate user ID.
  * Compared to other implementations, this resolver will always return an ID
@@ -39,7 +41,7 @@ import hudson.model.User;
 public class DefaultUserCannonicalIdResolver extends User.CannonicalIdResolver {
 
     @Override
-    public String resolveCannonicalId(String idOrFullName) {
+    public String resolveCannonicalId(String idOrFullName, Map context) {
         String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
                 .replace('>', '_');  // 4 replace() still faster than regex
         if (Functions.isWindows()) id = id.replace(':','_');

@@ -289,8 +289,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      (by creating a new {@link User} object if none exists.)
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
+     * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
-    public static @Nullable User get(String idOrFullName, boolean create) {
+    public static User get(String idOrFullName, boolean create) {
+        return get(idOrFullName, create, Collections.emptyMap());
+    }
+
+    /**
+     * Gets the {@link User} object by its id or full name.
+     *
+     * @param create
+     *      If true, this method will never return null for valid input
+     *      (by creating a new {@link User} object if none exists.)
+     *      If false, this method will return null if {@link User} object
+     *      with the given name doesn't exist.
+     *
+     * @param context
+     *      contextual environment this user idOfFullName was retrieved from,
+     *      that can help resolve the user ID
+     */
+    public static User get(String idOrFullName, boolean create, Map context) {
 
         if(idOrFullName==null)
             return null;
@@ -301,7 +319,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         String id = null;
         for (CannonicalIdResolver resolver : resolvers) {
-            id = resolver.resolveCannonicalId(idOrFullName);
+            id = resolver.resolveCannonicalId(idOrFullName, context);
             if (id != null) break;
         }
         // DefaultUserCannonicalIdResolver will always return a non-null id if all other CannonicalIdResolver failed
@@ -642,6 +660,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public static abstract class CannonicalIdResolver extends AbstractDescribableImpl<CannonicalIdResolver> implements Comparable<CannonicalIdResolver> {
 
+        /**
+         * context key for realm (domain) where idOrFullName has been retreived from.
+         * Can be used (for example) to distinguish ambiguous committer ID using the SCM URL.
+         */
+        public static final String REALM = "realm";
 
         public int compareTo(CannonicalIdResolver o) {
             // reverse priority order
@@ -654,7 +677,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @Nullable String resolveCannonicalId(String idOrFullName);
+        public abstract @Nullable String resolveCannonicalId(String idOrFullName, Map context);
 
         public int getPriority() {
             return 1;
