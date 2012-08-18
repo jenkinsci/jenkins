@@ -26,12 +26,7 @@ package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
-import hudson.CopyOnWrite;
-import hudson.FeedAdapter;
-import hudson.Functions;
-import hudson.Util;
-import hudson.XmlFile;
-import hudson.BulkChange;
+import hudson.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
@@ -77,7 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Represents a user.
@@ -295,12 +289,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
      */
-    public static @Nullable User get(String idOrFullName, boolean create) {
+    public static User get(String idOrFullName, boolean create) {
+
         if(idOrFullName==null)
             return null;
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
-                                .replace('>','_');  // 4 replace() still faster than regex
-        if (Functions.isWindows()) id = id.replace(':','_');
+
+        // sort resolvers by priority
+        List<CannonicalIdResolver> resolvers = new ArrayList<CannonicalIdResolver>(Jenkins.getInstance().getExtensionList(CannonicalIdResolver.class));
+        Collections.sort(resolvers);
+
+        String id = null;
+        for (CannonicalIdResolver resolver : resolvers) {
+            id = resolver.resolveCannonicalId(idOrFullName);
+            if (id != null) break;
+        }
+        // DefaultUserCannonicalIdResolver will always return a non-null id if all other CannonicalIdResolver failed
 
         String idkey = id.toLowerCase(Locale.ENGLISH);
 
@@ -635,5 +638,28 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         return Collections.unmodifiableList(actions);
     }
+
+    public static abstract class CannonicalIdResolver extends AbstractDescribableImpl<CannonicalIdResolver> implements Comparable<CannonicalIdResolver> {
+
+
+        public int compareTo(CannonicalIdResolver o) {
+            // reverse priority order
+            int i = getPriority();
+            int j = o.getPriority();
+            return i>j ? -1 : (i==j ? 0:1);
+        }
+
+        /**
+         * extract user ID from idOrFullName with help from contextual infos.
+         * can return <code>null</code> if no user ID matched the input
+         */
+        public abstract String resolveCannonicalId(String idOrFullName);
+
+        public int getPriority() {
+            return 1;
+        }
+
+    }
     
 }
+
