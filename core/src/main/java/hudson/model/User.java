@@ -51,6 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -289,7 +290,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
      */
-    public static User get(String idOrFullName, boolean create) {
+    public static @Nullable User get(String idOrFullName, boolean create) {
 
         if(idOrFullName==null)
             return null;
@@ -653,7 +654,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract String resolveCannonicalId(String idOrFullName);
+        public abstract @Nullable String resolveCannonicalId(String idOrFullName);
 
         public int getPriority() {
             return 1;
