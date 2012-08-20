@@ -694,6 +694,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
     }
-    
+
+
+    /**
+     * Resolve user ID from full name
+     */
+    @Extension
+    public static class FullNameIdResolver extends CanonicalIdResolver {
+
+        @Override
+        public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
+            for (User user : getAll()) {
+                if (idOrFullName.equals(user.getFullName())) return user.getId();
+            }
+            return null;
+        }
+
+        @Override
+        public int getPriority() {
+            return -1; // lower than default
+        }
+    }
 }
 
