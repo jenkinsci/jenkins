@@ -32,16 +32,16 @@ import hudson.model.User;
 import java.util.Map;
 
 /**
- * Default User.CannonicalIdResolver to escape unsupported characters and generate user ID.
+ * Default User.CanonicalIdResolver to escape unsupported characters and generate user ID.
  * Compared to other implementations, this resolver will always return an ID
  *
- * @author: <a hef="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
 */
 @Extension
-public class DefaultUserCannonicalIdResolver extends User.CannonicalIdResolver {
+public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
 
     @Override
-    public String resolveCannonicalId(String idOrFullName, Map context) {
+    public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
         String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
                 .replace('>', '_');  // 4 replace() still faster than regex
         if (Functions.isWindows()) id = id.replace(':','_');
@@ -54,11 +54,11 @@ public class DefaultUserCannonicalIdResolver extends User.CannonicalIdResolver {
     }
 
     @Override
-    public Descriptor<User.CannonicalIdResolver> getDescriptor() {
+    public Descriptor<User.CanonicalIdResolver> getDescriptor() {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<User.CannonicalIdResolver> DESCRIPTOR = new Descriptor<User.CannonicalIdResolver>() {
+    public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<User.CanonicalIdResolver>() {
         public String getDisplayName() {
             return "compute default user ID";
         }

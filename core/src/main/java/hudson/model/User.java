@@ -314,15 +314,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return null;
 
         // sort resolvers by priority
-        List<CannonicalIdResolver> resolvers = new ArrayList<CannonicalIdResolver>(Jenkins.getInstance().getExtensionList(CannonicalIdResolver.class));
+        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(Jenkins.getInstance().getExtensionList(CanonicalIdResolver.class));
         Collections.sort(resolvers);
 
         String id = null;
-        for (CannonicalIdResolver resolver : resolvers) {
-            id = resolver.resolveCannonicalId(idOrFullName, context);
+        for (CanonicalIdResolver resolver : resolvers) {
+            id = resolver.resolveCanonicalId(idOrFullName, context);
             if (id != null) break;
         }
-        // DefaultUserCannonicalIdResolver will always return a non-null id if all other CannonicalIdResolver failed
+        // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
 
         String idkey = id.toLowerCase(Locale.ENGLISH);
 
@@ -658,15 +658,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return Collections.unmodifiableList(actions);
     }
 
-    public static abstract class CannonicalIdResolver extends AbstractDescribableImpl<CannonicalIdResolver> implements Comparable<CannonicalIdResolver> {
+    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retreived from.
          * Can be used (for example) to distinguish ambiguous committer ID using the SCM URL.
+         * Associated Value is a {@link String}
          */
         public static final String REALM = "realm";
 
-        public int compareTo(CannonicalIdResolver o) {
+        public int compareTo(CanonicalIdResolver o) {
             // reverse priority order
             int i = getPriority();
             int j = o.getPriority();
@@ -677,7 +678,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @Nullable String resolveCannonicalId(String idOrFullName, Map context);
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
 
         public int getPriority() {
             return 1;
