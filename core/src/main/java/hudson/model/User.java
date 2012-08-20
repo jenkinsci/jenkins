@@ -324,14 +324,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
 
+        return getOrCreate(id, idOrFullName, create);
+    }
+
+    /**
+     * retrieve a user by its ID, and create a new one if requested
+     */
+    private static User getOrCreate(String id, String fullName, boolean create) {
         String idkey = id.toLowerCase(Locale.ENGLISH);
 
         User u = byName.get(idkey);
-        if(u==null && (create || getConfigFileFor(id).exists())) {
-            User tmp = new User(id, idOrFullName);
+        if (u==null && (create || getConfigFileFor(id).exists())) {
+            User tmp = new User(id, fullName);
             User prev = byName.putIfAbsent(idkey, u = tmp);
             if (prev!=null)
-                u = prev;   // if somehas already put a value in the map, use it
+                u = prev;   // if some has already put a value in the map, use it
         }
         return u;
     }
@@ -372,8 +379,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             if(subdirs==null)       return Collections.emptyList(); // shall never happen
 
             for (File subdir : subdirs)
-                if(new File(subdir,"config.xml").exists())
-                    User.get(subdir.getName());
+                if(new File(subdir,"config.xml").exists()) {
+                    String name = subdir.getName();
+                    User.getOrCreate(name, name, true);
+                }
 
             lastScanned = System.currentTimeMillis();
         }
