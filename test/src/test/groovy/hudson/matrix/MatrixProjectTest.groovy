@@ -53,6 +53,13 @@ import hudson.model.FileParameterDefinition
 import hudson.model.Cause.LegacyCodeCause
 import hudson.model.ParametersAction
 import hudson.model.FileParameterValue
+import hudson.model.StringParameterDefinition
+import hudson.model.StringParameterValue
+import hudson.scm.SubversionSCM.SvnInfo;
+import hudson.scm.RevisionParameterAction;
+import java.util.List;
+import java.util.ArrayList;
+import hudson.model.Action;
 
 import java.util.concurrent.CountDownLatch
 
@@ -151,11 +158,11 @@ public class MatrixProjectTest extends HudsonTestCase {
     @Email("http://www.nabble.com/1.286-version-and-fingerprints-option-broken-.-td22236618.html")
     public void testFingerprinting() throws Exception {
         MatrixProject p = createMatrixProject();
-        if (Functions.isWindows()) 
+        if (Functions.isWindows())
            p.getBuildersList().add(new BatchFile("echo \"\" > p"));
-        else 
+        else
            p.getBuildersList().add(new Shell("touch p"));
-        
+
         p.getPublishersList().add(new ArtifactArchiver("p",null,false));
         p.getPublishersList().add(new Fingerprinter("",true));
         buildAndAssertSuccess(p);
@@ -295,7 +302,7 @@ public class MatrixProjectTest extends HudsonTestCase {
             fail()
         } catch (TimeoutException e) {
             // expected
-        }        
+        }
     }
 
     @Bug(9009)
@@ -326,7 +333,7 @@ public class MatrixProjectTest extends HudsonTestCase {
                 return v;
             }
         ))
-        
+
         assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
     }
 
@@ -343,7 +350,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         p.concurrentBuild = true;
         def latch = new CountDownLatch(4)
         def dirs = Collections.synchronizedSet(new HashSet())
-        
+
         p.buildersList.add(new TestBuilder() {
             boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 dirs << build.workspace.getRemote()
@@ -365,5 +372,61 @@ public class MatrixProjectTest extends HudsonTestCase {
         [f1,f2]*.get().each{ assertBuildStatusSuccess(it)}
 
         assertEquals 4, dirs.size()
+    }
+
+
+    /**
+     * Test that Actions are passed to configurations
+     */
+    public void testParameterActions() throws Exception {
+        MatrixProject p = createMatrixProject();
+
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+            new StringParameterDefinition("PARAM_A","default_a"),
+            new StringParameterDefinition("PARAM_B","default_b"),
+        );
+
+        p.addProperty(pdp);
+        ParametersAction pa = new ParametersAction( pdp.getParameterDefinitions().collect { return it.getDefaultParameterValue() } )
+
+        MatrixBuild build = p.scheduleBuild2(0,new LegacyCodeCause(), pa).get();
+
+        assertEquals(4, build.getRuns().size());
+
+        for(MatrixRun run : build.getRuns()) {
+            ParametersAction pa1 = run.getAction(ParametersAction.class);
+            assertNotNull(pa1);
+            ["PARAM_A","PARAM_B"].each{ assertNotNull(pa1.getParameter(it)) }
+        }
+    }
+
+    /**
+     * Test that other Actions are passed to configurations
+     */
+    public void testMatrixChildActions() throws Exception {
+        MatrixProject p = createMatrixProject();
+
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+            new StringParameterDefinition("PARAM_A","default_a"),
+            new StringParameterDefinition("PARAM_B","default_b"),
+        );
+
+        p.addProperty(pdp);
+
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new RevisionParameterAction(new SvnInfo("http://example.com/svn/repo/",1234)));
+        actions.add(new ParametersAction( pdp.getParameterDefinitions().collect { return it.getDefaultParameterValue() } ));
+
+        MatrixBuild build = p.scheduleBuild2(0,new LegacyCodeCause(), actions).get();
+
+        assertEquals(4, build.getRuns().size());
+
+        for(MatrixRun run : build.getRuns()) {
+            ParametersAction pa1 = run.getAction(ParametersAction.class);
+            assertNotNull(pa1);
+            ["PARAM_A","PARAM_B"].each{ assertNotNull(pa1.getParameter(it)) };
+
+            assertNotNull(run.getAction(RevisionParameterAction.class));
+        }
     }
 }
