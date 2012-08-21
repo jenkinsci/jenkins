@@ -2,6 +2,7 @@ package hudson.matrix;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.matrix.listeners.MatrixBuildListener;
@@ -147,12 +148,12 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             notifyEndBuild(run,execution.getAggregators());
             r = r.combine(getResult(run));
         }
-        
+
         if (touchStoneResultCondition != null && r.isWorseThan(touchStoneResultCondition)) {
             logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
             return r;
         }
-        
+
         if(!runSequentially)
             for(MatrixConfiguration c : delayedConfigurations)
                 scheduleConfigurationBuild(execution, c);
@@ -187,17 +188,28 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             if(!a.endRun(b))
                 throw new AbortException();
     }
-    
+
     private <T> TreeSet<T> createTreeSet(Collection<T> items, Comparator<T> sorter) {
         TreeSet<T> r = new TreeSet<T>(sorter);
         r.addAll(items);
         return r;
     }
 
+    /** Function to start schedule a single configuration
+     *
+     * This function schedule a build of a configuration passing all of the Matrixchild actions
+     * that are present in the parent build.
+     *
+     * @param exec  Matrix build that is the parent of the configuration
+     * @param c     Configuration to schedule
+     */
     private void scheduleConfigurationBuild(MatrixBuildExecution exec, MatrixConfiguration c) {
         MatrixBuild build = exec.getBuild();
         exec.getListener().getLogger().println(Messages.MatrixBuild_Triggering(ModelHyperlinkNote.encodeTo(c)));
-        c.scheduleBuild(build.getAction(ParametersAction.class), new UpstreamCause((Run)build));
+
+        // filter the parent actions for those that can be passed to the individual jobs.
+        List<MatrixChildAction> childActions = Util.filter(build.getActions(), MatrixChildAction.class);
+        c.scheduleBuild(childActions, new UpstreamCause((Run)build));
     }
 
     private MatrixRun waitForCompletion(MatrixBuildExecution exec, MatrixConfiguration c) throws InterruptedException, IOException {
@@ -244,7 +256,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
                     whyInQueue = why;
                 }
             }
-            
+
             Thread.sleep(1000);
         }
     }

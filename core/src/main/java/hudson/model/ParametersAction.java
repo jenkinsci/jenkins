@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.matrix.MatrixChildAction;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
@@ -52,7 +53,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction, MatrixChildAction {
 
     private final List<ParameterValue> parameters;
 
@@ -64,7 +65,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     public ParametersAction(List<ParameterValue> parameters) {
         this.parameters = parameters;
     }
-    
+
     public ParametersAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
@@ -92,7 +93,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
      * Creates an {@link VariableResolver} that aggregates all the parameters.
      *
      * <p>
-     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
+     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}.
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
