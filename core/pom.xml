@@ -187,6 +187,12 @@ THE SOFTWARE.
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
       <version>1.4</version>
+      <exclusions> <!-- https://github.com/infradna/bridge-method-injector/issues/1 -->
+        <exclusion>
+          <artifactId>annotation-indexer</artifactId>
+          <groupId>org.jvnet.hudson</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -204,9 +210,9 @@ THE SOFTWARE.
       <version>2.0.16</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
