@@ -1159,7 +1159,9 @@ var jenkinsRules = {
         adjustSticker();
     }
 };
-var hudsonRules = jenkinsRules; // legacy name
+for (var selector in jenkinsRules) {
+    Behaviour.specify(selector, 'hudson-behavior', 0, jenkinsRules[selector]);
+}
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1211,10 +1213,6 @@ function refillOnChange(e,onChange) {
     }
     h();   // initial fill
 }
-
-Behaviour.register(hudsonRules);
-
-
 
 function xor(a,b) {
     // convert both values to boolean by '!' and then do a!=b
