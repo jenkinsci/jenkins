@@ -26,20 +26,14 @@ THE SOFTWARE.
   <l:layout title="">
     <l:main-panel>
       <script>
-        Behaviour.register({
-          ".a" : function (e) {
-            e.innerHTML += ' and appended';
-          }
+        Behaviour.specify(".a", 'test1', 0, function (e) {
+          e.innerHTML += ' and appended';
         });
-        Behaviour.register({
-          ".a" : function (e) {
-            e.innerHTML += ' and appended';
-          }
+        Behaviour.specify(".a", 'test1', 0, function (e) {
+          e.innerHTML += ' and appended';
         });
-        Behaviour.register({
-          ".a" : function (e) {
-            e.innerHTML += ' yet different';
-          }
+        Behaviour.specify(".a", 'test2', 0, function (e) {
+          e.innerHTML += ' yet different';
         });
       </script>
       <div class="a">initial</div>

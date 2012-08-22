@@ -9,20 +9,16 @@
 
    Usage:
 
-	var myrules = {
-		'b.someclass' : function(element){
-			element.onclick = function(){
-				alert(this.innerHTML);
-			}
-		},
-		'#someid u' : function(element){
-			element.onmouseover = function(){
-				this.innerHTML = "BLAH!";
-			}
-		}
-	};
-
-	Behaviour.register(myrules);
+        Behaviour.specify('b.someclass', 'myrules.alert', 10, function(element) {
+	    element.onclick = function() {
+                alert(this.innerHTML);
+            }
+        });
+        Behaviour.specify('#someid u', 'myrules.blah', 0, function(element) {
+	    element.onmouseover = function() {
+                this.innerHTML = "BLAH!";
+            }
+        });
 
 	// Call Behaviour.apply() to re-apply the rules (if you
 	// update the dom, etc).
@@ -37,9 +33,37 @@
 
 */
 
+var storage = {};
 var Behaviour = {
+
+    /**
+     * @param {String} selector a CSS selector triggering your behavior
+     * @param {String} id uniquely identifies this behavior among all behaviors for the selector; prevents duplicate registrations
+     * @param {Number} priority relative position of this behavior in case multiple apply; lower numbers applied first; alphabetical by id in case of tie; choose 0 if you do not care
+     * @param {Function} behavior callback function taking one parameter, a (DOM) {@link Element}, and returning void
+     */
+    specify : function(selector, id, priority, behavior) {
+        var forSelector = storage[selector];
+        if (forSelector == null) {
+            storage[selector] = forSelector = [];
+        }
+        for (var i = 0; i < forSelector.length; i++) {
+            if (forSelector[i].id == id) {
+                forSelector.splice(i, 1);
+                break;
+            }
+        }
+        forSelector.push({id: id, priority: priority, behavior: behavior});
+        forSelector.sort(function(a, b) {
+            var location = a.priority - b.priority;
+            return location != 0 ? location : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+        });
+    },
+
+        /** @deprecated For backward compatibility only; use {@link specify} instead. */
 	list : new Array,
 
+        /** @deprecated For backward compatibility only; use {@link specify} instead. */
 	register : function(sheet){
 		Behaviour.list.push(sheet);
 	},
@@ -65,30 +89,30 @@ var Behaviour = {
      *      this semantics is preserved.
      */
     applySubtree : function(startNode,includeSelf) {
-        var behaviorsBySelector = {};
+        if (!(startNode instanceof Array)) {
+            startNode = [startNode];
+        }
+        // First, handle deprecated registrations:
         Behaviour.list._each(function(sheet) {
             for (var selector in sheet){
-                var behavior = sheet[selector];
-                var behaviors = behaviorsBySelector[selector];
-                if (behaviors == null) {
-                    behaviors = [];
-                    behaviorsBySelector[selector] = behaviors;
-                }
-                if (behaviors.indexOf(behavior.toString()) == -1) {
-                    behaviors.push(behavior.toString());
-                    function apply(n) {
-                        var list = findElementsBySelector(n,selector,includeSelf);
-                        if (list.length>0)  // just to simplify setting of a breakpoint.
-                            list._each(sheet[selector]);
-                    }
-                    if (startNode instanceof Array) {
-                        startNode._each(apply)
-                    } else {
-                        apply(startNode);
-                    }
-                }
+                startNode._each(function (n) {
+                    var list = findElementsBySelector(n,selector,includeSelf);
+                    if (list.length>0)  // just to simplify setting of a breakpoint.
+                        list._each(sheet[selector]);
+                });
             }
         });
+        // Now those using specify:
+        for (var selector in storage) {
+            storage[selector]._each(function (registration) {
+                startNode._each(function (node) {
+                    var list = findElementsBySelector(node, selector, includeSelf);
+                    if (list.length > 0) {
+                        list._each(registration.behavior);
+                    }
+                });
+            });
+        }
     },
 
     addLoadEvent : function(func){
