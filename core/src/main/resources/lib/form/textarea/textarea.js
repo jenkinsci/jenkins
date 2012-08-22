@@ -15,7 +15,7 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
         scroller.style.height = h+"px";
     });
 
-Behaviour.specify("DIV.textarea-preview-container", 'textarea', 0, function (e) {
+Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e) {
         var previewDiv = findElementsBySelector(e,".textarea-preview")[0];
         var showPreview = findElementsBySelector(e,".textarea-show-preview")[0];
         var hidePreview = findElementsBySelector(e,".textarea-hide-preview")[0];
