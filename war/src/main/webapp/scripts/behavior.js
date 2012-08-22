@@ -33,7 +33,7 @@
 
 */
 
-var Behaviour = function() {
+var Behaviour = (function() {
     var storage = [{selector: '', id: '_deprecated', priority: 0}];
     return {
 
@@ -127,7 +127,7 @@ var Behaviour = function() {
 			}
 		}
 	}
-}}();
+}})();
 
 Behaviour.start();
 
