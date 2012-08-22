@@ -561,7 +561,9 @@ function sequencer(fs) {
     return next();
 }
 
+/** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = {
+// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -1159,9 +1161,8 @@ var jenkinsRules = {
         adjustSticker();
     }
 };
-for (var selector in jenkinsRules) {
-    Behaviour.specify(selector, 'hudson-behavior', 0, jenkinsRules[selector]);
-}
+/** @deprecated Use {@link Behaviour.specify} instead. */
+var hudsonRules = jenkinsRules; // legacy name
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1213,6 +1214,10 @@ function refillOnChange(e,onChange) {
     }
     h();   // initial fill
 }
+
+Behaviour.register(hudsonRules);
+
+
 
 function xor(a,b) {
     // convert both values to boolean by '!' and then do a!=b
