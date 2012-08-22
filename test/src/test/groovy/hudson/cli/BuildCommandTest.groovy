@@ -84,6 +84,22 @@ public class BuildCommandTest extends HudsonTestCase {
 
     }
 
+    /**
+     * Tests synchronous execution with retried verbose output
+     */
+    void testSyncWOutputStreaming() {
+        def p = createFreeStyleProject();
+        p.buildersList.add(new Shell("sleep 3"));
+
+        def cli =new CLI(getURL())
+        try {
+            cli.execute(["build","-s","-v","-r","5",p.name])
+            assertFalse(p.getBuildByNumber(1).isBuilding())
+        } finally {
+            cli.close();
+        }
+    }
+
     void testParameters() {
         def p = createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key",null)]));
