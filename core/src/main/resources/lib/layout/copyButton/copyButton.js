@@ -1,6 +1,6 @@
 // @include "org.kohsuke.stapler.zeroclipboard"
 
-Behaviour.soecify("span.copy-button", 'copyButton', 0, function(e) {
+Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         var btn = e.firstChild;
         var id = "copy-button"+(iota++);
         btn.id = id;
