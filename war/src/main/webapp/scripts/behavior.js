@@ -33,8 +33,9 @@
 
 */
 
-var storage = [{selector: '', id: '_deprecated', priority: 0}]; // XXX make private somehow
-var Behaviour = {
+var Behaviour = function() {
+    var storage = [{selector: '', id: '_deprecated', priority: 0}];
+    return {
 
     /**
      * Specifies something to do when an element matching a CSS selector is encountered.
@@ -126,7 +127,7 @@ var Behaviour = {
 			}
 		}
 	}
-}
+}}();
 
 Behaviour.start();
 
