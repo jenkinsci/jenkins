@@ -33,7 +33,7 @@
 
 */
 
-var storage = [];
+var storage = [{selector: '', id: '_deprecated', priority: 0}]; // XXX make private somehow
 var Behaviour = {
 
     /**
@@ -89,24 +89,28 @@ var Behaviour = {
         if (!(startNode instanceof Array)) {
             startNode = [startNode];
         }
-        // First, handle deprecated registrations:
-        Behaviour.list._each(function(sheet) {
-            for (var selector in sheet){
-                startNode._each(function (n) {
-                    var list = findElementsBySelector(n,selector,includeSelf);
-                    if (list.length>0)  // just to simplify setting of a breakpoint.
-                        list._each(sheet[selector]);
+        storage._each(function (registration) {
+            if (registration.id == '_deprecated') {
+                Behaviour.list._each(function(sheet) {
+                    for (var selector in sheet){
+                        startNode._each(function (n) {
+                            var list = findElementsBySelector(n, selector, includeSelf);
+                            if (list.length > 0) { // just to simplify setting of a breakpoint.
+                                //console.log('deprecated:' + selector + ' on ' + list.length + ' elements');
+                                list._each(sheet[selector]);
+                            }
+                        });
+                    }
+                });
+            } else {
+                startNode._each(function (node) {
+                    var list = findElementsBySelector(node, registration.selector, includeSelf);
+                    if (list.length > 0) {
+                        //console.log(registration.id + ':' + registration.selector + ' @' + registration.priority + ' on ' + list.length + ' elements');
+                        list._each(registration.behavior);
+                    }
                 });
             }
-        });
-        // Now those using specify:
-        storage._each(function (registration) {
-            startNode._each(function (node) {
-                var list = findElementsBySelector(node, registration.selector, includeSelf);
-                if (list.length > 0) {
-                    list._each(registration.behavior);
-                }
-            });
         });
     },
 
