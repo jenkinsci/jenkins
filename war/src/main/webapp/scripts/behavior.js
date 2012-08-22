@@ -10,12 +10,12 @@
    Usage:
 
         Behaviour.specify('b.someclass', 'myrules.alert', 10, function(element) {
-	    element.onclick = function() {
+            element.onclick = function() {
                 alert(this.innerHTML);
             }
         });
         Behaviour.specify('#someid u', 'myrules.blah', 0, function(element) {
-	    element.onmouseover = function() {
+            element.onmouseover = function() {
                 this.innerHTML = "BLAH!";
             }
         });
