@@ -33,30 +33,27 @@
 
 */
 
-var storage = {};
+var storage = [];
 var Behaviour = {
 
     /**
+     * Specifies something to do when an element matching a CSS selector is encountered.
      * @param {String} selector a CSS selector triggering your behavior
-     * @param {String} id uniquely identifies this behavior among all behaviors for the selector; prevents duplicate registrations
-     * @param {Number} priority relative position of this behavior in case multiple apply; lower numbers applied first; alphabetical by id in case of tie; choose 0 if you do not care
+     * @param {String} id combined with selector, uniquely identifies this behavior; prevents duplicate registrations
+     * @param {Number} priority relative position of this behavior in case multiple apply to a given element; lower numbers applied first (sorted by id then selector in case of tie); choose 0 if you do not care
      * @param {Function} behavior callback function taking one parameter, a (DOM) {@link Element}, and returning void
      */
     specify : function(selector, id, priority, behavior) {
-        var forSelector = storage[selector];
-        if (forSelector == null) {
-            storage[selector] = forSelector = [];
-        }
-        for (var i = 0; i < forSelector.length; i++) {
-            if (forSelector[i].id == id) {
-                forSelector.splice(i, 1);
+        for (var i = 0; i < storage.length; i++) {
+            if (storage[i].selector == selector && storage[i].id == id) {
+                storage.splice(i, 1);
                 break;
             }
         }
-        forSelector.push({id: id, priority: priority, behavior: behavior});
-        forSelector.sort(function(a, b) {
+        storage.push({selector: selector, id: id, priority: priority, behavior: behavior});
+        storage.sort(function(a, b) {
             var location = a.priority - b.priority;
-            return location != 0 ? location : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+            return location != 0 ? location : a.id < b.id ? -1 : a.id > b.id ? 1 : a.selector < b.selector ? -1 : a.selector > b.selector ? 1 : 0;
         });
     },
 
@@ -103,16 +100,14 @@ var Behaviour = {
             }
         });
         // Now those using specify:
-        for (var selector in storage) {
-            storage[selector]._each(function (registration) {
-                startNode._each(function (node) {
-                    var list = findElementsBySelector(node, selector, includeSelf);
-                    if (list.length > 0) {
-                        list._each(registration.behavior);
-                    }
-                });
+        storage._each(function (registration) {
+            startNode._each(function (node) {
+                var list = findElementsBySelector(node, registration.selector, includeSelf);
+                if (list.length > 0) {
+                    list._each(registration.behavior);
+                }
             });
-        }
+        });
     },
 
     addLoadEvent : function(func){

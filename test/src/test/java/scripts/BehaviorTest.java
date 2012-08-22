@@ -61,4 +61,10 @@ public class BehaviorTest extends HudsonTestCase {
         assertEquals("initial and appended yet different", r.getJavaScriptResult().toString());
     }
 
+    public void testSelectorOrdering() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testSelectorOrdering");
+        ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");
+        assertEquals("initial early counted! generic weevils! late", r.getJavaScriptResult().toString());
+    }
+
 }
