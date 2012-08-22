@@ -167,10 +167,9 @@ THE SOFTWARE.
           <j:set var="descriptorPath" value="${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
-        "#${strategyid} TR.permission-row" : function(e) {
+        Behaviour.specify("#${strategyid} TR.permission-row", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encodeURIComponent(e.getAttribute("name")),"GET",e.firstChild);
-        }
-      });
+        });
     </script>
   </f:block>
 </j:jelly>
