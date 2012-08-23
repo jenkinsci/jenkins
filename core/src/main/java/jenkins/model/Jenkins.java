@@ -306,7 +306,7 @@ import javax.annotation.CheckForNull;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
+public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
     private transient final Queue queue;
 
     /**

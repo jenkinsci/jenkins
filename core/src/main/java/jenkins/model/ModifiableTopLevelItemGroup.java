@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2011, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+package jenkins.model;
 
 import hudson.model.ModifiableItemGroup;
 import hudson.model.TopLevelItem;
-import jenkins.model.Jenkins;
-import hudson.Extension;
-import hudson.model.Item;
-import jenkins.model.ModifiableTopLevelItemGroup;
-import org.kohsuke.args4j.Argument;
+import hudson.model.TopLevelItemDescriptor;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Creates a new job by reading stdin as a configuration XML file.
- * 
- * @author Kohsuke Kawaguchi
+ * A {@link hudson.model.ModifiableItemGroup} to manage {@link hudson.model.TopLevelItem},
+ * including copying, creating from descriptor and from XML.
+ *
+ * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension
-public class CreateJobCommand extends CLICommand {
-    @Override
-    public String getShortDescription() {
-        return Messages.CreateJobCommand_ShortDescription();
-    }
+public interface ModifiableTopLevelItemGroup extends ModifiableItemGroup<TopLevelItem> {
 
-    @Argument(metaVar="NAME",usage="Name of the job to create",required=true)
-    public String name;
+    <T extends TopLevelItem> T copy(T src, String name) throws IOException;
 
-    protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
-        h.checkPermission(Item.CREATE);
+    TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException;
 
-        if (h.getItemByFullName(name)!=null) {
-            stderr.println("Job '"+name+"' already exists");
-            return -1;
-        }
+    TopLevelItem createProject(TopLevelItemDescriptor type, String name) throws IOException;
 
-        ModifiableTopLevelItemGroup ig = h;
-        int i = name.lastIndexOf('/');
-        if (i > 0) {
-            ig = (ModifiableTopLevelItemGroup) h.getItemByFullName(name.substring(0, i));
-        }
-
-        ig.createProjectFromXML(name, stdin);
-        return 0;
-    }
+    TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify) throws IOException;
 }
-
-
