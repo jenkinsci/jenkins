@@ -420,7 +420,7 @@ THE SOFTWARE.
               <value><!-- run "mvn install" once will generate the.hpl -->
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
                   ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
-                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/javadoc.hpi
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>
             <systemProperty>

@@ -10,9 +10,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.PluginManager;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import hudson.util.Service;
 
 /**
@@ -65,20 +68,31 @@ public class InitStrategy {
     }
 
     /**
-     * Lists up additional bundled plugins from the system property.
-     *
+     * Lists up additional bundled plugins from the system property {@code hudson.bundled.plugins}.
+     * Since 1.480 glob syntax is supported.
      * For use in the "mvn hudson-dev:run".
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
-    protected void getBundledPluginsFromProperty(List<File> r) {
+    protected void getBundledPluginsFromProperty(final List<File> r) {
         String hplProperty = System.getProperty("hudson.bundled.plugins");
         if (hplProperty != null) {
             for (String hplLocation : hplProperty.split(",")) {
                 File hpl = new File(hplLocation.trim());
-                if (hpl.exists())
+                if (hpl.exists()) {
                     r.add(hpl);
-                else
+                } else if (hpl.getName().contains("*")) {
+                    try {
+                        new DirScanner.Glob(hpl.getName(), null).scan(hpl.getParentFile(), new FileVisitor() {
+                            @Override public void visit(File f, String relativePath) throws IOException {
+                                r.add(f);
+                            }
+                        });
+                    } catch (IOException x) {
+                        LOGGER.log(Level.WARNING, "could not expand " + hplLocation, x);
+                    }
+                } else {
                     LOGGER.warning("bundled plugin " + hplLocation + " does not exist");
+                }
             }
         }
     }

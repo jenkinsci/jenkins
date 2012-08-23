@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map.Entry;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import jenkins.model.Jenkins;
@@ -82,6 +83,12 @@ public class BuildCommand extends CLICommand {
     @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
     public boolean consoleOutput = false;
 
+    @Option(name="-r", usage="Number of times to retry reading of the output log if it does not exists on first attempt. Defaults to 0. Use with -v.")
+    public String retryCntStr = "0";
+
+    // hold parsed retryCnt;
+    private int retryCnt = 0;
+
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
@@ -114,6 +121,8 @@ public class BuildCommand extends CLICommand {
             a = new ParametersAction(values);
         }
 
+        retryCnt = Integer.parseInt(retryCntStr);
+
         if (checkSCM) {
             if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
                 return 0;
@@ -128,7 +137,24 @@ public class BuildCommand extends CLICommand {
 
             if (sync) {
                 if (consoleOutput) {
-                    b.writeWholeLogTo(stdout);
+                    // read output in a retry loop, by default try only once
+                    // writeWholeLogTo may fail with FileNotFound
+                    // exception on a slow/busy machine, if it takes
+                    // longish to create the log file
+                    int retryInterval = 100;
+                    for (int i=0;i<=retryCnt;) {
+                        try {
+                            b.writeWholeLogTo(stdout);
+                            break;
+                        }
+                        catch (FileNotFoundException e) {
+                            if ( i == retryCnt ) {
+                                throw e;
+                            }
+                            i++;
+                            Thread.sleep(retryInterval);
+                        }
+                    }
                 }
                 // TODO: should we abort the build if the CLI is cancelled?
                 f.get();    // wait for the completion
