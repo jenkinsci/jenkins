@@ -40,7 +40,6 @@ THE SOFTWARE.
   </description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- -1 means # of processors in the system -->
     <mavenDebug>false</mavenDebug>
   </properties>
 
@@ -171,8 +170,22 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <skip>true</skip>
-          <!-- tests now run by maven-junit-plugin -->
+          <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
+          <systemProperties>
+            <property>
+              <!-- use AntClassLoader that supports predictable file handle release -->
+              <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
+              <value>true</value>
+            </property>
+            <property>
+              <name>hudson.maven.debug</name>
+              <value>${mavenDebug}</value>
+            </property>
+            <property>
+              <name>buildDirectory</name>
+              <value>${project.build.directory}</value>
+            </property>
+          </systemProperties>
         </configuration>
       </plugin>
       <plugin>
@@ -216,79 +229,6 @@ THE SOFTWARE.
   </build>
 
   <profiles>
-
-    <profile>
-      <id>run-test-harness</id>
-      <activation>
-        <property>
-          <name>!skip-test-harness</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- JUnit4 test is failed with maven-junit-plugin-->
-            <artifactId>maven-surefire-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <configuration>
-              <skip>false</skip>
-              <includes>
-                <include>**/UseRecipesWithJenkinsRuleTest.java</include>
-                <include>hudson/model/CauseTest.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
-            <groupId>org.kohsuke</groupId>
-            <artifactId>maven-junit-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>test</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <concurrency>${concurrency}</concurrency>
-                  <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
-                  <timeout>300</timeout>
-                  <systemProperties>
-                    <property>
-                      <!-- use AntClassLoader that supports predictable file handle release -->
-                      <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
-                      <value>true</value>
-                    </property>
-                    <property>
-                      <name>hudson.maven.debug</name>
-                      <value>${mavenDebug}</value>
-                    </property>
-                    <property>
-                      <name>java.io.tmpdir</name>
-                      <value>${project.build.directory}</value>
-                    </property>
-                    <property>
-                      <name>buildDirectory</name>
-                      <value>${project.build.directory}</value>
-                    </property>
-                    <property>
-                      <name>java.awt.headless</name>
-                      <value>true</value>
-                    </property>
-                  </systemProperties>
-                  <excludes>
-                    <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
-                    <exclude>hudson/model/CauseTest.java</exclude>
-                  </excludes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-
-    </profile>
-
     <profile>
       <id>light-test</id>
       <properties>
