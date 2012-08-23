@@ -2,6 +2,7 @@ package hudson.model.jobfactory;
 
 import hudson.Extension;
 import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.Messages;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Plugin;
 import jenkins.model.Jenkins;
@@ -11,6 +12,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Default implementation of a job factory - this is the extraction of the origin code before this extension point existed. 
+ * The Installation jobs created by this factory, use the <code>url</code> of the plugin info provided by the update-center JSON to download the artifact.
  *  
  * @author Dominik Bartholdi (imod)
  */
@@ -35,7 +37,7 @@ public class DefaultPluginIntallationJobFactory extends PluginIntallationJobFact
 
         @Override
         public String getDisplayName() {
-            return "Default update center based installation";
+            return Messages.DefaultPluginIntallationJobFactory_displayname();
         }
 
     }

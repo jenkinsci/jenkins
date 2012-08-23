@@ -71,7 +71,7 @@ THE SOFTWARE.
             <f:entry title="${%URL}" >
               <f:textbox name="site" value="${instance.url}" />
             </f:entry>
-            <f:entry title="${%Plugin InstallJob Factory}" >
+            <f:entry title="${%pluginInstallFactory}" >
                 <f:dropdownDescriptorSelector field="pluginIntallationJobFactory" descriptors="${app.pluginManager.pluginIntallationJobFactoryDescriptors}" />
             </f:entry>                   
             <f:block>
