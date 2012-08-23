@@ -278,7 +278,7 @@ THE SOFTWARE.
                   </systemProperties>
                   <excludes>
                     <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
-                    <exclude>hudson/model/CauseTest.java</exclude>
+                    <exclude>hudson/model/CauseTest.class</exclude>
                   </excludes>
                 </configuration>
               </execution>
