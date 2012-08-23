@@ -35,4 +35,4 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
       }
 
       e.onkeyup = applyFilter;
-  });
+});
