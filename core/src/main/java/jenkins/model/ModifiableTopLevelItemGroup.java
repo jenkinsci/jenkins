@@ -38,11 +38,38 @@ import java.io.InputStream;
  */
 public interface ModifiableTopLevelItemGroup extends ModifiableItemGroup<TopLevelItem> {
 
+    /**
+     * Copys a job.
+     *
+     * @param src
+     *      A {@link TopLevelItem} to be copied.
+     * @param name
+     *      Name of the newly created project.
+     * @return
+     *      Newly created {@link TopLevelItem}.
+     */
     <T extends TopLevelItem> T copy(T src, String name) throws IOException;
 
+    /**
+     * /**
+     * Creates a new job from its configuration XML. The type of the job created will be determined by
+     * what's in this XML.
+     * @param name
+     *      Name of the newly created project.
+     * @param xml
+     *      Item configuration as xml
+     * @return
+     *      Newly created {@link TopLevelItem}.
+     */
     TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException;
 
-    TopLevelItem createProject(TopLevelItemDescriptor type, String name) throws IOException;
-
+    /**
+     * Creates a new job.
+     * @param type Descriptor for job type
+     * @param name Name for job
+     * @param notify Whether to fire onCreated method for all ItemListeners
+     * @throws IllegalArgumentException
+     *      if a project of the give name already exists.
+     */
     TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify) throws IOException;
 }
