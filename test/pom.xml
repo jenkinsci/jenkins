@@ -234,6 +234,7 @@ THE SOFTWARE.
               <skip>false</skip>
               <includes>
                 <include>**/UseRecipesWithJenkinsRuleTest.java</include>
+                <include>hudson/model/CauseTest.java</include>
               </includes>
             </configuration>
           </plugin>
@@ -277,6 +278,7 @@ THE SOFTWARE.
                   </systemProperties>
                   <excludes>
                     <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
+                    <exclude>hudson/model/CauseTest.java</exclude>
                   </excludes>
                 </configuration>
               </execution>
