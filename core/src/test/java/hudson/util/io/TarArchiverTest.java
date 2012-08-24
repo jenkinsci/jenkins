@@ -27,22 +27,23 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.util.StreamTaskListener;
-import junit.framework.TestCase;
-import org.jvnet.hudson.test.Bug;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TarArchiverTest extends TestCase {
+public class TarArchiverTest {
     /**
      * Makes sure that permissions are properly stored in the tar file.
      */
     @Bug(9397)
-    public void testPermission() throws Exception {
-        if (Functions.isWindows())  return; // can't test on Windows
+    @Test public void permission() throws Exception {
+        assumeTrue(!Functions.isWindows());
 
         File tar = File.createTempFile("test","tar");
         File zip = File.createTempFile("test","zip");
