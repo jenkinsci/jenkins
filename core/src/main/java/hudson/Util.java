@@ -1071,7 +1071,12 @@ public class Util {
         } catch (LinkageError e) {
             // if JNA is unavailable, fall back.
             // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.get().readlink(filename);
+            try {
+                return PosixAPI.get().readlink(filename);
+            }
+            catch (IOException readlinkException) {
+                return null; // treat as not a symlink
+            }
         }
     }
 
