@@ -26,7 +26,7 @@ THE SOFTWARE.
   <f:entry title="${%Files to fingerprint}"
     description="${%description('http://ant.apache.org/manual/Types/fileset.html')}">
     <f:textbox name="targets" value="${instance.targets}"
-               checkUrl="'descriptorByName/Fingerprinter/check?value='+encodeURIComponent(this.value)" />
+               checkUrl="'descriptorByName/hudson.tasks.Fingerprinter/check?value='+encodeURIComponent(this.value)" />
   </f:entry>
   <f:entry title="">
     <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}"
