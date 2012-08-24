@@ -2,6 +2,7 @@ package hudson.util;
 
 import hudson.Functions;
 import hudson.os.PosixAPI;
+import hudson.os.PosixException;
 
 import java.io.*;
 import java.util.regex.Pattern;
@@ -115,9 +116,11 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate. Returns -1 if not on Unix.
+     * Gets the mode of a file/directory, if appropriate.
+     * @return a file mode, or -1 if not on Unix
+     * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
-    public static int mode(File f) {
+    public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
         return PosixAPI.get().stat(f.getPath()).mode();
     }
