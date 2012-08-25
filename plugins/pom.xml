@@ -279,7 +279,7 @@
                             <pluginExecutionFilter>
                                 <groupId>org.codehaus.gmaven</groupId>
                                 <artifactId>gmaven-plugin</artifactId>
-                                <versionRange>[1.4,)</versionRange>
+                                <versionRange>[1.0,)</versionRange>
                                 <goals>
                                     <goal>testCompile</goal>
                                     <goal>generateTestStubs</goal>
