@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -66,6 +67,8 @@ public class FilePathTest extends ChannelTestCase {
      * An attempt to reproduce the file descriptor leak.
      * If this operation leaks a file descriptor, 2500 should be enough, I think.
      */
+    // TODO: this test is much too slow to be a traditional unit test. Should be extracted into some stress test
+    // which is no part of the default test harness?
     public void testNoFileLeakInCopyTo() throws Exception {
         for (int j=0; j<2500; j++) {
             File tmp = File.createTempFile("testCopyFrom","");
@@ -94,66 +97,19 @@ public class FilePathTest extends ChannelTestCase {
      */
     @Bug(7871)
     public void testNoRaceConditionInCopyTo() throws Exception {
-        final File tmp = File.createTempFile("testCopyTo3","");
+        final File tmp = File.createTempFile("testNoRaceConditionInCopyTo","");
 
-        final int size = 90000;
-        
-        givenSomeContentInFile(tmp, size);
-
-        ExecutorService es = Executors.newFixedThreadPool(100);
         try {
-            List<java.util.concurrent.Future<Void>> r = new ArrayList<java.util.concurrent.Future<Void>>();
-            for (int i=0; i<100; i++) {
-                r.add(es.submit(new Callable<Void>() {
-                    public Void call() throws Exception {
-                        class Sink extends OutputStream {
-                            private Exception closed;
-                            private volatile int count;
+           int fileSize = 90000;
+        
+            givenSomeContentInFile(tmp, fileSize);
+        
+            List<Future<Integer>> results = whenFileIsCopied100TimesConcurrently(tmp);
 
-                            private void checkNotClosed() throws IOException2 {
-                                if (closed != null)
-                                    throw new IOException2(closed);
-                            }
-
-                            @Override
-                            public void write(int b) throws IOException {
-                                count++;
-                                checkNotClosed();
-                            }
-
-                            @Override
-                            public void write(byte[] b) throws IOException {
-                                count+=b.length;
-                                checkNotClosed();
-                            }
-
-                            @Override
-                            public void write(byte[] b, int off, int len) throws IOException {
-                                count+=len;
-                                checkNotClosed();
-                            }
-
-                            @Override
-                            public void close() throws IOException {
-                                closed = new Exception();
-                                if (size!=count)
-                                    fail();
-                            }
-                        }
-
-                        FilePath f = new FilePath(french, tmp.getPath());
-                        Sink sink = new Sink();
-                        f.copyTo(sink);
-                        assertEquals(size,sink.count);
-                        return null;
-                    }
-                }));
-            }
-
-            for (java.util.concurrent.Future<Void> f : r)
-                f.get();
+            // THEN copied count was always equal the expected size
+            for (Future<Integer> f : results)
+                assertEquals(fileSize,f.get().intValue());
         } finally {
-            es.shutdown();
             tmp.delete();
         }
     }
@@ -165,6 +121,62 @@ public class FilePathTest extends ChannelTestCase {
             buf[i] = (byte)(i%256);
         os.write(buf);
         os.close();
+    }
+    
+    private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
+        List<Callable<Integer>> r = new ArrayList<Callable<Integer>>();
+        for (int i=0; i<100; i++) {
+            r.add(new Callable<Integer>() {
+                public Integer call() throws Exception {
+                    class Sink extends OutputStream {
+                        private Exception closed;
+                        private volatile int count;
+
+                        private void checkNotClosed() throws IOException2 {
+                            if (closed != null)
+                                throw new IOException2(closed);
+                        }
+
+                        @Override
+                        public void write(int b) throws IOException {
+                            count++;
+                            checkNotClosed();
+                        }
+
+                        @Override
+                        public void write(byte[] b) throws IOException {
+                            count+=b.length;
+                            checkNotClosed();
+                        }
+
+                        @Override
+                        public void write(byte[] b, int off, int len) throws IOException {
+                            count+=len;
+                            checkNotClosed();
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+                            closed = new Exception();
+                            //if (size!=count)
+                            //    fail();
+                        }
+                    }
+
+                    FilePath f = new FilePath(french, file.getPath());
+                    Sink sink = new Sink();
+                    f.copyTo(sink);
+                    return sink.count;
+                }
+            });
+        }
+
+        ExecutorService es = Executors.newFixedThreadPool(100);
+        try {
+            return es.invokeAll(r);
+        } finally {
+            es.shutdown();
+        }
     }
 
     public void testRepeatCopyRecursiveTo() throws Exception {
