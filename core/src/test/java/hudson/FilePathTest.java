@@ -66,7 +66,7 @@ public class FilePathTest extends ChannelTestCase {
      * An attempt to reproduce the file descriptor leak.
      * If this operation leaks a file descriptor, 2500 should be enough, I think.
      */
-    public void testCopyTo2() throws Exception {
+    public void testNoFileLeakInCopyTo() throws Exception {
         for (int j=0; j<2500; j++) {
             File tmp = File.createTempFile("testCopyFrom","");
             FilePath f = new FilePath(tmp);
@@ -93,23 +93,19 @@ public class FilePathTest extends ChannelTestCase {
      * Also see JENKINS-7897
      */
     @Bug(7871)
-    public void testCopyTo3() throws Exception {
+    public void testNoRaceConditionInCopyTo() throws Exception {
         final File tmp = File.createTempFile("testCopyTo3","");
 
-        FileOutputStream os = new FileOutputStream(tmp);
         final int size = 90000;
-        byte[] buf = new byte[size];
-        for (int i=0; i<buf.length; i++)
-            buf[i] = (byte)(i%256);
-        os.write(buf);
-        os.close();
+        
+        givenSomeContentInFile(tmp, size);
 
         ExecutorService es = Executors.newFixedThreadPool(100);
         try {
-            List<java.util.concurrent.Future<Object>> r = new ArrayList<java.util.concurrent.Future<Object>>();
+            List<java.util.concurrent.Future<Void>> r = new ArrayList<java.util.concurrent.Future<Void>>();
             for (int i=0; i<100; i++) {
-                r.add(es.submit(new Callable<Object>() {
-                    public Object call() throws Exception {
+                r.add(es.submit(new Callable<Void>() {
+                    public Void call() throws Exception {
                         class Sink extends OutputStream {
                             private Exception closed;
                             private volatile int count;
@@ -154,14 +150,22 @@ public class FilePathTest extends ChannelTestCase {
                 }));
             }
 
-            for (java.util.concurrent.Future<Object> f : r)
+            for (java.util.concurrent.Future<Void> f : r)
                 f.get();
         } finally {
             es.shutdown();
+            tmp.delete();
         }
     }
 
-
+    private void givenSomeContentInFile(File file, int size) throws IOException {
+        FileOutputStream os = new FileOutputStream(file);
+        byte[] buf = new byte[size];
+        for (int i=0; i<buf.length; i++)
+            buf[i] = (byte)(i%256);
+        os.write(buf);
+        os.close();
+    }
 
     public void testRepeatCopyRecursiveTo() throws Exception {
         // local->local copy used to return 0 if all files were "up to date"
