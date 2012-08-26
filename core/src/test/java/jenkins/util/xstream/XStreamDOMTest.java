@@ -28,7 +28,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -116,8 +116,30 @@ public class XStreamDOMTest {
         DomInMap v = new DomInMap();
         v.values.put("foo",createSomeFoo().bar);
         String xml = xs.toXML(v);
-        System.out.println(xml);
         Object v2 = xs.fromXML(xml);
-        System.out.println(v2);
+        assertTrue(v2 instanceof DomInMap);
+        assertXStreamDOMEquals(v.values.get("foo"), ((DomInMap)v2).values.get("foo"));
+    }
+    
+    private void assertXStreamDOMEquals(XStreamDOM expected, XStreamDOM actual) {
+        assertEquals(expected.getTagName(), actual.getTagName());
+        assertEquals(expected.getValue(), actual.getValue());
+        
+        assertEquals(expected.getAttributeCount(), actual.getAttributeCount());
+        for (int i=0; i<expected.getAttributeCount(); i++) {
+            assertEquals(expected.getAttributeName(i), actual.getAttributeName(i));
+            assertEquals(expected.getAttribute(i), actual.getAttribute(i));
+        }
+        
+        if (expected.getChildren() == null) {
+            assertNull(actual.getChildren());
+        } else {
+            assertEquals(expected.getChildren().size(), actual.getChildren().size());
+            int childrenCount = expected.getChildren().size();
+            for (int i=0; i<childrenCount; i++) {
+                assertXStreamDOMEquals(expected.getChildren().get(i), actual.getChildren().get(i));
+            }
+        }
+        
     }
 }
