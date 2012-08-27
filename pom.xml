@@ -493,7 +493,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.78</version>
+          <version>1.88</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
