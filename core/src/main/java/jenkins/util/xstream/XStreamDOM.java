@@ -153,7 +153,7 @@ public class XStreamDOM {
         return attributes.length / 2;
     }
 
-    private String getAttributeName(int index) {
+    String getAttributeName(int index) {
         return attributes[index*2];
     }
 

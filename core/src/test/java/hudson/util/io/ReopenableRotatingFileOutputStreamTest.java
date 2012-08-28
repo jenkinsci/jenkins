@@ -20,6 +20,7 @@ public class ReopenableRotatingFileOutputStreamTest extends TestCase {
             os.rewind();
         }
         w.println("Content5");
+        w.close();
 
         assertEquals("Content5", new FilePath(base).readToString().trim());
         assertEquals("Content4", new FilePath(new File(base.getPath() + ".1")).readToString().trim());

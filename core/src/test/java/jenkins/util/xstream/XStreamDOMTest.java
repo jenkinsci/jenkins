@@ -24,8 +24,11 @@
 package jenkins.util.xstream;
 
 import hudson.util.XStream2;
-import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -35,7 +38,7 @@ import java.util.Map;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class XStreamDOMTest extends TestCase {
+public class XStreamDOMTest {
 
     private XStream2 xs;
 
@@ -44,13 +47,13 @@ public class XStreamDOMTest extends TestCase {
         XStreamDOM zot;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         xs = new XStream2();
         xs.alias("foo", Foo.class);
     }
 
+    @Test
     public void testMarshal() throws IOException {
         Foo foo = createSomeFoo();
         String xml = xs.toXML(foo);
@@ -65,6 +68,7 @@ public class XStreamDOMTest extends TestCase {
         return foo;
     }
 
+    @Test
     public void testUnmarshal() throws Exception {
         Foo foo = (Foo) xs.fromXML(getClass().getResourceAsStream("XStreamDOMTest.data1.xml"));
         assertEquals("test1",foo.bar.getTagName());
@@ -72,6 +76,7 @@ public class XStreamDOMTest extends TestCase {
         assertEquals("text!",foo.bar.getValue());
     }
 
+    @Test
     public void testWriteToDOM() throws Exception {
         // roundtrip via DOM
         XStreamDOM dom = XStreamDOM.from(xs, createSomeFoo());
@@ -82,6 +87,7 @@ public class XStreamDOMTest extends TestCase {
         assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
     }
 
+    @Test
     public void testNoChild() {
         String[] in = new String[0];
         XStreamDOM dom = XStreamDOM.from(xs, in);
@@ -90,6 +96,7 @@ public class XStreamDOMTest extends TestCase {
         assertEquals(in.length, out.length);
     }
 
+    @Test
     public void testNameEscape() {
         Object o = new Name_That_Gets_Escaped();
         XStreamDOM dom = XStreamDOM.from(xs, o);
@@ -104,12 +111,35 @@ public class XStreamDOMTest extends TestCase {
         Map<String,XStreamDOM> values = new HashMap<String, XStreamDOM>();
     }
 
+    @Test
     public void testDomInMap() {
         DomInMap v = new DomInMap();
         v.values.put("foo",createSomeFoo().bar);
         String xml = xs.toXML(v);
-        System.out.println(xml);
         Object v2 = xs.fromXML(xml);
-        System.out.println(v2);
+        assertTrue(v2 instanceof DomInMap);
+        assertXStreamDOMEquals(v.values.get("foo"), ((DomInMap)v2).values.get("foo"));
+    }
+    
+    private void assertXStreamDOMEquals(XStreamDOM expected, XStreamDOM actual) {
+        assertEquals(expected.getTagName(), actual.getTagName());
+        assertEquals(expected.getValue(), actual.getValue());
+        
+        assertEquals(expected.getAttributeCount(), actual.getAttributeCount());
+        for (int i=0; i<expected.getAttributeCount(); i++) {
+            assertEquals(expected.getAttributeName(i), actual.getAttributeName(i));
+            assertEquals(expected.getAttribute(i), actual.getAttribute(i));
+        }
+        
+        if (expected.getChildren() == null) {
+            assertNull(actual.getChildren());
+        } else {
+            assertEquals(expected.getChildren().size(), actual.getChildren().size());
+            int childrenCount = expected.getChildren().size();
+            for (int i=0; i<childrenCount; i++) {
+                assertXStreamDOMEquals(expected.getChildren().get(i), actual.getChildren().get(i));
+            }
+        }
+        
     }
 }

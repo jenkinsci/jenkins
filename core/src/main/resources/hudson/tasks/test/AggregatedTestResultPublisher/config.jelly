@@ -26,14 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:nested>
     <table style="width:100%">
-      <f:optionalBlock name="aggragatedTestResult.specify" negative="true"
+      <f:optionalBlock name="aggregatedTestResult.specify" negative="true"
               title="${%Automatically aggregate all downstream tests}"
               checked="${instance.jobs==null}"
               help="/help/tasks/aggregate-test/auto-aggregate.html">
         <f:entry title="${%Jobs to aggregate}"
                  help="/help/tasks/aggregate-test/manual-list.html">
-          <f:textbox name="aggragatedTestResult.jobs" value="${instance.jobs}"
-                     checkUrl="'descriptorByName/AggregatedTestResultPublisher/check?value='+encodeURIComponent(this.value)"
+          <f:textbox name="aggregatedTestResult.jobs" value="${instance.jobs}"
+                     checkUrl="'descriptorByName/hudson.tasks.test.AggregatedTestResultPublisher/check?value='+encodeURIComponent(this.value)"
                      field="jobs"
                      autoCompleteDelimChar="," />
         </f:entry>        
