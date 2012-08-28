@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-hudsonRules["IMG.treeview-fold-control"] = function(e) {
+Behaviour.specify("IMG.treeview-fold-control", 'projectViewNested', 0, function(e) {
     e.onexpanded = function() {
         var img = this;
         var tr = findAncestor(img, "TR");
@@ -50,4 +50,4 @@ hudsonRules["IMG.treeview-fold-control"] = function(e) {
         });
     };
     e = null;
-};
+});

@@ -1,7 +1,6 @@
 // @include "org.kohsuke.stapler.zeroclipboard"
 
-Behaviour.register({
-    "span.copy-button" : function(e) {
+Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         var btn = e.firstChild;
         var id = "copy-button"+(iota++);
         btn.id = id;
@@ -35,5 +34,4 @@ Behaviour.register({
         clip.addEventListener('onMouseUp',function() {
             $(id).removeClassName('yui-button-active')
         });
-    }
 });

@@ -1,5 +1,4 @@
-Behaviour.register({
-    "INPUT.combobox2" : function(e) {
+Behaviour.specify("INPUT.combobox2", 'combobox', 0, function(e) {
         var items = [];
 
         var c = new ComboBox(e,function(value) {
@@ -21,5 +20,4 @@ Behaviour.register({
                 }
             });
         });
-    }
 });

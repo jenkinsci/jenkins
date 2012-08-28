@@ -9,20 +9,16 @@
 
    Usage:
 
-	var myrules = {
-		'b.someclass' : function(element){
-			element.onclick = function(){
-				alert(this.innerHTML);
-			}
-		},
-		'#someid u' : function(element){
-			element.onmouseover = function(){
-				this.innerHTML = "BLAH!";
-			}
-		}
-	};
-
-	Behaviour.register(myrules);
+        Behaviour.specify('b.someclass', 'myrules.alert', 10, function(element) {
+            element.onclick = function() {
+                alert(this.innerHTML);
+            }
+        });
+        Behaviour.specify('#someid u', 'myrules.blah', 0, function(element) {
+            element.onmouseover = function() {
+                this.innerHTML = "BLAH!";
+            }
+        });
 
 	// Call Behaviour.apply() to re-apply the rules (if you
 	// update the dom, etc).
@@ -37,9 +33,35 @@
 
 */
 
-var Behaviour = {
+var Behaviour = (function() {
+    var storage = [{selector: '', id: '_deprecated', priority: 0}];
+    return {
+
+    /**
+     * Specifies something to do when an element matching a CSS selector is encountered.
+     * @param {String} selector a CSS selector triggering your behavior
+     * @param {String} id combined with selector, uniquely identifies this behavior; prevents duplicate registrations
+     * @param {Number} priority relative position of this behavior in case multiple apply to a given element; lower numbers applied first (sorted by id then selector in case of tie); choose 0 if you do not care
+     * @param {Function} behavior callback function taking one parameter, a (DOM) {@link Element}, and returning void
+     */
+    specify : function(selector, id, priority, behavior) {
+        for (var i = 0; i < storage.length; i++) {
+            if (storage[i].selector == selector && storage[i].id == id) {
+                storage.splice(i, 1);
+                break;
+            }
+        }
+        storage.push({selector: selector, id: id, priority: priority, behavior: behavior});
+        storage.sort(function(a, b) {
+            var location = a.priority - b.priority;
+            return location != 0 ? location : a.id < b.id ? -1 : a.id > b.id ? 1 : a.selector < b.selector ? -1 : a.selector > b.selector ? 1 : 0;
+        });
+    },
+
+        /** @deprecated For backward compatibility only; use {@link specify} instead. */
 	list : new Array,
 
+        /** @deprecated For backward compatibility only; use {@link specify} instead. */
 	register : function(sheet){
 		Behaviour.list.push(sheet);
 	},
@@ -65,28 +87,30 @@ var Behaviour = {
      *      this semantics is preserved.
      */
     applySubtree : function(startNode,includeSelf) {
-        var behaviorsBySelector = {};
-        Behaviour.list._each(function(sheet) {
-            for (var selector in sheet){
-                var behavior = sheet[selector];
-                var behaviors = behaviorsBySelector[selector];
-                if (behaviors == null) {
-                    behaviors = [];
-                    behaviorsBySelector[selector] = behaviors;
-                }
-                if (behaviors.indexOf(behavior.toString()) == -1) {
-                    behaviors.push(behavior.toString());
-                    function apply(n) {
-                        var list = findElementsBySelector(n,selector,includeSelf);
-                        if (list.length>0)  // just to simplify setting of a breakpoint.
-                            list._each(sheet[selector]);
+        if (!(startNode instanceof Array)) {
+            startNode = [startNode];
+        }
+        storage._each(function (registration) {
+            if (registration.id == '_deprecated') {
+                Behaviour.list._each(function(sheet) {
+                    for (var selector in sheet){
+                        startNode._each(function (n) {
+                            var list = findElementsBySelector(n, selector, includeSelf);
+                            if (list.length > 0) { // just to simplify setting of a breakpoint.
+                                //console.log('deprecated:' + selector + ' on ' + list.length + ' elements');
+                                list._each(sheet[selector]);
+                            }
+                        });
                     }
-                    if (startNode instanceof Array) {
-                        startNode._each(apply)
-                    } else {
-                        apply(startNode);
+                });
+            } else {
+                startNode._each(function (node) {
+                    var list = findElementsBySelector(node, registration.selector, includeSelf);
+                    if (list.length > 0) {
+                        //console.log(registration.id + ':' + registration.selector + ' @' + registration.priority + ' on ' + list.length + ' elements');
+                        list._each(registration.behavior);
                     }
-                }
+                });
             }
         });
     },
@@ -103,7 +127,7 @@ var Behaviour = {
 			}
 		}
 	}
-}
+}})();
 
 Behaviour.start();
 
