@@ -437,7 +437,7 @@ THE SOFTWARE.
           <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
           <groupId>org.kohsuke</groupId>
           <artifactId>maven-junit-plugin</artifactId>
-          <version>1.9</version>
+          <version>1.10</version>
          </plugin>
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
