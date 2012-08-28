@@ -26,14 +26,20 @@ THE SOFTWARE.
   <l:layout title="">
     <l:main-panel>
       <script>
-        Behaviour.specify(".a", 'test1', 0, function (e) {
-          e.innerHTML += ' and appended';
+        Behaviour.specify("DIV", 'generic', 0, function (e) {
+          e.innerHTML += ' generic';
         });
-        Behaviour.specify(".a", 'test1', 0, function (e) {
-          e.innerHTML += ' and appended';
+        Behaviour.specify(".a", 'early', -100, function (e) {
+          e.innerHTML += ' early';
         });
-        Behaviour.specify(".a", 'test2', 0, function (e) {
-          e.innerHTML += ' yet different';
+        Behaviour.specify(".a", 'late', 100, function (e) {
+          e.innerHTML += ' late';
+        });
+        Behaviour.specify("DIV", 'zyzzyva', 0, function (e) {
+          e.innerHTML += ' weevils!';
+        });
+        Behaviour.specify("DIV", 'abacus', 0, function (e) {
+          e.innerHTML += ' counted!';
         });
       </script>
       <div class="a">initial</div>

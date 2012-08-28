@@ -99,8 +99,7 @@ var repeatableSupport = {
 
 // do the ones that extract innerHTML so that they can get their original HTML before
 // other behavior rules change them (like YUI buttons.)
-Behaviour.list.unshift({
-    "DIV.repeated-container" : function(e) {
+Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
@@ -109,27 +108,25 @@ Behaviour.list.unshift({
             ip = ip.previous();
         // set up the logic
         object(repeatableSupport).init(e, e.firstChild, ip);
-    }
 });
 
-Behaviour.register({
     // button to add a new repeatable block
-    "INPUT.repeatable-add" : function(e) {
+Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
         makeButton(e,function(e) {
             repeatableSupport.onAdd(e.target);
         });
         e = null; // avoid memory leak
-    },
+    });
 
-    "INPUT.repeatable-delete" : function(e) {
+Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
         makeButton(e,function(e) {
             repeatableSupport.onDelete(e.target);
         });
         e = null; // avoid memory leak
-    },
+    });
 
     // radio buttons in repeatable content
-    "DIV.repeated-chunk" : function(d) {
+Behaviour.specify("DIV.repeated-chunk", 'repeatable', 0, function(d) {
         var inputs = d.getElementsByTagName('INPUT');
         for (var i = 0; i < inputs.length; i++) {
             if (inputs[i].type == 'radio') {
@@ -145,5 +142,4 @@ Behaviour.register({
                 if (inputs[i].defaultChecked) inputs[i].checked = true;
             }
         }
-    }
 });

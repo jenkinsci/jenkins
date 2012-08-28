@@ -1,5 +1,4 @@
-Behaviour.register({
-    "TEXTAREA.codemirror" : function(e) {
+Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
         var h = e.clientHeight;
         var config = e.getAttribute("codemirror-config") || "";
         config = eval('({'+config+'})');
@@ -14,9 +13,9 @@ Behaviour.register({
         var scroller = codemirror.getScrollerElement();
         scroller.setAttribute("style","border:1px solid black;");
         scroller.style.height = h+"px";
-    },
+    });
 
-    "DIV.textarea-preview-container" : function (e) {
+Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e) {
         var previewDiv = findElementsBySelector(e,".textarea-preview")[0];
         var showPreview = findElementsBySelector(e,".textarea-show-preview")[0];
         var hidePreview = findElementsBySelector(e,".textarea-hide-preview")[0];
@@ -54,5 +53,4 @@ Behaviour.register({
             $(hidePreview).hide();
             $(previewDiv).hide();
         };
-    }
 });

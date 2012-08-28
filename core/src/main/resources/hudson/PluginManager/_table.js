@@ -20,8 +20,7 @@ function showhideCategory(col) {
     row.style.display = newDisplay;
 }
 
-Behaviour.register({
-  "#filter-box": function(e) {
+Behaviour.specify("#filter-box", '_table', 0, function(e) {
       function applyFilter() {
           var filter = e.value.toLowerCase();
           ["TR.plugin","TR.plugin-category"].each(function(clz) {
@@ -36,5 +35,4 @@ Behaviour.register({
       }
 
       e.onkeyup = applyFilter;
-  }
 });

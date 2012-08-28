@@ -1,5 +1,4 @@
-Behaviour.register({
-    "INPUT.advanced-button" : function(e) {
+Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
         makeButton(e,function(e) {
             var link = e.target;
             while(!Element.hasClassName(link,"advancedLink"))
@@ -23,5 +22,4 @@ Behaviour.register({
             layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
-    }
 });
