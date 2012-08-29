@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
+ * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
