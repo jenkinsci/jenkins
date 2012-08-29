@@ -35,7 +35,7 @@ THE SOFTWARE.
       </t:buildCaption>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
-      <j:set var="offset" value="${empty(consoleFull) ? it.logFile.length()-threshold*1024 : 0}" />
+      <j:set var="offset" value="${empty(consoleFull) ? it.logText.length()-threshold*1024 : 0}" />
       <j:choose>
         <j:when test="${offset > 0}">
           ${%skipSome(offset/1024,"consoleFull")}

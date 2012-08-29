@@ -77,7 +77,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     private T context;
 
     public AnnotatedLargeText(File file, Charset charset, boolean completed, T context) {
-        super(file, charset, completed);
+        super(file, charset, completed, true);
         this.context = context;
     }
 
