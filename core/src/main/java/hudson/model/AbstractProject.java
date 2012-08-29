@@ -111,6 +111,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -844,8 +845,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return null;
 
         List<Action> queueActions = new ArrayList<Action>(actions);
-        if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
-            queueActions.add(new ParametersAction(getDefaultParametersValues()));
+
+        // if isParameterized make sure we add default values
+        if (isParameterized()) {
+            List<ParametersAction> parameterActions = Util.filter(queueActions, ParametersAction.class);
+
+            //Remove the old actions as will add them back as part of the new action
+            queueActions.removeAll(parameterActions);
+            queueActions.add(getDefaultParametersAction(parameterActions));
         }
 
         if (c != null) {
@@ -858,26 +865,44 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return null;
     }
 
-    private List<ParameterValue> getDefaultParametersValues() {
+    /**
+     * Create a ParameterAction from the existing and missing parameters required by the job.
+     *
+     * @param parameters    List of Parameter actions, can be null.
+     * @returns         Parameter Action containing all Values from list passed in and required values.
+     */
+    private ParametersAction getDefaultParametersAction(List<ParametersAction> parameters ) {
+
         ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
+
+
+        // create a map of names so we can use as a look up.
+        // also copy to output list
         ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
-        
-        /*
-         * This check is made ONLY if someone will call this method even if isParametrized() is false.
-         */
-        if(paramDefProp == null)
-            return defValues;
-        
-        /* Scan for all parameter with an associated default values */
-        for(ParameterDefinition paramDefinition : paramDefProp.getParameterDefinitions())
-        {
-           ParameterValue defaultValue  = paramDefinition.getDefaultParameterValue();
-            
-            if(defaultValue != null)
-                defValues.add(defaultValue);           
+        HashMap<String, String> parametersMap = new HashMap<String, String>();
+
+        for (ParametersAction pa : parameters){
+            defValues.addAll(pa.getParameters());
+            for( ParameterValue v : pa.getParameters()){
+                parametersMap.put(v.getName(), "");
+            }
         }
-        
-        return defValues;
+        if(paramDefProp != null){
+            // handle missing parameters by adding as default values
+            for(ParameterDefinition paramDefinition :  paramDefProp.getParameterDefinitions()) {
+
+                if (parametersMap.containsKey(paramDefinition.getName()))
+                    continue;
+
+                // not passed in use default
+                ParameterValue defaultValue  = paramDefinition.getDefaultParameterValue();
+                if(defaultValue != null)
+                    defValues.add(defaultValue);
+            }
+
+        }
+
+        return new ParametersAction(defValues);
     }
 
     /**
