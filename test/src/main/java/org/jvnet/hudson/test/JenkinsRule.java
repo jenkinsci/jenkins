@@ -132,9 +132,11 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.hamcrest.Matchers;
+import org.junit.rules.MethodRule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
@@ -220,7 +222,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  * @author Stephen Connolly
  * @since 1.436
  */
-public class JenkinsRule implements TestRule, RootAction {
+public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     private final TestEnvironment env = new TestEnvironment(null);
 
@@ -443,6 +445,13 @@ public class JenkinsRule implements TestRule, RootAction {
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
             System.gc();
         }
+    }
+
+    /**
+     * Backward compatibility with JUnit 4.8.
+     */
+    public Statement apply(Statement base, FrameworkMethod method, Object target) {
+        return apply(base,Description.createTestDescription(method.getMethod().getDeclaringClass(), method.getName(), method.getAnnotations()));
     }
 
     public Statement apply(final Statement base, final Description description) {
