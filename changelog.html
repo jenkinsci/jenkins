@@ -55,6 +55,17 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Refactored <code>behavior.js</code> to run more predictably.
+    Plugin JavaScript should use <code>Behaviour.specify</code> in place of
+    <code>Behaviour.register</code>, <code>Behaviour.list</code>,
+    <code>hudsonRules</code>, and <code>jenkinsRules</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14495">issue 14495</a> cont'd)
+    Fixed a possible race condition in the remoting layer.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14909">issue 14909</a>)
+  <li class=bug>
+    <code>TarArchiver.visitSymlink</code> can throw undeclared <code>PosixException</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14922">issue 14922</a>)
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->

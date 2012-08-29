@@ -63,13 +63,11 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.ManagementLink;
-import hudson.model.ModifiableItemGroup;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
-import hudson.model.Saveable;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
@@ -223,7 +221,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -259,7 +256,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Type;
 import java.net.BindException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -1364,12 +1360,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Gets the list of all the projects.
-     *
-     * <p>
-     * Since {@link Project} can only show up under {@link Jenkins},
-     * no need to search recursively.
+     * Gets a list of simple top-level projects.
+     * @deprecated This method will ignore Maven and matrix projects, as well as projects inside containers such as folders.
+     * You may prefer to call {@link #getAllItems(Class)} on {@link AbstractProject},
+     * perhaps also using {@link Util#createSubList} to consider only {@link TopLevelItem}s.
+     * (That will also consider the caller's permissions.)
+     * If you really want to get just {@link Project}s at top level, ignoring permissions,
+     * you can filter the values from {@link #getItemMap} using {@link Util#createSubList}.
      */
+    @Deprecated
     public List<Project> getProjects() {
         return Util.createSubList(items.values(),Project.class);
     }

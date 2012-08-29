@@ -29,6 +29,7 @@ import hudson.matrix.MatrixConfiguration;
 
 /**
  * {@link Item} that can be directly displayed under {@link jenkins.model.Jenkins} or other containers.
+ * (A "container" would be any {@link ItemGroup}{@code <TopLevelItem>}, such as a folder of projects.)
  * Ones that don't need to be under specific parent (say, unlike {@link MatrixConfiguration}),
  * and thus can be freely moved, copied, etc.
  *

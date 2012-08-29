@@ -1,5 +1,4 @@
-Behaviour.register({
-    "INPUT.apply-button":function (e) {
+Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
         var id;
         var containerId = "container"+(iota++);
 
@@ -63,5 +62,4 @@ Behaviour.register({
                 f.target = null;
             }
         });
-    }
 });

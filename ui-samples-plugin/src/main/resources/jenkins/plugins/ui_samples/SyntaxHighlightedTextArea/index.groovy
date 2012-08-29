@@ -22,12 +22,12 @@ namespace("/lib/samples").sample(title:_("Syntax Highlighted Text Area")) {
 
     // see CodeMirror web site for more about how to control the newly instantiated text area.
     script("""
-        hudsonRules["TEXTAREA.my-groovy-textbox"] = function(e) {
+        Behaviour.specify("TEXTAREA.my-groovy-textbox", "SyntaxHighlightedTextArea", 0, function(e) {
             var w = CodeMirror.fromTextArea(e,{
               mode:"text/x-groovy",
               lineNumbers: true
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
-        }
+        });
     """)
 }

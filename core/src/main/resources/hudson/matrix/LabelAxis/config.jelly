@@ -29,7 +29,7 @@ THE SOFTWARE.
   <f:entry title="${%Node/Label}" field="labels">
     <div class="yahooTree labelAxis-tree" style="border: 1px solid gray; height: 10em; overflow:auto;" values="${instance.valueString}" />
     <script>
-      hudsonRules["DIV.labelAxis-tree"] = function(e) {
+      Behaviour.specify("DIV.labelAxis-tree", 'LabelAxis', 0, function(e) {
         var tree = new YAHOO.widget.TreeView(e);
 
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
@@ -60,7 +60,7 @@ THE SOFTWARE.
         tree.subscribe("clickEvent", function(node) {
             return false;
         });
-      };
+      });
     </script>
   </f:entry>
 </j:jelly>
