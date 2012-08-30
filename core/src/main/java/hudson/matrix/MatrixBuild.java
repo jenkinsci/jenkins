@@ -104,7 +104,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             return;
         }
         
-        List<MatrixRun> runs = getRuns();
+        List<MatrixRun> runs = getExactRuns();
         for(MatrixRun run : runs){
         	why = run.getWhyKeepLog();
             if (why!=null) {
