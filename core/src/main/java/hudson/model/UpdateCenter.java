@@ -181,6 +181,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
+     * Gets a job by its ID.
+     *
+     * Primarily to make {@link UpdateCenterJob} bound to URL.
+     */
+    public UpdateCenterJob getJob(int id) {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job.id==id)
+                    return job;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns latest install/upgrade job for the given plugin.
      * @return InstallationJob or null if not found
      */
@@ -793,6 +808,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @ExportedBean
     public abstract class UpdateCenterJob implements Runnable {
         /**
+         * Unique ID that identifies this job.
+         *
+         * @see UpdateCenter#getJob(int)
+         */
+        @Exported
+        public final int id = iota.incrementAndGet();
+
+        /**
          * Which {@link UpdateSite} does this belong to?
          */
         public final UpdateSite site;
@@ -844,12 +867,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Restarts jenkins.
      */
     public class RestartJenkinsJob extends UpdateCenterJob {
-        /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
-               
          /**
          * Immutable state of this job.
          */
@@ -968,11 +985,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Base class for a job that downloads a file from the Jenkins project.
      */
     public abstract class DownloadJob extends UpdateCenterJob {
-        /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
         /**
          * Immutable object representing the current state of this job.
          */
