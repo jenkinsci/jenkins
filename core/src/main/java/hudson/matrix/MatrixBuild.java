@@ -104,7 +104,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
             return;
         }
         
-        List<MatrixRun> runs = getRuns();
+        List<MatrixRun> runs = getExactRuns();
         for(MatrixRun run : runs){
         	why = run.getWhyKeepLog();
             if (why!=null) {
@@ -246,11 +246,26 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     @Override
     public String getWhyKeepLog() {
         MatrixBuild b = getNextBuild();
-        if (b!=null && b.isPartial())
+        if (isLinkedBy(b))
             return b.getDisplayName()+" depends on this";
         return super.getWhyKeepLog();
     }
 
+    /** 
+     * @return True if another {@link MatrixBuild} build (passed as a parameter) depends on this build.
+     * @since 1.481 
+     */
+    public boolean isLinkedBy(MatrixBuild b) {
+    	if(null == b)
+    		return false;
+    	for(MatrixConfiguration c : b.getParent().getActiveConfigurations()) {
+            MatrixRun r = c.getNearestOldBuild(b.getNumber());
+            if (r != null && r.getNumber()==getNumber())
+                return true;
+        }
+        return false;
+    }
+    
     /**
      * True if this build didn't do a full build and it is depending on the result of the previous build.
      */
