@@ -1067,17 +1067,29 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      *
      * @param id
      *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
+     * @throws IllegalArgumentException if a short name was passed which matches multiple IDs (fail fast)
      */
+    @SuppressWarnings({"unchecked", "rawtypes"}) // too late to fix
     public Descriptor getDescriptor(String id) {
         // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
-        for( Descriptor d : Iterators.sequence(getExtensionList(Descriptor.class),DescriptorExtensionList.listLegacyInstances()) ) {
-            String name = d.getId();
-            if(name.equals(id))
+        Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
+        for (Descriptor d : descriptors) {
+            if (d.getId().equals(id)) {
                 return d;
-            if(name.substring(name.lastIndexOf('.')+1).equals(id))
-                return d;
+            }
         }
-        return null;
+        Descriptor candidate = null;
+        for (Descriptor d : descriptors) {
+            String name = d.getId();
+            if (name.substring(name.lastIndexOf('.') + 1).equals(id)) {
+                if (candidate == null) {
+                    candidate = d;
+                } else {
+                    throw new IllegalArgumentException(id + " is ambiguous; matches both " + name + " and " + candidate.getId());
+                }
+            }
+        }
+        return candidate;
     }
 
     /**
