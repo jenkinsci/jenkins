@@ -80,6 +80,7 @@ THE SOFTWARE.
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     <st:header name="X-Hudson" value="1.395"/>
     <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
+    <st:header name="X-Jenkins-Session" value="${app.SESSION_HASH}"/>
     <j:if test="${app.tcpSlaveAgentListener!=null}">
       <!-- advertise the CLI TCP port -->
       <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
