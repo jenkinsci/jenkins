@@ -53,6 +53,8 @@ import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -359,13 +361,33 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     	return scheduleBuild(parameters, new LegacyCodeCause());
     }
 
-    /**
+    /** Starts the build with the ParametersAction that are passed in.
      *
      * @param parameters
      *      Can be null.
+     * @deprecated
+	 *    Use {@link #scheduleBuild(List<? extends Action>, Cause)}.  Since 1.480
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c), new ParentBuildAction())!=null;
+
+        return scheduleBuild(Collections.singletonList(parameters), c);
+    }
+    /**
+     * Starts the build with the actions that are passed in.
+     *
+     * @param actions   Can be null.
+     * @param cause     Reason for starting the build
+     */
+    public boolean scheduleBuild(List<? extends Action> actions, Cause c) {
+        List<Action> allActions = new ArrayList<Action>();
+
+        if(actions != null)
+            allActions.addAll(actions);
+
+        allActions.add(new ParentBuildAction());
+        allActions.add(new CauseAction(c));
+
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), allActions )!=null;
     }
 
     /**
