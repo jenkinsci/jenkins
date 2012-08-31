@@ -90,6 +90,14 @@ THE SOFTWARE.
         <f:property field="executionStrategy" propertyDescriptor="${descriptor.executionStrategyDescriptors.get(0)}"/>
       </j:otherwise>
     </j:choose>
+    
+    <j:choose>
+      <!-- for the default case there's no configuration, if this is the only one strategy present, we don't need to render selector -->
+      <j:when test="${descriptor.deleteStrategyDescriptors.size() gt 1}">
+        <f:dropdownDescriptorSelector title="${%Delete Strategy}" field="deleteStrategy"/>
+      </j:when>
+    </j:choose>
+    
   </f:section>
 
   <p:config-buildWrappers />
