@@ -36,6 +36,9 @@ THE SOFTWARE.
               <form method="post" action="toggleOffline">
                 <f:submit value="${%submit.temporarilyOffline}"  />
               </form>
+              <form method="post" action="setOfflineCause">
+              <f:submit value="${%submit.updateOfflineCause}"  />
+              </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
