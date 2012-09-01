@@ -33,6 +33,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.matrix.MatrixBuild.MatrixBuildExecution;
+import hudson.matrix.MatrixDeleteStrategy.MatrixDeleteStrategyDescriptor;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
@@ -166,6 +167,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     private transient MatrixConfigurationSorter sorter;
 
     private MatrixExecutionStrategy executionStrategy;
+    
+    /**
+     * Strategy how to delete matrix build with sub-jobs
+     */
+    private MatrixDeleteStrategy deleteStrategy;
 
     /**
      * Custom workspace location for {@link MatrixConfiguration}s.
@@ -407,6 +413,16 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             save();
         }
     }
+    
+    public MatrixDeleteStrategy getDeleteStrategy() {
+        return deleteStrategy;
+    }
+    
+    public void setDeleteStrategy(MatrixDeleteStrategy deleteStrategy) throws IOException {
+        if (deleteStrategy ==null)   throw new IllegalArgumentException();
+        this.deleteStrategy = deleteStrategy;
+        save();
+    }
 
     @Override
     protected List<Action> createTransientActions() {
@@ -460,6 +476,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @Override
     public void onCreatedFromScratch() {
         executionStrategy = new DefaultMatrixExecutionStrategyImpl();
+        deleteStrategy = new DefaultMatrixDeleteStrategy();
         super.onCreatedFromScratch();
     }
 
@@ -472,6 +489,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
         if (executionStrategy ==null)
             executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially,touchStoneCombinationFilter,touchStoneResultCondition,sorter);
+        
+        if(deleteStrategy == null)
+            deleteStrategy = new DefaultMatrixDeleteStrategy();
 
         rebuildConfigurations(null);
     }
@@ -808,6 +828,13 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             executionStrategy = req.bindJSON(MatrixExecutionStrategy.class,json.getJSONObject("executionStrategy"));
         else
             executionStrategy = req.bindJSON(esd.get(0).clazz,json.getJSONObject("executionStrategy"));
+        
+        List<MatrixDeleteStrategyDescriptor> dsd = getDescriptor().getDeleteStrategyDescriptors();
+        if (dsd.size()>1)
+            deleteStrategy = req.bindJSON(MatrixDeleteStrategy.class,json.getJSONObject("deleteStrategy"));
+        else
+            // default delete strategy has no configuration so it's not rendered in config form at all
+            deleteStrategy = new DefaultMatrixDeleteStrategy();
 
         // parse system axes
         DescribableList<Axis,AxisDescriptor> newAxes = new DescribableList<Axis,AxisDescriptor>(this);
@@ -890,6 +917,10 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             return MatrixExecutionStrategyDescriptor.all();
         }
 
+        public List<MatrixDeleteStrategyDescriptor> getDeleteStrategyDescriptors() {
+            return MatrixDeleteStrategyDescriptor.all();
+        }
+        
         public List<SCMCheckoutStrategyDescriptor> getMatrixRunCheckoutStrategyDescriptors() {
             return SCMCheckoutStrategyDescriptor.all();
         }

@@ -29,6 +29,7 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixConfiguration.ParentBuildAction;
+import hudson.matrix.MatrixDeleteStrategy.MatrixDeleteException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -93,27 +94,11 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
      */
     @RequirePOST
     public void doDoDeleteAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(DELETE);
-
-        // We should not simply delete the build if it has been explicitly
-        // marked to be preserved, or if the build should not be deleted
-        // due to dependencies!
-        String why = getWhyKeepLog();
-        if (why!=null) {
-            sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
-            return;
+        try {
+            getParent().getDeleteStrategy().doDelete(this);
+        } catch (MatrixDeleteException e) {
+            sendError(e.getMessage(),req,rsp);
         }
-        
-        List<MatrixRun> runs = getRuns();
-        for(MatrixRun run : runs){
-        	why = run.getWhyKeepLog();
-            if (why!=null) {
-                sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
-                return;
-            }
-        	run.delete();
-        }
-        delete();
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 

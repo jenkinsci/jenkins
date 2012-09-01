@@ -26,18 +26,28 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}" norefresh="true">
-		<st:include page="sidepanel.jelly" />
-		<l:main-panel>
-      <j:set var="msg" value="${it.whyKeepLog}"/>
-      <j:if test="${msg!=null}">
-		    <b>${%Warning}</b>: ${%cannotMsg(msg)}
-		  </j:if>		  
-		  <j:if test="${msg==null}">
-		    <form method="post" action="doDeleteAll">
-		      ${%Are you sure about deleting the build and all configurations in this build?}
-		      <f:submit value="${%Yes}" />
-		    </form>
-		  </j:if>
-		</l:main-panel>
-	</l:layout>
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+    <j:choose>
+      <j:when test="${it.parent.descriptor.deleteStrategyDescriptors.size() gt 1}">
+      	<form method="post" action="doDeleteAll">
+          ${%Are you sure about deleting the build according to} ${it.parent.deleteStrategy.descriptor.displayName}?
+          <f:submit value="${%Yes}" />
+        </form>
+      </j:when>
+      <j:otherwise>
+        <j:set var="msg" value="${it.whyKeepLog}"/>
+        <j:if test="${msg!=null}">
+          <b>${%Warning}</b>: ${%cannotMsg(msg)}
+        </j:if>		  
+        <j:if test="${msg==null}">
+          <form method="post" action="doDeleteAll">
+            ${%Are you sure about deleting the build and all configurations in this build?}
+            <f:submit value="${%Yes}" />
+          </form>
+        </j:if>
+      </j:otherwise>
+    </j:choose>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

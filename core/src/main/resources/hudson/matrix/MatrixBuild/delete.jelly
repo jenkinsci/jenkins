@@ -29,6 +29,17 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!it.keepLog and !it.building}">
     <l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDelete" title="${%Delete Build}" permission="${it.DELETE}" />
-  	<l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDeleteAll" title="${%Delete this build and all configurations in this build}" permission="${it.DELETE}" />
   </j:if>
+  <j:choose>
+    <j:when test="${it.parent.descriptor.deleteStrategyDescriptors.size() gt 1}">
+      <j:if test="${!it.building}">
+  	    <l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDeleteAll" title="${%Delete by configured strategy}" permission="${it.DELETE}" />
+      </j:if>
+    </j:when>
+    <j:otherwise>
+      <j:if test="${!it.keepLog and !it.building}">
+  	    <l:task icon="images/24x24/edit-delete.png" href="${buildUrl.baseUrl}/confirmDeleteAll" title="${%Delete this build and all configurations in this build}" permission="${it.DELETE}" />
+      </j:if>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
