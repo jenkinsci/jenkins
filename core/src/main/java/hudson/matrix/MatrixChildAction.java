@@ -24,13 +24,16 @@
 package hudson.matrix;
 
 import hudson.model.Action;
+import hudson.model.Queue;
+import hudson.model.Queue.Task;
 
 /**
- * Optional interface for {@link Action}s to indicate that they
- * want to be passed to the individual build jobs from the parent in am matrix job.
+ * Optional interface for {@link Action}s that are used as parameters
+ * to {@link Queue#schedule(Task, int, Action...)} to indicate that they
+ * want to be also passed to the {@link MatrixRun}s from its parent {@link MatrixBuild}.
  *
  * @author Chris Johnson
+ * @since 1.481
  */
 public interface MatrixChildAction extends Action {
-
 }
