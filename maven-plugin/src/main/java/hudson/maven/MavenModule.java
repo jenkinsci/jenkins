@@ -422,7 +422,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         // to emulate the old behavior that tries to identify the upstream by ignoring the version.
         // Do this by putting groupId:artifactId:UNKNOWN to the modules list, but
         // ONLY if we find a such an old MavenModule in this Jenkins instance.
-        boolean hasDependenciesWithUnknownVersion = hasDependenciesWithUnknownVersion();
+        final boolean hasDependenciesWithUnknownVersion = hasDependenciesWithUnknownVersion();
         if (data == null) {
             Map<ModuleDependency,MavenModule> modules = new HashMap<ModuleDependency,MavenModule>();
     
@@ -472,6 +472,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
 
         //Create a map of groupId:artifact id keys to modules for faster look ups in findMatchingDependentModule
         Multimap<ModuleName,ModuleDependency> mapModules = data.byName();
+
         for (ModuleDependency d : dependencies) {
             MavenModule src;
 
@@ -533,31 +534,21 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
             return mm1;
         }
 
-        final MavenModule moreRelevant;
-        final MavenModule lessRelevant;
-        int relevancy1 = mm1.getDependencyRelevancy();
-        int relevancy2 = mm2.getDependencyRelevancy();
-        
-        if (relevancy1 > relevancy2) {
-            moreRelevant = mm1;
-            lessRelevant = mm2;
-        } else if (relevancy2 > relevancy1) {
-            moreRelevant = mm2;
-            lessRelevant = mm1;
-        } else {
-            // arbitrary, but reproduceable
-            if (mm1.getParent().getName().compareTo(mm2.getParent().getName()) < 0) {
-                moreRelevant = mm2;
-                lessRelevant = mm1;
-            } else { // should always mean > 0 as name is unique
-                moreRelevant = mm1;
-                lessRelevant = mm2;
-            }
+        int score = mm1.getDependencyRelevancy() - mm2.getDependencyRelevancy();
+        if (score==0) {
+            // tie breaker. this is arbitrary, but reproduceable
+            score = mm1.getParent().getFullName().compareTo(mm2.getParent().getFullName());
         }
-        
+        assert score!=0;
+
+        final MavenModule moreRelevant, lessRelevant;
+
+        if (score>0)    { moreRelevant = mm1; lessRelevant = mm2; }
+        else            { moreRelevant = mm2; lessRelevant = mm1; }
+
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.finer("Choosing " + moreRelevant.getParent().getName() + " over " + lessRelevant.getParent().getName()
-                    + " for module " + mm1.asDependency().getName() + ". Relevancies: " + relevancy1 + ", " + relevancy2);
+                    + " for module " + mm1.asDependency().getName() + ". Relevancies: " + mm1.getDependencyRelevancy() + ", " + mm2.getDependencyRelevancy());
         }
         return moreRelevant;
     }
