@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import org.apache.commons.collections.comparators.ReverseComparator;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -33,7 +34,8 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Extension;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -48,12 +50,29 @@ import hudson.Functions;
 public final class ModuleDependency implements Serializable {
     public final String groupId;
     public final String artifactId;
+    /**
+     * Version, possibly a version range.
+     */
     public final String version;
     
     /**
      * @since 1.395
      */
     public final boolean plugin;
+
+    /**
+     * Cached result of {@code VersionRange.createFromVersionSpec(version)}
+     *
+     * @see #getVersionAsRange()
+     */
+    private VersionRange range;
+
+    /**
+     * Cache of the parsed form of {@link #version}
+     *
+     * @see #parseVersion()
+     */
+    private ArtifactVersion parsedVersion;
 
     public ModuleDependency(String groupId, String artifactId, String version) {
         this(groupId, artifactId, version, false);
@@ -142,6 +161,18 @@ public final class ModuleDependency implements Serializable {
         return result;
     }
 
+    public VersionRange getVersionAsRange() throws InvalidVersionSpecificationException {
+        if (range==null)
+            range = VersionRange.createFromVersionSpec(version);
+        return range;
+    }
+
+    public ArtifactVersion parseVersion() {
+        if (parsedVersion==null)
+            parsedVersion = new DefaultArtifactVersion(version);
+        return parsedVersion;
+    }
+
     /**
      * Upon reading from the disk, intern strings.
      */
@@ -170,68 +201,48 @@ public final class ModuleDependency implements Serializable {
     public static final String NONE = "-";
 
     private static final long serialVersionUID = 1L;
+
     /**
      * Checks whether this ModuleDependency is satisfied by the dependency of the given ModuleDependency.
-     * This caters for versions where the version string defines a version range. It is assumed that the given
-     * ModuleDependency is of the same groupId and artifactId and only validates against the version.
+     * This caters for versions where the version string defines a version range.
      *
-     * @param otherDependency The dependency to check for.
+     * @param other The dependency to check for.
      * @return true if contained false otherwise.
      */
-    public boolean isSatisfiedBy(ModuleDependency otherDependency) {
-        if (otherDependency == null) {
+    public boolean contains(ModuleDependency other) {
+        if (other == null || !getName().equals(other.getName()))
+            return false;
+
+        try {
+            return getVersionAsRange().containsVersion(other.parseVersion());
+        } catch (InvalidVersionSpecificationException ivse) {
             return false;
         }
-
-        boolean result = false;
-        try {
-            VersionRange myRange = VersionRange.createFromVersionSpec(version);
-            ArtifactVersion otherVersion = new DefaultArtifactVersion(otherDependency.version);
-            result = myRange.containsVersion(otherVersion);
-        } catch (InvalidVersionSpecificationException ivse) {
-            //Do nothing. Return false.
-        }
-
-        return result;
     }
 
     /**
-     * Given a list of ModuleDependencies of the same groupId and artifactId, it will sort this list using the
-     * version and finds the highest version that satisfies this ModuleDependency.
+     * Given a list of ModuleDependencies (of the same groupId and artifactId),
+     * picks the {@link ModuleDependency} that satisfies the constraint and has the highest version.
      *
-     * @param listModuleDependencies The list of ModuleDependencies.
+     * @param candidates
+     *      List that represents specific (non-range) versions.
      * @return The highest satisfying ModuleDependency or null if none can be found.
      */
-    public ModuleDependency findHighestSatisfyingModule(List<ModuleDependency> listModuleDependencies) {
-
-        ModuleDependency highestDependency = null;
-
-        //Create a sorted map of the ModuleDependnecies sorted on version.
-        SortedMap<ArtifactVersion, ModuleDependency> sorted = new TreeMap<ArtifactVersion, ModuleDependency>();
-        for (ModuleDependency otherDependency : listModuleDependencies) {
-            sorted.put(new DefaultArtifactVersion(otherDependency.version), otherDependency);
+    public ModuleDependency findHighestFrom(Collection<ModuleDependency> candidates) {
+        //Create a sorted map of the ModuleDependnecies sorted on version (descending order).
+        SortedMap<ArtifactVersion, ModuleDependency> sorted = new TreeMap<ArtifactVersion, ModuleDependency>(new ReverseComparator());
+        for (ModuleDependency candidate : candidates) {
+            sorted.put(candidate.parseVersion(), candidate);
         }
 
-        try {
-            VersionRange myRange = VersionRange.createFromVersionSpec(version);
-
-            //Now find the highest version that satisfies this dependency.
-            ArtifactVersion highestVersion = null;
-            for (ArtifactVersion version : sorted.keySet()) {
-                if (myRange.containsVersion(version)) {
-                    highestVersion = version;
-                } else {
-                    break;
-                }
-            }
-
-            if (highestVersion != null) {
-                highestDependency = sorted.get(highestVersion);
-            }
-        } catch (InvalidVersionSpecificationException e) {
-            //Do nothing - return null.
+        //Now find the highest version that satisfies this dependency.
+        for (ModuleDependency e : sorted.values()) {
+            if (contains(e))
+                return e;
         }
-        return highestDependency;
+
+        // non found
+        return null;
     }
 
     @Override
