@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,6 +53,8 @@ import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -82,10 +84,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
     }
-    
+
     @Override
     protected void updateTransientActions(){
-        // This method is exactly the same as in {@link #AbstractProject}. 
+        // This method is exactly the same as in {@link #AbstractProject}.
         // Enabling to call this method from MatrixProject is the only reason for overriding.
         super.updateTransientActions();
     }
@@ -193,7 +195,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     public SCMCheckoutStrategy getScmCheckoutStrategy() {
         return getParent().getScmCheckoutStrategy();
     }
- 
+
     @Override
     public boolean isConfigurable() {
         return false;
@@ -333,7 +335,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     /**
      * Returns true if this configuration is a configuration
      * currently in use today (as opposed to the ones that are
-     * there only to keep the past record.) 
+     * there only to keep the past record.)
      *
      * @see MatrixProject#getActiveConfigurations()
      */
@@ -359,13 +361,33 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     	return scheduleBuild(parameters, new LegacyCodeCause());
     }
 
-    /**
+    /** Starts the build with the ParametersAction that are passed in.
      *
      * @param parameters
      *      Can be null.
+     * @deprecated
+	 *    Use {@link #scheduleBuild(List<? extends Action>, Cause)}.  Since 1.480
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c), new ParentBuildAction())!=null;
+
+        return scheduleBuild(Collections.singletonList(parameters), c);
+    }
+    /**
+     * Starts the build with the actions that are passed in.
+     *
+     * @param actions   Can be null.
+     * @param cause     Reason for starting the build
+     */
+    public boolean scheduleBuild(List<? extends Action> actions, Cause c) {
+        List<Action> allActions = new ArrayList<Action>();
+
+        if(actions != null)
+            allActions.addAll(actions);
+
+        allActions.add(new ParentBuildAction());
+        allActions.add(new CauseAction(c));
+
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), allActions )!=null;
     }
 
     /**
