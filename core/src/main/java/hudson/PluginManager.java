@@ -33,6 +33,8 @@ import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.UpdateCenter;
+import hudson.model.jobfactory.PluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory.PluginIntallationJobFactoryDescriptor;
 import hudson.model.UpdateSite;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
@@ -47,6 +49,8 @@ import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -60,8 +64,6 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -464,6 +466,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.warning("Failed to rename " + legacyFile + " to " + newFile);
         }
     }
+    
+    /**
+     * Gets all available descriptors to create plugin install factories 
+     * @return list of descriptors
+     */
+    public DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> getPluginIntallationJobFactoryDescriptors() {
+        final DescriptorExtensionList<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor> descriptorList = Jenkins.getInstance().<PluginIntallationJobFactory, PluginIntallationJobFactoryDescriptor>getDescriptorList(PluginIntallationJobFactory.class);
+        return descriptorList;
+    }           
 
     /**
      * Creates a hudson.PluginStrategy, looking at the corresponding system property. 
@@ -655,27 +666,46 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     
 
     /**
-     * Bare-minimum configuration mechanism to change the update center.
+     * Saves the UpdateSite configuration as the 'default' config. The current active 'default' config will be replaced by new one.
+     * 
+     * @throws ServletException 
      */
-    public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
-        Jenkins hudson = Jenkins.getInstance();
-        hudson.checkPermission(CONFIGURE_UPDATECENTER);
-        UpdateCenter uc = hudson.getUpdateCenter();
+    public HttpResponse doSiteConfigure(StaplerRequest req) throws IOException, ServletException {
+        
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(CONFIGURE_UPDATECENTER);
+        
+        UpdateCenter uc = jenkins.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
             if (s.getId().equals("default"))
                 sites.remove(s);
         }
-        sites.add(new UpdateSite("default",site));
+
+        final JSONObject form = req.getSubmittedForm();
+        final String site = form.getString("site");
+        final UpdateSite us = new UpdateSite("default",site);
+                
+        final JSONObject factoryJsonObject = form.getJSONObject("pluginIntallationJobFactory");
+        if(factoryJsonObject != null) {
+            PluginIntallationJobFactory factory = req.bindJSON(PluginIntallationJobFactory.class, factoryJsonObject);
+            if(factory != null) {
+                us.setPluginIntallationJobFactory(factory);
+            }
+        }
         
-        return HttpResponses.redirectToContextRoot();
+        sites.add(us);
+        Jenkins.getInstance().getUpdateCenter().save();
+        
+        return new HttpRedirect("advanced");
+
     }
 
 
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
         Jenkins jenkins = Jenkins.getInstance();
         jenkins.checkPermission(CONFIGURE_UPDATECENTER);
-
+        
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
         if (pc.name==null) {
             jenkins.proxy = null;

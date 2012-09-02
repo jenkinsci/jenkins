@@ -30,6 +30,8 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.jobfactory.DefaultPluginIntallationJobFactory;
+import hudson.model.jobfactory.PluginIntallationJobFactory;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
@@ -132,6 +134,11 @@ public class UpdateSite {
      * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
      */
     private final String url;
+    
+    /**
+     * Factory creating the jobs to install a plugin.
+     */
+    private PluginIntallationJobFactory pluginIntallationJobFactory;
 
     public UpdateSite(String id, String url) {
         this.id = id;
@@ -407,6 +414,27 @@ public class UpdateSite {
     }
 
     /**
+     * Returns the job factory to create plugin installation jobs
+     * @return never <code>null</code>.
+     */
+    public PluginIntallationJobFactory getPluginIntallationJobFactory() {
+        if(this.pluginIntallationJobFactory == null){
+            this.pluginIntallationJobFactory = new DefaultPluginIntallationJobFactory();
+        }
+        return this.pluginIntallationJobFactory;
+    }
+    
+    /**
+     * Set the job factory.
+     * @param pluginIntallationJobFactory only non <code>null</code> values are changing current setting.
+     */
+    public void setPluginIntallationJobFactory(PluginIntallationJobFactory pluginIntallationJobFactory) {
+        if(pluginIntallationJobFactory != null) {
+            this.pluginIntallationJobFactory = pluginIntallationJobFactory;
+        }
+    }        
+    
+    /**
      * This is where we store the update center data.
      */
     private TextFile getDataFile() {
@@ -642,12 +670,19 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
         
+        /**
+         * The maven coordinates for this plugin: groupId:artifactId:version 
+         */
+        @Exported
+        public final String gav;
+        
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o);
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
+            this.gav = get(o,"gav");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
             this.requiredCore = get(o,"requiredCore");
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
@@ -778,9 +813,10 @@ public class UpdateSite {
                 LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
                 dep.deploy(dynamicLoad);
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
+            final UpdateCenterJob installJob = UpdateSite.this.getPluginIntallationJobFactory().createPluginInstallJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            return uc.addJob(installJob);
         }
-
+        
         /**
          * Schedules the downgrade of this plugin.
          */

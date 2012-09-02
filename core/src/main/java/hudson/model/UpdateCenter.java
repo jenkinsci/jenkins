@@ -111,7 +111,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
-	
+    
     /**
      * {@link ExecutorService} that performs installation.
      */
@@ -139,7 +139,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * List of {@link UpdateSite}s to be used.
      */
     private final PersistedList<UpdateSite> sites = new PersistedList<UpdateSite>(this);
-
+    
     /**
      * Update center configuration data
      */
@@ -806,7 +806,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * This object will have the <tt>row.jelly</tt> which renders the job on UI.
      */
     @ExportedBean
-    public abstract class UpdateCenterJob implements Runnable {
+    public abstract static class UpdateCenterJob implements Runnable {
         /**
          * Unique ID that identifies this job.
          *
@@ -853,8 +853,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         public Future<UpdateCenterJob> submit() {
             LOGGER.fine("Scheduling "+this+" to installerService");
-            jobs.add(this);
-            return installerService.submit(this,this);
+            Jenkins.getInstance().getUpdateCenter().jobs.add(this);
+            return Jenkins.getInstance().getUpdateCenter().installerService.submit(this,this);
         }
 
         @Exported
@@ -984,7 +984,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
-    public abstract class DownloadJob extends UpdateCenterJob {
+    public static abstract class DownloadJob extends UpdateCenterJob {
         /**
          * Immutable object representing the current state of this job.
          */
@@ -1046,15 +1046,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         protected void _run() throws IOException, InstallationStatus {
             URL src = getURL();
 
-            config.preValidate(this, src);
+            final UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+            uc.config.preValidate(this, src);
 
             File dst = getDestination();
-            File tmp = config.download(this, src);
+            File tmp = uc.config.download(this, src);  
 
-            config.postValidate(this, tmp);
-            config.install(this, tmp, dst);
+            uc.config.postValidate(this, tmp);
+            uc.config.install(this, tmp, dst);
         }
-
+        
         /**
          * Called when the download is completed to overwrite
          * the old file with the new file.
@@ -1152,19 +1153,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob extends DownloadJob {
+    public static class InstallationJob extends DownloadJob {
         /**
          * What plugin are we trying to install?
          */
         @Exported
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
          */
-        private final boolean dynamicLoad;
+        protected final boolean dynamicLoad;
 
         /**
          * @deprecated as of 1.442
@@ -1196,7 +1197,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String getName() {
             return plugin.getDisplayName();
         }
-
+        
         @Override
         public void _run() throws IOException, InstallationStatus {
             super._run();
@@ -1257,7 +1258,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
     }
-
+    
     /**
      * Represents the state of the downgrading activity of plugin.
      */
@@ -1442,7 +1443,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Extension
     public static class PageDecoratorImpl extends PageDecorator {
     }
-
+    
     /**
      * Initializes the update center.
      *
