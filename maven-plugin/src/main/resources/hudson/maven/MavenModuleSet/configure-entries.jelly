@@ -79,13 +79,13 @@ THE SOFTWARE.
       <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
-      <f:entry title="${%Alternate settings file}"
-               help="/plugin/maven-plugin/alternate-settings.html">
-        <f:textbox name="alternateSettings"
-                   value="${it.alternateSettings}" 
-                   checkUrl="'checkFileRelative?value='+escape(this.value)"
-                   />
+
+
+      <f:entry title="${%Settings file}"
+               help="/plugin/maven-plugin/settings.html">
+          <f:hetero-radio field="settings" descriptors="${descriptor.settingsProviders}"/>
       </f:entry>
+
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"

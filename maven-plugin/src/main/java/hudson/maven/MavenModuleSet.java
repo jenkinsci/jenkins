@@ -135,7 +135,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     private String goals;
 
-    private String alternateSettings;
+    /**
+     * @deprecated as of 1.481
+     *      Subsumed by {@link #settings}, maps to {@link FilePathSettingsProvider}
+     */
+    private transient String alternateSettings;
 
     /**
      * Default goals specified in POM. Can be null.
@@ -257,6 +261,19 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.426
      */
     protected transient String globalSettingConfigPath;
+
+    /**
+     * @since 1.481
+     */
+    private SettingsProvider settings = new DefaultSettingsProvider();
+
+
+    public Object readResolve() {
+        // backward compatibility
+        if (alternateSettings != null) this.settings = new FilePathSettingsProvider(alternateSettings);
+        return this;
+    }
+
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
@@ -565,6 +582,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public String getGlobalSettingConfigId() {
         return globalSettingConfigId;
+    }
+
+    /**
+     * @since 1.481
+     */
+    public SettingsProvider getSettings() {
+        return settings;
     }
 
     /**
@@ -1096,28 +1120,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return FormValidation.ok();
     }
 
-    /**
-     * Check that the provided file is a relative path. And check that it exists, just in case.
-     */
-    public FormValidation doCheckFileRelative(@QueryParameter String value) throws IOException, ServletException {
-        String v = fixEmpty(value);
-        if ((v == null) || (v.length() == 0)) {
-            // Null values are allowed.
-            return FormValidation.ok();
-        }
-        if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-            return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
-        }
-        
-        MavenModuleSetBuild lb = getLastBuild();
-        if (lb!=null) {
-            FilePath ws = lb.getWorkspace();
-            if(ws!=null)
-                return ws.validateRelativePath(value,true,true);
-        }
-        return FormValidation.ok();
-    }
-
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
@@ -1151,7 +1153,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             mavenValidationLevels.put( "LEVEL_MAVEN_3_1", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1 );
             mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
         }
-        
+
+        public List<SettingsProviderDescriptor> getSettingsProviders() {
+            return Jenkins.getInstance().getDescriptorList(SettingsProvider.class);
+        }
+
         public String getGlobalMavenOpts() {
             return globalMavenOpts;
         }

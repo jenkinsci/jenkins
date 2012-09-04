@@ -738,17 +738,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             margs.add("-pl", Util.join(changedModules, ","));
                         }
 
-                        if (project.getAlternateSettings() != null) {
-                            if (IOUtils.isAbsolute(project.getAlternateSettings())) {
-                                margs.add("-s").add(project.getAlternateSettings());
-                            } else {
-                                FilePath mrSettings = getModuleRoot().child(project.getAlternateSettings());
-                                FilePath wsSettings = getWorkspace().child(project.getAlternateSettings());
-                                if (!wsSettings.exists() && mrSettings.exists())
-                                    wsSettings = mrSettings;
-                                
-                                margs.add("-s").add(wsSettings.getRemote());
-                            }
+                        SettingsProvider settings = project.getSettings();
+                        if (settings != null) {
+                            settings.configure(margs, MavenModuleSetBuild.this);
                         }
 
                         
