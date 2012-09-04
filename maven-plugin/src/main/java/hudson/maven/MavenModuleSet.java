@@ -1070,8 +1070,9 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
-        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
+        settings = SettingsProvider.parseSettingsProvider(req);
+
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
         if (json.optBoolean("usePrivateRepository"))
