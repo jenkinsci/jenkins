@@ -75,7 +75,7 @@ public class FilePathSettingsProvider extends SettingsProvider {
 
         @Override
         public String getDisplayName() {
-            return "settings.xml in project workspace";
+            return "File in project workspace";
         }
     }
 }

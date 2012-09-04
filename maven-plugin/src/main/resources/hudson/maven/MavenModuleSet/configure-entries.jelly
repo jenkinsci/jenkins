@@ -81,8 +81,7 @@ THE SOFTWARE.
       </f:entry>
 
 
-      <f:entry title="${%Settings file}"
-               help="/plugin/maven-plugin/settings.html">
+      <f:entry title="${%Settings file}">
           <f:hetero-radio field="settings" descriptors="${descriptor.settingsProviders}"/>
       </f:entry>
 
