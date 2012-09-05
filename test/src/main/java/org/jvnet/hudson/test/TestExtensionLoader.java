@@ -65,25 +65,24 @@ public class TestExtensionLoader extends GuiceExtensionAnnotation<TestExtension>
         Description description = env.description();
         if (testName.length()>0 && !testName.equals(description.getMethodName()))
             return false;   // doesn't apply to this test
-
+        String className = description.getClassName();
         if (e instanceof Class) {
-            return isActive(description, (Class)e);
+            for (Class<?> outer = (Class) e; outer != null; outer = outer.getEnclosingClass()) {
+                if (outer.getName().equals(className)) {
+                    return true;      // enclosed
+                }
+            }
+            return false;
         }
         if (e instanceof Field) {
             Field f = (Field) e;
-            return f.getDeclaringClass() == description.getTestClass();
+            return f.getDeclaringClass().getName().equals(className);
         }
         if (e instanceof Method) {
             Method m = (Method) e;
-            return m.getDeclaringClass() == description.getTestClass();
+            return m.getDeclaringClass().getName().equals(className);
         }
         return false;
     }
 
-    private boolean isActive(Description description, Class<?> extType) {
-        for (Class<?> outer = extType; outer!=null; outer=outer.getEnclosingClass())
-            if (outer == description.getTestClass())
-                return true;      // enclosed
-        return false;
-    }
 }

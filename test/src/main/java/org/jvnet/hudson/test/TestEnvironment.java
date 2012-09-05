@@ -58,6 +58,7 @@ public class TestEnvironment {
 
     /**
      * Current test case being run (works for JUnit 3 or 4).
+     * Warning: {@link Description#getTestClass} is currently broken in some environments. Use {@link Description#getClassName} instead.
      */
     public @Nonnull Description description() {
         if (description != null) {
