@@ -604,6 +604,26 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+        <plugin>
+         <groupId>org.codehaus.mojo</groupId>
+         <artifactId>build-helper-maven-plugin</artifactId>
+         <executions>
+             <execution>
+                 <id>add-source</id>
+                 <phase>generate-sources</phase>
+                 <goals>
+                     <goal>add-source</goal>
+                 </goals>
+                 <configuration>
+                     <sources>
+                         <source>${project.build.directory}/generated-sources/antlr</source>
+                         <source>${project.build.directory}/generated-sources/localizer</source>
+                         <source>${project.build.directory}/generated-sources/taglib-interface</source>
+                     </sources>
+                 </configuration>
+             </execution>
+         </executions>
+      </plugin>    
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
@@ -643,7 +663,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.16</version>
         <!-- version specified in grandparent pom -->
         <configuration>
           <fork>${staplerFork}</fork><!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
