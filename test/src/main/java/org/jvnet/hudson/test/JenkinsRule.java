@@ -121,8 +121,6 @@ import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -133,7 +131,6 @@ import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.hamcrest.Matchers;
 import org.junit.rules.MethodRule;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
@@ -205,10 +202,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -224,7 +219,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  */
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
-    private final TestEnvironment env = new TestEnvironment(null);
+    private TestEnvironment env;
 
     private Description testDescription;
 
@@ -315,6 +310,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @throws Throwable if setup fails (which will disable {@code after}
      */
     protected void before() throws Throwable {
+        env = new TestEnvironment(testDescription);
         env.pin();
         recipe();
         AbstractProject.WORKSPACE.toString();
@@ -438,6 +434,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             jenkins.cleanUp();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
+
+            try {
+                env.dispose();
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
 
             // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
