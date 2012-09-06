@@ -855,6 +855,9 @@ public final class FilePath implements Serializable {
      * call.
      * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on master
      * (and may collect contextual data if needed) and the returned wrapper will be executed on remote.
+     *
+     * @since 1.482
+     * @see AbstractInterceptorCallableWrapper
      */
     public static abstract class FileCallableWrapperFactory extends AbstractDescribableImpl<FileCallableWrapperFactory> implements ExtensionPoint {
 
@@ -865,6 +868,7 @@ public final class FilePath implements Serializable {
     /**
      * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
+     * @since 1.482
      */
     public abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
 
