@@ -1,7 +1,6 @@
 package hudson.util;
 
 import hudson.Util;
-import hudson.model.TaskListener;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 
@@ -35,7 +34,12 @@ public abstract class DirScanner implements Serializable {
             if (f.canRead()) {
                 if (visitor.understandsSymlink()) {
                     try {
-                        String target = Util.resolveSymlink(f, TaskListener.NULL);
+                        String target;
+                        try {
+                            target = Util.resolveSymlink(f);
+                        } catch (IOException x) { // JENKINS-13202
+                            target = null;
+                        }
                         if (target!=null) {
                             visitor.visitSymlink(f,target,path+f.getName());
                             return;
@@ -112,7 +116,12 @@ public abstract class DirScanner implements Serializable {
 
                     if (visitor.understandsSymlink()) {
                         try {
-                            String target = Util.resolveSymlink(file);
+                            String target;
+                            try {
+                                target = Util.resolveSymlink(file);
+                            } catch (IOException x) { // JENKINS-13202
+                                target = null;
+                            }
                             if (target!=null) {
                                 visitor.visitSymlink(file,target,f);
                                 continue;
