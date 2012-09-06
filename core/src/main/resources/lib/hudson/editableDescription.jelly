@@ -38,7 +38,7 @@ THE SOFTWARE.
     <div>
       <j:out value="${it.description!=null ? app.markupFormatter.translate(it.description) : ''}" />
     </div>
-
+<j:if test="${h.hasPermission(permission)}"><!-- change prevents Users without permission ADMINISTER to edit the description in the top section of hudson.model.View.index.jelly (because changes would be visible to all users and fail multitenancy) -->
     <l:hasPermission permission="${permission}">
       <div align="right"><a href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
         <img src="${imagesURL}/16x16/notepad.png" alt="" height="16" width="16" />
@@ -52,5 +52,6 @@ THE SOFTWARE.
         </j:choose>
       </a></div>
     </l:hasPermission>
+</j:if>
   </div>
 </j:jelly>
