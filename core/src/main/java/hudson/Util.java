@@ -311,7 +311,6 @@ public class Util {
      * Checks if the given file represents a symlink.
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
-    @IgnoreJRERequirement
     public static boolean isSymlink(File file) throws IOException {
         try { // JDK 7
             Object path = File.class.getMethod("toPath").invoke(file);
@@ -995,7 +994,6 @@ public class Util {
      * @param symlinkPath
      *      Where to create a symlink in.
      */
-    @IgnoreJRERequirement
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         try {
             try { // JDK 7
