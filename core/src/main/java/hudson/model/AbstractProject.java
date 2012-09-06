@@ -283,7 +283,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             OldDataMonitor.report(this, "1.28");
         }
         for (Trigger t : triggers)
-            t.start(this,false);
+            t.start(this, Items.updatingByXml.get());
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 

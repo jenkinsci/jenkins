@@ -80,7 +80,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @param project
      *      given so that the persisted form of this object won't have to have a back pointer.
      * @param newInstance
-     *      True if this is a newly created trigger first attached to the {@link Project}.
+     *      True if this may be a newly created trigger first attached to the {@link Project} (generally if the project is being created or configured).
      *      False if this is invoked for a {@link Project} loaded from disk.
      */
     public void start(J project, boolean newInstance) {
