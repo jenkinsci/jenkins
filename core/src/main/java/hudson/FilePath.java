@@ -28,7 +28,6 @@ package hudson;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -831,8 +830,8 @@ public final class FilePath implements Serializable {
             // run this on a remote system
             try {
                 DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
-                ExtensionList<AroundInvokeFactory> factories = Jenkins.getInstance().getExtensionList(AroundInvokeFactory.class);
-                for (AroundInvokeFactory factory : factories) {
+                ExtensionList<FileCallableWrapperFactory> factories = Jenkins.getInstance().getExtensionList(FileCallableWrapperFactory.class);
+                for (FileCallableWrapperFactory factory : factories) {
                     wrapper = factory.wrap(wrapper);
                 }
 
@@ -851,11 +850,45 @@ public final class FilePath implements Serializable {
         }
     }
 
-    public static abstract class AroundInvokeFactory extends AbstractDescribableImpl<AroundInvokeFactory> implements ExtensionPoint {
+    /**
+     * This extension point allows to contribute a wrapper around a fileCallable so that a plugin can "intercept" a
+     * call. Code in wrapper will be executed on remote.
+     */
+    public static abstract class FileCallableWrapperFactory extends AbstractDescribableImpl<FileCallableWrapperFactory> implements ExtensionPoint {
 
         public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
 
     }
+
+    /**
+     * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
+     * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
+     */
+    public abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+
+        protected DelegatingCallable<T, IOException> callable;
+
+        public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
+            this.callable = callable;
+        }
+
+        public ClassLoader getClassLoader() {
+            return callable.getClassLoader();
+        }
+
+        public T call() throws IOException {
+            before();
+            try {
+                return callable.call();
+            } finally {
+                after();
+            }
+        }
+
+        protected void before() {}
+        protected void after() {}
+    }
+
 
     /**
      * Executes some program on the machine that this {@link FilePath} exists,
@@ -2211,7 +2244,6 @@ public final class FilePath implements Serializable {
 
         public T call() throws IOException {
             try {
-                Channel.current().
                 return callable.invoke(new File(remote), Channel.current());
             } catch (InterruptedException e) {
                 throw new TunneledInterruptedException(e);
