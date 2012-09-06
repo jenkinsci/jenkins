@@ -868,13 +868,14 @@ public final class FilePath implements Serializable {
      */
     public abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
 
-        protected DelegatingCallable<T, IOException> callable;
+        private final DelegatingCallable<T, IOException> callable;
 
         public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
             this.callable = callable;
         }
 
-        public ClassLoader getClassLoader() {
+        @Override
+        public final ClassLoader getClassLoader() {
             return callable.getClassLoader();
         }
 
