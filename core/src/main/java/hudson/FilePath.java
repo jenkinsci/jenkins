@@ -852,7 +852,9 @@ public final class FilePath implements Serializable {
 
     /**
      * This extension point allows to contribute a wrapper around a fileCallable so that a plugin can "intercept" a
-     * call. Code in wrapper will be executed on remote.
+     * call.
+     * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on master
+     * (and may collect contextual data if needed) and the returned wrapper will be executed on remote.
      */
     public static abstract class FileCallableWrapperFactory extends AbstractDescribableImpl<FileCallableWrapperFactory> implements ExtensionPoint {
 
@@ -876,7 +878,7 @@ public final class FilePath implements Serializable {
             return callable.getClassLoader();
         }
 
-        public T call() throws IOException {
+        public final T call() throws IOException {
             before();
             try {
                 return callable.call();
@@ -885,7 +887,14 @@ public final class FilePath implements Serializable {
             }
         }
 
+        /**
+         * Executed before the actual FileCallable is invoked. This code will run on remote
+         */
         protected void before() {}
+
+        /**
+         * Executed after the actual FileCallable is invoked (whenever this one failed). This code will run on remote
+         */
         protected void after() {}
     }
 
