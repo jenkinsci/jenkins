@@ -27,6 +27,8 @@ package hudson;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -828,7 +830,13 @@ public final class FilePath implements Serializable {
         if(channel!=null) {
             // run this on a remote system
             try {
-                return channel.call(new FileCallableWrapper<T>(callable,cl));
+                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
+                ExtensionList<AroundInvokeFactory> factories = Jenkins.getInstance().getExtensionList(AroundInvokeFactory.class);
+                for (AroundInvokeFactory factory : factories) {
+                    wrapper = factory.wrap(wrapper);
+                }
+
+                return channel.call(wrapper);
             } catch (TunneledInterruptedException e) {
                 throw (InterruptedException)new InterruptedException().initCause(e);
             } catch (AbortException e) {
@@ -841,6 +849,12 @@ public final class FilePath implements Serializable {
             // the file is on the local machine.
             return callable.invoke(new File(remote), Jenkins.MasterComputer.localChannel);
         }
+    }
+
+    public static abstract class AroundInvokeFactory extends AbstractDescribableImpl<AroundInvokeFactory> implements ExtensionPoint {
+
+        public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
+
     }
 
     /**
@@ -2197,6 +2211,7 @@ public final class FilePath implements Serializable {
 
         public T call() throws IOException {
             try {
+                Channel.current().
                 return callable.invoke(new File(remote), Channel.current());
             } catch (InterruptedException e) {
                 throw new TunneledInterruptedException(e);
