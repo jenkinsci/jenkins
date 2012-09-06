@@ -859,7 +859,7 @@ public final class FilePath implements Serializable {
      * @since 1.482
      * @see AbstractInterceptorCallableWrapper
      */
-    public static abstract class FileCallableWrapperFactory extends AbstractDescribableImpl<FileCallableWrapperFactory> implements ExtensionPoint {
+    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
 
         public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
 
