@@ -68,6 +68,8 @@ public class RobustReflectionConverterTest extends TestCase {
                 return o != null ? o.value() : null;
             }
         });
+        String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
+        String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
         Enchufla s1 = new Enchufla();
         s1.number = 1;
         s1.direction = "North";
@@ -90,7 +92,9 @@ public class RobustReflectionConverterTest extends TestCase {
                 + "<Moonwalk plugin='p2'><number>2</number><boot/><lover class='Billy' plugin='p3'/></Moonwalk>"
                 + "<Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4'/></Moonwalk>"
                 + "</steppes></Bild></bildz></Projekt>",
-                xs.toXML(p).replaceAll("\\Q" + RobustReflectionConverterTest.class.getName() + "\\E(_-|[$])", "").replaceAll("\r?\n *", "").replace('"', '\''));
+                xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
+        Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
+        assertEquals(Billy.class, s.lover.getClass());
     }
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}
     public static class Projekt {
