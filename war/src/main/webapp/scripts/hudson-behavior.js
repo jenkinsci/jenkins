@@ -1960,7 +1960,7 @@ var downloadService = {
 
     download : function(id,url,info, postBack,completionHandler) {
         this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
-        loadScript(url+"?"+Hash.toQueryString(info));
+        loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
     },
 
     post : function(id,data) {
