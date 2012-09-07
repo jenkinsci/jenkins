@@ -898,7 +898,7 @@ public final class FilePath implements Serializable {
         protected void before() {}
 
         /**
-         * Executed after the actual FileCallable is invoked (whenever this one failed). This code will run on remote
+         * Executed after the actual FileCallable is invoked (even if this one failed). This code will run on remote
          */
         protected void after() {}
     }
