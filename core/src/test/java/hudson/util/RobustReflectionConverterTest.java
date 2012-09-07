@@ -26,6 +26,8 @@ package hudson.util;
 import junit.framework.TestCase;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,4 +60,62 @@ public class RobustReflectionConverterTest extends TestCase {
             assertTrue(e.getMessage().contains("z"));
         }
     }
+
+    public void testClassOwnership() throws Exception {
+        XStream xs = new XStream2(new XStream2.ClassOwnership() {
+            @Override public String ownerOf(Class<?> clazz) {
+                Owner o = clazz.getAnnotation(Owner.class);
+                return o != null ? o.value() : null;
+            }
+        });
+        Enchufla s1 = new Enchufla();
+        s1.number = 1;
+        s1.direction = "North";
+        Moonwalk s2 = new Moonwalk();
+        s2.number = 2;
+        s2.boot = new Boot();
+        s2.lover = new Billy();
+        Moonwalk s3 = new Moonwalk();
+        s3.number = 3;
+        s3.boot = new Boot();
+        s3.lover = new Jean();
+        Bild b = new Bild();
+        b.steppes = new Steppe[] {s1, s2, s3};
+        Projekt p = new Projekt();
+        p.bildz = new Bild[] {b};
+        assertEquals("<Projekt><bildz><Bild><steppes>"
+                + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
+                + "<Moonwalk plugin='p2'><number>2</number><boot plugin='p2'/><lover class='Billy' plugin='p3'/></Moonwalk>"
+                + "<Moonwalk plugin='p2'><number>3</number><boot plugin='p2'/><lover class='Jean' plugin='p4'/></Moonwalk>"
+                + "</steppes></Bild></bildz></Projekt>",
+                xs.toXML(p).replaceAll("\\Q" + RobustReflectionConverterTest.class.getName() + "\\E(_-|[$])", "").replaceAll("\r?\n *", "").replace('"', '\''));
+    }
+    @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}
+    public static class Projekt {
+        Bild[] bildz;
+    }
+    public static class Bild {
+        Steppe[] steppes;
+    }
+    public static abstract class Steppe {
+        int number;
+    }
+    @Owner("p1")
+    public static class Enchufla extends Steppe {
+        String direction;
+    }
+    @Owner("p2")
+    public static class Moonwalk extends Steppe {
+        Boot boot;
+        Lover lover;
+    }
+    @Owner("p2")
+    public static class Boot {}
+    @Owner("p2")
+    public static abstract class Lover {}
+    @Owner("p3")
+    public static class Billy extends Lover {}
+    @Owner("p4")
+    public static class Jean extends Lover {}
+
 }

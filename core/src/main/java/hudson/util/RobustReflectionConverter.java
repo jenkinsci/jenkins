@@ -73,10 +73,16 @@ public class RobustReflectionConverter implements Converter {
     protected final Mapper mapper;
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
+    private final XStream2.ClassOwnership classOwnership;
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
+        this(mapper, reflectionProvider, null);
+    }
+    RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider, XStream2.ClassOwnership classOwnership) {
         this.mapper = mapper;
         this.reflectionProvider = reflectionProvider;
+        assert classOwnership != null;
+        this.classOwnership = classOwnership;
         serializationMethodInvoker = new SerializationMethodInvoker();
     }
 
@@ -89,6 +95,11 @@ public class RobustReflectionConverter implements Converter {
 
         if (source.getClass() != original.getClass()) {
             writer.addAttribute(mapper.aliasForAttribute("resolves-to"), mapper.serializedClass(source.getClass()));
+        }
+
+        String owner = classOwnership == null ? "???" : classOwnership.ownerOf(original.getClass());
+        if (owner != null) {
+            writer.addAttribute("plugin", owner);
         }
 
         doMarshal(source, writer, context);
