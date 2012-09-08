@@ -293,4 +293,12 @@ public class History {
 
     }
 
+    public static int asInt(String s, int defalutValue) {
+        if (s==null)    return defalutValue;
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return defalutValue;
+        }
+    }
 }

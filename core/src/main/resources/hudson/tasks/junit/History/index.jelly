@@ -26,8 +26,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%title(it.testObject.displayName)}">
-		<j:set var="start" value="${request.getParameter('start')?:0}"/>
-		<j:set var="end" value="${request.getParameter('end')?:start+24}"/>
+		<j:set var="start" value="${it.asInt(request.getParameter('start'),0)}"/>
+		<j:set var="end" value="${it.asInt(request.getParameter('end'),start+24)}"/>
 		<j:set var="rangeParameters" value="start=${start}&amp;end=${end+1}"/>
 		<script type="text/javascript">
 			function setCount() {
