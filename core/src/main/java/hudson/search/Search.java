@@ -97,6 +97,7 @@ public class Search {
      * See http://developer.mozilla.org/en/docs/Supporting_search_suggestions_in_search_plugins
      */
     public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter String q) throws IOException, ServletException {
+        rsp.setContentType(Flavor.JSON.contentType);
         DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
         w.startArray();
         w.value(q);
