@@ -44,7 +44,7 @@ THE SOFTWARE.
         <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" />
       </l:task>
       <j:if test="${it.configurable}">
-        <j:if test="${it.buildable}">
+        <j:if test="${it.userBuildable}">
           <l:task icon="images/24x24/clock.png" href="${url}/build?delay=0sec" title="${it.buildNowText}"
                   onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
           <script>
