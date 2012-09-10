@@ -66,6 +66,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1052,6 +1053,7 @@ public class Util {
         }
     }
 
+    private static final AtomicBoolean warnedSymlinks = new AtomicBoolean();
     private static boolean createSymlinkJava7(File baseDir, String targetPath, String symlinkPath) throws IOException {
         try {
             Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
@@ -1069,7 +1071,12 @@ public class Util {
             if (x2 instanceof UnsupportedOperationException) {
                 return true; // no symlinks on this platform
             }
-            // XXX perhaps do the same for a FileSystemException with message ~ "a required privilege is not held by the client" (Vista+ but insufficient perms for JVM)
+            if (Functions.isWindows() && String.valueOf(x2).contains("A required privilege is not held by the client.")) {
+                if (warnedSymlinks.compareAndSet(false, true)) {
+                    LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
+                }
+                return true;
+            }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;
             }
