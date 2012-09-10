@@ -27,11 +27,13 @@ import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
+import hudson.model.AbstractItem;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.model.ItemGroupMixIn;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.security.Permission;
@@ -41,6 +43,7 @@ import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
+import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
@@ -71,6 +74,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -728,6 +732,24 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     public Descriptor<ProxyConfiguration> getProxyDescriptor() {
         return Jenkins.getInstance().getDescriptor(ProxyConfiguration.class);
+    }
+
+    /**
+     * Prepares plugins for some expected XML configuration.
+     * If the configuration (typically a job’s {@code config.xml})
+     * needs some plugins to be installed (or updated), those jobs
+     * will be triggered. Requires {@link Jenkins#ADMINISTER}.
+     * @param configXml configuration that might be uploaded
+     * @return an empty list if all is well, else a list of jobs which must be completed before this configuration can be fully read
+     * @throws IOException if loading or parsing the configuration failed
+     * @see ItemGroupMixIn#createProjectFromXML
+     * @see AbstractItem#updateByXml(javax.xml.transform.Source)
+     * @see XStream2
+     * @since XXX
+     */
+    public List<UpdateCenter.UpdateCenterJob> prevalidateConfig(InputStream configXml) throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        return Collections.emptyList(); // XXX
     }
 
     /**
