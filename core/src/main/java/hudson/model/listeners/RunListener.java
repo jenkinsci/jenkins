@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Receives notifications about builds.
@@ -175,7 +177,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireCompleted(Run r, TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onCompleted(r,listener);
+                try {
+                    l.onCompleted(r,listener);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
@@ -185,7 +191,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireStarted(Run r, TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onStarted(r,listener);
+                try {
+                    l.onStarted(r,listener);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -195,7 +205,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireFinalized(Run r) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onFinalized(r);
+                try {
+                    l.onFinalized(r);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -205,7 +219,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireDeleted(Run r) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onDeleted(r);
+                try {
+                    l.onDeleted(r);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -215,4 +233,10 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static ExtensionList<RunListener> all() {
         return Jenkins.getInstance().getExtensionList(RunListener.class);
     }
+
+    private static void report(Throwable e) {
+        LOGGER.log(Level.WARNING, "RunListener failed",e);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
 }
