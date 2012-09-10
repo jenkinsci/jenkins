@@ -26,6 +26,7 @@ package hudson;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -312,13 +313,9 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(File file) throws IOException {
-        try { // JDK 7
-            Object path = File.class.getMethod("toPath").invoke(file);
-            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
-        } catch (NoSuchMethodException x) {
-            // fine, JDK 5/6
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
         }
         if (Functions.isWindows()) {
           return Kernel32Utils.isJunctionOrSymlink(file);
@@ -335,6 +332,18 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
+    }
+
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean isSymlinkJava7(File file) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(file);
+            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
+        } catch (NoSuchMethodException x) {
+            return null; // fine, Java 5/6
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
     }
 
     /**
@@ -996,28 +1005,8 @@ public class Util {
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         try {
-            try { // JDK 7
-                Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
-                Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
-                Class<?> filesC = Class.forName("java.nio.file.Files");
-                Class<?> pathC = Class.forName("java.nio.file.Path");
-                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
-                Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
-                filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
-            } catch (NoSuchMethodException x) {
-                // fine, JDK 5/6
-            } catch (InvocationTargetException x) {
-                Throwable x2 = x.getCause();
-                if (x2 instanceof UnsupportedOperationException) {
-                    return; // no symlinks on this platform
-                }
-                // XXX perhaps do the same for a FileSystemException with message ~ "a required privilege is not held by the client" (Vista+ but insufficient perms for JVM)
-                if (x2 instanceof IOException) {
-                    throw (IOException) x2;
-                }
-                throw (IOException) new IOException(x.toString()).initCause(x);
-            } catch (Exception x) {
-                throw (IOException) new IOException(x.toString()).initCause(x);
+            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
+                return;
             }
             if (Functions.isWindows() || NO_SYMLINK) {
                 return;
@@ -1063,6 +1052,33 @@ public class Util {
         }
     }
 
+    private static boolean createSymlinkJava7(File baseDir, String targetPath, String symlinkPath) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
+            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
+            Class<?> filesC = Class.forName("java.nio.file.Files");
+            Class<?> pathC = Class.forName("java.nio.file.Path");
+            filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
+            filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+            return true;
+        } catch (NoSuchMethodException x) {
+            return false; // fine, Java 5/6
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return true; // no symlinks on this platform
+            }
+            // XXX perhaps do the same for a FileSystemException with message ~ "a required privilege is not held by the client" (Vista+ but insufficient perms for JVM)
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+    }
+
     /**
      * @deprecated as of 1.456
      *      Use {@link #resolveSymlink(File)}
@@ -1077,11 +1093,11 @@ public class Util {
      * If the resolution fails, report an error.
      */
     public static String resolveSymlink(File link) throws InterruptedException, IOException {
-        try { // JDK 7
+        try { // Java 7
             Object path = File.class.getMethod("toPath").invoke(link);
             return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
         } catch (NoSuchMethodException x) {
-            // fine, JDK 5/6
+            // fine, Java 5/6; fall through
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {
