@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.481-SNAPSHOT</version>
+  <version>1.481</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -519,7 +519,7 @@ THE SOFTWARE.
         						</goals>
         					</pluginExecutionFilter>
         					<action>
-        						<ignore></ignore>
+        						<ignore />
         					</action>
         				</pluginExecution>
         				<pluginExecution>
@@ -533,7 +533,7 @@ THE SOFTWARE.
         						</goals>
         					</pluginExecutionFilter>
         					<action>
-        						<ignore></ignore>
+        						<ignore />
         					</action>
         				</pluginExecution>
         			</pluginExecutions>
