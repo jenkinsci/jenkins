@@ -172,7 +172,7 @@ public class UtilTest {
         try {
             new FilePath(new File(d, "a")).touch(0);
             Util.createSymlink(d,"a","x", l);
-            assertEquals("a",Util.resolveSymlink(new File(d,"x"),l));
+            assertEquals("a",Util.resolveSymlink(new File(d,"x")));
 
             // test a long name
             StringBuilder buf = new StringBuilder(768);
@@ -184,7 +184,7 @@ public class UtilTest {
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
-            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
+            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x")));
             
             
             // test linking from another directory
@@ -192,7 +192,7 @@ public class UtilTest {
             assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
             
             Util.createSymlink(d,"a","anotherDir/link",l);
-            assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link"),l));
+            assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link")));
             
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work: 
             //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));

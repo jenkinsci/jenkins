@@ -1960,7 +1960,7 @@ var downloadService = {
 
     download : function(id,url,info, postBack,completionHandler) {
         this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
-        loadScript(url+"?"+Hash.toQueryString(info));
+        loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
     },
 
     post : function(id,data) {
@@ -1970,6 +1970,11 @@ var downloadService = {
             id = data.id;
         }
         var o = this.continuations[id];
+        if (o==undefined) {
+            console.log("Submission from update center that we don't know: "+id);
+            console.log("Likely mismatch between the registered ID vs ID in JSON");
+            return;
+        }
         // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
         new Ajax.Request(o.postBack, {
             contentType:"application/json",

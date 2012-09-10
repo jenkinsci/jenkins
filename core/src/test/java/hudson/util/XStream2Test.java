@@ -35,6 +35,8 @@ import org.jvnet.hudson.test.Bug;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -106,6 +108,8 @@ public class XStream2Test extends TestCase {
      * (HUDSON-5769)
      */
     public void testUnmarshalThrowableMissingField() {
+        Level oldLevel = disableLogging();
+        
         Baz baz = new Baz();
         baz.myFailure = new Exception("foo");
 
@@ -123,6 +127,18 @@ public class XStream2Test extends TestCase {
                 + "</myFailure></hudson.util.XStream2Test_-Baz>");
         // Object should load, despite "missingField" in XML above
         assertEquals("hoho", baz.myFailure.getMessage());
+        
+        enableLogging(oldLevel);
+    }
+
+    private Level disableLogging() {
+        Level oldLevel = Logger.getLogger(RobustReflectionConverter.class.getName()).getLevel();
+        Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
+        return oldLevel;
+    }
+    
+    private void enableLogging(Level oldLevel) {
+        Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(oldLevel);
     }
 
     private static class ImmutableMapHolder {

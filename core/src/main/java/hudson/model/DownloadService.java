@@ -26,18 +26,20 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
+import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
@@ -223,11 +225,24 @@ public class DownloadService extends PageDecorator {
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             long dataTimestamp = System.currentTimeMillis();
+            due = dataTimestamp+getInterval();  // success or fail, don't try too often
+
+            String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+            JSONObject o = JSONObject.fromObject(json);
+
+            if (signatureCheck) {
+                FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
+                if (e.kind!= Kind.OK) {
+                    LOGGER.severe(e.renderHtml());
+                    throw e;
+                }
+            }
+
             TextFile df = getDataFile();
-            df.write(IOUtils.toString(req.getInputStream(),"UTF-8"));
+            df.write(json);
             df.file.setLastModified(dataTimestamp);
-            due = dataTimestamp+getInterval();
             LOGGER.info("Obtained the updated data file for "+id);
+
             rsp.setContentType("text/plain");  // So browser won't try to parse response
         }
 
@@ -253,5 +268,10 @@ public class DownloadService extends PageDecorator {
     }
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+
+    /**
+     * Off by default until we know this is reasonably working.
+     */
+    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 
