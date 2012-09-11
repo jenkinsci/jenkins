@@ -8,7 +8,7 @@ import org.jvnet.hudson.test.Bug;
  * @author Kohsuke Kawaguchi
  */
 public class ResilientJsonObjectTest {
-    public static class Foo { int a; }
+    public static class Foo { public int a; }
 
     /**
      * {@link JSONObject} databinding should be able to ignore non-existent fields.
