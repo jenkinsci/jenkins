@@ -65,7 +65,7 @@ public class UtilTest {
         assertEquals("$", Util.replaceMacro("$$",m));
         assertEquals("$$", Util.replaceMacro("$$$$",m));
 
-    	// test that more complex scenarios work
+    	  // test that more complex scenarios work
         assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));
         assertEquals("a-aa", Util.replaceMacro("$A-$AA",m));
         assertEquals("/a/foo/can/B/you-believe_aa~it?", Util.replaceMacro("/$A/foo/can/$B/you-believe_$AA~it?",m));
@@ -246,48 +246,66 @@ public class UtilTest {
     @Bug(10346)
     @Test
     public void testDigestThreadSafety() throws InterruptedException {
-    	String a = "abcdefgh";
-    	String b = "123456789";
-    	
-    	String digestA = Util.getDigestOf(a);
-    	String digestB = Util.getDigestOf(b);
-    	
-    	DigesterThread t1 = new DigesterThread(a, digestA);
-    	DigesterThread t2 = new DigesterThread(b, digestB);
-    	
-    	t1.start();
-    	t2.start();
-    	
-    	t1.join();
-    	t2.join();
-    	
-    	if (t1.error != null) {
-    		fail(t1.error);
-    	}
-    	if (t2.error != null) {
-    		fail(t2.error);
-    	}
+        String a = "abcdefgh";
+        String b = "123456789";
+        
+        String digestA = Util.getDigestOf(a);
+        String digestB = Util.getDigestOf(b);
+        
+        DigesterThread t1 = new DigesterThread(a, digestA);
+        DigesterThread t2 = new DigesterThread(b, digestB);
+        
+        t1.start();
+        t2.start();
+        
+        t1.join();
+        t2.join();
+        
+        if (t1.error != null) {
+            fail(t1.error);
+        }
+
+        if (t2.error != null) {
+            fail(t2.error);
+        }
     }
     
     private static class DigesterThread extends Thread {
-    	private String string;
-		private String expectedDigest;
-		
-		private String error;
+        private String string;
+	      private String expectedDigest;		
+		    private String error;
+        
+	      public DigesterThread(String string, String expectedDigest) {
+        		this.string = string;
+        		this.expectedDigest = expectedDigest;
+        }
+	      
+	      public void run() {
+	      	  for (int i=0; i < 1000; i++) {
+                String digest = Util.getDigestOf(this.string);
+                if (!this.expectedDigest.equals(digest)) {
+                    this.error = "Expected " + this.expectedDigest + ", but got " + digest;
+                    break;
+                }
+            }
+        }
+    }
 
-		public DigesterThread(String string, String expectedDigest) {
-    		this.string = string;
-    		this.expectedDigest = expectedDigest;
-    	}
-		
-		public void run() {
-			for (int i=0; i < 1000; i++) {
-				String digest = Util.getDigestOf(this.string);
-				if (!this.expectedDigest.equals(digest)) {
-					this.error = "Expected " + this.expectedDigest + ", but got " + digest;
-					break;
-				}
-			}
-		}
+    // ik 2012-09-10: added for JENKINS-14533
+    @Bug(14533)
+    @Test
+    public void testContainsJenkinsVariable() {
+        final String containingVariable = "stringWith${foo}Variable";
+
+        assertTrue(Util.containsJenkinsVariable(containingVariable));
+    }
+
+    // ik 2012-09-10: added for JENKINS-14533
+    @Bug(14533)
+    @Test
+    public void testDoesNotContainJenkinsVariable() {
+        final String nonContainingVariable = "stringWithoutVariable";
+
+        assertFalse(Util.containsJenkinsVariable(nonContainingVariable));
     }
 }

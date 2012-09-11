@@ -109,8 +109,18 @@ public class Util {
 
     /**
      * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
-      */
+     */
     private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\}|\\$)");
+
+    /**
+     * Returns TRUE if the string contains one or more Jenkins-style variables, FALSE otherwise.
+     *
+     * @param input the string to check
+     */
+    // ik 2012-09-10: added for JENKINS-14533
+    public static boolean containsJenkinsVariable(String input) {
+        return VARIABLE.matcher(input).find();
+    }
 
     /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.

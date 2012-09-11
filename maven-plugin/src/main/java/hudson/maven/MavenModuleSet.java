@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans, Peter Hayes, Red Hat, Inc., Stephen Connolly, id:cactusman
  * Olivier Lamy
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -115,7 +115,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author Kohsuke Kawaguchi
  */
 public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
-	
+
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
@@ -194,16 +194,16 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * Encapsulates where to run the local repository.
      *
      * If null, inherited from the global configuration.
-     * 
+     *
      * @since 1.448
      */
     private LocalRepositoryLocator localRepository = null;
-    
+
    /**
     * If true, the build will send a failure e-mail for each failing maven module.
-    * Defaults to <code>true</code> to simulate old behavior. 
+    * Defaults to <code>true</code> to simulate old behavior.
     * <p>
-    * see JENKINS-5695. 
+    * see JENKINS-5695.
     */
     private Boolean perModuleEmail = Boolean.TRUE;
 
@@ -218,24 +218,24 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
-    
+
     /**
      * parameter for pom parsing by default <code>false</code> to be faster
      * @since 1.394
      */
     private boolean resolveDependencies = false;
-    
+
     /**
      * parameter for pom parsing by default <code>false</code> to be faster
      * @since 1.394
-     */    
+     */
     private boolean processPlugins = false;
-    
+
     /**
      * parameter for validation level during pom parsing by default the one corresponding
      * to the maven version used (2 or 3)
      * @since 1.394
-     */    
+     */
     private int mavenValidationLevel = -1;
 
     /**
@@ -284,13 +284,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     private DescribableList<Builder,Descriptor<Builder>> prebuilders =
             new DescribableList<Builder,Descriptor<Builder>>(this);
-    
+
     private DescribableList<Builder,Descriptor<Builder>> postbuilders =
             new DescribableList<Builder,Descriptor<Builder>>(this);
-	
+
     private Result runPostStepsIfResult;
-    
-   
+
+
     /**
      * @deprecated
      *      Use {@link #MavenModuleSet(ItemGroup, String)}
@@ -311,7 +311,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 	public DescribableList<Builder,Descriptor<Builder>> getPrebuilders() {
         return prebuilders;
     }
-	
+
     /**
      * Builders that are run after the main Maven execution.
      *
@@ -320,7 +320,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 	public DescribableList<Builder,Descriptor<Builder>> getPostbuilders() {
         return postbuilders;
     }
-	
+
 	/**
      * {@link #postbuilders} are run if the result is better or equal to this threshold.
      *
@@ -370,7 +370,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         for (MavenModule module: modules.values()) {
             module.updateTransientActions();
         }
-        
+
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
             for (BuildStep step : publishers)
                 r.addAll(step.getProjectActions(this));
@@ -464,7 +464,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public boolean isPerModuleEmail() {
         return perModuleEmail;
     }
-    
+
     public boolean ignoreUpstremChanges() {
         return ignoreUpstremChanges;
     }
@@ -494,7 +494,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /**
-     * @return 
+     * @return
      *      never null
      */
     public LocalRepositoryLocator getLocalRepository() {
@@ -523,7 +523,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public void setIsArchivingDisabled(boolean archivingDisabled) {
         this.archivingDisabled = archivingDisabled;
     }
-    
+
     public boolean isResolveDependencies()
     {
         return resolveDependencies;
@@ -539,7 +539,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     public void setProcessPlugins( boolean processPlugins ) {
         this.processPlugins = processPlugins;
-    }    
+    }
 
     public int getMavenValidationLevel() {
         return mavenValidationLevel;
@@ -716,16 +716,16 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         	postbuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
         }
         postbuilders.setOwner(this);
-        
+
         if(perModuleEmail == null){
             perModuleEmail = Boolean.TRUE;
         }
-        
+
         if (Boolean.TRUE.equals(usePrivateRepository)) {
             this.localRepository = new PerJobLocalRepositoryLocator();
             usePrivateRepository = null;
         }
-        
+
         updateTransientActions();
     }
 
@@ -778,7 +778,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 //      for (MavenModule m : modules) {
 //          m.buildDependencyGraph(graph);
 //      }
-        
+
         publishers.buildDependencyGraph(this,graph);
         buildWrappers.buildDependencyGraph(this,graph);
         prebuilders.buildDependencyGraph(this,graph);
@@ -857,7 +857,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 	}
 	return false;
     }
-	
+
     private List<String> getMavenArgument(String shortForm, String longForm) {
         List<String> args = new ArrayList<String>();
         boolean switchFound=false;
@@ -936,7 +936,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * a fully resolved value.
      */
     public String getMavenOpts() {
-        if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) { 
+        if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) {
             return mavenOpts.replaceAll("[\t\r\n]+"," ");
         }
         else {
@@ -957,7 +957,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public List<SettingConfig> getAllMavenSettingsConfigs() {
         return SettingsProviderUtils.getAllMavenSettingsConfigs();
     }
-    
+
     /**
      * @since 1.426
      * @return
@@ -1073,17 +1073,26 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             m.delete();
         return HttpResponses.redirectToDot();
     }
-    
+
     /**
      * Check the location of the POM, alternate settings file, etc - any file.
      */
     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
-        MavenModuleSetBuild lb = getLastBuild();
-        if (lb!=null) {
-            FilePath ws = lb.getModuleRoot();
-            if(ws!=null)
-                return ws.validateRelativePath(value,true,true);
+        // ik 2012-09-10: added for JENKINS-14533
+        if (Util.containsJenkinsVariable(value)) {
+            return FormValidation.ok();
         }
+
+        MavenModuleSetBuild lb = getLastBuild();
+
+        if (lb != null) {
+            FilePath ws = lb.getModuleRoot();
+
+            if (ws != null) {
+                return ws.validateRelativePath(value, true, true);
+            }
+        }
+
         return FormValidation.ok();
     }
 
@@ -1099,7 +1108,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
             return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
         }
-        
+
         MavenModuleSetBuild lb = getLastBuild();
         if (lb!=null) {
             FilePath ws = lb.getWorkspace();
@@ -1121,7 +1130,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
          * Globally-defined MAVEN_OPTS.
          */
         private String globalMavenOpts;
-        
+
         /**
          * @since 1.394
          */
@@ -1142,7 +1151,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             mavenValidationLevels.put( "LEVEL_MAVEN_3_1", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1 );
             mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
         }
-        
+
         public String getGlobalMavenOpts() {
             return globalMavenOpts;
         }
@@ -1175,7 +1184,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         public Maven.DescriptorImpl getMavenDescriptor() {
             return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
         }
-        
+
         /**
          * @since 1.394
          * @return
