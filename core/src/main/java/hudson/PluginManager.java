@@ -93,6 +93,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -738,16 +739,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Prepares plugins for some expected XML configuration.
      * If the configuration (typically a job’s {@code config.xml})
      * needs some plugins to be installed (or updated), those jobs
-     * will be triggered. Requires {@link Jenkins#ADMINISTER}.
+     * will be triggered.
+     * Plugins are dynamically loaded if possible (see {@link hudson.model.UpdateSite.Plugin#deploy(boolean)}).
+     * Requires {@link Jenkins#ADMINISTER}.
      * @param configXml configuration that might be uploaded
-     * @return an empty list if all is well, else a list of jobs which must be completed before this configuration can be fully read
+     * @return an empty list if all is well, else a list of submitted jobs which must be completed before this configuration can be fully read
      * @throws IOException if loading or parsing the configuration failed
      * @see ItemGroupMixIn#createProjectFromXML
      * @see AbstractItem#updateByXml(javax.xml.transform.Source)
      * @see XStream2
      * @since XXX
      */
-    public List<UpdateCenter.UpdateCenterJob> prevalidateConfig(InputStream configXml) throws IOException {
+    public List<Future<UpdateCenter.UpdateCenterJob>> prevalidateConfig(InputStream configXml) throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return Collections.emptyList(); // XXX
     }
