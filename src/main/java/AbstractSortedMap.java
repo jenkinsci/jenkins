@@ -8,7 +8,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
- * Implementing AbstractSortedMap really ends up implelmenting AbstractNavigableMap
+ * Implementing AbstractSortedMap really ends up implementing AbstractNavigableMap
  * because SortedMap isn't really self contained / closed to itself.
  *
  * @author Kohsuke Kawaguchi
