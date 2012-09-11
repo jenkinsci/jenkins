@@ -830,9 +830,12 @@ public final class FilePath implements Serializable {
             // run this on a remote system
             try {
                 DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
-                ExtensionList<FileCallableWrapperFactory> factories = Jenkins.getInstance().getExtensionList(FileCallableWrapperFactory.class);
-                for (FileCallableWrapperFactory factory : factories) {
-                    wrapper = factory.wrap(wrapper);
+                Jenkins instance = Jenkins.getInstance();
+                if (instance != null) { // this happens during unit tests
+                    ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
+                    for (FileCallableWrapperFactory factory : factories) {
+                        wrapper = factory.wrap(wrapper);
+                    }
                 }
 
                 return channel.call(wrapper);
