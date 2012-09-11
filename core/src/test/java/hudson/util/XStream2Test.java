@@ -25,21 +25,22 @@ package hudson.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import junit.framework.TestCase;
+import hudson.XmlFile;
 import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
-
-import org.jvnet.hudson.test.Bug;
-
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * Tests for XML serialization of java objects.
@@ -275,5 +276,39 @@ public class XStream2Test extends TestCase {
         CauseOfInterruption.UserInterruption cause =
             (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
         assertNotNull(cause);
+    }
+
+    public static class Foo2 {
+        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
+    }
+
+    /**
+     * Tests that ConcurrentHashMap is serialized into a more compact format,
+     * but still can deserialize to older, verbose format.
+     */
+    public void testConcurrentHashMapSerialization() throws Exception {
+        Foo2 foo = new Foo2();
+        foo.m.put("abc","def");
+        foo.m.put("ghi","jkl");
+        File v = File.createTempFile("hashmap", "xml");
+        try {
+            new XmlFile(v).write(foo);
+
+            // should serialize like map
+            String xml = FileUtils.readFileToString(v);
+            assertFalse(xml.contains("java.util.concurrent"));
+            //System.out.println(xml);
+            Foo2 deserialized = (Foo2) new XStream2().fromXML(xml);
+            assertEquals(2,deserialized.m.size());
+            assertEquals("def", deserialized.m.get("abc"));
+            assertEquals("jkl", deserialized.m.get("ghi"));
+        } finally {
+            v.delete();
+        }
+
+        // should be able to read in old data just fine
+        Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
+        assertEquals(1,map.m.size());
+        assertEquals("def",map.m.get("abc"));
     }
 }

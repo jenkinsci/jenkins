@@ -55,6 +55,26 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Provide symlink support on all possible platforms when using Java 7+, including newer versions of Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13202">issue 13202</a>)
+  <li class=bug>
+    NPE at hudson.maven.MavenModuleSet.getMaven
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14510">issue 14510</a>)
+  <li class=bug>
+    Invalid JSON gets produced with duplicate keys (seen on change sets)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13336">issue 13336</a>)
+  <li class=bug>
+    Command line options to control the HTTP request handling thread behavior weren't working.
+  <li class=rfe>
+    Default max # of concurrent HTTP request handling threads were brought down to a sane number (from 1000(!) to 20)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.482>What's new in 1.482</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
     Job created by posting <code>config.xml</code> to <code>/createItem</code> does not set GitHub webhook.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14759">issue 14759</a>)
@@ -62,14 +82,8 @@ Upcoming changes</a>
     “Took…on master” shown for a build which ran on a slave which was since deleted.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15042">issue 15042</a>)
   <li class=rfe>
-    Report root causes of UpstreamCause in log an status pages.
+    Report root causes of UpstreamCause in log and status pages.
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.482>What's new in 1.482</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
 </div><!--=END=-->
 <h3><a name=v1.481>What's new in 1.481</a> (2012/09/09)</h3>
 <ul class=image>
