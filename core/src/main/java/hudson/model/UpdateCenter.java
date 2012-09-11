@@ -249,11 +249,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return sites.toList();
     }
 
+    /**
+     * Alias for {@link #getById}.
+     */
     public UpdateSite getSite(String id) {
-        for (UpdateSite site : sites)
-            if (site.getId().equals(id))
-                return site;
-        return null;
+        return getById(id);
     }
 
     /**
