@@ -111,6 +111,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+
+    /**
+     * {@link #getId} of the default update site.
+     * @since 1.483
+     */
+    public static final String ID_DEFAULT = "default";
 	
     /**
      * {@link ExecutorService} that performs installation.
@@ -243,11 +249,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return sites.toList();
     }
 
+    /**
+     * Alias for {@link #getById}.
+     */
     public UpdateSite getSite(String id) {
-        for (UpdateSite site : sites)
-            if (site.getId().equals(id))
-                return site;
-        return null;
+        return getById(id);
     }
 
     /**
@@ -479,7 +485,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite("default", config.getUpdateCenterUrl() + "update-center.json");
+        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {

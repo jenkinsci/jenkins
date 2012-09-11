@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.model.AbstractDescribableImpl;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -828,7 +829,16 @@ public final class FilePath implements Serializable {
         if(channel!=null) {
             // run this on a remote system
             try {
-                return channel.call(new FileCallableWrapper<T>(callable,cl));
+                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
+                Jenkins instance = Jenkins.getInstance();
+                if (instance != null) { // this happens during unit tests
+                    ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
+                    for (FileCallableWrapperFactory factory : factories) {
+                        wrapper = factory.wrap(wrapper);
+                    }
+                }
+
+                return channel.call(wrapper);
             } catch (TunneledInterruptedException e) {
                 throw (InterruptedException)new InterruptedException().initCause(e);
             } catch (AbortException e) {
@@ -842,6 +852,60 @@ public final class FilePath implements Serializable {
             return callable.invoke(new File(remote), Jenkins.MasterComputer.localChannel);
         }
     }
+
+    /**
+     * This extension point allows to contribute a wrapper around a fileCallable so that a plugin can "intercept" a
+     * call.
+     * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on master
+     * (and may collect contextual data if needed) and the returned wrapper will be executed on remote.
+     *
+     * @since 1.482
+     * @see AbstractInterceptorCallableWrapper
+     */
+    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
+
+        public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
+
+    }
+
+    /**
+     * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
+     * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
+     * @since 1.482
+     */
+    public abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+
+        private final DelegatingCallable<T, IOException> callable;
+
+        public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
+            this.callable = callable;
+        }
+
+        @Override
+        public final ClassLoader getClassLoader() {
+            return callable.getClassLoader();
+        }
+
+        public final T call() throws IOException {
+            before();
+            try {
+                return callable.call();
+            } finally {
+                after();
+            }
+        }
+
+        /**
+         * Executed before the actual FileCallable is invoked. This code will run on remote
+         */
+        protected void before() {}
+
+        /**
+         * Executed after the actual FileCallable is invoked (even if this one failed). This code will run on remote
+         */
+        protected void after() {}
+    }
+
 
     /**
      * Executes some program on the machine that this {@link FilePath} exists,

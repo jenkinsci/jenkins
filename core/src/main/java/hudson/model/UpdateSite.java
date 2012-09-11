@@ -48,6 +48,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -378,7 +379,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals("default") && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
+        return id.equals(UpdateCenter.ID_DEFAULT) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
@@ -407,8 +408,8 @@ public class UpdateSite {
 
         Data(JSONObject o) {
             this.sourceId = (String)o.get("id");
-            if (sourceId.equals("default")) {
-                core = new Entry(sourceId, o.getJSONObject("core"));
+            if (sourceId.equals(UpdateCenter.ID_DEFAULT)) {
+                core = new Entry(sourceId, o.getJSONObject("core"), url);
             }
             else {
                 core = null;
@@ -460,10 +461,21 @@ public class UpdateSite {
         public final String url;
 
         public Entry(String sourceId, JSONObject o) {
+            this(sourceId, o, null);
+        }
+
+        Entry(String sourceId, JSONObject o, String baseURL) {
             this.sourceId = sourceId;
             this.name = o.getString("name");
             this.version = o.getString("version");
-            this.url = o.getString("url");
+            String url = o.getString("url");
+            if (!URI.create(url).isAbsolute()) {
+                if (baseURL == null) {
+                    throw new IllegalArgumentException("Cannot resolve " + url + " without a base URL");
+                }
+                url = URI.create(baseURL).resolve(url).toString();
+            }
+            this.url = url;
         }
 
         /**
@@ -535,7 +547,7 @@ public class UpdateSite {
         
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
-            super(sourceId, o);
+            super(sourceId, o, UpdateSite.this.url);
             this.wiki = get(o,"wiki");
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
