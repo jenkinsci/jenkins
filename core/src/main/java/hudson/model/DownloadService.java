@@ -63,7 +63,8 @@ public class DownloadService extends PageDecorator {
      */
     public String generateFragment() {
     	if (neverUpdate) return "";
-    	
+        if (doesNotSupportPostMessage())  return "";
+
         StringBuilder buf = new StringBuilder();
         if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
@@ -88,6 +89,23 @@ public class DownloadService extends PageDecorator {
             }
         }
         return buf.toString();
+    }
+
+    private boolean doesNotSupportPostMessage() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req==null)      return false;
+
+        String ua = req.getHeader("User-Agent");
+        if (ua==null)       return false;
+
+        // according to http://caniuse.com/#feat=x-doc-messaging, IE <=7 doesn't support pstMessage
+        // see http://www.useragentstring.com/pages/Internet%20Explorer/ for user agents
+
+        // we want to err on the cautious side here.
+        // Because of JENKINS-15105, we can't serve signed metadata from JSON, which means we need to be
+        // using a modern browser as a vehicle to request these data. This check is here to prevent Jenkins
+        // from using older browsers that are known not to support postMessage as the vehicle.
+        return ua.contains("Windows") && (ua.contains(" MSIE 5.") || ua.contains(" MSIE 6.") || ua.contains(" MSIE 7."));
     }
 
     private String mapHttps(String url) {
