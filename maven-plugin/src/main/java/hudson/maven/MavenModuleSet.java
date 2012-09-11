@@ -24,8 +24,6 @@
  */
 package hudson.maven;
 
-import static hudson.Util.*;
-import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -34,50 +32,82 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
+import static hudson.Util.*;
+
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
+
 import hudson.maven.settings.SettingConfig;
 import hudson.maven.settings.SettingsProviderUtils;
+
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
+
 import hudson.model.Descriptor.FormException;
+
 import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import static hudson.model.ItemGroupMixIn.loadChildren;
+
 import hudson.model.Job;
 import hudson.model.Queue;
+
 import hudson.model.Queue.Task;
+
 import hudson.model.ResourceActivity;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
+
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
+
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
+import hudson.tasks.JavadocArchiver;
 import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
+
 import hudson.tasks.Maven.MavenInstallation;
+
 import hudson.tasks.Publisher;
-import hudson.tasks.JavadocArchiver;
+
 import hudson.tasks.junit.JUnitResultArchiver;
+
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.Function1;
 
+import jenkins.model.Jenkins;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.math.NumberUtils;
+
+import org.apache.maven.model.building.ModelBuildingRequest;
+
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+
 import java.io.File;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -92,17 +122,6 @@ import java.util.Stack;
 
 import javax.servlet.ServletException;
 
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.maven.model.building.ModelBuildingRequest;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
 /**
  * Group of {@link MavenModule}s.
@@ -114,12 +133,16 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet, MavenModuleSetBuild>
+    implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable,
+        BuildableItemWithBuildWrappers {
+    @Extension(ordinal = 900)
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
      */
-    transient /*final*/ Map<ModuleName,MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName,MavenModule>();
+    transient /*final*/ Map<ModuleName, MavenModule> modules = new CopyOnWriteMap.Tree<ModuleName, MavenModule>();
 
     /**
      * Topologically sorted list of modules. This only includes live modules,
@@ -132,11 +155,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * Name of the top-level module. Null until the root module is determined.
      */
     private ModuleName rootModule;
-
     private String rootPOM;
-
     private String goals;
-
     private String alternateSettings;
 
     /**
@@ -199,12 +219,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     private LocalRepositoryLocator localRepository = null;
 
-   /**
-    * If true, the build will send a failure e-mail for each failing maven module.
-    * Defaults to <code>true</code> to simulate old behavior.
-    * <p>
-    * see JENKINS-5695.
-    */
+    /**
+     * If true, the build will send a failure e-mail for each failing maven module.
+     * Defaults to <code>true</code> to simulate old behavior.
+     * <p>
+     * see JENKINS-5695.
+     */
     private Boolean perModuleEmail = Boolean.TRUE;
 
     /**
@@ -259,48 +279,42 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.426
      */
     protected transient String globalSettingConfigPath;
+
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
-    private DescribableList<MavenReporter,Descriptor<MavenReporter>> reporters =
-        new DescribableList<MavenReporter,Descriptor<MavenReporter>>(this);
+    private DescribableList<MavenReporter, Descriptor<MavenReporter>> reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
 
     /**
      * List of active {@link Publisher}s configured for this project.
      * @since 1.176
      */
-    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
-        new DescribableList<Publisher,Descriptor<Publisher>>(this);
+    private DescribableList<Publisher, Descriptor<Publisher>> publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      * @since 1.212
      */
-    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
+    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers =
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
-	/**
-     * List of active {@link Builder}s configured for this project.
-     */
-    private DescribableList<Builder,Descriptor<Builder>> prebuilders =
-            new DescribableList<Builder,Descriptor<Builder>>(this);
-
-    private DescribableList<Builder,Descriptor<Builder>> postbuilders =
-            new DescribableList<Builder,Descriptor<Builder>>(this);
-
+    /**
+    * List of active {@link Builder}s configured for this project.
+    */
+    private DescribableList<Builder, Descriptor<Builder>> prebuilders = new DescribableList<Builder, Descriptor<Builder>>(this);
+    private DescribableList<Builder, Descriptor<Builder>> postbuilders = new DescribableList<Builder, Descriptor<Builder>>(this);
     private Result runPostStepsIfResult;
-
 
     /**
      * @deprecated
      *      Use {@link #MavenModuleSet(ItemGroup, String)}
      */
     public MavenModuleSet(String name) {
-        this(Jenkins.getInstance(),name);
+        this(Jenkins.getInstance(), name);
     }
 
     public MavenModuleSet(ItemGroup parent, String name) {
-        super(parent,name);
+        super(parent, name);
     }
 
     /**
@@ -308,7 +322,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      *
      * @since 1.433
      */
-	public DescribableList<Builder,Descriptor<Builder>> getPrebuilders() {
+    public DescribableList<Builder, Descriptor<Builder>> getPrebuilders() {
         return prebuilders;
     }
 
@@ -317,23 +331,23 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      *
      * @since 1.433
      */
-	public DescribableList<Builder,Descriptor<Builder>> getPostbuilders() {
+    public DescribableList<Builder, Descriptor<Builder>> getPostbuilders() {
         return postbuilders;
     }
 
-	/**
-     * {@link #postbuilders} are run if the result is better or equal to this threshold.
-     *
-     * @return
-     *      never null
-     * @since 1.433
-	 */
-	public Result getRunPostStepsIfResult() {
-		return Functions.defaulted(runPostStepsIfResult,Result.FAILURE);
-	}
+    /**
+    * {@link #postbuilders} are run if the result is better or equal to this threshold.
+    *
+    * @return
+    *      never null
+    * @since 1.433
+     */
+    public Result getRunPostStepsIfResult() {
+        return Functions.defaulted(runPostStepsIfResult, Result.FAILURE);
+    }
 
     public void setRunPostStepsIfResult(Result v) {
-        this.runPostStepsIfResult = Functions.defaulted(v,Result.FAILURE);
+        this.runPostStepsIfResult = Functions.defaulted(v, Result.FAILURE);
     }
 
     public String getUrlChildPrefix() {
@@ -358,7 +372,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return getItem(name);
     }
 
-    @Override   // to make this accessible from MavenModuleSetBuild
+    @Override // to make this accessible from MavenModuleSetBuild
+
     protected void updateTransientActions() {
         super.updateTransientActions();
     }
@@ -367,37 +382,54 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         List<Action> r = super.createTransientActions();
 
         // Fix for ISSUE-1149
-        for (MavenModule module: modules.values()) {
+        for (MavenModule module : modules.values()) {
             module.updateTransientActions();
         }
 
-        if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
+        if (publishers != null) { // this method can be loaded from within the onLoad method, where this might be null
+
             for (BuildStep step : publishers)
                 r.addAll(step.getProjectActions(this));
+        }
 
-        if (buildWrappers!=null)
-	        for (BuildWrapper step : buildWrappers)
+        if (buildWrappers != null) {
+            for (BuildWrapper step : buildWrappers)
                 r.addAll(step.getProjectActions(this));
+        }
 
         return r;
     }
 
-    protected void addTransientActionsFromBuild(MavenModuleSetBuild build, List<Action> collection, Set<Class> added) {
-        if(build==null)    return;
+    protected void addTransientActionsFromBuild(MavenModuleSetBuild build,
+        List<Action> collection, Set<Class> added) {
+        if (build == null) {
+            return;
+        }
 
         for (Action a : build.getActions())
-            if(a instanceof MavenAggregatedReport)
-                if(added.add(a.getClass()))
-                    collection.add(((MavenAggregatedReport)a).getProjectAction(this));
+            if (a instanceof MavenAggregatedReport) {
+                if (added.add(a.getClass())) {
+                    collection.add(((MavenAggregatedReport) a).getProjectAction(
+                            this));
+                }
+            }
 
         List<MavenReporter> list = build.projectActionReporters;
-        if(list==null)   return;
+
+        if (list == null) {
+            return;
+        }
 
         for (MavenReporter step : list) {
-            if(!added.add(step.getClass()))     continue;   // already added
+            if (!added.add(step.getClass())) {
+                continue; // already added
+            }
+
             Action a = step.getAggregatedProjectAction(this);
-            if(a!=null)
+
+            if (a != null) {
                 collection.add(a);
+            }
         }
     }
 
@@ -406,6 +438,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * Real deletion is done by the caller, and this method only adjusts the
      * data structure the parent maintains.
      */
+
     /*package*/ void onModuleDeleted(MavenModule module) {
         modules.remove(module.getModuleName());
     }
@@ -415,9 +448,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public boolean hasDisabledModule() {
         for (MavenModule m : modules.values()) {
-            if(m.isDisabled())
+            if (m.isDisabled()) {
                 return true;
+            }
         }
+
         return false;
     }
 
@@ -426,23 +461,27 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * or all enabeld modules (if disabled==false)
      */
     public List<MavenModule> getDisabledModules(boolean disabled) {
-        if(!disabled && sortedActiveModules!=null)
+        if (!disabled && (sortedActiveModules != null)) {
             return sortedActiveModules;
+        }
 
         List<MavenModule> r = new ArrayList<MavenModule>();
+
         for (MavenModule m : modules.values()) {
-            if(m.isDisabled()==disabled)
+            if (m.isDisabled() == disabled) {
                 r.add(m);
+            }
         }
+
         return r;
     }
 
     public Indenter<MavenModule> createIndenter() {
         return new Indenter<MavenModule>() {
-            protected int getNestLevel(MavenModule job) {
-                return job.nestLevel;
-            }
-        };
+                protected int getNestLevel(MavenModule job) {
+                    return job.nestLevel;
+                }
+            };
     }
 
     public boolean isIncrementalBuild() {
@@ -490,7 +529,9 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      *      Use {@link #setLocalRepository(LocalRepositoryLocator)} instead
      */
     public void setUsePrivateRepository(boolean usePrivateRepository) {
-        setLocalRepository(usePrivateRepository?new PerJobLocalRepositoryLocator() : new DefaultLocalRepositoryLocator());
+        setLocalRepository(usePrivateRepository
+            ? new PerJobLocalRepositoryLocator()
+            : new DefaultLocalRepositoryLocator());
     }
 
     /**
@@ -498,7 +539,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      *      never null
      */
     public LocalRepositoryLocator getLocalRepository() {
-        return localRepository!=null ? localRepository : getDescriptor().getLocalRepository();
+        return (localRepository != null) ? localRepository
+                                         : getDescriptor().getLocalRepository();
     }
 
     /**
@@ -524,12 +566,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         this.archivingDisabled = archivingDisabled;
     }
 
-    public boolean isResolveDependencies()
-    {
+    public boolean isResolveDependencies() {
         return resolveDependencies;
     }
 
-    public void setResolveDependencies( boolean resolveDependencies ) {
+    public void setResolveDependencies(boolean resolveDependencies) {
         this.resolveDependencies = resolveDependencies;
     }
 
@@ -537,7 +578,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return processPlugins;
     }
 
-    public void setProcessPlugins( boolean processPlugins ) {
+    public void setProcessPlugins(boolean processPlugins) {
         this.processPlugins = processPlugins;
     }
 
@@ -557,7 +598,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.426
      * @param settingConfigId
      */
-    public void setSettingConfigId( String settingConfigId ) {
+    public void setSettingConfigId(String settingConfigId) {
         this.settingConfigId = settingConfigId;
     }
 
@@ -573,7 +614,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.426
      * @param globalSettingConfigId
      */
-    public void setGlobalSettingConfigId( String globalSettingConfigId ) {
+    public void setGlobalSettingConfigId(String globalSettingConfigId) {
         this.globalSettingConfigId = globalSettingConfigId;
     }
 
@@ -610,17 +651,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return buildWrappers;
     }
 
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        if(ModuleName.isValid(token))
+    public Object getDynamic(String token, StaplerRequest req,
+        StaplerResponse rsp) {
+        if (ModuleName.isValid(token)) {
             return getModule(token);
-        return super.getDynamic(token,req,rsp);
+        }
+
+        return super.getDynamic(token, req, rsp);
     }
 
     public File getRootDirFor(MavenModule child) {
-        return new File(getModulesDir(),child.getModuleName().toFileSystemName());
+        return new File(getModulesDir(),
+            child.getModuleName().toFileSystemName());
     }
 
-    public void onRenamed(MavenModule item, String oldName, String newName) throws IOException {
+    public void onRenamed(MavenModule item, String oldName, String newName)
+        throws IOException {
         throw new UnsupportedOperationException();
     }
 
@@ -631,6 +677,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public Collection<Job> getAllJobs() {
         Set<Job> jobs = new HashSet<Job>(getItems());
         jobs.add(this);
+
         return jobs;
     }
 
@@ -641,18 +688,21 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add(new CollectionSearchIndex<MavenModule>() {// for computers
+        return super.makeSearchIndex().add(new CollectionSearchIndex<MavenModule>() { // for computers
                 protected MavenModule get(String key) {
                     for (MavenModule m : modules.values()) {
-                        if(m.getDisplayName().equals(key))
+                        if (m.getDisplayName().equals(key)) {
                             return m;
+                        }
                     }
+
                     return null;
                 }
+
                 protected Collection<MavenModule> all() {
                     return modules.values();
                 }
+
                 protected String getName(MavenModule o) {
                     return o.getName();
                 }
@@ -664,60 +714,79 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return true;
     }
 
-    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+    public void onLoad(ItemGroup<?extends Item> parent, String name)
+        throws IOException {
         modules = Collections.emptyMap(); // needed during load
         super.onLoad(parent, name);
 
-        modules = loadChildren(this, getModulesDir(),new Function1<ModuleName,MavenModule>() {
-            public ModuleName call(MavenModule module) {
-                return module.getModuleName();
-            }
-        });
+        modules = loadChildren(this, getModulesDir(),
+                new Function1<ModuleName, MavenModule>() {
+                    public ModuleName call(MavenModule module) {
+                        return module.getModuleName();
+                    }
+                });
+
         // update the transient nest level field.
         MavenModule root = getRootModule();
-        if(root!=null && root.getChildren()!=null) {
+
+        if ((root != null) && (root.getChildren() != null)) {
             List<MavenModule> sortedList = new ArrayList<MavenModule>();
             Stack<MavenModule> q = new Stack<MavenModule>();
             root.nestLevel = 0;
             q.push(root);
-            while(!q.isEmpty()) {
+
+            while (!q.isEmpty()) {
                 MavenModule p = q.pop();
                 sortedList.add(p);
+
                 List<MavenModule> children = p.getChildren();
-                if(children!=null) {
+
+                if (children != null) {
                     for (MavenModule m : children)
-                        m.nestLevel = p.nestLevel+1;
-                    for( int i=children.size()-1; i>=0; i--)    // add them in the reverse order
+                        m.nestLevel = p.nestLevel + 1;
+
+                    for (int i = children.size() - 1; i >= 0; i--) // add them in the reverse order
+
                         q.push(children.get(i));
                 }
             }
+
             this.sortedActiveModules = sortedList;
         } else {
             this.sortedActiveModules = getDisabledModules(false);
         }
 
-        if(reporters==null){
+        if (reporters == null) {
             reporters = new DescribableList<MavenReporter, Descriptor<MavenReporter>>(this);
         }
+
         reporters.setOwner(this);
-        if(publishers==null){
-            publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+
+        if (publishers == null) {
+            publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
         }
+
         publishers.setOwner(this);
-        if(buildWrappers==null){
+
+        if (buildWrappers == null) {
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
         }
+
         buildWrappers.setOwner(this);
-        if(prebuilders==null){
-        	prebuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
+
+        if (prebuilders == null) {
+            prebuilders = new DescribableList<Builder, Descriptor<Builder>>(this);
         }
+
         prebuilders.setOwner(this);
-        if(postbuilders==null){
-        	postbuilders = new DescribableList<Builder,Descriptor<Builder>>(this);
+
+        if (postbuilders == null) {
+            postbuilders = new DescribableList<Builder, Descriptor<Builder>>(this);
         }
+
         postbuilders.setOwner(this);
 
-        if(perModuleEmail == null){
+        if (perModuleEmail == null) {
             perModuleEmail = Boolean.TRUE;
         }
 
@@ -730,7 +799,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     private File getModulesDir() {
-        return new File(getRootDir(),"modules");
+        return new File(getRootDir(), "modules");
     }
 
     /**
@@ -752,6 +821,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
+
         // perform the log rotation of modules
         for (MavenModule m : modules.values())
             m.logRotate();
@@ -761,32 +831,36 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * The next build of {@link MavenModuleSet} must have
      * the build number newer than any of the current module build.
      */
+
     /*package*/ void updateNextBuildNumber() throws IOException {
         int next = this.nextBuildNumber;
-        for (MavenModule m : modules.values())
-            next = Math.max(next,m.getNextBuildNumber());
 
-        if(this.nextBuildNumber!=next) {
-            this.nextBuildNumber=next;
+        for (MavenModule m : modules.values())
+            next = Math.max(next, m.getNextBuildNumber());
+
+        if (this.nextBuildNumber != next) {
+            this.nextBuildNumber = next;
             this.saveNextBuildNumber();
         }
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
         // the modules are already rebuild by DependencyGraph#init !
-//      Collection<MavenModule> modules = getModules();
-//      for (MavenModule m : modules) {
-//          m.buildDependencyGraph(graph);
-//      }
-
-        publishers.buildDependencyGraph(this,graph);
-        buildWrappers.buildDependencyGraph(this,graph);
-        prebuilders.buildDependencyGraph(this,graph);
-        postbuilders.buildDependencyGraph(this,graph);
+        //      Collection<MavenModule> modules = getModules();
+        //      for (MavenModule m : modules) {
+        //          m.buildDependencyGraph(graph);
+        //      }
+        publishers.buildDependencyGraph(this, graph);
+        buildWrappers.buildDependencyGraph(this, graph);
+        prebuilders.buildDependencyGraph(this, graph);
+        postbuilders.buildDependencyGraph(this, graph);
     }
 
     public MavenModule getRootModule() {
-        if(rootModule==null)    return null;
+        if (rootModule == null) {
+            return null;
+        }
+
         return modules.get(rootModule);
     }
 
@@ -812,8 +886,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @deprecated for backward comp only
      * @return
      */
-    public String getRootPOM(){
-        return getRootPOM( null );
+    public String getRootPOM() {
+        return getRootPOM(null);
     }
 
     /**
@@ -821,9 +895,15 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.466
      */
     public String getRootPOM(EnvVars env) {
-        if (rootPOM == null) return "pom.xml";
+        if (rootPOM == null) {
+            return "pom.xml";
+        }
+
         // JENKINS-13822
-        if (env == null) return rootPOM;
+        if (env == null) {
+            return rootPOM;
+        }
+
         return env.expand(rootPOM);
     }
 
@@ -831,7 +911,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         this.rootPOM = rootPOM;
     }
 
-    public AbstractProject<?,?> asProject() {
+    public AbstractProject<?, ?> asProject() {
         return this;
     }
 
@@ -839,10 +919,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * Gets the list of goals to execute.
      */
     public String getGoals() {
-        if(goals==null) {
-            if(defaultGoals!=null)  return defaultGoals;
+        if (goals == null) {
+            if (defaultGoals != null) {
+                return defaultGoals;
+            }
+
             return "install";
         }
+
         return goals;
     }
 
@@ -852,32 +936,31 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     private boolean checkMavenOption(String shortForm, String longForm) {
         for (String t : Util.tokenize(getGoals())) {
-            if(t.equals(shortForm) || t.equals(longForm))
+            if (t.equals(shortForm) || t.equals(longForm)) {
                 return true;
-	}
-	return false;
+            }
+        }
+
+        return false;
     }
 
     private List<String> getMavenArgument(String shortForm, String longForm) {
         List<String> args = new ArrayList<String>();
-        boolean switchFound=false;
+        boolean switchFound = false;
+
         for (String t : Util.tokenize(getGoals())) {
-            if(switchFound) {
+            if (switchFound) {
                 args.add(t);
                 switchFound = false;
-            }
-            else
-            if(t.equals(shortForm) || t.equals(longForm))
-                switchFound=true;
-            else
-            if(t.startsWith(shortForm)) {
+            } else if (t.equals(shortForm) || t.equals(longForm)) {
+                switchFound = true;
+            } else if (t.startsWith(shortForm)) {
                 args.add(t.substring(shortForm.length()));
-            }
-            else
-            if(t.startsWith(longForm)) {
+            } else if (t.startsWith(longForm)) {
                 args.add(t.substring(longForm.length()));
             }
         }
+
         return args;
     }
 
@@ -891,7 +974,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * Sets the workspace-relative path to an alternative Maven settings.xml file.
      */
-    public void setAlternateSettings(String alternateSettings) throws IOException {
+    public void setAlternateSettings(String alternateSettings)
+        throws IOException {
         this.alternateSettings = alternateSettings;
         save();
     }
@@ -901,7 +985,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * return the configured profiles. Otherwise null.
      */
     public String getProfiles() {
-        return Util.join(getMavenArgument("-P","--activate-profiles"),",");
+        return Util.join(getMavenArgument("-P", "--activate-profiles"), ",");
     }
 
     /**
@@ -909,11 +993,17 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public Properties getMavenProperties() {
         Properties props = new Properties();
-        for (String arg : getMavenArgument("-D","--define")) {
+
+        for (String arg : getMavenArgument("-D", "--define")) {
             int idx = arg.indexOf('=');
-            if(idx<0)   props.put(arg,"true");
-            else        props.put(arg.substring(0,idx),arg.substring(idx+1));
+
+            if (idx < 0) {
+                props.put(arg, "true");
+            } else {
+                props.put(arg.substring(0, idx), arg.substring(idx + 1));
+            }
         }
+
         return props;
     }
 
@@ -936,15 +1026,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * a fully resolved value.
      */
     public String getMavenOpts() {
-        if ((mavenOpts!=null) && (mavenOpts.trim().length()>0)) {
-            return mavenOpts.replaceAll("[\t\r\n]+"," ");
-        }
-        else {
+        if ((mavenOpts != null) && (mavenOpts.trim().length() > 0)) {
+            return mavenOpts.replaceAll("[\t\r\n]+", " ");
+        } else {
             String globalOpts = DESCRIPTOR.getGlobalMavenOpts();
-            if (globalOpts!=null) {
-                return globalOpts.replaceAll("[\t\r\n]+"," ");
-            }
-            else {
+
+            if (globalOpts != null) {
+                return globalOpts.replaceAll("[\t\r\n]+", " ");
+            } else {
                 return globalOpts;
             }
         }
@@ -978,10 +1067,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * If null, we pick any random Maven installation.
      */
     public MavenInstallation getMaven() {
-        for( MavenInstallation i : DESCRIPTOR.getMavenDescriptor().getInstallations() ) {
-            if(mavenName==null || i.getName().equals(mavenName))
+        for (MavenInstallation i : DESCRIPTOR.getMavenDescriptor()
+                                             .getInstallations()) {
+            if ((mavenName == null) || i.getName().equals(mavenName)) {
                 return i;
+            }
         }
+
         return null;
     }
 
@@ -994,11 +1086,16 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
-        for( Queue.Item item : Jenkins.getInstance().getQueue().getItems() ) {
+
+        for (Queue.Item item : Jenkins.getInstance().getQueue().getItems()) {
             Task t = item.task;
-            if((t instanceof MavenModule && ((MavenModule)t).getParent()==this) || t ==this)
+
+            if ((t instanceof MavenModule &&
+                    (((MavenModule) t).getParent() == this)) || (t == this)) {
                 r.add(item);
+            }
         }
+
         return r;
     }
 
@@ -1016,68 +1113,86 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /*package*/ void reconfigure(PomInfo rootPom) throws IOException {
-        if(this.rootModule!=null && this.rootModule.equals(rootPom.name))
+        if ((this.rootModule != null) && this.rootModule.equals(rootPom.name)) {
             return; // no change
+        }
+
         this.rootModule = rootPom.name;
         this.defaultGoals = rootPom.defaultGoal;
         save();
     }
 
-//
-//
-// Web methods
-//
-//
+    //
+    //
+    // Web methods
+    //
+    //
+    protected void submit(StaplerRequest req, StaplerResponse rsp)
+        throws IOException, ServletException, FormException {
+        super.submit(req, rsp);
 
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        super.submit(req,rsp);
         JSONObject json = req.getSubmittedForm();
 
         rootPOM = Util.fixEmpty(req.getParameter("rootPOM").trim());
-        if(rootPOM!=null && rootPOM.equals("pom.xml"))   rootPOM=null;   // normalization
+
+        if ((rootPOM != null) && rootPOM.equals("pom.xml")) {
+            rootPOM = null; // normalization
+        }
 
         goals = Util.fixEmpty(req.getParameter("goals").trim());
-        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings").trim());
+        alternateSettings = Util.fixEmpty(req.getParameter("alternateSettings")
+                                             .trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
-        if (json.optBoolean("usePrivateRepository"))
-            localRepository = req.bindJSON(LocalRepositoryLocator.class,json.getJSONObject("explicitLocalRepository"));
-        else
+
+        if (json.optBoolean("usePrivateRepository")) {
+            localRepository = req.bindJSON(LocalRepositoryLocator.class,
+                    json.getJSONObject("explicitLocalRepository"));
+        } else {
             localRepository = null;
+        }
+
         perModuleEmail = req.hasParameter("maven.perModuleEmail");
         ignoreUpstremChanges = !json.has("triggerByDependency");
         runHeadless = req.hasParameter("maven.runHeadless");
         incrementalBuild = req.hasParameter("maven.incrementalBuild");
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
-        resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
-        processPlugins = req.hasParameter( "maven.processPlugins" );
-        mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
-        reporters.rebuild(req,json,MavenReporters.getConfigurableList());
+        resolveDependencies = req.hasParameter("maven.resolveDependencies");
+        processPlugins = req.hasParameter("maven.processPlugins");
+        mavenValidationLevel = NumberUtils.toInt(req.getParameter(
+                    "maven.validationLevel"), -1);
+        reporters.rebuild(req, json, MavenReporters.getConfigurableList());
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
-        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
-        settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
-        globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
+        buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
+        settingConfigId = req.getParameter("maven.mavenSettingsConfigId");
+        globalSettingConfigId = req.getParameter(
+                "maven.mavenGlobalSettingConfigId");
 
-        runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
-        prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");
-        postbuilders.rebuildHetero(req,json, Builder.all(), "postbuilder");
+        runPostStepsIfResult = Result.fromString(req.getParameter(
+                    "post-steps.runIfResult"));
+        prebuilders.rebuildHetero(req, json, Builder.all(), "prebuilder");
+        postbuilders.rebuildHetero(req, json, Builder.all(), "postbuilder");
     }
 
     /**
      * Delete all disabled modules.
      */
-    public HttpResponse doDoDeleteAllDisabledModules() throws IOException, InterruptedException {
+    public HttpResponse doDoDeleteAllDisabledModules()
+        throws IOException, InterruptedException {
         checkPermission(DELETE);
-        for( MavenModule m : getDisabledModules(true))
+
+        for (MavenModule m : getDisabledModules(true))
             m.delete();
+
         return HttpResponses.redirectToDot();
     }
 
     /**
      * Check the location of the POM, alternate settings file, etc - any file.
      */
-    public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
+    public FormValidation doCheckFileInWorkspace(@QueryParameter
+    String value) throws IOException, ServletException {
         // ik 2012-09-10: added for JENKINS-14533
         if (Util.containsJenkinsVariable(value)) {
             return FormValidation.ok();
@@ -1099,22 +1214,30 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * Check that the provided file is a relative path. And check that it exists, just in case.
      */
-    public FormValidation doCheckFileRelative(@QueryParameter String value) throws IOException, ServletException {
+    public FormValidation doCheckFileRelative(@QueryParameter
+    String value) throws IOException, ServletException {
         String v = fixEmpty(value);
+
         if ((v == null) || (v.length() == 0)) {
             // Null values are allowed.
             return FormValidation.ok();
         }
-        if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
+
+        if ((v.startsWith("/")) || (v.startsWith("\\")) ||
+                (v.matches("^\\w\\:\\\\.*"))) {
             return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
         }
 
         MavenModuleSetBuild lb = getLastBuild();
-        if (lb!=null) {
+
+        if (lb != null) {
             FilePath ws = lb.getWorkspace();
-            if(ws!=null)
-                return ws.validateRelativePath(value,true,true);
+
+            if (ws != null) {
+                return ws.validateRelativePath(value, true, true);
+            }
         }
+
         return FormValidation.ok();
     }
 
@@ -1122,10 +1245,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return DESCRIPTOR;
     }
 
-    @Extension(ordinal=900)
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
+        private static final Set<Class> NOT_APPLICABLE_TYPES = new HashSet<Class>(Arrays.asList(
+                    Fingerprinter.class, // this kicks in automatically
+                    JavadocArchiver.class, // this kicks in automatically
+                    Mailer.class, // for historical reasons, Maven uses MavenMailer
+                    JUnitResultArchiver.class // done by SurefireArchiver
+            ));
+
         /**
          * Globally-defined MAVEN_OPTS.
          */
@@ -1144,12 +1271,17 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         public DescriptorImpl() {
             super();
             load();
-            mavenValidationLevels.put( "DEFAULT", -1 );
-            mavenValidationLevels.put( "LEVEL_MINIMAL", ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-            mavenValidationLevels.put( "LEVEL_MAVEN_2_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0 );
-            mavenValidationLevels.put( "LEVEL_MAVEN_3_0", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
-            mavenValidationLevels.put( "LEVEL_MAVEN_3_1", ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1 );
-            mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
+            mavenValidationLevels.put("DEFAULT", -1);
+            mavenValidationLevels.put("LEVEL_MINIMAL",
+                ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            mavenValidationLevels.put("LEVEL_MAVEN_2_0",
+                ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_2_0);
+            mavenValidationLevels.put("LEVEL_MAVEN_3_0",
+                ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0);
+            mavenValidationLevels.put("LEVEL_MAVEN_3_1",
+                ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1);
+            mavenValidationLevels.put("LEVEL_STRICT",
+                ModelBuildingRequest.VALIDATION_LEVEL_STRICT);
         }
 
         public String getGlobalMavenOpts() {
@@ -1165,7 +1297,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
          * @return never null.
          */
         public LocalRepositoryLocator getLocalRepository() {
-            return localRepository!=null ? localRepository : new DefaultLocalRepositoryLocator();
+            return (localRepository != null) ? localRepository
+                                             : new DefaultLocalRepositoryLocator();
         }
 
         public void setLocalRepository(LocalRepositoryLocator localRepository) {
@@ -1178,11 +1311,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         }
 
         public MavenModuleSet newInstance(ItemGroup parent, String name) {
-            return new MavenModuleSet(parent,name);
+            return new MavenModuleSet(parent, name);
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class);
+            return Jenkins.getInstance()
+                          .getDescriptorByType(Maven.DescriptorImpl.class);
         }
 
         /**
@@ -1194,9 +1328,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         }
 
         @Override
-        public boolean configure( StaplerRequest req, JSONObject o ) {
-            globalMavenOpts = Util.fixEmptyAndTrim(o.getString("globalMavenOpts"));
-            localRepository = req.bindJSON(LocalRepositoryLocator.class,o.getJSONObject("localRepository"));
+        public boolean configure(StaplerRequest req, JSONObject o) {
+            globalMavenOpts = Util.fixEmptyAndTrim(o.getString(
+                        "globalMavenOpts"));
+            localRepository = req.bindJSON(LocalRepositoryLocator.class,
+                    o.getJSONObject("localRepository"));
             save();
 
             return true;
@@ -1206,12 +1342,5 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         public boolean isApplicable(Descriptor descriptor) {
             return !NOT_APPLICABLE_TYPES.contains(descriptor.clazz);
         }
-
-        private static final Set<Class> NOT_APPLICABLE_TYPES = new HashSet<Class>(Arrays.asList(
-            Fingerprinter.class,    // this kicks in automatically
-            JavadocArchiver.class,  // this kicks in automatically
-            Mailer.class,           // for historical reasons, Maven uses MavenMailer
-            JUnitResultArchiver.class // done by SurefireArchiver
-        ));
     }
 }
