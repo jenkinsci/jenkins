@@ -663,10 +663,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
-            if (s.getId().equals("default"))
+            if (s.getId().equals(UpdateCenter.ID_DEFAULT))
                 sites.remove(s);
         }
-        sites.add(new UpdateSite("default",site));
+        sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
         
         return HttpResponses.redirectToContextRoot();
     }

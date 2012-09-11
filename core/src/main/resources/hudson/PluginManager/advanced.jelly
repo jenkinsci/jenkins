@@ -69,7 +69,7 @@ THE SOFTWARE.
           <h1>${%Update Site}</h1>
           <f:form method="post" action="siteConfigure">
             <f:entry title="${%URL}" >
-              <f:textbox name="site" value="${app.updateCenter.getSite('default').url}" />
+              <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
             </f:entry>
             <f:block>
               <f:submit value="${%Submit}" />
