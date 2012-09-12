@@ -57,9 +57,10 @@ THE SOFTWARE.
 <st:header name="Cache-Control" value="no-cache,must-revalidate" />
 <st:header name="X-Hudson-Theme" value="default" />
 <st:contentType value="text/html;charset=UTF-8" />
-<!-- The path starts with a "/" character but does not end with a "/" character. -->
-<j:set var="rootURL" value="${request.contextPath}" />
-<j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+${h.initPageVariables(context)}
+${h.initPageVariables(context)}
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
   but it's too late because the headers are already committed. so ensure we always have a session.
@@ -68,15 +69,7 @@ THE SOFTWARE.
 -->
 <j:set var="_" value="${request.getSession()}"/>
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
-<!--
-  load static resources from the path dedicated to a specific version.
-  This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
-  the same thing as "/abc/def.ghi", but this avoids the stale cache
-  problem when the user upgrades to new Jenkins. Stapler also sets a long
-  future expiration dates for such static resources.
--->
-<j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
-<j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
+
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     <st:header name="X-Hudson" value="1.395"/>
     <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
