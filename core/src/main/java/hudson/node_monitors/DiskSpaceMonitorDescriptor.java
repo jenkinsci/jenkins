@@ -57,6 +57,7 @@ import org.kohsuke.stapler.export.Exported;
         public final long size;
         
         private boolean triggered;
+        private Class<? extends AbstractDiskSpaceMonitor> trigger;
 
         /**
          * @deprecated as of 1.467
@@ -121,6 +122,18 @@ import org.kohsuke.stapler.export.Exported;
         	this.triggered = triggered;
         }
 
+        /** 
+         * Same as {@link DiskSpace#setTriggered(boolean)}, also sets the trigger class which made the decision
+         */
+        protected void setTriggered(Class<? extends AbstractDiskSpaceMonitor> trigger, boolean triggered) {
+            this.trigger = trigger;
+            this.triggered = triggered;
+        }
+        
+        public Class<? extends AbstractDiskSpaceMonitor> getTrigger() {
+            return trigger;
+        }
+        
         /**
          * Parses a human readable size description like "1GB", "0.5m", etc. into {@link DiskSpace}
          *
