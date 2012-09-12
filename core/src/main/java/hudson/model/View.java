@@ -426,14 +426,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return true;
     }
 
-    public List<Queue.Item> getQueueItems() {
+    private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
-            return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
+            return base;
         }
 
         Collection<TopLevelItem> items = getItems();
         List<Queue.Item> result = new ArrayList<Queue.Item>();
-        for (Queue.Item qi : Jenkins.getInstance().getQueue().getItems()) {
+        for (Queue.Item qi : base) {
             if (items.contains(qi.task)) {
                 result.add(qi);
             } else
@@ -445,6 +445,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
         return result;
+    }
+
+    public List<Queue.Item> getQueueItems() {
+        return filterQueue(Arrays.asList(Jenkins.getInstance().getQueue().getItems()));
+    }
+
+    public List<Queue.Item> getApproximateQueueItemsQuickly() {
+        return filterQueue(Jenkins.getInstance().getQueue().getApproximateItemsQuickly());
     }
 
     /**

@@ -36,7 +36,7 @@ THE SOFTWARE.
       <l:task icon="images/24x24/new-computer.png" href="new" title="${%New Node}" permission="${createPermission}" />
       <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
     </l:tasks>
-    <t:queue items="${app.queue.items}" />
+    <t:queue items="${app.queue.approximateItemsQuickly}" />
     <t:executors />
   </l:side-panel>
 </j:jelly>
