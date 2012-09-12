@@ -70,7 +70,7 @@ THE SOFTWARE.
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
       <t:actions />
     </l:tasks>
-    <t:queue items="${it.queueItems}" />
+    <t:queue items="${it.approximateQueueItemsQuickly}" />
     <t:executors computers="${it.computers}" />
     <j:forEach var="w" items="${it.widgets}">
       <st:include it="${w}" page="index.jelly" />
