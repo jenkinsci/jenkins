@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.Launcher;
 import hudson.Util;
 
 import java.util.ArrayList;
@@ -77,6 +78,12 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     /**
+     * Optionally hide this part of the command line from being printed to the log.
+     * @param a a command argument
+     * @param mask true to suppress in output, false to print normally
+     * @return this
+     * @see hudson.Launcher.ProcStarter#masks(boolean[])
+     * @see Launcher#maskedPrintCommandLine(List, boolean[], FilePath)
      * @since 1.378
      */
     public ArgumentListBuilder add(String a, boolean mask) {
