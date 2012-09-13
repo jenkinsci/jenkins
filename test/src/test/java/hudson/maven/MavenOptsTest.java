@@ -1,5 +1,6 @@
 package hudson.maven;
 
+import hudson.maven.MavenModuleSet.DescriptorImpl;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -11,6 +12,19 @@ import hudson.tasks.Maven.MavenInstallation;
  * @author Andrew Bayer
  */
 public class MavenOptsTest extends HudsonTestCase {
+    DescriptorImpl d;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        d = jenkins.getDescriptorByType(DescriptorImpl.class);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        d.setGlobalMavenOpts(null);
+        super.tearDown();
+    }
 
     public void testEnvMavenOptsNoneInProject() throws Exception {
         configureDefaultMaven();
@@ -43,10 +57,10 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        d.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setAssignedLabel(createSlave(new EnvVars("MAVEN_OPTS", "-Dhudson.mavenOpt.test=foo")).getSelfLabel());
         m.setMavenOpts("-Dhudson.mavenOpt.test=baz");
-        
+
         buildAndAssertSuccess(m);
 
         assertLogContains("[hudson.mavenOpt.test=baz]", m.getLastBuild());
@@ -58,7 +72,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        d.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         
         buildAndAssertSuccess(m);
 
@@ -70,7 +84,7 @@ public class MavenOptsTest extends HudsonTestCase {
         MavenModuleSet m = createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-opts-echo.zip")));
         m.setGoals("validate");
-        MavenModuleSet.DESCRIPTOR.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
+        d.setGlobalMavenOpts("-Dhudson.mavenOpt.test=bar");
         m.setMavenOpts("-Dhudson.mavenOpt.test=foo");
        
         buildAndAssertSuccess(m);
