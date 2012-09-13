@@ -2608,7 +2608,7 @@ var downloadService = {
             // try downloading the postMessage version of the data,
             // if we don't receive postMessage (which probably means the server isn't ready with these new datasets),
             // fallback to JSONP
-            tag.iframe = createIframe(url+".html",function() {
+            tag.iframe = createIframe(url+".html?id="+id+'&'+Hash.toQueryString(info),function() {
                 window.setTimeout(function() {
                     if (!tag.received)
                         fallback();
