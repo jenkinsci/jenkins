@@ -74,6 +74,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
@@ -105,6 +106,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static hudson.init.InitMilestone.*;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -498,7 +500,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 				LOGGER.warning("Plugin strategy class not found: "
 						+ strategyName);
 			} catch (Exception e) {
-				LOGGER.log(Level.WARNING, "Could not instantiate plugin strategy: "
+				LOGGER.log(WARNING, "Could not instantiate plugin strategy: "
 						+ strategyName + ". Falling back to ClassicPluginStrategy", e);
 			}
 			LOGGER.info("Falling back to ClassicPluginStrategy");
@@ -770,34 +772,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (pw == null) { // install new
                 UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
                 if (toInstall == null) {
-                    LOGGER.log(Level.WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
+                    LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
                     continue;
                 }
                 if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
-                    LOGGER.log(Level.WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
+                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
                 }
                 if (toInstall.isForNewerHudson()) {
-                    LOGGER.log(Level.WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
+                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
                 }
                 jobs.add(toInstall.deploy(true));
             } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
                 UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
                 if (toInstall == null) {
-                    LOGGER.log(Level.WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
+                    LOGGER.log(WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
                     continue;
                 }
                 if (!pw.isOlderThan(new VersionNumber(toInstall.version))) {
-                    LOGGER.log(Level.WARNING, "{0}@{1} is no newer than what we already have", new Object[] {toInstall.name, toInstall.version});
+                    LOGGER.log(WARNING, "{0}@{1} is no newer than what we already have", new Object[] {toInstall.name, toInstall.version});
                     continue;
                 }
                 if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
-                    LOGGER.log(Level.WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
+                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
                 }
                 if (toInstall.isForNewerHudson()) {
-                    LOGGER.log(Level.WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
+                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
                 }
                 if (!toInstall.isCompatibleWithInstalledVersion()) {
-                    LOGGER.log(Level.WARNING, "{0}@{1} is incompatible with the installed @{2}", new Object[] {toInstall.name, toInstall.version, pw.getVersion()});
+                    LOGGER.log(WARNING, "{0}@{1} is incompatible with the installed @{2}", new Object[] {toInstall.name, toInstall.version, pw.getVersion()});
                 }
                 jobs.add(toInstall.deploy(true)); // dynamicLoad=true => sure to throw RestartRequiredException, but at least message is nicer
             } // else already good
@@ -836,10 +838,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                 }
             });
-        } catch (IOException x) {
-            throw x;
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (SAXException x) {
+            throw new IOException2("Failed to parse XML",x);
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e); // impossible since we don't tweak XMLParser
         }
         return requestedPlugins;
     }

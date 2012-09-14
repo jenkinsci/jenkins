@@ -126,6 +126,7 @@ public class XStream2 extends XStream {
                 if (pm == null) {
                     return null;
                 }
+                // TODO: possibly recursively scan super class to discover dependencies
                 PluginWrapper p = pm.whichPlugin(clazz);
                 return p != null ? p.getShortName() + '@' + p.getVersion() : null;
             }
