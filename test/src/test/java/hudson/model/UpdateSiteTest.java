@@ -60,7 +60,7 @@ public class UpdateSiteTest {
         assertNotNull(data);
         assertEquals(new URL(url, "jenkins.war").toString(), data.core.url);
         assertEquals(new HashSet<String>(Arrays.asList("tasks", "dummy")), data.plugins.keySet());
-        assertEquals(new URL(url, "tasks.hpi").toString(), data.plugins.get("tasks").url);
+        assertEquals(new URL(url, "tasks.jpi").toString(), data.plugins.get("tasks").url);
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
     }
 
