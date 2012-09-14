@@ -233,6 +233,7 @@ public class PluginManagerTest extends HudsonTestCase {
         assertNotNull(jenkins.getPluginManager().getPlugin("tasks"));
         // XXX restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // XXX dependencies installed or upgraded too
+        // XXX required plugin installed but inactive
     }
 
 }
