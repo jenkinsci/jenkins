@@ -36,6 +36,8 @@ import hudson.model.UpdateSite;
 import hudson.scm.SubversionSCM;
 import hudson.util.PersistedList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
@@ -47,8 +49,6 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.apache.commons.io.IOUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 
 /**
  * @author Kohsuke Kawaguchi

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.util.IOException2;
+import jenkins.model.Jenkins;
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -47,7 +48,6 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 
 /**
  * Used to expose remote access API for ".../api/"

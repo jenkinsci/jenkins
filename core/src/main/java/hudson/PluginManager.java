@@ -43,6 +43,7 @@ import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
+import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
@@ -69,9 +70,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,21 +93,18 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.init.InitMilestone.*;
-import hudson.util.VersionNumber;
-import java.util.TreeMap;
-import javax.xml.parsers.SAXParserFactory;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import static hudson.init.InitMilestone.*;
 
 /**
  * Manages {@link PluginWrapper}s.
