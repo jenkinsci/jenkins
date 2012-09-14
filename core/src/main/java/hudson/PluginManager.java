@@ -758,7 +758,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @see hudson.model.UpdateSite.Plugin#deploy(boolean)
      * @see PluginWrapper#supportsDynamicLoad
      * @see hudson.model.UpdateCenter.DownloadJob.SuccessButRequiresRestart
-     * @since XXX
+     * @since 1.483
      */
     public List<Future<UpdateCenter.UpdateCenterJob>> prevalidateConfig(InputStream configXml) throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
@@ -807,7 +807,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Runs {@link #prevalidateConfig} on posted XML and redirects to the {@link UpdateCenter}.
-     * @since XXX
+     * @since 1.483
      */
     @RequirePOST
     public HttpResponse doPrevalidateConfig(StaplerRequest req) throws IOException {
