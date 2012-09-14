@@ -222,9 +222,9 @@ public class PluginManagerTest extends HudsonTestCase {
             UpdateSite.signatureCheck = true;
         }
         assertNotNull(site.getData());
-        assertEquals(Collections.emptyList(), jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant 1.1\"/></whatever>")));
+        assertEquals(Collections.emptyList(), jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
         assertNull(jenkins.getPluginManager().getPlugin("tasks"));
-        List<Future<UpdateCenterJob>> jobs = jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks 2.23\"/></whatever>"));
+        List<Future<UpdateCenterJob>> jobs = jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());

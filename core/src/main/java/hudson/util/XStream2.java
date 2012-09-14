@@ -127,7 +127,7 @@ public class XStream2 extends XStream {
                     return null;
                 }
                 PluginWrapper p = pm.whichPlugin(clazz);
-                return p != null ? p.getShortName() + ' ' + p.getVersion() : null;
+                return p != null ? p.getShortName() + '@' + p.getVersion() : null;
             }
         });
         return reflectionConverter;
