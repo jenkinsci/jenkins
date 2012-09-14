@@ -1,0 +1,64 @@
+<!--
+The MIT License
+
+Copyright (c) 2012, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Uploading a plugin</h2>
+  <p>
+    You can upload a plugin from HTTP client by POST to <a href="../uploadPlugin">this URL</a> with <a href="http://tools.ietf.org/html/rfc2388">multipart/form-data</a> MIME type.
+  </p>
+
+  <h2>Making sure all the needed plugins are installed</h2>
+  <p>
+    Jenkins uses an XML format for representing most of complex objects internally (such as slaves, views, jobs, and builds.)
+    As such, it has various APIs that send/receive those XMLs. For example, you can create a new job by POSTing its XML representation.
+    Starting 1.482, Jenkins annotates these XMLs with additional information indicating what plugins have been used in them.
+    This improves the portability of those XML files.
+  </p><p>
+    By POSTing such XML to <a href="../prevalidateConfig">this URL</a>, you can find out if any plugins are missing or too old.
+    This method responds with a JSON array that contains one entry for every missing/outdated plugin. If this method
+    returns an empty array, then you know that this Jenkins has every plugin needed to accept the submitted XML.
+  </p>
+<blockquote><pre>
+Sample response:
+
+Content-Type: application/javascript; charset=UTF-8
+
+[
+  { name: "findbugs",   version: "1.5", mode:"missing" },
+  { name: "checkstyle", version: "1.3", mode:"old" }
+]
+</pre></blockquote>
+  <p>
+    Whereas <a href="../pevalidateConfig">prevalidateConfig</a> call runs without any side-effect, you can also
+    submit the same XML to <a href="../installNecessaryPlugins">installNecessaryPlugins</a> endpoint to
+    install missing plugins and updating old ones.
+    This calls returns immediately after initiating plugin installation process, without waiting for the completion
+    of those.
+  </p><p>
+    To wait for the completion of the plugin installations/updates, use <a href="../../updateCenter/api">update center REST API</a>.
+    In some cases, Jenkins would have to be restarted before newly installed/updated plugins take effect.
+    See <a href="../../api">restart API</a> for how to do this over the REST API.
+  </p>
+</j:jelly>
