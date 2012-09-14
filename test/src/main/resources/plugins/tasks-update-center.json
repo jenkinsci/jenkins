@@ -16,7 +16,7 @@
             "requiredCore": "1.264",
             "sha1": "wtzlciUKiMcg90H5CTYkGX6+r8Y=",
             "title": "Hudson Task Scanner Plug-in",
-            "url": "tasks.hpi",
+            "url": "tasks.jpi",
             "version": "2.23"
         },
         "dummy": {
