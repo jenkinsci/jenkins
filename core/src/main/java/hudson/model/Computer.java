@@ -252,9 +252,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (offlineCause == null) {
             return "";
         }
+        // remove header string from offline cause when a comment was set
         String newString = offlineCause.toString().replaceAll(
                 "^Disconnected by [\\w]* \\: ","");
-        return newString.toString().replaceAll(
+        // remove header string from offline cause when no comment was set
+        return newString.replaceAll(
                 "^Disconnected by [\\w]*","");
     }
 
