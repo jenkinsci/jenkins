@@ -250,14 +250,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getOfflineCauseReason() {
         if (offlineCause == null) {
-            return new String("");
+            return "";
         }
-        else {
-            String newString = offlineCause.toString().replaceAll(
-                    "^Disconnected by [\\w]* \\: ","");
-            return newString.toString().replaceAll(
-                    "^Disconnected by [\\w]*","");
-        }
+        String newString = offlineCause.toString().replaceAll(
+                "^Disconnected by [\\w]* \\: ","");
+        return newString.toString().replaceAll(
+                "^Disconnected by [\\w]*","");
     }
 
     /**
