@@ -231,6 +231,8 @@ public class PluginManagerTest extends HudsonTestCase {
         UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
         assertEquals("tasks", ijob.plugin.name);
         assertNotNull(jenkins.getPluginManager().getPlugin("tasks"));
+        // XXX restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
+        // XXX dependencies installed or upgraded too
     }
 
 }
