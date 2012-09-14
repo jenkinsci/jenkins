@@ -101,6 +101,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.util.VersionNumber;
 import java.util.TreeMap;
 import javax.xml.parsers.SAXParserFactory;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -802,6 +803,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             } // else already good
         }
         return jobs;
+    }
+
+    /**
+     * Runs {@link #prevalidateConfig} on posted XML and redirects to the {@link UpdateCenter}.
+     * @since XXX
+     */
+    @RequirePOST
+    public HttpResponse doPrevalidateConfig(StaplerRequest req) throws IOException {
+        prevalidateConfig(req.getInputStream());
+        return HttpResponses.redirectViaContextPath("updateCenter");
     }
 
     static Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
