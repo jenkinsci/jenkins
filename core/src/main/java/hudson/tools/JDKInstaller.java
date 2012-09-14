@@ -546,11 +546,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the CPU of the given node.
          */
         public static CPU of(Node n) throws IOException,InterruptedException, DetectionFailedException {
-            return n.getChannel().call(new Callable<CPU,DetectionFailedException>() {
-                public CPU call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentCPU());
         }
 
         /**
@@ -566,6 +562,14 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("86"))    return i386;
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
+
+        static class GetCurrentCPU implements Callable<CPU,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public CPU call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
