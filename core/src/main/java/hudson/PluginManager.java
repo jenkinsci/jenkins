@@ -51,6 +51,8 @@ import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -808,11 +810,42 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
+     * Like {@link #doInstallNecessaryPlugins(StaplerRequest)} but only checks if everything is installed
+     * or if some plugins need updates or installation.
+     *
+     * This method runs without side-effect. I'm still requiring the ADMINISTER permission since
+     * XML file can contain various external references and we don't configure parsers properly against
+     * that.
+     *
+     * @since 1.483
+     */
+    @RequirePOST
+    public JSONArray doPrevalidateConfig(StaplerRequest req) throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        JSONArray response = new JSONArray();
+
+        for (Map.Entry<String,VersionNumber> p : parseRequestedPlugins(req.getInputStream()).entrySet()) {
+            PluginWrapper pw = getPlugin(p.getKey());
+            JSONObject j = new JSONObject()
+                    .accumulate("name", p.getKey())
+                    .accumulate("version", p.getValue().toString());
+            if (pw == null) { // install new
+                response.add(j.accumulate("mode", "missing"));
+            } else if (pw.isOlderThan(p.getValue())) { // upgrade
+                response.add(j.accumulate("mode", "old"));
+            } // else already good
+        }
+
+        return response;
+    }
+
+    /**
      * Runs {@link #prevalidateConfig} on posted XML and redirects to the {@link UpdateCenter}.
      * @since 1.483
      */
     @RequirePOST
-    public HttpResponse doPrevalidateConfig(StaplerRequest req) throws IOException {
+    public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
         prevalidateConfig(req.getInputStream());
         return HttpResponses.redirectViaContextPath("updateCenter");
     }
