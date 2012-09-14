@@ -490,11 +490,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the platform of the given node.
          */
         public static Platform of(Node n) throws IOException,InterruptedException,DetectionFailedException {
-            return n.getChannel().call(new Callable<Platform,DetectionFailedException>() {
-                public Platform call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentPlatform());
         }
 
         public static Platform current() throws DetectionFailedException {
@@ -504,6 +500,14 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
+
+        static class GetCurrentPlatform implements Callable<Platform,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public Platform call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
