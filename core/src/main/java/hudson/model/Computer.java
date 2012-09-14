@@ -245,14 +245,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * this method will return the cause as a string (without user info).
      *
      * @return
-     *      null if the system was put offline without given a cause.
+     *      empty string if the system was put offline without given a cause.
      */
     @Exported
     public String getOfflineCauseReason() {
-        String newString = offlineCause.toString().replaceAll(
-                "^Disconnected by [\\w]* \\: ","");
-        return newString.toString().replaceAll(
-                "^Disconnected by [\\w]*","");
+        if (offlineCause == null) {
+            return new String("");
+        }
+        else {
+            String newString = offlineCause.toString().replaceAll(
+                    "^Disconnected by [\\w]* \\: ","");
+            return newString.toString().replaceAll(
+                    "^Disconnected by [\\w]*","");
+        }
     }
 
     /**
