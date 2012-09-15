@@ -20,6 +20,14 @@ public class SortedIntList extends AbstractList<Integer> {
     }
 
     /**
+     * Internal copy constructor.
+     */
+    public SortedIntList(SortedIntList rhs) {
+        this.data = Arrays.copyOf(rhs.data,rhs.data.length);
+        this.size = rhs.size;
+    }
+
+    /**
      * Binary search to find the position of the given string.
      *
      * @return
@@ -54,7 +62,7 @@ public class SortedIntList extends AbstractList<Integer> {
 
     private void ensureCapacity(int i) {
         if (data.length<i) {
-            int[] r = new int[data.length*2];
+            int[] r = new int[Math.max(data.length*2,i)];
             System.arraycopy(data,0,r,0,size);
             data = r;
         }
@@ -89,6 +97,17 @@ public class SortedIntList extends AbstractList<Integer> {
     }
 
     public boolean isInRange(int idx) {
-        return 0<idx && idx<size;
+        return 0<=idx && idx<size;
+    }
+
+    public void sort() {
+        Arrays.sort(data,0,size);
+    }
+
+    public void removeValue(int n) {
+        int idx = find(n);
+        if (idx<0)  return;
+        System.arraycopy(data,idx+1,data,idx,size-(idx+1));
+        size--;
     }
 }

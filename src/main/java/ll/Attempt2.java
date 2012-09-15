@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static ll.Attempt2.Direction.ASC;
+import static ll.Attempt2.Direction.*;
 import static ll.Boundary.*;
 
 /**
@@ -28,7 +28,11 @@ import static ll.Boundary.*;
 public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
 
     private boolean fullyLoaded;
-    // copy on write map that stores what's already loaded
+
+    /**
+     * Stores the mapping from build number to build, for builds that are already loaded.
+     */
+    // copy on write map
     private volatile TreeMap<Integer,R> byNumber = new TreeMap<Integer,R>();
 
     /**
@@ -65,6 +69,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         String[] buildDirs = dir.list(createDirectoryFilter());
         if (buildDirs==null)    buildDirs=EMPTY_STRING_ARRAY;
         // wrap into ArrayList to enable mutation
+        Arrays.sort(buildDirs);
         idOnDisk = new SortedStringList(new ArrayList<String>(Arrays.asList(buildDirs)));
 
         // TODO: should we check that shortcuts is a symlink?
@@ -78,6 +83,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
                 // this isn't a shortcut
             }
         }
+        list.sort();
         numberOnDisk = list;
     }
 
@@ -121,7 +127,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     public R get(Object key) {
         if (key instanceof Integer) {
             int n = (Integer) key;
-            return search(n, Direction.EXACT);
+            return get(n);
         }
         return super.get(key);
     }
@@ -169,7 +175,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
                         if (idOnDisk.isInRange(prev)) {
                             R pr = getById(idOnDisk.get(prev));
                             // sign*sign is making sure that #pr and #r sandwiches #n.
-                            if (pr!=null && signOfCompare(getNumberOf(pr),n)*signOfCompare(n,getNumberOf(r))<0)
+                            if (pr!=null && signOfCompare(getNumberOf(pr),n)*signOfCompare(n,getNumberOf(r))>0)
                                 return r;
                             else {
                                 // cache is lying. there's something fishy.
@@ -325,8 +331,9 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
 
                 if (r==null) {
                     // if failed to locate, record that fact
-                    if (copy)   copy();
-                    byNumber.put(n,null);
+                    SortedIntList update = new SortedIntList(numberOnDisk);
+                    update.removeValue(n);
+                    numberOnDisk = update;
                 }
             }
         }

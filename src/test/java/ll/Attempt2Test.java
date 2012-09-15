@@ -49,8 +49,10 @@ public class Attempt2Test extends Assert {
 
     @Test
     public void idempotentLookup() {
-        for (int i=0; i<5; i++)
+        for (int i=0; i<5; i++) {
             a.get(1).asserts(1,"A");
+            a.get((Object)1).asserts(1, "A");
+        }
     }
 
     @Test
@@ -108,5 +110,68 @@ public class Attempt2Test extends Assert {
         ((Build)b[0].getValue()).asserts(1,"A");
         ((Build)b[1].getValue()).asserts(3,"B");
         ((Build)b[2].getValue()).asserts(5,"C");
+    }
+
+    @Test
+    public void fastLookup() throws IOException {
+        FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C"). make();
+
+        a.get(1).asserts(1,"A");
+        assertNull(a.get(2));
+        a.get(3).asserts(3,"B");
+        assertNull(a.get(4));
+        a.get(5).asserts(5,"C");
+    }
+
+    @Test
+    public void fastSearch() throws IOException {
+        FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C").addBoth(7,"D").make();
+
+        // we should be using the cache to find the entry efficiently
+        a.search(6, Direction.ASC).asserts(7,"D");
+        a.search(2, Direction.DESC).asserts(1, "A");
+    }
+
+    @Test
+    public void bogusCache() throws IOException {
+        FakeMap a = localBuilder.addUnloadableCache(1).make();
+        assertNull(a.get(1));
+    }
+
+    @Test
+    public void bogusCacheAndHiddenRealData() throws IOException {
+        FakeMap a = localBuilder.addUnloadableCache(1).add(1,"A").make();
+        a.get(1).asserts(1, "A");
+    }
+
+    @Test
+    public void bogusCache2() throws IOException {
+        FakeMap a = localBuilder.addBogusCache(1,3,"A").make();
+        assertNull(a.get(1));
+        a.get(3).asserts(3,"A");
+    }
+
+    @Test
+    public void incompleteCache() throws IOException {
+        FakeMapBuilder setup = localBuilder.addBoth(1, "A").add(3, "B").addBoth(5, "C");
+
+        // each test uses a fresh map since cache lookup causes additional loads
+        // to verify the results
+
+        // if we just rely on cache,
+        // it'll pick up 5:C as the first ascending value,
+        // but we should be then verifying this by loading B, so in the end we should
+        // find the correct value
+        setup.make().search(2, Direction.ASC).asserts(3,"B");
+        setup.make().search(4, Direction.DESC).asserts(3,"B");
+
+        // variation of the cache based search where we find the outer-most value via cache
+        setup.make().search(0, Direction.ASC).asserts(1,"A");
+        setup.make().search(6, Direction.DESC).asserts(5,"C");
+
+        // variation of the cache search where the cache tells us that we are searching
+        // in the direction that doesn't have any records
+        assertNull(setup.make().search(0, Direction.DESC));
+        assertNull(setup.make().search(6, Direction.ASC));
     }
 }

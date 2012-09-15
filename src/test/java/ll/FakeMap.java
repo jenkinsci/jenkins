@@ -41,7 +41,8 @@ public class FakeMap extends Attempt2<Build> {
     @Override
     protected Build retrieve(File dir) throws IOException {
         String n = FileUtils.readFileToString(new File(dir, "n")).trim();
-        return new Build(Integer.parseInt(n),dir.getName());
+        String id = FileUtils.readFileToString(new File(dir, "id")).trim();
+        return new Build(Integer.parseInt(n),id);
     }
 }
 

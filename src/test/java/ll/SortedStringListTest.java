@@ -55,4 +55,14 @@ public class SortedStringListTest extends Assert {
         assertEquals(3,l.higher("F"));
         assertEquals(3,l.higher("G"));
     }
+
+    @Test
+    public void testRange() {
+        assertTrue(l.isInRange(0));
+        assertTrue(l.isInRange(1));
+        assertTrue(l.isInRange(2));
+
+        assertFalse(l.isInRange(-1));
+        assertFalse(l.isInRange(3));
+    }
 }

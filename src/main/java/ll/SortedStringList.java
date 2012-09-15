@@ -120,6 +120,6 @@ public class SortedStringList extends AbstractList<String> {
     }
 
     public boolean isInRange(int idx) {
-        return 0<idx && idx<data.size();
+        return 0<=idx && idx<data.size();
     }
 }
