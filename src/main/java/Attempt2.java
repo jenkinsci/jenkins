@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -9,8 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import static Attempt2.Direction.*;
 
 /**
  * After {@link AbstractSortedMap} is abandoned, this one is more crude implementation.
@@ -42,11 +41,21 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     private List<Integer> numberOnDisk;
 
     private final File dir;
-    
+
+    /**
+     * Used to ensure only one thread is actually calling {@link #retrieve(File)} and
+     * updating {@link #byNumber} and {@link #byId}.
+     */
     private final Object loadLock = this;
 
     public Attempt2(File dir) {
         this.dir = dir;
+    }
+
+    private void loadIdOnDisk() {
+        String[] buildDirs = dir.list(createDirectoryFilter());
+        if (buildDirs==null)    buildDirs=new String[0];
+        idOnDisk = new SortedStringList(Arrays.asList(buildDirs));
     }
 
     public Comparator<? super Integer> comparator() {
@@ -56,6 +65,21 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     @Override
     public Set<Entry<Integer, R>> entrySet() {
         return all().entrySet();
+    }
+
+    public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
+        // TODO: maybe we do want efficient implementation here
+        return all().subMap(fromKey,toKey);
+    }
+
+    public SortedMap<Integer, R> headMap(Integer toKey) {
+        // TODO: maybe we do want efficient implementation here
+        return all().headMap(toKey);
+    }
+
+    public SortedMap<Integer, R> tailMap(Integer fromKey) {
+        // TODO: maybe we do want efficient implementation here
+        return all().tailMap(fromKey);
     }
 
     public Integer firstKey() {
@@ -77,7 +101,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             if (byNumber.containsKey(n))
                 return byNumber.get(n);
 
-            return search(n, EXACT);
+            return search(n, Direction.EXACT);
         }
         return super.get(key);
     }
@@ -93,7 +117,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      *      If ASC, finds the closest #M that satisfies M>=N.
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
-    protected R search(int n, Direction d) {
+    protected R search(final int n, final Direction d) {
         while (true) {
             Entry<Integer, R> f = byNumber.floorEntry(n);
             if (f!=null && f.getKey()== n)  return f.getValue();    // found the exact #n
@@ -112,27 +136,51 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             String fid = f==null ? ""  : getIdOf(f.getValue());
             String cid = c==null ? "z" : getIdOf(c.getValue());
 
-            idOnDisk.subList(idOnDisk.higher(fid), idOnDisk.lower(cid));
+            // We know that the build we are looking for exists in this range
+            // we will narrow this down via binary search
+            int lo = idOnDisk.higher(fid);
+            int hi = idOnDisk.lower(cid);
 
-            int pos = Collections.binarySearch(idOnDisk, n);
-            if (pos>=0) {// found it
-                R r = load(n, true);
-                if (d==EXACT || r!=null)    return r;
-            } else {
-                // non-exact match
-                n = d.candidate(pos);
+            int pivot;
+            while (true) {
+                pivot = (lo+hi)/2;
+                if (hi<=lo)     break;  // end of search
+
+                R r = load(new File(dir, idOnDisk.get(pivot)), true);
+                if (r==null) {
+                    // this ID isn't valid. get rid of that and retry pivot
+                    hi--;
+                    idOnDisk.remove(pivot);
+                    continue;
+                }
+
+                int found = getNumberOf(r);
+                if (found==n)
+                    return r;   // exact match
+
+                if (found<n)    lo = pivot+1;   // the pivot was too small. look in the upper half
+                else            hi = pivot;     // the pivot was too big. look in the lower half
             }
 
-
-            // bisect the expected record 'start' by two bounds
-
+            // didn't find the exact match
+            // 'pivot' points to the insertion point on idOnDisk
+            switch (d) {
+            case ASC:
+                if (hi==idOnDisk.size())    return null;
+                return byId.get(idOnDisk.get(hi));
+            case DESC:
+                if (lo==-1)                 return null;
+                return byId.get(idOnDisk.get(lo));
+            case EXACT:
+                return null;
+            }
         }
     }
 
-    protected int toIdIndex(Entry<Integer, R> f, int fallback) {
-        if (f==null)    return fallback;
-        return getIdOf(f.getValue());
-    }
+//    protected int toIdIndex(Entry<Integer, R> f, int fallback) {
+//        if (f==null)    return fallback;
+//        return getNumberOf(f.getValue());
+//    }
 
 
     /**
@@ -146,16 +194,14 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      */
     private TreeMap<Integer,R> all() {
         if (!fullyLoaded) {
-            synchronized (this) {
+            synchronized (loadLock) {
                 if (!fullyLoaded) {
-                    String[] buildDirs = dir.list(createDirectoryFilter());
-                    if (buildDirs!=null) {
-                        copy();
-                        for (String id : buildDirs) {
-                            if (!byId.containsKey(id))
-                                load(id);
-                        }
+                    copy();
+                    for (String id : idOnDisk) {
+                        if (!byId.containsKey(id))
+                            load(new File(dir,id),false); // copy() called above, so no need to copy inside
                     }
+                    fullyLoaded = true;
                 }
             }
         }
@@ -178,29 +224,33 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         R r = null;
         File shortcut = new File(dir,String.valueOf(n));
         if (shortcut.isDirectory()) {
-            r = load(shortcut,copy);
-            if (r==null) {
-                // if failed to locate, record that fact
-                if (copy)   copy();
-                byNumber.put(n,null);
+            synchronized (loadLock) {
+                r = load(shortcut,copy);
+                if (r==null) {
+                    // if failed to locate, record that fact
+                    if (copy)   copy();
+                    byNumber.put(n,null);
+                }
             }
         }
         return r;
     }
-    
+
     protected R load(File dataDir, boolean copy) {
-        try {
-            R r = retrieve(dataDir);
-            if (copy)   copy();
-            byId.put(getIdOf(r),r);
-            byNumber.put(getNumberOf(r),r);
-            return r;
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (loadLock) {
+            try {
+                R r = retrieve(dataDir);
+                if (copy)   copy();
+                byId.put(getIdOf(r),r);
+                byNumber.put(getNumberOf(r),r);
+                return r;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
-        return null;
     }
-    
+
     protected abstract int getNumberOf(R r);
     protected abstract String getIdOf(R r);
 
@@ -226,6 +276,10 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             this.binarySearchTrimOffset = binarySearchTrimOffset;
         }
 
+        public int offset() {
+            return binarySearchTrimOffset;
+        }
+
         /**
          * Given the negative result from {@link Collections#binarySearch(List, Object)}
          * that indicates no-exact match, determine the position of the element we'll load
@@ -234,5 +288,5 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         private int candidate(int n) {
             return -n-1+binarySearchTrimOffset;
         }
-    };
+    }
 }

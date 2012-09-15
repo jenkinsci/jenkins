@@ -80,30 +80,32 @@ public abstract class AbstractSortedMap<K,V> extends AbstractMap<K,V> implements
         return e!=null ? new SimpleEntry<K, V>(e.getKey(),e.getValue()) : null;
     }
 
-    public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
-        final AbstractSortedMap<K,V> back = this;
-        return new AbstractSortedMap<K,V>() {
-            @Override
-            public NavigableSet<Entry<K, V>> entrySet() {
-                return back.entrySet().subSet(fromKey, toKey)
-            }
 
-            public Comparator<? super K> comparator() {
-                // TODO
-                throw new UnsupportedOperationException();
-            }
 
-            public K firstKey() {
-                // TODO
-                throw new UnsupportedOperationException();
-            }
-
-            public K lastKey() {
-                // TODO
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
+//    public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
+//        final AbstractSortedMap<K,V> back = this;
+//        return new AbstractSortedMap<K,V>() {
+//            @Override
+//            public NavigableSet<Entry<K, V>> entrySet() {
+//                return back.entrySet().subSet(fromKey, toKey);
+//            }
+//
+//            public Comparator<? super K> comparator() {
+//                // TODO
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            public K firstKey() {
+//                // TODO
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            public K lastKey() {
+//                // TODO
+//                throw new UnsupportedOperationException();
+//            }
+//        };
+//    }
 
     final int compare(Object k1, Object k2) {
         Comparator c = comparator();
