@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.SortedMap;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -173,5 +174,16 @@ public class Attempt2Test extends Assert {
         // in the direction that doesn't have any records
         assertNull(setup.make().search(0, Direction.DESC));
         assertNull(setup.make().search(6, Direction.ASC));
+    }
+
+    @Test
+    public void fastSubMap() throws Exception {
+        SortedMap<Integer,Build> m = a.subMap(2, 99);
+        assertEquals(2, m.size());
+
+        Build[] b = m.values().toArray(new Build[2]);
+        assertEquals(2,b.length);
+        b[0].asserts(3,"B");
+        b[1].asserts(5,"C");
     }
 }

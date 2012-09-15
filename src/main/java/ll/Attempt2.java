@@ -97,18 +97,26 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     }
 
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        // TODO: maybe we do want efficient implementation here
-        return all().subMap(fromKey,toKey);
+        R start = search(fromKey, ASC);
+        if (start==null)    return EMPTY_SORTED_MAP;
+
+        R end = search(toKey-1, DESC);
+        if (end==null)      return EMPTY_SORTED_MAP;
+
+        for (R i=start; i!=end; ) {
+            i = search(getNumberOf(i)+1,ASC);
+            assert i!=null;
+        }
+
+        return byNumber.subMap(fromKey,toKey);
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        // TODO: maybe we do want efficient implementation here
-        return all().headMap(toKey);
+        return subMap(Integer.MIN_VALUE,toKey);
     }
 
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        // TODO: maybe we do want efficient implementation here
-        return all().tailMap(fromKey);
+        return subMap(fromKey,Integer.MAX_VALUE);
     }
 
     public Integer firstKey() {
@@ -410,4 +418,6 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     }
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
+    private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
 }
