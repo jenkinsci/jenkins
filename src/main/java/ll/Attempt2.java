@@ -1,3 +1,5 @@
+package ll;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -120,7 +122,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      *      If ASC, finds the closest #M that satisfies M>=N.
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
-    protected R search(final int n, final Direction d) {
+    public R search(final int n, final Direction d) {
         Entry<Integer, R> f = byNumber.floorEntry(n);
         if (f!=null && f.getKey()== n)  return f.getValue();    // found the exact #n
 
@@ -174,8 +176,8 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             if (hi==idOnDisk.size())    return null;
             return byId.get(idOnDisk.get(hi));
         case DESC:
-            if (lo==-1)                 return null;
-            return byId.get(idOnDisk.get(lo));
+            if (lo<=0)                 return null;
+            return byId.get(idOnDisk.get(lo-1));
         case EXACT:
             return null;
         default:

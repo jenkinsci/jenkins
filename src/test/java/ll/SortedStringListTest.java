@@ -1,3 +1,6 @@
+package ll;
+
+import ll.SortedStringList;
 import org.junit.Assert;
 import org.junit.Test;
 
