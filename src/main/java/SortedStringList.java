@@ -2,7 +2,6 @@ import java.util.AbstractList;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -53,14 +52,14 @@ public class SortedStringList extends AbstractList<String> {
      * Finds the index of the entry lower or equal to v.
      */
     public int floor(String v) {
-        return lowerHigherFloorCeil(v,0,0);
+        return lowerHigherFloorCeil(v,0,-1);
     }
 
     /**
-     * Finds the index of the entry grater or equal to v.
+     * Finds the index of the entry greater or equal to v.
      */
     public int ceil(String v) {
-        return lowerHigherFloorCeil(v,0,1);
+        return lowerHigherFloorCeil(v,0,0);
     }
 
     private int lowerHigherFloorCeil(String probe, int offsetOfExactMatch, int offsetOfInsertionPoint) {
