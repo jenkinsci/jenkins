@@ -16,7 +16,14 @@ public class FakeMapBuilder implements TestRule {
     }
 
     public FakeMapBuilder add(int n, String id) throws IOException {
-        File build = new File(dir, id);
+        try {
+            Integer.parseInt(id);
+            throw new IllegalMonitorStateException("ID cannot be a number");
+        } catch (NumberFormatException e) {
+            // OK
+        }
+
+        File build = new File(dir,id);
         build.mkdir();
         FileUtils.write(new File(build,"n"),Integer.toString(n));
         return this;

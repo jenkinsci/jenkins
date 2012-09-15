@@ -33,11 +33,13 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     /**
      * Build IDs found as directories, in the ascending order.
      */
+    // copy on write
     private SortedStringList idOnDisk;
 
     /**
      * Build bumber shortcuts found on disk, in the ascending order.
      */
+    // copy on write
     private List<Integer> numberOnDisk;
 
     private final File dir;
@@ -50,6 +52,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
 
     public Attempt2(File dir) {
         this.dir = dir;
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
@@ -118,62 +121,65 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
     protected R search(final int n, final Direction d) {
+        Entry<Integer, R> f = byNumber.floorEntry(n);
+        if (f!=null && f.getKey()== n)  return f.getValue();    // found the exact #n
+
+        // at this point we know that we don't have #n loaded yet
+
+        // TODO: use numberOnDisk to see if we can find it quickly
+
+        // capture the snapshot and work off with it since it can be changed by other threads
+        SortedStringList idOnDisk = this.idOnDisk;
+
+        // slow path: we have to find the build from idOnDisk.
+        // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
+        if (idOnDisk.isEmpty())     return null;
+
+        Entry<Integer, R> c = byNumber.ceilingEntry(n);
+
+        // if bound is null, use a sentinel value
+        String fid = f==null ? "\u0000"  : getIdOf(f.getValue());
+        String cid = c==null ? "\uFFFF" : getIdOf(c.getValue());
+
+        // We know that the build we are looking for exists in this range
+        // we will narrow this down via binary search
+        int lo = idOnDisk.higher(fid);
+        int hi = idOnDisk.lower(cid)+1;
+
+        int pivot;
         while (true) {
-            Entry<Integer, R> f = byNumber.floorEntry(n);
-            if (f!=null && f.getKey()== n)  return f.getValue();    // found the exact #n
+            pivot = (lo+hi)/2;
+            if (hi<=lo)     break;  // end of search
 
-            // at this point we know that we don't have #n loaded yet
-
-            // TODO: use numberOnDisk to see if we can find it quickly
-
-            // slow path: we have to find the build from idOnDisk.
-            // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
-            if (idOnDisk.isEmpty())     return null;
-
-            Entry<Integer, R> c = byNumber.ceilingEntry(n);
-
-            // if bound is null, use a sentinel value
-            String fid = f==null ? ""  : getIdOf(f.getValue());
-            String cid = c==null ? "z" : getIdOf(c.getValue());
-
-            // We know that the build we are looking for exists in this range
-            // we will narrow this down via binary search
-            int lo = idOnDisk.higher(fid);
-            int hi = idOnDisk.lower(cid);
-
-            int pivot;
-            while (true) {
-                pivot = (lo+hi)/2;
-                if (hi<=lo)     break;  // end of search
-
-                R r = load(new File(dir, idOnDisk.get(pivot)), true);
-                if (r==null) {
-                    // this ID isn't valid. get rid of that and retry pivot
-                    hi--;
-                    idOnDisk.remove(pivot);
-                    continue;
-                }
-
-                int found = getNumberOf(r);
-                if (found==n)
-                    return r;   // exact match
-
-                if (found<n)    lo = pivot+1;   // the pivot was too small. look in the upper half
-                else            hi = pivot;     // the pivot was too big. look in the lower half
+            R r = load(new File(dir, idOnDisk.get(pivot)), true);
+            if (r==null) {
+                // this ID isn't valid. get rid of that and retry pivot
+                hi--;
+                idOnDisk.remove(pivot);
+                continue;
             }
 
-            // didn't find the exact match
-            // 'pivot' points to the insertion point on idOnDisk
-            switch (d) {
-            case ASC:
-                if (hi==idOnDisk.size())    return null;
-                return byId.get(idOnDisk.get(hi));
-            case DESC:
-                if (lo==-1)                 return null;
-                return byId.get(idOnDisk.get(lo));
-            case EXACT:
-                return null;
-            }
+            int found = getNumberOf(r);
+            if (found==n)
+                return r;   // exact match
+
+            if (found<n)    lo = pivot+1;   // the pivot was too small. look in the upper half
+            else            hi = pivot;     // the pivot was too big. look in the lower half
+        }
+
+        // didn't find the exact match
+        // 'pivot' points to the insertion point on idOnDisk
+        switch (d) {
+        case ASC:
+            if (hi==idOnDisk.size())    return null;
+            return byId.get(idOnDisk.get(hi));
+        case DESC:
+            if (lo==-1)                 return null;
+            return byId.get(idOnDisk.get(lo));
+        case EXACT:
+            return null;
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -255,6 +261,16 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     protected abstract String getIdOf(R r);
 
     protected abstract R retrieve(File dir) throws IOException;
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o==this;
+    }
 
     /**
      * Lists the actual data directory

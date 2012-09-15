@@ -26,7 +26,12 @@ public class FakeMap extends Attempt2<Build> {
     protected FilenameFilter createDirectoryFilter() {
         return new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.startsWith("_");
+                try {
+                    Integer.parseInt(name);
+                    return false;
+                } catch (NumberFormatException e) {
+                    return true;
+                }
             }
         };
     }
