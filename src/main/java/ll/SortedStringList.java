@@ -50,36 +50,28 @@ public class SortedStringList extends AbstractList<String> {
      * Finds the index of the entry lower than v.
      */
     public int lower(String v) {
-        return lowerHigherFloorCeil(v,-1,-1);
+        return Boundary.LOWER.apply(find(v));
     }
 
     /**
      * Finds the index of the entry greater than v.
      */
     public int higher(String v) {
-        return lowerHigherFloorCeil(v,1,0);
+        return Boundary.HIGHER.apply(find(v));
     }
 
     /**
      * Finds the index of the entry lower or equal to v.
      */
     public int floor(String v) {
-        return lowerHigherFloorCeil(v,0,-1);
+        return Boundary.FLOOR.apply(find(v));
     }
 
     /**
      * Finds the index of the entry greater or equal to v.
      */
     public int ceil(String v) {
-        return lowerHigherFloorCeil(v,0,0);
-    }
-
-    private int lowerHigherFloorCeil(String probe, int offsetOfExactMatch, int offsetOfInsertionPoint) {
-        int r = find(probe);
-        if (r>=0)    return r+offsetOfExactMatch;
-
-        int ip = -(r+1);
-        return ip+offsetOfInsertionPoint;
+        return Boundary.CEIL.apply(find(v));
     }
 
     /**
