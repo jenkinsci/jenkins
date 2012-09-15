@@ -4,13 +4,14 @@ import ll.SortedStringList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class SortedStringListTest extends Assert {
-    SortedStringList l = new SortedStringList(Arrays.asList("B","D","F"));
+    SortedStringList l = new SortedStringList(new ArrayList<String>(Arrays.asList("B","D","F")));
 
     @Test
     public void testCeil() {
@@ -64,5 +65,16 @@ public class SortedStringListTest extends Assert {
 
         assertFalse(l.isInRange(-1));
         assertFalse(l.isInRange(3));
+    }
+
+    @Test
+    public void remove() {
+        l.remove("nosuchthing");
+        assertEquals(3,l.size());
+
+        l.remove("B");
+        assertEquals(2, l.size());
+        assertEquals("D",l.get(0));
+        assertEquals("F",l.get(1));
     }
 }

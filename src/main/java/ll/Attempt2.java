@@ -18,7 +18,7 @@ import static ll.Attempt2.Direction.*;
 import static ll.Boundary.*;
 
 /**
- * After {@link AbstractSortedMap} is abandoned, this one is more crude implementation.
+ * Lazy-loading map of build records.
  *
  * This implementation is in 2 states. An instance can be {@linkplain #fullyLoaded fully loaded} state,
  * where everything that can be loaded gets loaded. Otherwise it's in a partially loaded state.

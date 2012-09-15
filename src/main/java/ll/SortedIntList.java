@@ -15,10 +15,6 @@ public class SortedIntList extends AbstractList<Integer> {
         this.size = 0;
     }
 
-    public SortedIntList() {
-        this(16);
-    }
-
     /**
      * Internal copy constructor.
      */

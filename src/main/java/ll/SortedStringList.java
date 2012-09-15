@@ -1,10 +1,8 @@
 package ll;
 
 import java.util.AbstractList;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -72,51 +70,6 @@ public class SortedStringList extends AbstractList<String> {
      */
     public int ceil(String v) {
         return Boundary.CEIL.apply(find(v));
-    }
-
-    /**
-     * Smarter {@link #subList(int, int)} that gracefully handles index that's out of range.
-     */
-    public SortedStringList safeSubList(int from, int to) {
-        return new SortedStringList(subList(inside(from),inside(to)));
-    }
-
-    /**
-     * Brings the index into the legal range.
-     */
-    private int inside(int idx) {
-        idx = Math.max(0,idx);
-        idx = Math.min(idx,size());
-        return idx;
-    }
-
-    /**
-     * Finds the middle value used for binary search pivot.
-     */
-    public Entry<Integer,String> middle() {
-        assert !data.isEmpty();
-        int idx = data.size()/2;
-        return new SimpleEntry<Integer, String>(idx,data.get(idx));
-    }
-
-    /**
-     * Overloaded version of {@link #remove(int)} that takes a pointer instead of the index.
-     */
-    public void remove(Entry<Integer,String> ptr) {
-        remove(ptr.getKey().intValue());
-    }
-
-    /**
-     * Returns the sub list that contains (pivot,end]
-     */
-    public SortedStringList upperHalf() {
-        int sz = data.size();
-        return safeSubList(sz/2+1,sz);
-    }
-
-    public SortedStringList lowerHalf() {
-        int sz = data.size();
-        return safeSubList(0,sz/2);
     }
 
     public boolean isInRange(int idx) {
