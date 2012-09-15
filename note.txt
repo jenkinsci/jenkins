@@ -1,6 +1,3 @@
-
-- Perhaps better to create two independent implementations,
-  one that relies on symlinks (thus mapping from N->R), the other
-  that uses ID->R mapping.
-
-  It's not clear how we can mix two
+TODO:
+ - remove Java6 dependency (or do we really?)
+ - ship it!
