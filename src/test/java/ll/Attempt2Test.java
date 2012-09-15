@@ -186,4 +186,12 @@ public class Attempt2Test extends Assert {
         b[0].asserts(3,"B");
         b[1].asserts(5,"C");
     }
+
+    @Test
+    public void identity() {
+        assertTrue(a.equals(a));
+        assertTrue(!a.equals(b));
+        a.hashCode();
+        b.hashCode();
+    }
 }

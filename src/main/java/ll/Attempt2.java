@@ -395,26 +395,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     };
     
     enum Direction {
-        ASC(0), DESC(-1), EXACT(0/*invalid*/);
-        
-        private final int binarySearchTrimOffset;
-
-        Direction(int binarySearchTrimOffset) {
-            this.binarySearchTrimOffset = binarySearchTrimOffset;
-        }
-
-        public int offset() {
-            return binarySearchTrimOffset;
-        }
-
-        /**
-         * Given the negative result from {@link Collections#binarySearch(List, Object)}
-         * that indicates no-exact match, determine the position of the element we'll load
-         * instead that matches with the search order.
-         */
-        private int candidate(int n) {
-            return -n-1+binarySearchTrimOffset;
-        }
+        ASC, DESC, EXACT
     }
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
