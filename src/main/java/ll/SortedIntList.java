@@ -88,4 +88,7 @@ public class SortedIntList extends AbstractList<Integer> {
         return Boundary.CEIL.apply(find(v));
     }
 
+    public boolean isInRange(int idx) {
+        return 0<idx && idx<size;
+    }
 }

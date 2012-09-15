@@ -118,4 +118,8 @@ public class SortedStringList extends AbstractList<String> {
         int sz = data.size();
         return safeSubList(0,sz/2);
     }
+
+    public boolean isInRange(int idx) {
+        return 0<idx && idx<data.size();
+    }
 }

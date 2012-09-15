@@ -14,6 +14,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static ll.Attempt2.Direction.ASC;
+import static ll.Boundary.*;
+
 /**
  * After {@link AbstractSortedMap} is abandoned, this one is more crude implementation.
  *
@@ -43,7 +46,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      * Build bumber shortcuts found on disk, in the ascending order.
      */
     // copy on write
-    private List<Integer> numberOnDisk;
+    private SortedIntList numberOnDisk;
 
     private final File dir;
 
@@ -60,9 +63,22 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
 
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
-        if (buildDirs==null)    buildDirs=new String[0];
+        if (buildDirs==null)    buildDirs=EMPTY_STRING_ARRAY;
         // wrap into ArrayList to enable mutation
         idOnDisk = new SortedStringList(new ArrayList<String>(Arrays.asList(buildDirs)));
+
+        // TODO: should we check that shortcuts is a symlink?
+        String[] shortcuts = dir.list();
+        if (shortcuts==null)    shortcuts=EMPTY_STRING_ARRAY;
+        SortedIntList list = new SortedIntList(shortcuts.length/2);
+        for (String s : shortcuts) {
+            try {
+                list.add(Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                // this isn't a shortcut
+            }
+        }
+        numberOnDisk = list;
     }
 
     public Comparator<? super Integer> comparator() {
@@ -90,7 +106,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     }
 
     public Integer firstKey() {
-        R r = search(Integer.MIN_VALUE, Direction.ASC);
+        R r = search(Integer.MIN_VALUE, ASC);
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }
@@ -110,6 +126,10 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         return super.get(key);
     }
 
+    public R get(int n) {
+        return search(n,Direction.EXACT);
+    }
+
     /**
      * Loads the build #M where M is nearby the given 'n'.
      *
@@ -127,7 +147,52 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
 
         // at this point we know that we don't have #n loaded yet
 
-        // TODO: use numberOnDisk to see if we can find it quickly
+        {// check numberOnDisk as a cache to see if we can find it there
+            int npos = numberOnDisk.find(n);
+            if (npos>=0) {// found exact match
+                R r = load(numberOnDisk.get(npos), true);
+                if (r!=null)
+                    return r;
+            }
+
+            switch (d) {
+            case ASC:
+            case DESC:
+                // didn't find the exact match, but what's the nearest ascending value in the cache?
+                int neighbor = (d==ASC?HIGHER:LOWER).apply(npos);
+                if (numberOnDisk.isInRange(neighbor)) {
+                    R r = getByNumber(numberOnDisk.get(neighbor));
+                    if (r!=null) {
+                        // make sure that the cache is accurate by looking at the previous ID
+                        // and it actually satisfies the constraint
+                        int prev = (d==ASC?LOWER:HIGHER).apply(idOnDisk.find(getIdOf(r)));
+                        if (idOnDisk.isInRange(prev)) {
+                            R pr = getById(idOnDisk.get(prev));
+                            // sign*sign is making sure that #pr and #r sandwiches #n.
+                            if (pr!=null && signOfCompare(getNumberOf(pr),n)*signOfCompare(n,getNumberOf(r))<0)
+                                return r;
+                            else {
+                                // cache is lying. there's something fishy.
+                                // ignore the cache and do the slow search
+                            }
+                        } else {
+                            // r is the build with youngest ID
+                            return r;
+                        }
+                    } else {
+                        // cache says we should have a build but we didn't.
+                        // ignore the cache and do the slow search
+                    }
+                }
+                break;
+            case EXACT:
+                // fall through
+            }
+
+            // didn't find it in the cache, but don't give up yet
+            // maybe the cache just doesn't exist.
+            // so fall back to the slow search
+        }
 
         // capture the snapshot and work off with it since it can be changed by other threads
         SortedStringList idOnDisk = this.idOnDisk;
@@ -152,7 +217,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             pivot = (lo+hi)/2;
             if (hi<=lo)     break;  // end of search
 
-            R r = load(new File(dir, idOnDisk.get(pivot)), true);
+            R r = load(idOnDisk.get(pivot), true);
             if (r==null) {
                 // this ID isn't valid. get rid of that and retry pivot
                 hi--;
@@ -173,15 +238,34 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         switch (d) {
         case ASC:
             if (hi==idOnDisk.size())    return null;
-            return byId.get(idOnDisk.get(hi));
+            return getById(idOnDisk.get(hi));
         case DESC:
             if (lo<=0)                 return null;
-            return byId.get(idOnDisk.get(lo-1));
+            return getById(idOnDisk.get(lo-1));
         case EXACT:
             return null;
         default:
             throw new AssertionError();
         }
+    }
+
+    /**
+     * sign of (a-b).
+     */
+    private static int signOfCompare(int a, int b) {
+        if (a>b)    return 1;
+        if (a<b)    return -1;
+        return 0;
+    }
+
+    public R getById(String id) {
+        if (byId.containsKey(id))
+            return byId.get(id);
+        return load(id,true);
+    }
+
+    public R getByNumber(int n) {
+        return search(n,Direction.EXACT);
     }
 
 //    protected int toIdIndex(Entry<Integer, R> f, int fallback) {
@@ -206,7 +290,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
                     copy();
                     for (String id : idOnDisk) {
                         if (!byId.containsKey(id))
-                            load(new File(dir,id),false); // copy() called above, so no need to copy inside
+                            load(id,false); // copy() called above, so no need to copy inside
                     }
                     fullyLoaded = true;
                 }
@@ -233,6 +317,12 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         if (shortcut.isDirectory()) {
             synchronized (loadLock) {
                 r = load(shortcut,copy);
+
+                // make sure what we actually loaded is #n,
+                // because the shortcuts can lie.
+                if (r!=null && getNumberOf(r)!=n)
+                    r = null;
+
                 if (r==null) {
                     // if failed to locate, record that fact
                     if (copy)   copy();
@@ -241,6 +331,11 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             }
         }
         return r;
+    }
+
+
+    protected R load(String id, boolean copy) {
+        return load(new File(dir,id),copy);
     }
 
     protected R load(File dataDir, boolean copy) {
@@ -306,4 +401,6 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
             return -n-1+binarySearchTrimOffset;
         }
     }
+
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 }
