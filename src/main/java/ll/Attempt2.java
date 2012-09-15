@@ -103,9 +103,6 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     public R get(Object key) {
         if (key instanceof Integer) {
             int n = (Integer) key;
-            if (byNumber.containsKey(n))
-                return byNumber.get(n);
-
             return search(n, Direction.EXACT);
         }
         return super.get(key);
