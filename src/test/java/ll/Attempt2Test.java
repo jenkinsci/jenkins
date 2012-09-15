@@ -6,20 +6,26 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class Attempt2Test extends Assert {
+    // A=1, B=3, C=5
     @Rule
     public FakeMapBuilder aBuilder = new FakeMapBuilder();
     private FakeMap a;
 
+    // empty map
     @Rule
     public FakeMapBuilder bBuilder = new FakeMapBuilder();
     private FakeMap b;
 
+    @Rule
+    public FakeMapBuilder localBuilder = new FakeMapBuilder();
 
     @Before
     public void setUp() throws Exception {
@@ -45,6 +51,13 @@ public class Attempt2Test extends Assert {
     public void idempotentLookup() {
         for (int i=0; i<5; i++)
             a.get(1).asserts(1,"A");
+    }
+
+    @Test
+    public void lookupWithBogusKeyType() {
+        assertNull(a.get(null));
+        assertNull(a.get("foo"));
+        assertNull(a.get(this));
     }
 
     @Test
@@ -75,5 +88,25 @@ public class Attempt2Test extends Assert {
         // searching toward non-existent direction
         assertNull(a.search( 99, Direction.ASC));
         assertNull(a.search(-99, Direction.DESC));
+    }
+
+    /**
+     * If load fails, search needs to gracefully handle it
+     */
+    @Test
+    public void unloadableData() throws IOException {
+        FakeMap m = localBuilder.add(1, "A").addUnloadable("B").add(5, "C").make();
+
+        assertNull(m.search(3,Direction.EXACT));
+        m.search(3,Direction.DESC).asserts(1,"A");
+        m.search(3,Direction.ASC ).asserts(5,"C");
+    }
+
+    @Test
+    public void eagerLoading() throws IOException {
+        Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
+        ((Build)b[0].getValue()).asserts(1,"A");
+        ((Build)b[1].getValue()).asserts(3,"B");
+        ((Build)b[2].getValue()).asserts(5,"C");
     }
 }

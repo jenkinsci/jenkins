@@ -31,6 +31,12 @@ public class FakeMapBuilder implements TestRule {
         return this;
     }
 
+    public FakeMapBuilder addUnloadable(String id) throws IOException {
+        File build = new File(dir,id);
+        build.mkdir();
+        return this;
+    }
+
     public FakeMap make() {
         return new FakeMap(dir);
     }

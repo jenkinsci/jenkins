@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,7 +61,8 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
         if (buildDirs==null)    buildDirs=new String[0];
-        idOnDisk = new SortedStringList(Arrays.asList(buildDirs));
+        // wrap into ArrayList to enable mutation
+        idOnDisk = new SortedStringList(new ArrayList<String>(Arrays.asList(buildDirs)));
     }
 
     public Comparator<? super Integer> comparator() {

@@ -36,6 +36,16 @@ public class SortedStringList extends AbstractList<String> {
         return data.size();
     }
 
+    @Override
+    public String remove(int index) {
+        return data.remove(index);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return data.remove(o);
+    }
+
     /**
      * Finds the index of the entry lower than v.
      */
