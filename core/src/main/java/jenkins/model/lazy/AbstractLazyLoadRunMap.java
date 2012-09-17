@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2012, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package jenkins.model.lazy;
 
 import java.io.File;
@@ -13,7 +36,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static jenkins.model.lazy.Attempt2.Direction.*;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
 
 /**
@@ -24,7 +47,7 @@ import static jenkins.model.lazy.Boundary.*;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
+public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
 
     private boolean fullyLoaded;
 
@@ -43,7 +66,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      * Build IDs found as directories, in the ascending order.
      */
     // copy on write
-    private SortedStringList idOnDisk;
+    private SortedList<String> idOnDisk;
 
     /**
      * Build bumber shortcuts found on disk, in the ascending order.
@@ -59,7 +82,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
      */
     private final Object loadLock = this;
 
-    public Attempt2(File dir) {
+    public AbstractLazyLoadRunMap(File dir) {
         this.dir = dir;
         loadIdOnDisk();
     }
@@ -69,7 +92,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         if (buildDirs==null)    buildDirs=EMPTY_STRING_ARRAY;
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
-        idOnDisk = new SortedStringList(new ArrayList<String>(Arrays.asList(buildDirs)));
+        idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
 
         // TODO: should we check that shortcuts is a symlink?
         String[] shortcuts = dir.list();
@@ -208,7 +231,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
         }
 
         // capture the snapshot and work off with it since it can be changed by other threads
-        SortedStringList idOnDisk = this.idOnDisk;
+        SortedList<String> idOnDisk = this.idOnDisk;
 
         // slow path: we have to find the build from idOnDisk.
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping

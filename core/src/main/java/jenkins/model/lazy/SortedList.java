@@ -24,30 +24,20 @@
 package jenkins.model.lazy;
 
 import java.util.AbstractList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * {@code ArrayList&lt;Integer>} that uses {@code int} for storage.
- *
- * Plus a number of binary-search related methods that assume the array is sorted in the ascending order.
+ * {@link List} decorator that provides a number of binary-search related methods
+ * by assuming that the array is sorted in the ascending order.
  *
  * @author Kohsuke Kawaguchi
  */
-class SortedIntList extends AbstractList<Integer> {
-    private int[] data;
-    private int size;
+class SortedList<T extends Comparable<T>> extends AbstractList<T> {
+    private List<T> data;
 
-    public SortedIntList(int capacity) {
-        this.data = new int[capacity];
-        this.size = 0;
-    }
-
-    /**
-     * Internal copy constructor.
-     */
-    public SortedIntList(SortedIntList rhs) {
-        this.data = Arrays.copyOf(rhs.data,rhs.data.length);
-        this.size = rhs.size;
+    public SortedList(List<T> data) {
+        this.data = data;
     }
 
     /**
@@ -57,80 +47,58 @@ class SortedIntList extends AbstractList<Integer> {
      *      -(insertionPoint+1) if the exact string isn't found.
      *      That is, -1 means the probe would be inserted at the very beginning.
      */
-    public int find(int probe) {
-        return Arrays.binarySearch(data, 0, size, probe);
+    public int find(T probe) {
+        return Collections.binarySearch(data, probe);
     }
-
-    @Override
-    public Integer get(int index) {
-        if (size<=index)    throw new IndexOutOfBoundsException();
-        return data[index];
+    
+    public T get(int idx) {
+        return data.get(idx);
     }
 
     @Override
     public int size() {
-        return size;
+        return data.size();
     }
 
     @Override
-    public boolean add(Integer i) {
-        return add(i.intValue());
+    public T remove(int index) {
+        return data.remove(index);
     }
 
-    public boolean add(int i) {
-        ensureCapacity(size+1);
-        data[size++] = i;
-        return true;
-    }
-
-    private void ensureCapacity(int i) {
-        if (data.length<i) {
-            int[] r = new int[Math.max(data.length*2,i)];
-            System.arraycopy(data,0,r,0,size);
-            data = r;
-        }
+    @Override
+    public boolean remove(Object o) {
+        return data.remove(o);
     }
 
     /**
      * Finds the index of the entry lower than v.
      */
-    public int lower(int v) {
+    public int lower(T v) {
         return Boundary.LOWER.apply(find(v));
     }
 
     /**
      * Finds the index of the entry greater than v.
      */
-    public int higher(int v) {
+    public int higher(T v) {
         return Boundary.HIGHER.apply(find(v));
     }
 
     /**
      * Finds the index of the entry lower or equal to v.
      */
-    public int floor(int v) {
+    public int floor(T v) {
         return Boundary.FLOOR.apply(find(v));
     }
 
     /**
      * Finds the index of the entry greater or equal to v.
      */
-    public int ceil(int v) {
+    public int ceil(T v) {
         return Boundary.CEIL.apply(find(v));
     }
 
     public boolean isInRange(int idx) {
-        return 0<=idx && idx<size;
-    }
-
-    public void sort() {
-        Arrays.sort(data,0,size);
-    }
-
-    public void removeValue(int n) {
-        int idx = find(n);
-        if (idx<0)  return;
-        System.arraycopy(data,idx+1,data,idx,size-(idx+1));
-        size--;
+        return 0<=idx && idx<data.size();
     }
 }
