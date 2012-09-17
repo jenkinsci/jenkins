@@ -23,6 +23,10 @@
  */
 package hudson.maven.settings;
 
+import hudson.Plugin;
+import hudson.PluginWrapper;
+import hudson.util.VersionNumber;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,10 +36,22 @@ import jenkins.model.Jenkins;
 public class ConfigProviderDelegate implements ConfigProviderFacade {
     private static final Logger LOGGER = Logger.getLogger(ConfigProviderDelegate.class.getName());
     private final ConfigProviderFacade cpf;
+    
+    /**
+     * The minimum version of the config file provider plugins that supports toolchains files.
+     */
+    private static final VersionNumber MINIMUM_CONFIG_FILE_PROVIDER_VERSION_WITH_TOOLCHAINS_SUPPORT = new VersionNumber("2.3");
 
     public ConfigProviderDelegate() {
-        if (Jenkins.getInstance().getPlugin("config-file-provider") != null) {
-            cpf = new ConfigProviderMediator();
+        Plugin configPlugin = Jenkins.getInstance().getPlugin("config-file-provider"); 
+        if (configPlugin != null) {
+            VersionNumber version = configPlugin.getWrapper().getVersionNumber();
+            if (!version.isOlderThan(MINIMUM_CONFIG_FILE_PROVIDER_VERSION_WITH_TOOLCHAINS_SUPPORT)) {
+                cpf = new ConfigProviderToolchainsEnabledMediator();
+            } else {
+                LOGGER.warning("'config-file-provider' plugin does not support toolchains files..., administration of toolchains.xml will not be available!");
+                cpf = new ConfigProviderMediator();
+            }
         } else {
             LOGGER.warning("'config-file-provider' plugin installed..., administration of setting.xml will not be available!");
             cpf = new DefaultConfigProviderFacade();
@@ -53,6 +69,11 @@ public class ConfigProviderDelegate implements ConfigProviderFacade {
     }
 
     @Override
+    public List<SettingConfig> getAllMavenToolchainsConfigs() {
+        return cpf.getAllMavenToolchainsConfigs();
+    }
+
+    @Override
     public SettingConfig findConfig(String settingsConfigId) {
         return cpf.findConfig(settingsConfigId);
     }
@@ -65,6 +86,11 @@ public class ConfigProviderDelegate implements ConfigProviderFacade {
 
         @Override
         public List<SettingConfig> getAllMavenSettingsConfigs() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<SettingConfig> getAllMavenToolchainsConfigs() {
             return Collections.emptyList();
         }
 

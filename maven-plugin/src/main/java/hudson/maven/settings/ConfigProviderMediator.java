@@ -26,6 +26,7 @@ package hudson.maven.settings;
 import hudson.ExtensionList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import jenkins.model.Jenkins;
@@ -34,6 +35,7 @@ import org.jenkinsci.lib.configprovider.ConfigProvider;
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig.GlobalMavenSettingsConfigProvider;
 import org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig.MavenSettingsConfigProvider;
+import org.jenkinsci.plugins.configfiles.maven.MavenToolchainsConfig.MavenToolchainsConfigProvider;
 
 public class ConfigProviderMediator implements ConfigProviderFacade {
 
@@ -70,6 +72,14 @@ public class ConfigProviderMediator implements ConfigProviderFacade {
             }
         }
         return globalMavenSettingsConfigs;
+    }
+
+    /**
+     * @see hudson.maven.settings.ConfigProviderFacade#getAllMavenToolchainsConfigs()
+     */
+    @Override
+    public List<SettingConfig> getAllMavenToolchainsConfigs() {
+        return Collections.EMPTY_LIST;
     }
 
     /**

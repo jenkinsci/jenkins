@@ -50,6 +50,15 @@ public class SettingsProviderUtils {
     public static List<SettingConfig> getAllGlobalMavenSettingsConfigs() {
         return configProvider.getAllGlobalMavenSettingsConfigs();
     }
+    
+    /**
+     * @since 1.483
+     * @return
+     */
+    public static List<SettingConfig> getAllMavenToolchainsConfigs() {
+        return configProvider.getAllMavenToolchainsConfigs();
+    }
+
 
     /**
      * utility method to retrieve Config of type (MavenSettingsProvider etc..)

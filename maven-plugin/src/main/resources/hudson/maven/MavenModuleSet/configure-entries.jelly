@@ -139,6 +139,16 @@ THE SOFTWARE.
         </select>
       </f:entry>
 
+      <j:set var="mavenToolchainsConfigs" value="${it.allMavenToolchainsConfigs}" />
+      <f:entry title="${%Maven Toolchains Configs}">
+        <select class="setting-input" name="maven.mavenToolchainConfigId">
+          <f:option value="">- select -</f:option>
+          <j:forEach var="toolchainConfig" items="${mavenToolchainsConfigs}">
+            <f:option selected="${it.toolchainConfigId == toolchainConfig.id}" value="${toolchainConfig.id}">${toolchainConfig.name}</f:option>
+          </j:forEach>
+        </select>
+      </f:entry>
+ 
     </f:advanced>
   </f:section>
 
