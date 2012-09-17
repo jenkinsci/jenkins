@@ -54,13 +54,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     /**
      * Stores the mapping from build number to build, for builds that are already loaded.
      */
-    // copy on write map
+    // copy on write
     private volatile TreeMap<Integer,R> byNumber = new TreeMap<Integer,R>();
 
     /**
      * Stores the build ID to build number for builds that we already know
      */
-    private final TreeMap<String,R> byId = new TreeMap<String,R>();
+    // copy on write
+    private volatile TreeMap<String,R> byId = new TreeMap<String,R>();
 
     /**
      * Build IDs found as directories, in the ascending order.
@@ -130,15 +131,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return Collections.unmodifiableSortedMap(byNumber.subMap(fromKey,toKey));
+        return Collections.unmodifiableSortedMap(byNumber.subMap(fromKey, toKey));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return subMap(Integer.MIN_VALUE,toKey);
+        return subMap(Integer.MIN_VALUE, toKey);
     }
 
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return subMap(fromKey,Integer.MAX_VALUE);
+        return subMap(fromKey, Integer.MAX_VALUE);
     }
 
     public Integer firstKey() {
@@ -339,6 +340,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Creates a duplicate for the COW data structure in preparation for mutation.
      */
     private void copy() {
+        byId     = new TreeMap<String, R>(byId);
         byNumber = new TreeMap<Integer,R>(byNumber);
     }
 
