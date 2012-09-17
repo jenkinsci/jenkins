@@ -115,7 +115,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     @Override
     public Set<Entry<Integer, R>> entrySet() {
-        return all().entrySet();
+        return Collections.unmodifiableSet(all().entrySet());
     }
 
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
@@ -130,7 +130,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return byNumber.subMap(fromKey,toKey);
+        return Collections.unmodifiableSortedMap(byNumber.subMap(fromKey,toKey));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
