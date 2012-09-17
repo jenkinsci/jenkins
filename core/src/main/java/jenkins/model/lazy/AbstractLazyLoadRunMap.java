@@ -23,6 +23,9 @@
  */
 package jenkins.model.lazy;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -36,6 +39,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
@@ -76,7 +81,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     // copy on write
     private SortedIntList numberOnDisk;
 
-    private final File dir;
+    /**
+     * Base directory for data.
+     * In effect this is treated as a final field, but can't mark it final
+     * because the compatibility requires that we make it settable
+     * in the first call after the constructor.
+     */
+    private File dir;
 
     /**
      * Used to ensure only one thread is actually calling {@link #retrieve(File)} and
@@ -84,9 +95,17 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     private final Object loadLock = this;
 
-    public AbstractLazyLoadRunMap(File dir) {
+    protected AbstractLazyLoadRunMap(File dir) {
         this.dir = dir;
-        loadIdOnDisk();
+        initBaseDir(dir);
+    }
+
+    @Restricted(NoExternalUse.class)
+    protected void initBaseDir(File dir) {
+        assert this.dir==null;
+        this.dir = dir;
+        if (dir!=null)
+            loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
@@ -401,12 +420,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         synchronized (loadLock) {
             try {
                 R r = retrieve(dataDir);
+                if (r==null)    return null;
+
                 if (copy)   copy();
                 byId.put(getIdOf(r),r);
                 byNumber.put(getNumberOf(r),r);
                 return r;
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING, "Failed to load "+dataDir,e);
             }
             return null;
         }
@@ -415,7 +436,26 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     protected abstract int getNumberOf(R r);
     protected abstract String getIdOf(R r);
 
+    /**
+     * Parses {@code R} instance from data in the specified directory.
+     *
+     * @return
+     *      null if the parsing failed.
+     * @throws IOException
+     *      if the parsing failed. This is just like returning null
+     *      except the caller will catch the exception and report it.
+     */
     protected abstract R retrieve(File dir) throws IOException;
+
+    public boolean remove(R run) {
+        synchronized (loadLock) {
+            copy();
+            byNumber.remove(getNumberOf(run));
+            R old = byId.remove(getIdOf(run));
+            return old!=null;
+        }
+    }
+
 
     @Override
     public int hashCode() {
@@ -445,4 +485,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
 }
