@@ -1,0 +1,67 @@
+<!--
+The MIT License
+
+Copyright (c) 2009-2010, Sun Microsystems, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <f:section title="${descriptor.displayName}">
+    <d:taglib uri="local">
+      <d:tag name="section">
+        <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
+          <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
+                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
+            <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
+            <table width="100%">
+              <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
+              <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
+              <f:entry title="">
+                <div align="right">
+                  <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
+                </div>
+              </f:entry>
+            </table>
+          </f:repeatable>
+        </f:entry>
+      </d:tag>
+    </d:taglib>
+    <j:choose>
+      <j:when test="${size(descriptor.installations)==0}">
+        <local:section/>
+      </j:when>
+      <j:otherwise>
+        <tr> <!-- f:advanced does not work well here because of placement in third column -->
+          <td colspan="3">
+            <st:adjunct includes="lib.form.advanced.advanced"/>
+            <div class="advancedLink" style="text-align:left">
+              <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
+            </div>
+            <table class="advancedBody">
+              <tbody>
+                <local:section/>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </j:otherwise>
+    </j:choose>
+  </f:section>
+</j:jelly>

@@ -1,0 +1,62 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<html><body>
+Maven support.
+
+<h2>General Idea</h2>
+<p>
+  One of the pain points of the freestyle project is that you have to configure a lot of things, such as
+  where to look for test reports, what files to archive, where the findbugs report would go.
+
+  But if we focus on Maven, we should be able to eliminate much of the configuration, since it introduces
+  more uniform structures. So that's what this plugin does &mdash; at the expense of limiting the build tool
+  to Maven, automate much of the configuration.
+</p>
+
+<h2>Implementation Approach</h2>
+<p>
+  The core idea of the implementation is to monitor what Maven does, so that we can see which mojos are
+  executed with what parameters. In this way, we can tell when/where javadoc is generated, if source code
+  compilation had an error, and access other rich information about the project build process.
+</p><p>
+  To make communication between Hudson JVM and Maven JVM easier, we use the remoting technology that Hudson
+  uses between the master and the slave. We start a new JVM and bootstraps to the remoting, then use a socket
+  to establish a connection to this process. This part of the code is in the "maven-agent" module.
+  We then bootstrap Maven.
+</p><p>
+  To intercept what's going on in Maven, we extend some key components in Maven, and configure Plexus
+  in such a way that our components are used instead of default ones. Because injected components need to live
+  in a different classloader, they are packaged in a separate "maven-interceptor" module.
+
+   We also bring in objects (MavenReporters) from plugins
+  via remoting, and distribute intercepted events to these guys. They can then digest information and send it back to
+  Hudson JVM.
+</p><p>
+  In addition to all this, we use embedded Maven to parse POMs, so that we can figure out the structure
+  of the project before we even do a build (this information is used for example to set up dependencies among
+  jobs.) This turns out to be rather fragile (in the presence of profiles that are activated by system property,
+  platform, etc., which makes the effective POM different when in Hudson vs when built for real.)
+</p>
+</body></html>

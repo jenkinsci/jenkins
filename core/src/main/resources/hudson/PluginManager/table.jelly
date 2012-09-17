@@ -1,0 +1,147 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Shared between index.jelly and available.jelly
+
+  Attributes:
+     list: variable to contain List<Plugin>
+     page: page name to be passed to local:tabBar
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+    <l:header>
+      <script type="text/javascript">
+      <![CDATA[
+        function flip(item) {
+          var nodes = document.getElementsByName(item.name);
+          for (var i = 0; i < nodes.length; ++i) {
+            if(nodes[i].nodeName == "INPUT") {
+              nodes[i].checked = item.checked;
+            }
+          }
+        }
+        ]]>
+      </script>
+    </l:header>
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <st:adjunct includes="hudson.PluginManager._table"/>
+      <form method="post" action="install">
+        <div id="filter-container">
+          ${%Filter}:
+          <input type="text" id="filter-box"/>
+        </div>
+
+        <j:set var="isUpdates" value="${attrs.page=='updates'}" />
+        <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
+        <table id="plugins" class="sortable pane bigtable">
+            <tr style="border-top: 0px;">
+              <th initialSortDir="${isUpdates?null:'down'}"
+                  tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
+                  width="32" onclick="showhideCategories(this,1)">${%Install}</th>
+              <th initialSortDir="${isUpdates?'down':null}"
+                  onclick="showhideCategories(this,0)">${%Name}</th>
+              <th onclick="showhideCategories(this,0)">${%Version}</th>
+              <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
+            </tr>
+            <j:choose>
+              <j:when test="${!empty(list)}">
+                <j:set var="lastCat" value="" />
+                <j:forEach var="p" items="${list}">
+                  <j:if test="${!isUpdates}">
+                    <j:set var="thisCat" value="${p.category}" />
+                    <j:set var="p" value="${p.plugin}" />
+                    <j:if test="${thisCat != lastCat}">
+                      <tr class="plugin-category" name="${thisCat}">
+                        <td class="pane" colspan="4" onclick="showhideCategory(this)">${thisCat}</td>
+                      </tr>
+                    </j:if>
+                    <j:set var="lastCat" value="${thisCat}" />
+                  </j:if>
+                  <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
+                  <j:set var="installedOk"
+                     value="${installJob.status.success and installJob.plugin.version==p.version}" />
+                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
+                    <td class="pane" align="center" data="${thisCat}_">
+                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                             checked="${installedOk ? 'checked' : null}"
+                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"/>
+                    </td>
+                    <td class="pane" data="${h.xmlEscape(p.displayName)}">
+                      <div>
+                        <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
+                      </div>
+                      <j:if test="${p.excerpt!=null}">
+                        <div class="excerpt"><j:out value="${p.excerpt}" /></div>
+                      </j:if>
+                      <j:if test="${!p.isCompatibleWithInstalledVersion()}">
+                        <div class="compatWarning">${%compatWarning}</div>
+                      </j:if>
+                      <j:if test="${p.isForNewerHudson()}">
+                        <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
+                      </j:if>
+                    </td>
+                    <td class="pane"><st:out value="${p.version}" /></td>
+                    <j:if test="${isUpdates}">
+                      <td class="pane">
+                        <j:choose><j:when test="${p.installed.active}">
+                          <st:out value="${p.installed.version}" />
+                        </j:when><j:otherwise>
+                          <span title="${%Inactive}">
+                            (<st:out value="${p.installed.version}" />)
+                          </span>
+                        </j:otherwise></j:choose>
+                      </td>
+                    </j:if>
+                  </tr>
+                </j:forEach>
+              </j:when>
+              <j:otherwise>
+                <tr>
+                  <td colspan="4" align="center">
+                    <div style="padding:1em">
+                      ${%No updates}
+                    </div>
+                  </td>
+                </tr>
+              </j:otherwise>
+            </j:choose>
+        </table>
+
+        <j:if test="${!empty(list)}">
+          <div id="bottom-sticker" >
+            <div class="bottom-sticker-inner">
+              <f:submit value="${%Install without restart}" name="dynamicLoad" />
+              <span style="margin-left:2em;"></span>
+              <f:submit value="${%Download now and install after restart}" />
+            </div>
+          </div>
+        </j:if>
+        <d:invokeBody />
+      </form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

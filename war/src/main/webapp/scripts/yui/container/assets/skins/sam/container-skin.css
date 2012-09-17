@@ -1,0 +1,242 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+/* Panel modality mask styles */
+.yui-skin-sam .mask {
+    background-color: #000;
+    opacity: .25;
+    filter: alpha(opacity=25);  /* Set opacity in IE */
+}
+
+/* Panel styles */
+.yui-skin-sam .yui-panel-container {
+    padding:0 1px;
+    /* Padding added for IE to allow 0,0 alignment with shadow */
+    *padding:2px;
+}
+
+.yui-skin-sam .yui-panel {
+    position: relative;
+    left:0;
+    top:0;
+    border-style: solid;
+    border-width: 1px 0;
+    border-color: #808080;
+    z-index: 1;
+
+    /* Rollback rounded corner support for IE6/7 */
+    *border-width:1px;
+    *zoom:1;
+    _zoom:normal;
+}
+
+.yui-skin-sam .yui-panel .hd,
+.yui-skin-sam .yui-panel .bd,
+.yui-skin-sam .yui-panel .ft {
+    border-style: solid;
+    border-width: 0 1px;
+    border-color: #808080;
+    margin: 0 -1px;
+
+    /* Rollback rounded corner support for IE6/7 */
+    *margin:0;
+    *border:0;
+}
+
+.yui-skin-sam .yui-panel .hd {
+    border-bottom: solid 1px #ccc;
+}
+
+.yui-skin-sam .yui-panel .bd,
+.yui-skin-sam .yui-panel .ft {
+    background-color: #F2F2F2;
+}
+
+.yui-skin-sam .yui-panel .hd {
+    padding: 0 10px;
+    font-size: 93%;  /* 12px */
+    line-height: 2;  /* ~24px */
+    *line-height: 1.9; /* For IE */
+    font-weight: bold;
+    color: #000;
+    background: url(../../../../assets/skins/sam/sprite.png) repeat-x 0 -200px;
+}
+
+.yui-skin-sam .yui-panel .bd {
+    padding: 10px;
+}
+
+.yui-skin-sam .yui-panel .ft {
+    border-top: solid 1px #808080;
+    padding: 5px 10px;
+    font-size: 77%;
+}
+
+.yui-skin-sam .yui-panel-container.focused .yui-panel .hd {
+
+}
+
+.yui-skin-sam .container-close {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    width: 25px;
+    height: 15px;
+    background: url(../../../../assets/skins/sam/sprite.png) no-repeat 0 -300px;
+    cursor:pointer;
+}
+
+/* Panel underlay styles */
+.yui-skin-sam .yui-panel-container .underlay {
+    right: -1px;
+    left: -1px;
+}
+
+.yui-skin-sam .yui-panel-container.matte {
+    padding: 9px 10px;
+    background-color: #fff;
+}
+
+.yui-skin-sam .yui-panel-container.shadow {
+    /* IE 7 Quirks Mode and IE 6 Standards Mode and Quirks mode */
+    _padding: 2px 4px 0 2px;
+}
+
+.yui-skin-sam .yui-panel-container.shadow .underlay {
+    position: absolute;
+    top: 2px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+
+    /* IE7 Strict (provides 3px shadow (when combined with 2px padding applied to container) */
+    *top: 4px;
+    *left: -1px;
+    *right: -1px;
+    *bottom: -1px;
+
+    /* IE 7 Quirks Mode and IE 6 Standards Mode and Quirks mode */
+    _top: 0;
+    _left: 0;
+    _right: 0;
+    _bottom: 0;
+    _margin-top: 3px;
+    _margin-left: -1px;
+
+    background-color: #000;
+    opacity: .12;
+    filter: alpha(opacity=12);  /* Set opacity in IE */
+}
+
+
+/* Dialog styles */
+.yui-skin-sam .yui-dialog .ft {
+    border-top: none;
+    padding: 0 10px 10px 10px;
+    font-size: 100%;
+}
+
+.yui-skin-sam .yui-dialog .ft .button-group {
+    display: block;
+    text-align: right;
+}
+
+/* Dialog default button style */
+.yui-skin-sam .yui-dialog .ft button.default {
+    font-weight:bold;
+}
+
+/* Dialog default YUI Button style */
+.yui-skin-sam .yui-dialog .ft span.default {
+    border-color: #304369;
+    background-position: 0 -1400px;
+}
+
+.yui-skin-sam .yui-dialog .ft span.default .first-child {
+    border-color: #304369;
+}
+
+.yui-skin-sam .yui-dialog .ft span.default button {
+    color: #fff;
+}
+
+/* Dialog YUI Button disabled state */
+.yui-skin-sam .yui-dialog .ft span.yui-button-disabled {
+    background-position:0pt -1500px;
+    border-color:#ccc;
+}
+
+.yui-skin-sam .yui-dialog .ft span.yui-button-disabled .first-child {
+    border-color:#ccc;
+}
+
+.yui-skin-sam .yui-dialog .ft span.yui-button-disabled button {
+    color:#a6a6a6;
+}
+
+/* SimpleDialog icon styles */
+.yui-skin-sam .yui-simple-dialog .bd .yui-icon {
+    background: url(../../../../assets/skins/sam/sprite.png) no-repeat 0 0;
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    float: left;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.blckicon {
+    background-position: 0 -1100px;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.alrticon {
+    background-position: 0 -1050px;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.hlpicon {
+    background-position: 0 -1150px;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.infoicon {
+    background-position: 0 -1200px;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.warnicon {
+    background-position: 0 -1900px;
+}
+
+.yui-skin-sam .yui-simple-dialog .bd span.tipicon {
+    background-position: 0 -1250px;
+}
+
+/* Tooltip styles */
+.yui-skin-sam .yui-tt .bd {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    color: #000;
+    padding: 2px 5px;
+    border-color: #D4C237 #A6982B #A6982B #A6982B;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #FFEE69;
+}
+
+.yui-skin-sam .yui-tt.show-scrollbars .bd {
+    overflow: auto;
+}
+
+.yui-skin-sam .yui-tt-shadow {
+    top: 2px;
+    right: -3px;
+    left: -3px;
+    bottom: -3px;
+    background-color: #000;
+}
+
+.yui-skin-sam .yui-tt-shadow-visible {
+    opacity: .12;
+    filter: alpha(opacity=12);  /* For IE */
+}

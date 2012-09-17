@@ -1,0 +1,20 @@
+﻿<div>
+  Jenkins a la capacité d'envoyer des emails aux destinaires spécifiés
+  lorsque certains évènements importants ont eu lieu.
+
+  <ol>
+    <li>Chaque build en échec provoque l'envoi d'un mail.
+    <li>Un build qui passe avec succès après un build en échec 
+    provoque l'envoi d'un mail, ce qui permet de savoir qu'une situation
+    de crise est résolue.
+    <li>Un build instable après un build avec succès provoque l'envoi
+    d'un mail, indiquant ainsi qu'il y a eu une régression.
+    <li>Sauf configuration contraire, chaque build instable
+    provoque l'envoi d'un mail, indiquant ainsi qu'une régression est
+    toujours d'actualité.
+  </ol>
+
+  Pour les projets qui ne suivent pas les bonnes pratiques et
+  où les builds instables sont la norme, décochez la case 
+  "Envoyer un email à chaque build instable".
+</div>

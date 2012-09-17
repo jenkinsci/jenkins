@@ -1,0 +1,159 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Repeatable blocks used to present UI where the user can configure multiple entries
+    of the same kind (see the Java installations configuration in the system config.)
+
+    This tag works like <j:forEach> and repeatedly evaluate the body so that
+    initially all the items get their own copy. This tag also evaluate the body
+    once more with var=null to create a 'master copy', which is the template entry
+    used when a new copy is inserted.
+
+    h1. HTML structure
+      this tag mainly produces the nested DIVs with CSS classes as follows:
+
+      {noformat}
+      <div class="repeated-container">   // container for the whole thing
+        <div class="repeated-chunk">
+          ... copy 1 ...
+        <div class="repeated-chunk">
+          ... copy 2 ...
+        ...
+      {noformat}
+
+      The 'repeated-chunk' DIVs will also have additional CSS classes that represent
+      their positions among siblings:
+
+        first : first chunk among the siblings
+        last  : last chunk among the siblings
+        middle: neither first nor last
+        only  : it is the only chunk (automatically get first and last at the same time)
+
+    h1. Usage Note
+      The caller of this tag should define a button to add a new copy and delete
+      the current copy. Such buttons should have 'repeatable-add' CSS class and
+      'repeatable-delete' CSS class respectively (it can have other CSS classes),
+      so that their event handlers get properly wired up.
+
+      The positional CSS classes on 'repeated-chunk' DIVs (as explained above)
+      can be used to control the visibility of such buttons. For example, this allows
+      you to hide 'delete' button if there's only one item, or only show 'add' button
+      on the last row. There are a few CSS classes already defined in style.css
+      for this purpose.
+  ]]>
+    <st:attribute name="var">
+      variable that receives the item of the current iteration.
+      Accessible from the body. Required unless @field is given.
+    </st:attribute>
+    <st:attribute name="varStatus">
+      Status variable that indicates the loop status.
+    </st:attribute>
+    <st:attribute name="name">
+      name used in the structured form submission. Defaults to the same name as @var.
+    </st:attribute>
+    <st:attribute name="field">
+      Used for the data binding.
+    </st:attribute>
+    <st:attribute name="items">
+      The item collection to loop over. Required unless @field is given. 
+    </st:attribute>
+    <st:attribute name="default">
+      Use this collection for items if items or @field is null 
+    </st:attribute>
+    <st:attribute name="noAddButton">
+      true if the default 'add' button (that adds a new copy) shouldn't be displayed.
+      When you use this attribute,
+    </st:attribute>
+    <st:attribute name="add">
+      If specified, this text will replace the standard "Add" text.
+    </st:attribute>
+    <st:attribute name="minimum">
+      At least provide this number of copies initially.
+      minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
+    </st:attribute>
+    <st:attribute name="header">
+      For each item, add this header.
+      This also activates drag&amp;drop (where the header is a grip).
+    </st:attribute>
+    <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,add?,minimum?,header?"/>
+  </st:documentation>
+
+
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
+  <!--
+    If bi-directional binding, fill in the rest of attributes automatically
+  -->
+  <j:choose>
+    <j:when test="${attrs.field!=null}">
+      <j:set var="name" value="${field}"/>
+      <j:set var="var" value="instance"/>
+      <j:set var="items" value="${instance[name] ?: attrs.default}"/>
+
+      <!-- and expose update descriptor to the body of this tag -->
+      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptorOrDie}" />
+    </j:when>
+    <j:otherwise>
+      <j:set var="name" value="${attrs.name?:attrs.var}"/>
+      <j:set var="items" value="${attrs.items ?: attrs.default}"/>
+    </j:otherwise>
+  </j:choose>
+
+  <div class="repeated-container${!empty(header)?' with-drag-drop':''}">
+    <!-- The first DIV is the master copy. -->
+    <div class="repeated-chunk to-be-removed" name="${name}">
+      <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
+      <j:scope>
+        <j:set var="${var}" value="${null}"/>
+        <d:invokeBody />
+      </j:scope>
+    </div>
+    <!-- then populate them for each item -->
+    <j:forEach var="loop" varStatus="loopStatus" items="${items}">
+      <div class="repeated-chunk" name="${name}">
+        <j:set var="${var}" value="${loop}" />
+        <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
+        <d:invokeBody />
+      </div>
+    </j:forEach>
+    <j:remove var="${var}" />
+
+    <j:if test="${minimum &gt; 0}">
+      <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
+        <j:set var="${var}" value="${null}" />
+        <div class="repeated-chunk" name="${name}">
+          <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
+          <d:invokeBody />
+        </div>
+      </j:forEach>
+    </j:if>
+
+    <div class="repeatable-insertion-point" />
+    <j:if test="${!attrs.noAddButton}">
+      <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add" />
+    </j:if>
+  </div>
+</j:jelly>

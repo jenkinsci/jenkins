@@ -1,0 +1,91 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <st:contentType value="application/x-java-jnlp-file" />
+  <j:new var="h" className="hudson.Functions" />
+  <j:set var="rootURL" value="${app.rootUrl}" />
+
+  <!--
+    See http://www.dallaway.com/acad/webstart/ for obtaining the certificate.
+  -->
+  <l:isAdminOrTest test="true">
+    <!-- See http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/syntax.html for the syntax -->
+    <jnlp spec="1.0+"
+        codebase="${rootURL}computer/${h.encode(it.node.nodeName)}/">
+
+      <information>
+        <title>Slave Agent for ${it.displayName}</title>
+        <vendor>Jenkins project</vendor>
+        <homepage href="https://jenkins-ci.org/"/>
+      </information>
+
+      <security>
+        <all-permissions/>
+      </security>
+
+      <resources>
+        <j:set var="port" value="${request.getParameter('debugPort')}"/>
+        <j:choose>
+          <j:when test="${port!=null}">
+            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
+          </j:when>
+          <j:otherwise>
+            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs}"/>
+          </j:otherwise>
+        </j:choose>
+        <jar href="${rootURL}jnlpJars/remoting.jar"/>
+        <property name="hudson.showWindowsServiceInstallLink" value="true" />
+      </resources>
+
+      <application-desc main-class="hudson.remoting.jnlp.Main">
+        <argument>${app.secretKey}</argument>
+        <argument>${it.node.nodeName}</argument>
+        <j:if test="${it.launcher.tunnel!=null}">
+          <argument>-tunnel</argument>
+          <argument>${it.launcher.tunnel}</argument>
+        </j:if>
+
+        <argument>-url</argument>
+        <argument>${rootURL}</argument>
+
+        <j:if test="${rootURL!=app.rootUrlFromRequest}">
+          <!--
+            rootURL is based on the URL in the system config, but there has been
+            numerous reports about people moving Jenkins to another place but
+            forgetting to update it. To improve the user experience in this regard,
+            let's also pass the URL that the browser sent us as well, so that the
+            JNLP Main class can try both.
+
+            Note that rootURL is still necessary in various situations, such
+            as reverse HTTP proxy situation, which makes rootUrlFromRequest incorrect.
+          -->
+          <argument>-url</argument>
+          <argument>${app.rootUrlFromRequest}</argument>
+        </j:if>
+      </application-desc>
+    </jnlp>
+  </l:isAdminOrTest>
+</j:jelly>

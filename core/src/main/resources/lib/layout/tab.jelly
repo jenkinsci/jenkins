@@ -1,0 +1,64 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+<%@ attribute name="name" required="true" type="java.lang.String" %>
+<%@ attribute name="href" required="true" type="java.lang.String" %>
+<%@ attribute name="active" required="true" type="java.lang.Boolean" %>
+<%@ attribute name="title" required="false" type="java.lang.String" %>
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <j:choose>
+    <j:when test="${tabPass=='pass1'}">
+      <!-- in the 1st pass we draw the dummy top row to get the 'dent' right -->
+      <j:choose>
+        <j:when test="${active}">
+          <td class="active" rowspan="2">${name}</td>
+          <j:set scope="parent" var="activeIndex" value="${tabIndex}" />
+        </j:when>
+        <j:otherwise>
+          <td style="height:3px; padding:0px"></td>
+        </j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
+      <!-- in the 2nd pass we draw the real tabs -->
+      <j:if test="${tabIndex!=activeIndex}">
+        <j:choose>
+          <j:when test="${tabIndex lt activeIndex}">
+            <j:set var="cssClass" value="noRight" />
+          </j:when>
+          <j:when test="${tabIndex gt activeIndex}">
+            <j:set var="cssClass" value="noLeft" />
+          </j:when>
+        </j:choose>
+        <td class="inactive ${cssClass}">
+          <a href="${href}" title="${attrs.title}">${name}</a>
+        </td>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
+  <j:set scope="parent" var="tabIndex" value="${tabIndex+1}" />
+</j:jelly>

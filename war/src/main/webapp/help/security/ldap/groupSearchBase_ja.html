@@ -1,0 +1,19 @@
+<div>
+    Jenkinsが行うLDAPの検索の1つに、与えられたユーザー名を持つグループリストの検索があります。
+
+    <p>
+    この項目は、グループを含むユニット名を特定するクエリーを決めます。
+    root DNから検索する際にこの項目が未入力でも、 このクエリーは通常<tt>"ou=groups"</tt>なので、まず<tt>"ou=groups"</tt>で検索します。
+    </p>
+   <p>
+    もし、ログイン時に"Administrative Limit Exceeded"や同様のエラーが発生する場合は、
+    できるだけあなたのLDAPの構造にあわせた設定を行って、クエリーの範囲を絞ってください。
+    それでもエラーが発生するようであれば、<tt>jenkins.war</tt>に含まれている
+    <tt>WEB-INF/security/LDAPBindSecurityRealm.groovy</tt>を編集します。<br />
+    次の行:<br />
+    <tt>groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";</tt><br/>
+    をLDAPで使用されている項目だけを問い合わせるように変更します。<br />
+    <tt>groupSearchFilter = "(member={0})";</tt><br/>
+    変更したら、Jenkinsを再起動してログインしてください。
+    </p>
+</div>

@@ -1,0 +1,17 @@
+<div>
+  Runs a shell script (defaults to <tt>sh</tt>, but this is configurable) for building the project.
+  The script will be run with the workspace as the current directory. Type in the contents of your shell
+  script. If your shell script has no header line like <tt>#!/bin/sh</tt> &mdash;, then the shell configured
+  system-wide will be used, but you can also use the header line to write script in another language
+  (like <tt>#!/bin/perl</tt>) or control the options that shell uses.
+
+  <p>
+  By default, the shell will be invoked with the "-ex" option. So all of the commands are printed before being executed,
+  and the build is considered a failure if any of the commands exits with a non-zero exit code. Again, add the
+  <tt>#!/bin/...</tt> line to change this behavior.
+
+  <p>
+  As a best practice, try not to put a long shell script in here. Instead, consider adding the shell script
+  in SCM and simply call that shell script from Jenkins (via <tt>bash -ex myscript.sh</tt> or something like that),
+  so that you can track changes in your shell script.
+</div>

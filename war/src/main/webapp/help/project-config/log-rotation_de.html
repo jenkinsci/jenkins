@@ -1,0 +1,17 @@
+<div>
+  Steuert den Festplattenverbrauch von Jenkins, in dem verwaltet wird, wie lange
+  Sie Aufzeichnungen von Builds (wie z.B. die Konsolenausgabe, Buildartefakte usw.)
+  aufbewahrt werden. Jenkins bietet dazu zwei Strategien an:
+  <ol>
+    <li>
+      Nach Alter. Jenkins löscht Aufzeichnungen, sobald sie ein bestimmtes Alter
+      erreichen, z.B. 7 Tage alt sind.
+    <li>
+      Nach Anzahl. Jenkins bewahrt nur die N neuesten Builds auf. Wenn ein neuer
+      Build gestartet wird, löscht Jenkins den ältesten.
+  </ol>
+
+  Jenkins erlaubt zusätzlich, einzelne Builds mit dem Hinweis "Dieses Protokoll
+  für immer aufbewahren" zu markieren. So können wichtige Builds von der
+  automatischen Löschung ausgeschlossen werden.
+</div>

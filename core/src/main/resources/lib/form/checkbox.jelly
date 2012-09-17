@@ -1,0 +1,65 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    &lt;input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
+
+    <st:attribute name="name" />
+    <st:attribute name="checked" />
+    <st:attribute name="value" />
+    <st:attribute name="json">
+      Normally, the submitted JSON will be boolean indicating whether the checkbox was checked or not.
+      This is sometimes inconvenient if you have a UI that lets user select a subset of a set.
+      If this attribute is present, the submitted JSON will have this as a string value if the checkbox is checked,
+      and none otherwise, making the subset selection easier.
+    </st:attribute>
+    <st:attribute name="default">
+      The default value of the check box, in case both @checked and @instance are null.
+      If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
+    </st:attribute>
+    <st:attribute name="id" />
+    <st:attribute name="onclick" />
+    <st:attribute name="class" />
+    <st:attribute name="negative" />
+    <st:attribute name="field">
+      Used for databinding. TBD.
+    </st:attribute>
+    <st:attribute name="title">
+      If specified, this human readable text will follow the checkbox, and clicking this text also
+      toggles the checkbox.
+    </st:attribute>
+  </st:documentation>
+  <f:prepareDatabinding />
+  <input type="checkbox"
+         name="${attrs.name?:'_.'+attrs.field}"
+         value="${attrs.value}"
+         onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+         checkUrl="${attrs.checkUrl}" json="${attrs.json}"
+         checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
+  <j:if test="${attrs.title!=null}">
+    <label class="attach-previous">${attrs.title}</label>
+  </j:if>
+</j:jelly>

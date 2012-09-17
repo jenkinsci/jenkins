@@ -1,0 +1,51 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Used in the &lt;l:side-panel> to draw a box with a title.
+
+    The box is drawn as a table, and the body of this tag
+    is expected to draw a series of &lt;TR>s to fill in the contents
+    of the box.
+    
+    <st:attribute name="title" use="required">
+      Title of the box. Can include HTML.
+    </st:attribute>
+    <st:attribute name="width" use="required">
+      Specify the number of columns in the table
+      (so that the title can stretch to the entire table width.
+    </st:attribute>
+    <st:attribute name="id">
+      @id of the table, if specified.
+    </st:attribute>
+  </st:documentation>
+  <table class="pane" id="${attrs.id}">
+    <tr><td class="pane-header" colspan="${width}">
+      <j:out value="${title}"/>
+    </td></tr>
+    <d:invokeBody />
+  </table>
+</j:jelly>

@@ -1,0 +1,16 @@
+/var/log/jenkins/jenkins.log /var/log/jenkins/access_log {
+    compress
+    dateext
+    maxage 365
+    rotate 99
+    size=+4096k
+    notifempty
+    missingok
+    create 644
+    postrotate
+      if [ -s /var/run/jenkins.pid ]; then
+        JPID=`cat /var/run/jenkins.pid`
+        test -n "`find /proc/$JPID -maxdepth 0 -user jenkins 2>/dev/null`" && /bin/kill -s ALRM $JPID || :
+      fi
+    endscript
+}

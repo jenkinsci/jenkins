@@ -1,0 +1,60 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <h2>Other Useful URLs</h2>
+  <dl>
+    <dt><a href="../buildNumber">Build number</a></dt>
+    <dd>
+      This URL returns the build number in <tt>text/plain</tt> format.
+    </dd>
+    <dt><a href="../buildTimestamp">Build timestamp</a></dt>
+    <dd>
+      This URL returns the build timestamp. You can also use the <tt>format</tt> query parameter
+      to control the date format, which follows
+      <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html">the <tt>SimpleDateFormat</tt> format pattern</a>.
+      (<a href="../buildTimestamp?format=yyyy/MM/dd">example</a>)
+      You can also use the <tt>Accept-Language</tt> HTTP header to control the locale
+      in which the date is formatted.
+    </dd>
+  </dl>
+
+  <h2>Accessing Progressive Console Output</h2>
+  <p>
+    You can retrieve in-progress console output by making repeated GET requests with a parameter.
+    You'll basically send GET request to
+    <a href="../logText/progressiveText?start=0">this URL</a> (or <a href="../logText/progressiveHtml?start=0">this URL</a> if you
+    want HTML that can be put into &lt;pre> tag.)
+    The <tt>start</tt> parameter controls the byte offset of where you start.
+  </p><p>
+    The response will contain a chunk of the console output, as well as the <tt>X-Text-Size</tt> header that represents
+    the number of bytes (in the raw log file) the response served.
+    This is the number you want to add to the <tt>start</tt> parameter before making the next call.
+  </p><p>
+    If the response also contains the <tt>X-More-Data: true</tt> header, the server is indicating that the build
+    is in progress, and you need to repeat the request after some delay. The Jenkins UI waits 5 seconds before making
+    the next call. When this header is not present, you know that you've retrieved all the data and the build is complete.
+  </p>
+</j:jelly>

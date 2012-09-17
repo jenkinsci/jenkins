@@ -1,0 +1,1 @@
+This root CA is used to hand out certificates to the community members, allowing people to run update centers without using an expensive regular certificates from vendors like VeriSign.

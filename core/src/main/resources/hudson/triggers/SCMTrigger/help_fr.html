@@ -1,0 +1,12 @@
+﻿<div>
+  Demande à Jenkins de scruter les changements dans l'outil de gestion de
+  version.
+
+  <p>
+  Notez que cette opération est consommatrice de ressources pour CVS,
+  car chaque scrutation signifie que Jenkins va scanner l'ensemble du
+  workspace et le comparer avec le serveur.
+  Envisagez d'utiliser un trigger de type 'push' pour éviter cette 
+  surcharge, comme décrit dans
+  <a href="https://wiki.jenkins-ci.org/display/JENKINS/Building+a+software+project">ce document</a>.
+</div>

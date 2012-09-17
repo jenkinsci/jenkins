@@ -1,0 +1,77 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+.yui-navset .yui-nav li {
+    margin-right:0.16em; /* space between tabs */
+    padding-top:1px; /* gecko: make room for overflow */
+    zoom:1;
+}
+
+.yui-navset .yui-nav .selected { 
+    margin-bottom:-1px; /* for overlap */
+}
+
+.yui-navset .yui-nav a {
+    background:#dadbdb url(../../assets/skins/sam/sprite.png) repeat-x; /* sprite position for normal gradient */
+    border:solid #a3a3a3;
+    border-width:0 1px;
+    color:#000;
+    text-decoration:none;
+}
+
+.yui-navset .yui-nav li a em {
+    border-top:solid 1px #a3a3a3;
+    border-bottom:0;
+    cursor:hand;
+    padding:0.2em 0.5em;
+    top:-1px; /* for 1px rounded corners */
+    position:relative;
+}
+
+.yui-navset .yui-nav .selected a,
+.yui-navset .yui-nav a:focus,
+.yui-navset .yui-nav a:hover {
+    background:#214197 url(../../assets/skins/sam/sprite.png) repeat-x left -1400px;
+    color:#fff;
+}
+
+.yui-navset .yui-nav .selected a em {
+    padding:0.3em 0.5em; /* raise selected tab */
+}
+
+.yui-navset .yui-nav .selected a,
+.yui-navset .yui-nav a:hover,
+.yui-navset .yui-nav a:focus {
+    border-color:#243356;
+}
+
+.yui-navset .yui-nav a:hover em,
+.yui-navset .yui-nav a:focus em,
+.yui-navset .yui-nav .selected a em {
+    border-color:#233356 #406ed9;
+}
+
+.yui-navset .yui-nav {
+    border-bottom:1px solid #243356;
+    position:relative;
+    zoom:1;
+}
+
+.yui-navset .yui-content {
+    background:#abceff;
+    border-top:5px solid #214095;
+}
+
+.yui-navset .yui-content div {
+    border:1px solid #808080;
+    border-top-color:#243356;
+    padding:0.25em 0.5em;
+}
+
+.yui-navset .yui-content div div { /* kill inheritance */
+    border:0; 
+    padding:0;
+}

@@ -1,0 +1,98 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, 
+Stephen Connolly, Yahoo!, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Config page.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+
+  <p:config-disableBuild/>
+  <p:config-concurrentBuild />
+
+  <f:section title="${%Advanced Project Options}">
+    <f:advanced>
+      <p:config-quietPeriod />
+      <p:config-retryCount />
+      <p:config-blockWhenUpstreamBuilding />
+      <p:config-blockWhenDownstreamBuilding />
+      <f:optionalBlock name="customWorkspace" title="${%Use custom workspace}"
+                       checked="${instance.customWorkspace!=null or instance.hasChildCustomWorkspace()}"
+                       help="/help/project-config/custom-workspace.html">
+        <f:entry title="${%Directory}">
+          <f:textbox name="customWorkspace.directory" field="customWorkspace" />
+        </f:entry>
+        <f:entry title="${%Directory for sub-builds}">
+          <f:textbox name="childCustomWorkspace.directory" field="childCustomWorkspace"  value="${instance.hasChildCustomWorkspace()?instance.childCustomWorkspace:''}" />
+        </f:entry>
+      </f:optionalBlock>
+
+      <f:entry title="${%Display Name}" field="displayNameOrNull">
+         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
+      </f:entry>
+    </f:advanced>
+  </f:section>
+
+  <p:config-scm/>
+
+  <p:config-trigger>
+    <p:config-upstream-pseudo-trigger />
+  </p:config-trigger>
+
+  <f:section title="${%Configuration Matrix}">
+    <!-- Needed for LabelAxis, but including these from LabelAxis/config.jelly is too late -->
+    <l:yui module="treeview" />
+    <link rel="stylesheet" type="text/css"
+          href="${rootURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" />
+
+    <f:block>
+      <f:hetero-list name="axis" hasHeader="true"
+                     descriptors="${descriptor.axisDescriptors}"
+                     items="${it.axes}"
+                     addCaption="${%Add axis}"/>
+    </f:block>
+
+    <f:optionalBlock name="hasCombinationFilter" title="${%Combination Filter}" checked="${!empty(it.combinationFilter)}"
+        help="/help/matrix/combinationfilter.html">
+	    <f:entry title="${%Filter}">
+	      <f:textbox name="combinationFilter" value="${it.combinationFilter}" />
+	    </f:entry>
+    </f:optionalBlock>
+
+    <j:choose>
+      <j:when test="${descriptor.executionStrategyDescriptors.size() gt 1}">
+        <f:dropdownDescriptorSelector title="${%Execution Strategy}" field="executionStrategy"/>
+      </j:when>
+      <j:otherwise>
+        <!-- for the default case when there's only one execution strategy, render it inline to simplify the UI -->
+        <f:property field="executionStrategy" propertyDescriptor="${descriptor.executionStrategyDescriptors.get(0)}"/>
+      </j:otherwise>
+    </j:choose>
+  </f:section>
+
+  <p:config-buildWrappers />
+  <p:config-builders />
+  <p:config-publishers2 />
+</j:jelly>

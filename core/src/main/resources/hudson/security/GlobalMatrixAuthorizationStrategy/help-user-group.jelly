@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<l:ajax xmlns:l="/lib/layout">
+  <div>
+    Different security realm has different conventions about group names.
+    The best way to go about it is to login and see what group names you belong to,
+    by going to <a href="${rootURL}/whoAmI" target="_new">this diagnostics page</a>.
+
+    <p>
+      A special group "authenticated" is also available, which represents all
+      authenticated (logged in) users.
+    </p>
+  </div>
+</l:ajax>

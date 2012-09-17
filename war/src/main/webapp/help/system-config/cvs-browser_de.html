@@ -1,0 +1,37 @@
+<div>
+  <p>
+  Legt den Pfad zur CVS-Repository-Webbrowseranwendung fest.
+  
+  Diese Einstellungen erlauben es Jenkins, für Changesets passende Links zu den 
+  korrespondierenden Seiten in der CVS-Repository Webbrowseranwendung zu generieren.
+  Pro CVSROOT gibt es zwei konfigurierbare Werte:
+
+  <dl>
+    <dt>URL</dt>
+    <dd>
+      URL der Seite, die Details zu einer bestimmten Datei im Repository anzeigt.
+    </dd>
+
+    <dt>Diff-URL</dt>
+    <dd>
+      URL der Seite, die Details zu den Unterschieden zweier Revisionen anzeigt.
+    </dd>
+  </dl>
+
+  <p>
+  Die folgenden Platzhalterzeichen sind verfügbar:
+  <table>
+    <tr>
+      <td>%%P</td>
+      <td>Pfad der Datei in CVS, z.B. "foo/bar/Zot.java"</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revision der alten Version (für Diff-URLs)</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revision der neuen Version (für Diff-URLs)</td>
+    </tr>
+  </table>
+</div>

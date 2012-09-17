@@ -1,0 +1,176 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+.yui-overlay,
+.yui-panel-container {
+    visibility: hidden;
+    position: absolute;
+    z-index: 2;
+}
+
+.yui-panel {
+    position:relative;
+}
+
+.yui-panel-container form {
+    margin: 0;
+}
+
+.mask {
+    z-index: 1;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mask.block-scrollbars {
+    /*
+        Application of "overflow:auto" prevents Mac scrollbars from bleeding
+        through the modality mask in Gecko. The block-scollbars class is only 
+        added for Gecko on MacOS
+    */
+    overflow: auto;
+}
+
+/* 
+    PLEASE NOTE:
+
+    1) ".masked select" is used to prevent <SELECT> elements bleeding through 
+       the modality mask in IE 6. 
+
+    2) ".drag select" is used to hide <SELECT> elements when dragging a 
+       Panel in IE 6.  This is necessary to prevent some redraw problems with 
+       the <SELECT> elements when a Panel instance is dragged.
+    
+    3) ".hide-select select" is appended to an Overlay instance's root HTML 
+       element when it is being annimated by YAHOO.widget.ContainerEffect.  
+       This is necessary because <SELECT> elements don't inherit their parent
+       element's opacity in IE 6.
+
+*/
+
+.masked select,
+.drag select,
+.hide-select select {
+    _visibility: hidden;
+}
+
+.yui-panel-container select {
+    _visibility: inherit;
+}
+
+/*
+
+There are two known issues with YAHOO.widget.Overlay (and its subclasses) that 
+manifest in Gecko-based browsers on Mac OS X:
+
+    1) Elements with scrollbars will poke through Overlay instances floating 
+       above them.
+    
+    2) An Overlay's scrollbars and the scrollbars of its child nodes remain  
+       visible when the Overlay is hidden.
+
+To fix these bugs:
+
+    1) The "overflow" property of an Overlay instance's root element and child 
+       nodes is toggled between "hidden" and "auto" (through the application  
+       and removal of the "hide-scrollbars" and "show-scrollbars" CSS classes)
+       as its "visibility" configuration property is toggled between 
+       "false" and "true."
+    
+    2) The "display" property of <SELECT> elements that are child nodes of the 
+       Overlay instance's root element is set to "none" when it is hidden.
+
+PLEASE NOTE:  
+  
+    1) The "hide-scrollbars" and "show-scrollbars" CSS classes classes are 
+       applied only for Gecko on Mac OS X and are added/removed to/from the 
+       Overlay's root HTML element (DIV) via the "hideMacGeckoScrollbars" and 
+       "showMacGeckoScrollbars" methods of YAHOO.widget.Overlay.
+    
+    2) There may be instances where the CSS for a web page or application 
+       contains style rules whose specificity override the rules implemented by 
+       the Container CSS files to fix this bug.  In such cases, is necessary to 
+       leverage the provided "hide-scrollbars" and "show-scrollbars" classes to 
+       write custom style rules to guard against this bug.
+
+** For more information on this issue, see:
+
+   + https://bugzilla.mozilla.org/show_bug.cgi?id=187435
+   + YUILibrary bug #1723530
+
+*/
+
+.hide-scrollbars,
+.hide-scrollbars * {
+
+    overflow: hidden;
+
+}
+
+.hide-scrollbars select {
+    display: none;
+}
+
+.show-scrollbars {
+    overflow: auto;
+}
+
+.yui-panel-container.show-scrollbars,
+.yui-tt.show-scrollbars {
+    overflow: visible;
+}
+
+.yui-panel-container.show-scrollbars .underlay,
+.yui-tt.show-scrollbars .yui-tt-shadow {
+
+    overflow: auto;
+
+}
+
+/* 
+   Workaround for Safari 2.x - the yui-force-redraw class is applied, and then removed when
+   the Panel's content changes, to force Safari 2.x to redraw the underlay.
+   We attempt to choose a CSS property which has no visual impact when added,
+   removed.
+*/
+.yui-panel-container.shadow .underlay.yui-force-redraw {
+    padding-bottom: 1px;
+}
+
+.yui-effect-fade .underlay, .yui-effect-fade .yui-tt-shadow {
+    display:none;
+}
+
+/*
+    PLEASE NOTE: The <DIV> element used for a Tooltip's shadow is appended 
+    to its root element via JavaScript once it has been rendered.  The 
+    code that creates the shadow lives in the Tooltip's public "onRender" 
+    event handler that is a prototype method of YAHOO.widget.Tooltip.  
+    Implementers wishing to remove a Tooltip's shadow or add any other markup
+    required for a given skin for Tooltip should override the "onRender" method.
+*/
+
+.yui-tt-shadow {
+    position: absolute;
+}
+
+.yui-override-padding {
+    padding:0 !important;
+}
+
+.yui-panel-container .container-close {
+    overflow:hidden;
+    text-indent:-10000em;
+    text-decoration:none;
+}
+
+.yui-overlay.yui-force-redraw, .yui-panel-container.yui-force-redraw {
+    margin-bottom:1px;
+}

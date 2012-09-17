@@ -1,0 +1,95 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Foldable block that can be expanded to show more controls by checking the checkbox.
+
+    <st:attribute name="name">
+      Name of the checkbox. Can be used by the server to determine
+      if the block is collapsed or expanded at the time of submission.
+
+      Note that when the block is collapsed, none of its child controls will send
+      the values to the server (unlike &lt;f:advanced>)
+    </st:attribute>
+    <st:attribute name="title">
+      Human readable text that follows the checkbox.
+
+      If this field is null, the checkbox degrades to a &lt;f:rowSet>, which provides
+      a grouping at JSON level but on the UI there's no checkbox (and you always see
+      the body of it.)
+    </st:attribute>
+    <st:attribute name="field">
+      Used for databinding. TBD. Either this or @name/@title combo is required.
+    </st:attribute>
+    <st:attribute name="checked">
+      initial checkbox status. true/false.
+    </st:attribute>
+    <st:attribute name="help">
+      If present, the (?) icon will be rendered on the right to show inline help.
+      See @help for &lt;f:entry>.
+    </st:attribute>
+    <st:attribute name="negative">
+      if present, the foldable section expands when the checkbox is unchecked.
+    </st:attribute>
+    <st:attribute name="inline">
+      if present, the foldable section will not be grouped into a separate JSON object upon submission
+    </st:attribute>
+  </st:documentation>
+  <j:if test="${attrs.help==null}">
+    <!-- infer the help page from the current descriptor and field if possible -->
+    <j:set target="${attrs}" property="help"
+           value="${descriptor.getHelpFile(attrs.field)}" />
+  </j:if>
+
+  <j:choose>
+    <j:when test="${attrs.title!=null}">
+      <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+        <td colspan="3">
+          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+                      negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
+        </td>
+        <j:if test="${attrs.help!=null}">
+          <td>
+            <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
+          </td>
+        </j:if>
+      </tr>
+      <j:if test="${attrs.help!=null}">
+        <f:helpArea />
+      </j:if>
+      <tr class="rowvg-start" />
+      <d:invokeBody />
+      <!-- end marker -->
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
+    </j:when>
+
+    <j:otherwise>
+      <f:rowSet name="${attrs.name}">
+        <d:invokeBody />
+      </f:rowSet>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

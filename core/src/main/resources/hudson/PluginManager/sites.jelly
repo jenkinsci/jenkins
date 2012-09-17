@@ -1,0 +1,68 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Add/remove update center sites
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+  <st:include page="sidepanel.jelly"/>
+  <l:main-panel>
+    <form method="post" action="updateSources">
+      <local:tabBar page="sites" xmlns:local="/hudson/PluginManager">
+        <tr style="border-top: 0px;">
+          <th colspan="2"/>
+        </tr>
+        <tr style="border-bottom:none">
+          <td colspan="2">
+            <p>
+              This Jenkins is configured to receive updates from the following sources:
+            </p>
+          </td>
+        </tr>
+        <tr style="border-top: none">
+          <td>
+            <select multiple="true" style="width:100%" name="sources">
+              <j:forEach var="s" items="${app.updateCenter.sources}">
+                <option value="${s.id}">${s.url}</option>
+              </j:forEach>
+            </select>
+          </td>
+          <td id="buttonBar" style="width:13em;">
+            <style>
+              #buttonBar INPUT {
+                width: 10em;
+              }
+            </style>
+            <input type="submit" value="${%Add...}" name="add" />
+            <br />
+            <input type="submit" value="${%Remove}" name="remove" disabled="${empty(app.updateCenter.sources)?'true':null}"/>
+          </td>
+        </tr>
+      </local:tabBar>
+    </form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

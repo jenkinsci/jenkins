@@ -1,0 +1,54 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:if test="${!empty(descriptor.installations)}">
+    <f:entry title="${%Maven Version}">
+      <select class="setting-input" name="maven.name">
+        <option value="(Default)">(${%Default})</option>
+        <j:forEach var="inst" items="${descriptor.installations}">
+          <f:option selected="${inst.name==instance.maven.name}" value="${inst.name}">${inst.name}</f:option>
+        </j:forEach>
+      </select>
+    </f:entry>
+  </j:if>
+  <f:entry title="${%Goals}">
+    <f:expandableTextbox field="targets" />
+  </f:entry>
+  <f:advanced>
+    <f:entry title="${%POM}" help="/plugin/maven-plugin/root-pom.html">
+      <f:textbox field="pom"/>
+    </f:entry>
+    <f:entry title="${%Properties}" help="/help/tasks/maven/properties.html">
+      <f:textarea field="properties"/>
+    </f:entry>
+    <f:entry title="${%JVM Options}" help="/plugin/maven-plugin/maven-opts.html">
+      <f:expandableTextbox field="jvmOptions"/>
+    </f:entry>
+    <f:entry field="usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html">
+      <f:checkbox checked="${it.usesPrivateRepository()}" />
+    </f:entry>
+  </f:advanced>
+</j:jelly>

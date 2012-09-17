@@ -1,0 +1,82 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Foldable block expanded when the corresponding item is selected in the drop-down list.
+
+    <st:attribute name="title">
+      Human readable title text of this drop-down listbox.
+      Shown in the same position as &lt;f:entry title="..." />
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      name of the drop-down list.
+    </st:attribute>
+    <st:attribute name="help">
+      Path to the inline help. See &lt;f:entry help="..." />
+    </st:attribute>
+  </st:documentation>
+
+    <tr>
+        <td class="setting-leftspace"><st:nbsp/></td>
+        <td class="setting-name">
+            ${attrs.title}
+        </td>
+        <td class="setting-main">
+            <!-- create drop-down list -->
+            <select class="setting-input dropdownList">
+                <j:set var="dropdownListMode" value="createSelectField"/>
+                <d:invokeBody/>
+            </select>
+        </td>
+        <j:if test="${attrs.help!=null}">
+            <td class="setting-help">
+                <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png"
+                                                                                       alt="Help for feature: ${title}"
+                                                                                       height="16" width="16"/></a>
+            </td>
+        </j:if>
+    </tr>
+
+    <!-- generate the actual form entries -->
+    <tr class="dropdownList-container">
+      <td colspan="2"/>
+      <td colspan="2">
+        <table width="100%" name="${name}">
+            <j:set var="dropdownListMode" value="generateEntries"/>
+            <d:invokeBody/>
+        </table>
+      </td>
+    </tr>
+
+    <j:if test="${!empty(attrs.description)}">
+        <f:description>
+            <j:out value="${description}"/>
+        </f:description>
+    </j:if>
+    <j:if test="${attrs.help!=null}">
+        <f:helpArea/>
+    </j:if>
+</j:jelly>

@@ -1,0 +1,55 @@
+<div>
+  Jenkins baut standardmäßig alle möglichen Kombinationen aller Achsen auf erschöpfende Weise.
+  Manchmal sind dies jedoch einfach zu viele Kombinationen oder es gibt Kombinationen, die
+  aus fachlicher Sicht nicht erwünscht sind.
+
+  In diesen Situationen können Sie die Matrix ausdünnen, indem Sie über einen Groovy-Ausdruck
+  unerwünschte Kombinationen herausfiltern. 
+
+  <p>
+  Geben Sie hier einen Groovy-Ausdruck an, so werden nur diejenigen Kombinationen gebaut, für
+  die der Ausdruck <b>true</b> ergibt. Die momentanen Werte der Achsen stehen dem Ausdruck
+  dabei als initialisierte Variablen zur Verfügung.
+
+  <h4>Werte-basiertes Filtern</h4>
+  <p>
+  Beispiel: Sie bauen auf unterschiedlichen Betriebssystemen mit unterschiedlichen Compilern.
+  Ihre Slave-Knoten sind mit den Labels <b>label=[linux,solaris]</b> gekennzeichnet und Sie haben
+  eine Achse <b>compiler=[gcc,cc]</b> angelegt.
+  
+  Jeder der folgenden Ausdrücke wird Builds mit <b>cc</b> auf <b>linux</b> herausfiltern. Je nach
+  persönlicher Herangehensweise werden Sie die Ausdrücke unterschiedlich intuitiv finden.
+
+  <center>
+    <table>
+        <tr>
+            <td>Ansatz: "Wenn linux und cc gleichzeitig zutrifft, ist die Kombination ungültig."</td>
+            <td>
+                <pre>!(label=="linux" && compiler=="cc")</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Ansatz: "Eine gültige Kombination verwendet entweder solaris oder gcc."</td>
+            <td>
+                <pre>label=="solaris" || compiler=="gcc"</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Ansatz: "Wenn auf solaris, dann nur cc erlauben."</td>
+            <td>
+                <pre>(label=="solaris").implies(compiler=="cc")</pre>
+            </td>
+        </tr>
+    </table>
+  </center>
+
+  <h4>Ausdünnen der Matrix</h4>
+  <p>
+  Zusätzlich zu den werte-basierten Filterregeln, können Sie die Variable "<tt>index</tt>" verwenden,
+  um die Matrix auszudünnen.
+
+  <p>
+  Beispiel: <tt>index%2==0</tt> halbiert die Größe der Matrix, in dem nur noch jede zweite Kombination 
+  gebaut wird. Analog drittelt <tt>index%3!=0</tt> die Größe der Matrix, in dem nur noch jede dritte
+  Kombination gebaut wird, usw.
+</div>

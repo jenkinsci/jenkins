@@ -1,0 +1,84 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, id:cactusman, Martin Eigenbrodt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Renders a list of jobs and their key information.
+
+    <st:attribute name="jobs" use="required" trim="Collection">
+      Items to disable.
+    </st:attribute>
+    <st:attribute name="jobBaseUrl" type="String">
+      The base URL of all job links. Normally ${rootURL}/
+    </st:attribute>
+    <st:attribute name="showViewTabs" use="optional" type="boolean">
+      If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly.
+    </st:attribute>
+    <st:attribute name="views" type="Collection&lt;View>">
+      If non-null, render nested views.
+    </st:attribute>
+    <st:attribute name="indenter" type="hudson.Indenter">
+      Optional Indenter instance used to indent items.
+    </st:attribute>
+    <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>">
+      List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used.
+    </st:attribute>
+  </st:documentation>
+
+  <t:setIconSize/>
+  <div class="dashboard">
+
+    <j:if test="${columnExtensions==null}">
+        <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
+    </j:if>
+
+    <j:if test="${!empty(jobs) or !empty(attrs.views)}">
+      <!-- the caller can inject a tab bar here -->
+      <d:invokeBody/>
+      <!-- project list -->
+      <table id="projectstatus" class="sortable pane bigtable"
+             style="${showViewTabs!=null?'margin-top:0px; border-top: none;':null}">
+        <tr style="border-top: 0px;">
+          <j:forEach var="col" items="${columnExtensions}">
+             <st:include page="columnHeader.jelly" it="${col}" />
+          </j:forEach>
+          <th>
+            <st:nbsp/>
+          </th>
+        </tr>
+
+        <j:forEach var="v" items="${attrs.views}">
+          <t:projectViewNested />
+        </j:forEach>
+
+        <j:forEach var="job" items="${jobs}">
+          <t:projectViewRow />
+        </j:forEach>
+      </table>
+      <t:iconSize><t:rssBar/></t:iconSize>
+    </j:if>
+  </div>
+</j:jelly>

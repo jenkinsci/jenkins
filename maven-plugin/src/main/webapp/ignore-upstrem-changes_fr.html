@@ -1,0 +1,17 @@
+﻿<div>
+  Si cette case est cochée, Jenkins parcourera les fichiers POM de ce
+  projet et verra si une des dépendances SNAPSHOT sont construites
+  également sur ce serveur Jenkins. Dans ce cas, Jenkins positionnera une
+  relation dépendance de build, de façon à ce que, à chaque fois que le job
+  dont il dépend est construit et qu'un nouveau jar SNAPSHOT est créé,
+  Jenkins programme un nouveau build pour ce projet.
+
+  <p>
+  Cela est pratique pour obtenir une intégration continue automatique.
+  Jenkins vérifiera que les dépendances SNAPSHOT de l'élément
+  &lt;dependency> dans le POM, ainsi que les &lt;plugin>s et les
+  &lt;extension>s utilisés dans les POMs.
+
+  <p>
+  Si ce comportement est problématique, décochez cette option.
+</div>

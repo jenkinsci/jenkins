@@ -1,0 +1,20 @@
+﻿<div>
+  Si votre serveur LDAP ne supporte pas le <a href="http://www.google.com/?q=LDAP+anonymous+bind">binding anonyme</a>
+  (c'est-à-dire, si votre serveur LDAP ne permet pas le requêtage sans authentification),
+  alors Jenkins va devoir s'authentifier auprès du serveur. Il fait cela en envoyant le
+  DN et le mot de passe du "gestionnaire".
+
+  <p>
+  Un DN ressemble typiquement à <tt>CN=MyUser,CN=Users,DC=mydomain,DC=com</tt>
+  bien que la séquence exacte des éléments dépend de la configuration du serveur LDAP.
+  Cela peut être tout DN valide, tant que LDAP autorise cet utilisateur à lancer des
+  requêtes sur les données.
+
+  <p>
+  Cette configuration est également utile quand vous êtes connectés à Active Directory
+  à partir d'une machine Unix, car AD ne permet pas le bind anonyme par défaut. Si cette
+  configuration vous parait trop complexe, vous pouvez simplement changer les paramètres de
+  AD afin d'authoriser le binding anonyme.
+  Voir <a href="http://www.novell.com/coolsolutions/appnote/15120.html">ce document</a>
+  pour plus d'explications.
+</div>

@@ -1,0 +1,57 @@
+<div>
+  Bu alan &#231;ok k&#252;&#231;&#252;k farklar d&#305;&#351;&#305;nda cron sentaks&#305;n&#305; kullan&#305;r.
+  Her sat&#305;r, TAB veya bo&#351;luk karakteri ile ayr&#305;lm&#305;&#351; 5 k&#305;s&#305;mdan olu&#351;ur.
+  <pre>MINUTE HOUR DOM MONTH DOW</pre>
+  <table>
+    <tr>
+      <td>MINUTE</td>
+      <td>Saatin dakikalar&#305; (0-59)</td>
+    </tr>
+    <tr>
+      <td>HOUR</td>
+      <td>G&#252;n&#252;n saatleri (0-23)</td>
+    </tr>
+    <tr>
+      <td>DOM</td>
+      <td>Ay&#305;n g&#252;nleri (1-31)</td>
+    </tr>
+    <tr>
+      <td>MONTH</td>
+      <td>Ay (1-12)</td>
+    </tr>
+    <tr>
+      <td>DOW</td>
+      <td>Haftan&#305;n g&#252;nleri (0-7), 0 ve 7 Pazard&#305;r.</td>
+    </tr>
+  </table>
+  <p>
+    Bir k&#305;s&#305;ma birden fazla de&#287;er girmek i&#231;in a&#351;a&#287;&#305;dakiler kullan&#305;labilir.
+    &#214;ncelik s&#305;ras&#305;na g&#246;re,
+  </p>
+  <ul>
+    <li>'*' t&#252;m ge&#231;erli de&#287;erleri belirlemek i&#231;in kullan&#305;l&#305;r.</li>
+    <li>'M-N', "1-5" gibi aral&#305;klar&#305; belirlemek i&#231;in kullan&#305;l&#305;r</li>
+    <li>'M-N/X' veya '*/X' verilen 'M-N' aral&#305;&#287;&#305;nda 'X' de&#287;eri kadar farklarla belirleme imkan&#305; sa&#287;lar,
+        mesela MINUTE k&#305;sm&#305;na yaz&#305;alcak "*/15" de&#287;eri "0,15,30,45" anlam&#305;na gelir veya "1-6/2" ise "1,3,5" anlam&#305;ndad&#305;r.</li>
+    <li>'A,B,...,Z' birden fazla de&#287;erin belirlenmesine yard&#305;mc&#305; olur, mesela "0,30" veya "1,3,5" gibi.</li>
+  </ul>
+  <p>
+    Bo&#351; sat&#305;rlar ve '#' ile ba&#351;layan sat&#305;rlar yorum olarak alg&#305;lan&#305;r, ve es ge&#231;ilir.
+  </p><p>
+    Bunlar&#305;n yan&#305;nda, '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
+    ve '@hourly' de&#287;i&#351;kenleri de desteklenmektedir.
+  </p>
+  <table>
+    <tr>
+      <td>&#214;rnekler</td>
+      <td>
+<pre>
+# her dakika i&#231;in
+* * * * *
+# her saati 5 ge&#231;e
+5 * * * *
+</pre>
+      </td>
+    </tr>
+  </table>
+</div>

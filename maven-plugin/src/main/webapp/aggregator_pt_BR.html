@@ -1,0 +1,20 @@
+<div>
+  <p>
+  Se marcada, o Jenkins executar&#225; as constru&#231;&#245;es de m&#243;dulo individual como constru&#231;&#245;es separadas. Em um projeto
+  com um grande n&#250;mero de m&#243;dulos, ou em um projeto onde os m&#243;dulo levam muito tempo para construir,
+  marcar esta op&#231;&#227;o pode acelerar a constru&#231;&#227;o toda, assim m&#243;dulos diferentes podem ser constru&#237;dos
+  em paralelo.
+
+  <p>
+  Caso contr&#225;rio, deixe desmarcada e o Jenkins construir&#225; este projeto maven como voc&#234; faria normalmente
+  pela linha de comando.
+
+  <p>
+  Quando sua constru&#231;&#227;o usa os mojos no "estilo-agregador" multi-m&#243;dulo, voc&#234; teria que deixar esta
+  op&#231;&#227;o desmarcada assim o mojo ter&#225; acesso a todos os seus m&#243;dulos.
+
+  <p>
+  Hist&#243;ricamente, este tem sido o m&#243;do padr&#227;o do projeto maven nativo at&#233; o Jenkins 1.133.
+  Assim se seu projeto foi criado antes disso, voc&#234; poderia querer desmarcar esta op&#231;&#227;o.   
+  
+</div>

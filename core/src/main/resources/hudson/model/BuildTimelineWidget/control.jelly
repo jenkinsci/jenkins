@@ -1,0 +1,162 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    Show timeline trend image. It takes two builds
+  </st:documentation>
+
+  <st:adjunct includes="org.kohsuke.stapler.simile.timeline" />
+
+  <div id="resizeContainer" style="height: 300px; border:1px solid black; padding-bottom: 5px;">
+    <div id="tl" style="height:100%;"/>
+  </div>
+  <div id="status" />
+  
+  <link rel="stylesheet" type="text/css" href="${resURL}/scripts/yui/assets/skins/sam/resize.css"/>
+  <script type="text/javascript" src="${resURL}/scripts/yui/resize/resize-min.js"></script>
+  
+  <script>
+    <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
+    var tz = ${tz.rawOffset / 3600000};
+    var tl = null;
+    <![CDATA[
+    function doLoad() {
+        var tl_el = document.getElementById("tl");
+        var eventSource1 = new Timeline.DefaultEventSource();
+        eventSource1.loaded = {};
+        var interval = 24*60*60*1000;
+        eventSource1.ensureVisible = function(band) {
+          // make sure all data are loaded for the portion visible in the band
+          // $('status').innerHTML = "min="+band.getMinDate()+" max="+band.getMaxDate();
+          var min = Math.floor(band.getMinDate().getTime()/interval);
+          var max = Math.ceil(band.getMaxDate().getTime()/interval);
+          for (var i=min; i<=max; i++) {
+            if (!this.loaded[i]) {
+              this.loaded[i] = true;
+              new Ajax.Request("timeline/data/",{
+                  method:"POST",
+                  parameters: {min: i*interval, max:(i+1)*interval},
+                  onSuccess: function(t) {
+                    try {
+                      eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
+                    } catch (e) {
+                      alert(e);
+                    }
+                  }
+              });
+            }
+          }
+        };
+
+
+        var theme1 = Timeline.ClassicTheme.create();
+  //            theme1.autoWidth = true; // Set the Timeline's "width" automatically.
+                                 // Set autoWidth on the Timeline's first band's theme,
+                                 // will affect all bands.
+        theme1.timeline_start = new Date(${it.firstBuild.timeInMillis-24*60*60*1000});
+        theme1.timeline_stop  = new Date(${it.lastBuild.timeInMillis+24*60*60*1000});
+
+        var d = new Date(${it.lastBuild.timeInMillis});
+        var bandInfos = [
+            // the bar that shows outline
+            Timeline.createBandInfo({
+                width:          "20%",
+                intervalUnit:   Timeline.DateTime.DAY,
+                intervalPixels: 200,
+                eventSource:    eventSource1,
+                timeZone:       tz,
+                theme:          theme1,
+                layout:         'overview'  // original, overview, detailed
+            }),
+            // the main area
+            Timeline.createBandInfo({
+                width:          "80%",
+                eventSource:    eventSource1,
+                timeZone:       tz,
+                theme:          theme1,
+                intervalUnit:   Timeline.DateTime.HOUR,
+                intervalPixels: 200
+            })
+        ];
+        bandInfos[0].highlight = true;
+        bandInfos[0].syncWith = 1;
+
+        // create the Timeline
+        tl = Timeline.create(tl_el, bandInfos, Timeline.HORIZONTAL);
+
+        tl.getBand(0).addOnScrollListener(function(band) {
+            eventSource1.ensureVisible(band);
+        });
+
+        tl.layout(); // display the Timeline
+
+        // if resized, redo layout
+        var resizeTimerID = null;
+        function doResize() {
+            if (resizeTimerID == null) {
+                resizeTimerID = window.setTimeout(function() {
+                    resizeTimerID = null;
+                    tl.layout();
+                }, 500);
+            }
+        }
+        
+        if (window.addEventListener) { 
+            window.addEventListener( "resize", doResize, false );
+        }else if (window.attachEvent) { 
+            window.attachEvent( "onresize", doResize);
+        }else if (window.onResize) {
+           window.onresize = doResize;
+        }
+        
+    };
+    
+    if (window.addEventListener) { 
+        window.addEventListener( "load", doLoad, false );
+    }else if (window.attachEvent) { 
+        window.attachEvent( "onload", doLoad );
+    }else if (window.onLoad) {
+           window.onload = doLoad;
+    }
+    
+    //add resize handle
+    (function() {
+        var Dom = YAHOO.util.Dom,
+            Event = YAHOO.util.Event;
+
+        var resize = new YAHOO.util.Resize('resizeContainer', {
+             handles: 'b',
+             minHeight: 300 // this should be the same as the height of the container div,
+                            // to fix a issue when it's resized to be smaller than the original height
+        });
+
+        //update timeline after resizing
+        resize.on('endResize', function() { 
+            tl.layout(); 
+        }, null, true); 
+    
+    })();
+  ]]></script>
+</j:jelly>

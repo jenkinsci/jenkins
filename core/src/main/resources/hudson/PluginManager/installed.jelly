@@ -1,0 +1,159 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Yahoo! Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Config page
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+      <table id="plugins" class="sortable pane bigtable">
+        <j:choose>
+          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+            <tr><td>
+              ${%No plugins installed.}
+            </td></tr>
+          </j:when>
+          <j:otherwise>
+            <tr style="border-top: 0px;">
+              <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
+              <th initialSortDir="down">${%Name}</th>
+              <th width="32">${%Version}</th>
+              <th width="32">${%Previously installed version}</th>
+              <th width="32">${%Pinned}</th>
+            </tr>
+            <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <tr>
+                <j:set var="state" value="${p.enabled?'true':null}"/>
+                <td class="center pane" data="${state}">
+                  <input type="checkbox" checked="${state}" onclick="flip(event)"
+                         url="plugin/${p.shortName}"
+                         original="${p.active?'true':'false'}"/>
+                </td>
+                <td class="pane">
+                  <div>
+                    <a href="${p.url}">
+                      ${p.updateInfo.title?:p.longName}
+                    </a>
+                  </div>
+                  <div class="excerpt">
+                    <j:set var="indexPage" value="${p.indexPage.toString()}" />
+                    <j:if test="${!empty(indexPage)}">
+                      <j:include uri="${indexPage}" />
+                    </j:if>
+                  </div>
+                </td>
+                <td class="center pane" style="white-space:nowrap">
+                  <a href="plugin/${p.shortName}/thirdPartyLicenses">
+                    ${p.version}
+                  </a>
+                </td>
+                <td class="pane">
+                  <j:if test="${p.downgradable}">
+                    <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
+                      <s:submit value="${%downgradeTo(p.backupVersion)}"/>
+                    </form>
+                  </j:if>
+                </td>
+                <td class="center pane" id='unpin-${p.shortName}'>
+                  <j:if test="${p.isPinned()}">
+                    <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
+                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
+                  </j:if>
+                </td>
+              </tr>
+            </j:forEach>
+            <!-- failed ones -->
+            <j:forEach var="p" items="${it.pluginManager.failedPlugins}">
+              <tr class="hoverback">
+                <td class="pane" />
+                <td class="pane">
+                  <h4 class="error">Failed : ${p.name}</h4>
+                  <div stlyle="padding-left: 1em">
+                    <pre>${p.exceptionString}</pre>
+                  </div>
+                </td>
+                <td class="pane" />
+              </tr>
+            </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </table>
+
+      <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
+        <form method="post" action="${rootURL}/safeRestart">
+          ${%Changes will take effect when you restart Jenkins}
+          <j:if test="${app.lifecycle.canRestart()}">
+            <s:submit value="${%Restart Once No Jobs Are Running}" />
+          </j:if>
+        </form>
+      </div>
+
+
+      <script>
+        <!-- function to toggle the enable/disable state -->
+        function flip(o) {
+          btn = Event.element(o);
+
+          <!-- trigger -->
+          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+            onFailure : function(req,o) {
+              $('needRestart').innerHTML = req.responseText;
+            }
+          });
+
+          updateMsg();
+        }
+
+        function updateMsg() {
+          <!-- is anything changed since its original state? -->
+          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
+            return String(e.checked)!=e.getAttribute('original');
+          });
+
+          <j:if test="${it.isPluginUploaded()}">
+            e = true;
+          </j:if>
+          $('needRestart').style.display = (e!=null?"block":"none");
+        }
+
+        updateMsg(); // set the initial state
+
+        function unpin(button,shortName) {
+          new Ajax.Request("./plugin/"+shortName+"/unpin", {
+            onFailure : function(t) {
+              alert('Failed to unpin:'+t.responseText);
+            },
+            onSuccess : function(t) {
+              $('unpin-'+shortName).innerHTML = "";
+            }
+          });
+        }
+      </script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

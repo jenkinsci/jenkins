@@ -1,0 +1,55 @@
+<div>
+  La commande à utiliser pour lancer un agent esclave, qui contrôle la
+  machine-esclave et communique avec la machine-maître.
+
+  <h3>Les agents esclaves JNLP</h3>
+  <p>
+  Laissez ce champ vide si vous souhaitez lancer les esclaves par JNLP.
+  Avec cette configuration, la page d'information sur les esclaves
+  (jenkins/computer/***/) aura une icône de lancement JNLP. Vous pouvez
+  cliquer sur ce lien pour lancer un agent esclave par JNLP.
+  <p>
+  Ce mode est utile pour les esclaves Windows qui n'ont généralement pas
+  de mécanisme d'exécution à distance.
+
+  <h3>Les agents esclaves ssh/rsh</h3>
+  <p>
+  Quand une commande est spécifiée dans ce champ, elle est exécutée
+  sur le maître et Jenkins suppose que le programme exécuté lance le
+  programme <tt>slave.jar</tt> sur la bonne machine esclave.
+
+  <p>
+  Une copie du <tt>slave.jar</tt> est disponible dans le répertoire
+    <a href="${rootURL}/jnlpJars/slave.jar"><tt>WEB-INF/slave.jar</tt></a>.
+
+  <p>
+  Pour un cas simple, cette commande pourrait être du type
+  "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
+
+  Cela dit, il est généralement préférable d'écrire un petit script sur
+  l'esclave, comme celui qui suit, afin de gérer le répertoire
+  d'installation de Java et/ou de slave.jar. Vous pouvez aussi
+  positionner des variables d'environnement spécifiques à cette machine
+  esclave, comme le PATH.
+  
+<pre>
+#!/bin/sh
+exec java -jar ~/bin/slave.jar
+</pre>
+
+  <p>
+  Vous pouvez utiliser n'importe quelle commande d'exécution d'un
+  process sur la machine-esclave, comme RSH, du moment que les
+  sorties stdin/stdout de ce process sont au final connectées
+  sur "java -jar ~/bin/slave.jar".
+
+  <p>
+  Dans un déploiement à plus grande échelle, on peut envisager de charger
+  <tt>slave.jar</tt> à partir d'une location commune montée par NFS, afin
+  de ne pas nécessiter la mise à jour de ce fichier à chaque mise à jour
+  de Jenkins.
+
+  <p>
+  Mettre la valeur "ssh -v <i>hostname</i>" dans ce champ peut être
+  utile pour débugger les problèmes de connexion.
+</div>

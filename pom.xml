@@ -1,0 +1,839 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The MIT License
+
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:sorokh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci</groupId>
+    <artifactId>jenkins</artifactId>
+    <version>1.27</version>
+  </parent>
+
+  <groupId>org.jenkins-ci.main</groupId>
+  <artifactId>pom</artifactId>
+  <version>1.484-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Jenkins main module</name>
+  <description>The module that constitutes the main jenkins.war</description>
+  <licenses>
+    <license>
+      <name>The MIT license</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>core</module>
+    <module>maven-plugin</module>
+    <module>ui-samples-plugin</module>
+    <module>war</module>
+    <module>test</module>
+    <module>cli</module>
+    <module>plugins</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
+    <url>https://github.com/jenkinsci/jenkins</url>
+  </scm>
+  <distributionManagement>
+    <site>
+      <id>hudson-www</id>
+      <url>scp://jenkins-ci.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
+    </site>
+    <snapshotRepository>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
+  </issueManagement>
+
+  <properties>
+    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
+    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <build.type>private</build.type>
+
+    <!-- configuration for patch tracker plugin  -->
+    <project.patchManagement.system>github</project.patchManagement.system>
+    <patch.request.organisation>jenkinsci</patch.request.organisation>
+    <patch.request.repository>jenkins</patch.request.repository>
+    <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
+    <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
+
+    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
+  </properties>
+
+
+
+
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository><!-- only until we release ant and javadoc plugins -->
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org/content/repositories/snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.8.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit-dep</artifactId>
+        <version>4.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>1.2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-library</artifactId>
+        <version>1.2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>1.8.5</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-module-junit4</artifactId>
+        <version>1.4.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-api-mockito</artifactId>
+        <version>1.4.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-httpclient</groupId>
+        <artifactId>commons-httpclient</artifactId>
+        <version>3.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>remoting</artifactId>
+        <version>2.17</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>11.0.1</version>
+      </dependency>
+      
+      <dependency>
+        <!-- we'd like to use stock Guice, but that breaks Maven embedder
+               because it uses a modified Guice called Sisu -->
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-guice</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+
+      <!-- SLF4J used in maven-plugin and core -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-nop</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <!-- for JRE requirement check annotation -->
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>animal-sniffer-annotations</artifactId>
+      <version>1.7</version>
+      <scope>provided</scope>
+      <optional>true</optional><!-- no need to have this at runtime -->
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>test-annotations</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/filter/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.7</version>
+          <executions>
+            <execution>
+              <id>timestamp-property</id>
+              <goals>
+                <goal>timestamp-property</goal>
+              </goals>
+              <configuration>
+                <name>now</name>
+                <pattern>MM/dd/yyyy HH:mm z</pattern>
+                <locale>en_US</locale>
+              </configuration>
+            </execution>
+            <execution>
+              <id>version-property</id>
+              <goals>
+                <goal>regex-property</goal>
+              </goals>
+              <configuration>
+                <name>build.version</name>
+                <value>${project.version}</value>
+                <regex>-SNAPSHOT</regex>
+                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name})</replacement>
+                <failIfNoMatch>false</failIfNoMatch>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.kohsuke.gmaven</groupId>
+          <artifactId>gmaven-plugin</artifactId>
+          <version>1.0-rc-5-patch-2</version>
+          <dependencies>
+            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
+              <groupId>org.apache.ant</groupId>
+              <artifactId>ant-junit</artifactId>
+              <version>1.7.0</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.cobertura</groupId>
+              <artifactId>cobertura</artifactId>
+              <version>1.9</version>
+            </dependency>
+            <dependency>
+              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+              <version>2.4</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.6</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.10</version>
+          <configuration>
+            <systemPropertyVariables>
+              <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+              <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
+              <java.awt.headless>true</java.awt.headless>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jarsigner-plugin</artifactId>
+          <version>1.2</version>
+          <configuration>
+            <!--
+              during the development, debug profile will cause
+              the jars to be signed by a self-certified dummy public key.
+
+              For release, you should define the real values in ~/.m2/settings.xml
+            -->
+            <alias>${hudson.sign.alias}</alias>
+            <storepass>${hudson.sign.storepass}</storepass>
+            <keystore>${hudson.sign.keystore}</keystore>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <!--
+            Both test harness and core uses stapler as an extension,
+            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
+            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
+            defined in this extension is not getting picked up.)
+
+            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
+            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
+
+            To test if you can remove this work around, do a rebuild from main and see if the test harness
+            is installed with the right extension into the local repository.
+          -->
+          <groupId>org.kohsuke.stapler</groupId>
+          <artifactId>maven-stapler-plugin</artifactId>
+          <version>1.16</version>
+          <extensions>true</extensions>
+          <dependencies>
+            <dependency>
+              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
+              <artifactId>maven-jellydoc-plugin</artifactId>
+              <version>1.4</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.kohsuke</groupId>
+          <artifactId>access-modifier-checker</artifactId>
+          <version>1.3</version>
+        </plugin>
+        <plugin>
+          <groupId>com.cloudbees</groupId>
+          <artifactId>maven-license-plugin</artifactId>
+          <version>1.7</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>process</goal>
+              </goals>
+              <phase>compile</phase>
+              <configuration>
+                <requireCompleteLicenseInfo>true</requireCompleteLicenseInfo>
+                <script>../licenseCompleter.groovy</script>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
+          <groupId>org.kohsuke</groupId>
+          <artifactId>maven-junit-plugin</artifactId>
+          <version>1.10</version>
+         </plugin>
+        <plugin>
+          <groupId>org.jvnet.localizer</groupId>
+          <artifactId>maven-localizer-plugin</artifactId>
+          <version>1.14</version>
+         </plugin>
+        <plugin>
+          <groupId>org.jvnet.hudson.tools</groupId>
+          <artifactId>maven-encoding-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>com.infradna.tool</groupId>
+          <artifactId>bridge-method-injector</artifactId>
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>antlr-maven-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>apt-maven-plugin</artifactId>
+          <version>1.0-alpha-4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <version>2.3.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>2.5</version>
+         </plugin>
+        <plugin>
+          <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-jenkins-dev-plugin</artifactId>
+          <version>8.1.4.v20120524-jenkins-1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jvnet.updatecenter2</groupId>
+          <artifactId>maven-makepkgs-plugin</artifactId>
+          <version>0.5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <version>1.90</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0</version>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+        	<groupId>org.eclipse.m2e</groupId>
+        	<artifactId>lifecycle-mapping</artifactId>
+        	<version>1.0.0</version>
+        	<configuration>
+        		<lifecycleMappingMetadata>
+        			<pluginExecutions>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>org.kohsuke.gmaven</groupId>
+        						<artifactId>gmaven-plugin</artifactId>
+        						<versionRange>[1.0-rc-5-patch-2,)</versionRange>
+        						<goals>
+        							<goal>execute</goal>
+        							<goal>testCompile</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore />
+        					</action>
+        				</pluginExecution>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>org.apache.maven.plugins</groupId>
+        						<artifactId>maven-dependency-plugin</artifactId>
+        						<versionRange>[2.3,)</versionRange>
+        						<goals>
+        							<goal>list</goal>
+        							<goal>unpack-dependencies</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore />
+        					</action>
+        				</pluginExecution>
+        			</pluginExecutions>
+        		</lifecycleMappingMetadata>
+        	</configuration>
+        </plugin>
+        <plugin>
+	        <groupId>org.codehaus.mojo</groupId>
+	        <artifactId>animal-sniffer-maven-plugin</artifactId>
+	        <version>1.7</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- enable release profile during the release, create IPS package, and sign bits. -->
+          <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
+          <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
+          <preparationGoals>clean install</preparationGoals>
+          <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
+          <pushChanges>false</pushChanges>
+          <localCheckout>true</localCheckout>
+          <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.jvnet.hudson:license:1.0</resourceBundle>
+              </resourceBundles>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <configuration>
+          <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java15</artifactId>
+            <version>1.0</version>
+          </signature>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
+          <source>1.5</source>
+          <target>1.5</target>
+          <!-- default reuseCreated is more performant 
+          feel free to uncomment if you have any issues on your platform
+          <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+          -->
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
+                <requireJavaVersion>
+                  <version>1.6.0-18</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>3.0</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <!--
+          Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
+          This enables us to report a better error message.
+        -->
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-jenkins-dev-plugin</artifactId>
+      </plugin>
+
+      <!--<plugin>
+        <groupId>org.jvnet.fix1600</groupId>
+        <artifactId>fix1600</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>fix</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>-->
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generateStubs</goal>
+              <goal>compile</goal>
+              <goal>generateTestStubs</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+           <!-- 1.8 not yet supported by plugin but 1.7 works
+                here so long as we provide explicit version -->
+           <providerSelection>1.7</providerSelection>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-1.7</artifactId>
+            <version>1.3</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+
+  </build>
+
+  <profiles>
+    <profile>
+      <id>rc</id>
+      <properties>
+        <build.type>rc</build.type>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>build-helper-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>version-property</id>
+                  <configuration>
+                    <replacement>-RC (${now})</replacement>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <id>metrics</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <configuration>
+              <threshold>High</threshold>
+            </configuration>
+          </plugin>
+          <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-pmd-plugin</artifactId>-->
+            <!--<version>2.5</version>-->
+            <!--<configuration>-->
+              <!--&lt;!&ndash;rulesets>-->
+                  <!--<ruleset>ruleset.xml</ruleset>-->
+                  <!--</rulesets&ndash;&gt;-->
+              <!--<targetJdk>1.5</targetJdk>-->
+            <!--</configuration>-->
+          <!--</plugin>-->
+          <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
+            <!--<version>2.6</version>-->
+          <!--</plugin>-->
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
+      <id>debug</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <hudson.sign.alias>jenkins</hudson.sign.alias>
+        <hudson.sign.keystore>../dummy.keystore</hudson.sign.keystore>
+        <hudson.sign.storepass>jenkins</hudson.sign.storepass>
+      </properties>
+    </profile>
+    <profile>
+      <id>sorcerer</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.sorcerer</groupId>
+            <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>0.8</version>
+          </plugin>
+        </plugins>
+      </reporting>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jvnet.sorcerer</groupId>
+            <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>0.8</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>attached</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <finalName>jenkins-${project.version}</finalName>
+                  <descriptors>
+                    <descriptor>assembly-src.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>m2e</id>
+      <properties>
+        <m2BuildDirectory>target</m2BuildDirectory>
+      </properties>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <directory>${m2BuildDirectory}</directory>
+        <plugins>
+          <plugin>
+            <groupId>org.maven.ide.eclipse</groupId>
+            <artifactId>lifecycle-mapping</artifactId>
+            <version>0.12.0</version>
+            <configuration>
+              <mappingId>customizable</mappingId>
+              <configurators>
+                <configurator id="org.maven.ide.eclipse.jdt.javaConfigurator" />
+                <configurator id="org.maven.ide.eclipse.plexus.annotations.plexusConfigurator" />
+              </configurators>
+              <mojoExecutions>
+                <mojoExecution>org.apache.maven.plugins:maven-resources-plugin::</mojoExecution>
+              </mojoExecutions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

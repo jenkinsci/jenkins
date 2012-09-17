@@ -1,0 +1,126 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2011, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package jenkins.security;
+
+import hudson.Extension;
+import hudson.Util;
+import hudson.model.Descriptor.FormException;
+import hudson.model.User;
+import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
+import hudson.util.HttpResponses;
+import hudson.util.Secret;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import java.io.IOException;
+import java.security.SecureRandom;
+
+/**
+ * Remembers the API token for this user, that can be used like a password to login.
+ *
+ *
+ * @author Kohsuke Kawaguchi
+ * @see ApiTokenFilter
+ * @since 1.426
+ */
+public class ApiTokenProperty extends UserProperty {
+    private volatile Secret apiToken;
+
+    @DataBoundConstructor
+    public ApiTokenProperty() {
+        _changeApiToken();
+    }
+
+    /**
+     * We don't let the external code set the API token,
+     * but for the initial value of the token we need to compute the seed by ourselves.
+     */
+    private ApiTokenProperty(String seed) {
+        apiToken = Secret.fromString(seed);
+    }
+
+    public String getApiToken() {
+        return Util.getDigestOf(apiToken.getPlainText());
+    }
+
+    public boolean matchesPassword(String password) {
+        return getApiToken().equals(password);
+    }
+
+    public void changeApiToken() throws IOException {
+        _changeApiToken();
+        if (user!=null)
+            user.save();
+    }
+
+    private void _changeApiToken() {
+        byte[] random = new byte[16];   // 16x8=128bit worth of randomness, since we use md5 digest as the API token
+        RANDOM.nextBytes(random);
+        apiToken = Secret.fromString(Util.toHexString(random));
+    }
+
+    @Override
+    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return this;
+    }
+
+    @Extension
+    public static final class DescriptorImpl extends UserPropertyDescriptor {
+        public String getDisplayName() {
+            return Messages.ApiTokenProperty_DisplayName();
+        }
+
+        /**
+         * When we are creating a default {@link ApiTokenProperty} for User,
+         * we need to make sure it yields the same value for the same user,
+         * because there's no guarantee that the property is saved.
+         *
+         * But we also need to make sure that an attacker won't be able to guess
+         * the initial API token value. So we take the seed by hasing the instance secret key + user ID.
+         */
+        public ApiTokenProperty newInstance(User user) {
+            return new ApiTokenProperty(Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + user.getId()));
+        }
+
+        public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p==null) {
+                p = newInstance(u);
+                u.addProperty(p);
+            } else {
+                p.changeApiToken();
+            }
+            rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
+            return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_Success());
+        }
+    }
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+}

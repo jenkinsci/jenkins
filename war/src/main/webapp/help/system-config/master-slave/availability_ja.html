@@ -1,0 +1,44 @@
+<div>
+    いつスレーブを開始・終了するのか選択します。
+
+    <dl>
+        <dt><b>
+             可能な限りオンラインのままにする
+        </b></dt>
+        <dd>
+            これはデフォルトで通常の設定です。 このモードでは、Jenkinsはスレーブを極力オンラインのままにしようとします。
+            ユーザーの手助けなしにJenkinsがスレーブを開始できるなら、スレーブが使用できない場合に定期的にリスタートしようとします。
+           Jenkinsはスレーブをオフラインにはしません。
+        </dd>
+
+        <!--dt><b>
+            Take this slave on-line and off-line at specific times
+        </b></dt>
+        <dd>
+            In this mode, Jenkins will keep the slave on-line according to the configured schedule.
+            If Jenkins can start the slave without user assistance, it will periodically
+            attempt to start the slave if it is unavailable during an on-line window.
+
+            During an off-line window, the slave will only be taken off-line if there are no active
+            jobs running on the slave.
+        </dd-->
+
+        <dt><b>
+            要求時にはオンラインにし、待機中にはオフラインにする
+        </b></dt>
+        <dd>
+             このモードでは、ユーザーの手助けなしにJenkinsがスレーブを開始できるなら、
+             次の条件に合う未実行のジョブがある間はスレーブを開始しようとします。
+            <ul>
+                <li>少なくともある一定の起動要求期間にキューにある</li>
+                <li>このスレーブ上で実行可能</li>
+            </ul>
+
+              スレーブは次の場合オフラインになります。
+            <ul>
+                <li>スレーブ上に実行中のジョブが存在しない</li>
+                <li>スレーブが少なくともある一定の期間待機中である</li>
+            </ul>
+        </dd>
+    </dl>
+</div>

@@ -1,0 +1,57 @@
+<div>
+  Este campo segue a sintaxe do cron (com poucas diferen&#231;as).
+  Especificamente, cada linha consite de 5 campos separados por tabula&#231;&#227;o (TAB) ou espea&#231;o em branco:
+  <pre>MINUTO HORA DM MES DS</pre>
+  <table>
+    <tr>
+      <td>MINUTO</td>
+      <td>Minutos dentro de uma hora (0-59)</td>
+    </tr>
+    <tr>
+      <td>HORA</td>
+      <td>A hora do dia (0-23)</td>
+    </tr>
+    <tr>
+      <td>DM</td>
+      <td>O dia do m&#234;s (1-31)</td>
+    </tr>
+    <tr>
+      <td>MES</td>
+      <td>O m&#234;s (1-12)</td>
+    </tr>
+    <tr>
+      <td>DS</td>
+      <td>O dia da semana (0-7) onde 0 e 7 s&#227;o Domingo.</td>
+    </tr>
+  </table>
+  <p>
+    Para especificar m&#250;ltiplos valores para um campo, os seguintes operadores est&#227;o
+    dispon&#237;veis. Em ordem de preced&#234;ncia,
+  </p>
+  <ul>
+    <li>'*' pode ser usado para especificar todos os valores v&#225;lidos.</li>
+    <li>'M-N' pode ser usado para especificar um intervalo, tal como "1-5"</li>
+    <li>'M-N/X' ou '*/X' pode ser usado para especificar saltos do valor de X entre o intervalo,
+        tal como "*/15" no campo MINUTO para "0,15,30,45" e "1-6/2" para "1,3,5"</li>
+    <li>'A,B,...,Z' pode ser usado para especificar m&#250;ltiplos valores, tal como "0,30" ou "1,3,5"</li>
+  </ul>
+  <p>
+    Linhas vazias e linha que come&#231;am com '#' ser&#227;o ignoradas como coment&#225;rios.
+  </p><p>
+    Em adi&#231;&#227;o, as constantes '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
+    e '@hourly' s&#227;o suportadas.
+  </p>
+  <table>
+    <tr>
+      <td>Exemplos</td>
+      <td>
+<pre>
+# todo minuto
+* * * * *
+# no minuto 5 de cada hora (ou seja '2:05,3:05,...') 
+5 * * * *
+</pre>
+      </td>
+    </tr>
+  </table>
+</div>

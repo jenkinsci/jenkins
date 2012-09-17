@@ -1,0 +1,46 @@
+<div>
+    Controls when Jenkins starts and stops the slave.
+
+    <dl>
+        <dt><b>
+            Keep this slave on-line as much as possible
+        </b></dt>
+        <dd>
+            This is the default and normal setting.
+            In this mode, Jenkins uses tries to keep the slave on-line.
+            If Jenkins can start the slave without user assistance, it will periodically
+            attempt to restart the slave if it is unavailable.
+            Jenkins will not take the slave off-line.
+        </dd>
+
+        <!--dt><b>
+            Take this slave on-line and off-line at specific times
+        </b></dt>
+        <dd>
+            In this mode, Jenkins will keep the slave on-line according to the configured schedule.
+            If Jenkins can start the slave without user assistance, it will periodically
+            attempt to start the slave if it is unavailable during an on-line window.
+
+            During an off-line window, the slave will only be taken off-line if there are no active
+            jobs running on the slave.
+        </dd-->
+
+        <dt><b>
+            Take this slave on-line when in demand and off-line when idle
+        </b></dt>
+        <dd>
+            In this mode, if Jenkins can launch the slave without user assistance, it will periodically
+            attempt to launch the slave while there are unexecuted jobs which meet the following criteria:
+            <ul>
+                <li>They have been in the queue for at least the specified startup demand period</li>
+                <li>They can execute on this slave</li>
+            </ul>
+
+            The slave will be taken off-line if:
+            <ul>
+                <li>There are no active jobs running on the slave</li>
+                <li>The slave has been idle for at least the specified idle period</li>
+            </ul>
+        </dd>
+    </dl>
+</div>

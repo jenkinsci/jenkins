@@ -1,0 +1,44 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+.yui-button  {
+
+    display: -moz-inline-box; /* Gecko */
+    display: inline-block; /* IE, Opera and Safari */
+    vertical-align: text-bottom;
+    
+}
+
+.yui-button .first-child {
+
+    display: block;
+    *display: inline-block; /* IE */
+
+}
+
+.yui-button button,
+.yui-button a {
+
+    display: block;
+    *display: inline-block; /* IE */
+    border: none;
+    margin: 0;
+
+}
+
+.yui-button button {
+
+    background-color: transparent;
+    *overflow: visible; /* Remove superfluous padding for IE */
+    cursor: pointer;
+
+}
+
+.yui-button a {
+
+    text-decoration: none;
+
+}

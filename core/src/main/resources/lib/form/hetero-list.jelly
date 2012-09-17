@@ -1,0 +1,139 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <st:documentation>
+    Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
+    arbitrary items from the given list of descriptors, and configure them independently.
+
+    The submission can be data-bound into List&lt;T> where T is the common base type for the describable instances.
+    
+    <st:attribute name="name" use="required">
+      form name that receives an array for all the items in the heterogeneous list.
+    </st:attribute>
+    <st:attribute name="items" use="required" type="java.util.Collection">
+      existing items to be displayed. Something iterable, such as array or collection.
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      all types that the user can add.
+    </st:attribute>
+    <st:attribute name="addCaption">
+      caption of the 'add' button.
+    </st:attribute>
+    <st:attribute name="deleteCaption">
+      caption of the 'delete' button.
+    </st:attribute>
+    <st:attribute name="targetType">
+      the type for which descriptors will be configured. Defaults to ${it.class} (optional)
+    </st:attribute>
+    <st:attribute name="hasHeader">
+      For each item, add a caption from descriptor.getDisplayName().
+      This also activates drag&amp;drop (where the header is a grip), and help text support.
+    </st:attribute>
+    <st:attribute name="oneEach">
+      If true, only allow up to one instance per descriptor.
+    </st:attribute>
+    <st:attribute name="menuAlign">
+      Menu alignment against the button. Defaults to tl-bl
+    </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
+  </st:documentation>
+  <d:taglib uri="local">
+    <d:tag name="body">
+      <table style="width:100%">
+        <j:set var="help" value="${descriptor.helpFile}" />
+        <j:if test="${hasHeader}">
+          <tr>
+            <td colspan="3">
+              <div class="dd-handle">
+                <b>${descriptor.displayName}</b>
+              </div>
+            </td>
+            <j:if test="${help!=null}">
+              <td>
+                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
+              </td>
+            </j:if>
+          </tr>
+          <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
+          <j:if test="${help!=null}">
+            <f:helpArea />
+          </j:if>
+        </j:if>
+
+        <d:invokeBody/>
+
+        <f:block>
+          <div align="right">
+            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </div>
+        </f:block>
+      </table>
+      <input type="hidden" name="kind" value="${descriptor.id}" />
+    </d:tag>
+  </d:taglib>
+
+  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
+
+  <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
+  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+    <!-- display existing items -->
+    <j:forEach var="i" items="${attrs.items}">
+      <j:set var="descriptor" value="${i.descriptor}" />
+      <j:set var="instance" value="${i}" />
+      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
+        <local:body deleteCaption="${attrs.deleteCaption}">
+          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+        </local:body>
+      </div>
+    </j:forEach>
+
+    <div class="repeatable-insertion-point" />
+
+    <div class="prototypes to-be-removed">
+      <!-- render one prototype for each type -->
+      <j:set var="instance" value="${null}" />
+      <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
+        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
+          <local:body deleteCaption="${attrs.deleteCaption}">
+            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance">
+              <l:ajax>
+                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+              </l:ajax>
+            </l:renderOnDemand>
+          </local:body>
+        </div>
+      </j:forEach>
+    </div>
+
+    <div>
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+    </div>
+  </div>
+</j:jelly>

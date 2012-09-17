@@ -1,0 +1,29 @@
+<div>
+  Bu makine &#252;zerinde, Jenkins'&#305;n yap&#305;land&#305;rmalar&#305; nas&#305;l planlayaca&#287;&#305;n&#305; kontrol eder.
+
+  <dl>
+    <dt><b>
+      Bu slave'i m&#252;mk&#252;n oldu&#287;unca &#231;ok kullan
+    </b></dt>
+    <dd>
+      Bu ayar, varsay&#305;lan ve normal olan ayard&#305;r. Bu modda Jenkins, slave'i &#246;zg&#252;rce
+      kullan&#305;r. Herhangi bir yap&#305;land&#305;rma, bu slave &#252;zerinde yap&#305;land&#305;r&#305;labiliyorsa,
+      Jenkins bu slave'i kullanacakt&#305;r.
+    </dd>
+
+    <dt><b>
+      Bu slave'i sadece, bu slave'e atanm&#305;&#351; yap&#305;land&#305;rmalar i&#231;in kullan
+    </b></dt>
+    <dd>
+      Bu modda slave, herhangi bir proje i&#231;in &#246;zellikle "atanm&#305;&#351; nod" olarak se&#231;ilmi&#351;
+      ise, Jenkins bu projeyi, bu slave &#252;zerinde &#231;al&#305;&#351;t&#305;racakt&#305;r.
+
+      Bu durum, bir slave'in sadece belirli i&#351;ler i&#231;in kullan&#305;lmas&#305;n&#305; sa&#287;lar.
+      Mesela, Jenkins &#252;zerinde performans testleri &#231;al&#305;&#351;t&#305;r&#305;yorsan&#305;z ve bu
+      i&#351;in ba&#351;ka i&#351;ler taraf&#305;ndan b&#246;l&#252;nmesini veya bekletilmesini istemiyorsan&#305;z,
+      bu slave &#252;zerindeki yap&#305;land&#305;r&#305;c&#305; say&#305;s&#305;n&#305; 1 yap&#305;p, performans testleriniz i&#231;in
+      "atanm&#305;&#351; nod" olarak bu slave'i se&#231;meniz yeterli olacakt&#305;r. B&#246;ylece, Performans testleriniz
+      b&#246;l&#252;nmeden veya bekletilmeden bu makine &#252;zerinde y&#252;r&#252;t&#252;lebilecektir.
+    </dd>
+  </dl>
+</div>

@@ -1,0 +1,20 @@
+<div>
+  Jenkins unterstützt das JUnit-XML-Format für Testergebnisse (das auch von
+  TestNG verwendet wird). Wenn diese Option konfiguriert ist, kann Jenkins
+  nützliche Auswertungen der Testergebnisse bereitstellen, z.B. deren
+  zeitlichen Verlauf darstellen, Testergebnisse in einer webbasierten Oberfläche
+  anzeigen, Fehlschläge verfolgen usw.
+
+  <p>
+  
+  Um diese Funktion zu verwenden, richten Sie Ihren Build-Prozess zunächst so
+  ein, daß Tests ausgeführt werden. Dann geben Sie den Pfad zu den JUnit-XML-Dateien
+  in der <a href="http://ant.apache.org/manual/Types/fileset.html">Ant glob-Syntax</a>,
+  an, z.B. <tt>**/build/test-reports/*.xml</tt>. Stellen Sie sicher, daß der Pfad
+  ausschließlich auf Testergebnisdateien im JUnit-XML-Format zutrifft. 
+  
+  <p>
+  
+  Sobald ein paar Builds mit Tests gelaufen sind, sollten Sie Auswertungen wie
+  <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+graph"> diese</a> sehen.
+</div>

@@ -1,0 +1,26 @@
+<div>
+  For each job on Jenkins, Jenkins allocates a unique "workspace directory." This is the directory
+  where the code is checked out and builds happen. Normally you should let Jenkins allocate
+  and clean up workspace directories, but in several situations this is problematic,
+  and in such case, this option lets you specify the workspace location manually.
+
+  <p>
+  One such situation is where paths are hard-coded and the code needs to be built on a specific location.
+  While there's no doubt that such a build is not ideal, this option allows you to get going in such a situation.
+
+  <p>
+  Another situation where this is useful is when you are using the project type not to perform
+  a software build, but execution of a certain batch task, perhaps as a cron replacement. In such case,
+  you can use this option to map the relevant directory as the workspace, so that people can look at files
+  through the Jenkins web UI, and you can kick relevant commands more easily.
+
+  <p>
+  If you are in a distributed build environment, unless you tie a job to a specific node, Jenkins may still
+  move around jobs to different slaves. Sometimes this is desirable, sometimes this is not. Also,
+  you can map multiple projects to have the same workspace, but if you do so, make sure concurrent executions
+  of those jobs won't have nasty interferance with each other.
+
+  <p>
+  If this path is relative, it's resolved against the "remote FS root" directory of the slave, or <tt>$JENKINS_HOME</tt>
+  on the master.    
+</div>

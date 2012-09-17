@@ -1,0 +1,16 @@
+﻿<div>
+  <p>
+  Un esclave a besoin d'un répertoire dédié à Jenkins. Spécifiez ici le
+  chemin absolu vers le répertoire de travail sur l'esclave, par exemple
+  '/var/jenkins' ou 'c:\jenkins'. Cela doit être un chemin local à la machine
+  esclave. En règle générale, il n'est pas nécessaire que ce chemin soit
+  visible depuis le maître.
+
+  <p>
+  Les esclaves ne conservent pas de données importantes (autres que les
+  répertoires de travail des derniers builds des projets); vous pouvez donc
+  positionner le répertoire du travail de l'esclave dans un répertoire
+  temporaire.
+  Le seul défaut de ce choix est que vous perdrez le dernier workspace à
+  jour si la machine esclave est éteinte.
+</div>

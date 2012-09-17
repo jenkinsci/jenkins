@@ -1,0 +1,15 @@
+﻿<div>
+  Ceci contrôle le nombre de builds concurrents que Jenkins peut exécuter
+  sur cet esclave. La valeur affecte la charge système que Jenkins peut
+  causer. Une bonne valeur pour commencer serait le nombre de processeurs.
+
+  <p>
+  Augmenter cette valeur au-delà du nombre de processeurs peut rallonger
+  la durée individuelle des builds, mais aussi augmenter la capacité.
+  En effet, cela permet au processeur de construire un projet
+  pendant qu'un autre est en attente d'entrées/sorties.
+
+  <p>
+  Positionner cette valeur à 0 est utile pour désactiver un esclave
+  temporairement indisponible, sans perdre le reste de la configuration.
+</div>

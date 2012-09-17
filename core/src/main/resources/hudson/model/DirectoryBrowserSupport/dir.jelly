@@ -1,0 +1,104 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, id:cactusman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!-- Show files in the workspace -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.title} : ${path}">
+    <st:include page="sidepanel.jelly" it="${it.owner}"/>
+    <l:main-panel>
+      <div class="dirTree">
+      <!-- parent path -->
+        <div class="parentPath">
+          <form action="${backPath}" method="get">
+            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt="" height="48" width="48"/></a>
+            <j:forEach var="p" items="${parentPath}">
+              <a href="${p.href}">${p.title}</a>
+              /
+            </j:forEach>
+            <input type="text" name="pattern" value="${pattern}" />
+            <img src="${imagesURL}/16x16/go-next.png" style="vertical-align:middle; cursor:pointer" alt="[submit]"
+                onclick="this.parentNode.submit()" height="16" width="16"/>
+          </form>
+        </div>
+        <j:choose>
+          <j:when test="${empty(files)}">
+            ${%No files in directory}
+          </j:when>
+          <j:otherwise>
+            <table class="fileList">
+              <j:forEach var="f" items="${files}">
+                <j:set var="x" value="${f.get(f.size()-1)}"/>
+                <tr>
+                  <td>
+                    <img src="${imagesURL}/16x16/${x.iconName}" alt="" height="16" width="16"/>
+                  </td>
+                  <td>
+                    <j:forEach var="t" items="${f}" varStatus="st">
+                    
+                      <j:choose>
+                        <j:when test="${x.readable}">
+                          <a href="${t.href}">${t.title}</a>
+                        </j:when>
+                        <j:otherwise>
+                          ${t.title}
+                        </j:otherwise>
+                      </j:choose>
+                      
+                      <j:if test="${!st.last}">/</j:if>
+                    </j:forEach>
+                  </td>
+                  <j:if test="${!x.folder}">
+                    <td class="fileSize">
+                      ${h.humanReadableByteSize(x.getSize())}
+                    </td>
+                    <td>
+                      <j:if test="${x.readable}">
+                        <a href="${x.href}/*fingerprint*/">
+                          <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
+                        </a>
+                        <st:nbsp/>
+                        <a href="${x.href}/*view*/">${%view}</a>
+                      </j:if>                      
+                    </td>
+                  </j:if>
+                </tr>
+              </j:forEach>
+              <tr>
+                <td style="text-align:right;" colspan="3">
+                  <div style="margin-top: 1em;">
+                    <a href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
+                      <img src="${imagesURL}/16x16/package.png" height="16" width="16"/>
+                      (${%all files in zip})
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </j:otherwise>
+        </j:choose>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

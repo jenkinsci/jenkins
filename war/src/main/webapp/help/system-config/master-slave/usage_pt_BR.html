@@ -1,0 +1,29 @@
+<div>
+  Controla como o Jenkins agenda as constru&#231;&#245;es nesta m&#225;quina.
+
+  <dl>
+    <dt><b>
+      Utilizar este slave tanto quando poss&#237;vel
+    </b></dt>
+    <dd>
+      Esta &#233; a configura&#231;&#227;o padr&#227;o.
+      Neste modo, o Jenkins usa este slave livremente. Sempre que houver uma constru&#231;&#227;o
+      que possa ser feita usando este slave, o Jenkins usar&#225; ele.
+    </dd>
+
+    <dt><b>
+      Deixar esta m&#225;quina apenas para tarefas amarradas
+    </b></dt>
+    <dd>
+      Neste modo, o Jenkins apenas construir&#225; um projeto nesta m&#225;quina quando
+      este projeto especificamente tiver este slave como o "n&#243; associado".
+
+      Isto permite que um slave seja reservado para certos tipos de tarefas.
+      Por exemplo, para executar testes de desempenho do Jenkins cont&#237;nuamente,
+      voc&#234; pode usar esta configura&#231;&#227;o com o n&#250;mero de executores como sendo 1, 
+      tal que apenas um teste de desempenho execute a qualquer tempo definido, 
+      e que um executor n&#227;o ser&#225; bloqueado
+      por outras constru&#231;&#245;es que possam ser feitas em outros slaves.
+    </dd>
+  </dl>
+</div>

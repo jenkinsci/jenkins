@@ -1,0 +1,78 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Displays the form to choose the tag name.
+
+  This belongs to a build view.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout>
+    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <l:main-panel>
+      <h1>
+        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
+        ${%Recorded Fingerprints}
+      </h1>
+      <table class="fingerprint-in-build sortable bigtable">
+        <tr>
+          <th initialSortDir="down">${%File}</th>
+          <th>${%Original owner}</th>
+          <th>${%Age}</th>
+          <th/>
+        </tr>
+        <j:forEach var="e" items="${it.fingerprints}">
+          <j:set var="f" value="${e.value}" />
+          <tr>
+            <td>
+              ${e.key}
+            </td>
+            <td>
+              <j:choose>
+                <j:when test="${f.original==null}">
+                  ${%outside Jenkins}
+                </j:when>
+                <j:when test="${f.original.run==it.build}">
+                  ${%this build}
+                </j:when>
+                <j:otherwise>
+                  <t:buildLink jobName="${f.original.name}" job="${f.original.job}" number="${f.original.number}" />
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td data="${-f.timestamp.time}">
+              ${f.timestampString} old
+            </td>
+            <td>
+              <a href="${rootURL}/fingerprint/${f.hashString}/">
+                <img src="${imagesURL}/16x16/fingerprint.png" alt="" height="16" width="16"/> ${%more details}
+              </a>
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

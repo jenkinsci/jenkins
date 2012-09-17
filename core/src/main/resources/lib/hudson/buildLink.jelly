@@ -1,0 +1,56 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Link to a build. Used by fingerprint/index.jsp
+
+  Attributes:
+    jobName    name of the job. Can be omitted if you don't want to show a name.
+    job        A 'job' object. Can be omitted if you don't want to link.
+    number     build number to link to.
+    href       Link target. If missing, the top page of the build.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
+  <j:choose>
+	  <j:when test="${job==null}">
+	    ${jobName_}#<!-- -->${number}
+	  </j:when>
+	  <j:otherwise>
+	    <j:set var="r" value="${job.getBuildByNumber(number)}" />
+	    <j:choose>
+	      <j:when test="${r==null}">
+	        <a href="${rootURL}/${job.url}" class="model-link">${jobName}</a>
+          #<!-- -->${number}
+	      </j:when>
+	      <j:otherwise>
+	        <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
+	          <img src="${imagesURL}/16x16/${r.buildStatusUrl}"
+                 alt="${r.iconColor.description}" height="16" width="16"/>${jobName_}#<!-- -->${number}</a>
+	      </j:otherwise>
+	    </j:choose>
+	  </j:otherwise>
+	</j:choose>
+</j:jelly>

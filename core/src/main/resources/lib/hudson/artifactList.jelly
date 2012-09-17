@@ -1,0 +1,102 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Romain Seguy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Generates a listing of the build artifacts.
+    Depending on the size of the artifact, this will either produce a list or a link to the directory view.
+
+    <st:attribute name="build" type="hudson.model.Build" use="required">
+      Build object for which the artifacts are displayed
+    </st:attribute>
+    <st:attribute name="caption" use="required">
+      Human readable title text
+    </st:attribute>
+    <st:attribute name="baseURL">
+      If the hyperlink to artifacts are at another URL, specify the prefix.
+    </st:attribute>
+  </st:documentation>
+  <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
+    <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
+    <j:if test="${!build.building and !empty(artifacts)}">
+      <t:summary icon="package.png">
+        <a href="${baseURL}artifact/">${caption}</a>
+        <j:choose>
+          <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
+            <!-- if not too many, just list them -->
+            <table class="fileList">
+              <j:forEach var="f" items="${artifacts}">
+                <tr>
+                  <td>
+                    <img src="${imagesURL}/16x16/text.png" alt="" height="16" width="16"/>
+                  </td>
+                  <td>
+                    <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
+                  </td>
+                  <td class="fileSize">
+                    ${h.humanReadableByteSize(f.getFileSize())}
+                  </td>
+                  <td>
+                    <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
+                      <img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16"/>
+                    </a>
+                  </td>
+                </tr>
+              </j:forEach>
+            </table>
+          </j:when>
+          <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
+              <!-- otherwise (unless way too many) use a tree view -->
+              <l:yui module="treeview"/>
+              <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
+              <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
+              <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
+              <div id="artifact-tree"></div>
+              <script language="javascript">// &lt;![CDATA[
+                YAHOO.util.Event.onContentReady('artifact-tree', function () {
+                var artifactTree = new YAHOO.widget.TreeView('artifact-tree');
+                var artifactRoot = new YAHOO.widget.TextNode('${h.jsStringEscape('%View')}',
+                                                             artifactTree.getRoot(), false);
+                <j:forEach var="e" items="${artifacts.getTree().entrySet()}">
+                  <j:set var="f" value="${e.key}"/>
+                  var ${f.treeNodeId} = new YAHOO.widget.TextNode(
+                    '${h.jsStringEscape(f.fileName)}', ${e.value?:'artifactRoot'}, false);
+                        <j:if test="${f.href!=null}">
+                          <!-- Assign href property instead of passing to constructor above,
+                               as constructor does urlencoding, but f.href is already encoded -->
+                          ${f.treeNodeId}.href = '${baseURL}artifact/${h.jsStringEscape(f.href)}';
+                        </j:if>
+                </j:forEach>
+                artifactTree.draw();
+               });
+             // ]]&gt;</script>
+          </j:when>
+          <!-- otherwise just show link to directory browser -->
+        </j:choose>
+      </t:summary>
+    </j:if>
+  </j:if>
+</j:jelly>

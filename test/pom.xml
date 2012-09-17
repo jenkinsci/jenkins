@@ -1,0 +1,334 @@
+<?xml version="1.0"?>
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>pom</artifactId>
+    <groupId>org.jenkins-ci.main</groupId>
+    <version>1.484-SNAPSHOT</version>
+  </parent>
+  <groupId>org.jenkins-ci.main</groupId>
+  <artifactId>jenkins-test-harness</artifactId>
+
+  <name>Test harness for Jenkins and plugins</name>
+  <description>
+    Unit test harness (src/main) and Unit tests for Jenkins core (src/test)
+  </description>
+
+  <properties>
+    <concurrency>2</concurrency> <!-- -1 means # of processors in the system -->
+    <mavenDebug>false</mavenDebug>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <!--
+        put hudson.war in the classpath. we can't pull in the war artifact directly
+        because Maven excludes all wars from classpath automatically. so we need a jar artifact.
+      -->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <classifier>war-for-test</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.modules</groupId>
+          <artifactId>sshd</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>subversion</artifactId>
+      <version>1.26</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty</artifactId>
+      <version>6.1.26</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>test-annotations</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+      <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.mock-javamail</groupId>
+      <artifactId>mock-javamail</artifactId>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit-dep</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>htmlunit</artifactId>
+      <version>2.6-jenkins-6</version>
+      <exclusions>
+        <exclusion>
+          <!--  hides JDK DOM classes in Eclipse -->
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+      <version>2.7.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>embedded-rhino-debugger</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <!-- for testing JNLP launch. -->
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>netx</artifactId>
+      <version>0.5-hudson-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/src/test/junit4</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <skip>true</skip>
+          <!-- tests now run by maven-junit-plugin -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <executions>
+          <execution>
+            <id>preset-packager</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-in-groovy</id>
+            <!-- allow tests written in Groovy -->
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.8.0</version>
+          </dependency>
+          <!-- Usually a dependency of ant, but some people seem to have an incomplete ant POM. See JENKINS-11416 -->
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-launcher</artifactId>
+            <version>1.8.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+
+    <profile>
+      <id>run-test-harness</id>
+      <activation>
+        <property>
+          <name>!skip-test-harness</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- JUnit4 test is failed with maven-junit-plugin-->
+            <artifactId>maven-surefire-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <configuration>
+              <skip>false</skip>
+              <includes>
+                <include>**/UseRecipesWithJenkinsRuleTest.java</include>
+                <include>hudson/model/CauseTest.java</include>
+                <include>hudson/model/UpdateSiteTest.java</include>
+                <include>hudson/triggers/TriggerStartTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
+            <groupId>org.kohsuke</groupId>
+            <artifactId>maven-junit-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <fork>true</fork>
+                  <concurrency>${concurrency}</concurrency>
+                  <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
+                  <timeout>300</timeout>
+                  <systemProperties>
+                    <property>
+                      <!-- use AntClassLoader that supports predictable file handle release -->
+                      <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
+                      <value>true</value>
+                    </property>
+                    <property>
+                      <name>hudson.maven.debug</name>
+                      <value>${mavenDebug}</value>
+                    </property>
+                    <property>
+                      <name>java.io.tmpdir</name>
+                      <value>${project.build.directory}</value>
+                    </property>
+                    <property>
+                      <name>buildDirectory</name>
+                      <value>${project.build.directory}</value>
+                    </property>
+                    <property>
+                      <name>java.awt.headless</name>
+                      <value>true</value>
+                    </property>
+                  </systemProperties>
+                  <excludes>
+                    <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
+                    <exclude>hudson/model/CauseTest.class</exclude>
+                    <exclude>hudson/model/UpdateSiteTest.class</exclude>
+                    <exclude>hudson/triggers/TriggerStartTest.class</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+
+    </profile>
+
+    <profile>
+      <id>light-test</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <!--
+        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
+      -->
+      <id>cobertura</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.kohsuke.gmaven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <!-- version specified in grandparent pom -->
+            <executions>
+              <!-- run unit test -->
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <scriptpath>
+                    <!-- load helpers from hg core -->
+                    <element>${project.basedir}/../core/src/build-script</element>
+                  </scriptpath>
+                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
+  </profiles>
+</project>

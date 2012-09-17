@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
+  <securityRealm class="hudson.security.SecurityRealm$None"/>
+  <jdks>
+    <jdk>
+      <name>1.6</name>
+      <javaHome>FOOBAR</javaHome>
+    </jdk>
+  </jdks>
+  <clouds/>
+  <slaves>
+    <slave>
+      <name>slave</name>
+      <description></description>
+      <remoteFS>c:\temp\hudson</remoteFS>
+      <numExecutors>1</numExecutors>
+      <mode>NORMAL</mode>
+      <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+      <launcher class="hudson.slaves.JNLPLauncher"/>
+      <label></label>
+      <nodeProperties>
+        <hudson.tools.ToolLocationNodeProperty>
+          <locations>
+            <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+              <type>hudson.tasks.Ant$DescriptorImpl</type>
+              <name>Ant 1</name>
+              <home>D:\dev\apache-ant-1.7.1</home>
+            </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+            <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+              <type>hudson.tasks.Maven$DescriptorImpl</type>
+              <name>Maven 1</name>
+              <home>D:\dev\apache-maven-2.0.9</home>
+            </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+            <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+              <type>hudson.model.JDK$DescriptorImpl</type>
+              <name>1.6</name>
+              <home>C:\Program Files\Java\jdk1.6.0_11</home>
+            </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+          </locations>
+        </hudson.tools.ToolLocationNodeProperty>
+      </nodeProperties>
+    </slave>
+  </slaves>
+  <quietPeriod>5</quietPeriod>
+  <views>
+    <hudson.model.AllView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Alle</name>
+    </hudson.model.AllView>
+  </views>
+  <primaryView>Alle</primaryView>
+  <slaveAgentPort>0</slaveAgentPort>
+  <label></label>
+  <nodeProperties/>
+  <disabledAdministrativeMonitors/>
+</hudson>

@@ -1,0 +1,123 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Overall form that should be placed inside <l:main-panel>
+
+  Attributes:
+    @descriptors : collection of Descriptors
+    @nameTitle   : title of the name text field
+    @copyTitle   : title of the copy option
+    @copyNames   : options of names to choose from as the copy source. null to hide "copy" option
+    @checkUrl    : form field validation url
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <st:documentation>
+    Generates a form for creating something out of descriptors by (1) selecting a descriptor and specifying a name.
+    This also presents a copy option. This should be placed inside &lt;l:main-panel>.
+
+    <st:attribute name="action">
+      Specify where the form will be submitted to. Defaults to 'createItem'.
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      Collection of Descriptors to be rendered.
+    </st:attribute>
+    <st:attribute name="nameTitle" use="required">
+      Caption of the text box to receive the name of the newly created item. Something like "Job name"
+    </st:attribute>
+    <st:attribute name="checkUrl" use="required">
+      relative URL that point to the check method that validates the new name.
+    </st:attribute>
+  </st:documentation>
+
+
+  <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+
+  <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
+    <s:entry title="${attrs.nameTitle}">
+      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
+                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
+      <script>$('name').focus();</script>
+    </s:entry>
+
+    <j:forEach var="descriptor" items="${descriptors}">
+      <s:block>
+        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
+      </s:block>
+      <s:entry>
+        <st:set var="instance" value="${descriptor}" />
+        <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
+      </s:entry>
+    </j:forEach>
+    <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
+      <s:block>
+        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
+      </s:block>
+      <s:entry>
+        ${%Copy from}
+        <j:choose>
+          <j:when test="${attrs.copyNames}">
+            <!-- deprecated as of 1.402. -->
+            <s:editableComboBox id="from" name="from" items="${attrs.copyNames}" />
+          </j:when>
+          <j:otherwise>
+            <j:set var="descriptor" value="${it.descriptor}" />
+            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
+          </j:otherwise>
+        </j:choose>
+      </s:entry>
+    </j:if>
+
+    <s:block>
+      <!--
+        when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
+        So always force non-empty array
+       -->
+      <input type="radio" name="mode" value="dummy1" style="display:none" />
+      <input type="radio" name="mode" value="dummy2" style="display:none" />
+      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
+    </s:block>
+  </s:form>
+  <script><![CDATA[
+    var okButton = makeButton($('ok'),null);
+
+    function updateOk(form) {
+      function state() {
+        if($('name').value.length==0)   return true;
+        var radio = form.elements['mode'];
+        if (radio.length==2)  return false; // this means we only have dummy checkboxes
+        for(i=0;i<radio.length;i++)
+          if(radio[i].checked)
+            return false;
+        return true;
+      }
+
+      okButton.set('disabled',state(),false);
+    }
+    updateOk(okButton.getForm());
+  ]]></script>
+</j:jelly>

@@ -1,0 +1,77 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Config page. derived class specific entries should go to configure-entries.jsp
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
+    <st:include page="sidepanel.jelly" />
+    <f:breadcrumb-config-outline />
+    <l:main-panel>
+      <div class="behavior-loading">${%LOADING}</div>
+      <f:form method="post" action="configSubmit" name="config">
+        <j:set var="descriptor" value="${it.descriptor}" />
+        <j:set var="instance" value="${it}" />
+
+        <j:if test="${it.isNameEditable()}">
+          <f:entry title="${%name(it.pronoun)}">
+            <f:textbox name="name" value="${it.name}" />
+          </f:entry>
+        </j:if>
+        <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+        </f:entry>
+
+        <j:if test="${it.supportsLogRotator()}">
+          <!-- log rotator -->
+          <f:optionalBlock name="logrotate"
+            help="/help/project-config/log-rotation.html"
+            title="${%Discard Old Builds}" checked="${it.logRotator!=null}">
+            <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
+          </f:optionalBlock>
+        </j:if>
+
+        <!-- job property configurations. This should have been <f:descriptorList> -->
+        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />
+
+        <!-- additional entries from derived classes -->
+        <st:include page="configure-entries.jelly" />
+
+        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+          <f:block>
+            <div id="bottom-sticker">
+              <div class="bottom-sticker-inner">
+                <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
+                <f:submit value="${%Save}" />
+                <f:apply />
+              </div>
+            </div>
+          </f:block>
+        </j:if>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -1,0 +1,46 @@
+<div>
+    Controleert de beschikbaarheid van een slaafnode.
+
+    <dl>
+        <dt><b>
+            Hou deze slaafnode zoveel mogelijk beschikbaar.
+        </b></dt>
+        <dd>
+            Dit is de standaard instelling.
+            In deze modus zal Jenkins de slaafnode altijd beschikbaar proberen te houden.
+            Indien Jenkins deze slaafnode automatisch can starten, dan zal een poging ondernomen
+	    worden om deze, bij onbeschikbaarheid, periodisch te herstarten.
+            Jenkins zal de slaafnode niet onbeschikbaar maken.
+        </dd>
+
+        <!--dt><b>
+            Maak de slaafnode beschikbaar op tussen specifieke tijdstippen.
+        </b></dt>
+        <dd>
+            In deze mode zal Jenkins de slaafnode beschikbaar stellen in functie van een opgesteld tijdsschema.
+            Indien Jenkins deze slaafnode automatisch can starten, dan zal een poging ondernomen
+	    worden om deze, bij onbeschikbaarheid tijdens een actieve periode, periodisch te herstarten.
+
+            Gedurende de periode waarin de slaafnode niet actief hoort te zijn, zal de slaafnode onbeschikbaar
+	    gesteld worden indien er geen actieve jobs aanwezig zijn op de node.
+        </dd-->
+
+        <dt><b>
+            Maak de slaafnode op vraag beschikbaar en onbeschikbaar indien de slaafnode onbenut is.
+        </b></dt>
+        <dd>
+            In deze mode zal Jenkins, indien mogelijk, de slaafnode periodisch (her-)starten zolang er jobs zijn
+	    die aan de volgende criteria voldoen:
+            <ul>
+                <li>Ze staan al minstens voor de opgegeven opstartperiode in de wachtrij.</li>
+                <li>Ze zijn uitvoerbaar op deze slaafnode</li>
+            </ul>
+
+            De slaafnode zal onbeschikbaar gemaakt worden indien:
+            <ul>
+                <li>Er geen actieve jobs aanwezig zijn op de slaafnode</li>
+                <li>De slaafnode inactief is voor minstens de opgegeven periode</li>
+            </ul>
+        </dd>
+    </dl>
+</div>

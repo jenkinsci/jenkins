@@ -1,0 +1,18 @@
+<div>
+  Jenkins herkent het JUnit testrapport XML-formaat. Ditzelfde formaat word bvb. ook door TestNG
+  gebruikt.
+  Indien U deze optie configureert, kan Jenkins nuttige informatie over uw testresultaten tonen.
+  Deze informatie omvat historische trends, een web-gebaseerde interface voor de testrapporten,
+  het volgen van gefaalde testen, ...  
+
+  <p>
+  Om deze functionaliteit te gebruiken, dient U er vooreerst voor te zorgen dat uw
+  bouwconfiguratie voorzien is op het starten van uw testen. Vervolgens geeft U het
+  pad naar de Junit XML bestanden, volgens de <a href="http://ant.apache.org/manual/Types/fileset.html">
+  de Ant glob syntax</a> op. Bvb.  <tt>**/build/test-reports/*.xml</tt>. Let erop
+  dat U geen bestanden selecteert die geen rapport bevatten.  
+
+  <p>
+  Van zodra er enkele bouwpogingen met testresultaten beschikbaar zijn, zou je iets
+  gelijkaardigs aan <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+graph">het volgende</a> moeten zien.
+</div>

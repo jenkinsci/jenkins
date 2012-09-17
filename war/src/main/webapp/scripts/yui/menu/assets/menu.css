@@ -1,0 +1,503 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+/* Menu & MenuBar styles */
+
+.yuimenu {
+
+    top: -999em;
+    left: -999em;
+
+}
+
+.yuimenubar {
+
+    position: static;
+
+}
+
+.yuimenu .yuimenu,
+.yuimenubar .yuimenu {
+
+    position: absolute;
+
+}
+
+.yuimenubar li, 
+.yuimenu li {
+
+    list-style-type: none;    
+
+}
+
+.yuimenubar ul, 
+.yuimenu ul,
+.yuimenubar li, 
+.yuimenu li,
+.yuimenu h6,
+.yuimenubar h6 { 
+
+    margin: 0;
+    padding: 0;
+
+}
+
+.yuimenuitemlabel,
+.yuimenubaritemlabel {
+
+    text-align: left;
+    white-space: nowrap;
+
+}
+
+
+/* 
+    The following style rule trigger the "hasLayout" property in 
+    IE (http://msdn2.microsoft.com/en-us/library/ms533776.aspx) for a
+    MenuBar instance's <ul> element, allowing both to clear their floated 
+    child <li> elements.
+*/
+
+.yuimenubar ul {
+
+    *zoom: 1;
+
+}
+
+
+/* 
+    Remove the "hasLayout" trigger for submenus of MenuBar instances as it 
+    is unnecessary. 
+*/
+
+.yuimenubar .yuimenu ul {
+
+    *zoom: normal;
+
+}
+
+/*
+    The following style rule allows a MenuBar instance's <ul> element to clear
+    its floated <li> elements in Firefox, Safari and and Opera.
+*/
+
+.yuimenubar>.bd>ul:after {
+
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    height: 0;
+    line-height: 0;
+
+}
+
+.yuimenubaritem {
+
+    float: left;
+
+}
+
+.yuimenubaritemlabel,
+.yuimenuitemlabel {
+
+    display: block;
+
+}
+
+.yuimenuitemlabel .helptext {
+
+    font-style: normal;
+    display: block;
+    
+    /*
+        The value for the left margin controls how much the help text is
+        offset from the text of the menu item.  This value will need to 
+        be customized depending on the longest text label of a menu item.
+    */
+    
+    margin: -1em 0 0 10em;
+    
+}
+
+/*
+    PLEASE NOTE: The <div> element used for a menu's shadow is appended 
+    to its root element via JavaScript once it has been rendered.  The 
+    code that creates the shadow lives in the menu's public "onRender" 
+    event handler that is a prototype method of YAHOO.widget.Menu.  
+    Implementers wishing to remove a menu's shadow or add any other markup
+    required for a given skin for menu should override the "onRender" method.
+*/
+
+.yui-menu-shadow {
+
+    position: absolute;
+    visibility: hidden;
+    z-index: -1;
+
+}
+
+.yui-menu-shadow-visible {
+
+    top: 2px;
+    right: -3px;
+    left: -3px;
+    bottom: -3px;
+    visibility: visible;
+
+}
+
+
+/*
+
+There are two known issues with YAHOO.widget.Overlay (the superclass class of 
+Menu) that manifest in Gecko-based browsers on Mac OS X:
+
+    1) Elements with scrollbars will poke through Overlay instances floating 
+       above them.
+    
+    2) An Overlay's scrollbars and the scrollbars of its child nodes remain  
+       visible when the Overlay is hidden.
+
+To fix these bugs in Menu (a subclass of YAHOO.widget.Overlay):
+
+    1) The "overflow" property of a Menu instance's shadow element and child 
+       nodes is toggled between "hidden" and "auto" (through the application  
+       and removal of the "hide-scrollbars" and "show-scrollbars" CSS classes)
+       as its "visibility" configuration property is toggled between 
+       "false" and "true."
+    
+    2) The "display" property of <select> elements that are child nodes of the 
+       Menu instance's root element is set to "none" when it is hidden.
+
+PLEASE NOTE:  
+  
+    1) The "hide-scrollbars" and "show-scrollbars" CSS classes classes are 
+       applied only for Gecko on Mac OS X and are added/removed to/from the 
+       Overlay's root HTML element (DIV) via the "hideMacGeckoScrollbars" and 
+       "showMacGeckoScrollbars" methods of YAHOO.widget.Overlay.
+    
+    2) There may be instances where the CSS for a web page or application 
+       contains style rules whose specificity override the rules implemented by 
+       the Menu CSS files to fix this bug.  In such cases, is necessary to 
+       leverage the provided "hide-scrollbars" and "show-scrollbars" classes to 
+       write custom style rules to guard against this bug.
+
+** For more information on this issue, see:
+
+   + https://bugzilla.mozilla.org/show_bug.cgi?id=187435
+   + YUILibrary bug #1723530
+
+*/
+
+.hide-scrollbars * {
+
+	overflow: hidden;
+
+}
+
+.hide-scrollbars select {
+
+	display: none;
+
+}
+
+
+/*
+
+The following style rule (".yuimenu.show-scrollbars") overrides the 
+".show-scrollbars" rule defined in container-core.css which sets the 
+"overflow" property of a YAHOO.widget.Overlay instance's root HTML element to 
+"auto" when it is visible.  Without this override, a Menu would have scrollbars
+when one of its submenus is visible.
+
+*/
+
+.yuimenu.show-scrollbars,
+.yuimenubar.show-scrollbars {
+
+	overflow: visible; 
+
+}
+
+.yuimenu.hide-scrollbars .yui-menu-shadow,
+.yuimenubar.hide-scrollbars .yui-menu-shadow {
+
+    overflow: hidden;
+
+}
+
+.yuimenu.show-scrollbars .yui-menu-shadow,
+.yuimenubar.show-scrollbars .yui-menu-shadow {
+
+    overflow: auto;
+
+}
+
+
+/* MenuBar style rules */
+
+.yuimenubar {
+
+    background-color: #f6f7ee;
+    
+}
+
+
+
+/* Menu style rules */
+
+.yuimenu {
+
+    background-color: #f6f7ee;
+    border: solid 1px #c4c4be;
+    padding: 1px;
+    
+}
+
+.yui-menu-shadow {
+
+    display: none;
+
+}
+
+.yuimenu ul {
+
+    border: solid 1px #c4c4be;
+    border-width: 1px 0 0 0;
+    padding: 10px 0;
+
+}
+
+.yuimenu .yui-menu-body-scrolled {
+
+    overflow: hidden;
+
+}
+
+
+/* Group titles */
+
+.yuimenu h6,
+.yuimenubar h6 { 
+
+    font-size: 100%;
+    font-weight: normal;
+    border: solid 1px #c4c4be;
+    color: #b9b9b9;    
+
+}
+
+.yuimenubar h6 {
+
+    float: left;
+    padding: 4px 12px;
+    border-width: 0 1px 0 0;
+
+}
+
+.yuimenubar .yuimenu h6 {
+
+    float: none;
+
+}
+
+.yuimenu h6 {
+
+    border-width: 1px 0 0 0;
+    padding: 5px 10px 0 10px;
+
+}
+
+.yuimenu ul.first-of-type, 
+.yuimenu ul.hastitle,
+.yuimenu h6.first-of-type {
+
+    border-width: 0;
+
+}
+
+
+
+/* Top and bottom scroll controls */
+
+.yuimenu .topscrollbar,
+.yuimenu .bottomscrollbar {
+
+    height: 16px;
+    background-position: center center;
+    background-repeat: no-repeat;
+
+}
+
+.yuimenu .topscrollbar {
+
+    background-image: url(menu_up_arrow.png);
+
+}
+
+.yuimenu .topscrollbar_disabled {
+
+    background-image: url(menu_up_arrow_disabled.png);
+
+}
+
+.yuimenu .bottomscrollbar {
+
+    background-image: url(menu_down_arrow.png);
+
+}
+
+.yuimenu .bottomscrollbar_disabled {
+
+    background-image: url(menu_down_arrow_disabled.png);
+
+}
+
+
+/* MenuItem and MenuBarItem styles */
+
+.yuimenuitem {
+
+    /*
+        For IE: Used to collapse superfluous white space between <li> elements
+        that is triggered by the "display" property of the <a> elements being
+        set to "block."
+    */
+
+    *border-bottom: solid 1px #f6f7ee;
+
+}
+
+.yuimenuitemlabel,
+.yuimenuitemlabel:visited,
+.yuimenubaritemlabel,
+.yuimenubaritemlabel:visited {
+
+    font-size: 85%;
+    color: #000;
+    text-decoration: none;
+
+}
+
+.yuimenuitemlabel {
+
+    padding: 2px 24px;
+    
+}
+
+.yuimenubaritemlabel {
+
+    border-width: 0 0 0 1px;
+    border-style: solid;
+    border-color: #c4c4be;
+    padding: 4px 24px;
+
+}
+
+.yuimenubar li.first-of-type .yuimenubaritemlabel {
+
+    border-width: 0;
+
+}
+
+.yuimenubaritem-hassubmenu {
+
+    background: url(menubaritem_submenuindicator.png) right center no-repeat;
+
+}
+
+.yuimenuitem-hassubmenu {
+
+    background: url(menuitem_submenuindicator.png) right center no-repeat;
+
+}
+
+.yuimenuitem-checked {
+
+    background: url(menuitem_checkbox.png) left center no-repeat;
+
+}
+
+.yuimenuitemlabel .helptext {
+
+    margin-top: -1.1em;
+    *margin-top: -1.2em;  /* For IE*/
+    
+}
+
+
+
+/* MenuItem states */
+
+
+/* Selected MenuItem */
+
+.yuimenubaritem-selected,
+.yuimenuitem-selected {
+
+    background-color: #8c8ad0;
+
+}
+
+.yuimenubaritemlabel-selected,
+.yuimenubaritemlabel-selected:visited,
+.yuimenuitemlabel-selected,
+.yuimenuitemlabel-selected:visited {
+
+    text-decoration: underline;
+    color: #fff;
+
+}
+
+.yuimenubaritem-hassubmenu-selected {
+
+    background-image: url(menubaritem_submenuindicator_selected.png);
+
+}
+
+.yuimenuitem-hassubmenu-selected {
+
+    background-image: url(menuitem_submenuindicator_selected.png);
+
+}
+
+.yuimenuitem-checked-selected {
+
+    background-image: url(menuitem_checkbox_selected.png);
+
+}
+
+
+/* Disabled MenuItem */
+
+.yuimenubaritemlabel-disabled,
+.yuimenubaritemlabel-disabled:visited,
+.yuimenuitemlabel-disabled,
+.yuimenuitemlabel-disabled:visited {
+
+    cursor: default;
+    color: #b9b9b9;
+
+}
+
+.yuimenubaritem-hassubmenu-disabled {
+
+    background-image: url(menubaritem_submenuindicator_disabled.png);
+
+}
+
+.yuimenuitem-hassubmenu-disabled {
+
+    background-image: url(menuitem_submenuindicator_disabled.png);
+
+}
+
+.yuimenuitem-checked-disabled {
+
+    background-image: url(menuitem_checkbox_disabled.png);
+
+}

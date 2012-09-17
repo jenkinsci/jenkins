@@ -1,0 +1,23 @@
+﻿<div>
+  Jenkins comprend le format XML des rapports de test JUnit (qui est le
+  même pour ceux de TestNG).
+  Quand cette option est configurée, Jenkins peut fournir des informations
+  utiles sur les résultats des tests, tels que les tendances historiques
+  sur les résultats des tests, une interface web pour visualiser les rapports
+  de test, tracer les échecs, etc.
+
+  <p>
+  Pour utiliser cette fonctionnalité, tout d'abord configurez votre build
+  pour lancer des tests, puis spéficiez le chemin vers les fichiers XML
+  JUnit en utilisant
+  <a href="http://ant.apache.org/manual/Types/fileset.html">
+  la syntaxe classique de Ant</a>, par exemple
+  <tt>**/build/test-reports/*.xml</tt>.
+  Assurez-vous de ne pas inclure des fichiers qui ne contiennent pas de
+  rapports dans ce pattern.
+
+  <p>
+  Une fois que des builds produisent des résultats de test, vous devriez
+  commencer à voir quelque chose
+  <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+graph">comme ça</a>.
+</div>

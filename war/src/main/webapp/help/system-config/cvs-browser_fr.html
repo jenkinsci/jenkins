@@ -1,0 +1,36 @@
+﻿<div>
+  <p>
+  Spécifie les chemins du l'application web qui sert de navigateur de repository CVS.
+  Ces valeurs permettent à Jenkins de générer des liens à partir des listes de changements
+  vers ces pages.
+  Il y a deux valeurs à fournir pour chaque CVSROOT.
+
+  <dl>
+    <dt>URL</dt>
+    <dd>
+      L'URL de la page qui affiche les détails d'un fichier particulier.
+    </dd>
+
+    <dt>Diff URL</dt>
+    <dd>
+      L'URL de la page qui affiche les détails des différences entre deux revisions.
+    </dd>
+  </dl>
+
+  <p>
+  Les caractères de macro suivants sont disponibles.
+  <table>
+    <tr>
+      <td>%%P</td>
+      <td>Chemin vers le fichier sous CVS, du type "foo/bar/Zot.java"</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Numéro de révision de la version précédente (pour les Diff URLs)</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Numéro de révision de la nouvelle version du fichier (pour les Diff URLs)</td>
+    </tr>
+  </table>
+</div>

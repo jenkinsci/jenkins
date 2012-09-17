@@ -1,0 +1,72 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Log view
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="${%Log}">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel xmlns:local="local">
+    <h1><img src="${imagesURL}/48x48/clipboard.png" alt="" height="48" width="48"/>
+      ${%Log Recorders}
+      <t:help href="https://wiki.jenkins-ci.org/display/JENKINS/Logging" />
+    </h1>
+
+    <d:taglib uri="local">
+      <d:tag name="row">
+        <tr>
+          <td width="32">
+            <img src="${imagesURL}/32x32/clipboard.png" width="32" height="32" alt=""/>
+          </td>
+          <td style="padding-left:2em"><a href="${href}">${name}</a></td>
+          <td width="32">
+            <d:invokeBody />
+          </td>
+        </tr>
+      </d:tag>
+    </d:taglib>
+
+    <table id="logRecorders" class="sortable pane bigtable">
+      <tr>
+        <th width="32">S</th>
+        <th initialSortDir="down">${%Name}</th>
+        <th width="32"/>
+      </tr>
+      <local:row href="all" name="${%All Jenkins Logs}" />
+      <j:forEach var="lr" items="${it.logRecorders.values()}">
+        <local:row name="${lr.name}" href="${lr.name}/">
+          <a href="${lr.name}/configure">
+            <img src="${imagesURL}/32x32/setting.png" width="32" height="32" alt="[configure]" title="Configure"/>
+          </a>
+        </local:row>
+      </j:forEach>
+    </table>
+    <form method="get" action="new">
+      <f:submit value="${%Add new log recorder}" />
+    </form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

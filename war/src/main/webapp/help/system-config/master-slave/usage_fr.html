@@ -1,0 +1,29 @@
+﻿<div>
+  Contrôle comment Jenkins programme les builds sur cette machine.
+
+  <dl>
+    <dt><b>
+      Utilise cet esclave le plus possible
+    </b></dt>
+    <dd>
+      C'est l'option normale, configurée par défaut.
+      Dans ce mode, Jenkins utilise librement cet esclave. A chaque fois
+      qu'un build peut être exécuté sur cet esclave, Jenkins le fera.
+    </dd>
+
+    <dt><b>
+      Utilise cette machine seulement pour les jobs spécifiques à celle-ci
+    </b></dt>
+    <dd>
+      Dans ce mode, Jenkinsne construira un projet sur cette machine que
+      lorsque un projet aura été assigné spécifiquement à cet esclave. 
+      
+      Cela permet à un esclave de n'être utilisé que pour certains types
+      de jobs. Par exemple, pour lancer des tests de performance en
+      continu à partir de Jenkins, vous pouvez utiliser cette option
+      avec le nombre d'exécuteurs à 1, afin de ne lancer qu'un test de
+      performance à la fois. Cet exécuteur ne sera pas bloqué par les
+      autres builds qui peuvent être lancés sur les autres esclaves.
+    </dd>
+  </dl>
+</div>

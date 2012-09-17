@@ -1,0 +1,21 @@
+<div><!-- OUT OF DATE -->
+  Führt ein Shell-Skript aus, um das Projekt zu bauen (Vorgabewert für die Shell
+  ist
+  <tt>sh</tt>, aber dies ist konfigurierbar). Das Skript wird im Arbeitsbereich
+  als aktuelles Verzeichnis ausgeführt. Geben Sie den Inhalt Ihres
+  Shell-Skriptes direkt in die Textbox ein, jedoch ohne die Kopfzeile
+  <tt>#!/bin/sh</tt> &mdash; diese wird von Jenkins, entsprechend der
+  systemweiten Konfiguration, hinzugefügt.
+  <p>
+    Die Shell wird mit der Option
+    <tt>-ex</tt> ausgeführt. Dadurch werden alle Kommandos ausgegeben, bevor sie
+    ausgeführt werden. Der Build gilt als fehlgeschlagen, wenn einer der
+    Kommandos in der Befehlszeile einen Ergebniscode ungleich 0 liefert.
+  </p>
+  <p>
+    Es hat sich in der Praxis nicht bewährt, allzulange Skripte an dieser Stelle
+    einzutragen. Stattdessen sollten Sie in Erwägung ziehen, Ihr Shell-Skript
+    als Teil Ihres Codes unter Versionskontrolle zu stellen und lediglich von
+    hier aus aufzurufen. Dadurch können Sie Änderungen in Ihrem Skript
+    wesentlich leichter nachverfolgen.
+</div>

@@ -1,0 +1,1 @@
+document.write("<div id='inserted-by-test2'></div>");

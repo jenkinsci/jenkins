@@ -1,0 +1,12 @@
+<div>
+  Specify the JDK(s) with which builds are performed. If none is selected,
+  the default JDK is used (no explicit <tt>JAVA_HOME</tt>, and <tt>java</tt> command
+  is assumed to be in <tt>PATH</tt>.) If multiple JDKs are selected,
+  the configuration matrix will include all of the specified JDKs.
+  <br>
+  Selecting multiple values is typically useful when this job is running tests,
+  and you need to run tests on multiple different versions of JDKs.
+  <br>
+  During a build, the selected JDK value for the given run is available as the "jdk" axis.
+  See the help of "axes" below for more information about how to access the axis value.
+</div>

@@ -1,0 +1,19 @@
+﻿<div>
+  Jenkins place tous les fichiers de données dans ce répertoire du système de fichiers.
+  Vous pouvez changer cette valeur&nbsp;:
+  <ol>
+    <li>
+      Soit en utilisant l'outil d'administration de votre conteneur web pour
+      positionner la variable <tt>JENKINS_HOME</tt>.
+    <li>
+      Soit en positionnant la variable <tt>JENKINS_HOME</tt> avant de lancer
+      votre conteneur web.
+    <li>
+      Soit (non recommandé) en modifiant le fichier web.xml dans
+      <tt>jenkins.war</tt>
+      (ou sa version décompressée dans votre conteneur web).
+  </ol>
+  Cette valeur ne peut être changée quand Jenkins est lancé.
+  Elle a principalement pour but de vous permettre de
+  constater que votre configuration a bien été prise en compte.
+</div>

@@ -1,0 +1,53 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  If the tag is used during the full HTML page generation, <ajax> tag becomes
+  no-op and simply invokes its body.
+
+  If the page is used as a top-level tag, it sets up the environment
+  for generating partial HTML contents (which can be then injected into the existing
+  page via client-side script.)
+
+  See MatrixProject/index.jelly and ajaxMatrix.jelly for how to use this tag.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
+  <j:choose>
+    <j:when test="${rootURL!=null}">
+      <!-- no envelope needed, since this is called during full HTML rendering. -->
+      <d:invokeBody/>
+    </j:when>
+    <j:otherwise>
+      <!-- called to generate partial HTML. set up HTML headers and etc -->
+      <!-- copied from layout.jelly -->
+      <st:contentType value="text/html;charset=UTF-8" />
+      <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+      ${h.initPageVariables(context)}
+      <j:set var="ajax" value="true"/>
+      
+      <d:invokeBody/>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

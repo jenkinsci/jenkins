@@ -1,0 +1,24 @@
+<div>
+  Wenn aktiviert, müssen Sie sich mit einem Benutzernamen und Passwort anmelden, dem
+  die "admin"-Rolle zugewiesen ist, um Konfigurationen zu ändern oder neue Builds
+  zu starten. Die Anmeldung erfolgt über den "Anmelden"-Link oben rechts auf der Seite.
+
+  <p>
+  Die Konfiguration von Benutzerkonten ist anhängig vom Webcontainer, den Sie
+  einsetzen. Tomcat verwendet beispielsweise standardmäßig die Datei 
+  <tt>$TOMCAT_HOME/conf/tomcat-users.xml</tt>.
+
+  <p>
+  Wenn Sie Jenkins im Intranet (oder in einer vertrauenswürdigen Umgebung) einsetzen,
+  bleibt diese Option in der Regel deaktiviert. Dadurch kann jeder Entwickler
+  seine Projekte selbst konfigurieren, ohne Sie damit belästigen zu müssen.
+
+  <p>
+  Wenn Sie Jenkins hingegen im Internet einsetzen, sollten Sie unbedingt diese
+  Option aktivieren. Jenkins startet Prozesse auf Ihrem System - ein unsicheres
+  Jenkins-System ist daher ein sicherer Weg, "gehackt" zu werden.
+  
+  <p>
+  Weitere Informationen zum Thema "Sicherheit und Jenkins" finden Sie
+  <a href="http://wiki.jenkins-ci.org/display/JENKINS/Securing+Jenkins">hier</a>.
+</div>

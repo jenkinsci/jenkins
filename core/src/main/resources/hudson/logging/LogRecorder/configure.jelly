@@ -1,0 +1,76 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Config page
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout norefresh="true">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <f:form method="post" name="config" action="configSubmit">
+      <j:set var="instance" value="${it}" />
+      <f:entry title="${%Name}" help="/help/LogRecorder/name.html">
+        <f:textbox field="name"/>
+      </f:entry>
+
+      <f:entry title="${%Loggers}"
+               description="${%List of loggers and the log levels to record}"
+               help="/help/LogRecorder/logger.html">
+        <j:set var="instance" value="${null}" />
+        <f:repeatable var="instance" items="${it.targets}" name="targets">
+          <table width="100%">
+            <tr>
+              <td>
+                ${%Logger}
+              </td>
+              <td width="100%">
+                <f:textbox field="name"/>
+              </td>
+              <td style="white-space:nowrap;">
+                ${%Log level}
+              </td>
+              <td>
+                <select name="level">
+                  <j:forEach var="lv" items="${it.LEVELS}">
+                    <f:option selected="${instance.level==lv}">${lv.toString().toLowerCase()}</f:option>
+                  </j:forEach>
+                </select>
+              </td>
+              <td>
+                <f:repeatableDeleteButton/>
+              </td>
+            </tr>
+          </table>
+        </f:repeatable>
+      </f:entry>
+
+      <f:block>
+        <f:submit value="${%Save}" />
+      </f:block>
+    </f:form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

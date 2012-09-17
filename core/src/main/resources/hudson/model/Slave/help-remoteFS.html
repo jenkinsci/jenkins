@@ -1,0 +1,14 @@
+<div>
+  <p>
+  A slave needs to have a directory dedicated to Jenkins. Specify
+  the absolute path of this work directory on the slave, such as
+  '/var/jenkins' or 'c:\jenkins'. This should be a path local to the slave
+  machine. There's no need for this path to be visible from the master,
+  under normal circumstances.
+
+  <p>
+  Slaves do not maintain important data (other than active workspaces
+  of projects last built on it), so you can possibly set the slave
+  workspace to a temporary directory. The only downside of doing this
+  is that you may lose the up-to-date workspace if the slave is turned off.
+</div>

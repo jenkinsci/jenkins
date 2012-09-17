@@ -1,0 +1,45 @@
+<div><!-- TODO 誰か訳して -->
+    Controls how Jenkins permits launching via JNLP.
+
+    <dl>
+        <dt><b>
+            Launch only from Computer detail. Require Login if security enabled.
+        </b></dt>
+        <dd>
+            <em>This is the default and normal setting.</em>
+            In this mode, Jenkins provides the JNLP launch link on the computer view.
+            If Security is enabled, then the link will only be available to authenticated users.
+        </dd>
+
+        <dt><b>
+            Launch from front page. Require Login if security enabled.
+        </b></dt>
+        <dd>
+            In this mode, Jenkins provides the JNLP launch link on both the computer view and the Build Executor Status
+            sidepanel.
+            If Security is enabled, then the link will only be available to authenticated users.
+        </dd>
+
+        <dt><b>
+            Launch only from Computer detail. Login never required.
+        </b></dt>
+        <dd>
+            In this mode, Jenkins provides the JNLP launch link on the computer view.
+            The link will always be available whenever the slave is offline.
+            <br />
+            <b>WARNING!</b> In this mode security is disabled.  Thus slaves can be started by <em>anyone
+            that can access this server</em>.  Slaves have the ability to execute arbitrary code on the
+            master.  <b>Do not select this option unless you are fully aware of the risks</b>
+        </dd>
+
+        <!--dt><b>
+            Launch from front page. Login never required.
+        </b></dt>
+        <dd>
+            In this mode, Jenkins provides the JNLP launch link on both the computer view and the Build Executor Status
+            sidepanel.
+            The link will always be available whenever the slave is offline.
+        </dd-->
+
+    </dl>
+</div>

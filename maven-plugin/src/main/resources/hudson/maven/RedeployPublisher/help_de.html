@@ -1,0 +1,19 @@
+<div>
+  Bringt Artefakte in ein Maven-Repository aus (deployment). Im Gegensatz zum 
+  üblichen <tt>mvn deploy</tt>, bringt dieses Funktionsmerkmal Artefakte erst dann aus,
+  wenn der komplette Build erfolgreich abgeschlossen wurde.
+  
+  <p>
+  Dies verhindert ein typisches Problem im Zusammenspiel mit Maven, bei dem zunächst einige
+  Module bereits ausgebracht werden, bevor etwas später im Build ein kritischer Fehler
+  entdeckt wird - und somit das Repository in einen inkonsistenten Zustand gerät.
+
+  <p>
+  Hinweis: Unabhängig von dieser Einstellung können Sie aber auch jederzeit manuell
+  Artefakte aus durchgeführten Builds in beliebige Repositories ausbringen.
+
+  <p>
+  <b>To use this feature you shouldn't deactivate the automatic artifact archiving.</b>
+  </p>
+
+</div>

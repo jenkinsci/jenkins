@@ -1,0 +1,13 @@
+<div>
+  Wenn angewählt, baut Jenkins nur Module mit SCM-Änderungen sowie diejenigen Module,
+  die von diesen geänderten Modulen abhängen. Jenkins verwendet dazu
+  Mavens Kommandozeilenoption <tt>"-amd -pl group1:artifact1,group1:artifact2"</tt>.
+  Wenn das SCM-System hingegen in keinen Modulen Änderungen feststellt,
+  werden alle Module gebaut. Mehr zur diesem Maven-Verhalten finden Sie unter
+  <a href="http://docs.codehaus.org/display/MAVEN/Make+Like+Reactor+Mode">http://docs.codehaus.org/display/MAVEN/Make+Like+Reactor+Mode</a>.
+
+  <p>
+  Diese Funktion erfordert Maven 2.1 oder höher und wird ignoriert,
+  wenn "Baue Module parallel" angewählt ist.
+
+</div>

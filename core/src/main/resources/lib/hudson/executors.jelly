@@ -1,0 +1,147 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Stephen Connolly, id:cactusman, Yahoo! Inc., Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <st:documentation>
+    Displays the status of executors.
+    <st:attribute name="computers">
+      If specified, this is the list of computers whose executors are rendered. If omitted, all the computers
+      in the system will be rendered.
+    </st:attribute>
+  </st:documentation>
+  <d:taglib uri="local">
+    <d:tag name="computerCaption">
+      <a href="${rootURL}/${c.url}" class="model-link">${title}</a>
+      <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
+      <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
+    </d:tag>
+    <d:tag name="executor">
+      <j:choose>
+        <j:when test="${!c.offline or (c.offline and !e.idle)}">
+          <tr>
+            <td class="pane" align="right" style="vertical-align: top">
+              ${name}
+            </td>
+            <j:choose>
+              <j:when test="${!e.alive}">
+                <td class="pane">
+                  <a href="${rootURL}/${c.url}${url}/causeOfDeath">
+                    <div class="error">${%Dead} (!)</div>
+                  </a>
+                </td>
+                <td class="pane"/>
+              </j:when>
+              <j:when test="${e.idle}">
+                <td class="pane">
+                  <j:choose>
+                    <j:when test="${c.offline}">
+                      <a href="${rootURL}/${c.url}" class="model-link">${%Offline}</a>
+                    </j:when>
+                    <j:otherwise>
+                      ${%Idle}
+                    </j:otherwise>
+                  </j:choose>
+                </td>
+                <td class="pane"/>
+              </j:when>
+              <j:otherwise>
+                <!-- not actually optional, but it helps with backward compatibility -->
+                <j:set var="executor" value="${e}" />
+                <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
+                  <td class="pane">
+                    <div style="white-space: normal">${%Building}
+                      <j:set var="exe" value="${e.currentExecutable}" />
+                      <j:invokeStatic var="exeparent"
+                         className="hudson.model.queue.Executables" method="getParentOf">
+                        <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
+                      </j:invokeStatic>
+                      <j:choose>
+                        <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                          <a href="${rootURL}/${exeparent.url}" class="model-link">${exeparent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}" class="model-link">#${exe.number}</a>
+                          <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                        </j:when>
+                        <j:otherwise>
+                          <span>${%Unknown Task}</span>
+                        </j:otherwise>
+                      </j:choose>
+                    </div>
+                  </td>
+                </st:include>
+                <td class="pane" align="center" valign="middle">
+                  <j:if test="${e.hasStopPermission()}">
+                    <a href="${rootURL}/${c.url}${url}/stop"><img src="${imagesURL}/16x16/stop.png" alt="${%terminate this build}" height="16" width="16" /></a>
+                  </j:if>
+                </td>
+              </j:otherwise>
+            </j:choose>
+          </tr>
+        </j:when>
+      </j:choose>
+    </d:tag>
+  </d:taglib>
+  <j:set var="computers" value="${attrs.computers?:app.computers}" />
+    <l:pane width="3" id="executors"
+        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
+      <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
+      <j:forEach var="c" items="${computers}">
+        <tr>
+          <j:choose>
+            <j:when test="${c.node==app or computers.size()==1}">
+              <th class="pane">#</th>
+              <th class="pane" colspan="2">
+                <div style="margin-right:19px">
+                <j:choose>
+                  <j:when test="${empty(app.slaves) or computers.size()==1}">
+                    ${%Status}
+                  </j:when>
+                  <j:otherwise>
+                    <local:computerCaption title="${%Master}" />
+                  </j:otherwise>
+                </j:choose>
+                </div>
+              </th>
+            </j:when>
+            <j:otherwise>
+              <th class="pane" colspan="3">
+                <local:computerCaption title="${c.displayName}" />
+              </th>
+            </j:otherwise>
+          </j:choose>
+        </tr>
+        <j:forEach var="e" items="${c.executors}" varStatus="eloop">
+          <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
+        </j:forEach>
+        <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
+          <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+        </j:forEach>
+      </j:forEach>
+    </l:pane>
+    <!-- schedule updates only for the full page reload -->
+    <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
+      <script defer="defer">
+        refreshPart('executors',"${h.hasView(it,'ajaxExecutors')?'.':rootURL}/ajaxExecutors");
+      </script>
+    </j:if>
+</j:jelly>

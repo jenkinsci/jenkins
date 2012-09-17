@@ -1,0 +1,28 @@
+<div>
+  Controls how Jenkins schedules builds on this machine.
+
+  <dl>
+    <dt><b>
+      Utilize this slave as much as possible
+    </b></dt>
+    <dd>
+      This is the default and normal setting.
+      In this mode, Jenkins uses this slave freely. Whenever there is a build
+      that can be done by using this slave, Jenkins will use it.
+    </dd>
+
+    <dt><b>
+      Leave this machine for tied jobs only
+    </b></dt>
+    <dd>
+      In this mode, Jenkins will only build a project on this machine when
+      that project specifically has this slave as the "assigned node".
+
+      This allows a slave to be reserved for certain kinds of jobs.
+      For example, to run performance tests continuously from Jenkins,
+      you can use this setting with # of executors as 1, so that only one performance
+      test runs at any given time, and that one executor won't be blocked
+      by other builds that can be done on other slaves.
+    </dd>
+  </dl>
+</div>

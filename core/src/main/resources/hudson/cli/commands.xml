@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    This list is a subset of commands.xml in org/codehaus/groovy/tools/shell.
+
+    The "load", "save", and "record" commands have been removed because of
+    the ambiguity of their operation on local files in a client/server
+    context and because of a problematic implementation detail in the record
+    command. These commands may be replaced later with Jenkins-specific
+    versions that have clearer semantics.
+-->
+<commands>
+    <command>org.codehaus.groovy.tools.shell.commands.HelpCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.ExitCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.ImportCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.DisplayCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.ClearCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.ShowCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.InspectCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.PurgeCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.EditCommand</command>
+    <!--<command>org.codehaus.groovy.tools.shell.commands.LoadCommand</command>-->
+    <!--<command>org.codehaus.groovy.tools.shell.commands.SaveCommand</command>-->
+    <!--<command>org.codehaus.groovy.tools.shell.commands.RecordCommand</command>-->
+    <command>org.codehaus.groovy.tools.shell.commands.HistoryCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.AliasCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.SetCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.ShadowCommand</command>
+    <command>org.codehaus.groovy.tools.shell.commands.RegisterCommand</command>
+</commands>
+

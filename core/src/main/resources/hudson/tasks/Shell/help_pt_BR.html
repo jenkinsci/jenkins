@@ -1,0 +1,14 @@
+<div><!-- OUT OF DATE -->
+  Executa um script de shell (o padr&#227;o &#233; o <tt>sh</tt>, mas isto &#233; configur&#225;vel) para construir o projeto.
+  O script ser&#225; executado com o workspace como diret&#243;rio atual. Informe no conte&#250;do de seu
+  script, mas sem um cabe&#231;alho como <tt>#!/bin/sh</tt> &mdash; que &#233; adicionado pelo Jenkins, onde 
+  o caminho do shell est&#225; configurado globalmente.
+
+  <p>
+  O shell ser&#225; invocado com a op&#231;&#227;o "-ex". Assim todos os comandos s&#227;o impressos antes ser executados,
+  e a constru&#231;&#227;o &#233; considerada uma falha se qualquer dos comandos sair com um c&#243;digo diferente de zero.
+
+  <p>
+  Como uma boa pr&#225;tica, tente n&#227;o colocar um script muito longo aqui. Ao inv&#233;s, considere adicionar o script
+  no SCM e simplesmente cham&#225;-lo do Jenkins, desta forma voc&#234; pode rastrear as mudan&#231;as em seu script.
+</div>

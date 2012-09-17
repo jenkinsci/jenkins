@@ -1,0 +1,21 @@
+<p>
+    运行Shell命令来安装你选择的工具.用Ubunte举例,
+    假设Jenkins用户在<code>/etc/sudoers</code>内:
+</p>
+<pre>sudo apt-get --yes install openjdk-6-jdk</pre>
+<p>
+    (这个例子中指定 <code>/usr/lib/jvm/java-6-openjdk</code> 作为工具安装目录.)
+</p>
+<p>
+    其它情况的例子,在(x86) Linux下安装JDK6,
+    你可以使用<a href="https://jdk-distros.dev.java.net/developer.html">DLJ</a>:
+</p>
+<pre>bin=jdk-6u13-dlj-linux-i586.bin
+if [ \! -f $bin ]
+then
+    wget --no-verbose http://download.java.net/dlj/binaries/$bin
+    sh $bin --unpack --accept-license
+fi</pre>
+<p>
+    (这个例子中指定 <code>jdk1.6.0_13</code> 作为安装目录<a href="https://jdk-distros.dev.java.net/developer.html">DLJ</a>:.)
+</p>

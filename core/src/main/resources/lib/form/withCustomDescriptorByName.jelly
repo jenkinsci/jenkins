@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    Execute the body with a temporary currentDescriptorByNameUrl value
+
+    <st:attribute name="value" use="required">
+    </st:attribute>
+  </st:documentation>
+
+  <j:set var="old" value="${h.setCurrentDescriptorByNameUrl(attrs.value)}"/>
+  <d:invokeBody/>
+  <j:set var="_" value="${h.restoreCurrentDescriptorByNameUrl(old)}"/>
+</j:jelly>

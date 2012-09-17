@@ -1,0 +1,77 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>on
+    Radio button with a label that hides additional controls.
+    When checked, those additional controls are displayed. This is useful
+    for presenting mutually exclusive options, where each option comes
+    with a sub-form that provides additional configuration.
+
+    <st:attribute name="name" use="required">
+      Name of the radio button group. Radio buttons that are mutually exclusive need
+      to have the same name.
+    </st:attribute>
+    <st:attribute name="value" use="required">
+      @value of the &lt;input> element.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Human readable label text to be rendered next to the radio button.
+    </st:attribute>
+    <st:attribute name="checked" use="required" type="boolean">
+      Should this control be initially checked or not?
+    </st:attribute>
+    <st:attribute name="inline">
+      if present, the folded section will not be grouped into a separate JSON object upon submission.
+    </st:attribute>
+    <st:attribute name="help">
+      If specified, the (?) help icon will be rendered on the right,
+      for in place help text. See &lt;f:entry> for the details.
+    </st:attribute>
+  </st:documentation>
+
+  <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
+
+	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+	  <td colspan="3">
+      <label>
+	      <input type="radio" name="${name}" value="${value}"
+             class="radio-block-control" checked="${checked?'true':null}" />
+        ${title}
+      </label>
+    </td>
+    <j:if test="${attrs.help!=null}">
+      <td>
+        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
+      </td>
+    </j:if>
+	</tr>
+  <j:if test="${attrs.help!=null}">
+    <f:helpArea />
+  </j:if>
+	<d:invokeBody />
+	<!-- end marker -->
+	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+</j:jelly>

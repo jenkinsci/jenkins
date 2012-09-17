@@ -1,0 +1,1095 @@
+/*
+ * The MIT License
+ * 
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+body {
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+body, table, form, input, td, th, p, textarea, select
+{
+  font-family: Verdana, Helvetica, sans serif;
+  font-size: 11px;
+}
+
+FORM {
+  margin: 0;
+}
+
+td {
+  vertical-align: top;
+}
+
+dt {
+  font-weight: bold;
+}
+
+.fixed-width {
+  font-family: Courier, monospace;
+}
+
+.center {
+  text-align: center;
+}
+
+.middle-align td, td.middle-align {
+  vertical-align: middle;
+}
+
+.center-align td, td.center-align {
+  text-align: center;
+}
+
+.no-wrap td, td.no-wrap {
+  white-space: nowrap;
+}
+
+#main-table {
+  padding: 0;
+  border-collapse: collapse;
+}
+
+#top-panel {
+  margin-bottom: 3pt;
+  height: 34px;
+  background: url(../images/topbar.png) repeat-x;
+}
+#top-panel a {
+  text-decoration: none;
+}
+
+#main-panel {
+  padding: 10px;
+    padding-top: 0px;
+}
+
+#side-panel {
+  padding: 4px;
+  width: 220px;
+}
+
+#footer {
+  text-align: right;
+  font-size: 8pt;
+  margin-top: 10em;
+  padding: 10px;
+  border-top: 1px solid #bbb;
+}
+
+#tasks {
+  padding: 4px;
+}
+
+.skiplink {
+    position: absolute;
+    left: -20000px;
+}
+
+#shutdown-msg {
+    font-weight: bold;
+    color: white;
+    background-color: #ef2929;
+    text-align: center;
+    margin-left: 2em;
+    margin-right: 2em;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+    -moz-border-radius: 0.5em;
+}
+
+a:link {
+  text-decoration: underline;
+  color: #204A87;
+}
+
+a:visited {
+  text-decoration: underline;
+  color: #5c3566;
+}
+
+a.lowkey:link {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.lowkey:hover {
+  text-decoration: underline;
+  color: inherit;
+}
+
+a.lowkey:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* tip - anchors of class info */
+a.tip {
+  position:relative;
+  z-index:24;
+  text-decoration: underline;
+}
+
+a.tip:hover {
+  z-index:25;
+}
+
+a.tip span {
+  display: none
+}
+
+a.tip:hover span {
+  display:block;
+  position:absolute;
+  top:2em;
+  left:2em;
+  width:400px;
+  border:1px solid #bbbbbb;
+  background-color:#fffff0;
+  color:#000;
+  text-align: left
+}
+
+img {
+  vertical-align: middle;
+  border: 0;
+}
+
+div.disabled {
+    opacity : 0.4;
+    filter: alpha(opacity=40); /* msie */
+    background-color: #000;
+}
+
+table.tab {
+  border-collapse: collapse;
+}
+
+td.selected_tab {
+  vertical-align: middle;
+  border: 1px #090 solid;
+  background: #ffffff;
+}
+
+td.tab_filler {
+  background: #ffffff;
+  border-bottom: 1px #090 solid;
+}
+
+td.tab {
+  vertical-align: middle;
+  border: 1px #090 solid;
+  background: #f0f0f0;
+}
+
+.dashboard td {
+  padding: 4px 4px 4px 4px;
+}
+
+pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    margin: 0;
+}
+
+pre.console {
+  overflow: auto;
+}
+
+.setting-leftspace {
+  width: 2em;
+}
+
+.setting-name {
+  white-space: nowrap;
+}
+
+.setting-main {
+  width: 100%; /* try to make this column as big as possible. */
+}
+.setting-help {
+  width: 16px;
+}
+
+.setting-input {
+  width: 100%;
+}
+
+.setting-description {
+  font-size: 0.8em;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* div that looks like a hyperlink */
+.pseudoLink {
+  cursor: pointer;
+}
+
+.advancedLink {
+  text-align: right;
+}
+
+.advancedBody {
+  display: none;
+}
+
+.scm_info {
+  width: 480px;
+}
+
+.build-row {
+  padding: 3px 4px 3px 4px;
+}
+
+.build-keep {
+  font-weight: bold;
+}
+
+.task-header {
+  display: block;
+  border-bottom: 1px #090 solid;
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.task {
+  white-space: nowrap;
+}
+
+.subtasks {
+  padding-left: 1em;
+}
+
+.main-table {
+}
+
+div.dashboard {
+  width: 100%;
+  clear:both;
+}
+
+.pane  {
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.pane td {
+  padding: 4px 4px 3px 4px;
+}
+
+table.pane {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px #bbb solid;
+}
+table.pane > tbody > tr > td:last-child {
+  border-right: 1px #bbb solid;
+}
+
+td.pane {
+  border: 1px #bbb solid;
+  padding: 3px 4px 3px 4px;
+  vertical-align: middle;
+}
+
+td.pane-header {
+  border: 1px #bbb solid;
+  border-right: none;
+  border-left: none;
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+th.pane {
+  border: 1px #bbb solid;
+  font-weight: bold;
+}
+
+.bigtable tr {
+  border: 1px solid #bbb;
+  padding: 3px 4px 3px 4px;
+}
+
+.bigtable tr:hover {
+  background-color: #f0f0f0;
+}
+
+.bigtable th {
+  font-weight: bold;
+  border: none;
+  background-color: #f0f0f0;
+  padding: 3px 4px 3px 4px;
+}
+
+.bigtable td {
+  vertical-align: middle;
+  padding: 3px 4px 3px 4px;
+}
+
+.smallfont {
+  font-size: 9px;
+}
+
+#foldertab {
+  padding: 4px 0;
+  margin-left: 0;
+  border-bottom: 1px solid #090;
+  font: bold 12px Verdana, sans-serif;
+}
+
+#foldertab li {
+  list-style: none;
+  margin: 0;
+  display: inline;
+}
+
+#foldertab li a {
+  padding: 4px 0.5em;
+  margin-left: 3px;
+  border: 1px solid #090;
+  border-bottom: none;
+  background: #090;
+  text-decoration: none;
+}
+
+#foldertab li a:link { color: white; }
+#foldertab li a:visited { color: white; }
+
+#foldertab li a:hover {
+  color: white;
+  background: #6c0;
+  border-color: #6c0;
+}
+
+#foldertab li a#current {
+  background: white;
+  border-bottom: 1px solid white;
+  color: black;
+}
+
+.changeset-message {
+  border: 1px solid #ccb;
+  background: #eed;
+  padding: 4px;
+  white-space: normal;
+}
+
+.disabledJob {
+  color: gray;
+}
+
+.spinner {
+  padding-left: 32px;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-image: url("../images/spinner.gif");
+  background-repeat: no-repeat;
+  background-position: left;
+}
+
+.spinner-right {
+  padding-right: 32px;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-image: url("../images/spinner.gif");
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+#login-field {
+    vertical-align: middle;
+    padding-right: 1em;
+    width:1px;
+}
+
+#login-field SPAN {
+  white-space:nowrap;
+  color: white;
+}
+
+#login-field A {
+    /*
+      link inside login field should be always white.
+      If I set this to inherit, it won't work in IE7
+     */
+    color: white;
+}
+
+div.behavior-loading {
+    position: absolute; width: 80%; height:100%;
+    background-color: #e4e4e4; text-align: center; font-size: 300%;
+    opacity: 0.5;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+}
+
+LABEL.attach-previous {
+    margin-left: 0.5em;
+}
+
+.bottom-sticker, #bottom-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+}
+.bottom-sticker-inner {
+    background:white;
+    padding:1em;
+}
+.bottom-sticker-edge {
+    height:16px;
+    background-image: url("../images/bottom-sticker-top-edge.png");
+    background-repeat: repeat-x;
+}
+
+.top-sticker, #top-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    z-index: 999;
+}
+.top-sticker-inner {
+    background:white;
+    padding:1em;
+}
+.top-sticker-edge {
+    height:16px;
+    background-image: url("../images/top-sticker-bottom-edge.png");
+    background-repeat: repeat-x;
+}
+.top-sticker.noedge > .top-sticker-edge {
+    display: none;
+}
+
+.top-sticker.noedge > .top-sticker-inner {
+    padding:0;
+}
+
+
+/* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
+.error {
+    color: #CC0000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url("../images/16x16/error.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.error-inline {
+    color: #CC0000;
+    font-weight: bold;
+}
+
+.warning {
+    color: #C4A000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url( "../images/16x16/warning.gif" );
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.warning-inline {
+    color: #C4A000;
+    font-weight: bold;
+}
+
+.info {
+    color: black;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.icon16x16 {
+    width: 16px;
+    height: 16px;
+}
+
+.icon24x24 {
+    width: 24px;
+    height: 24px;
+}
+
+.icon32x32 {
+    width: 32px;
+    height: 32px;
+}
+
+/* ====================== help ===================================== */
+
+.help {
+  display: none;  /* hidden until loaded */
+  border: solid #bbb 1px;
+  background-color: #f0f0f0;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+.help .from-plugin {
+    text-align: right;
+    color: #666;
+}
+
+.help-area {
+  /* this marker class is used by JavaScript to locate the area to display help text. */
+}
+
+
+/* ====================== project view tab bar ===================================== */
+#viewList {
+  border: none;
+  margin-bottom: 0px;
+  width: 100%;
+  white-space: nowrap;
+}
+#viewList td {
+  padding: 0px;
+}
+#viewList td.inactive {
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+}
+#viewList td.inactive:hover {
+  background-color: #777;
+}
+#viewList td.inactive a {
+  text-decoration: none;
+  color: #444
+}
+#viewList td.noleft {
+  border-left: none;
+}
+#viewList td.noright {
+  border-right: none;
+}
+#viewList td.active {
+  border: solid 1px #bbb;
+  padding: 0.5em;
+  border-bottom: none;
+  vertical-align:middle;
+  background-color: rgb(240,240,240);
+  font-weight: bold;
+  white-space: nowrap;
+}
+#viewList td.filler {
+  border: none;
+  border-bottom: solid 1px #bbb;
+  width: 100%;
+  text-align: right;
+}
+#viewList a {
+  display: block;
+  padding: 0.5em;
+  white-space: nowrap;
+}
+
+#projectstatus th {
+  text-align: left;
+}
+
+/* ============================ list view entries ======================== */
+div.listview-jobs {
+  max-height:300px;
+  overflow:auto;
+}
+
+/* ============================ parameters form ========================== */
+
+table.parameters {
+  border-collapse: collapse;
+}
+
+table.parameters > tbody > tr:first-child > td {
+  padding-top: 4px;
+}
+
+table.parameters .setting-description {
+  padding-bottom: 4px;
+}
+
+table.parameters > tbody:hover {
+  background-color: #f0f0f0;
+}
+
+/* ============================ health report hover ========================== */
+
+.healthReport a {
+    text-decoration: none;
+}
+
+.healthReport div.healthReportDetails {
+    display: none;
+}
+
+.healthReport:hover, .healthReport.hover { /* fix IE6 bug with :hover */
+    background: transparent;
+}
+
+.healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
+    display: block;
+    position: absolute;
+    background-color: #ffe;
+    border: 1px solid #bbb;
+    margin-left: 32px; /* move it across a bit */
+    z-index: 26;
+}
+
+.healthReport div.healthReportDetails table {
+    border-collapse: collapse;
+    width: 450px; /* fix IE bug with width */
+}
+
+/* ========================= build history ========================= */
+#buildHistory .healthReport {
+    display: inline;
+    margin-right: 1em;
+}
+
+#buildHistory tr.no-wrap td.middle-align {
+    padding: 0;
+}
+
+#buildHistory td.desc {
+    padding: 0;
+    white-space: normal;
+}
+
+/* ========================= editable combobox style ========================= */
+.comboBoxList {
+  border: 1px solid #000;
+  overflow: visible;
+  color: MenuText;
+  background-color: Menu;
+}
+.comboBoxSelectedItem {
+  background-color: Highlight;
+  color: HighlightText;
+}
+.combobox-values {
+  display: none;
+}
+
+
+/* ========================= directory tree ========================= */
+.parentPath {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.dirTree li {
+  list-style: none;
+}
+
+.dirTree .rootIcon {
+  margin-right: 1em;
+}
+
+TABLE.fileList {
+  margin-left: 2em;
+  padding: 0;
+}
+
+TABLE.fileList TD {
+  padding: 0;
+}
+
+TABLE.fileList TD.fileSize {
+  padding-left: 2em;
+  text-align: right;
+  color: #888;
+}
+
+
+
+/* ========================= test result ========================= */
+.result-passed {
+  color: #3465a4;
+}
+
+.result-skipped {
+  color: #ddbb00;
+}
+
+.result-fixed {
+  color: #3465a4;
+  font-weight: bold;
+}
+
+.result-failed {
+  color: #ef2929;
+}
+
+.result-regression {
+  color: #ef2929;
+  font-weight: bold;
+}
+.test-trend-caption {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+
+
+/* ========================= sortable table ========================= */
+table.sortable a.sortheader {
+  text-decoration: none;
+  color: black;
+  display: block;
+}
+table.sortable span.sortarrow {
+  color: black;
+  text-decoration: none;
+}
+
+
+
+
+/* ========================= fingerprint ========================= */
+.md5sum {
+  text-align: right;
+}
+
+.fingerprint-summary-header {
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+TABLE.fingerprint-in-build TD {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+
+
+
+/* ========================= plugin manager ========================= */
+#plugins {
+  margin-top: 0;
+  border-top: none;
+}
+
+#pluginsAdv tr:hover {
+  background-color: inherit;
+}
+
+#plugins tr.already-upgraded {
+  background-color: #e8eeee;
+}
+
+
+/* ========================= repeatable elements ========================= */
+
+.repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested erpeatable elements / 2 deep == */
+.repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested erpeatable elements / 3 deep == */
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/*
+    <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly
+    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
+    when the user does "Add".
+*/
+DIV.to-be-removed { display: none; }
+
+/* ========================= Other form related CSS ========================= */
+
+.row-set-end { display: none; }
+
+/* ========================= Yahoo UI style adjustments ========================= */
+.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
+	color: inherit;
+}
+
+DIV.yahooTree td {
+  vertical-align: middle;
+}
+
+.yui-tt {
+  border: 1px solid black !important;
+  background-color: #FFFFFF !important;
+  padding: 2px !important;
+  font-family: inherit !important;
+  color: inherit !important;
+}
+
+.yui-skin-sam .yui-tt .bd {
+  border: none !important;
+  background-color: #FFF !important;
+}
+/* ========================= search box at the top-right of the page ========================= */
+#search-box {
+  background: white url(../images/16x16/search.gif) no-repeat 2px center;
+  padding-left: 20px;
+  width: 15em;
+  position: static; 
+}
+
+#search-box.defaulted {
+  color: gray;
+}
+
+#search-box-completion {
+  text-align: left;
+  width:25em;
+  position: absolute;
+  z-index: 1000;
+}
+
+#search-box-completion .yui-ac-content {
+  border: 1px solid black;
+  width:25em;
+  background-color: white;
+  overflow: hidden;
+}
+
+#search-box-completion UL {
+  padding: 0 0;
+  width: 100%;
+  margin: 0 0;
+  list-style: none;
+}
+#search-box-completion LI {
+  padding-left:20px;
+  white-space:nowrap;
+}
+#search-box-completion LI.yui-ac-highlight {
+  background: #729FCF;
+}
+#search-box-minWidth {
+  position:absolute;
+  visibility: hidden;
+  width:15em;
+}
+
+#search-box-sizer {
+  position:absolute;
+  visibility: hidden;
+}
+
+
+/* ========================= resizable text area ========================= */
+
+TEXTAREA {
+    margin-bottom: 0;
+}
+DIV.textarea-handle {
+    height: 5px;
+    font-size: 0;
+    background: #EEE url(../images/textarea-handle.gif) no-repeat 50% 1px;
+    border: 1px solid #BABDB6;
+    border-top: none;
+    cursor: s-resize;
+}
+TEXTAREA.rich-editor {
+  visibility: hidden;
+}
+
+/* ========================= hover notification ========================= */
+
+#hoverNotification {
+    visibility:hidden;
+    background-color: white;
+    border: 1px solid black;
+    padding: 0.5em;
+}
+
+/* ========================= D&D support in heterogenous/repeatable lists = */
+
+.hetero-list-container .dd-handle, .repeated-container .dd-handle {
+    cursor: move;
+    background-image: url(../images/grip.png);
+    background-repeat: repeat-y;
+    padding-left: 20px;
+}
+
+.hetero-list-container.with-drag-drop .repeated-chunk.hover {
+    border: 2px dashed #CCC;
+}
+
+.hetero-list-container.with-drag-drop .repeated-chunk {
+    border: 2px dashed transparent;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+
+/* ========================= plugin update center ========================= */
+
+#plugins .excerpt {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #888a85;
+}
+
+#plugins .compatWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
+/* ========================= progress bar ========================= */
+
+table.progress-bar {
+  border-collapse: collapse;
+  border: 1px solid #3465a4;
+  height: 6px;
+  width: 100px;
+  clear: none;
+}
+
+table.progress-bar tr.unknown {
+    background-image:url(../images/progress-unknown.gif);
+}
+
+td.progress-bar-done {
+  background-color: #3465a4;
+}
+
+td.progress-bar-left {
+  background-color: #ffffff;
+}
+
+table.progress-bar.red {
+  border: 1px solid #cc0000;
+}
+
+table.progress-bar.red tr.unknown {
+    background-image:url(../images/progress-unknown-red.gif);
+}
+table.progress-bar.red td.progress-bar-done {
+  background-color: #cc0000;
+}
+
+/* ========================= notification bar ========================= */
+#notification-bar {
+    width:100%;
+    position:fixed;
+    text-align:center;
+    left:0px;
+    font-size: 2em;
+    z-index:1000;
+    border-bottom: 1px solid black;
+}
+
+/* ========================= YUI dialog ========================= */
+
+.dialog .hd {
+    font-size: 12px !important;
+}
+/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
+ to the latest YUI will fix this? */
+.dialog .hd {
+    margin: 0 !important;
+}
+
+.dialog .bd {
+    margin: 0 !important;
+}
+
+.dialog .ft {
+    margin: 0 !important;
+}
+
+/* ========================= tags/labels ================== */
+/* tag0 is the least important tag in a tag cloud */
+.tag0 { font-size: 1.00em; }
+.tag1 { font-size: 1.10em; }
+.tag2 { font-size: 1.20em; }
+.tag3 { font-size: 1.30em; }
+.tag4 { font-size: 1.40em; }
+.tag5 { font-size: 1.50em; }
+.tag6 { font-size: 1.60em; }
+.tag7 { font-size: 1.70em; }
+.tag8 { font-size: 1.80em; }
+.tag9 { font-size: 1.90em; }
+
+/* ========================= textarea.jelly ================== */
+
+.textarea-preview-container {
+    text-align:left;
+}
+.textarea-preview {
+    background-color: #F0F0F0;
+    padding: 0.5em;
+}
+
+/* ========================= matrix configuration table ================== */
+table#configuration-matrix {
+	border: 1px #BBBBBB solid;
+	border-collapse: collapse;
+}
+tr.matrix-row {
+	background: #f0f0f0;
+	font-weight: bold;
+}
+td.matrix-header {
+	border: 1px #BBBBBB solid;
+	padding: 3px;
+}
+td#matrix-title {
+	padding: 3px;
+}
+td.matrix-leftcolumn {
+	border: 1px #BBBBBB solid;
+	font-weight: bold;
+	background: #f0f0f0;
+	padding: 3px;
+}
+td.matrix-cell {
+	border: 1px #BBBBBB solid;
+	text-align: center;
+}

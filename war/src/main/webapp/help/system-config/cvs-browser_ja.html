@@ -1,0 +1,37 @@
+﻿<div>
+  <!-- TODO:誰か訳して -->
+  <p>
+  Specifies paths of the CVS repository browser web application.
+  Setting these values allows Jenkins to generate links from changesets to those pages.
+  There are two different entries for each CVSROOT.
+
+  <dl>
+    <dt>URL</dt>
+    <dd>
+      URL of the page that displays details about a particular file
+      in the repository.
+    </dd>
+
+    <dt>Diff URL</dt>
+    <dd>
+      URL of the page that displays details about differences between two revisions.
+    </dd>
+  </dl>
+
+  <p>
+  The following macro characters are available.
+  <table>
+    <tr>
+      <td>%%P</td>
+      <td>Path name of the file under CVS, like "foo/bar/Zot.java"</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revision of the old version (for diff URLs)</td>
+    </tr>
+    <tr>
+      <td>%%r</td>
+      <td>Revision of the new version (for diff URLs)</td>
+    </tr>
+  </table>
+</div>

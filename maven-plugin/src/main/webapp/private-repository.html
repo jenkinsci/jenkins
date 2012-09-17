@@ -1,0 +1,30 @@
+<div>
+  Normally, Jenkins uses the local Maven repository as determined by Maven &mdash; the exact process
+  seems to be undocumented, but it's <tt>~/.m2/repository</tt> and can be overridden by
+  &lt;localRepository> in <tt>~/.m2/settings.xml</tt> (see <a  href="http://maven.apache.org/settings.html">the reference</a> for more details.)
+
+  <p>
+  This normally means that all the jobs that are executed on the same node shares a single Maven repository.
+  The upside of this is that you can save the disk space, but the downside of this is that sometimes those
+  builds could interfere with each other. For example, you might end up having builds incorrectly succeed,
+  just because your have all the dependencies in your local repository, despite that fact that none of the
+  repositories in POM might have them.
+
+  <p>
+  There are also some reported problems regarding having concurrent Maven processes trying to use the same local
+  repository.
+
+
+  <p>
+  When this option is checked, Jenkins will tell Maven to use <tt>$WORKSPACE/.repository</tt> as the local Maven repository.
+  This means each job will get its own isolated Maven repository just for itself. It fixes the above problems,
+  at the expense of additional disk space consumption.
+
+  <p>
+  When using this option, consider setting up a Maven artifact manager so that you don't have to hit
+  remote Maven repositories too often.
+
+  <p>
+  If you'd prefer to activate this mode in all the Maven jobs executed on Jenkins, refer to the technique described
+  <a href="http://jenkins.361315.n4.nabble.com/Hudson-on-2-4-8-16-core-boxes-td371215.html#a371217">here</a>.
+</div>

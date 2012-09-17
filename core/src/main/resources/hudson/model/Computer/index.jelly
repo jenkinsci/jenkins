@@ -1,0 +1,106 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Stephen Connolly, Tom Huybrechts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.displayName}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+
+      <!-- temporarily offline switch -->
+      <div style="float:right">
+        <j:choose>
+          <j:when test="${it.temporarilyOffline}">
+            <l:hasPermission permission="${it.CONNECT}">
+              <form method="post" action="toggleOffline">
+                <f:submit value="${%submit.temporarilyOffline}"  />
+              </form>
+              <form method="post" action="setOfflineCause">
+              <f:submit value="${%submit.updateOfflineCause}"  />
+              </form>
+            </l:hasPermission>
+          </j:when>
+          <j:otherwise>
+            <l:hasPermission permission="${it.DISCONNECT}">
+              <form method="post" action="markOffline">
+                <f:submit value="${%submit.not.temporarilyOffline}"  />
+              </form>
+            </l:hasPermission>
+          </j:otherwise>
+        </j:choose>
+      </div>
+
+      <h1>
+        <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
+        ${it.caption}
+        <j:if test="${!empty(it.node.nodeDescription)}">
+          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
+        </j:if>
+      </h1>
+
+      <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
+        <st:include it="${it.offlineCause}" page="cause.jelly" />
+      </j:if>
+
+      <j:if test="${it.manualLaunchAllowed}">
+        <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+      </j:if>
+
+      <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
+        <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
+      </j:if>
+
+
+        <j:if test="${it.node.assignedLabels.size() gt 1}">
+        <div>
+          ${%Labels:}
+          <j:forEach var="entry" items="${it.node.labelCloud}">
+            <!-- Skip the label for this node -->
+            <j:if test="${entry.item!=it.node.selfLabel}">
+              <a class="${entry.className} model-link" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+              <st:nbsp/>
+            </j:if>
+          </j:forEach>
+        </div>
+      </j:if>
+
+      <st:include page="nodepropertysummaries.jelly" />
+
+      <h2>${%title.projects_tied_on(it.displayName)}</h2>
+      <j:set var="jobs" value="${it.tiedJobs}" />
+      <j:choose>
+        <j:when test="${empty(jobs)}">
+          <p>
+            ${%None}
+          </p>
+        </j:when>
+        <j:otherwise>
+          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" />
+        </j:otherwise>
+      </j:choose>
+
+      <st:include page="main.jelly" optional="true"/>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

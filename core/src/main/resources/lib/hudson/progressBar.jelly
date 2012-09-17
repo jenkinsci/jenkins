@@ -1,0 +1,50 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Progress bar. @pos (0-100) specifies the current position
+
+  Attributes:
+    pos  : 0-100 to indicates the current progress. -1 if the progress is unknown
+    href : if set, the progress bar becomes a hyperlink
+    red  : if set to non-null, the progress bar will be drawn in red, to indicate that the processing is likely stuck.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <table class="progress-bar ${attrs.red?'red':null}" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${attrs.href!=null ? 'cursor:pointer' : null}">
+    <j:choose>
+      <j:when test="${pos lt 0}">
+        <!-- style sheet will fill in the progress bar image -->
+        <tbody><tr class="unknown"><td/></tr></tbody>
+      </j:when>
+      <j:otherwise>
+          <tbody><tr>
+            <td class="progress-bar-done" style="width:${pos}%;"/>
+            <td class="progress-bar-left" style="width:${100-pos}%"/>
+          </tr>
+        </tbody>
+      </j:otherwise>
+    </j:choose>
+  </table>
+</j:jelly>

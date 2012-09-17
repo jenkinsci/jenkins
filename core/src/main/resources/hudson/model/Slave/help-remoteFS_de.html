@@ -1,0 +1,16 @@
+<div>
+  <p>
+  Ein Slave-Knoten benötigt ein Verzeichnis, das Jenkins exklusiv 
+  zur Verfügung steht. Geben Sie den absoluten Pfad dieses
+  Arbeitsverzeichnisses auf dem Slave-Knoten an, z.B. 
+  '/export/home/jenkins' oder 'c:\jenkins'. Dieses Verzeichnis muß unter normalen
+  Umständen nicht vom Master aus erreichbar sein.
+
+  <p>
+  Slave-Knoten speichern keine wichtigen Daten (abgesehen von den 
+  aktiven Arbeitsbereichen derjenigen Projekte, die zuletzt auf dem
+  Slave-Knoten gebaut wurden). Sie können daher gefahrlos das Slave-Arbeitsverzeichnis
+  auf ein temporäres Verzeichnis setzen. Der einzige Nachteil dieses Vorgehens
+  wäre der Verlust der aktuellen Arbeitsbereiche, falls der Slave-Knoten
+  abgeschaltet würde.
+</div>

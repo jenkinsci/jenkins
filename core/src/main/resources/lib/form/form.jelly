@@ -1,0 +1,57 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Outer-most tag of the entire form taglib, that generates &lt;form> element.
+
+    <st:attribute name="action" use="required">
+      @action of the form field. The URL where the submission is sent.
+    </st:attribute>
+    <st:attribute name="method" use="required">
+      Submission method. Either post or get.
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      @name of the form. In HTML this is not a mandatory attribute,
+      but in Hudson you should have it for testing and page scraping,
+      so this attribute is marked required.
+    </st:attribute>
+    <st:attribute name="enctype">
+      @enctype of the &lt;form> HTML element.
+    </st:attribute>
+    <st:attribute name="target">
+      @target of the &lt;form> HTML element. Works like &lt;a target="...">
+      and controls which window the result of the submission goes to.
+    </st:attribute>
+    <st:attribute name="tableClass">
+      Optional class attribute for &lt;table> that is created in the form.
+    </st:attribute>
+  </st:documentation>
+  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
+    <table width="100%" class="${attrs.tableClass}">
+      <d:invokeBody/>
+    </table>
+  </form>
+</j:jelly>

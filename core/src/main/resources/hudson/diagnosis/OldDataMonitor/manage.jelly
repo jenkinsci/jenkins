@@ -1,0 +1,100 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="${%Manage Old Data}" permission="${app.ADMINISTER}">
+  <st:include page="sidepanel.jelly" it="${app}"/>
+  <l:main-panel>
+    <h1>${%Manage Old Data}</h1>
+    <p>${%blurb.1}</p>
+    <p>${%blurb.2}</p>
+    <table class="pane bigtable" style="width:auto">
+      <tr><th>${%Type}</th><th>${%Name}</th><th>${%Version}</th><th></th></tr>
+      <j:forEach var="item" items="${it.data.entrySet()}">
+        <j:set var="obj" value="${item.key}"/>
+        <j:set var="range" value="${item.value}"/>
+        <j:choose>
+          <j:when test="${range!=''}">
+            <j:if test="${range.isOld(150)}"><j:set var="range"><b>${range}</b></j:set></j:if>
+            <tr>
+              <td>${obj.class.name}</td>
+              <!-- fullName is first to avoid calling User.get(String) for User object -->
+              <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+              <td>${range}</td>
+              <td style="white-space:normal">${item.value.extra}</td>
+            </tr>
+          </j:when>
+          <j:otherwise>
+            <j:if test="${item.value.extra!=null}"><j:set var="hasExtra" value="${true}"/></j:if>
+          </j:otherwise>
+        </j:choose>
+      </j:forEach>
+    </table>
+    <p>${%blurb.3}</p>
+    <p>${%blurb.4}</p>
+    <j:set var="vers" value="${it.versionList}"/>
+    <j:choose>
+      <j:when test="${vers.hasNext()}">
+        <form action="upgrade" method="POST" name="oldDataUpgrade">
+          ${%Resave data files with structure changes no newer than Jenkins}
+          <select name="thruVer">
+            <j:forEach var="ver" items="${vers}">
+              <f:option>${ver}</f:option>
+            </j:forEach>
+          </select>
+          ${%blurb.5}
+          <br/>
+          <f:submit value="${%Upgrade}"/>
+        </form>
+      </j:when>
+      <j:otherwise>
+        ${%No old data was found.}
+      </j:otherwise>
+    </j:choose>
+    <j:if test="${hasExtra}">
+      <br/>
+      <h2>${%Unreadable Data}</h2>
+      <p>${%blurb.6}</p>
+      <table class="pane bigtable" style="width:auto">
+        <tr><th>${%Type}</th><th>${%Name}</th><th>${%Error}</th></tr>
+        <j:forEach var="item" items="${it.data.entrySet()}">
+          <j:if test="${item.value.extra!=null and item.value==''}">
+            <j:set var="obj" value="${item.key}"/>
+            <tr>
+              <td>${obj.class.name}</td>
+              <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+              <td style="white-space:normal">${item.value.extra}</td>
+            </tr>
+          </j:if>
+        </j:forEach>
+      </table>
+      <br/>
+      <form action="discard" method="POST" name="discardUnreadable">
+        <f:submit value="${%Discard Unreadable Data}"/>
+      </form>
+    </j:if>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

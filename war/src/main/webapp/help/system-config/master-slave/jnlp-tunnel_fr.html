@@ -1,0 +1,21 @@
+<div>
+    Quand un esclave est lancé par JNLP, l'agent de l'esclave tente de se connecter à Jenkins par un port
+    TCP spécifique, afin d'établir un canal de communication.
+    Certains réseaux très sécurisés peuvent vous empècher d'effectuer cette connexion.
+    Cela peut également être le cas quand Jenkins tourne derrière un répartiteur de charge (load balancer),
+    un <a href="http://www.serverwatch.com/tutorials/article.php/3290851">reverse proxy apache</a>
+    dans une <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">zone démilitarisée (DMZ)</a>, etc.
+
+    <p>
+    Cette option de tunneling vous permet, dans ces situations, de rediriger la connexion sur un autre host ou
+    un autre numéro de port. Le champ supporte les formats "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>" et "<tt>HOST:</tt>".
+    Dans le premier format, l'agent JNLP de l'esclave se connectera sur le numéro de port TCP et le host spécifiés et
+    supposera que vous avez configuré votre réseau de façon à ce que ce port fasse suivre la connexion sur le
+    port TCP de l'esclave JNLP de Jenkins.
+
+    <p>
+    Dans les deux derniers formats, le nom de host et le numéro de port par défaut (c'est-à-dire le nom de host que
+    Jenkins utilise et le numéro de port que Jenkins a ouvert) sont utilisés pour compléter les valeurs manquantes.
+    En particulier, le format <tt>HOST:</tt> est utile si un reverse proxy HTTP est utilisé et que Jenkins tourne en fait sur
+    un autre système.
+</div>

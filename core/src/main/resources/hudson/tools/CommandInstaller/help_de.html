@@ -1,0 +1,25 @@
+<p>
+    Startet ein Shell-Kommando Ihrer Wahl, um das Hilfsprogramm zu installieren.
+    Unter Ubuntu könnte das beispielsweise so aussehen (unter der Annahme, daß
+    der Jenkins-Benutzer in <code>/etc/sudoers</code> gelistet ist):
+    
+</p>
+<pre>sudo apt-get --yes install openjdk-6-jdk</pre>
+<p>
+    (In diesem Fall geben Sie <code>/usr/lib/jvm/java-6-openjdk</code> als Stammverzeichnis
+    des Hilfsprogramms an.)
+</p>
+<p>
+    Weiteres Beispiel: Um Sun JDK 6 für (x86) Linux zu installieren, können Sie
+    <a href="https://jdk-distros.dev.java.net/developer.html">DLJ</a> einsetzen:
+</p>
+<pre>bin=jdk-6u13-dlj-linux-i586.bin
+if [ \! -f $bin ]
+then
+    wget --no-verbose http://download.java.net/dlj/binaries/$bin
+    sh $bin --unpack --accept-license
+fi</pre>
+<p>
+    (In diesem Fall geben Sie <code>jdk1.6.0_13</code> als Stammverzeichnis
+    des Hilfsprogramms an.)
+</p>

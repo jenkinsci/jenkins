@@ -1,0 +1,77 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+/* default space between tabs */
+.yui-navset .yui-nav li {
+    margin-right:0.5em; /* horizontal tabs */
+}
+.yui-navset-left .yui-nav li, .yui-navset-right .yui-nav li {
+    margin:0 0 0.5em; /* vertical tabs */
+}
+
+/* default width for side tabs */
+.yui-navset-left .yui-nav, .yui-navset-right .yui-nav { width:6em; }
+.yui-navset-left { padding-left:6em; } /* map to nav width */
+.yui-navset-right { padding-right:6em; } /* ditto */
+
+/* core */
+
+.yui-nav, .yui-nav li {
+    margin:0;
+    padding:0;
+    list-style:none;
+}
+.yui-navset li em { font-style:normal; }
+
+.yui-navset {
+    position:relative; /* contain absolute positioned tabs (left/right) */
+    zoom:1;
+}
+
+.yui-navset .yui-content { zoom:1; }
+
+.yui-navset .yui-hidden { display:none; }
+
+.yui-navset .yui-nav li {
+    display:inline-block;
+    display:-moz-inline-stack;
+    *display:inline; /* IE */
+    vertical-align:bottom; /* safari: for overlap */
+    cursor:pointer; /* gecko: due to -moz-inline-stack on anchor */
+    zoom:1; /* IE: kill space between horizontal tabs */
+}
+
+.yui-navset-left .yui-nav li, .yui-navset-right .yui-nav li {
+    display:block;
+}
+
+.yui-navset .yui-nav a {
+    outline:0; /* gecko: keep from shifting */
+}
+
+.yui-navset .yui-nav a { position:relative; } /* IE: to allow overlap */
+
+.yui-navset .yui-nav li a {
+    display:block;
+    display:inline-block;
+    vertical-align:bottom; /* safari: for overlap */
+    zoom:1;
+}
+
+.yui-navset-left .yui-nav li a, .yui-navset-right .yui-nav li a {
+    display:block;
+}
+
+.yui-navset-bottom .yui-nav li a {
+    vertical-align:text-top; /* for inline overlap (reverse for Op border bug) */
+}
+
+.yui-navset .yui-nav li a em { display:block; }
+
+/* position left and right oriented tabs */
+.yui-navset-left .yui-nav, .yui-navset-right .yui-nav { position:absolute; z-index:1; }
+.yui-navset-left .yui-nav { left:0; }
+.yui-navset-right .yui-nav { right:0; }

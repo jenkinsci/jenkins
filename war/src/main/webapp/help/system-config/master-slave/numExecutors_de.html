@@ -1,0 +1,17 @@
+<div>
+  Diese Einstellung legt die Anzahl gleichzeitiger Build-Prozesse auf diesem Slave-Knoten fest.
+  Sie beeinflußt daher die Gesamtlast, die Jenkins auf einem System erzeugen kann.
+  Ein guter Ausgangspunkt wäre die Anzahl der CPUs Ihres Systems.
+  
+  <p>
+ 
+  Eine Erhöhung der Anzahl über diesen Wert hinaus würde zunächst die einzelnen Builds
+  verlängern, könnte aber insgesamt den Durchsatz erhöhen, weil es den CPUs erlaubt,
+  an einem Build zu rechnen, während ein anderer Build wegen Ein-/Ausgabeoperationen
+  wartet.
+ 
+  <p>
+  Ein Wert von 0 an dieser Stelle erlaubt es, einen deaktivierten Slave-Knoten
+  übergangsweise aus Jenkins Build-Steuerung zu entfernen, ohne weitere
+  Konfigurationseinstellungen zu verlieren.
+</div>

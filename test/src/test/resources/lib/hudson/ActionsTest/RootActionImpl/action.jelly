@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <div>
+    <b id='bravo'>Bravo</b>
+  </div>
+</j:jelly>

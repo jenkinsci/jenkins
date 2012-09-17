@@ -1,0 +1,21 @@
+﻿<div>
+  Si cette option est activée tous les
+  <a href="lastSuccessfulBuild/fingerprint">builds référencés</a> par les 
+  builds de ce projet (à travers les empreintes digitales) seront protégés
+  lors de la rotation des log.
+
+  <p>
+  Quand votre job dépend d'autres jobs sur Jenkins et que vous avez
+  occasionnellement besoin de tagguer votre workspace, il est souvent
+  pratique (voire nécessaire) de tagguer aussi vos dépendances sur Jenkins.
+  Le problème est que la rotation du log peut avoir des effets néfastes,
+  puisqu'un build utilisé par votre projet pourra être affecté par un
+  nettoyage suite aux rotations des logs (s'il y a eu beaucoup de builds
+  dans cette dépendance). Si cela arrive, vous ne pourrez plus tagguer
+  vos dépendances de façon fiable.
+
+  <p>
+  Cette fonctionnalité règle ce problème en "lockant" ceux de ces builds
+  dont vous dépendez, garantissant ainsi que vous pourrez toujours tagguer
+  toutes vos dépendances.
+</div>

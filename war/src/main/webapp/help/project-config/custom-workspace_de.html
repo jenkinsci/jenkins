@@ -1,0 +1,34 @@
+<div>
+  Für jeden Job erstellt Jenkins ein individuelles "Arbeitsverzeichnis" (workspace).
+  In dieses Verzeichnis wird Code ausgecheckt und der Build durchgeführt. Normalerweise
+  sollten Sie Jenkins Arbeitsverzeichnisse anlegen und löschen lassen, aber in einigen
+  Situationen kann dies problembehaftet sein. In diesen Fällen können Sie mit dieser
+  Option das Arbeitsverzeichnis manuell festlegen.
+
+  <p>
+  In einer solchen Situation verwenden Sie beispielsweise "festverdrahtete" Dateipfade und 
+  der Code muß daher an einer bestimmten Stelle im Dateisystem gebaut werden.
+  Zweifellos ist dies kein Idealfall eines Builds, aber diese Option erlaubt es Ihnen,
+  auch in einer solchen Situation weiterzukommmen. 
+  <p>
+  In einer anderen Situation verwenden Sie ein Projekt nicht um einen
+  Software-Build auszuführen, sondern um eine Batch-Aufgabe auszuführen, z.B. als Cron-Ersatz.
+  In diesem Fall können Sie diese Option verwenden, um ein relevantes Verzeichnis als 
+  Arbeitsverzeichnis einzustellen, so daß Anwender Dateien in diesem Verzeichnis über
+  die Weboberfläche von Jenkins abrufen können und relevante Kommandos einfacher 
+  gestartet werden können.
+
+  <p>
+  Wenn Sie in einer verteilten Build-Umgebung arbeiten und einen Job nicht an
+  einen bestimmten Knoten binden, kann Jenkins einen Job auf verschiedenen
+  Knoten zur Ausführung vorsehen. Manchmal ist dies wünschenswert,
+  manchmal nicht. Darüberhinaus können Sie auch mehrere Projekte
+  auf das gleiche Arbeitsverzeichnis verweisen. In diesem Fall müssen Sie
+  dafür sorgen, daß die gleichzeitige Ausführung dieser Jobs keine unerwünschten
+  gegenseitigen Beeinträchtigungen herbeiführt.
+  
+  <p>
+  Ein relativer Pfad wird auf Slave-Knoten ausgehend vom Konfigurationseintrag
+  "Stammverzeichnis in entferntem Dateisystem" aufgelöst, auf dem Master-Knoten
+  hingegen von <tt>$JENKINS_HOME</tt>.   
+</div>

@@ -1,0 +1,24 @@
+<div>
+  Hier können Sie die Achsen Ihrer Konfigurationsmatrix angeben.
+  <p>
+  Beispiel: Sie haben eine Datenbankanwendung geschrieben und möchten diese mit
+  den drei Datenbanksystemen MySQL, PostgreSQL und Oracle  testen. Ihr Build-Skript
+  ist so gestaltet, dass Sie ein bestimmtes Datenbanksystem testen können, indem 
+  Sie Ant etwa folgendermaßen aufrufen: <tt>ant -Ddatabase=mysql</tt>.
+  <p>
+  Dies ist das Konzept einer "Achse". Sie definieren dazu eine Variable namens "database",
+  welche unterschiedliche Werte annehmen kann. Wenn Sie für diese Variable 3 Werte
+  konfigurieren, wird Jenkins 3 Unter-Builds ausführen - jeder mit einem anderen Wert
+  für die Variable "database", um die Konfigurationsmatrix erschöpfend abzudecken.
+  <p>
+  Variablen, die hier als Achse spezifiziert werden, stehen dem Build als Umgebungsvariablen
+  zur Verfügung. Für Ant und Maven sind die Variablen zusätzlich auch als Eigenschaften
+  (properties) sichtbar - genau so, als ob <tt>-D<i>variableName</i>=<i>value</i></tt> 
+  in der Kommandozeile angegeben worden wäre.
+  <p>
+  Sind mehrere Achsen eingerichtet, so werden alle möglichen Kombinationen
+  erschöpfend in Unter-Builds ausgeführt. Mehrfache Auswahlen in Labels und JDKs
+  werden auf dieselbe Weise behandelt. Geben Sie beispielsweise
+  <tt>jdk=[JDK5,JDK6], database=[mysql,postgresql,oracle], container=[jetty,tomcat]</tt>
+  an, so besteht ein Build aus 2x3x2=12 unterschiedlichen Unter-Builds.
+</div>

@@ -1,0 +1,15 @@
+<div>
+  This controls the number of concurrent builds that Jenkins can perform. So the value
+  affects the overall system load Jenkins may incur.
+  A good value to start with would be the number of processors on your system.
+
+  <p>
+  Increasing this value beyond that would cause each build to take longer, but it could increase
+  the overall throughput, because it allows CPU to build one project while another build is waiting
+  for I/O.
+
+  <p>
+  When using Jenkins in the master/slave mode, setting this value to 0 would prevent the master
+  from doing any building on its own.  Slaves may not have zero executors, but may be
+  temporarily disabled using the button on the slave's status page.
+</div>

@@ -1,0 +1,43 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+  <st:documentation>
+    &lt;option> tag for the &lt;select> element that takes true/false for selected.
+
+    <st:attribute name="value">
+      The value to be sent when the form is submitted.
+      If omitted, the body of the tag will be placed in the value attribute as well
+      (due to the browser incompatibility between IE and Firefox, value attribute
+       must be included).
+    </st:attribute>
+    <st:attribute name="selected" type="boolean">
+      If true, the option value appears as selected.
+    </st:attribute>
+  </st:documentation>
+  <!-- No escape/encode to avoid double-encoding if used in value attribute below -->
+  <j:set var="optionBody" encode="false"><d:invokeBody escapeText="false"/></j:set>
+  <option value="${attrs.value!=null?attrs.value:h.xmlUnescape(optionBody)}"
+          selected="${attrs.selected?'true':null}"><j:out value="${optionBody}"/></option>
+</j:jelly>

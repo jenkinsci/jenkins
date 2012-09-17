@@ -1,0 +1,19 @@
+<div>
+    When a slave is launched through JNLP, the slave agent attempts to connect to a specific TCP port of Jenkins
+    to establish a communication channel.
+    But some security sensitive network can prevent you from making this connection.
+    This can also happen when Jenkins runs behind a load balancer,
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">apache reverse proxy</a>
+    into <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>, and so on.
+
+    <p>
+    This tunneling option allows you to route this connection to another host/port, and useful for those situations.
+    The field can either take "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>", or "<tt>HOST:</tt>". In the first format,
+    JNLP slave agent will connect to the given TCP port on the given host, and assume that you've configured your
+    network so that this port forwards the connection to Jenkins' JNLP slave TCP port.
+
+    <p>
+    In the latter two formats, the default host name and port number (that is, the host name that Jenkins runs,
+    and the TCP port that Jenkins opened) are used to augment the missing values. In particular the <tt>HOST:</tt> format
+    is useful if the HTTP reverse proxy is used and Jenkins actually runs on another system. 
+</div>

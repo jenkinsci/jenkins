@@ -1,0 +1,51 @@
+<div>
+    Contrôle le moment où Jenkins démarrage et arrête l'esclave.
+
+    <dl>
+        <dt><b>
+            Maintenir l'esclave activé le plus longtemps possible
+        </b></dt>
+        <dd>
+            C'est la configuration par défaut et la plus classique.
+            Dans ce mode, Jenkins fait des tests réguliers pour conserver l'esclave
+            actif.
+            Si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur et
+            que l'esclave n'est pas disponible,
+            il tentera régulièrement de le relancer.
+            Jenkins ne cherchera pas à le désactiver.
+        </dd>
+
+        <!--dt><b>
+            Arrêter et démarrer l'esclave à des moment spécifiques
+        </b></dt>
+        <dd>
+            Dans ce mode, Jenkins conservera l'esclave activé selon les horaires configurés.
+            Si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur et
+            que l'esclave n'est pas disponible dans la fenêtre où cet
+            il est censé être activé,
+            il tentera régulièrement de le relancer.
+
+            Pendant la fenêtre où l'esclave est censé être désactivé, il ne le sera
+            réellement que s'il n'a pas de job en cours.
+        </dd-->
+
+        <dt><b>
+            Activer l'esclave en cas nécessité et le désactiver lorsqu'il n'est plus nécessaire
+        </b></dt>
+        <dd>
+            Dans ce mode, si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur, il
+            cherchera régulièrement à l'activer tant qu'il y aura des jobs en attente
+            respectant les critères suivants&nbsp;:
+            <ul>
+                <li>Ils sont dans la file d'attente depuis au moins aussi longue que la période d'attente spécifiée</li>
+                <li>Ils peuvent s'exécuter sur cette machine</li>
+            </ul>
+
+            L'esclace sera désactivé si&nbsp;:
+            <ul>
+                <li>Il n'y a plus de job en cours sur cet esclave</li>
+                <li>L'esclave a été inactif depuis au moins la période d'inactivité spécifiée</li>
+            </ul>
+        </dd>
+    </dl>
+</div>

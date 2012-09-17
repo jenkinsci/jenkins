@@ -1,0 +1,63 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Edit View Page
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout norefresh="true" title="${%Edit View}">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <!-- to make the form field binding work -->
+      <j:set var="instance" value="${it}" />
+      <j:set var="descriptor" value="${it.descriptor}" />
+
+      <f:form method="post" action="configSubmit" name="viewConfig">
+        <f:entry title="${%Name}">
+          <f:textbox name="name" value="${it.viewName}" />
+        </f:entry>
+        <f:entry title="${%Description}" help="/help/view-config/description.html">
+          <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+        </f:entry>
+        <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
+        	<f:checkbox name="filterQueue" field="filterQueue"/>
+        </f:entry>
+        <f:entry title="${%Filter build executors}" help="/help/view-config/filter-executors.html">
+        	<f:checkbox name="filterExecutors" field="filterExecutors"/>
+        </f:entry>
+
+        <!-- subtypes can put entries here. -->
+        <st:include page="configure-entries.jelly" optional="true" />
+
+        <!-- view property configurations -->
+        <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
+
+        <f:block>
+          <f:submit value="OK" />
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

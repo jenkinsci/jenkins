@@ -1,0 +1,14 @@
+<div>
+  This controls the number of concurrent builds that Jenkins can perform on this slave.
+  So the value affects the overall system load Jenkins may incur.
+  A good value to start with would be the number of processors.
+
+  <p>
+  Increasing this value beyond that would cause each build to take longer, but it could increase
+  the overall throughput, because it allows CPU to build one project while another build is waiting
+  for I/O.
+
+  <p>
+  Setting this value to 0 is useful to remove a disabled slave from Jenkins temporarily without
+  losing other configuration information.
+</div>

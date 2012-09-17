@@ -1,0 +1,54 @@
+<div>
+  By default, Jenkins builds all the possible combinations of axes exhaustively. But sometimes this is too many,
+  or may contain combinations that don't make sense.
+  In such a situation, you can make the matrix sparse by filtering out combinations that you don't want through
+  a Groovy expression that returns true or false.
+
+  <p>
+  When you specify a Groovy expression here, only the combinations that result in <b>true</b>
+  will be built. In evaluating the expression, axes are exposed as variables (with their values set
+  to the current combination evaluated).
+
+  <h4>Filtering based on values</h4>
+  <p>
+  For example, let's say you are building on different operating systems for
+  different compilers. Assume that your slave labels are <b>label=[linux,solaris]</b> and you have
+  created an axis as <b>compiler=[gcc,cc].</b>
+
+  Any of the following expressions will filter out <b>cc</b> builds on <b>linux</b>. Depending on
+  how you think about this constraint, you'll probably find some more intuitive than others.
+
+  <center>
+    <table>
+        <tr>
+            <td>Read "if both linux and cc, it's invalid"</td>
+            <td>
+                <pre>!(label=="linux" && compiler=="cc")</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Read "for a combination to be valid, it has to be either on solaris or on gcc."</td>
+            <td>
+                <pre>label=="solaris" || compiler=="gcc"</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Read "if on Solaris, just do cc"</td>
+            <td>
+                <pre>(label=="solaris").implies(compiler=="cc")</pre>
+            </td>
+        </tr>
+    </table>
+  </center>
+
+  <h4>Sparsening of the matrix</h4>
+  <p>
+  In addition to the specific filtering rules based on values, one can also use a special
+  variable "<tt>index</tt>", which can be used to sparsen the matrix.
+
+  <p>
+  For example, <tt>index%2==0</tt> would cut the matrix size in half by removing one
+  combination per every 2 combinations, in such a way that the coverage is still reasonable.
+  Similarly, <tt>index%3!=0</tt> would cut the matrix size into 66% by throwing
+  away every 1 out of 3 combinations.
+</div>

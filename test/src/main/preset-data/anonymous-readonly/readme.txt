@@ -1,0 +1,1 @@
+Standard Hudson security set up of "anonymous is read-only, but logged in user can do anything"

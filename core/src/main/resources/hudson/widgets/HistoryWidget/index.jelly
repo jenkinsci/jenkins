@@ -1,0 +1,100 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Seiji Sogabe, id:cactusman, Yahoo! Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set target="${it}" property="trimmed" value="${all==null}"/>
+  <j:parse var="paneTitle">
+    <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>
+    <j:invoke var="jobClass" on="${currentThread.contextClassLoader}" method="loadClass">
+      <j:arg value="hudson.model.Job"/>
+    </j:invoke>
+    <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
+      <div style="float:right">(<a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>)</div>
+      <t:buildHealth job="${it.owner}" iconSize="16x16" link="${it.baseUrl}/lastBuild"/>
+    </j:if>
+  </j:parse>
+  <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" id="buildHistory">
+
+    <!-- build history -->
+    <st:include page="entries.jelly" />
+
+    <!--
+      If we are trimming the build history because it's too long,
+      show the link to fetch all the records by using AJAX.
+    -->
+    <j:if test="${it.trimmed}">
+      <tr class="build-row">
+        <td colspan="3" align="right">
+          <script>
+            function replace(a, b) {
+                  var p = a.parentNode;
+                  var next = a.nextSibling;
+                  p.removeChild(a);
+                  p.insertBefore(b,next);
+            }
+
+            function loadAllBuildHistory() {
+              // first display the "loading..." icon
+              var box = $("loadAllBuildHistory");
+              box.innerHTML = '<img src="${imagesURL}/spinner.gif" alt=""/>';
+
+              // then actually fetch the HTML
+              new Ajax.Request("${it.baseUrl}/buildHistory/all",{
+                method: "get",
+                onComplete: function(rsp,_) {
+                  <!-- neither outerHTML nor responseXML works in Firefox 2.0 -->
+                  var hist = $$("buildHistory");
+
+                  var newhist = document.createElement('div');
+                  newhist.innerHTML = rsp.responseText;
+                  newhist.headers = hist.headers
+
+                  replace(hist, newhist);
+                }
+            });
+            }
+          </script>
+          <div id="loadAllBuildHistory">
+            <!-- once clicked, this div will be replaced by the load icon -->
+            <a href="javascript:loadAllBuildHistory()">${%More ...}</a>
+          </div>
+        </td>
+      </tr>
+    </j:if>
+    <!--
+      RSS link
+    -->
+    <tr class="build-row">
+      <td colspan="3" align="right">
+        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for all}</a>
+        <st:nbsp/>
+        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for failures}</a>
+      </td>
+    </tr>
+  </l:pane>
+  <script defer="true">
+    updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.nextBuildNumberToFetch});
+  </script>
+</j:jelly>

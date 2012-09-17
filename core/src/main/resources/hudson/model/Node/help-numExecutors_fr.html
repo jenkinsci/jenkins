@@ -1,0 +1,16 @@
+<div>
+  Ceci contrôle le nombre de builds simultanés que Jenkins peut exécuter.
+  Cette valeur impacte donc la charge générale du système.
+  Une bonne valeur pour commencer serait le nombre de processeurs sur
+  votre systéme.
+
+  <p>
+  Un nombre de builds simultanés supérieur à cette valeur augmentera la
+  durée individuelle de chaque build. Néanmoins, la capacité globale
+  peut être supérieure, puisqu'un processeur peut se charger d'un build
+  pendant qu'un autre build est en attente sur les entrées/sorties.
+
+  <p>
+  En mode maître/esclave, une valeur de 0 garantit que le maître ne fera
+  pas lui-même de build.
+</div>

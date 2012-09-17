@@ -1,0 +1,25 @@
+<div>
+    Wird ein Slave über JNLP gestartet, versucht der Slave-Agent über einen bestimmten TCP-Port
+    den Jenkins-Master zu erreichen. In abgesicherten Netzwerken kann dieser Verbindungsaufbau
+    jedoch scheitern. Probleme können auch dadurch entstehen, wenn Jenkins hinter einem Lastverteiler (load balancer),
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">einem Apache Reverse-Proxy</a>
+    in eine <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a> o.ä. 
+    betrieben wird.
+
+    <p>
+    Mit dieser Tunnel-Option können Sie in diesen Situationen die Verbindung über
+    einen anderen Rechner/Port leiten. Das Feld nimmt Eingaben in den Formaten
+    "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>" oder "<tt>HOST:</tt>" entgegen.
+
+    <p>Beim ersten Format versucht der JNLP Slave-Agent über den angegebenen Port
+    der angegebenen Rechner zu erreichen und setzt voraus, dass Sie Ihr Netzwerk
+    so konfiguriert haben, dass diese Anfrage auf den JNLP Slave-TCP-Port des 
+    Jenkins Masters weitergeleitet wird.
+    
+    <p>
+    Bei den beiden anderen Formaten werden fehlende Werte durch den Standardrechner
+    (der Rechner, auf dem Jenkins läuft) bzw. Standard-JNLP-TCP-Port ergänzt. Insbesondere
+    das <tt>HOST:</tt>-Format ist sehr praktisch, wenn ein HTTP-Reverse-Proxy verwendet
+    wird und Jenkins auf einem anderen Rechner läuft.
+ 
+</div>

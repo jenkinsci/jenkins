@@ -1,0 +1,37 @@
+<div>
+    Steuert das Starten von Slave-Knoten durch Jenkins über JNLP.
+
+    <dl>
+        <dt><b>
+            Starte nur von der Rechner-Detailansicht. Anmeldung notwendig, wenn Sicherheitsfunktionen aktiviert sind.
+        </b></dt>
+        <dd>
+            <em>Dies ist die Vorgabe- und Normaleinstellung.</em>
+            In diesem Modus stellt Jenkins den JNLP-Startlink auf der Rechner-Detailansicht bereit.
+            Sind Sicherheitsfunktionen aktiviert, ist der Link nur für authentifizierte Benutzer verfügbar.
+        </dd>
+
+        <dt><b>
+            Starte von der Übersichtsseite. Verlange Anmeldung, wenn Sicherheitsfunktionen aktiviert sind.
+        </b></dt>
+        <dd>
+            In diesem Modus stellt Jenkins den JNLP-Startlink sowohl auf der Rechner-Detailansicht
+            als auch im Bereich "Build-Prozessor Status" bereit.
+            Sind Sicherheitsfunktionen aktiviert, ist der Link nur für authentifizierte Benutzer verfügbar.
+        </dd>
+
+        <dt><b>
+            Starte nur von der Rechner-Detailansicht. Anmeldung notwendig, wenn Sicherheit aktiviert ist.
+        </b></dt>
+        <dd>
+            In diesem Modus stellt Jenkins den JNLP-Startlink auf der Rechner-Detailansicht bereit.
+            Der Link ist verfügbar, wann immer der Slave-Knoten offline ist.
+            <br />
+            <b>WARNUNG!</b> In diesem Modus sind Sicherheitsfunktionen deaktiviert. Slave-Knoten können daher
+            <em>von jedem mit Zugriff auf den Server</em> gestartet werden. Slave-Knoten haben die Möglichkeit,
+            beliebigen Code auf dem Master auszuführen. <b>Wählen Sie diese Option daher nur dann, wenn
+            Sie sich der Risiken völlig bewußt sind!</b>
+        </dd>
+
+    </dl>
+</div>

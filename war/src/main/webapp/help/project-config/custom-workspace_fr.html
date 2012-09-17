@@ -1,0 +1,29 @@
+﻿<div>
+  Pour chaque job, Jenkins alloue un "répertoire de travail" unique. Il s'agit du répertoire
+  où le code est placé en provenance de l'outil de gestion de configuration et où les builds ont lieu.
+  En règle générale, vous devriez laisser Jenkins allouer et nettoyer les répertoires de travail, mais
+  dans certaines circonstances, cela peut poser problème. Cette option vous permet de spécifier
+  le répertoire de travail manuellement.
+
+  <p>
+  Un exemple d'une telle situation est quand les chemins sont codés en dur et que le code a besoin
+  d'être construit à partir d'un emplacement spécifique.
+  Il est certain qu'une telle configuration de build est déconseillée, mais cette option vous
+  permet néanmoins d'avencer dans ces circonstances.
+
+  <p>
+  Un autre cas où cette option est utile est lorsque vous utilisez le type de projet 'free-style', non
+  pour construire un projet logiciel mais pour exécuter certaines tâches en batch, par exemple à la
+  place d'un cron. Dans ce cas, utilisez cette option pour allouer un répertoire spécifique
+  au répertoire de travail du batch, afin que les utilisateurs puissent accéder aux fichiers directement
+  à travers l'interface web de Jenkins. Il sera également possible de lancer les commandes plus
+  facilement.
+
+  <p>
+  Si vous êtes dans un environnement distribué, à moins d'associer un job à un noeud (une machine) spécifique,
+  Jenkins sera toujours capable de déporter des jobs sur différentes machines esclaves, même si cette option
+  est utilisée. Parfois, cela est souhaitable; parfois, non.<br>
+  Par ailleurs, il est possible d'associer plusieurs projets à un même répertoire de travail;
+  assurez-vous dans ce cas que des exécutions concurrentes de ces jobs n'interfèrent pas de façon
+  adverse les unes avec les autres.
+</div>

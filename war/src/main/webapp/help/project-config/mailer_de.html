@@ -1,0 +1,17 @@
+<div>
+  Ist diese Option konfiguriert, sendet Jenkins E-Mails an die angegebenen Empfänger
+  wenn bestimmte wichtige Ereignisse eintreten.
+ 
+  <ol>
+    <li>Jeder fehlgeschlagene Build löst eine neue E-Mail aus.
+    <li>Ein erfolgreicher Build nach einem fehlgeschlagenen (oder instabilen)
+        löst eine neue E-Mail aus, um über eine überstandene Krise zu informieren.
+    <li>Ein instabiler Build nach einem erfolgreichen löst eine neue E-Mail aus,
+        um über einen Regressionsfehler zu informieren.
+    <li>Sofern nicht anders konfiguriert, lost jeder instabile Build eine neue
+        E-Mail aus, um über weiter anhaltende Regressionsfehler zu informieren.
+  </ol>
+
+  Für nachlässige Projekte, in denen instabile Projekte der Regelfall sind, wählen Sie
+  "E-Mail für jeden instabilen Build senden" ab.
+</div>

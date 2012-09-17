@@ -1,0 +1,58 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    See
+    http://wiki.jenkins-ci.org/display/JENKINS/Jelly+form+controls
+    for the reference.
+
+    <st:attribute name="method" use="required">
+      Server-side method that handles the validation. For example, if this is 'foo', you need "doFoo" on
+      your descriptor class.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Caption of the validate button. Should be internationalized.
+    </st:attribute>
+    <st:attribute name="progress">
+      Caption of the text shown while the AJAX call is in progress. For example, "checking..."
+    </st:attribute>
+    <st:attribute name="with">
+      ','-separated list of fields that are sent to the server.
+    </st:attribute>
+  </st:documentation>
+  <f:entry>
+    <div style="float:right">
+      <input type="button" value="${title}" class="yui-button validate-button" onclick="validateButton('${descriptor.descriptorFullUrl}/${method}','${with}',this)" />
+    </div>
+    <div style="display:none;">
+      <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}
+    </div>
+    <div><!-- this is where the error message goes --></div>
+  </f:entry>
+</j:jelly>

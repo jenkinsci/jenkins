@@ -1,0 +1,17 @@
+<div>
+  Jenkins stores all the data files inside this directory in the file system.
+  You can change this by either:
+  <ol>
+    <li>
+      Using your web container's admin tool to set the <tt>JENKINS_HOME</tt>
+      environment entry.
+    <li>
+      Setting the environment variable <tt>JENKINS_HOME</tt> before launching
+      your web container.
+    <li>
+      (Not recommended) modifying web.xml in <tt>jenkins.war</tt> (or its expanded image
+      in your web container).
+  </ol>
+  This value cannot be changed while Jenkins is running.
+  This entry is mostly for you to make sure that your configuration is taking effect.
+</div>

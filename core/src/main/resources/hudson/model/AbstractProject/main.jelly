@@ -1,0 +1,81 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+id:cactusman, Romain Seguy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <p:projectActionFloatingBox />
+
+  <j:if test="${it.supportsMakeDisabled()}">
+    <st:include page="makeDisabled.jelly" />
+  </j:if>
+
+  <table style="margin-top: 1em; margin-left:1em;">
+
+    <j:forEach var="act" items="${it.prominentActions}">
+      <t:summary icon="${act.iconFileName}" href="${act.urlName}">
+        ${act.displayName}
+      </t:summary>
+    </j:forEach>
+    <t:summary icon="folder.png" href="ws/" permission="${it.WORKSPACE}">
+      ${%Workspace}
+    </t:summary>
+
+    <t:artifactList caption="${%Last Successful Artifacts}"
+        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
+        permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
+
+    <t:summary icon="notepad.png" href="changes">
+      ${%Recent Changes}
+    </t:summary>
+
+    <j:set var="tr" value="${it.lastCompletedBuild.testResultAction}"/>
+    <j:if test="${tr!=null}">
+      <j:if test="${tr.class.name != 'hudson.tasks.test.AggregatedTestResultAction'}">
+        <t:summary icon="clipboard.png">
+          <a href="lastCompletedBuild/testReport/" class="model-link">${%Latest Test Result}</a>
+          <st:nbsp/>
+          <t:test-result it="${tr}" />
+        </t:summary>
+      </j:if>
+    </j:if>
+
+    <j:set var="atr" value="${it.lastCompletedBuild.aggregatedTestResultAction}"/>
+    <j:if test="${atr!=null}">
+      <t:summary icon="clipboard.png">
+        <a href="lastCompletedBuild/aggregatedTestReport/" class="model-link">${%Latest Aggregated Test Result}</a>
+        <st:nbsp/>
+        <t:test-result it="${atr}" />
+      </t:summary>
+    </j:if>
+    
+  </table>
+
+  <!-- merge fragments from the actions -->
+  <j:forEach var="a" items="${it.actions}">
+    <st:include page="jobMain.jelly" it="${a}" optional="true" />
+  </j:forEach>
+
+  <p:upstream-downstream />
+</j:jelly>

@@ -1,0 +1,15 @@
+<div>
+  Wenn angewählt, liest Jenkins die POM-Dateien dieses Projekts ein und überprüft,
+  ob SNAPSHOT-Abhängigkeiten dieses Projekts ebenfalls auf derselben Jenkins-Instanz gebaut werden.
+  Wenn ja, richtet Jenkins automatisch folgende Build-Abhängigkeit ein: Wann immer die
+  SNAPSHOT-Abhängigkeit neu gebaut wird und ein neue SNAPSHOT-Jar-Datei erzeugt wird, wird auch
+  dieses Projekt anschließend neu gebaut.
+
+  <p> 
+  Jenkins findet SNAPSHOT-Abhängigkeiten durch Auswertung der POM-Elemente <tt>&lt;dependency&gt</tt>,
+  <tt>&lt;plugin&gt;</tt> und <tt>&lt;extension&gt;</tt>.
+
+  <p>
+  Dies erlaubt auf sehr bequeme Weise, kontinuierliche Integration zu automatisieren.
+  Bei Problemen mit diesem Verhalten wählen Sie die Option ab.
+</div>

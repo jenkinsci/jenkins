@@ -1,0 +1,136 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<l:layout title="Remote API">
+		<l:main-panel>
+      <h1>REST API</h1>
+
+      <p>
+        Many objects of Jenkins provide the remote access API. They are available
+        at <tt>${rootURL}/.../api/</tt> where "..." portion is the object for
+        which you'd like to access.
+      </p>
+
+      <dl>
+        <dt><a href="xml">XML API</a></dt>
+        <dd>
+          Access data exposed in <a href="..">HTML</a> as XML for machine consumption.
+          <a href="schema">Schema</a> is also available.
+
+          <p>
+            You can also specify optional XPath to control the fragment you'd like to obtain (but see <a href="#tree">below</a>).
+            For example, <tt>../api/xml?xpath=/*/*[0]</tt>. If the XPath only matches a text node,
+            the result will be sent with <tt>text/plain</tt> MIME type to simplify
+            further processing.
+            
+            For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
+            to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
+          </p>
+          <p>
+            Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
+            that match the given XPath from the result. This is useful for
+            trimming down the amount of data you fetch (but again see <a href="#tree">below</a>). This query parameter can be specified
+            multiple times.
+          </p>
+          <p>
+            XPath filtering is powerful, and you can have it only return a very small data, but note that
+            the server still has to build a full DOM of the raw data, which could cause a large memory spike.
+            To avoid overloading the server, consider using the <tt>tree</tt> parameter, or use the <tt>xpath</tt> parameter
+            in conjunction with the <tt>tree</tt> parameter. When used together, the result of the <tt>tree</tt> parameter
+            filtering is built into DOM, then the XPath is applied to compute the final return value. In this way,
+            you can often substantially reduce the size of DOM built in memory.
+          </p>
+        </dd>
+
+        <dt><a href="json?pretty=true">JSON API</a></dt>
+        <dd>
+          Access the same data as JSON for JavaScript-based access. Supports
+          <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
+          the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
+        </dd>
+
+        <dt><a href="python?pretty=true">Python API</a></dt>
+        <dd>
+         <p>
+           Access the same data as Python for Python clients. This can be parsed into Python
+           object as <tt>eval(urllib.urlopen("...").read())</tt> and the resulting object
+           tree is identical to that of JSON.
+
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs. 
+         </p>
+         <p>
+           In Python 2.6 or later you can safely parse this output using 
+           <tt>ast.literal_eval(urllib.urlopen("...").read())</tt>
+         </p>
+        </dd>
+
+        <!--
+        <dt><a href="ruby?pretty=true">Ruby API</a></dt>
+        <dd>
+         <p>
+           Access the same data as Ruby literals that can be <tt>eval</tt>ed.
+
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs.
+         </p>
+        </dd>
+        -->
+      </dl>
+
+      <p>
+        For more information about remote API in Jenkins, see
+        <a href="http://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API">the documentation</a>.
+      </p>
+
+      <h2>Controlling the amount of data you fetch</h2>
+      <p>
+        In all formats, the <tt>depth</tt> query parameter can be used to control the amount of data
+        you'll receive. The default is <tt>depth=0</tt>, but by increasing this value you can get
+        a lot of data by single remote API invocation (the downside is bigger bandwidth requirement.)
+        Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
+        is for yourself. Also note that data created by a smaller depth value is always a subset of
+        the data created by a bigger depth value.
+      </p>
+      <p>
+        <a name="tree">A newer alternative is the <tt>tree</tt> query parameter.</a> This works with any format, e.g. JSON;
+        is more efficient than using <tt>depth</tt> with <tt>exclude</tt> (since information
+        does not need to be generated on the server and then discarded); and may be easier to use,
+        since you need only know what elements you are looking for, rather than what you are <em>not</em> looking
+        for (which is anyway an open-ended list when plugins can contribute API elements).
+        The value should be a list of property names to include, with subproperties inside square braces.
+        Try <a href="xml?tree=jobs[name],views[name,jobs[name]]">tree=jobs[name],views[name,jobs[name]]</a>
+        to see just a list of jobs (only giving the name) and views (giving the name and jobs they contain).
+        <strong>Note</strong>: for array-type properties (such as <tt>jobs</tt> in this example),
+        the name must be given in the original plural, not in the singular as the element would appear in XML (<tt>&amp;lt;job&amp;gt;</tt>).
+        This will be more natural for e.g. <a href="json?tree=jobs[name]">json?tree=jobs[name]</a> anyway:
+        the JSON writer does not do plural-to-singular mangling because arrays are represented explicitly.
+      </p>
+
+      <st:include it="${it.bean}" page="_api.jelly" optional="true" />
+    </l:main-panel>
+	</l:layout>
+</j:jelly>

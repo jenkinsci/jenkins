@@ -1,0 +1,72 @@
+<div>
+  This field follows the syntax of cron (with minor differences).
+  Specifically, each line consists of 5 fields separated by TAB or whitespace:
+  <pre>MINUTE HOUR DOM MONTH DOW</pre>
+  <table>
+    <tr>
+      <td>MINUTE</td>
+      <td>Minutes within the hour (0-59)</td>
+    </tr>
+    <tr>
+      <td>HOUR</td>
+      <td>The hour of the day (0-23)</td>
+    </tr>
+    <tr>
+      <td>DOM</td>
+      <td>The day of the month (1-31)</td>
+    </tr>
+    <tr>
+      <td>MONTH</td>
+      <td>The month (1-12)</td>
+    </tr>
+    <tr>
+      <td>DOW</td>
+      <td>The day of the week (0-7) where 0 and 7 are Sunday.</td>
+    </tr>
+  </table>
+  <p>
+    To specify multiple values for one field, the following operators are
+    available. In the order of precedence,
+  </p>
+  <ul>
+    <li>'*' can be used to specify all valid values.</li>
+    <li>'M-N' can be used to specify a range, such as "1-5"</li>
+    <li>'M-N/X' or '*/X' can be used to specify skips of X's value through the range,
+        such as "*/15" in the MINUTE field for "0,15,30,45" and "1-6/2" for "1,3,5"</li>
+    <li>'A,B,...,Z' can be used to specify multiple values, such as "0,30" or "1,3,5"</li>
+  </ul>
+  <p>
+    To allow periodically scheduled tasks to produce even load on the system,
+    the '<tt>H</tt>' token can be used. For example, people often use
+    '<tt>0 0 * * *</tt>' for a daily job, but this ends up causing a large
+    spike in midnight. In contrast, doing '<tt>H H * * *</tt>' would
+    still execute a job once a day, but the actual time of the day this gets
+    executed will be spread over by Jenkins.
+  </p><p>
+    The 'H' token can be used with a range. For example, '<tt>H H(0-7) * * *</tt>'
+    means some time between midnight to 7:59am.
+  </p><p>
+    The '<tt>H</tt>' token can be thought of as a random value over a range,
+    but it actually is a hash of the job name, not a random function, so that
+    the value remains stable for any given project.
+  </p>
+  <p>
+    Empty lines and lines that start with '#' will be ignored as comments.
+  </p><p>
+    In addition, '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
+    and '@hourly' are supported.
+  </p>
+  <table>
+    <tr>
+      <td>Examples</td>
+      <td>
+<pre>
+# every minute
+* * * * *
+# every 5 mins past the hour 
+5 * * * *
+</pre>
+      </td>
+    </tr>
+  </table>
+</div>

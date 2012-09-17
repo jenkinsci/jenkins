@@ -1,0 +1,64 @@
+﻿<div>
+  Ce champ suit la syntaxe de cron (avec des différences mineures).
+  Chaque ligne consiste en 5 champs séparés par des TABs ou des espaces&nbsp;:
+  <pre>MINUTES HEURES JOURMOIS MOIS JOURSEMAINE</pre>
+  <table>
+    <tr>
+      <td>MINUTES</td>
+      <td>Les minutes dans une heure (0-59)</td>
+    </tr>
+    <tr>
+      <td>HEURES</td>
+      <td>Les heures dans une journée (0-23)</td>
+    </tr>
+    <tr>
+      <td>JOURMOIS</td>
+      <td>Le jour dans un mois (1-31)</td>
+    </tr>
+    <tr>
+      <td>MOIS</td>
+      <td>Le mois (1-12)</td>
+    </tr>
+    <tr>
+      <td>JOURSEMAINE</td>
+      <td>Le jour de la semaine (0-7) où 0 et 7 représentent le dimanche
+      </td>
+    </tr>
+  </table>
+  <p>
+    Pour spécifier des valeurs multiples pour un champ, utilisez les
+    opérateurs suivants.
+    Par ordre de précédence&nbsp;:
+  </p>
+  <ul>
+    <li>'*' représente l'ensemble des valeurs possibles.</li>
+    <li>'M-N' représente une liste bornée, telle que "1-5"</li>
+    <li>'M-N/X' ou '*/X' permettent de spécifier des sauts de valeur X
+    dans la liste.
+    Par exemple, "*/15" dans le champ MINUTES est équivalent à
+    "0,15,30,45" et "1-6/2" à "1,3,5"</li>
+    <li>'A,B,...,Z' permet de spécifier des valeurs multiples, comme
+    "0,30" ou "1,3,5"</li>
+  </ul>
+  <p>
+    Les lignes vides et les lignes qui commencent par '#' seront
+    considérées comme des commentaires et ignorées.
+  </p>
+  <p>
+  Par ailleurs, les mots-clefs '@yearly', '@annually', '@monthly',
+  '@weekly', '@daily', '@midnight' et '@hourly' sont supportés.
+  </p>
+  <table>
+    <tr>
+      <td>Exemples</td>
+      <td>
+<pre>
+# toutes les minutes
+* * * * *
+# toutes les 5 minutes après l'heure
+5 * * * *
+</pre>
+      </td>
+    </tr>
+  </table>
+</div>
