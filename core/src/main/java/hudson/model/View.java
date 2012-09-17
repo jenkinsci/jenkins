@@ -32,12 +32,8 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Node.Mode;
-import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
-import hudson.model.listeners.SaveableListener;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -48,11 +44,9 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
-import hudson.util.AtomicFileWriter;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.IOException2;
-import hudson.util.IOUtils;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
@@ -77,7 +71,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -92,7 +85,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -645,7 +637,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Exported
         public final List<UserInfo> users;
 
-        public final Object parent;
+        public final ModelObject parent;
 
         public People(Jenkins parent) {
             this.parent = parent;
