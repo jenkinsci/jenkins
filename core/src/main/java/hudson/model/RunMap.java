@@ -23,21 +23,22 @@
  */
 package hudson.model;
 
-import com.google.common.collect.Maps;
+import jenkins.model.lazy.AbstractLazyLoadRunMap;
+import org.apache.commons.collections.comparators.ReverseComparator;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -49,86 +50,30 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
-    // copy-on-write map
-    private transient volatile SortedMap<Integer,R> builds =
-        new TreeMap<Integer,R>(COMPARATOR);
-
+public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> {
     /**
      * Read-only view of this map.
      */
     private final SortedMap<Integer,R> view = Collections.unmodifiableSortedMap(this);
 
-    public Set<Entry<Integer,R>> entrySet() {
-        // since the map is copy-on-write, make sure no one modifies it
-        return Collections.unmodifiableSet(builds.entrySet());
-    }
+    private Constructor<R> cons;
 
-    public synchronized R put(R value) {
-        return put(value.getNumber(),value);
-    }
+    // TODO: before first complete build
+    // patch up next/previous build link
 
-    @Override
-    public synchronized R put(Integer key, R value) {
-        // copy-on-write update
-        TreeMap<Integer,R> m = new TreeMap<Integer,R>(builds);
 
-        R r = update(m, key, value);
-
-        this.builds = m;
-        return r;
+    public RunMap() {
+        super(null); // will be set later
     }
 
     @Override
-    public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
-        // copy-on-write update
-        TreeMap<Integer,R> m = new TreeMap<Integer,R>(builds);
-
-        for (Map.Entry<? extends Integer,? extends R> e : rhs.entrySet())
-            update(m, e.getKey(), e.getValue());
-
-        this.builds = m;
-    }
-
-    private R update(TreeMap<Integer, R> m, Integer key, R value) {
-        // things are bit tricky because this map is order so that the newest one comes first,
-        // yet 'nextBuild' refers to the newer build.
-        R first = m.isEmpty() ? null : m.get(m.firstKey());
-        R r = m.put(key, value);
-        SortedMap<Integer,R> head = m.headMap(key);
-        if(!head.isEmpty()) {
-            R prev = m.get(head.lastKey());
-            value.previousBuild = prev.previousBuild;
-            value.nextBuild = prev;
-            if(value.previousBuild!=null)
-                value.previousBuild.nextBuild = value;
-            prev.previousBuild=value;
-        } else {
-            value.previousBuild = first;
-            value.nextBuild = null;
-            if(first!=null)
-                first.nextBuild = value;
-        }
-        return r;
-    }
-
-    public synchronized boolean remove(R run) {
+    public boolean remove(R run) {
         if(run.nextBuild!=null)
             run.nextBuild.previousBuild = run.previousBuild;
         if(run.previousBuild!=null)
-            run.previousBuild.nextBuild = run.nextBuild; 
+            run.previousBuild.nextBuild = run.nextBuild;
 
-        // copy-on-write update
-        TreeMap<Integer,R> m = new TreeMap<Integer,R>(builds);
-        R r = m.remove(run.getNumber());
-        this.builds = m;
-
-        return r!=null;
-    }
-
-    public synchronized void reset(TreeMap<Integer,R> builds) {
-        this.builds = new TreeMap<Integer,R>(COMPARATOR);
-        putAll(builds);
+        return super.remove(run);
     }
 
     /**
@@ -138,51 +83,24 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         return view;
     }
 
-//
-// SortedMap delegation
-//
-    public Comparator<? super Integer> comparator() {
-        return builds.comparator();
-    }
-
-    public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        return builds.subMap(fromKey, toKey);
-    }
-
-    public SortedMap<Integer, R> headMap(Integer toKey) {
-        return builds.headMap(toKey);
-    }
-
-    public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return builds.tailMap(fromKey);
-    }
-
-    public Integer firstKey() {
-        return builds.firstKey();
-    }
-
-    public Integer lastKey() {
-        return builds.lastKey();
-    }
-
     /**
      * This is the newest build (with the biggest build number)
      */
     public R newestValue() {
-        SortedMap<Integer, R> _builds = builds;
-        if (_builds.isEmpty())  return null;
-        return _builds.get(firstKey());
+        return search(Integer.MAX_VALUE, DESC);
     }
 
     /**
      * This is the oldest build (with the smallest build number)
      */
     public R oldestValue() {
-        SortedMap<Integer, R> _builds = builds;
-        if (_builds.isEmpty())  return null;
-        return _builds.get(lastKey());
+        return search(Integer.MIN_VALUE, ASC);
     }
 
+    /**
+     * @deprecated
+     *      Use {@link ReverseComparator}
+     */
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return -o1.compareTo(o2);
@@ -196,21 +114,21 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
         R create(File dir) throws IOException;
     }
 
-    /**
-     * Fills in {@link RunMap} by loading build records from the file system.
-     *
-     * @param job
-     *      Job that owns this map.
-     * @param cons
-     *      Used to create new instance of {@link Run}.
-     */
-    public synchronized void load(Job job, Constructor<R> cons) {
+    @Override
+    protected final int getNumberOf(R r) {
+        return r.getNumber();
+    }
+
+    @Override
+    protected final String getIdOf(R r) {
+        return r.getId();
+    }
+
+    @Override
+    protected FilenameFilter createDirectoryFilter() {
         final SimpleDateFormat formatter = Run.ID_FORMATTER.get();
 
-        TreeMap<Integer,R> builds = new TreeMap<Integer,R>(RunMap.COMPARATOR);
-        File buildDir = job.getBuildDir();
-        buildDir.mkdirs();
-        String[] buildDirs = buildDir.list(new FilenameFilter() {
+        return new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
                 // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
@@ -231,52 +149,40 @@ public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> imp
                 }
                 return false;
             }
-        });
+        };
+    }
 
-        // keep all those that are building intact.
-        Map<Integer,R> building = Maps.newHashMap();
-        for (R b=newestValue(); b!=null && b.isBuilding(); b=b.getPreviousBuild()) {
-            building.put(b.getNumber(), b);
-        }
-
-        for( String build : buildDirs ) {
-            File d = new File(buildDir,build);
-            if(new File(d,"build.xml").exists()) {
-                // if the build result file isn't in the directory, ignore it.
-                try {
-                    R b = cons.create(d);
-                    R existing = builds.put(b.getNumber(), b);
-                    if (existing != null) {
-                        LOGGER.log(Level.WARNING, "multiple runs claiming to be #{0}; using run from {1}", new Object[] {b.getNumber(), d});
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "could not load " + d, e);
-                } catch (InstantiationError e) {
-                    LOGGER.log(Level.WARNING, "could not load " + d, e);
-                }
+    @Override
+    protected R retrieve(File d) throws IOException {
+        if(new File(d,"build.xml").exists()) {
+            // if the build result file isn't in the directory, ignore it.
+            try {
+                R b = cons.create(d);
+                b.onLoad();
+                return b;
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
+            } catch (InstantiationError e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }
+        return null;
+    }
 
-        // overlay what's currently building on top of what's loaded
-        builds.putAll(building);
-        /*
-            // we probably aren't saving every little changes during the build to disk,
-            // so it's risky to reload these from disk.
-            for (R b : building.values()) {
-                try {
-                    b.reload();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InstantiationError e) {
-                    e.printStackTrace();
-                }
-            }
-        */
-
-        reset(builds);
-
-        for (R r : builds.values())
-            r.onLoad();
+    /**
+     * Backward compatibility method that notifies {@link RunMap} of who the owner is.
+     *
+     * Traditionally, this method blocked and loaded all the build records on the disk,
+     * but now all the actual loading happens lazily.
+     *
+     * @param job
+     *      Job that owns this map.
+     * @param cons
+     *      Used to create new instance of {@link Run}.
+     */
+    public synchronized void load(Job job, Constructor<R> cons) {
+        this.cons = cons;
+        initBaseDir(job.getBuildDir());
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
