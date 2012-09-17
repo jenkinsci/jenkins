@@ -78,13 +78,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Build IDs found as directories, in the ascending order.
      */
     // copy on write
-    private SortedList<String> idOnDisk;
+    private SortedList<String> idOnDisk = new SortedList<String>(Collections.<String>emptyList());
 
     /**
      * Build bumber shortcuts found on disk, in the ascending order.
      */
     // copy on write
-    private SortedIntList numberOnDisk;
+    private SortedIntList numberOnDisk = new SortedIntList(0);
 
     /**
      * Base directory for data.
