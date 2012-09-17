@@ -79,14 +79,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         this.cons = cons;
     }
 
-    @Override
     public boolean remove(R run) {
+        return removeValue(run);
+    }
+
+    @Override
+    public boolean removeValue(R run) {
         if(run.nextBuild!=null)
             run.nextBuild.previousBuild = run.previousBuild;
         if(run.previousBuild!=null)
             run.previousBuild.nextBuild = run.nextBuild;
 
-        return super.remove(run);
+        return super.removeValue(run);
     }
 
     /**

@@ -440,7 +440,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     protected abstract R retrieve(File dir) throws IOException;
 
-    public synchronized boolean remove(R run) {
+    public synchronized boolean removeValue(R run) {
         copy();
         byNumber.remove(getNumberOf(run));
         R old = byId.remove(getIdOf(run));
