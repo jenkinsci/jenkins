@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -305,11 +306,30 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return search(n,Direction.EXACT);
     }
 
-//    protected int toIdIndex(Entry<Integer, R> f, int fallback) {
-//        if (f==null)    return fallback;
-//        return getNumberOf(f.getValue());
-//    }
+    public R put(R value) {
+        return put(getNumberOf(value),value);
+    }
 
+    @Override
+    public R put(Integer key, R r) {
+        synchronized (loadLock) {
+            copy();
+            R old = byId.put(getIdOf(r),r);
+            byNumber.put(getNumberOf(r),r);
+            return old;
+        }
+    }
+
+    @Override
+    public void putAll(Map<? extends Integer,? extends R> rhs) {
+        synchronized (loadLock) {
+            copy();
+            for (R r : rhs.values()) {
+                byId.put(getIdOf(r),r);
+                byNumber.put(getNumberOf(r),r);
+            }
+        }
+    }
 
     /**
      * Loads all the build records to fully populate the map.
@@ -412,13 +432,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     protected abstract FilenameFilter createDirectoryFilter();
 
-    public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
+    private static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return -o1.compareTo(o2);
         }
     };
     
-    enum Direction {
+    public enum Direction {
         ASC, DESC, EXACT
     }
 
