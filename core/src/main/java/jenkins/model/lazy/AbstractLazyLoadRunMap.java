@@ -51,6 +51,11 @@ import static jenkins.model.lazy.Boundary.*;
  * This implementation is in 2 states. An instance can be {@linkplain #fullyLoaded fully loaded} state,
  * where everything that can be loaded gets loaded. Otherwise it's in a partially loaded state.
  *
+ * <p>
+ * Object lock of {@code this} is used to make sure mutation occurs sequentially.
+ * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
+ * updating {@link #byNumber} and {@link #byId}.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
@@ -88,12 +93,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * in the first call after the constructor.
      */
     private File dir;
-
-    /**
-     * Used to ensure only one thread is actually calling {@link #retrieve(File)} and
-     * updating {@link #byNumber} and {@link #byId}.
-     */
-    private final Object loadLock = this;
 
     protected AbstractLazyLoadRunMap(File dir) {
         this.dir = dir;
@@ -330,23 +329,19 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     @Override
-    public R put(Integer key, R r) {
-        synchronized (loadLock) {
-            copy();
-            R old = byId.put(getIdOf(r),r);
-            byNumber.put(getNumberOf(r),r);
-            return old;
-        }
+    public synchronized R put(Integer key, R r) {
+        copy();
+        R old = byId.put(getIdOf(r),r);
+        byNumber.put(getNumberOf(r),r);
+        return old;
     }
 
     @Override
-    public void putAll(Map<? extends Integer,? extends R> rhs) {
-        synchronized (loadLock) {
-            copy();
-            for (R r : rhs.values()) {
-                byId.put(getIdOf(r),r);
-                byNumber.put(getNumberOf(r),r);
-            }
+    public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
+        copy();
+        for (R r : rhs.values()) {
+            byId.put(getIdOf(r),r);
+            byNumber.put(getNumberOf(r),r);
         }
     }
 
@@ -361,7 +356,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     private TreeMap<Integer,R> all() {
         if (!fullyLoaded) {
-            synchronized (loadLock) {
+            synchronized (this) {
                 if (!fullyLoaded) {
                     copy();
                     for (String id : idOnDisk) {
@@ -392,7 +387,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         R r = null;
         File shortcut = new File(dir,String.valueOf(n));
         if (shortcut.isDirectory()) {
-            synchronized (loadLock) {
+            synchronized (this) {
                 r = load(shortcut,copy);
 
                 // make sure what we actually loaded is #n,
@@ -416,21 +411,19 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return load(new File(dir,id),copy);
     }
 
-    protected R load(File dataDir, boolean copy) {
-        synchronized (loadLock) {
-            try {
-                R r = retrieve(dataDir);
-                if (r==null)    return null;
+    protected synchronized R load(File dataDir, boolean copy) {
+        try {
+            R r = retrieve(dataDir);
+            if (r==null)    return null;
 
-                if (copy)   copy();
-                byId.put(getIdOf(r),r);
-                byNumber.put(getNumberOf(r),r);
-                return r;
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load "+dataDir,e);
-            }
-            return null;
+            if (copy)   copy();
+            byId.put(getIdOf(r),r);
+            byNumber.put(getNumberOf(r),r);
+            return r;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load "+dataDir,e);
         }
+        return null;
     }
 
     protected abstract int getNumberOf(R r);
@@ -447,15 +440,26 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     protected abstract R retrieve(File dir) throws IOException;
 
-    public boolean remove(R run) {
-        synchronized (loadLock) {
-            copy();
-            byNumber.remove(getNumberOf(run));
-            R old = byId.remove(getIdOf(run));
-            return old!=null;
-        }
+    public synchronized boolean remove(R run) {
+        copy();
+        byNumber.remove(getNumberOf(run));
+        R old = byId.remove(getIdOf(run));
+        return old!=null;
     }
 
+    /**
+     * Replaces all the current loaded Rs with the given ones.
+     */
+    public synchronized void reset(TreeMap<Integer,R> builds) {
+        TreeMap<Integer, R> byNumber = new TreeMap<Integer,R>(builds);
+        TreeMap<String, R> byId = new TreeMap<String, R>();
+        for (R r : builds.values()) {
+            byId.put(getIdOf(r),r);
+        }
+
+        this.byNumber = byNumber;
+        this.byId = byId;
+    }
 
     @Override
     public int hashCode() {
