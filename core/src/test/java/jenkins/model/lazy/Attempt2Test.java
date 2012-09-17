@@ -1,6 +1,6 @@
-package ll;
+package jenkins.model.lazy;
 
-import ll.Attempt2.Direction;
+import jenkins.model.lazy.Attempt2.Direction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -102,7 +102,7 @@ public class Attempt2Test extends Assert {
 
         assertNull(m.search(3,Direction.EXACT));
         m.search(3,Direction.DESC).asserts(1,"A");
-        m.search(3,Direction.ASC ).asserts(5,"C");
+        m.search(3, Direction.ASC ).asserts(5,"C");
     }
 
     @Test

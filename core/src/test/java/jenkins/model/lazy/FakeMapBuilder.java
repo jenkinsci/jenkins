@@ -1,4 +1,4 @@
-package ll;
+package jenkins.model.lazy;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestRule;
@@ -23,8 +23,8 @@ public class FakeMapBuilder implements TestRule {
         verifyId(id);
         File build = new File(dir,id);
         build.mkdir();
-        FileUtils.write(new File(build, "n"), Integer.toString(n));
-        FileUtils.write(new File(build,"id"),id);
+        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(n));
+        FileUtils.writeStringToFile(new File(build,"id"),id);
         return this;
     }
 
@@ -42,8 +42,8 @@ public class FakeMapBuilder implements TestRule {
         verifyId(id);
         File build = new File(dir,Integer.toString(label));
         build.mkdir();
-        FileUtils.write(new File(build, "n"), Integer.toString(actual));
-        FileUtils.write(new File(build,"id"),id);
+        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(actual));
+        FileUtils.writeStringToFile(new File(build,"id"),id);
         return this;
     }
 

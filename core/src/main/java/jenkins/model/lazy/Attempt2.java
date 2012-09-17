@@ -1,4 +1,4 @@
-package ll;
+package jenkins.model.lazy;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -8,14 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static ll.Attempt2.Direction.*;
-import static ll.Boundary.*;
+import static jenkins.model.lazy.Attempt2.Direction.*;
+import static jenkins.model.lazy.Boundary.*;
 
 /**
  * Lazy-loading map of build records.
@@ -126,7 +125,7 @@ public abstract class Attempt2<R> extends AbstractMap<Integer,R> implements Sort
     }
 
     public Integer lastKey() {
-        R r = search(Integer.MAX_VALUE, Direction.DESC);
+        R r = search(Integer.MAX_VALUE, DESC);
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }

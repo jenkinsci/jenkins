@@ -1,6 +1,5 @@
-package ll;
+package jenkins.model.lazy;
 
-import ll.SortedStringList;
 import org.junit.Assert;
 import org.junit.Test;
 
