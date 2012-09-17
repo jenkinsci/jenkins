@@ -62,8 +62,21 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     // patch up next/previous build link
 
 
+    /**
+     * @deprecated
+     *      Use {@link #RunMap(File, Constructor)}.
+     */
     public RunMap() {
         super(null); // will be set later
+    }
+
+    /**
+     * @param cons
+     *      Used to create new instance of {@link Run}.
+     */
+    public RunMap(File baseDir, Constructor cons) {
+        super(baseDir);
+        this.cons = cons;
     }
 
     @Override
@@ -179,8 +192,10 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      *      Job that owns this map.
      * @param cons
      *      Used to create new instance of {@link Run}.
+     * @deprecated
+     *      Use {@link #RunMap(File, Constructor)}
      */
-    public synchronized void load(Job job, Constructor<R> cons) {
+    public void load(Job job, Constructor<R> cons) {
         this.cons = cons;
         initBaseDir(job.getBuildDir());
     }

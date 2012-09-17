@@ -62,6 +62,7 @@ import hudson.util.Iterators;
 import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -168,6 +169,26 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public final P getProject() {
         return getParent();
+    }
+
+    private boolean previousBuildComputed, nextBuildComputed;
+
+    @Override
+    public R getPreviousBuild() {
+        if (previousBuild==null && !previousBuildComputed) {
+            previousBuild = getParent().builds.search(number-1, Direction.DESC);
+            previousBuildComputed = true;
+        }
+        return previousBuild;
+    }
+
+    @Override
+    public R getNextBuild() {
+        if (nextBuild==null && !nextBuildComputed) {
+            nextBuild = getParent().builds.search(number+1, Direction.ASC);
+            nextBuildComputed = true;
+        }
+        return nextBuild;
     }
 
     /**

@@ -94,7 +94,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     private File dir;
 
-    @Restricted(NoExternalUse.class) // for now
     protected AbstractLazyLoadRunMap(File dir) {
         this.dir = dir;
         initBaseDir(dir);

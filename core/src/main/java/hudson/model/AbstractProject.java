@@ -160,7 +160,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient /*almost final*/ RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds = new RunMap<R>();
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -269,9 +269,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        if (this.builds==null)
-            this.builds = new RunMap<R>();
-        this.builds.load(this,new Constructor<R>() {
+        this.builds = new RunMap<R>(getBuildDir(),new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
             }
