@@ -35,6 +35,60 @@ THE SOFTWARE.
         <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
         <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
       </h1>
+      <script>
+          function display(data) {
+              for (var x = 0; data.length > x; x++) {
+                  var e = data[x];
+                  var r = document.getElementById('person-' + e.id);
+                  if (r == null) {
+                      r = document.createElement('tr');
+                      r.id = e.id;
+                      document.getElementById('people').appendChild(r);
+                  }
+
+                  var d = document.createElement('td');
+                  var a = document.createElement('a');
+                  a.href = '${rootURL}/' + e.url;
+                  a.className = 'model-link';
+                  var i = document.createElement('img');
+                  i.src = e.avatar;
+                  i.className = 'icon${iconSize}';
+                  a.appendChild(i);
+                  d.appendChild(a);
+                  r.appendChild(d);
+
+                  d = document.createElement('td');
+                  var a = document.createElement('a');
+                  a.href = '${rootURL}/' + e.url;
+                  a.appendChild(document.createTextNode(e.id));
+                  d.appendChild(a);
+                  r.appendChild(d);
+
+                  d = document.createElement('td');
+                  var a = document.createElement('a');
+                  a.href = '${rootURL}/' + e.url;
+                  a.appendChild(document.createTextNode(e.fullName));
+                  d.appendChild(a);
+                  r.appendChild(d);
+
+                  d = document.createElement('td');
+                  d.data = e.timeSortKey;
+                  d.appendChild(document.createTextNode(e.lastChangeTimeString));
+                  r.appendChild(d);
+
+                  d = document.createElement('td');
+                  if (e.projectUrl != null) {
+                      a = document.createElement('a');
+                      a.href = '${rootURL}/' + e.projectUrl;
+                      a.className = 'model-link';
+                      a.appendChild(document.createTextNode(e.projectFullDisplayName));
+                      d.appendChild(a);
+                  }
+                  r.appendChild(d);
+              }
+          }
+      </script>
+      <l:progressiveRendering handler="${it}" callback="display"/>
       <table class="sortable pane bigtable" id="people">
         <tr>
           <th />
@@ -43,16 +97,6 @@ THE SOFTWARE.
           <th initialSortDir="up">${%Last Active}</th>
           <th>${%On}</th>
         </tr>
-        <j:forEach var="p" items="${it.users}">
-          <tr>
-            <td><a href="${rootURL}/${p.user.url}/" class="model-link"><img src="${h.getUserAvatar(p.user,iconSize)}"
-                 alt="" class="icon${iconSize}"/></a></td>
-            <td><a href="${rootURL}/${p.user.url}/">${p.user.id}</a></td>
-            <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
-            <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
-            <td><a href="${rootURL}/${p.project.url}" class="model-link">${p.project.fullDisplayName}</a></td>
-          </tr>
-        </j:forEach>
       </table>
       <t:iconSize>
         <j:if test="${!isAll}">
