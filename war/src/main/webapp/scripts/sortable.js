@@ -184,18 +184,67 @@ function ts_resortTable(lnk) {
  * @since XXX
  */
 function ts_refresh(table){
+    var column;
+    var dir;
     var key = ts_getStorageKey(table);
-    if(ts_Storage.hasKey(key)){
-        var val = ts_Storage.getItem(key);
-        if(val){
-            var vals = val.split(":");
-            if(vals.length == 2) {
-                var colIndex = parseInt(vals[0]);
-                var col = table.rows[0].cells[colIndex];
-                var anchor = col.firstChild;
-                ts_resortTable(anchor);
+    var val = ts_Storage.hasKey(key) ? ts_Storage.getItem(key) : null;
+    if (val != null) {
+        var vals = val.split(":");
+        if(vals.length != 2) {
+            return;
+        }
+        column = parseInt(vals[0]);
+        dir = vals[1];
+    } else {
+        var firstRow;
+        if (table.rows && table.rows.length > 0) {
+            firstRow = table.rows[0];
+        }
+        if (!firstRow) {
+            return;
+        }
+        for (var i=0;i<firstRow.cells.length;i++) {
+            var cell = firstRow.cells[i];
+            var initialSortDir = cell.getAttribute("initialSortDir");
+            if (initialSortDir != null) {
+                column = i;
+                dir = initialSortDir;
             }
         }
+        if (dir == null) {
+            return;
+        }
+    }
+    // Work out a type for the column
+    if (table.rows.length <= 1) return;
+    var itm = extractData(table.rows[1].cells[column]).trim();
+    var sortfn = ts_sort_caseinsensitive;
+    if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = ts_sort_date;
+    if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = ts_sort_date;
+    if (itm.match(/^[�$]/)) sortfn = ts_sort_currency;
+    if (itm.match(/^-?[\d\.]+$/)) sortfn = ts_sort_numeric;
+    var firstRow = new Array();
+    var newRows = new Array();
+    for (i=0;i<table.rows[0].length;i++) { firstRow[i] = table.rows[0][i]; }
+    for (j=1;j<table.rows.length;j++) { newRows[j-1] = table.rows[j]; }
+
+    var sortfn2 = sortfn;
+    if(dir === 'up') {
+        // ascending
+        sortfn2 = function(a,b){return -sortfn(a,b)};
+    }
+    newRows.sort(function(a,b) {
+        return sortfn2(
+            extractData(a.cells[column]),
+            extractData(b.cells[column]));
+    });
+    for (var i=0;i<newRows.length;i++) {
+        if (! Element.hasClassName(newRows[i], 'sortbottom'))
+            table.tBodies[0].appendChild(newRows[i]);
+    }
+    for (var i=0;i<newRows.length;i++) {
+        if (Element.hasClassName(newRows[i], 'sortbottom'))
+            table.tBodies[0].appendChild(newRows[i]);
     }
 }
 
