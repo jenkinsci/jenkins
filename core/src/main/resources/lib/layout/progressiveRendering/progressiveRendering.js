@@ -35,7 +35,7 @@ function progressivelyRender(handler, callback) {
         } else if (r.status == 'error') {
             $$('#status .progress-bar-done')[0].style.width = '100%';
             $$('#status .progress-bar-left')[0].style.width = '0%';
-            $('status').class = 'progress-bar red'; // XXX does not seem to work
+            $('status').className = 'progress-bar red';
         } else {
             eval(callback)(r.data);
             $$('#status .progress-bar-done')[0].style.width = (100 * r.status) + '%';
