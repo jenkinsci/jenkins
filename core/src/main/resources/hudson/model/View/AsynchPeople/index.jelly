@@ -73,7 +73,7 @@ THE SOFTWARE.
                   r.appendChild(d);
 
                   d = document.createElement('td');
-                  d.data = e.timeSortKey;
+                  d.setAttribute('data', e.timeSortKey);
                   d.appendChild(document.createTextNode(e.lastChangeTimeString));
                   r.appendChild(d);
 
