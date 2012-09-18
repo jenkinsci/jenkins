@@ -179,6 +179,26 @@ function ts_resortTable(lnk) {
     ts_saveDirection(table, column, dir);
 }
 
+/**
+ * Call when data has changed.
+ * @since XXX
+ */
+function ts_refresh(table){
+    var key = ts_getStorageKey(table);
+    if(ts_Storage.hasKey(key)){
+        var val = ts_Storage.getItem(key);
+        if(val){
+            var vals = val.split(":");
+            if(vals.length == 2) {
+                var colIndex = parseInt(vals[0]);
+                var col = table.rows[0].cells[colIndex];
+                var anchor = col.firstChild;
+                ts_resortTable(anchor);
+            }
+        }
+    }
+}
+
 function getParent(el, pTagName) {
 	if (el == null) return null;
 	else if (el.nodeType == 1 && el.tagName.toLowerCase() == pTagName.toLowerCase())	// Gecko bug, supposed to be uppercase
