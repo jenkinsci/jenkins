@@ -46,7 +46,7 @@ class SortedIntList extends AbstractList<Integer> {
      * Internal copy constructor.
      */
     public SortedIntList(SortedIntList rhs) {
-        this.data = Arrays.copyOf(rhs.data,rhs.data.length);
+        this.data = Arrays.copyOf(rhs.data,rhs.data.length+8);
         this.size = rhs.size;
     }
 
@@ -59,6 +59,15 @@ class SortedIntList extends AbstractList<Integer> {
      */
     public int find(int probe) {
         return Arrays.binarySearch(data, 0, size, probe);
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return o instanceof Integer && contains(((Integer)o).intValue());
+    }
+
+    public boolean contains(int i) {
+        return find(i)>=0;
     }
 
     @Override
@@ -125,6 +134,10 @@ class SortedIntList extends AbstractList<Integer> {
 
     public void sort() {
         Arrays.sort(data,0,size);
+    }
+
+    public void copyInto(int[] dest) {
+        System.arraycopy(data,0,dest,0,size);
     }
 
     public void removeValue(int n) {

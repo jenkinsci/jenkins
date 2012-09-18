@@ -50,7 +50,12 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     public int find(T probe) {
         return Collections.binarySearch(data, probe);
     }
-    
+
+    @Override
+    public boolean contains(Object o) {
+        return find((T)o)>=0;
+    }
+
     public T get(int idx) {
         return data.get(idx);
     }
