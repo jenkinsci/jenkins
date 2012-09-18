@@ -132,6 +132,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return COMPARATOR;
     }
 
+    /**
+     * If we have non-zero R in memory, we can return false right away.
+     * If we have zero R in memory, try loading one and see if we can find something.
+     */
+    @Override
+    public boolean isEmpty() {
+        return byId.isEmpty() && search(Integer.MAX_VALUE, DESC)==null;
+    }
+
     @Override
     public Set<Entry<Integer, R>> entrySet() {
         return Collections.unmodifiableSet(all().entrySet());
@@ -186,7 +195,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
-     * Loads the build #M where M is nearby the given 'n'.
+     * Finds the build #M where M is nearby the given 'n'.
+     *
+     * <p>
+     *
      *
      * @param n
      *      the index to start the search from
@@ -323,15 +335,38 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return search(n,Direction.EXACT);
     }
 
-    public R put(R value) {
+    public final R put(R value) {
         return put(getNumberOf(value),value);
     }
 
     @Override
     public synchronized R put(Integer key, R r) {
+        String id = getIdOf(r);
+        int n = getNumberOf(r);
+
         copy();
-        R old = byId.put(getIdOf(r),r);
-        byNumber.put(getNumberOf(r),r);
+        R old = byId.put(id,r);
+        byNumber.put(n,r);
+
+        /*
+            search relies on the fact that every objet added via
+            put() method be available in the xyzOnDisk index, so I'm adding them here
+            however, this is awfully inefficient. I wonder if there's any better way to do this?
+         */
+        if (!idOnDisk.contains(id)) {
+            ArrayList<String> a = new ArrayList<String>(idOnDisk);
+            a.add(id);
+            Collections.sort(a);
+            idOnDisk = new SortedList<String>(a);
+        }
+
+        if (!numberOnDisk.contains(n)) {
+            SortedIntList a = new SortedIntList(numberOnDisk);
+            a.add(n);
+            a.sort();
+            numberOnDisk = a;
+        }
+
         return old;
     }
 
