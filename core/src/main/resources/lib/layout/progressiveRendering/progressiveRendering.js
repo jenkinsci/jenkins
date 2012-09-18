@@ -40,10 +40,13 @@ function progressivelyRender(handler, callback) {
             eval(callback)(r.data);
             $$('#status .progress-bar-done')[0].style.width = (100 * r.status) + '%';
             $$('#status .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
-            setTimeout(function() {
-                handler.news(checkNews);
-            }, 500);
+            checkNewsLater();
         }
     }
-    handler.news(checkNews);
+    function checkNewsLater() {
+        setTimeout(function() {
+            handler.news(checkNews);
+        }, 500);
+    }
+    checkNewsLater();
 }
