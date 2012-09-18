@@ -152,11 +152,17 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return Collections.unmodifiableSet(all().entrySet());
     }
 
+    /**
+     * @param fromKey
+     *      Biggest build number to be in the returned set.
+     * @param toKey
+     *      Smallest build number-1 to be in the returned set (-1 because this is exclusive)
+     */
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
         R start = search(fromKey, DESC);
         if (start==null)    return EMPTY_SORTED_MAP;
 
-        R end = search(toKey-1, ASC);
+        R end = search(toKey, ASC);
         if (end==null)      return EMPTY_SORTED_MAP;
 
         for (R i=start; i!=end; ) {
