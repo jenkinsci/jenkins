@@ -23,6 +23,7 @@
  */
 package jenkins.model.lazy;
 
+import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -46,7 +47,12 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
 
 /**
- * Lazy-loading map of build records.
+ * {@link SortedMap} that keeps build records by their build numbers, in the descending order
+ * (newer ones first.)
+ *
+ * The main thing about this class is that it encapsulates the lazy loading logic.
+ * That is,
+ * think of subtype of {@link Run}
  *
  * This implementation is in 2 states. An instance can be {@linkplain #fullyLoaded fully loaded} state,
  * where everything that can be loaded gets loaded. Otherwise it's in a partially loaded state.
@@ -66,7 +72,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Stores the mapping from build number to build, for builds that are already loaded.
      */
     // copy on write
-    private volatile TreeMap<Integer,R> byNumber = new TreeMap<Integer,R>();
+    private volatile TreeMap<Integer,R> byNumber = new TreeMap<Integer,R>(COMPARATOR);
 
     /**
      * Stores the build ID to build number for builds that we already know
@@ -147,14 +153,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
-        R start = search(fromKey, ASC);
+        R start = search(fromKey, DESC);
         if (start==null)    return EMPTY_SORTED_MAP;
 
-        R end = search(toKey-1, DESC);
+        R end = search(toKey-1, ASC);
         if (end==null)      return EMPTY_SORTED_MAP;
 
         for (R i=start; i!=end; ) {
-            i = search(getNumberOf(i)+1,ASC);
+            i = search(getNumberOf(i)-1,DESC);
             assert i!=null;
         }
 
@@ -162,21 +168,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
-        return subMap(Integer.MIN_VALUE, toKey);
+        return subMap(Integer.MAX_VALUE, toKey);
     }
 
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
-        return subMap(fromKey, Integer.MAX_VALUE);
+        return subMap(fromKey, Integer.MIN_VALUE);
     }
 
     public Integer firstKey() {
-        R r = search(Integer.MIN_VALUE, ASC);
+        R r = search(Integer.MAX_VALUE, DESC);
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }
 
     public Integer lastKey() {
-        R r = search(Integer.MAX_VALUE, DESC);
+        R r = search(Integer.MIN_VALUE, ASC);
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }
@@ -209,8 +215,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
     public R search(final int n, final Direction d) {
-        Entry<Integer, R> f = byNumber.floorEntry(n);
-        if (f!=null && f.getKey()== n)  return f.getValue();    // found the exact #n
+        Entry<Integer, R> c = byNumber.ceilingEntry(n);
+        if (c!=null && c.getKey()== n)  return c.getValue();    // found the exact #n
 
         // at this point we know that we don't have #n loaded yet
 
@@ -268,16 +274,16 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
         if (idOnDisk.isEmpty())     return null;
 
-        Entry<Integer, R> c = byNumber.ceilingEntry(n);
+        Entry<Integer, R> f = byNumber.floorEntry(n);
 
         // if bound is null, use a sentinel value
-        String fid = f==null ? "\u0000"  : getIdOf(f.getValue());
-        String cid = c==null ? "\uFFFF" : getIdOf(c.getValue());
+        String cid = c==null ? "\u0000"  : getIdOf(c.getValue());
+        String fid = f==null ? "\uFFFF" : getIdOf(f.getValue());
 
         // We know that the build we are looking for exists in this range
         // we will narrow this down via binary search
-        int lo = idOnDisk.higher(fid);
-        int hi = idOnDisk.lower(cid)+1;
+        int lo = idOnDisk.higher(cid);
+        int hi = idOnDisk.lower(fid)+1;
 
         int pivot;
         while (true) {
@@ -485,10 +491,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Replaces all the current loaded Rs with the given ones.
      */
     public synchronized void reset(TreeMap<Integer,R> builds) {
-        TreeMap<Integer, R> byNumber = new TreeMap<Integer,R>(builds);
-        TreeMap<String, R> byId = new TreeMap<String, R>();
+        TreeMap<Integer, R> byNumber = new TreeMap<Integer,R>(COMPARATOR);
+        TreeMap<String, R> byId = new TreeMap<String, R>(COMPARATOR);
         for (R r : builds.values()) {
             byId.put(getIdOf(r),r);
+            byNumber.put(getNumberOf(r),r);
         }
 
         this.byNumber = byNumber;

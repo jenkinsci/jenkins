@@ -88,7 +88,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void firstKey() {
-        assertEquals(1, a.firstKey().intValue());
+        assertEquals(5, a.firstKey().intValue());
 
         try {
             b.firstKey();
@@ -100,7 +100,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void lastKey() {
-        assertEquals(5, a.lastKey().intValue());
+        assertEquals(1, a.lastKey().intValue());
         try {
             b.lastKey();
             fail();
@@ -131,9 +131,9 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Test
     public void eagerLoading() throws IOException {
         Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
-        ((Build)b[0].getValue()).asserts(1,"A");
+        ((Build)b[0].getValue()).asserts(5,"C");
         ((Build)b[1].getValue()).asserts(3,"B");
-        ((Build)b[2].getValue()).asserts(5,"C");
+        ((Build)b[2].getValue()).asserts(1,"A");
     }
 
     @Test
@@ -201,13 +201,13 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void fastSubMap() throws Exception {
-        SortedMap<Integer,Build> m = a.subMap(2, 99);
+        SortedMap<Integer,Build> m = a.subMap(99, 2);
         assertEquals(2, m.size());
 
         Build[] b = m.values().toArray(new Build[2]);
         assertEquals(2,b.length);
-        b[0].asserts(3,"B");
-        b[1].asserts(5,"C");
+        b[0].asserts(5,"C");
+        b[1].asserts(3,"B");
     }
 
     @Test
