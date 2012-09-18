@@ -176,7 +176,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     public R getPreviousBuild() {
         if (previousBuild==null && !previousBuildComputed) {
-            previousBuild = getParent().builds.search(number-1, Direction.DESC);
+            // having two neighbors pointing to each other is important to make RunMap.removeValue work
+            R previousBuild = getParent().builds.search(number-1, Direction.DESC);
+            if (previousBuild!=null)
+                previousBuild.nextBuild = (R)this;
+            this.previousBuild = previousBuild;
             previousBuildComputed = true;
         }
         return previousBuild;
@@ -185,7 +189,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     public R getNextBuild() {
         if (nextBuild==null && !nextBuildComputed) {
-            nextBuild = getParent().builds.search(number+1, Direction.ASC);
+            // having two neighbors pointing to each other is important to make RunMap.removeValue work
+            R nextBuild = getParent().builds.search(number+1, Direction.ASC);
+            if (nextBuild!=null)
+                nextBuild.previousBuild = (R)this;
+            this.nextBuild = nextBuild;
             nextBuildComputed = true;
         }
         return nextBuild;
