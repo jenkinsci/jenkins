@@ -37,13 +37,14 @@ THE SOFTWARE.
       </h1>
       <script>
           function display(data) {
+              var p = document.getElementById('people');
               for (var x = 0; data.length > x; x++) {
                   var e = data[x];
                   var r = document.getElementById('person-' + e.id);
                   if (r == null) {
                       r = document.createElement('tr');
                       r.id = e.id;
-                      document.getElementById('people').appendChild(r);
+                      p.appendChild(r);
                   }
 
                   var d = document.createElement('td');
@@ -85,6 +86,8 @@ THE SOFTWARE.
                       d.appendChild(a);
                   }
                   r.appendChild(d);
+
+                  ts_refresh(p);
               }
           }
       </script>
