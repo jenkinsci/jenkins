@@ -87,6 +87,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public static final class Target {
         public final String name;
         private final int level;
+        private transient /* almost final*/ Logger logger;
 
         public Target(String name, Level level) {
             this(name,level.intValue());
@@ -118,7 +119,10 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
         public Logger getLogger() {
-            return Logger.getLogger(name);
+            if (logger == null) {
+                logger = Logger.getLogger(name);
+            }
+            return logger;
         }
 
         /**

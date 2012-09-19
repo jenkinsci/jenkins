@@ -37,7 +37,7 @@ public class ConfigProviderDelegate implements ConfigProviderFacade {
         if (Jenkins.getInstance().getPlugin("config-file-provider") != null) {
             cpf = new ConfigProviderMediator();
         } else {
-            LOGGER.warning("'config-file-provider' plugin installed..., administration of setting.xml will not be available!");
+            LOGGER.warning("'config-file-provider' plugin not installed..., administration of setting.xml will not be available!");
             cpf = new DefaultConfigProviderFacade();
         }
     }
