@@ -170,7 +170,7 @@ public abstract class ProgressiveRendering {
         }
         r.put("status", status == 1 ? "done" : status == CANCELED ? "canceled" : status == ERROR ? "error" : status);
         lastNewsTime = System.currentTimeMillis();
-        LOG.log(Level.FINE, "news from {0}: {1}", new Object[] {uri, r});
+        LOG.log(Level.FINER, "news from {0}", uri);
         return r;
     }
 
