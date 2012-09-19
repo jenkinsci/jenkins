@@ -449,4 +449,30 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals(expected, d.validateAntFileMask(fileMasks));
     }
 
+    @Bug(7214)
+    public void testValidateAntFileMaskBounded() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(french, tmp.getPath());
+            FilePath d2 = d.child("d1/d2");
+            d2.mkdirs();
+            for (int i = 0; i < 100; i++) {
+                FilePath d3 = d2.child("d" + i);
+                d3.mkdirs();
+                d3.child("f.txt").touch(0);
+            }
+            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt"));
+            assertEquals(null, d.validateAntFileMask("d1/d2/**/f.txt", 10));
+            assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
+            try {
+                d.validateAntFileMask("**/*.js", 10);
+                fail();
+            } catch (InterruptedException x) {
+                // good
+            }
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+
 }

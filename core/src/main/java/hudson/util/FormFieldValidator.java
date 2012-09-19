@@ -378,11 +378,11 @@ public abstract class FormFieldValidator {
                     return;
                 }
 
-                String msg = ws.validateAntFileMask(value);
+                String msg = ws.validateAntFileMask(value, 10000);
                 if(errorIfNotExist)     error(msg);
                 else                    warning(msg);
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(Messages.FormFieldValidator_did_not_manage_to_validate_may_be_too_sl(value));
             }
         }
 
