@@ -44,7 +44,7 @@ THE SOFTWARE.
         <j:if test="${b.changeSet.iterator().hasNext()}">
           <j:set var="hadChanges" value="${true}"/>
           <h2><a href="${b.number}/changes">${b.displayName}
-            (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
+            (<t:formatDate value="${b.build.timestamp.time}"/>)</a></h2>
 
           <ol>
             <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">

@@ -1328,6 +1328,17 @@ public class Functions {
     public static Date getCurrentTime() {
         return new Date();
     }
+    
+    
+    /**
+     * Return TimeFormater which is set by current user. If user is not know (anonymous) return null.
+     */
+    public static TimeFormat getTimeFormat(){
+        User user = User.current();
+        if(user==null)
+            return null;
+        return user.getProperty(TimeFormatUserProperty.class).getFormat();
+    }
 
     public static Locale getCurrentLocale() {
         Locale locale=null;

@@ -49,7 +49,7 @@ THE SOFTWARE.
 
       <t:buildCaption>
         ${%Build} ${it.displayName}
-        (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
+        (<t:formatDate value="${it.timestamp.time}"/>)
       </t:buildCaption>
 
       <div>

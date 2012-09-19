@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <j:set var="timeFormats" value="${instance.getAllTimeformats()}"/>
+    <f:radioBlock name="assignedFormat" value="none" title="None" checked="${instance.getFormat()==null}"/>
+    <j:forEach var="idx" begin="1" end="${timeFormats.size()}">  
+        <j:set var="descriptor" value="${timeFormats.get(idx-1)}"/>
+      <f:radioBlock name="assignedFormat" value="${descriptor.id}" title="${descriptor.displayName}" checked="${descriptor == instance.getFormat().getDescriptor()}">
+        <j:set var="format" value="${instance.getFormat().descriptor==descriptor ? instance.getFormat() : null}"/>
+        <st:include from="${descriptor}" page="${descriptor.getConfigPage()}"/>
+      </f:radioBlock>
+    </j:forEach>
+</j:jelly>
