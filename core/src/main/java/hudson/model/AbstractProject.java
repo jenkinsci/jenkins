@@ -79,9 +79,11 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
+import hudson.util.RunList;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
@@ -962,6 +964,51 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuild(String id) {
+        return builds.getById(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuildByNumber(int n) {
+        return builds.getByNumber(n);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getFirstBuild() {
+        return builds.oldestBuild();
+    }
+
+    @Override
+    public R getLastBuild() {
+        return builds.newestBuild();
+    }
+
+    @Override
+    public R getNearestBuild(int n) {
+        return builds.search(n, Direction.ASC);
+    }
+
+    @Override
+    public R getNearestOldBuild(int n) {
+        return builds.search(n, Direction.DESC);
+    }
+
+    /**
      * Determines Class&lt;R>.
      */
     protected abstract Class<R> getBuildClass();
@@ -1632,7 +1679,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget<R>(this,getBuilds(),HISTORY_ADAPTER);
+        return new BuildHistoryWidget<R>(this,builds,HISTORY_ADAPTER);
     }
     
     public boolean isParameterized() {

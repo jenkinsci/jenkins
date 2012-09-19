@@ -33,6 +33,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Level;
@@ -50,7 +51,7 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> {
+public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
      */
@@ -81,6 +82,33 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     public boolean remove(R run) {
         return removeValue(run);
+    }
+
+    /**
+     * Walks through builds, newer ones first.
+     */
+    public Iterator<R> iterator() {
+        return new Iterator<R>() {
+            R last = null;
+            R next = newestBuild();
+
+            public boolean hasNext() {
+                return next!=null;
+            }
+
+            public R next() {
+                R last = next;
+                if (last!=null)
+                    next = last.getPreviousBuild();
+                return last;
+            }
+
+            public void remove() {
+                if (last==null)
+                    throw new UnsupportedOperationException();
+                removeValue(last);
+            }
+        };
     }
 
     @Override

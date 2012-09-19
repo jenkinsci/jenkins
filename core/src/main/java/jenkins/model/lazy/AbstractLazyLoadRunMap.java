@@ -189,15 +189,23 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public Integer firstKey() {
-        R r = search(Integer.MAX_VALUE, DESC);
+        R r = newestBuild();
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
     }
 
     public Integer lastKey() {
-        R r = search(Integer.MIN_VALUE, ASC);
+        R r = oldestBuild();
         if (r==null)    throw new NoSuchElementException();
         return getNumberOf(r);
+    }
+
+    public R newestBuild() {
+        return search(Integer.MAX_VALUE, DESC);
+    }
+
+    public R oldestBuild() {
+        return search(Integer.MIN_VALUE, ASC);
     }
 
     @Override
