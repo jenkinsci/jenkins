@@ -424,4 +424,29 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar\\manchu").getRemote());
         assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar/manchu").getRemote());
     }
+
+    public void testValidateAntFileMask() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(french, tmp.getPath());
+            d.child("d1/d2/d3").mkdirs();
+            d.child("d1/d2/d3/f.txt").touch(0);
+            d.child("d1/d2/d3/f.html").touch(0);
+            d.child("d1/d2/f.txt").touch(0);
+            assertValidateAntFileMask(null, d, "**/*.txt");
+            assertValidateAntFileMask(null, d, "d1/d2/d3/f.txt");
+            assertValidateAntFileMask(null, d, "**/*.html");
+            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d, "**/*.js");
+            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
+            assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
+            // XXX lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+
+    private static void assertValidateAntFileMask(String expected, FilePath d, String fileMasks) throws Exception {
+        assertEquals(expected, d.validateAntFileMask(fileMasks));
+    }
+
 }
