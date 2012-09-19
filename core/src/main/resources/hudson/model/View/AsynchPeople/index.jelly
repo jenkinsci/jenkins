@@ -104,7 +104,7 @@ THE SOFTWARE.
       <t:iconSize>
         <j:if test="${!isAll}">
           <div style="float:right">
-            <a href="${rootURL}/people/">${%All People}</a><st:nbsp/>
+            <a href="${rootURL}/asynchPeople/">${%All People}</a><st:nbsp/>
           </div>
         </j:if>
       </t:iconSize>
