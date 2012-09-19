@@ -46,7 +46,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.listeners.SCMListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
@@ -269,11 +268,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        this.builds = new RunMap<R>(getBuildDir(),new Constructor<R>() {
+        RunMap<R> builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
+        if (this.builds!=null) {
+            // if we are reloading, keep all those that are still building intact
+            for (R r : this.builds.getLoadedBuilds().values()) {
+                if (r.isBuilding())
+                    builds.put(r);
+            }
+        }
+        this.builds = builds;
 
         if(triggers==null) {
             // it didn't exist in < 1.28

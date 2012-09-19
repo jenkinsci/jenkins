@@ -153,6 +153,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
+     * Returns a read-only view of records that has already been loaded.
+     */
+    public SortedMap<Integer,R> getLoadedBuilds() {
+        return Collections.unmodifiableSortedMap(byNumber);
+    }
+
+    /**
      * @param fromKey
      *      Biggest build number to be in the returned set.
      * @param toKey
