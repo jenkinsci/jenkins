@@ -642,7 +642,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @since XXX
+     * @since 1.484
      */
     public AsynchPeople getAsynchPeople() {
         return new AsynchPeople(this);
@@ -731,7 +731,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Variant of {@link People} which can be displayed progressively, since it may be slow.
-     * @since XXX
+     * @since 1.484
      */
     public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
 

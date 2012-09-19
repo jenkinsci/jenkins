@@ -181,7 +181,7 @@ function ts_resortTable(lnk) {
 
 /**
  * Call when data has changed.
- * @since XXX
+ * @since 1.484
  */
 function ts_refresh(table){
     var column;

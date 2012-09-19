@@ -966,7 +966,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * @since XXX
+     * @since 1.484
      */
     public View.AsynchPeople getAsynchPeople() {
         return new View.AsynchPeople(this);

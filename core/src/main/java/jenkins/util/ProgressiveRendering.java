@@ -53,7 +53,7 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * <li>Make {@link #data} produce whatever JSON you want to send to the page to be displayed.
  * </ol>
  * {@code ui-samples-plugin} demonstrates all this.
- * @since XXX
+ * @since 1.484
  */
 public abstract class ProgressiveRendering {
 
