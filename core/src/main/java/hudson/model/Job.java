@@ -669,7 +669,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets all the runs.
      * 
-     * The resulting map must be immutable (by employing copy-on-write
+     * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      */
     protected abstract SortedMap<Integer, ? extends RunT> _getRuns();

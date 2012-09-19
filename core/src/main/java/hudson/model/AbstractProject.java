@@ -954,8 +954,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public SortedMap<Integer, ? extends R> _getRuns() {
-        return builds.getView();
+    public RunMap<R> _getRuns() {
+        return builds;
     }
 
     @Override
