@@ -25,7 +25,15 @@ package jenkins.model.lazy;
 
 /**
  * ceil/floor/lower/higher implementations
- * based on the result from a binary search.
+ * that takes the return value of a binary search as an input.
+ *
+ * <p>
+ * Consider a sorted array of int X={x<sub>i</sub>} and a binary search of p on it.
+ * this class provides likes of {@code ceil(X,p)} which is the smallest x<sub>i</sub>
+ * that still satisfies x<sub>i</sub> >= p.
+ *
+ * Simiarly, {@link #HIGHER} is the smallest x<sub>i</sub>
+ * that still satisfies x<sub>i</sub> > p.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -42,9 +50,12 @@ enum Boundary {
         this.offsetOfInsertionPoint = offsetOfInsertionPoint;
     }
 
+    /**
+     * Computes the boundary value.
+     */
     public int apply(int binarySearchOutput) {
         int r = binarySearchOutput;
-        if (r>=0)    return r+offsetOfExactMatch;
+        if (r>=0)    return r+offsetOfExactMatch;   // if we had some x_i==p
 
         int ip = -(r+1);
         return ip+offsetOfInsertionPoint;

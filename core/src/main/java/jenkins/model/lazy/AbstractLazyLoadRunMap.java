@@ -23,7 +23,6 @@
  */
 package jenkins.model.lazy;
 
-import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,12 +49,42 @@ import static jenkins.model.lazy.Boundary.*;
  * {@link SortedMap} that keeps build records by their build numbers, in the descending order
  * (newer ones first.)
  *
+ * <p>
  * The main thing about this class is that it encapsulates the lazy loading logic.
- * That is,
- * think of subtype of {@link Run}
+ * That is, while this class looks and feels like a normal {@link SortedMap} from outside,
+ * it actually doesn't have every item in the map instantiated yet. As items in the map get
+ * requested, this class {@link #retrieve(File) retrieves them} on demand, one by one.
  *
- * This implementation is in 2 states. An instance can be {@linkplain #fullyLoaded fully loaded} state,
- * where everything that can be loaded gets loaded. Otherwise it's in a partially loaded state.
+ * <p>
+ * The lookup is primarily done by using the build number as the key (hence the key type is {@link Integer}),
+ * but this class also provides look up based on {@linkplain #getIdOf(Object) the build ID}.
+ *
+ * <p>
+ * This class makes the following assumption about the on-disk layout of the data:
+ *
+ * <ul>
+ *     <li>Every build is stored in a directory, named after its ID.
+ *     <li>ID and build number are in the consistent order. That is,
+ *         if there are two builds #M and #N, {@code M>N <=> M.id > N.id}.
+ * </ul>
+ *
+ * <p>
+ * On certain platforms, there are symbolic links named after build numbers that link to the build ID.
+ * If these are available, they are used as a hint to speed up the lookup. Otherwise
+ * we rely on the assumption above and perform a binary search to locate the build.
+ * (notice that we'll have to do linear search if we don't have the consistent ordering assumption,
+ * which robs the whole point of doing lazy loading.)
+ *
+ * <p>
+ * Some of the {@link SortedMap} operations are weakly implemented. For example,
+ * {@link #size()} may be inaccurate because we only count the number of directories that look like
+ * build records, without checking if they are loadable. But these weaknesses aren't distinguishable
+ * from concurrent modifications, where another thread deletes a build while one thread iterates them.
+ *
+ * <p>
+ * Some of the {@link SortedMap} operations are inefficiently implemented, by
+ * {@linkplain #all() loading all the build records eagerly}. We hope to replace
+ * these implementations by more efficient lazy-loading ones as we go.
  *
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
@@ -65,7 +94,9 @@ import static jenkins.model.lazy.Boundary.*;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
-
+    /**
+     * Used in {@link #all()} to quickly determine if we've already loaded everything.
+     */
     private boolean fullyLoaded;
 
     /**
