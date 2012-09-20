@@ -206,7 +206,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 R b = cons.create(d);
                 b.onLoad();
                 if (LOGGER.isLoggable(FINE) || LOG_RETRIEVAL)
-                    LOGGER.log(LOG_RETRIEVAL?INFO:FINE,"Loaded " + b.getFullDisplayName(),new Exception());
+                    LOGGER.log(LOG_RETRIEVAL?INFO:FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
                 return b;
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
@@ -238,4 +238,6 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
 
     public static boolean LOG_RETRIEVAL = true;
+
+    private static class ThisIsHowItsLoaded extends Exception {}
 }
