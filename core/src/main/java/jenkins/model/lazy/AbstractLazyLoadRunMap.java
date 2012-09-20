@@ -166,6 +166,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      Smallest build number-1 to be in the returned set (-1 because this is exclusive)
      */
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
+        // TODO: if this method can produce a lazy map, that'd be wonderful
+        // because due to the lack of floor/ceil/higher/lower kind of methods
+        // to look up keys in SortedMap, various places of Jenkins rely on
+        // subMap+firstKey/lastKey combo.
+
         R start = search(fromKey, DESC);
         if (start==null)    return EMPTY_SORTED_MAP;
 

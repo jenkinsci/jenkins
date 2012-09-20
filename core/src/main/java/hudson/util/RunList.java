@@ -35,7 +35,6 @@ import hudson.model.Run;
 import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
 
-import javax.annotation.Nullable;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
