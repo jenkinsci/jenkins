@@ -100,6 +100,11 @@ public class RunList<R extends Run> extends AbstractList<R> {
         base = c;
     }
 
+    @Override
+    public Iterator<R> iterator() {
+        return base.iterator();
+    }
+
     /**
      * @deprecated
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
