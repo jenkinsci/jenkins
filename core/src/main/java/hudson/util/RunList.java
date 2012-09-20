@@ -48,8 +48,6 @@ import java.util.List;
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
  *
- * TODO: this should be immutable
- *
  * @author Kohsuke Kawaguchi
  */
 public class RunList<R extends Run> extends AbstractList<R> {
@@ -105,7 +103,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * @deprecated
+     * @deprecated as of 1.LAZYLOAD
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
@@ -122,7 +120,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * @deprecated
+     * @deprecated as of 1.LAZYLOAD
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override

@@ -92,6 +92,7 @@ import static jenkins.model.lazy.Boundary.*;
  * updating {@link #byNumber} and {@link #byId}.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.LAZYLOAD
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
     /**
