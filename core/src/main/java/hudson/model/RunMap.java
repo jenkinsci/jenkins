@@ -39,6 +39,7 @@ import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.*;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 
 /**
@@ -204,6 +205,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
+                if (LOGGER.isLoggable(FINE) || LOG_RETRIEVAL)
+                    LOGGER.log(LOG_RETRIEVAL?INFO:FINE,"Loaded " + b.getFullDisplayName(),new Exception());
                 return b;
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
@@ -233,4 +236,6 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
+
+    public static boolean LOG_RETRIEVAL = true;
 }
