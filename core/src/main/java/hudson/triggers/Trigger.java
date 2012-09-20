@@ -62,6 +62,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import antlr.ANTLRException;
+import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Triggers a {@link Build}.
@@ -278,26 +280,32 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * If plugins want to run periodic jobs, they should implement {@link PeriodicWork}.
      */
-    public static Timer timer;
+    @SuppressWarnings("MS_SHOULD_BE_FINAL")
+    public static @CheckForNull Timer timer;
 
     @Initializer(after=JOB_LOADED)
     public static void init() {
         new DoubleLaunchChecker().schedule();
 
-        // start all PeridocWorks
-        for(PeriodicWork p : PeriodicWork.all())
-            timer.scheduleAtFixedRate(p,p.getInitialDelay(),p.getRecurrencePeriod());
-        
-        // start all AperidocWorks
-        for(AperiodicWork p : AperiodicWork.all())
-            timer.schedule(p,p.getInitialDelay());
-
-        // start monitoring nodes, although there's no hurry.
-        timer.schedule(new SafeTimerTask() {
-            public void doRun() {
-                ComputerSet.initialize();
+        Timer _timer = timer;
+        if (_timer != null) {
+            // start all PeridocWorks
+            for(PeriodicWork p : PeriodicWork.all()) {
+                _timer.scheduleAtFixedRate(p,p.getInitialDelay(),p.getRecurrencePeriod());
             }
-        }, 1000*10);
+
+            // start all AperidocWorks
+            for(AperiodicWork p : AperiodicWork.all()) {
+                _timer.schedule(p,p.getInitialDelay());
+            }
+
+            // start monitoring nodes, although there's no hurry.
+            _timer.schedule(new SafeTimerTask() {
+                public void doRun() {
+                    ComputerSet.initialize();
+                }
+            }, 1000*10);
+        }
     }
 
     /**

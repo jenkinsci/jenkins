@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,11 +71,14 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
     }
 
     private void schedule(long interval) {
-        Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
-            public void doRun() {
-                triggerUpdate();
-            }
-        }, interval, interval);
+        Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.scheduleAtFixedRate(new SafeTimerTask() {
+                public void doRun() {
+                    triggerUpdate();
+                }
+            }, interval, interval);
+        }
     }
 
     /**
