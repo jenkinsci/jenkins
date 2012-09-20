@@ -171,7 +171,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
-    private boolean previousBuildComputed, nextBuildComputed;
+    private transient boolean previousBuildComputed, nextBuildComputed;
 
     @Override
     public R getPreviousBuild() {
