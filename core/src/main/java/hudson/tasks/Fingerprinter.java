@@ -340,11 +340,16 @@ public class Fingerprinter extends Recorder implements Serializable, DependecyDe
         }
 
         public void onLoad() {
-            Run pb = build.getPreviousBuild();
-            if (pb!=null) {
-                FingerprintAction a = pb.getAction(FingerprintAction.class);
-                if (a!=null)
-                    compact(a);
+            // share data structure with nearby builds, but to keep lazy loading efficient,
+            // don't go back the history forever. By %4!=0, 4 neighboring builds will share
+            // the data structure, so we'll get good enough saving.
+            if (build.getNumber()%4!=0) {
+                Run pb = build.getPreviousBuild();
+                if (pb!=null) {
+                    FingerprintAction a = pb.getAction(FingerprintAction.class);
+                    if (a!=null)
+                        compact(a);
+                }
             }
         }
 
