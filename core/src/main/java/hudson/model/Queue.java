@@ -85,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -93,7 +94,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -1746,8 +1746,11 @@ public class Queue extends ResourceController implements Saveable {
         MaintainTask(Queue queue) {
             this.queue = new WeakReference<Queue>(queue);
 
-            long interval = 5 * Timer.ONE_SECOND;
-            Trigger.timer.schedule(this, interval, interval);
+            long interval = 5000;
+            Timer timer = Trigger.timer;
+            if (timer != null) {
+                timer.schedule(this, interval, interval);
+            }
         }
 
         protected void doRun() {

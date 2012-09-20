@@ -727,7 +727,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("SC_START_IN_CTOR") // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings({
+        "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
+        "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
+    })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         long start = System.currentTimeMillis();
         
@@ -816,12 +819,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             }
             dnsMultiCast = new DNSMultiCast(this);
 
-            Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
-                @Override
-                protected void doRun() throws Exception {
-                    trimLabels();
-                }
-            }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5));
+            Timer timer = Trigger.timer;
+            if (timer != null) {
+                timer.scheduleAtFixedRate(new SafeTimerTask() {
+                    @Override
+                    protected void doRun() throws Exception {
+                        trimLabels();
+                    }
+                }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5));
+            }
 
             updateComputerList();
 
@@ -2563,6 +2569,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Called to shut down the system.
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void cleanUp() {
         for (ItemListener l : ItemListener.all())
             l.onBeforeShutdown();
@@ -2579,7 +2586,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(dnsMultiCast!=null)
             dnsMultiCast.close();
         interruptReloadThread();
-        Trigger.timer.cancel();
+        Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.cancel();
+        }
         // TODO: how to wait for the completion of the last job?
         Trigger.timer = null;
         if(tcpSlaveAgentListener!=null)
