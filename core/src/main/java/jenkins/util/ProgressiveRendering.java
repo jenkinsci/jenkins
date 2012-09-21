@@ -45,7 +45,10 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * <ol>
  * <li>Write a {@code <script>} section defining {@code function display(data)}.
  *     (Call {@code ts_refresh(document.getElementById('someid'))} if using a {@code sortable} table.)
- * <li>Use {@code <l:progressiveRendering handler="${it.something()}" callback="display"/>} from your Jelly page to display a progress bar and initialize JavaScript infrastructure.
+ * <li>Use {@code <l:progressiveRendering handler="${it.something()}" callback="display"/>} from your
+ *     Jelly page to display a progress bar and initialize JavaScript infrastructure.
+ *     (The callback attribute can take arbitrary JavaScript expression to be evaluated in the browser
+ *     so long as it produces a function object.)
  * <li>Implement {@code something()} to create an instance of your subclass of {@code ProgressiveRendering}.
  * <li>Perform your work in {@link #compute}.
  * <li>Periodically check {@link #canceled}.
