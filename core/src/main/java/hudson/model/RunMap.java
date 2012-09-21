@@ -248,7 +248,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
 
-    public static boolean LOG_RETRIEVAL = true;
+    public static boolean LOG_RETRIEVAL = false;
 
     private static class ThisIsHowItsLoaded extends Exception {}
 }
