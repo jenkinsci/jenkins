@@ -375,9 +375,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
         // invariant: 0<=lo<=pivot<=hi<=idOnDisk.size()
 
-        while (true) {
-            if (hi<=lo)     break;  // end of search
-
+        while (lo<hi) {
             final int pivot = (lo+hi)/2;
 
             R r = load(idOnDisk.get(pivot), null);
