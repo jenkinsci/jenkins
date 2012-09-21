@@ -77,6 +77,9 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
 
     /**
      * Finds the index of the entry lower than v.
+     *
+     * @return
+     *      return value will be in the [-1,size) range
      */
     public int lower(T v) {
         return Boundary.LOWER.apply(find(v));
@@ -84,6 +87,9 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
 
     /**
      * Finds the index of the entry greater than v.
+     *
+     * @return
+     *      return value will be in the [0,size] range
      */
     public int higher(T v) {
         return Boundary.HIGHER.apply(find(v));
@@ -91,6 +97,9 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
 
     /**
      * Finds the index of the entry lower or equal to v.
+     *
+     * @return
+     *      return value will be in the [-1,size) range
      */
     public int floor(T v) {
         return Boundary.FLOOR.apply(find(v));
@@ -98,6 +107,9 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
 
     /**
      * Finds the index of the entry greater or equal to v.
+     *
+     * @return
+     *      return value will be in the [0,size] range
      */
     public int ceil(T v) {
         return Boundary.CEIL.apply(find(v));

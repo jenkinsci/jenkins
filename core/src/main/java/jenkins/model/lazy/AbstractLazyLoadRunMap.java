@@ -91,7 +91,7 @@ import static jenkins.model.lazy.Boundary.*;
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link #byNumber} and {@link #byId}.
+ * updating {@link Index#byNumber} and {@link Index#byId}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.LAZYLOAD
@@ -103,16 +103,39 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private boolean fullyLoaded;
 
     /**
-     * Stores the mapping from build number to build, for builds that are already loaded.
+     * Currently visible index.
+     * Updated atomically. Once set to this field, the index object may not be modified.
      */
-    // copy on write
-    private volatile TreeMap<Integer,BuildReference<R>> byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
+    private volatile Index index = new Index();
 
     /**
-     * Stores the build ID to build number for builds that we already know
+     * Pair of two maps into a single class, so that the changes can be made visible atomically,
+     * and updates can happen concurrently to read.
+     *
+     * The idiom is that you put yourself in a synchronized block, {@linkplain #copy() make a copy of this},
+     * update the copy, then set it to {@link #index}.
      */
-    // copy on write
-    private volatile TreeMap<String,BuildReference<R>> byId = new TreeMap<String,BuildReference<R>>();
+    private class Index {
+        /**
+         * Stores the mapping from build number to build, for builds that are already loaded.
+         */
+        private final TreeMap<Integer,BuildReference<R>> byNumber;
+
+        /**
+         * Stores the build ID to build number for builds that we already know
+         */
+        private final TreeMap<String,BuildReference<R>> byId;
+
+        private Index() {
+            byId = new TreeMap<String,BuildReference<R>>();
+            byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
+        }
+
+        private Index(Index rhs) {
+            byId     = new TreeMap<String, BuildReference<R>>(rhs.byId);
+            byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
+        }
+    }
 
     /**
      * Build IDs found as directories, in the ascending order.
@@ -178,7 +201,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     @Override
     public boolean isEmpty() {
-        return byId.isEmpty() && search(Integer.MAX_VALUE, DESC)==null;
+        return index.byId.isEmpty() && search(Integer.MAX_VALUE, DESC)==null;
     }
 
     @Override
@@ -190,7 +213,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer,R> getLoadedBuilds() {
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this,byNumber));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber));
     }
 
     /**
@@ -216,7 +239,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this,byNumber.subMap(fromKey, toKey)));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this, index.byNumber.subMap(fromKey, toKey)));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
@@ -275,7 +298,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
     public R search(final int n, final Direction d) {
-        Entry<Integer, BuildReference<R>> c = byNumber.ceilingEntry(n);
+        Entry<Integer, BuildReference<R>> c = index.byNumber.ceilingEntry(n);
         if (c!=null && c.getKey()== n) {
             R r = c.getValue().get();
             if (r!=null)
@@ -287,7 +310,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         {// check numberOnDisk as a cache to see if we can find it there
             int npos = numberOnDisk.find(n);
             if (npos>=0) {// found exact match
-                R r = load(numberOnDisk.get(npos), true);
+                R r = load(numberOnDisk.get(npos), null);
                 if (r!=null)
                     return r;
             }
@@ -331,14 +354,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             // so fall back to the slow search
         }
 
-        // capture the snapshot and work off with it since it can be changed by other threads
+        // capture the snapshot and work off with it since it can be overwritten by other threads
         SortedList<String> idOnDisk = this.idOnDisk;
+        boolean clonedIdOnDisk = false;
 
         // slow path: we have to find the build from idOnDisk.
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
         if (idOnDisk.isEmpty())     return null;
 
-        Entry<Integer, BuildReference<R>> f = byNumber.floorEntry(n);
+        Entry<Integer, BuildReference<R>> f = index.byNumber.floorEntry(n);
 
         // if bound is null, use a sentinel value
         String cid = c==null ? "\u0000"  : c.getValue().id;
@@ -349,15 +373,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         int lo = idOnDisk.higher(cid);
         int hi = idOnDisk.lower(fid)+1;
 
+        // invariant: 0<=lo<=pivot<=hi<=idOnDisk.size()
+
         int pivot;
         while (true) {
             pivot = (lo+hi)/2;
             if (hi<=lo)     break;  // end of search
 
-            R r = load(idOnDisk.get(pivot), true);
+            R r = load(idOnDisk.get(pivot), null);
             if (r==null) {
                 // this ID isn't valid. get rid of that and retry pivot
                 hi--;
+                if (!clonedIdOnDisk) {// if we are making an edit, we need to own a copy
+                    idOnDisk = new SortedList<String>(idOnDisk);
+                    clonedIdOnDisk = true;
+                }
                 idOnDisk.remove(pivot);
                 continue;
             }
@@ -369,6 +399,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             if (found<n)    lo = pivot+1;   // the pivot was too small. look in the upper half
             else            hi = pivot;     // the pivot was too big. look in the lower half
         }
+
+        if (clonedIdOnDisk)
+            this.idOnDisk = idOnDisk;   // feedback the modified result atomically
 
         // didn't find the exact match
         // 'pivot' points to the insertion point on idOnDisk
@@ -396,10 +429,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R getById(String id) {
-        if (byId.containsKey(id)) {
-            return unwrap(byId.get(id));
+        Index snapshot = index;
+        if (snapshot.byId.containsKey(id)) {
+            return unwrap(snapshot.byId.get(id));
         }
-        return load(id,true);
+        return load(id,null);
     }
 
     public R getByNumber(int n) {
@@ -415,10 +449,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         String id = getIdOf(r);
         int n = getNumberOf(r);
 
-        copy();
+        Index copy = copy();
         BuildReference<R> ref = createReference(r);
-        BuildReference<R> old = byId.put(id,ref);
-        byNumber.put(n,ref);
+        BuildReference<R> old = copy.byId.put(id,ref);
+        copy.byNumber.put(n,ref);
+        index = copy;
 
         /*
             search relies on the fact that every object added via
@@ -448,13 +483,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     @Override
     public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
-        copy();
+        Index copy = copy();
         for (R r : rhs.values()) {
             String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            byId.put(id,ref);
-            byNumber.put(getNumberOf(r),ref);
+            copy.byId.put(id,ref);
+            copy.byNumber.put(getNumberOf(r),ref);
         }
+        index = copy;
     }
 
     /**
@@ -470,37 +506,37 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         if (!fullyLoaded) {
             synchronized (this) {
                 if (!fullyLoaded) {
-                    copy();
+                    Index copy = copy();
                     for (String id : idOnDisk) {
-                        if (!byId.containsKey(id))
-                            load(id,false); // copy() called above, so no need to copy inside
+                        if (!copy.byId.containsKey(id))
+                            load(id,copy);
                     }
+                    index = copy;
                     fullyLoaded = true;
                 }
             }
         }
-        return byNumber;
+        return index.byNumber;
     }
 
     /**
      * Creates a duplicate for the COW data structure in preparation for mutation.
      */
-    private void copy() {
-        byId     = new TreeMap<String, BuildReference<R>>(byId);
-        byNumber = new TreeMap<Integer,BuildReference<R>>(byNumber);
-    }
+    private Index copy() {
+        return new Index(index);
+   }
 
     /**
      * Tries to load the record #N by using the shortcut.
      * 
      * @return null if the data failed to load.
      */
-    protected R load(int n, boolean copy) {
+    protected R load(int n, Index editInPlace) {
         R r = null;
         File shortcut = new File(dir,String.valueOf(n));
         if (shortcut.isDirectory()) {
             synchronized (this) {
-                r = load(shortcut,copy);
+                r = load(shortcut,editInPlace);
 
                 // make sure what we actually loaded is #n,
                 // because the shortcuts can lie.
@@ -519,21 +555,29 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
 
-    protected R load(String id, boolean copy) {
-        return load(new File(dir,id),copy);
+    protected R load(String id, Index editInPlace) {
+        return load(new File(dir,id),editInPlace);
     }
 
-    protected synchronized R load(File dataDir, boolean copy) {
+    /**
+     * @param editInPlace
+     *      If non-null, update this data structure.
+     *      Otherwise do a copy-on-write of {@link #index}
+     */
+    protected synchronized R load(File dataDir, Index editInPlace) {
         try {
             R r = retrieve(dataDir);
             if (r==null)    return null;
 
-            if (copy)   copy();
+            Index copy = editInPlace!=null ? editInPlace : new Index(index);
 
             String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            byId.put(id,ref);
-            byNumber.put(getNumberOf(r),ref);
+            copy.byId.put(id,ref);
+            copy.byNumber.put(getNumberOf(r),ref);
+
+            if (editInPlace==null)  index = copy;
+
             return r;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load "+dataDir,e);
@@ -570,9 +614,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     protected abstract R retrieve(File dir) throws IOException;
 
     public synchronized boolean removeValue(R run) {
-        copy();
-        byNumber.remove(getNumberOf(run));
-        BuildReference<R> old = byId.remove(getIdOf(run));
+        Index copy = copy();
+        copy.byNumber.remove(getNumberOf(run));
+        BuildReference<R> old = copy.byId.remove(getIdOf(run));
+        this.index = copy;
+
         return unwrap(old)!=null;
     }
 
@@ -580,17 +626,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Replaces all the current loaded Rs with the given ones.
      */
     public synchronized void reset(TreeMap<Integer,R> builds) {
-        TreeMap<Integer, BuildReference<R>> byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
-        TreeMap<String, BuildReference<R>> byId = new TreeMap<String, BuildReference<R>>(COMPARATOR);
+        Index index = new Index();
         for (R r : builds.values()) {
             String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            byId.put(id,ref);
-            byNumber.put(getNumberOf(r),ref);
+            index.byId.put(id,ref);
+            index.byNumber.put(getNumberOf(r),ref);
         }
 
-        this.byNumber = byNumber;
-        this.byId = byId;
+        this.index = index;
     }
 
     @Override
