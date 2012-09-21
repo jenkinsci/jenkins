@@ -26,8 +26,7 @@ function progressivelyRender(handler, callback) {
     function checkNews(response) {
         var r = response.responseObject();
         if (r.status == 'done') {
-            // XXX why does window[callback] not work?
-            eval(callback)(r.data);
+            callback(r.data);
             $('status').style.display = 'none';
         } else if (r.status == 'canceled') {
             // XXX ugly; replace with single tr of class=unknown?
@@ -37,7 +36,7 @@ function progressivelyRender(handler, callback) {
             $$('#status .progress-bar-left')[0].style.width = '0%';
             $('status').className = 'progress-bar red';
         } else {
-            eval(callback)(r.data);
+            callback(r.data);
             $$('#status .progress-bar-done')[0].style.width = (100 * r.status) + '%';
             $$('#status .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
             checkNewsLater(500);
