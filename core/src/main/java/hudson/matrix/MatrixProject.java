@@ -471,7 +471,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         buildWrappers.setOwner(this);
 
         if (executionStrategy ==null)
-            executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially,touchStoneCombinationFilter,touchStoneResultCondition,sorter);
+            executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially != null ? runSequentially : false, touchStoneCombinationFilter, touchStoneResultCondition, sorter);
 
         rebuildConfigurations(null);
     }

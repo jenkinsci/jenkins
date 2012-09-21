@@ -35,6 +35,7 @@ import org.jvnet.hudson.test.Email
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.SingleFileSCM
 import org.jvnet.hudson.test.UnstableBuilder
+import org.jvnet.hudson.test.recipes.LocalData;
 import com.gargoylesoftware.htmlunit.html.HtmlTable
 import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.TestBuilder
@@ -431,4 +432,19 @@ public class MatrixProjectTest extends HudsonTestCase {
             //~ assertNotNull(run.getAction(RevisionParameterAction.class));
         //~ }
     //~ }
+
+    @Bug(15271)
+    @LocalData
+    public void testUpgrade() throws Exception {
+        MatrixProject p = jenkins.getItemByFullName("x", MatrixProject.class);
+        assertNotNull(p);
+        MatrixExecutionStrategy executionStrategy = p.getExecutionStrategy();
+        assertEquals(DefaultMatrixExecutionStrategyImpl.class, executionStrategy.getClass());
+        DefaultMatrixExecutionStrategyImpl defaultExecutionStrategy = (DefaultMatrixExecutionStrategyImpl) executionStrategy;
+        assertFalse(defaultExecutionStrategy.isRunSequentially());
+        assertNull(defaultExecutionStrategy.getTouchStoneCombinationFilter());
+        assertNull(defaultExecutionStrategy.getTouchStoneResultCondition());
+        assertNull(defaultExecutionStrategy.getSorter());
+    }
+
 }
