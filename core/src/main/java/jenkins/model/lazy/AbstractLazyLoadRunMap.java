@@ -23,12 +23,14 @@
  */
 package jenkins.model.lazy;
 
+import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,13 +106,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Stores the mapping from build number to build, for builds that are already loaded.
      */
     // copy on write
-    private volatile TreeMap<Integer,R> byNumber = new TreeMap<Integer,R>(COMPARATOR);
+    private volatile TreeMap<Integer,BuildReference<R>> byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
 
     /**
      * Stores the build ID to build number for builds that we already know
      */
     // copy on write
-    private volatile TreeMap<String,R> byId = new TreeMap<String,R>();
+    private volatile TreeMap<String,BuildReference<R>> byId = new TreeMap<String,BuildReference<R>>();
 
     /**
      * Build IDs found as directories, in the ascending order.
@@ -181,14 +183,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     @Override
     public Set<Entry<Integer, R>> entrySet() {
-        return Collections.unmodifiableSet(all().entrySet());
+        return Collections.unmodifiableSet(new BuildReferenceMapAdapter<R>(this,all()).entrySet());
     }
 
     /**
      * Returns a read-only view of records that has already been loaded.
      */
     public SortedMap<Integer,R> getLoadedBuilds() {
-        return Collections.unmodifiableSortedMap(byNumber);
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this,byNumber));
     }
 
     /**
@@ -214,7 +216,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             assert i!=null;
         }
 
-        return Collections.unmodifiableSortedMap(byNumber.subMap(fromKey, toKey));
+        return Collections.unmodifiableSortedMap(new BuildReferenceMapAdapter<R>(this,byNumber.subMap(fromKey, toKey)));
     }
 
     public SortedMap<Integer, R> headMap(Integer toKey) {
@@ -273,8 +275,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
     public R search(final int n, final Direction d) {
-        Entry<Integer, R> c = byNumber.ceilingEntry(n);
-        if (c!=null && c.getKey()== n)  return c.getValue();    // found the exact #n
+        Entry<Integer, BuildReference<R>> c = byNumber.ceilingEntry(n);
+        if (c!=null && c.getKey()== n) {
+            R r = c.getValue().get();
+            if (r!=null)
+            return r;    // found the exact #n
+        }
 
         // at this point we know that we don't have #n loaded yet
 
@@ -332,11 +338,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
         if (idOnDisk.isEmpty())     return null;
 
-        Entry<Integer, R> f = byNumber.floorEntry(n);
+        Entry<Integer, BuildReference<R>> f = byNumber.floorEntry(n);
 
         // if bound is null, use a sentinel value
-        String cid = c==null ? "\u0000"  : getIdOf(c.getValue());
-        String fid = f==null ? "\uFFFF" : getIdOf(f.getValue());
+        String cid = c==null ? "\u0000"  : c.getValue().id;
+        String fid = f==null ? "\uFFFF" : f.getValue().id;
 
         // We know that the build we are looking for exists in this range
         // we will narrow this down via binary search
@@ -390,8 +396,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R getById(String id) {
-        if (byId.containsKey(id))
-            return byId.get(id);
+        if (byId.containsKey(id)) {
+            return unwrap(byId.get(id));
+        }
         return load(id,true);
     }
 
@@ -409,11 +416,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         int n = getNumberOf(r);
 
         copy();
-        R old = byId.put(id,r);
-        byNumber.put(n,r);
+        BuildReference<R> ref = createReference(r);
+        BuildReference<R> old = byId.put(id,ref);
+        byNumber.put(n,ref);
 
         /*
-            search relies on the fact that every objet added via
+            search relies on the fact that every object added via
             put() method be available in the xyzOnDisk index, so I'm adding them here
             however, this is awfully inefficient. I wonder if there's any better way to do this?
          */
@@ -431,15 +439,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             numberOnDisk = a;
         }
 
-        return old;
+        return unwrap(old);
+    }
+
+    private R unwrap(Reference<R> ref) {
+        return ref!=null ? ref.get() : null;
     }
 
     @Override
     public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
         copy();
         for (R r : rhs.values()) {
-            byId.put(getIdOf(r),r);
-            byNumber.put(getNumberOf(r),r);
+            String id = getIdOf(r);
+            BuildReference<R> ref = createReference(r);
+            byId.put(id,ref);
+            byNumber.put(getNumberOf(r),ref);
         }
     }
 
@@ -452,7 +466,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @return
      *      fully populated map.
      */
-    private TreeMap<Integer,R> all() {
+    private TreeMap<Integer,BuildReference<R>> all() {
         if (!fullyLoaded) {
             synchronized (this) {
                 if (!fullyLoaded) {
@@ -472,8 +486,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Creates a duplicate for the COW data structure in preparation for mutation.
      */
     private void copy() {
-        byId     = new TreeMap<String, R>(byId);
-        byNumber = new TreeMap<Integer,R>(byNumber);
+        byId     = new TreeMap<String, BuildReference<R>>(byId);
+        byNumber = new TreeMap<Integer,BuildReference<R>>(byNumber);
     }
 
     /**
@@ -515,8 +529,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             if (r==null)    return null;
 
             if (copy)   copy();
-            byId.put(getIdOf(r),r);
-            byNumber.put(getNumberOf(r),r);
+
+            String id = getIdOf(r);
+            BuildReference<R> ref = createReference(r);
+            byId.put(id,ref);
+            byNumber.put(getNumberOf(r),ref);
             return r;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load "+dataDir,e);
@@ -524,8 +541,22 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return null;
     }
 
+    /**
+     * Subtype to provide {@link Run#getNumber()} so that this class doesn't have to depend on it.
+     */
     protected abstract int getNumberOf(R r);
+    /**
+     * Subtype to provide {@link Run#getId()} so that this class doesn't have to depend on it.
+     */
     protected abstract String getIdOf(R r);
+
+    /**
+     * Allow subtype to capture a reference.
+     */
+    protected BuildReference<R> createReference(R r) {
+        return new BuildReference<R>(getIdOf(r),r);
+    }
+
 
     /**
      * Parses {@code R} instance from data in the specified directory.
@@ -541,19 +572,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public synchronized boolean removeValue(R run) {
         copy();
         byNumber.remove(getNumberOf(run));
-        R old = byId.remove(getIdOf(run));
-        return old!=null;
+        BuildReference<R> old = byId.remove(getIdOf(run));
+        return unwrap(old)!=null;
     }
 
     /**
      * Replaces all the current loaded Rs with the given ones.
      */
     public synchronized void reset(TreeMap<Integer,R> builds) {
-        TreeMap<Integer, R> byNumber = new TreeMap<Integer,R>(COMPARATOR);
-        TreeMap<String, R> byId = new TreeMap<String, R>(COMPARATOR);
+        TreeMap<Integer, BuildReference<R>> byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
+        TreeMap<String, BuildReference<R>> byId = new TreeMap<String, BuildReference<R>>(COMPARATOR);
         for (R r : builds.values()) {
-            byId.put(getIdOf(r),r);
-            byNumber.put(getNumberOf(r),r);
+            String id = getIdOf(r);
+            BuildReference<R> ref = createReference(r);
+            byId.put(id,ref);
+            byNumber.put(getNumberOf(r),ref);
         }
 
         this.byNumber = byNumber;

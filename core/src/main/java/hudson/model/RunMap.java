@@ -24,6 +24,7 @@
 package hudson.model;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
+import jenkins.model.lazy.BuildReference;
 import org.apache.commons.collections.comparators.ReverseComparator;
 
 import java.io.File;
@@ -52,6 +53,8 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
  *
  * @author Kohsuke Kawaguchi
  */
+// in practice R is always bound by AbstractBuild, but making that change causes all kinds of
+// signature breakage.
 public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
@@ -114,11 +117,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     @Override
     public boolean removeValue(R run) {
-        if(run.nextBuild!=null)
-            run.nextBuild.previousBuild = run.previousBuild;
-        if(run.previousBuild!=null)
-            run.previousBuild.nextBuild = run.nextBuild;
-
+        run.dropLinks();
         return super.removeValue(run);
     }
 
@@ -168,6 +167,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     @Override
     protected final String getIdOf(R r) {
         return r.getId();
+    }
+
+    /**
+     * Reuses the same reference as much as we can.
+     * <p>
+     * If concurrency ends up creating a few extra, that's OK, because
+     * we are really just trying to reduce the # of references we create.
+     */
+    @Override
+    protected BuildReference<R> createReference(R r) {
+        if (r instanceof AbstractBuild)     return ((AbstractBuild)r).selfReference;
+        else                                return super.createReference(r);
     }
 
     @Override

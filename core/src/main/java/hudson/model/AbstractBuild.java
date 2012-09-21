@@ -63,6 +63,7 @@ import hudson.util.LogTaskListener;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.lazy.BuildReference;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -155,6 +156,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
+    /**
+     * Pointers to form bi-directional link between adjacent {@link AbstractBuild}s.
+     *
+     * <p>
+     * Unlike {@link Run}, {@link AbstractBuild}s do lazy-loading, so we don't use
+     * {@link Run#previousBuild} and {@link Run#nextBuild}, and instead use these
+     * fields and point to {@link #selfReference} of adjacent builds.
+     */
+    private volatile transient BuildReference<R> previousBuild, nextBuild;
+
+    /*package*/ final transient BuildReference<R> selfReference = new BuildReference<R>(getId(),_this());
+
+
+
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -171,32 +186,78 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
-    private transient boolean previousBuildComputed, nextBuildComputed;
+    @Override
+    void dropLinks() {
+        super.dropLinks();
+
+        if(nextBuild!=null) {
+            AbstractBuild nb = nextBuild.get();
+            if (nb!=null)   nb.previousBuild = previousBuild;
+        }
+        if(previousBuild!=null) {
+            AbstractBuild pb = previousBuild.get();
+            if (pb!=null)   pb.nextBuild = nextBuild;
+        }
+    }
 
     @Override
     public R getPreviousBuild() {
-        if (previousBuild==null && !previousBuildComputed) {
-            // having two neighbors pointing to each other is important to make RunMap.removeValue work
-            R previousBuild = getParent().builds.search(number-1, Direction.DESC);
-            if (previousBuild!=null)
-                previousBuild.nextBuild = (R)this;
-            this.previousBuild = previousBuild;
-            previousBuildComputed = true;
+        while (true) {
+            BuildReference<R> r = previousBuild;    // capture the value once
+
+            if (r==null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                R pb = getParent().builds.search(number-1, Direction.DESC);
+                if (pb!=null) {
+                    ((AbstractBuild)pb).nextBuild = selfReference;   // establish bi-di link
+                    this.previousBuild = pb.selfReference;
+                    return pb;
+                } else {
+                    // this indicates that we know there's no previous build
+                    // (as opposed to we don't know if/what our previous build is.
+                    this.previousBuild = selfReference;
+                    return null;
+                }
+            }
+            if (r==selfReference)
+                return null;
+
+            R referent = r.get();
+            if (referent!=null) return referent;
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.previousBuild = null;
         }
-        return previousBuild;
     }
 
     @Override
     public R getNextBuild() {
-        if (nextBuild==null && !nextBuildComputed) {
-            // having two neighbors pointing to each other is important to make RunMap.removeValue work
-            R nextBuild = getParent().builds.search(number+1, Direction.ASC);
-            if (nextBuild!=null)
-                nextBuild.previousBuild = (R)this;
-            this.nextBuild = nextBuild;
-            nextBuildComputed = true;
+        while (true) {
+            BuildReference<R> r = nextBuild;    // capture the value once
+
+            if (r==null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                R nb = getParent().builds.search(number+1, Direction.ASC);
+                if (nb!=null) {
+                    ((AbstractBuild)nb).previousBuild = selfReference;   // establish bi-di link
+                    this.nextBuild = nb.selfReference;
+                    return nb;
+                } else {
+                    // this indicates that we know there's no next build
+                    // (as opposed to we don't know if/what our next build is.
+                    this.nextBuild = selfReference;
+                    return null;
+                }
+            }
+            if (r==selfReference)
+                return null;
+
+            R referent = r.get();
+            if (referent!=null) return referent;
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.nextBuild = null;
         }
-        return nextBuild;
     }
 
     /**

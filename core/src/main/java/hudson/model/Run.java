@@ -1,9 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
- * Darek Ostolski
+ * Darek Ostolski, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.BuildReference;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
@@ -338,7 +339,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Obtains 'this' in a more type safe signature.
      */
     @SuppressWarnings({"unchecked"})
-    private RunT _this() {
+    protected RunT _this() {
         return (RunT)this;
     }
 
@@ -688,6 +689,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Exported(visibility=2)
     public int getNumber() {
         return number;
+    }
+
+    /**
+     * Called by {@link RunMap} to drop bi-directional links in preparation for
+     * deleting a build.
+     */
+    /*package*/ void dropLinks() {
+        if(nextBuild!=null)
+            nextBuild.previousBuild = previousBuild;
+        if(previousBuild!=null)
+            previousBuild.nextBuild = nextBuild;
     }
 
     public RunT getPreviousBuild() {
