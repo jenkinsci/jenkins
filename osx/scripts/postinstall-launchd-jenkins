@@ -45,6 +45,10 @@ fi
 
 find "$JENKINS_HOMEDIR" \( -not -user jenkins -or -not -group jenkins \) -print0 | xargs -0 chown jenkins:jenkins
 
+# Create log directory, which can be written by Jenkins daemon
+mkdir -p /var/log/jenkins
+chown jenkins:jenkins /var/log/jenkins
+
 # Load and start the launch daemon
 /bin/launchctl load -w ${JENKINS_PLIST}
 
