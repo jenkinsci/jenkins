@@ -966,6 +966,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
+     * @since 1.484
+     */
+    public View.AsynchPeople getAsynchPeople() {
+        return new View.AsynchPeople(this);
+    }
+
+    /**
      * Does this {@link View} has any associated user information recorded?
      */
     public boolean hasPeople() {
