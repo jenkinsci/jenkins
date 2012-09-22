@@ -53,6 +53,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
+import hudson.mvn.GlobalSettingsProvider;
 import hudson.mvn.SettingsProvider;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
@@ -722,8 +723,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         if (project.globalSettingConfigPath != null)
                             margs.add("-gs" , project.globalSettingConfigPath);
-
-
+                        
                         
                         // If incrementalBuild is set
                         // and the previous build didn't specify that we need a full build

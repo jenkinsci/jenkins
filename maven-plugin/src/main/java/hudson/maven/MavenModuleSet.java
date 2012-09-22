@@ -50,14 +50,19 @@ import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
+import hudson.model.AbstractBuild;
 import hudson.model.ResourceActivity;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
+import hudson.mvn.DefaultGlobalSettingsProvider;
 import hudson.mvn.DefaultSettingsProvider;
+import hudson.mvn.FilePathGlobalSettingsProvider;
 import hudson.mvn.FilePathSettingsProvider;
+import hudson.mvn.GlobalSettingsProvider;
+import hudson.mvn.GlobalSettingsProviderDescriptor;
 import hudson.mvn.SettingsProvider;
 import hudson.mvn.SettingsProviderDescriptor;
 import hudson.search.CollectionSearchIndex;
@@ -73,6 +78,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -270,6 +276,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.481
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
+    
+    /**
+     * @since 1.481
+     */
+    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
 
     public Object readResolve() {
@@ -593,6 +604,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public SettingsProvider getSettings() {
         return settings;
+    }
+
+    /**
+     * @since 1.481
+     */
+    public GlobalSettingsProvider getGlobalSettings() {
+        return globalSettings;
     }
 
     /**
@@ -1076,6 +1094,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         goals = Util.fixEmpty(req.getParameter("goals").trim());
         mavenOpts = Util.fixEmpty(req.getParameter("mavenOpts").trim());
         settings = SettingsProvider.parseSettingsProvider(req);
+        globalSettings = GlobalSettingsProvider.parseSettingsProvider(req);
 
         mavenName = req.getParameter("maven_version");
         aggregatorStyleBuild = !req.hasParameter("maven.perModuleBuild");
@@ -1161,6 +1180,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
         public List<SettingsProviderDescriptor> getSettingsProviders() {
             return Jenkins.getInstance().getDescriptorList(SettingsProvider.class);
+        }
+        
+        public List<GlobalSettingsProviderDescriptor> getGlobalSettingsProviders() {
+            return Jenkins.getInstance().getDescriptorList(GlobalSettingsProvider.class);
         }
 
         public String getGlobalMavenOpts() {

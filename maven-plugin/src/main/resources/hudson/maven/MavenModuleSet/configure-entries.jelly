@@ -85,6 +85,10 @@ THE SOFTWARE.
           <f:hetero-radio field="settings" descriptors="${descriptor.settingsProviders}"/>
       </f:entry>
 
+      <f:entry title="${%Global Settings file}">
+          <f:hetero-radio field="globalSettings" descriptors="${descriptor.globalSettingsProviders}"/>
+      </f:entry>
+
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"
