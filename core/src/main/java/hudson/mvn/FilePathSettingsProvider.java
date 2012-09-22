@@ -56,21 +56,24 @@ public class FilePathSettingsProvider extends SettingsProvider {
          * Check that the provided file is a relative path. And check that it exists, just in case.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject job, @QueryParameter String value) throws IOException, ServletException {
-            String v = fixEmpty(value);
-            if ((v == null) || (v.length() == 0)) {
-                // Null values are allowed.
-                return FormValidation.ok();
-            }
-            if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-                return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
-            }
-
-            Run lb = job.getLastBuild();
-            if (lb!=null) {
-                FilePath ws = lb.getWorkspace();
-                if(ws!=null)
-                    return ws.validateRelativePath(value,true,true);
-            }
+        	
+        	// TODO why not support an absolute path?
+        	
+//            String v = fixEmpty(value);
+//            if ((v == null) || (v.length() == 0)) {
+//                // Null values are allowed.
+//                return FormValidation.ok();
+//            }
+//            if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
+//                return FormValidation.error(Messages.MavenModuleSet_AlternateSettingsRelativePath());
+//            }
+//
+//            Run lb = job.getLastBuild();
+//            if (lb!=null) {
+//                FilePath ws = lb.getWorkspace();
+//                if(ws!=null)
+//                    return ws.validateRelativePath(value,true,true);
+//            }
             return FormValidation.ok();
         }
 
