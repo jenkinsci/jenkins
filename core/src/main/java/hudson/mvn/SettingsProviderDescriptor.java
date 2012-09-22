@@ -1,4 +1,4 @@
-package hudson.maven;
+package hudson.mvn;
 
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;

@@ -25,6 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
     <f:entry title="${%File path}" field="path">
-        <f:textbox checkUrl="'descriptorByName/hudson.maven.FilePathSettingsProvider/check?value='+escape(this.value)"/>
+        <f:textbox checkUrl="'descriptorByName/hudson.mvn.FilePathSettingsProvider/check?value='+escape(this.value)"/>
     </f:entry>
 </j:jelly>

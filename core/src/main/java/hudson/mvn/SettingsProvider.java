@@ -1,19 +1,16 @@
-package hudson.maven;
+package hudson.mvn;
 
 import hudson.ExtensionPoint;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import hudson.util.ArgumentListBuilder;
-import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
 
 import javax.servlet.ServletException;
-import java.io.IOException;
+
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
