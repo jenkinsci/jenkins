@@ -620,6 +620,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             return r;
             			}
 
+                    	//#######################
+                    	// TODO refactor/remove this in favor to the new SettingsProvider EPs
                         String settingsConfigId = project.getSettingConfigId();
                         if (StringUtils.isNotBlank(settingsConfigId)) {
                             SettingConfig settingsConfig = SettingsProviderUtils.findSettings(settingsConfigId);
@@ -652,6 +654,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         	// make sure the transient field is clean
                         	project.globalSettingConfigPath = null;
                         }
+                        //#######################
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
@@ -724,6 +727,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if (project.globalSettingConfigPath != null)
                             margs.add("-gs" , project.globalSettingConfigPath);
                         
+                        GlobalSettingsProvider gsettings = project.getGlobalSettings();
+                        if (gsettings != null) {
+                            gsettings.configure(margs, MavenModuleSetBuild.this);
+                        }
+
                         
                         // If incrementalBuild is set
                         // and the previous build didn't specify that we need a full build
