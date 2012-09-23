@@ -45,11 +45,11 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
 
 
     @Extension(ordinal = 10)
-    public static class DescriptorImpl extends SettingsProviderDescriptor {
+    public static class DescriptorImpl extends GlobalSettingsProviderDescriptor {
 
         @Override
         public String getDisplayName() {
-            return "File in project workspace";
+            return "global settings file in project workspace";
         }
         
     }
