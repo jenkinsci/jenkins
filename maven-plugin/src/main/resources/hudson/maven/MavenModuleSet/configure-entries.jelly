@@ -79,16 +79,7 @@ THE SOFTWARE.
       <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
-
-
-      <f:entry title="${%Settings file}">
-          <f:hetero-radio field="settings" descriptors="${descriptor.settingsProviders}"/>
-      </f:entry>
-
-      <f:entry title="${%Global Settings file}">
-          <f:hetero-radio field="globalSettings" descriptors="${descriptor.globalSettingsProviders}"/>
-      </f:entry>
-
+      		
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"
@@ -122,8 +113,9 @@ THE SOFTWARE.
         </select>
       </f:entry>
 
+      <!-- TODO remove after refactor start -->
       <j:set var="mavenSettingsConfigs" value="${it.allMavenSettingsConfigs}" />
-      <f:entry title="${%Maven Settings Configs}">
+      <f:entry title="REMOVE - ${%Maven Settings Configs}">
         <select class="setting-input" name="maven.mavenSettingsConfigId">
           <f:option value="">- select -</f:option>
           <j:forEach var="settingConfig" items="${mavenSettingsConfigs}">
@@ -133,7 +125,7 @@ THE SOFTWARE.
       </f:entry>
 
       <j:set var="mavenGlobalSettingsConfigs" value="${it.allGlobalMavenSettingsConfigs}" />
-      <f:entry title="${%Maven Global Settings Configs}">
+      <f:entry title="REMOVE - ${%Maven Global Settings Configs}">
         <select class="setting-input" name="maven.mavenGlobalSettingConfigId">
           <f:option value="">- select -</f:option>
           <j:forEach var="globalSettingConfig" items="${mavenGlobalSettingsConfigs}">
@@ -141,6 +133,15 @@ THE SOFTWARE.
           </j:forEach>
         </select>
       </f:entry>
+      <!-- TODO remove ende -->      
+      
+      <f:entry title="${%Settings file}">
+          <f:dropdownDescriptorSelector field="settings" descriptors="${descriptor.settingsProviders}"/>
+      </f:entry>
+
+      <f:entry title="${%Global Settings file}">
+          <f:dropdownDescriptorSelector field="globalSettings" descriptors="${descriptor.globalSettingsProviders}"/>
+      </f:entry>      
 
     </f:advanced>
   </f:section>

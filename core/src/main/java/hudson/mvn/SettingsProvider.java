@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -23,14 +25,14 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param margs
      * @param project
      */
-    public abstract void configure(ArgumentListBuilder margs, AbstractBuild project) throws IOException, InterruptedException;
+    public abstract void configure(ArgumentListBuilder margs, AbstractBuild<?, ?> project) throws IOException, InterruptedException;
 
     public static SettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
-        String scm = req.getParameter("settings");
-        if(scm==null) {
+        JSONObject settings = req.getSubmittedForm().getJSONObject("settings");
+        if(settings==null) {
             return new DefaultSettingsProvider();
         }
-        return req.bindJSON(SettingsProvider.class, req.getSubmittedForm().getJSONObject("settings"));
+        return req.bindJSON(SettingsProvider.class, settings);
     }
 
 }

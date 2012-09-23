@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -23,14 +25,14 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * @param margs
      * @param project
      */
-    public abstract void configure(ArgumentListBuilder margs, AbstractBuild project) throws IOException, InterruptedException;
+    public abstract void configure(ArgumentListBuilder margs, AbstractBuild<?, ?> project) throws IOException, InterruptedException;
 
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
-        String scm = req.getParameter("globalSettings");
-        if(scm==null) {
+        JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");
+        if(settings==null) {
             return new DefaultGlobalSettingsProvider();
         }
-        return req.bindJSON(GlobalSettingsProvider.class, req.getSubmittedForm().getJSONObject("globalSettings"));
+        return req.bindJSON(GlobalSettingsProvider.class, settings);
     }
 
 }
