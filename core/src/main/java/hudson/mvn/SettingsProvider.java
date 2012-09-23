@@ -14,6 +14,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @author Dominik Bartholdi (imod)
  */
 public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsProvider> implements ExtensionPoint {
 
@@ -26,11 +27,10 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
 
     public static SettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         String scm = req.getParameter("settings");
-        if(scm==null)   return new DefaultSettingsProvider();
-
-        int scmidx = Integer.parseInt(scm);
-        SettingsProviderDescriptor d = SettingsProviderDescriptor.all().get(scmidx);
-        return d.newInstance(req, req.getSubmittedForm().getJSONObject("settings"));
+        if(scm==null) {
+            return new DefaultSettingsProvider();
+        }
+        return req.bindJSON(SettingsProvider.class, req.getSubmittedForm().getJSONObject("settings"));
     }
 
 }

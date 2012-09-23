@@ -27,11 +27,10 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
 
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         String scm = req.getParameter("globalSettings");
-        if(scm==null)   return new DefaultGlobalSettingsProvider();
-
-        int scmidx = Integer.parseInt(scm);
-        GlobalSettingsProviderDescriptor d = GlobalSettingsProviderDescriptor.all().get(scmidx);
-        return d.newInstance(req, req.getSubmittedForm().getJSONObject("settings"));
+        if(scm==null) {
+            return new DefaultGlobalSettingsProvider();
+        }
+        return req.bindJSON(GlobalSettingsProvider.class, req.getSubmittedForm().getJSONObject("globalSettings"));
     }
 
 }
