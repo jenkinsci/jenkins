@@ -23,6 +23,7 @@
  */
 package jenkins.util.xstream;
 
+import hudson.Functions;
 import hudson.util.XStream2;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -58,7 +59,11 @@ public class XStreamDOMTest {
         Foo foo = createSomeFoo();
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
+        String expected = IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml"));
+        if (Functions.isWindows()) {
+            expected = expected.replaceAll("\r\n", "\n");
+        }
+        assertEquals(expected.trim(), xml.trim());
     }
 
     private Foo createSomeFoo() {
@@ -84,7 +89,11 @@ public class XStreamDOMTest {
 
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
+        String expected = IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml"));
+        if (Functions.isWindows()) {
+            expected = expected.replaceAll("\r\n", "\n");
+        }
+        assertEquals(expected.trim(), xml.trim());
     }
 
     @Test
