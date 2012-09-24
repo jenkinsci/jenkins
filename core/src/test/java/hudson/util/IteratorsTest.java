@@ -23,16 +23,20 @@
  */
 package hudson.util;
 
+import hudson.util.Iterators.CountingPredicate;
 import junit.framework.TestCase;
 
 import java.util.List;
+
+import static java.util.Arrays.*;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class IteratorsTest extends TestCase {
+
     public void testReverseSequence() {
-        List<Integer> lst = Iterators.reverseSequence(1,4);
+        List<Integer> lst = Iterators.reverseSequence(1, 4);
         assertEquals(3,(int)lst.get(0));
         assertEquals(2,(int)lst.get(1));
         assertEquals(1,(int)lst.get(2));
@@ -44,6 +48,17 @@ public class IteratorsTest extends TestCase {
         assertEquals(1,(int)lst.get(0));
         assertEquals(2,(int)lst.get(1));
         assertEquals(3,(int)lst.get(2));
-        assertEquals(3,lst.size());
+        assertEquals(3, lst.size());
     }
+
+    public void testLimit() {
+        assertEquals("[0]",com.google.common.collect.Iterators.toString(Iterators.limit(asList(0,1,2,3,4).iterator(), EVEN)));
+        assertEquals("[]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,4,6).iterator(), EVEN)));
+    }
+
+    public static final CountingPredicate<Integer> EVEN = new CountingPredicate<Integer>() {
+        public boolean apply(int index, Integer input) {
+            return input % 2 == 0;
+        }
+    };
 }

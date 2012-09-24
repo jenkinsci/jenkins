@@ -55,6 +55,15 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class='major rfe'>
+    Build records are now lazy loaded, resulting in a reduced startup time 
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.484>What's new in 1.484</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=bug>
     Check view permissions before showing config page
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15277">issue 15277</a>)
@@ -74,11 +83,8 @@ Upcoming changes</a>
     Mac OS X installer now sends log to <tt>/var/log/jenkins/jenkins.log</tt>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15178">issue 15178</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.483>What's new in 1.483</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.483>What's new in 1.483</a> (2012/09/23)</h3>
 <ul class=image>
   <li class=bug>
     Invalid warning message when the config-file-provider plugin is not installed
@@ -110,7 +116,6 @@ Upcoming changes</a>
     Track and verify plugins used in configuration XML
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15003">issue 15003</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.482>What's new in 1.482</a> (2012/09/16)</h3>
 <ul class=image>
   <li class=bug>

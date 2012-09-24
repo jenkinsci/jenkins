@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.484-SNAPSHOT</version>
+  <version>1.485-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -63,8 +63,8 @@ THE SOFTWARE.
   </scm>
   <distributionManagement>
     <site>
-      <id>hudson-www</id>
-      <url>scp://jenkins-ci.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
     </site>
     <snapshotRepository>
       <id>maven.jenkins-ci.org</id>
@@ -678,6 +678,13 @@ THE SOFTWARE.
       </plugin>
     </plugins>
 
+    <extensions>
+      <extension>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.5</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
