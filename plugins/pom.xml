@@ -316,6 +316,13 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <extensions>
+      <extension>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.5</version>
+      </extension>
+    </extensions>
   </build>
 
   <repositories>
@@ -345,6 +352,10 @@
   </pluginRepositories>
 
   <distributionManagement>
+    <site>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-site.git:plugin-parent</url>
+    </site>
     <snapshotRepository>
       <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
