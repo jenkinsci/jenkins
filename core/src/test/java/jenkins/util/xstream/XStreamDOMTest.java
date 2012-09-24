@@ -58,7 +58,11 @@ public class XStreamDOMTest {
         Foo foo = createSomeFoo();
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
+        assertEquals(getTestData1().trim(), xml.trim());
+    }
+
+    private String getTestData1() throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).replaceAll("\r\n", "\n");
     }
 
     private Foo createSomeFoo() {
@@ -84,7 +88,7 @@ public class XStreamDOMTest {
 
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).trim(),xml.trim());
+        assertEquals(getTestData1().trim(), xml.trim());
     }
 
     @Test
