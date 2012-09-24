@@ -23,8 +23,11 @@
  */
 package hudson.util;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -325,5 +328,52 @@ public class Iterators {
 
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
         return com.google.common.collect.Iterators.concat(iterators);
+    }
+
+    /**
+     * Returns the elements in the base iterator until it hits any element that doesn't satisfy the filter.
+     * Then the rest of the elements in the base iterator gets ignored.
+     *
+     * @since 1.LAZYLOAD
+     */
+    public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
+        return new Iterator<T>() {
+            private T next;
+            private boolean end;
+            private int index=0;
+            public boolean hasNext() {
+                fetch();
+                return next!=null;
+            }
+
+            public T next() {
+                fetch();
+                T r = next;
+                next = null;
+                return r;
+            }
+
+            private void fetch() {
+                if (next==null && !end) {
+                    if (base.hasNext()) {
+                        next = base.next();
+                        if (!filter.apply(index++,next)) {
+                            next = null;
+                            end = true;
+                        }
+                    } else {
+                        end = true;
+                    }
+                }
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public interface CountingPredicate<T> {
+        boolean apply(int index, T input);
     }
 }

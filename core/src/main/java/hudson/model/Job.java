@@ -518,10 +518,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @return never null. The first entry is the latest build.
      */
-    @Exported
+    @Exported(name="allBuilds",visibility=-2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
         return RunList.fromRuns(_getRuns().values());
+    }
+
+    /**
+     * Gets the read-only view of the recent builds.
+     *
+     * @since 1.LAZYLOAD
+     */
+    @Exported(name="builds")
+    public RunList<RunT> getNewBuilds() {
+        return getBuilds().newBuilds();
     }
 
     /**
@@ -600,7 +610,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      */
-    public final RunT getNearestBuild(int n) {
+    public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
                                                                           // include n, so n-1
         if (m.isEmpty())
@@ -614,7 +624,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      */
-    public final RunT getNearestOldBuild(int n) {
+    public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
         if (m.isEmpty())
             return null;
@@ -626,7 +636,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) {
         try {
             // try to interpret the token as build number
-            return _getRuns().get(Integer.valueOf(token));
+            return getBuildByNumber(Integer.valueOf(token));
         } catch (NumberFormatException e) {
             // try to map that to widgets
             for (Widget w : getWidgets()) {
@@ -660,7 +670,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets all the runs.
      * 
-     * The resulting map must be immutable (by employing copy-on-write
+     * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      */
     protected abstract SortedMap<Integer, ? extends RunT> _getRuns();

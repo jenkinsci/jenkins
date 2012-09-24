@@ -46,7 +46,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.listeners.SCMListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
@@ -80,9 +79,11 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
+import hudson.util.RunList;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
@@ -160,7 +161,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient /*almost final*/ RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds = new RunMap<R>();
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -269,13 +270,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        if (this.builds==null)
-            this.builds = new RunMap<R>();
-        this.builds.load(this,new Constructor<R>() {
+        RunMap<R> builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
+        if (this.builds!=null) {
+            // if we are reloading, keep all those that are still building intact
+            for (R r : this.builds.getLoadedBuilds().values()) {
+                if (r.isBuilding())
+                    builds.put(r);
+            }
+        }
+        this.builds = builds;
 
         if(triggers==null) {
             // it didn't exist in < 1.28
@@ -947,13 +954,58 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public SortedMap<Integer, ? extends R> _getRuns() {
-        return builds.getView();
+    public RunMap<R> _getRuns() {
+        return builds;
     }
 
     @Override
     public void removeRun(R run) {
         this.builds.remove(run);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuild(String id) {
+        return builds.getById(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuildByNumber(int n) {
+        return builds.getByNumber(n);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getFirstBuild() {
+        return builds.oldestBuild();
+    }
+
+    @Override
+    public R getLastBuild() {
+        return builds.newestBuild();
+    }
+
+    @Override
+    public R getNearestBuild(int n) {
+        return builds.search(n, Direction.ASC);
+    }
+
+    @Override
+    public R getNearestOldBuild(int n) {
+        return builds.search(n, Direction.DESC);
     }
 
     /**
@@ -1627,7 +1679,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget<R>(this,getBuilds(),HISTORY_ADAPTER);
+        return new BuildHistoryWidget<R>(this,builds,HISTORY_ADAPTER);
     }
     
     public boolean isParameterized() {
