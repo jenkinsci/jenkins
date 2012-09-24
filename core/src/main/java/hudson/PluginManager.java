@@ -1041,4 +1041,64 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return pluginsWithCycle;
         }
     }
+    
+    public static PluginUpdateMonitor getPluginUpdateMonitor() {
+        return PluginUpdateMonitor.getInstance();
+    }
+    
+    /**
+     * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
+     */
+    @Extension
+    public static final class PluginUpdateMonitor extends AdministrativeMonitor {
+        
+        private List<PluginUpdateInfo> pluginsToBeUpdated = new ArrayList<PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();
+        
+        /**
+         * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
+         * @return this monitor.
+         */
+        public static final PluginUpdateMonitor getInstance() {
+            return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
+        }
+        
+        public PluginUpdateMonitor() {
+            init();
+        }
+        
+        private void init() {
+            ifPluginOlderThenReport("config-file-provider", "2.2.2", "The current installed version of 'config-file-provider' is not compatible with this core anymore");
+        }
+        
+        private void ifPluginOlderThenReport(String pluginName, String version, String message){
+            Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
+            if(plugin != null){
+                if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(version))) {
+                    pluginsToBeUpdated.add(new PluginUpdateInfo(pluginName, message));
+                }
+            }
+        }
+
+        public boolean isActivated() {
+            return !pluginsToBeUpdated.isEmpty();
+        }
+        
+        public void addPluginToUpdate(String pluginName, String message) {
+            this.pluginsToBeUpdated.add(new PluginUpdateInfo(pluginName, message));
+        }
+        
+        public List<PluginUpdateInfo> getPluginsToBeUpdated() {
+            return pluginsToBeUpdated;
+        }
+        
+        private static class PluginUpdateInfo {
+            public final String pluginName;
+            public final String message;
+            public PluginUpdateInfo(String pluginName, String message) {
+                this.pluginName = pluginName;
+                this.message = message;
+            }
+        }
+
+    }    
 }
