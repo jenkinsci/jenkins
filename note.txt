@@ -1,0 +1,5 @@
+TODO:
+ - remove Java6 dependency (or do we really?)
+
+NOTE:
+ - permalinks, such as "last unstable build" can end up loading all the records if there's no build that has the said status.
