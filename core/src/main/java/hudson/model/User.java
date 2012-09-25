@@ -51,7 +51,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -621,6 +620,33 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public boolean canDelete() {
         return hasPermission(Jenkins.ADMINISTER) && !id.equals(Jenkins.getAuthentication().getName())
                 && new File(getRootDir(), id).exists();
+    }
+
+    /**
+     * Checks for authorities (groups) associated with this user.
+     * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
+     * @since XXX
+     * @return a possibly empty but not null list
+     */
+    public List<String> getAuthorities() {
+        if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            return Collections.emptyList();
+        }
+        List<String> r = new ArrayList<String>();
+        try {
+            for (GrantedAuthority a : Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id).getAuthorities()) {
+                if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+                    continue;
+                }
+                String n = a.getAuthority();
+                if (n != null && !n.equals(id)) {
+                    r.add(n);
+                }
+            }
+        } catch (Exception x) {
+            LOGGER.log(Level.FINE, "could not look up " + id, x);
+        }
+        return r;
     }
 
     public Descriptor getDescriptorByName(String className) {
