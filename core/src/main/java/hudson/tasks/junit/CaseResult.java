@@ -299,7 +299,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         if (failedSince==0 && getFailCount()==1) {
             CaseResult prev = getPreviousResult();
             if(prev!=null && !prev.isPassed())
-                this.failedSince = prev.failedSince;
+                this.failedSince = prev.getFailedSince();
             else if (getOwner() != null) {
                 this.failedSince = getOwner().getNumber();
             } else {
