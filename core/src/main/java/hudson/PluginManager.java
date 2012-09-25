@@ -1091,7 +1091,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return pluginsToBeUpdated;
         }
         
-        private static class PluginUpdateInfo {
+        public static class PluginUpdateInfo {
             public final String pluginName;
             public final String message;
             public PluginUpdateInfo(String pluginName, String message) {
