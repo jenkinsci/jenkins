@@ -111,29 +111,7 @@ THE SOFTWARE.
             <f:option selected="${it.mavenValidationLevel == level.value}" value="${level.value}">${level.key}</f:option>
           </j:forEach>
         </select>
-      </f:entry>
-
-      <!-- TODO remove after refactor start -->
-      <j:set var="mavenSettingsConfigs" value="${it.allMavenSettingsConfigs}" />
-      <f:entry title="REMOVE - ${%Maven Settings Configs}">
-        <select class="setting-input" name="maven.mavenSettingsConfigId">
-          <f:option value="">- select -</f:option>
-          <j:forEach var="settingConfig" items="${mavenSettingsConfigs}">
-            <f:option selected="${it.settingConfigId == settingConfig.id}" value="${settingConfig.id}">${settingConfig.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-
-      <j:set var="mavenGlobalSettingsConfigs" value="${it.allGlobalMavenSettingsConfigs}" />
-      <f:entry title="REMOVE - ${%Maven Global Settings Configs}">
-        <select class="setting-input" name="maven.mavenGlobalSettingConfigId">
-          <f:option value="">- select -</f:option>
-          <j:forEach var="globalSettingConfig" items="${mavenGlobalSettingsConfigs}">
-            <f:option selected="${it.globalSettingConfigId == globalSettingConfig.id}" value="${globalSettingConfig.id}">${globalSettingConfig.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-      <!-- TODO remove ende -->      
+      </f:entry>     
       
       <f:entry title="${%Settings file}">
           <f:dropdownDescriptorSelector field="settings" descriptors="${descriptor.settingsProviders}"/>
