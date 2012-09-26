@@ -1042,17 +1042,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
     
-    public static PluginUpdateMonitor getPluginUpdateMonitor() {
-        return PluginUpdateMonitor.getInstance();
-    }
-    
     /**
      * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
      */
     @Extension
     public static final class PluginUpdateMonitor extends AdministrativeMonitor {
         
-        private List<PluginUpdateInfo> pluginsToBeUpdated = new ArrayList<PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();
+        private Map<String, PluginUpdateInfo> pluginsToBeUpdated = new HashMap<String, PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();
         
         /**
          * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
@@ -1074,7 +1070,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
             if(plugin != null){
                 if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(version))) {
-                    pluginsToBeUpdated.add(new PluginUpdateInfo(pluginName, message));
+                    pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
                 }
             }
         }
@@ -1083,12 +1079,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return !pluginsToBeUpdated.isEmpty();
         }
         
+        /**
+         * adds a message about a plugin to the manage screen 
+         * @param pluginName the plugins name
+         * @param message the message to be displayed
+         */
         public void addPluginToUpdate(String pluginName, String message) {
-            this.pluginsToBeUpdated.add(new PluginUpdateInfo(pluginName, message));
+            this.pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
         }
         
-        public List<PluginUpdateInfo> getPluginsToBeUpdated() {
-            return pluginsToBeUpdated;
+        public Collection<PluginUpdateInfo> getPluginsToBeUpdated() {
+            return pluginsToBeUpdated.values();
         }
         
         public static class PluginUpdateInfo {
