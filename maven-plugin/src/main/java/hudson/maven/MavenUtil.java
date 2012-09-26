@@ -31,6 +31,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
+import hudson.mvn.SettingsProvider;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 
@@ -99,7 +100,8 @@ public class MavenUtil {
             m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
         }
         if (project instanceof MavenModuleSet) {
-            String altSet = ((MavenModuleSet) project).getAlternateSettings();
+            String altSet = SettingsProvider.getRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
+            
             settingsLoc = (altSet == null) ? null 
                 : new File(build.getWorkspace().child(altSet).getRemote());
 
