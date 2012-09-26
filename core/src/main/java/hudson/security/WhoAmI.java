@@ -60,10 +60,10 @@ public class WhoAmI implements UnprotectedRootAction {
 
     @Exported
     public String[] getAuthorities() {
-        List <String> authorities = new ArrayList<String>();
         if (auth().getAuthorities() == null) {
             return new String[0];
         }
+        List <String> authorities = new ArrayList<String>();
         for (GrantedAuthority a : auth().getAuthorities()) {
             authorities.add(a.getAuthority());
         }
