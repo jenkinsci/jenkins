@@ -257,17 +257,20 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     /**
      * @since 1.426
+     * @deprecated since 1.484 settings are provided by {@link #settings}
      */
     private String settingConfigId;
 
     /**
      * @since 1.426
+     * @deprecated since 1.484 settings are provided by {@link #globalSettings}
      */
     private String globalSettingConfigId;
 
     /**
      * used temporary during maven build to store file path
      * @since 1.426
+     * @deprecated since 1.484 settings are provided by {@link #globalSettings}
      */
     protected transient String globalSettingConfigPath;
 
@@ -290,7 +293,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             try {
                 Class<? extends SettingsProvider> legacySettings = Class.forName("org.jenkinsci.plugins.configfiles.maven.LegacySettingsProvider").asSubclass(SettingsProvider.class);
                 SettingsProvider newInstance = legacySettings.newInstance();
-                PropertyUtils.setProperty(newInstance, "settingConfigId", settingConfigId);
+                PropertyUtils.setProperty(newInstance, "settingsConfigId", settingConfigId);
                 this.settings = newInstance;
             } catch (Exception e) {
                 // FIXME how should we log this?
@@ -303,7 +306,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             try {
                 Class<? extends GlobalSettingsProvider> legacySettings = Class.forName("org.jenkinsci.plugins.configfiles.maven.LegacyGlobalSettingsProvider").asSubclass(GlobalSettingsProvider.class);
                 GlobalSettingsProvider newInstance = legacySettings.newInstance();
-                PropertyUtils.setProperty(newInstance, "settingConfigId", globalSettingConfigId);
+                PropertyUtils.setProperty(newInstance, "settingsConfigId", globalSettingConfigId);
                 this.globalSettings = newInstance;
             } catch (Exception e) {
                 // FIXME how should we log this?
@@ -952,6 +955,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     /**
      * Gets the workspace-relative path to an alternative Maven settings.xml file.
+     * @deprecated as of 1.481
      */
     public String getAlternateSettings() {
         return alternateSettings;
@@ -959,10 +963,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     /**
      * Sets the workspace-relative path to an alternative Maven settings.xml file.
+     * @deprecated as of 1.481
      */
     public void setAlternateSettings(String alternateSettings) throws IOException {
         this.alternateSettings = alternateSettings;
-        save();
     }
 
     /**
