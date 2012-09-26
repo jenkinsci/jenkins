@@ -602,30 +602,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /**
-     * @since 1.426
-     * @return
-     */
-    public String getSettingConfigId() {
-        return settingConfigId;
-    }
-
-    /**
-     * @since 1.426
-     * @param settingConfigId
-     */
-    public void setSettingConfigId( String settingConfigId ) {
-        this.settingConfigId = settingConfigId;
-    }
-
-    /**
-     * @since 1.426
-     * @return
-     */
-    public String getGlobalSettingConfigId() {
-        return globalSettingConfigId;
-    }
-
-    /**
      * @since 1.481
      */
     public SettingsProvider getSettings() {
@@ -637,14 +613,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public GlobalSettingsProvider getGlobalSettings() {
         return globalSettings;
-    }
-
-    /**
-     * @since 1.426
-     * @param globalSettingConfigId
-     */
-    public void setGlobalSettingConfigId( String globalSettingConfigId ) {
-        this.globalSettingConfigId = globalSettingConfigId;
     }
 
     /**
@@ -1124,8 +1092,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
-        settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
-        globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
 
         runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
         prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");
