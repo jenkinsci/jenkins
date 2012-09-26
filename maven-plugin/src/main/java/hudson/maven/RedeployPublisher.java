@@ -227,7 +227,7 @@ public class RedeployPublisher extends Recorder {
                 
                 // TODO check if the remoteSettings has a localRepository configured and disabled it
 
-                String altSettingsPath = SettingsProvider.getRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
+                String altSettingsPath = SettingsProvider.getSettingsRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
                 String remoteGlobalSettingsPath = GlobalSettingsProvider.getRemotePath(((MavenModuleSet) project).getGlobalSettings(), build, listener);
                 if(remoteGlobalSettingsPath != null){
                     remoteGlobalSettingsFromConfig = new File(remoteGlobalSettingsPath);

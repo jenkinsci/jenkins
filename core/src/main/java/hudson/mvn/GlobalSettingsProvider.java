@@ -28,7 +28,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      *            the build to provide the settigns for
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
-    public abstract FilePath configure(AbstractBuild<?, ?> build, TaskListener listener) throws IOException, InterruptedException;
+    public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
 
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");
@@ -53,7 +53,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
         FilePath settingsPath = null;
         if (settings != null) {
             try {
-                settingsPath = settings.configure(build, listener);
+                settingsPath = settings.supplySettings(build, listener);
             } catch (Exception e) {
                 listener.getLogger().print("failed to get the path to the alternate global settings.xml");
             }

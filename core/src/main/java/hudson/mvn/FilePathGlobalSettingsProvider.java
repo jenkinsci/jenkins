@@ -30,7 +30,7 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) throws IOException, InterruptedException {
+    public FilePath supplySettings(AbstractBuild<?, ?> project, TaskListener listener) {
         if (StringUtils.isEmpty(path)) {
             return null;
         }
@@ -39,8 +39,13 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
         } else {
             FilePath mrSettings = project.getModuleRoot().child(path);
             FilePath wsSettings = project.getWorkspace().child(path);
-            if (!wsSettings.exists() && mrSettings.exists()) {
-                wsSettings = mrSettings;
+            try {
+                if (!wsSettings.exists() && mrSettings.exists()) {
+                    wsSettings = mrSettings;
+                }
+            } catch (Exception e) {
+                listener.getLogger().print("ERROR: failed to find settings.xml at: "+wsSettings.getRemote());
+                e.printStackTrace();
             }
             return wsSettings;
         }

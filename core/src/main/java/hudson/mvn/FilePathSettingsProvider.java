@@ -29,19 +29,20 @@ public class FilePathSettingsProvider extends SettingsProvider {
     }
 
     @Override
-    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) {
+    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
         if (StringUtils.isEmpty(path))
             return null;
         if (IOUtils.isAbsolute(path)) {
             return new FilePath(new File(path));
         } else {
-            FilePath mrSettings = project.getModuleRoot().child(path);
-            FilePath wsSettings = project.getWorkspace().child(path);
+            FilePath mrSettings = build.getModuleRoot().child(path);
+            FilePath wsSettings = build.getWorkspace().child(path);
             try {
                 if (!wsSettings.exists() && mrSettings.exists()) {
                     wsSettings = mrSettings;
                 }
             } catch (Exception e) {
+                listener.getLogger().print("ERROR: failed to find settings.xml at: "+wsSettings.getRemote());
                 e.printStackTrace();
             }
             return wsSettings;

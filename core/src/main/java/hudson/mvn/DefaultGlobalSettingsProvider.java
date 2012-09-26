@@ -18,7 +18,7 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) {
+    public FilePath supplySettings(AbstractBuild<?, ?> project, TaskListener listener) {
         return null;
     }
 

@@ -100,7 +100,7 @@ public class MavenUtil {
             m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
         }
         if (project instanceof MavenModuleSet) {
-            String altSet = SettingsProvider.getRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
+            String altSet = SettingsProvider.getSettingsRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
             
             settingsLoc = (altSet == null) ? null 
                 : new File(build.getWorkspace().child(altSet).getRemote());

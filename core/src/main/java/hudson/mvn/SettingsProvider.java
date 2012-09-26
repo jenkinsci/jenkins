@@ -22,10 +22,10 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
     /**
      * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.
      * 
-     * @param project
+     * @param build
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
-    public abstract FilePath configure(AbstractBuild<?, ?> project, TaskListener listener);
+    public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
 
     public static SettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("settings");
@@ -46,10 +46,10 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *            the listener of the current build
      * @return the path to the settings.xml
      */
-    public static final FilePath getFilePathOppressed(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static final FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath settingsPath = null;
         if (settings != null) {
-            settingsPath = settings.configure(build, listener);
+            settingsPath = settings.supplySettings(build, listener);
         }
         return settingsPath == null ? null : settingsPath;
     }
@@ -65,8 +65,8 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *            the listener of the current build
      * @return the path to the settings.xml
      */
-    public static final String getRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
-        FilePath fp = getFilePathOppressed(settings, build, listener);
+    public static final String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+        FilePath fp = getSettingsFilePath(settings, build, listener);
         return fp == null ? null : fp.getRemote();
     }
 
