@@ -36,8 +36,6 @@ import hudson.Util;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
-import hudson.maven.settings.SettingConfig;
-import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
@@ -1021,22 +1019,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 return globalOpts;
             }
         }
-    }
-
-    /**
-     * @since 1.426
-     * @return
-     */
-    public List<SettingConfig> getAllMavenSettingsConfigs() {
-        return SettingsProviderUtils.getAllMavenSettingsConfigs();
-    }
-    
-    /**
-     * @since 1.426
-     * @return
-     */
-    public List<SettingConfig> getAllGlobalMavenSettingsConfigs() {
-        return SettingsProviderUtils.getAllGlobalMavenSettingsConfigs();
     }
 
     /**
