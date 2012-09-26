@@ -3,16 +3,9 @@ package hudson.mvn;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.util.ArgumentListBuilder;
-import hudson.util.FormValidation;
-import org.kohsuke.stapler.AncestorInPath;
+import hudson.model.TaskListener;
+
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-
-import static hudson.Util.fixEmpty;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -24,8 +17,8 @@ public class DefaultSettingsProvider extends SettingsProvider {
     }
 
     @Override
-    public void configure(ArgumentListBuilder margs, AbstractBuild project) throws IOException, InterruptedException {
-        return;
+    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) {
+        return null;
     }
 
     @Extension(ordinal = 99)

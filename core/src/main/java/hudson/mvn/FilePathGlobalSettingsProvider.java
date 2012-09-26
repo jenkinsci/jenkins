@@ -3,9 +3,10 @@ package hudson.mvn;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.util.ArgumentListBuilder;
+import hudson.model.TaskListener;
 import hudson.util.IOUtils;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,20 +30,21 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public void configure(ArgumentListBuilder margs, AbstractBuild project) throws IOException, InterruptedException {
-        if (StringUtils.isEmpty(path)) return;
+    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) throws IOException, InterruptedException {
+        if (StringUtils.isEmpty(path)) {
+            return null;
+        }
         if (IOUtils.isAbsolute(path)) {
-            margs.add("-gs").add(path);
+            return new FilePath(new File(path));
         } else {
             FilePath mrSettings = project.getModuleRoot().child(path);
             FilePath wsSettings = project.getWorkspace().child(path);
-            if (!wsSettings.exists() && mrSettings.exists())
+            if (!wsSettings.exists() && mrSettings.exists()) {
                 wsSettings = mrSettings;
-
-            margs.add("-gs").add(wsSettings.getRemote());
+            }
+            return wsSettings;
         }
     }
-
 
     @Extension(ordinal = 10)
     public static class DescriptorImpl extends GlobalSettingsProviderDescriptor {
@@ -51,6 +53,6 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
         public String getDisplayName() {
             return "global settings file in project workspace";
         }
-        
+
     }
 }

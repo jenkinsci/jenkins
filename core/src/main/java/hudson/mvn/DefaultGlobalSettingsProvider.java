@@ -1,10 +1,9 @@
 package hudson.mvn;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.util.ArgumentListBuilder;
-
-import java.io.IOException;
+import hudson.model.TaskListener;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -19,8 +18,8 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public void configure(ArgumentListBuilder margs, AbstractBuild project) throws IOException, InterruptedException {
-        return;
+    public FilePath configure(AbstractBuild<?, ?> project, TaskListener listener) {
+        return null;
     }
 
     @Extension(ordinal = 99)

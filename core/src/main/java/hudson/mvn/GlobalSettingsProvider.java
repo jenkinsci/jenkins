@@ -1,10 +1,11 @@
 package hudson.mvn;
 
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.util.ArgumentListBuilder;
+import hudson.model.TaskListener;
 
 import java.io.IOException;
 
@@ -22,18 +23,58 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
 
     /**
      * configure maven launcher argument list with adequate settings path
-     * @param margs
-     * @param project
+     * 
+     * @param build
+     *            the build to provide the settigns for
+     * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
-    public abstract void configure(ArgumentListBuilder margs, AbstractBuild<?, ?> project) throws IOException, InterruptedException;
+    public abstract FilePath configure(AbstractBuild<?, ?> build, TaskListener listener) throws IOException, InterruptedException;
 
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");
-        if(settings==null) {
+        if (settings == null) {
             return new DefaultGlobalSettingsProvider();
         }
         return req.bindJSON(GlobalSettingsProvider.class, settings);
     }
 
-}
+    /**
+     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * 
+     * @param settings
+     *            the provider to be used
+     * @param build
+     *            the active build
+     * @param listener
+     *            the listener of the current build
+     * @return the path to the global settings.xml
+     */
+    public static final FilePath getFilePath(GlobalSettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+        FilePath settingsPath = null;
+        if (settings != null) {
+            try {
+                settingsPath = settings.configure(build, listener);
+            } catch (Exception e) {
+                listener.getLogger().print("failed to get the path to the alternate global settings.xml");
+            }
+        }
+        return settingsPath == null ? null : settingsPath;
+    }
 
+    /**
+     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * 
+     * @param settings
+     *            the provider to be used
+     * @param build
+     *            the active build
+     * @param listener
+     *            the listener of the current build
+     * @return the path to the global settings.xml
+     */
+    public static final String getRemotePath(GlobalSettingsProvider provider, AbstractBuild<?, ?> build, TaskListener listener) {
+        FilePath fp = getFilePath(provider, build, listener);
+        return fp == null ? null : fp.getRemote();
+    }
+
+}
