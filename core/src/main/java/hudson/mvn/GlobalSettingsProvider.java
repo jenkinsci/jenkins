@@ -7,8 +7,6 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
@@ -49,7 +47,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      *            the listener of the current build
      * @return the path to the global settings.xml
      */
-    public static final FilePath getFilePath(GlobalSettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
+    public static final FilePath getSettingsFilePath(GlobalSettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath settingsPath = null;
         if (settings != null) {
             try {
@@ -72,8 +70,8 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      *            the listener of the current build
      * @return the path to the global settings.xml
      */
-    public static final String getRemotePath(GlobalSettingsProvider provider, AbstractBuild<?, ?> build, TaskListener listener) {
-        FilePath fp = getFilePath(provider, build, listener);
+    public static final String getSettingsRemotePath(GlobalSettingsProvider provider, AbstractBuild<?, ?> build, TaskListener listener) {
+        FilePath fp = getSettingsFilePath(provider, build, listener);
         return fp == null ? null : fp.getRemote();
     }
 

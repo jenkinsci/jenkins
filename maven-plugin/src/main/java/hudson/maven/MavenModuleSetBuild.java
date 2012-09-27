@@ -583,7 +583,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
                 
                 remoteSettings = SettingsProvider.getSettingsFilePath(project.getSettings(), MavenModuleSetBuild.this, listener);
-                remoteGlobalSettings = GlobalSettingsProvider.getFilePath(project.getGlobalSettings(), MavenModuleSetBuild.this, listener);
+                remoteGlobalSettings = GlobalSettingsProvider.getSettingsFilePath(project.getGlobalSettings(), MavenModuleSetBuild.this, listener);
                 
                 if(!project.isAggregatorStyleBuild()) {
                     parsePoms(listener, logger, envVars, mvn, mavenVersion);
@@ -1066,7 +1066,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             
             this.alternateSettings = SettingsProvider.getSettingsRemotePath(project.getSettings(), build, listener);
-            this.globalSetings = GlobalSettingsProvider.getRemotePath(project.getGlobalSettings(), build, listener);
+            this.globalSetings = GlobalSettingsProvider.getSettingsRemotePath(project.getGlobalSettings(), build, listener);
             
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();
