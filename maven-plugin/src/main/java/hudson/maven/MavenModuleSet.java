@@ -605,14 +605,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.481
      */
     public SettingsProvider getSettings() {
-        return settings;
+        return settings != null ? settings : new DefaultSettingsProvider();
     }
 
     /**
      * @since 1.481
      */
     public GlobalSettingsProvider getGlobalSettings() {
-        return globalSettings;
+        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
 
     /**
