@@ -39,6 +39,10 @@ import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
+import hudson.mvn.DefaultGlobalSettingsProvider;
+import hudson.mvn.DefaultSettingsProvider;
+import hudson.mvn.GlobalSettingsProvider;
+import hudson.mvn.SettingsProvider;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
@@ -55,6 +59,8 @@ import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
@@ -118,30 +124,56 @@ public class Maven extends Builder {
      * @since 1.322
      */
     public boolean usePrivateRepository = false;
+    
+    /**
+     * Provides access to the settings.xml to be used for a build.
+     * @since 1.481
+     */
+    private SettingsProvider settings = new DefaultSettingsProvider();
+    
+    /**
+     * Provides access to the global settings.xml to be used for a build.
+     * @since 1.481
+     */
+    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
 
     public Maven(String targets,String name) {
-        this(targets,name,null,null,null,false);
+        this(targets,name,null,null,null,false, null, null);
     }
 
     public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
-	this(targets, name, pom, properties, jvmOptions, false);
+        this(targets, name, pom, properties, jvmOptions, false, null, null);
+    }
+    
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
     
     @DataBoundConstructor
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
         this.usePrivateRepository = usePrivateRepository;
+        this.settings = settings != null ? settings : new DefaultSettingsProvider();
+        this.globalSettings = globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
 
     public String getTargets() {
         return targets;
+    }
+    
+    public SettingsProvider getSettings() {
+        return settings != null ? settings : new DefaultSettingsProvider();
+    }
+    
+    public GlobalSettingsProvider getGlobalSettings() {
+        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
 
     public void setUsePrivateRepository(boolean usePrivateRepository) {
@@ -248,6 +280,19 @@ public class Maven extends Builder {
             }
             if(pom!=null)
                 args.add("-f",pom);
+            
+            if(!targets.contains(" -s ")) {
+                String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
+                if(StringUtils.isNotBlank(settingsPath)){
+                    args.add("-s", settingsPath);
+                }
+            }
+            if(!targets.contains(" -gs ")) {
+                String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
+                if(StringUtils.isNotBlank(settingsPath)){
+                    args.add("-gs", settingsPath);
+                }
+            }
 
             Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
