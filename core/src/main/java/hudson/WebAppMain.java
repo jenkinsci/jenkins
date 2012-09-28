@@ -27,9 +27,6 @@ import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
-import hudson.model.User;
-import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.util.HudsonIsLoading;
 import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;

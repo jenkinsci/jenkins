@@ -34,6 +34,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import javax.annotation.Nonnull;
 
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why
@@ -100,6 +101,11 @@ public abstract class Cause {
      * A build is triggered by the completion of another build (AKA upstream build.)
      */
     public static class UpstreamCause extends Cause {
+
+        /**
+         * Maximum depth of transitive upstream causes we want to record.
+         */
+        private static final int MAX_DEPTH = 10;
         private String upstreamProject, upstreamUrl;
         private int upstreamBuild;
         /**
@@ -107,7 +113,7 @@ public abstract class Cause {
          */
         @Deprecated
         private transient Cause upstreamCause;
-        private List<Cause> upstreamCauses;
+        private @Nonnull List<Cause> upstreamCauses;
 
         /**
          * @deprecated since 2009-02-28
@@ -121,7 +127,33 @@ public abstract class Cause {
             upstreamBuild = up.getNumber();
             upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
-            upstreamCauses = new ArrayList<Cause>(up.getCauses());
+            upstreamCauses = new ArrayList<Cause>();
+            for (Cause c : up.getCauses()) {
+                upstreamCauses.add(trim(c, MAX_DEPTH));
+            }
+        }
+
+        private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @Nonnull List<Cause> upstreamCauses) {
+            this.upstreamProject = upstreamProject;
+            this.upstreamBuild = upstreamBuild;
+            this.upstreamUrl = upstreamUrl;
+            this.upstreamCauses = upstreamCauses;
+        }
+
+        private @Nonnull Cause trim(@Nonnull Cause c, int depth) {
+            if (!(c instanceof UpstreamCause)) {
+                return c;
+            }
+            UpstreamCause uc = (UpstreamCause) c;
+            List<Cause> cs = new ArrayList<Cause>();
+            if (depth > 0) {
+                for (Cause c2 : uc.upstreamCauses) {
+                    cs.add(trim(c2, depth - 1));
+                }
+            } else {
+                cs.add(new DeeplyNestedUpstreamCause());
+            }
+            return new UpstreamCause(uc.upstreamProject, uc.upstreamBuild, uc.upstreamUrl, cs);
         }
 
         /**
@@ -153,6 +185,10 @@ public abstract class Cause {
             return upstreamUrl;
         }
 
+        public List<Cause> getUpstreamCauses() {
+            return upstreamCauses;
+        }
+        
         @Override
         public String getShortDescription() {
             return Messages.Cause_UpstreamCause_ShortDescription(upstreamProject, upstreamBuild);
@@ -165,6 +201,16 @@ public abstract class Cause {
                     ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
                     ModelHyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
             );
+            if(upstreamCauses != null && upstreamCauses.size() > 0) {
+                listener.getLogger().println(Messages.Cause_UpstreamCause_CausedBy());
+                for (Cause cause : upstreamCauses) {
+                    cause.print(listener);
+                }
+            }
+        }
+
+        @Override public String toString() {
+            return upstreamUrl + upstreamBuild + upstreamCauses;
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<UpstreamCause> {
@@ -178,6 +224,16 @@ public abstract class Cause {
                 }
             }
         }
+
+        public static class DeeplyNestedUpstreamCause extends Cause {
+            @Override public String getShortDescription() {
+                return "(deeply nested causes)";
+            }
+            @Override public String toString() {
+                return "JENKINS-14814";
+            }
+        }
+
     }
 
     /**

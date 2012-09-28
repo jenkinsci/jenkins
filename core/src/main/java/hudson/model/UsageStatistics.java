@@ -126,6 +126,7 @@ public class UsageStatistics extends PageDecorator {
         JSONObject o = new JSONObject();
         o.put("stat",1);
         o.put("install", Util.getDigestOf(h.getSecretKey()));
+        o.put("servletContainer",h.servletContext.getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<JSONObject>();

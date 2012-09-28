@@ -43,6 +43,7 @@ THE SOFTWARE.
     <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
     <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
   </st:once>
+  <st:adjunct includes="lib.form.combobox.combobox"/>
 
   <f:prepareDatabinding/>
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->

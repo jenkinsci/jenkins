@@ -28,24 +28,6 @@ THE SOFTWARE.
     Put this tag right before &lt;l:main-panel>
   </st:documentation>
 
+  <st:adjunct includes="lib.form.breadcrumb-config-outline.init"/>
   <l:breadcrumb title="${%configuration}" id="inpage-nav" />
-  <style>
-    #breadcrumbs #inpage-nav A { background: none; }
-  </style>
-  <!--
-    TODO: use human-readable ID
-  -->
-  <script>
-    Event.observe(window,"load",function(){
-      /** @type section.SectionNode */
-      var outline = section.buildTree();
-      var menu = new breadcrumbs.ContextMenu();
-      $A(outline.children).each(function (e) {
-        if (!e.section.id)
-            e.section.setAttribute("id","section"+(iota++));
-        menu.add('#'+e.section.id,null,e.getHTML());
-      });
-      breadcrumbs.attachMenu('inpage-nav',menu);
-    });
-  </script>
 </j:jelly>

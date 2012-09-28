@@ -23,12 +23,21 @@
  */
 package hudson;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.UpdateSite;
 import hudson.scm.SubversionSCM;
+import hudson.util.PersistedList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
@@ -37,6 +46,9 @@ import org.jvnet.hudson.test.recipes.WithPluginManager;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -190,4 +202,38 @@ public class PluginManagerTest extends HudsonTestCase {
         Class c = jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
         assertNotNull(jenkins.getDescriptorByType(c));
     }
+
+    public void testPrevalidateConfig() throws Exception {
+        PersistedList<UpdateSite> sites = jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        try {
+            UpdateSite.signatureCheck = false;
+            { // XXX pending UpdateSite.updateDirectly:
+                jenkins.setCrumbIssuer(null);
+                WebRequestSettings wrs = new WebRequestSettings(new URL(getURL(), "/updateCenter/byId/default/postBack"), HttpMethod.POST);
+                wrs.setRequestBody(IOUtils.toString(url.openStream()));
+                Page p = createWebClient().getPage(wrs);
+                assertEquals(/* FormValidation.OK */"<div/>", p.getWebResponse().getContentAsString());
+            }
+        } finally {
+            UpdateSite.signatureCheck = true;
+        }
+        assertNotNull(site.getData());
+        assertEquals(Collections.emptyList(), jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
+        assertNull(jenkins.getPluginManager().getPlugin("tasks"));
+        List<Future<UpdateCenterJob>> jobs = jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
+        assertEquals(1, jobs.size());
+        UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
+        assertEquals("InstallationJob", job.getType());
+        UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
+        assertEquals("tasks", ijob.plugin.name);
+        assertNotNull(jenkins.getPluginManager().getPlugin("tasks"));
+        // XXX restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
+        // XXX dependencies installed or upgraded too
+        // XXX required plugin installed but inactive
+    }
+
 }

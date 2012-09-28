@@ -43,7 +43,6 @@ import org.jvnet.localizer.Localizable;
  * Each permission is represented by a specific instance of {@link Permission}.
  *
  * @author Kohsuke Kawaguchi
- * @see http://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Hudson
  */
 public final class Permission {
 
@@ -129,7 +128,7 @@ public final class Permission {
      * <pre>
      * class Foo {
      *     private static final PermissionGroup PERMISSIONS = new PermissionGroup(Foo.class,...);
-     *     public static final Permission ABC = new Permisison(PERMISSION,...) ;
+     *     public static final Permission ABC = new Permission(PERMISSION,...) ;
      * }
      * </pre>
      *

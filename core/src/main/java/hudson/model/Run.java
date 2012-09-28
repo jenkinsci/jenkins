@@ -1,9 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
- * Darek Ostolski
+ * Darek Ostolski, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.PermissionScope;
-import jenkins.model.Jenkins.MasterComputer;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -97,6 +96,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.BuildReference;
+import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
@@ -128,7 +129,7 @@ import static java.util.logging.Level.*;
  */
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
-        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner {
+        extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster {
 
     protected transient final JobT project;
 
@@ -324,7 +325,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
-            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
+            // canonicalization to ensure we are looking at the ID in the directory name
+            // as opposed to build numbers which are used in symlinks
+            return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
         } catch (ParseException e) {
             throw new IOException2("Invalid directory name "+buildDir,e);
         } catch (NumberFormatException e) {
@@ -336,7 +339,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Obtains 'this' in a more type safe signature.
      */
     @SuppressWarnings({"unchecked"})
-    private RunT _this() {
+    protected RunT _this() {
         return (RunT)this;
     }
 
@@ -421,6 +424,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
      * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
+    @Exported 
     public Executor getExecutor() {
         for( Computer c : Jenkins.getInstance().getComputers() ) {
             for (Executor e : c.getExecutors()) {
@@ -638,10 +642,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         // a new build is in progress
         BallColor baseColor;
-        if(previousBuild==null)
+        RunT pb = getPreviousBuild();
+        if(pb==null)
             baseColor = BallColor.GREY;
         else
-            baseColor = previousBuild.getIconColor();
+            baseColor = pb.getIconColor();
 
         return baseColor.anime();
     }
@@ -684,6 +689,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Exported(visibility=2)
     public int getNumber() {
         return number;
+    }
+
+    /**
+     * Called by {@link RunMap} to drop bi-directional links in preparation for
+     * deleting a build.
+     */
+    /*package*/ void dropLinks() {
+        if(nextBuild!=null)
+            nextBuild.previousBuild = previousBuild;
+        if(previousBuild!=null)
+            previousBuild.nextBuild = nextBuild;
     }
 
     public RunT getPreviousBuild() {
@@ -745,10 +761,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last build that was actually built - i.e., skipping any with Result.NOT_BUILT
      */
     public RunT getPreviousBuiltBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         // in certain situations (aborted m2 builds) r.getResult() can still be null, although it should theoretically never happen
         while( r!=null && (r.getResult() == null || r.getResult()==Result.NOT_BUILT) )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -756,9 +772,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last build that didn't fail before this build.
      */
     public RunT getPreviousNotFailedBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()==Result.FAILURE )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -766,9 +782,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last failed build before this build.
      */
     public RunT getPreviousFailedBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()!=Result.FAILURE )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -777,9 +793,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.383
      */
     public RunT getPreviousSuccessfulBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()!=Result.SUCCESS )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -1376,6 +1392,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         private final CheckpointSet checkpoints = new CheckpointSet();
 
+        private final Map<Object,Object> attributes = new HashMap<Object, Object>();
+
         /**
          * Performs the main build and returns the status code.
          *
@@ -1414,6 +1432,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         public JobT getProject() {
             return _this().getParent();
+        }
+
+        /**
+         * Bag of stuff to allow plugins to store state for the duration of a build
+         * without persisting it.
+         *
+         * @since 1.473
+         */
+        public Map<Object,Object> getAttributes() {
+            return attributes;
         }
     }
 

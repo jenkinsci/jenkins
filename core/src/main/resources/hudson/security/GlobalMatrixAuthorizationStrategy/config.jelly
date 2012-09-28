@@ -144,16 +144,15 @@ THE SOFTWARE.
         });
       })();
 
-      Behaviour.register({
-        "#${strategyid} TD.stop A.remove" : function(e) {
+      Behaviour.specify("#${strategyid} TD.stop A.remove", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           e.onclick = function() {
             var tr = findAncestor(this,"TR");
             tr.parentNode.removeChild(tr);
             return false;
           }
           e = null; <!-- avoid memory leak -->
-        },
-        "#${strategyid} TD.stop A.toggleall" : function(e) {
+        });
+      Behaviour.specify("#${strategyid} TD.stop A.toggleall", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           e.onclick = function() {
             var tr = findAncestor(this,"TR");
             var inputs = tr.getElementsByTagName("INPUT");
@@ -163,15 +162,14 @@ THE SOFTWARE.
             return false;
           };
           e = null; <!-- avoid memory leak -->
-        },
+        });
         <j:if test="${empty(descriptorPath)}">
           <j:set var="descriptorPath" value="${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
-        "#${strategyid} TR.permission-row" : function(e) {
+        Behaviour.specify("#${strategyid} TR.permission-row", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encodeURIComponent(e.getAttribute("name")),"GET",e.firstChild);
-        }
-      });
+        });
     </script>
   </f:block>
 </j:jelly>

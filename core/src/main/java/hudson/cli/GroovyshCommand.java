@@ -82,7 +82,7 @@ public class GroovyshCommand extends CLICommand {
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        final ClassLoader cl = Jenkins.getInstance().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 

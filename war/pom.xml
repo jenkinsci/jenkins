@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.476-SNAPSHOT</version>
+    <version>1.485-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -71,6 +71,11 @@ THE SOFTWARE.
           <groupId>javax.servlet</groupId>
           <artifactId>jsp-api</artifactId>
         </exclusion>
+        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
+        <exclusion>
+          <artifactId>metainf-services</artifactId>
+          <groupId>org.kohsuke.metainf-services</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
@@ -99,7 +104,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-37</version>
+      <version>0.9.10-jenkins-38</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -281,7 +286,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
-                  <version>1.0</version>
+                  <version>1.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -415,7 +420,7 @@ THE SOFTWARE.
               <value><!-- run "mvn install" once will generate the.hpl -->
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
                   ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
-                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/javadoc.hpi
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>
             <systemProperty>

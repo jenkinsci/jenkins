@@ -41,11 +41,16 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
     public Object data(Computer c) {
     	DiskSpace size = (DiskSpace) super.data(c);
         if(size!=null && size.size < getThresholdBytes()) {
-        	size.setTriggered(true);
+        	size.setTriggered(this.getClass(), true);
         	if(getDescriptor().markOffline(c,size)) {
         		LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getName()));
         	}
         }
+        if(size!=null && size.size > getThresholdBytes() && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
+            if(this.getClass().equals(((DiskSpace)c.getOfflineCause()).getTrigger()))
+                if(getDescriptor().markOnline(c)) {
+                    LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOnline(c.getName()));
+                }
         return size;
     }
 

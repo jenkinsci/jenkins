@@ -176,6 +176,7 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
             env.put("COMBINATION",getParent().getCombination().toString('/','/'));  // e.g., "axis1/a/axis2/b"
             env.put("SHORT_COMBINATION",getParent().getDigestName());               // e.g., "0fbcab35"
             env.put("PARENT_WORKSPACE",baseDir.getRemote());
+            env.putAll(getBuildVariables());
 
             // child workspace need no individual locks, whether or not we use custom workspace
             String childWs = mp.getChildCustomWorkspace();

@@ -30,6 +30,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
+import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
@@ -52,6 +53,17 @@ public class Items {
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
     public static final List<TopLevelItemDescriptor> LIST = (List)new DescriptorList<TopLevelItem>(TopLevelItem.class);
+
+    /**
+     * Used to behave differently when loading posted configuration as opposed to persisted configuration.
+     * @see Trigger#start
+     * @since 1.482
+     */
+    static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
+        @Override protected Boolean initialValue() {
+            return false;
+        }
+    };
 
     /**
      * Returns all the registered {@link TopLevelItemDescriptor}s.

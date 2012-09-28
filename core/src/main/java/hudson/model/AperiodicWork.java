@@ -30,6 +30,7 @@ import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
 
 import java.util.Random;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 
@@ -84,7 +85,10 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
     @Override
     public final void doRun() throws Exception{
     	doAperiodicRun();
-    	Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
+        Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.schedule(getNewInstance(), getRecurrencePeriod());
+        }
     }
     
     protected abstract void doAperiodicRun();

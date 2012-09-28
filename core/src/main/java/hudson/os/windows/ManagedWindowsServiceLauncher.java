@@ -25,35 +25,28 @@ package hudson.os.windows;
 
 import static hudson.Util.copyStreamAndClose;
 import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
+
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
 import hudson.lifecycle.WindowsSlaveInstaller;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Computer;
-import hudson.model.Descriptor;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.os.windows.ManagedWindowsServiceAccount.AnotherUser;
 import hudson.os.windows.ManagedWindowsServiceAccount.LocalSystem;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.SlaveComputer;
+import hudson.slaves.*;
 import hudson.tools.JDKInstaller;
 import hudson.tools.JDKInstaller.CPU;
 import hudson.tools.JDKInstaller.Platform;
+import hudson.util.DescribableList;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.jna.DotNet;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -95,6 +88,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     public final Secret password;
     
     public final String vmargs;
+
+    public final String javaPath;
 
     /**
      * @deprecated Use {@link #account}
@@ -156,11 +151,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         this(userName,password,host,account==null ? new LocalSystem() : new AnotherUser(account.userName,account.password), null);
     }
     
-    @DataBoundConstructor
     public ManagedWindowsServiceLauncher(String userName, String password, String host, ManagedWindowsServiceAccount account, String vmargs) {
+        this(userName, password, host, account, vmargs, "");
+    }
+    @DataBoundConstructor
+    public ManagedWindowsServiceLauncher(String userName, String password, String host, ManagedWindowsServiceAccount account, String vmargs, String javaPath) {
         this.userName = userName;
         this.password = Secret.fromString(password);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
+        this.javaPath = Util.fixEmptyAndTrim(javaPath);
         this.host = Util.fixEmptyAndTrim(host);
         this.account = account==null ? new LocalSystem() : account;
         this.logOn = null;
@@ -227,12 +226,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             if(!remoteRoot.exists())
                 remoteRoot.mkdirs();
 
+            String java = resolveJava(computer);
+
             try {// does Java exist?
                 logger.println("Checking if Java exists");
                 WindowsRemoteProcessLauncher wrpl = new WindowsRemoteProcessLauncher(name,auth);
-                Process proc = wrpl.launch("java -fullversion","c:\\");
+                Process proc = wrpl.launch("\"" +java + "\" -version","c:\\");
                 proc.getOutputStream().close();
-                IOUtils.copy(proc.getInputStream(),logger);
+                StringWriter console = new StringWriter();
+                IOUtils.copy(proc.getInputStream(), console);
                 proc.getInputStream().close();
                 int exitCode = proc.waitFor();
                 if (exitCode==1) {// we'll get this error code if Java is not found
@@ -247,12 +249,15 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 
                     WindowsRemoteFileSystem fs = new WindowsRemoteFileSystem(name, createSmbAuth());
                     fs.mkdirs(javaDir);
-                    
+
                     jdki.install(new WindowsRemoteLauncher(listener,wrpl), Platform.WINDOWS,
                             fs, listener, javaDir ,path+"\\jdk.exe");
+                } else {
+                    checkJavaVersion(logger, java, new BufferedReader(new StringReader(console.toString())));
                 }
             } catch (Exception e) {
                 e.printStackTrace(listener.error("Failed to prepare Java"));
+                return;
             }
 
 // this just doesn't work --- trying to obtain the type or check the existence of smb://server/C$/ results in "access denied"    
@@ -298,7 +303,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 copySlaveJar(logger, remoteRoot);
 
                 // copy jenkins-slave.xml
-                String xml = createAndCopyJenkinsSlaveXml(id, logger, remoteRoot);
+                String xml = createAndCopyJenkinsSlaveXml(java, id, logger, remoteRoot);
 
                 // install it as a service
                 logger.println(Messages.ManagedWindowsServiceLauncher_RegisteringService());
@@ -332,7 +337,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 }
                 slaveService = services.getService(id);
             } else {
-                createAndCopyJenkinsSlaveXml(id, logger, remoteRoot);
+                createAndCopyJenkinsSlaveXml(java, id, logger, remoteRoot);
                 copySlaveJar(logger, remoteRoot);
             }
 
@@ -379,6 +384,52 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
 
+    private String resolveJava(SlaveComputer computer) {
+        if (StringUtils.isNotBlank(javaPath)) {
+            return getEnvVars(computer).expand(javaPath);
+        }
+        return "java";
+    }
+
+    // -- duplicates code from ssh-slaves-plugin
+    private EnvVars getEnvVars(SlaveComputer computer) {
+        final EnvVars global = getEnvVars(Jenkins.getInstance());
+
+        final EnvVars local = getEnvVars(computer.getNode());
+
+        if (global != null) {
+            if (local != null) {
+                final EnvVars merged = new EnvVars(global);
+                merged.overrideAll(local);
+
+                return merged;
+            } else {
+                return global;
+            }
+        } else if (local != null) {
+            return local;
+        } else {
+            return new EnvVars();
+        }
+    }
+
+    private EnvVars getEnvVars(Hudson h) {
+        return getEnvVars(h.getGlobalNodeProperties());
+    }
+
+    private EnvVars getEnvVars(Node n) {
+        return getEnvVars(n.getNodeProperties());
+    }
+
+    private EnvVars getEnvVars(DescribableList<NodeProperty<?>, NodePropertyDescriptor> dl) {
+        final EnvironmentVariablesNodeProperty evnp = dl.get(EnvironmentVariablesNodeProperty.class);
+        if (evnp == null) {
+            return null;
+        }
+        return evnp.getEnvVars();
+    }
+
+
     private void checkPort135Access(PrintStream logger, String name, InetAddress host) throws IOException {
         Socket s = new Socket();
         try {
@@ -403,9 +454,10 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
     
-    private String createAndCopyJenkinsSlaveXml(String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
+    private String createAndCopyJenkinsSlaveXml(String java, String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
         logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
-        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,"javaw.exe",vmargs,"-tcp %BASE%\\port.txt");
+        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,
+                java+"w.exe", vmargs, "-tcp %BASE%\\port.txt");
         copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
         return xml;
     }

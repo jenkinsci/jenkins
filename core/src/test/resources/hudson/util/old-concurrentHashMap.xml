@@ -1,4 +1,4 @@
-<hudson.util.XStreamTest_-Foo>
+<hudson.util.XStream2Test_-Foo2>
   <m serialization="custom">
     <unserializable-parents/>
     <java.util.concurrent.ConcurrentHashMap>
@@ -222,4 +222,4 @@
       <null/>
     </java.util.concurrent.ConcurrentHashMap>
   </m>
-</hudson.util.XStreamTest_-Foo>
+</hudson.util.XStream2Test_-Foo2>

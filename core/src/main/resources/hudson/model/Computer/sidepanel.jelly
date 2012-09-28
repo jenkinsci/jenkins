@@ -36,7 +36,7 @@ THE SOFTWARE.
       <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${it.CONFIGURE}" />
       <l:task icon="images/24x24/notepad.png" href="builds" title="${%Build History}" />
       <l:task icon="images/24x24/monitor.png" href="load-statistics" title="${%Load Statistics}" />
-      <l:task icon="images/24x24/terminal.png" href="script" title="${%Script Console}" permission="${app.ADMINISTER}" />
+      <l:task icon="images/24x24/terminal.png" href="script" title="${%Script Console}" permission="${app.RUN_SCRIPTS}" />
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />
     </l:tasks>

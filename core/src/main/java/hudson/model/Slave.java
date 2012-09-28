@@ -217,6 +217,13 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
+    @Override
+    public void setLabelString(String labelString) throws IOException {
+        this.label = Util.fixNull(labelString).trim();
+        // Compute labels now.
+        getAssignedLabels();
+    }
+
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getChannel();
         if(channel==null)

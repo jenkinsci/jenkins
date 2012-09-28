@@ -33,7 +33,7 @@ import org.apache.maven.model.ReportPlugin;
 import java.io.Serializable;
 
 /**
- * Version independent name of a Maven project.
+ * Version independent name of a Maven project. GroupID+artifactId.
  * 
  * @author Kohsuke Kawaguchi
  * @see ModuleDependency

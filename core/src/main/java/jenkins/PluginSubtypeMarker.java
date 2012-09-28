@@ -33,6 +33,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -81,8 +82,12 @@ public class PluginSubtypeMarker extends AbstractProcessor {
                 }
             };
 
-            for( Element e : roundEnv.getRootElements() )
-                scanner.scan(e,null);
+            for (Element e : roundEnv.getRootElements()) {
+                if (e.getKind() == ElementKind.PACKAGE) { // JENKINS-11739
+                    continue;
+                }
+                scanner.scan(e, null);
+            }
 
             return false;
         } catch (RuntimeException e) {

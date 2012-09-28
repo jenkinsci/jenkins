@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.476-SNAPSHOT</version>
+    <version>1.485-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -234,6 +234,9 @@ THE SOFTWARE.
               <skip>false</skip>
               <includes>
                 <include>**/UseRecipesWithJenkinsRuleTest.java</include>
+                <include>hudson/model/CauseTest.java</include>
+                <include>hudson/model/UpdateSiteTest.java</include>
+                <include>hudson/triggers/TriggerStartTest.java</include>
               </includes>
             </configuration>
           </plugin>
@@ -277,6 +280,9 @@ THE SOFTWARE.
                   </systemProperties>
                   <excludes>
                     <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
+                    <exclude>hudson/model/CauseTest.class</exclude>
+                    <exclude>hudson/model/UpdateSiteTest.class</exclude>
+                    <exclude>hudson/triggers/TriggerStartTest.class</exclude>
                   </excludes>
                 </configuration>
               </execution>

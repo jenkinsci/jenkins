@@ -35,7 +35,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
     @Extension
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
-            return "Setting for search";
+            return Messages.UserSearchProperty_DisplayName();
         }
 
         public UserProperty newInstance(User user) {

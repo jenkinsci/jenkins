@@ -55,9 +55,9 @@ public class DropdownList extends UISample {
     public static final class DescriptorImpl extends UISampleDescriptor {
     }
 
-    public static class Fruit implements ExtensionPoint, Describable<Fruit> {
+    public static abstract class Fruit implements ExtensionPoint, Describable<Fruit> {
         protected String name;
-        private Fruit(String name) { this.name = name; }
+        protected Fruit(String name) { this.name = name; }
 
         public Descriptor<Fruit> getDescriptor() {
             return Jenkins.getInstance().getDescriptor(getClass());

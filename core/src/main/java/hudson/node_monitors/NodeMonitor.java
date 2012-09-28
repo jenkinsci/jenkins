@@ -83,6 +83,9 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return (AbstractNodeMonitorDescriptor<?>) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
+    /**
+     * Obtains the monitoring result currently available, or null if no data is available.
+     */
     public Object data(Computer c) {
         return getDescriptor().get(c);
     }

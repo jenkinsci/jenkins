@@ -31,6 +31,8 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <!-- table to show a map -->
     <d:tag name="feature">
+      <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"/>
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title) : null}
       <t:summary icon="${icon}"
                  href="${href}" iconOnly="true">
         <div class="link"><a href="${href}">${title}</a></div>
@@ -41,7 +43,9 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <st:include page="sidepanel.jelly" />
+  <j:if test="${taskTags==null}">
+    <st:include page="sidepanel.jelly" />
+  </j:if>
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
     <j:if test="${it.checkURIEncodingEnabled}">

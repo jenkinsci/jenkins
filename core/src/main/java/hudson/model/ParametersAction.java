@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.matrix.MatrixChildAction;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
@@ -52,7 +53,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction, MatrixChildAction {
 
     private final List<ParameterValue> parameters;
 

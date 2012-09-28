@@ -30,15 +30,19 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.ViewJobFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -212,6 +216,33 @@ public class ListView extends View implements Saveable {
             return item;
         }
         return null;
+    }
+
+    @RequirePOST
+    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (getOwnerItemGroup().getItem(name) == null)
+            throw new Failure("Query parameter 'name' does not correspond to a known item");
+
+        if (jobNames.add(name))
+            owner.save();
+
+        return HttpResponses.ok();
+    }
+
+    @RequirePOST
+    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (jobNames.remove(name))
+            owner.save();
+
+        return HttpResponses.ok();
     }
 
     @Override

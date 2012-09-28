@@ -135,6 +135,6 @@ public class ViewTest extends HudsonTestCase {
         User.get("user", true);
         WebClient webClient = new WebClient();
         webClient.setJavaScriptEnabled(false);
-        assertAllImageLoadSuccessfully(webClient.goTo("people"));
+        assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 }

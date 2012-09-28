@@ -59,7 +59,7 @@ public class JellyTestSuiteBuilder {
 
         if (res.isDirectory()) {
             for (final File jelly : (Collection <File>)FileUtils.listFiles(res,new String[]{"jelly"},true))
-                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jct, requirePI));
+                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jelly.getAbsolutePath().substring(0, (res.getAbsolutePath() + File.separator).length()), jct, requirePI));
         }
         if (res.getName().endsWith(".jar")) {
             String jarUrl = res.toURI().toURL().toExternalForm();
@@ -68,7 +68,7 @@ public class JellyTestSuiteBuilder {
             while (e.hasMoreElements()) {
                 JarEntry ent =  e.nextElement();
                 if (ent.getName().endsWith(".jelly"))
-                    ts.addTest(new JellyCheck(new URL("jar:"+jarUrl+"!/"+ent.getName()), jct, requirePI));
+                    ts.addTest(new JellyCheck(new URL("jar:"+jarUrl+"!/"+ent.getName()), ent.getName(), jct, requirePI));
             }
             jf.close();
         }
@@ -80,8 +80,8 @@ public class JellyTestSuiteBuilder {
         private final JellyClassLoaderTearOff jct;
         private final boolean requirePI;
 
-        public JellyCheck(URL jelly, JellyClassLoaderTearOff jct, boolean requirePI) {
-            super(jelly.getPath());
+        JellyCheck(URL jelly, String name, JellyClassLoaderTearOff jct, boolean requirePI) {
+            super(name);
             this.jelly = jelly;
             this.jct = jct;
             this.requirePI = requirePI;

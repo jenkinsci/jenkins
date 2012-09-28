@@ -45,10 +45,10 @@ THE SOFTWARE.
 
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
-          <l:task icon="images/24x24/user.png" href="${rootURL}/people/" title="${%People}" />
+          <l:task icon="images/24x24/user.png" href="${rootURL}/asynchPeople/" title="${%People}" />
         </j:when>
         <j:when test="${it.isDefault() or it.hasPeople()}">
-          <l:task icon="images/24x24/user.png" href="${rootURL}/${it.viewUrl}people/" title="${%People}" />
+          <l:task icon="images/24x24/user.png" href="${rootURL}/${it.viewUrl}asynchPeople/" title="${%People}" />
         </j:when>
       </j:choose>
       <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.viewUrl}builds" title="${%Build History}"/>
@@ -70,7 +70,7 @@ THE SOFTWARE.
       <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
       <t:actions />
     </l:tasks>
-    <t:queue items="${it.queueItems}" />
+    <t:queue items="${it.approximateQueueItemsQuickly}" />
     <t:executors computers="${it.computers}" />
     <j:forEach var="w" items="${it.widgets}">
       <st:include it="${w}" page="index.jelly" />

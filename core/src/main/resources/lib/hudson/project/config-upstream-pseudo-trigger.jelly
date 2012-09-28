@@ -35,10 +35,10 @@ THE SOFTWARE.
                    help="/help/project-config/upstream.html"
                    title="${%Build after other projects are built}" 
                    checked="${!empty(up)}">
-    <f:entry title="${%Projects names}"
+    <f:entry title="${%Project names}"
              description="${%Multiple projects can be specified like 'abc, def'}">
       <f:textbox name="upstreamProjects" value="${h.getProjectListString(up)}"
-        checkUrl="'descriptorByName/BuildTrigger/check?value='+encodeURIComponent(this.value)"
+        checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?value='+encodeURIComponent(this.value)"
         autoCompleteField="upstreamProjects"/>
     </f:entry>
   </f:optionalBlock>

@@ -466,13 +466,12 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent,name);
-        Collections.sort(axes); // perhaps the file was edited on disk and the sort order might have been broken
         builders.setOwner(this);
         publishers.setOwner(this);
         buildWrappers.setOwner(this);
 
         if (executionStrategy ==null)
-            executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially,touchStoneCombinationFilter,touchStoneResultCondition,sorter);
+            executionStrategy = new DefaultMatrixExecutionStrategyImpl(runSequentially != null ? runSequentially : false, touchStoneCombinationFilter, touchStoneResultCondition, sorter);
 
         rebuildConfigurations(null);
     }
@@ -590,7 +589,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         if (context!=null) {
             List<Set<String>> axesList = Lists.newArrayList();
             for (Axis axis : axes)
-                axesList.add(new LinkedHashSet<String>(axis.getValues()));
+                axesList.add(Sets.newLinkedHashSet(axis.rebuild(context)));
 
             activeCombinations = Iterables.transform(Sets.cartesianProduct(axesList), new Function<List<String>, Combination>() {
                 public Combination apply(@Nullable List<String> strings) {

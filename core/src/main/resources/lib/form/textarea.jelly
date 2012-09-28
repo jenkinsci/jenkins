@@ -71,6 +71,9 @@ THE SOFTWARE.
 
   <f:prepareDatabinding />
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
+  <j:if test="${attrs['previewEndpoint']!=null || attrs['codemirror-mode']!=null}">
+    <st:adjunct includes="lib.form.textarea.textarea"/>
+  </j:if>
   <j:if test="${attrs['codemirror-mode']!=null}">
     <st:adjunct includes="
         org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
@@ -81,6 +84,7 @@ THE SOFTWARE.
             class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
             checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
             rows="${h.determineRows(value)}"
+            readonly="${attrs.readonly}"
             codemirror-mode="${attrs['codemirror-mode']}"
             codemirror-config="${attrs['codemirror-config']}">
     <st:out value="${value}" />

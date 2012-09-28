@@ -24,6 +24,10 @@
 package hudson.matrix;
 
 import hudson.Util;
+import hudson.model.Action;
+import hudson.model.Executor;
+import hudson.model.InvisibleAction;
+import hudson.model.Queue.QueueAction;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
@@ -42,12 +46,15 @@ import hudson.model.SCMedItem;
 import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.scm.SCM;
+import jenkins.scm.SCMCheckoutStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -122,12 +129,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      */
     @Override
     public int getNextBuildNumber() {
-        AbstractBuild lb = getParent().getLastBuild();
-        if(lb==null)    return 0;
-        
+        AbstractBuild<?,?> lb = getParent().getLastBuild();
 
-        int n=lb.getNumber();
-        if(!lb.isBuilding())    n++;
+        while (lb!=null && lb.isBuilding()) {
+            lb = lb.getPreviousBuild();
+        }
+        if(lb==null)    return 0;
+
+        int n=lb.getNumber()+1;
 
         lb = getLastBuild();
         if(lb!=null)
@@ -179,6 +188,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return getParent().getScmCheckoutRetryCount();
     }
 
+    /**
+     * Inherit the value from the parent.
+     */
+    @Override
+    public SCMCheckoutStrategy getScmCheckoutStrategy() {
+        return getParent().getScmCheckoutStrategy();
+    }
+ 
     @Override
     public boolean isConfigurable() {
         return false;
@@ -191,9 +208,17 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     protected MatrixRun newBuild() throws IOException {
-        // for every MatrixRun there should be a parent MatrixBuild
+        List<Action> actions = Executor.currentExecutor().getCurrentWorkUnit().context.actions;
         MatrixBuild lb = getParent().getLastBuild();
+        for (Action a : actions) {
+            if (a instanceof ParentBuildAction) {
+                lb = ((ParentBuildAction) a).parent;
+            }
+        }
+
+        // for every MatrixRun there should be a parent MatrixBuild
         MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
+
         lastBuild.number = lb.getNumber();
 
         builds.put(lastBuild);
@@ -336,12 +361,42 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     	return scheduleBuild(parameters, new LegacyCodeCause());
     }
 
-    /**
+    /** Starts the build with the ParametersAction that are passed in.
      *
      * @param parameters
      *      Can be null.
+     * @deprecated
+	 *    Use {@link #scheduleBuild(List<? extends Action>, Cause)}.  Since 1.480
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), parameters, new CauseAction(c))!=null;
+
+        return scheduleBuild(Collections.singletonList(parameters), c);
+    }
+    /**
+     * Starts the build with the actions that are passed in.
+     *
+     * @param actions   Can be null.
+     * @param cause     Reason for starting the build
+     */
+    public boolean scheduleBuild(List<? extends Action> actions, Cause c) {
+        List<Action> allActions = new ArrayList<Action>();
+
+        if(actions != null)
+            allActions.addAll(actions);
+
+        allActions.add(new ParentBuildAction());
+        allActions.add(new CauseAction(c));
+
+        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), allActions )!=null;
+    }
+
+    /**
+     *
+     */
+    public static class ParentBuildAction extends InvisibleAction implements QueueAction {
+        public transient MatrixBuild parent = (MatrixBuild)Executor.currentExecutor().getCurrentExecutable();
+        public boolean shouldSchedule(List<Action> actions) {
+            return true;
+        }
     }
 }
