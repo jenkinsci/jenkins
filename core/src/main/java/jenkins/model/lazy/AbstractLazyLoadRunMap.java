@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -409,6 +410,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             return getById(idOnDisk.get(hi));
         case DESC:
             if (lo<=0)                 return null;
+            if (lo-1>=idOnDisk.size()) {
+                // assertion error, but we are so far unable to get to the bottom of this bug.
+                // but don't let this kill the loading the hard way
+                LOGGER.log(Level.WARNING, MessageFormat.format(
+                        "Assertion error: failing to load #n {0}: lo={1},hi={2},size={3}",
+                        d,lo,hi,idOnDisk.size()),new Exception());
+                return null;
+            }
             return getById(idOnDisk.get(lo-1));
         case EXACT:
             return null;
