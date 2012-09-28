@@ -32,6 +32,7 @@ import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -546,6 +547,7 @@ public class CLI {
     }
     
     @SuppressWarnings("Since15")
+    @IgnoreJRERequirement
     private static String askForPasswd(String filePath){
         try {
             Console cons = System.console();
