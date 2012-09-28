@@ -24,6 +24,7 @@
 package jenkins;
 
 import hudson.Plugin;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -57,6 +58,7 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("*")
 @MetaInfServices(Processor.class)
+@IgnoreJRERequirement
 @SuppressWarnings({"Since15"})
 public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
