@@ -153,7 +153,7 @@ class SortedIntList extends AbstractList<Integer> {
      * Switch to {@code java.util.Arrays.binarySearch} when we depend on Java6.
      */
     private static int binarySearch(int[] a, int start, int end, int key) {
-        int lo = start, hi = end+1;
+        int lo = start, hi = end-1; // search range is [lo,hi]
 
         // invariant lo<=hi
         while (lo <= hi) {
