@@ -24,6 +24,7 @@
 package jenkins.model.lazy;
 
 import hudson.model.Run;
+import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,6 +137,25 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             byId     = new TreeMap<String, BuildReference<R>>(rhs.byId);
             byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
         }
+
+        private Map.Entry<Integer,BuildReference<R>> ceilingEntry(int n) {
+// switch to this once we depend on JDK6
+//            return byNumber.ceilingEntry(n);
+
+            Set<Entry<Integer, BuildReference<R>>> s = byNumber.tailMap(n).entrySet();
+            if (s.isEmpty())    return null;
+            else                return s.iterator().next();
+        }
+
+        private Map.Entry<Integer,BuildReference<R>> floorEntry(int n) {
+// switch to this once we depend on JDK6
+//            return byNumber.floorEntry(n);
+
+            SortedMap<Integer, BuildReference<R>> sub = byNumber.headMap(n);
+            if (sub.isEmpty())    return null;
+            Integer k = sub.lastKey();
+            return new DefaultMapEntry(k,sub.get(k));
+        }
     }
 
     /**
@@ -144,7 +165,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private SortedList<String> idOnDisk = new SortedList<String>(Collections.<String>emptyList());
 
     /**
-     * Build bumber shortcuts found on disk, in the ascending order.
+     * Build number shortcuts found on disk, in the ascending order.
      */
     // copy on write
     private SortedIntList numberOnDisk = new SortedIntList(0);
@@ -298,7 +319,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If DESC, finds the closest #M that satisfies M<=N.
      */
     public R search(final int n, final Direction d) {
-        Entry<Integer, BuildReference<R>> c = index.byNumber.ceilingEntry(n);
+        Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
         if (c!=null && c.getKey()== n) {
             R r = c.getValue().get();
             if (r!=null)
@@ -362,7 +383,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
         if (idOnDisk.isEmpty())     return null;
 
-        Entry<Integer, BuildReference<R>> f = index.byNumber.floorEntry(n);
+        Entry<Integer, BuildReference<R>> f = index.floorEntry(n);
 
         // if bound is null, use a sentinel value
         String cid = c==null ? "\u0000"  : c.getValue().id;
@@ -409,6 +430,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             return getById(idOnDisk.get(hi));
         case DESC:
             if (lo<=0)                 return null;
+            if (lo-1>=idOnDisk.size()) {
+                // assertion error, but we are so far unable to get to the bottom of this bug.
+                // but don't let this kill the loading the hard way
+                LOGGER.log(Level.WARNING, MessageFormat.format(
+                        "Assertion error: failing to load #n {0}: lo={1},hi={2},size={3}",
+                        d,lo,hi,idOnDisk.size()),new Exception());
+                return null;
+            }
             return getById(idOnDisk.get(lo-1));
         case EXACT:
             return null;

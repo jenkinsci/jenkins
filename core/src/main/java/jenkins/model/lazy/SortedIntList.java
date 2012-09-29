@@ -45,9 +45,11 @@ class SortedIntList extends AbstractList<Integer> {
     /**
      * Internal copy constructor.
      */
-    public SortedIntList(SortedIntList rhs) {
-        this.data = Arrays.copyOf(rhs.data,rhs.data.length+8);
-        this.size = rhs.size;
+    public SortedIntList(SortedIntList that) {
+        this.data = new int[that.size+8];
+        System.arraycopy(that.data, 0, this.data, 0,
+                         that.size);
+        this.size = that.size;
     }
 
     /**
@@ -58,7 +60,7 @@ class SortedIntList extends AbstractList<Integer> {
      *      That is, -1 means the probe would be inserted at the very beginning.
      */
     public int find(int probe) {
-        return Arrays.binarySearch(data, 0, size, probe);
+        return binarySearch(data, 0, size, probe);
     }
 
     @Override
@@ -145,5 +147,26 @@ class SortedIntList extends AbstractList<Integer> {
         if (idx<0)  return;
         System.arraycopy(data,idx+1,data,idx,size-(idx+1));
         size--;
+    }
+
+    /**
+     * Switch to {@code java.util.Arrays.binarySearch} when we depend on Java6.
+     */
+    private static int binarySearch(int[] a, int start, int end, int key) {
+        int lo = start, hi = end-1; // search range is [lo,hi]
+
+        // invariant lo<=hi
+        while (lo <= hi) {
+            int pivot = (lo + hi)/2;
+            int v = a[pivot];
+
+            if (v < key)        // needs to search upper half
+                lo = pivot+1;
+            else if (v > key)   // needs to search lower half
+                hi = pivot-1;
+            else    // eureka!
+                return pivot;
+        }
+        return -(lo + 1); // insertion point
     }
 }
