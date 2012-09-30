@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.27</version>
+    <version>1.28</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -304,15 +304,16 @@
                 <goal>check</goal>
               </goals>
               <phase>test</phase>
-              <configuration>
-                <signature>
-                  <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java15</artifactId>
-                  <version>1.0</version>
-                </signature>
-              </configuration>
             </execution>
           </executions>
+          <configuration>
+            <!-- outside <execution> so that we can run 'animal-sniffer:check' from the top without breaking anything  -->
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
