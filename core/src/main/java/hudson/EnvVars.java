@@ -157,6 +157,12 @@ public class EnvVars extends TreeMap<String,String> {
 		}
 	}
 
+    public String get(String key, String defaultValue) {
+        String v = get(key);
+        if (v==null)    v=defaultValue;
+        return v;
+    }
+
     @Override
     public String put(String key, String value) {
         if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
