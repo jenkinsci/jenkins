@@ -29,9 +29,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import org.junit.Assume;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -268,7 +270,93 @@ public class UtilTest {
     		fail(t2.error);
     	}
     }
-    
+
+    @Test
+    public void testDeleteContentsRecursive() throws IOException
+    {
+        File base = File.createTempFile("test", "dir");
+        base.delete();
+        base.mkdir();
+        base.deleteOnExit();
+        File file1 = new File(base,"myfile1");
+        file1.createNewFile();
+        file1.deleteOnExit();
+        File file2 = new File(base,"myfile2");
+        file2.createNewFile();
+        file2.deleteOnExit();
+
+        Util.deleteContentsRecursive(base);
+
+        boolean parentExists = base.exists();
+        assertTrue(parentExists);
+        boolean contents1Exists = file1.exists();
+        assertFalse(contents1Exists);
+        boolean contents2Exists = file2.exists();
+        assertFalse(contents2Exists);
+    }
+
+    @Test
+    public void testDeleteContentsRecursiveThrows() throws IOException
+    {
+        File base = File.createTempFile("test", "dir");
+        base.delete();
+        base.mkdir();
+        base.deleteOnExit();
+        File file1 = new File(base,"myfile1");
+        file1.deleteOnExit();
+        FileOutputStream fileCurrentlyOpen = new FileOutputStream(file1);
+        fileCurrentlyOpen.write("Test".getBytes());
+        fileCurrentlyOpen.flush();
+        File file2 = new File(base,"myfile2");
+        file2.createNewFile();
+        file2.deleteOnExit();
+
+        Util.WAIT_BETWEEN_DELETION_RETRIES = 500;
+        try {
+            Util.deleteContentsRecursive(base);
+            fail("Expected IOException");
+        }catch(IOException expected) {
+            assertThat(expected.getMessage(), containsString(file1.toString()));
+        }
+
+        boolean parentExists = base.exists();
+        assertTrue(parentExists);
+        boolean contents1Exists = file1.exists();
+        assertTrue(contents1Exists);
+        boolean contents2Exists = file2.exists();
+        assertFalse(contents2Exists);
+        fileCurrentlyOpen.close();
+    }
+
+    @Test
+    public void testDeleteRecursive() throws IOException
+    {
+        File base = File.createTempFile("test", "dir");
+        base.delete();
+        base.mkdir();
+        base.deleteOnExit();
+        File file1 = new File(base,"myfile1");
+        file1.createNewFile();
+        file1.deleteOnExit();
+        File dir1 = new File(base,"mydir1");
+        dir1.mkdir();
+        dir1.deleteOnExit();
+        File file2 = new File(dir1,"myfile2");
+        file2.createNewFile();
+        file2.deleteOnExit();
+
+        Util.deleteRecursive(base);
+
+        boolean parentExists = base.exists();
+        assertFalse(parentExists);
+        boolean dir1Exists = dir1.exists();
+        assertFalse(dir1Exists);
+        boolean contents1Exists = file1.exists();
+        assertFalse(contents1Exists);
+        boolean contents2Exists = file2.exists();
+        assertFalse(contents2Exists);
+    }
+
     private static class DigesterThread extends Thread {
     	private String string;
 		private String expectedDigest;
