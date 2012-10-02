@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.FilePath;
 import hudson.Functions;
 import hudson.tasks.Shell;
 import hudson.tasks.BatchFile;
@@ -95,4 +96,28 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
         // can we see it?
         new WebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
     }
+
+    public void testGlob() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("pom.xml").touch(0);
+                ws.child("src/main/java/p").mkdirs();
+                ws.child("src/main/java/p/X.java").touch(0);
+                ws.child("src/main/resources/p").mkdirs();
+                ws.child("src/main/resources/p/x.txt").touch(0);
+                ws.child("src/test/java/p").mkdirs();
+                ws.child("src/test/java/p/XTest.java").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        String text = new WebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
+        assertTrue(text, text.contains("X.java"));
+        assertTrue(text, text.contains("XTest.java"));
+        assertFalse(text, text.contains("pom.xml"));
+        assertFalse(text, text.contains("x.txt"));
+    }
+
 }
