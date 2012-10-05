@@ -241,7 +241,7 @@ THE SOFTWARE.
       <!-- for JRE requirement check annotation -->
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
-      <version>1.7</version>
+      <version>1.8</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
@@ -549,7 +549,7 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.7</version>
+	        <version>1.8</version>
         </plugin>
       </plugins>
     </pluginManagement>
