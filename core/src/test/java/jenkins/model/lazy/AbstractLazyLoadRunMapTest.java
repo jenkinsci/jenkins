@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
+import java.util.logging.Level;
+import org.junit.BeforeClass;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -50,6 +52,11 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Rule
     public FakeMapBuilder localBuilder = new FakeMapBuilder();
+
+    @BeforeClass
+    public static void setUpClass() {
+        AbstractLazyLoadRunMap.LOGGER.setLevel(Level.OFF);
+    }
 
     @Before
     public void setUp() throws Exception {

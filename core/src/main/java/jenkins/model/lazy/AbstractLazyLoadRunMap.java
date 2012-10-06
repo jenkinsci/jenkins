@@ -394,10 +394,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         int lo = idOnDisk.higher(cid);
         int hi = idOnDisk.lower(fid)+1;
 
-        // invariant: 0<=lo<=pivot<=hi<=idOnDisk.size()
-
         while (lo<hi) {
             final int pivot = (lo+hi)/2;
+            assert 0 <= lo : lo;
+            assert lo <= pivot : lo + " vs. " + pivot;
+            assert pivot <= hi : pivot + " vs. " + hi;
+            assert hi <= idOnDisk.size() : hi + " vs. " + idOnDisk.size();
 
             R r = load(idOnDisk.get(pivot), null);
             if (r==null) {
@@ -693,5 +695,5 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
+    static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
 }
