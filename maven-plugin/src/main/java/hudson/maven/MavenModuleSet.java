@@ -32,6 +32,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Indenter;
+import hudson.Plugin;
 import hudson.Util;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
@@ -285,36 +286,47 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     public Object readResolve() {
         // backward compatibility
-        if (alternateSettings != null) { 
+        Plugin plugin = null;
+        if(StringUtils.isNotBlank(this.settingConfigId) || StringUtils.isNotBlank(this.globalSettingConfigId)) {
+            plugin = Jenkins.getInstance().getPlugin("config-file-provider");
+            if(plugin == null || !plugin.getWrapper().isEnabled()){
+                System.err.println("ERROR: 'config-file-provider' is not installed or disabled, therefore the config cant be fully loaded!!");
+            }  
+        }
+        
+        if (this.alternateSettings != null) { 
             this.settings = new FilePathSettingsProvider(alternateSettings);
-        } else if (StringUtils.isNotBlank(settingConfigId)) {
+            this.alternateSettings = null;
+        } else if (plugin != null && StringUtils.isNotBlank(this.settingConfigId)) {
             try {
-                Class<? extends SettingsProvider> legacySettings = Class.forName("org.jenkinsci.plugins.configfiles.maven.LegacySettingsProvider").asSubclass(SettingsProvider.class);
+                Class<? extends SettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.MvnSettingsProvider").asSubclass(SettingsProvider.class);
                 SettingsProvider newInstance = legacySettings.newInstance();
-                PropertyUtils.setProperty(newInstance, "settingsConfigId", settingConfigId);
+                PropertyUtils.setProperty(newInstance, "settingsConfigId", this.settingConfigId);
                 this.settings = newInstance;
+                this.settingConfigId = null;
             } catch (Exception e) {
-                // FIXME how should we log this?
-                System.out.println("Please update the 'config-file-provider' plugin, the current version is not supported anymore! (settingConfigId="+settingConfigId+")");
+                // The PluginUpdateMonitor is also informing the admin about the update
+                System.err.println("ERROR: Please update the 'config-file-provider' plugin, the current version is not supported anymore! (settingConfigId="+settingConfigId+")");
                 e.printStackTrace();
             }
         }
         
-        if (StringUtils.isNotBlank(globalSettingConfigId)) {
+        if (plugin != null && StringUtils.isNotBlank(this.globalSettingConfigId)) {
             try {
-                Class<? extends GlobalSettingsProvider> legacySettings = Class.forName("org.jenkinsci.plugins.configfiles.maven.LegacyGlobalSettingsProvider").asSubclass(GlobalSettingsProvider.class);
+                Class<? extends GlobalSettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.MvnGlobalSettingsProvider").asSubclass(GlobalSettingsProvider.class);
                 GlobalSettingsProvider newInstance = legacySettings.newInstance();
-                PropertyUtils.setProperty(newInstance, "settingsConfigId", globalSettingConfigId);
+                PropertyUtils.setProperty(newInstance, "settingsConfigId", this.globalSettingConfigId);
                 this.globalSettings = newInstance;
+                this.globalSettingConfigId = null;
             } catch (Exception e) {
-                // FIXME how should we log this?
-                System.out.println("Please update the 'config-file-provider' plugin, the current version is not supported anymore! (globalSettingConfigId="+globalSettingConfigId+")");
+                // The PluginUpdateMonitor is also informing the admin about the update
+                System.err.println("ERROR: Please update the 'config-file-provider' plugin, the current version is not supported anymore! (globalSettingConfigId="+globalSettingConfigId+")");
                 e.printStackTrace();
             }
         }
         return this;
     }
-
+    
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
