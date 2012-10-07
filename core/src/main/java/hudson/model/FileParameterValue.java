@@ -77,7 +77,7 @@ public class FileParameterValue extends ParameterValue {
         this(name, new FileItemImpl(file), originalFileName);
     }
 
-    private FileParameterValue(String name, FileItem file, String originalFileName) {
+    protected FileParameterValue(String name, FileItem file, String originalFileName) {
         super(name);
         this.file = file;
         this.originalFileName = originalFileName;
