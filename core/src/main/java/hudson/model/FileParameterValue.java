@@ -84,10 +84,13 @@ public class FileParameterValue extends ParameterValue {
     }
 
     // post initialization hook
-    /*package*/ void setLocation(String location) {
+    protected void setLocation(String location) {
         this.location = location;
     }
 
+    public String getLocation() {
+        return location;
+    }
 
     /**
      * Exposes the originalFileName as an environment variable.
@@ -115,6 +118,10 @@ public class FileParameterValue extends ParameterValue {
      */
     public String getOriginalFileName() {
         return originalFileName;
+    }
+
+    public FileItem getFile() {
+        return file;
     }
 
     @Override
