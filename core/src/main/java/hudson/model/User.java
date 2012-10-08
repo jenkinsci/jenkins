@@ -26,12 +26,7 @@ package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
-import hudson.CopyOnWrite;
-import hudson.FeedAdapter;
-import hudson.Functions;
-import hudson.Util;
-import hudson.XmlFile;
-import hudson.BulkChange;
+import hudson.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
@@ -56,6 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -77,7 +73,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Represents a user.
@@ -294,22 +289,56 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      (by creating a new {@link User} object if none exists.)
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
+     * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
-    public static @Nullable User get(String idOrFullName, boolean create) {
+    public static User get(String idOrFullName, boolean create) {
+        return get(idOrFullName, create, Collections.emptyMap());
+    }
+
+    /**
+     * Gets the {@link User} object by its id or full name.
+     *
+     * @param create
+     *      If true, this method will never return null for valid input
+     *      (by creating a new {@link User} object if none exists.)
+     *      If false, this method will return null if {@link User} object
+     *      with the given name doesn't exist.
+     *
+     * @param context
+     *      contextual environment this user idOfFullName was retrieved from,
+     *      that can help resolve the user ID
+     */
+    public static User get(String idOrFullName, boolean create, Map context) {
+
         if(idOrFullName==null)
             return null;
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
-                                .replace('>','_');  // 4 replace() still faster than regex
-        if (Functions.isWindows()) id = id.replace(':','_');
 
+        // sort resolvers by priority
+        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(Jenkins.getInstance().getExtensionList(CanonicalIdResolver.class));
+        Collections.sort(resolvers);
+
+        String id = null;
+        for (CanonicalIdResolver resolver : resolvers) {
+            id = resolver.resolveCanonicalId(idOrFullName, context);
+            if (id != null) break;
+        }
+        // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
+
+        return getOrCreate(id, idOrFullName, create);
+    }
+
+    /**
+     * retrieve a user by its ID, and create a new one if requested
+     */
+    private static User getOrCreate(String id, String fullName, boolean create) {
         String idkey = id.toLowerCase(Locale.ENGLISH);
 
         User u = byName.get(idkey);
-        if(u==null && (create || getConfigFileFor(id).exists())) {
-            User tmp = new User(id, idOrFullName);
+        if (u==null && (create || getConfigFileFor(id).exists())) {
+            User tmp = new User(id, fullName);
             User prev = byName.putIfAbsent(idkey, u = tmp);
             if (prev!=null)
-                u = prev;   // if somehas already put a value in the map, use it
+                u = prev;   // if some has already put a value in the map, use it
         }
         return u;
     }
@@ -350,8 +379,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             if(subdirs==null)       return Collections.emptyList(); // shall never happen
 
             for (File subdir : subdirs)
-                if(new File(subdir,"config.xml").exists())
-                    User.get(subdir.getName());
+                if(new File(subdir,"config.xml").exists()) {
+                    String name = subdir.getName();
+                    User.getOrCreate(name, name, true);
+                }
 
             lastScanned = System.currentTimeMillis();
         }
@@ -635,5 +666,54 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
         return Collections.unmodifiableList(actions);
     }
-    
+
+    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements Comparable<CanonicalIdResolver> {
+
+        /**
+         * context key for realm (domain) where idOrFullName has been retreived from.
+         * Can be used (for example) to distinguish ambiguous committer ID using the SCM URL.
+         * Associated Value is a {@link String}
+         */
+        public static final String REALM = "realm";
+
+        public int compareTo(CanonicalIdResolver o) {
+            // reverse priority order
+            int i = getPriority();
+            int j = o.getPriority();
+            return i>j ? -1 : (i==j ? 0:1);
+        }
+
+        /**
+         * extract user ID from idOrFullName with help from contextual infos.
+         * can return <code>null</code> if no user ID matched the input
+         */
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
+
+        public int getPriority() {
+            return 1;
+        }
+
+    }
+
+
+    /**
+     * Resolve user ID from full name
+     */
+    @Extension
+    public static class FullNameIdResolver extends CanonicalIdResolver {
+
+        @Override
+        public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
+            for (User user : getAll()) {
+                if (idOrFullName.equals(user.getFullName())) return user.getId();
+            }
+            return null;
+        }
+
+        @Override
+        public int getPriority() {
+            return -1; // lower than default
+        }
+    }
 }
+

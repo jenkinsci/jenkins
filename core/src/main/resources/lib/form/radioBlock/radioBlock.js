@@ -24,11 +24,8 @@ var radioBlockSupport = {
     }
 };
 
-Behaviour.list.unshift({
-    // this needs to happen before TR.row-set-end rule kicks in.
-    // but this is a hack.
-    // TODO: how do we handle ordering?
-    "INPUT.radio-block-control" : function(r) {
+// this needs to happen before TR.row-set-end rule kicks in.
+Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
         r.id = "radio-block-"+(iota++);
 
         // when one radio button is clicked, we need to update foldable block for
@@ -73,5 +70,4 @@ Behaviour.list.unshift({
         // install event handlers to update visibility.
         // needs to use onclick and onchange for Safari compatibility
         r.onclick = r.onchange = function() { g.updateButtons(); };
-    }
 });

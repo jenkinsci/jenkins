@@ -70,7 +70,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -83,6 +85,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -108,6 +111,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+
+    /**
+     * {@link #getId} of the default update site.
+     * @since 1.483
+     */
+    public static final String ID_DEFAULT = "default";
 	
     /**
      * {@link ExecutorService} that performs installation.
@@ -178,6 +187,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
+     * Gets a job by its ID.
+     *
+     * Primarily to make {@link UpdateCenterJob} bound to URL.
+     */
+    public UpdateCenterJob getJob(int id) {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job.id==id)
+                    return job;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns latest install/upgrade job for the given plugin.
      * @return InstallationJob or null if not found
      */
@@ -225,11 +249,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return sites.toList();
     }
 
+    /**
+     * Alias for {@link #getById}.
+     */
     public UpdateSite getSite(String id) {
-        for (UpdateSite site : sites)
-            if (site.getId().equals(id))
-                return site;
-        return null;
+        return getById(id);
     }
 
     /**
@@ -289,7 +313,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
      */
-    public Plugin getPlugin(String artifactId) {
+    public @CheckForNull Plugin getPlugin(String artifactId) {
         for (UpdateSite s : sites) {
             Plugin p = s.getPlugin(artifactId);
             if (p!=null) return p;
@@ -461,7 +485,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite("default", config.getUpdateCenterUrl() + "update-center.json");
+        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
@@ -492,13 +516,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public List<Plugin> getAvailables() {
-        List<Plugin> plugins = new ArrayList<Plugin>();
-
-        for (UpdateSite s : sites) {
-            plugins.addAll(s.getAvailables());
+        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        for (UpdateSite site : sites) {
+            for (Plugin plugin: site.getAvailables()) {
+                final Plugin existing = pluginMap.get(plugin.name);
+                if (existing == null) {
+                    pluginMap.put(plugin.name, plugin);
+                } else if (!existing.version.equals(plugin.version)) {
+                    // allow secondary update centers to publish different versions
+                    // TODO refactor to consolidate multiple versions of the same plugin within the one row
+                    final String altKey = plugin.name + ":" + plugin.version;
+                    if (!pluginMap.containsKey(altKey)) {
+                        pluginMap.put(altKey, plugin);
+                    }
+                }
+            }
         }
 
-        return plugins;
+        return new ArrayList<Plugin>(pluginMap.values());
     }
 
     /**
@@ -529,13 +564,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public List<Plugin> getUpdates() {
-        List<Plugin> plugins = new ArrayList<Plugin>();
-
-        for (UpdateSite s : sites) {
-            plugins.addAll(s.getUpdates());
+        Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
+        for (UpdateSite site : sites) {
+            for (Plugin plugin: site.getUpdates()) {
+                final Plugin existing = pluginMap.get(plugin.name);
+                if (existing == null) {
+                    pluginMap.put(plugin.name, plugin);
+                } else if (!existing.version.equals(plugin.version)) {
+                    // allow secondary update centers to publish different versions
+                    // TODO refactor to consolidate multiple versions of the same plugin within the one row
+                    final String altKey = plugin.name + ":" + plugin.version;
+                    if (!pluginMap.containsKey(altKey)) {
+                        pluginMap.put(altKey, plugin);
+                    }
+                }
+            }
         }
 
-        return plugins;
+        return new ArrayList<Plugin>(pluginMap.values());
     }
 
 
@@ -768,6 +814,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @ExportedBean
     public abstract class UpdateCenterJob implements Runnable {
         /**
+         * Unique ID that identifies this job.
+         *
+         * @see UpdateCenter#getJob(int)
+         */
+        @Exported
+        public final int id = iota.incrementAndGet();
+
+        /**
          * Which {@link UpdateSite} does this belong to?
          */
         public final UpdateSite site;
@@ -819,12 +873,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Restarts jenkins.
      */
     public class RestartJenkinsJob extends UpdateCenterJob {
-        /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
-               
          /**
          * Immutable state of this job.
          */
@@ -943,11 +991,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Base class for a job that downloads a file from the Jenkins project.
      */
     public abstract class DownloadJob extends UpdateCenterJob {
-        /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
         /**
          * Immutable object representing the current state of this job.
          */

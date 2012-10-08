@@ -30,6 +30,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -241,6 +242,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * If the computer was offline (either temporarily or not),
+     * this method will return the cause as a string (without user info).
+     *
+     * @return
+     *      empty string if the system was put offline without given a cause.
+     */
+    @Exported
+    public String getOfflineCauseReason() {
+        if (offlineCause == null) {
+            return "";
+        }
+        // remove header string from offline cause when a comment was set
+        String newString = offlineCause.toString().replaceAll(
+                "^Disconnected by [\\w]* \\: ","");
+        // remove header string from offline cause when no comment was set
+        return newString.replaceAll(
+                "^Disconnected by [\\w]*","");
+    }
+
+    /**
      * Gets the channel that can be used to run a program on this computer.
      *
      * @return
@@ -434,7 +455,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return getNode().getSelfLabel().loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : "").loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
@@ -546,7 +567,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
-        getNode().setTemporaryOfflineCause(offlineCause);
+        Node node = getNode();
+        if (node != null) {
+            node.setTemporaryOfflineCause(offlineCause);
+        }
         Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
@@ -999,6 +1023,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return HttpResponses.redirectToDot();
     }
 
+    public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
+        checkPermission(DISCONNECT);
+        offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
+        setTemporarilyOffline(true,
+                OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                    Jenkins.getAuthentication().getName(),
+                    offlineMessage!=null ? " : " + offlineMessage : "")));
+        return HttpResponses.redirectToDot();
+    }
+
     public Api getApi() {
         return new Api(this);
     }
@@ -1052,9 +1086,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
-        // ability to run arbitrary script is dangerous,
-        // so tie it to the admin access
-        checkPermission(Jenkins.ADMINISTER);
+        // ability to run arbitrary script is dangerous
+        checkPermission(Jenkins.RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if(text!=null) {
@@ -1079,7 +1112,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
         
-        Node result = getNode().reconfigure(req, req.getSubmittedForm());
+        Node node = getNode();
+        if (node == null) {
+            throw new ServletException("No such node " + nodeName);
+        }
+        Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
         // take the user back to the slave top page.
@@ -1136,7 +1173,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="delete-node")
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
-        Jenkins.getInstance().removeNode(getNode());
+        Node node = getNode();
+        if (node == null) {
+            throw new IOException("Cannot delete " + nodeName + " since it does not still exist");
+        }
+        Jenkins.getInstance().removeNode(node);
         return new HttpRedirect("..");
     }
 

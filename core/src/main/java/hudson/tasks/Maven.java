@@ -61,6 +61,8 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.List;
@@ -345,8 +347,18 @@ public class Maven extends Builder {
             return installations;
         }
 
-        public void setInstallations(MavenInstallation... installations) {
-            this.installations = installations;
+		public void setInstallations(MavenInstallation... installations) {
+			List<MavenInstallation> tmpList = new ArrayList<Maven.MavenInstallation>();
+			// remote empty Maven installation : 
+			if(installations != null) {
+				Collections.addAll(tmpList, installations);
+				for(MavenInstallation installation : installations) {
+					if(Util.fixEmptyAndTrim(installation.getName()) == null) {
+						tmpList.remove(installation);
+					}
+				}
+			}
+            this.installations = tmpList.toArray(new MavenInstallation[tmpList.size()]);
             save();
         }
 

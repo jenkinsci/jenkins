@@ -31,19 +31,21 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <script type="text/javascript">
-  <![CDATA[
-    function flip(item) {
-      var nodes = document.getElementsByName(item.name);
-      for (var i = 0; i < nodes.length; ++i) {
-        if(nodes[i].nodeName == "INPUT") {
-          nodes[i].checked = item.checked;
-        }
-      }
-    }
-    ]]>
-  </script>
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+    <l:header>
+      <script type="text/javascript">
+      <![CDATA[
+        function flip(item) {
+          var nodes = document.getElementsByName(item.name);
+          for (var i = 0; i < nodes.length; ++i) {
+            if(nodes[i].nodeName == "INPUT") {
+              nodes[i].checked = item.checked;
+            }
+          }
+        }
+        ]]>
+      </script>
+    </l:header>
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>

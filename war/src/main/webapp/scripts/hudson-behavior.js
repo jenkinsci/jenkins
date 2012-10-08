@@ -561,7 +561,9 @@ function sequencer(fs) {
     return next();
 }
 
+/** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = {
+// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
@@ -1159,7 +1161,17 @@ var jenkinsRules = {
         adjustSticker();
     }
 };
+/** @deprecated Use {@link Behaviour.specify} instead. */
 var hudsonRules = jenkinsRules; // legacy name
+(function() {
+    var p = 20;
+    for (var selector in jenkinsRules) {
+        Behaviour.specify(selector, 'hudson-behavior', p++, jenkinsRules[selector]);
+        delete jenkinsRules[selector];
+    }
+})();
+// now empty, but plugins can stuff things in here later:
+Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
@@ -1211,10 +1223,6 @@ function refillOnChange(e,onChange) {
     }
     h();   // initial fill
 }
-
-Behaviour.register(hudsonRules);
-
-
 
 function xor(a,b) {
     // convert both values to boolean by '!' and then do a!=b
@@ -1405,6 +1413,7 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
+                    if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
                     var next = hist.next();
                     p.removeChild(hist);
@@ -1947,12 +1956,69 @@ function loadScript(href,callback) {
     head.insertBefore( script, head.firstChild );
 }
 
+/**
+ * Loads a dynamically created invisible IFRAME.
+ */
+function createIframe(src,callback) {
+    var iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.style.display = "none";
+
+    var done = false;
+    iframe.onload = iframe.onreadystatechange = function() {
+        if ( !done && (!this.readyState ||
+                this.readyState === "loaded" || this.readyState === "complete") ) {
+            done = true;
+            callback();
+        }
+    };
+
+    document.body.appendChild(iframe);
+    return iframe;
+}
+
 var downloadService = {
     continuations: {},
 
     download : function(id,url,info, postBack,completionHandler) {
-        this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
-        loadScript(url+"?"+Hash.toQueryString(info));
+        var tag = {id:id,postBack:postBack,completionHandler:completionHandler,received:false};
+        this.continuations[id] = tag;
+
+        // use JSONP to download the data
+        function fallback() {
+            loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
+        }
+
+        if (window.postMessage) {
+            // try downloading the postMessage version of the data,
+            // if we don't receive postMessage (which probably means the server isn't ready with these new datasets),
+            // fallback to JSONP
+            tag.iframe = createIframe(url+".html?id="+id+'&'+Hash.toQueryString(info),function() {
+                window.setTimeout(function() {
+                    if (!tag.received)
+                        fallback();
+                },100); // bit of delay in case onload on our side fires first
+            });
+        } else {
+            // this browser doesn't support postMessage
+            fallback();
+        }
+
+        // NOTE:
+        //   the only reason we even try fallback() is in case our server accepts the submission without a signature
+        //   (which it really shouldn't)
+    },
+
+    /**
+     * Call back to postMessage
+     */
+    receiveMessage : function(ev) {
+        var self = this;
+        Object.values(this.continuations).each(function(tag) {
+            if (tag.iframe.contentWindow==ev.source) {
+                self.post(tag.id,JSON.parse(ev.data));
+            }
+        })
     },
 
     post : function(id,data) {
@@ -1961,15 +2027,22 @@ var downloadService = {
             data = id;
             id = data.id;
         }
-        var o = this.continuations[id];
+        var tag = this.continuations[id];
+        if (tag==undefined) {
+            console.log("Submission from update center that we don't know: "+id);
+            console.log("Likely mismatch between the registered ID vs ID in JSON");
+            return;
+        }
+        tag.received = true;
+
         // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
-        new Ajax.Request(o.postBack, {
+        new Ajax.Request(tag.postBack, {
             contentType:"application/json",
             encoding:"UTF-8",
             postBody:Object.toJSON(data),
             onSuccess: function() {
-                if(o.completionHandler!=null)
-                    o.completionHandler();
+                if(tag.completionHandler!=null)
+                    tag.completionHandler();
                 else if(downloadService.completionHandler!=null)
                     downloadService.completionHandler();
             }
@@ -1979,6 +2052,8 @@ var downloadService = {
 
 // update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
+
+YAHOO.util.Event.addListener(window, "message", function(ev) { downloadService.receiveMessage(ev); })
 
 /*
 redirects to a page once the page is ready.

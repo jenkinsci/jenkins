@@ -71,9 +71,11 @@ THE SOFTWARE.
 
   <f:prepareDatabinding />
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
+  <j:if test="${attrs['previewEndpoint']!=null || attrs['codemirror-mode']!=null}">
+    <st:adjunct includes="lib.form.textarea.textarea"/>
+  </j:if>
   <j:if test="${attrs['codemirror-mode']!=null}">
     <st:adjunct includes="
-        lib.form.textarea.textarea
         org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
         org.kohsuke.stapler.codemirror.theme.default"/>
   </j:if>

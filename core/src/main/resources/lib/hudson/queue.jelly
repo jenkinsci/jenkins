@@ -79,7 +79,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <a href="${rootURL}/queue/item/${item.id}/cancelQueue"><img src="${imagesURL}/16x16/stop.png" alt="cancel this build" height="16" width="16"/></a>
+                <a href="${rootURL}/queue/cancelItem?id=${item.id}"><img src="${imagesURL}/16x16/stop.png" alt="cancel this build" height="16" width="16"/></a>
               </j:if>
              </td>
           </tr>

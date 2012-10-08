@@ -1,9 +1,9 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
- * Darek Ostolski
+ * Darek Ostolski, CloudBees, Inc.
  *
  * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
  * 
@@ -46,7 +46,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.PermissionScope;
-import jenkins.model.Jenkins.MasterComputer;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -99,6 +98,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.BuildReference;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
@@ -327,7 +327,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
-            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
+            // canonicalization to ensure we are looking at the ID in the directory name
+            // as opposed to build numbers which are used in symlinks
+            return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
         } catch (ParseException e) {
             throw new IOException2("Invalid directory name "+buildDir,e);
         } catch (NumberFormatException e) {
@@ -339,7 +341,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Obtains 'this' in a more type safe signature.
      */
     @SuppressWarnings({"unchecked"})
-    private RunT _this() {
+    protected RunT _this() {
         return (RunT)this;
     }
 
@@ -642,10 +644,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         // a new build is in progress
         BallColor baseColor;
-        if(previousBuild==null)
+        RunT pb = getPreviousBuild();
+        if(pb==null)
             baseColor = BallColor.GREY;
         else
-            baseColor = previousBuild.getIconColor();
+            baseColor = pb.getIconColor();
 
         return baseColor.anime();
     }
@@ -688,6 +691,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Exported(visibility=2)
     public int getNumber() {
         return number;
+    }
+
+    /**
+     * Called by {@link RunMap} to drop bi-directional links in preparation for
+     * deleting a build.
+     */
+    /*package*/ void dropLinks() {
+        if(nextBuild!=null)
+            nextBuild.previousBuild = previousBuild;
+        if(previousBuild!=null)
+            previousBuild.nextBuild = nextBuild;
     }
 
     public RunT getPreviousBuild() {
@@ -749,10 +763,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last build that was actually built - i.e., skipping any with Result.NOT_BUILT
      */
     public RunT getPreviousBuiltBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         // in certain situations (aborted m2 builds) r.getResult() can still be null, although it should theoretically never happen
         while( r!=null && (r.getResult() == null || r.getResult()==Result.NOT_BUILT) )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -760,9 +774,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last build that didn't fail before this build.
      */
     public RunT getPreviousNotFailedBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()==Result.FAILURE )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -770,9 +784,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the last failed build before this build.
      */
     public RunT getPreviousFailedBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()!=Result.FAILURE )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 
@@ -781,9 +795,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.383
      */
     public RunT getPreviousSuccessfulBuild() {
-        RunT r=previousBuild;
+        RunT r=getPreviousBuild();
         while( r!=null && r.getResult()!=Result.SUCCESS )
-            r=r.previousBuild;
+            r=r.getPreviousBuild();
         return r;
     }
 

@@ -26,18 +26,20 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
+import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
@@ -61,7 +63,8 @@ public class DownloadService extends PageDecorator {
      */
     public String generateFragment() {
     	if (neverUpdate) return "";
-    	
+        if (doesNotSupportPostMessage())  return "";
+
         StringBuilder buf = new StringBuilder();
         if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
@@ -86,6 +89,23 @@ public class DownloadService extends PageDecorator {
             }
         }
         return buf.toString();
+    }
+
+    private boolean doesNotSupportPostMessage() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req==null)      return false;
+
+        String ua = req.getHeader("User-Agent");
+        if (ua==null)       return false;
+
+        // according to http://caniuse.com/#feat=x-doc-messaging, IE <=7 doesn't support pstMessage
+        // see http://www.useragentstring.com/pages/Internet%20Explorer/ for user agents
+
+        // we want to err on the cautious side here.
+        // Because of JENKINS-15105, we can't serve signed metadata from JSON, which means we need to be
+        // using a modern browser as a vehicle to request these data. This check is here to prevent Jenkins
+        // from using older browsers that are known not to support postMessage as the vehicle.
+        return ua.contains("Windows") && (ua.contains(" MSIE 5.") || ua.contains(" MSIE 6.") || ua.contains(" MSIE 7."));
     }
 
     private String mapHttps(String url) {
@@ -223,11 +243,24 @@ public class DownloadService extends PageDecorator {
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             long dataTimestamp = System.currentTimeMillis();
+            due = dataTimestamp+getInterval();  // success or fail, don't try too often
+
+            String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+            JSONObject o = JSONObject.fromObject(json);
+
+            if (signatureCheck) {
+                FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
+                if (e.kind!= Kind.OK) {
+                    LOGGER.severe(e.renderHtml());
+                    throw e;
+                }
+            }
+
             TextFile df = getDataFile();
-            df.write(IOUtils.toString(req.getInputStream(),"UTF-8"));
+            df.write(json);
             df.file.setLastModified(dataTimestamp);
-            due = dataTimestamp+getInterval();
             LOGGER.info("Obtained the updated data file for "+id);
+
             rsp.setContentType("text/plain");  // So browser won't try to parse response
         }
 
@@ -253,5 +286,10 @@ public class DownloadService extends PageDecorator {
     }
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+
+    /**
+     * Off by default until we know this is reasonably working.
+     */
+    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

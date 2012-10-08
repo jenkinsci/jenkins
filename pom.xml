@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.25</version>
+    <version>1.28</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.478</version>
+  <version>1.485</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
+    <module>plugins</module>
   </modules>
 
   <scm>
@@ -62,8 +63,8 @@ THE SOFTWARE.
   </scm>
   <distributionManagement>
     <site>
-      <id>hudson-www</id>
-      <url>scp://jenkins-ci.org/home/kohsuke/www/hudson-labs.org/maven-site/</url>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
     </site>
     <snapshotRepository>
       <id>maven.jenkins-ci.org</id>
@@ -75,6 +76,11 @@ THE SOFTWARE.
     <system>jira</system>
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
   </issueManagement>
+
+  <ciManagement>
+      <system>jenkins</system>
+      <url>https://ci.jenkins-ci.org/job/jenkins_main_trunk/</url>
+  </ciManagement>
 
   <properties>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
@@ -190,7 +196,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.16</version>
+        <version>2.17</version>
       </dependency>
 
       <dependency>
@@ -414,12 +420,12 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>1.0</version>
+          <version>1.3</version>
         </plugin>
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.6</version>
+          <version>1.7</version>
           <executions>
             <execution>
               <goals>
@@ -437,12 +443,12 @@ THE SOFTWARE.
           <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
           <groupId>org.kohsuke</groupId>
           <artifactId>maven-junit-plugin</artifactId>
-          <version>1.9</version>
+          <version>1.10</version>
          </plugin>
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.12</version>
+          <version>1.14</version>
          </plugin>
         <plugin>
           <groupId>org.jvnet.hudson.tools</groupId>
@@ -483,7 +489,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>6.1.26-jenkins-2</version>
+          <version>8.1.4.v20120524-jenkins-1</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -493,12 +499,57 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.78</version>
+          <version>1.90</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.0</version>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+        	<groupId>org.eclipse.m2e</groupId>
+        	<artifactId>lifecycle-mapping</artifactId>
+        	<version>1.0.0</version>
+        	<configuration>
+        		<lifecycleMappingMetadata>
+        			<pluginExecutions>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>org.kohsuke.gmaven</groupId>
+        						<artifactId>gmaven-plugin</artifactId>
+        						<versionRange>[1.0-rc-5-patch-2,)</versionRange>
+        						<goals>
+        							<goal>execute</goal>
+        							<goal>testCompile</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore />
+        					</action>
+        				</pluginExecution>
+        				<pluginExecution>
+        					<pluginExecutionFilter>
+        						<groupId>org.apache.maven.plugins</groupId>
+        						<artifactId>maven-dependency-plugin</artifactId>
+        						<versionRange>[2.3,)</versionRange>
+        						<goals>
+        							<goal>list</goal>
+        							<goal>unpack-dependencies</goal>
+        						</goals>
+        					</pluginExecutionFilter>
+        					<action>
+        						<ignore />
+        					</action>
+        				</pluginExecution>
+        			</pluginExecutions>
+        		</lifecycleMappingMetadata>
+        	</configuration>
+        </plugin>
+        <plugin>
+	        <groupId>org.codehaus.mojo</groupId>
+	        <artifactId>animal-sniffer-maven-plugin</artifactId>
+	        <version>1.7</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -510,7 +561,6 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.1</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
@@ -524,7 +574,6 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.2</version>
         <executions>
           <execution>
             <goals>
@@ -542,7 +591,6 @@ THE SOFTWARE.
         <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.7</version>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
@@ -554,7 +602,6 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5</version>
         <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
           <source>1.5</source>
           <target>1.5</target>
@@ -568,7 +615,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.0.1</version>
         <executions>
           <execution>
             <goals>
@@ -596,7 +642,6 @@ THE SOFTWARE.
         -->
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <version>8.1.4.v20120524-jenkins-1</version>
       </plugin>
 
       <!--<plugin>
@@ -613,7 +658,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.3</version>
         <executions>
           <execution>
             <goals>
@@ -639,6 +683,13 @@ THE SOFTWARE.
       </plugin>
     </plugins>
 
+    <extensions>
+      <extension>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.5</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
@@ -673,7 +724,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.3.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>

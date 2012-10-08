@@ -194,6 +194,13 @@ public abstract class Launcher {
             return commands;
         }
 
+        /**
+         * Hide parts of the command line from being printed to the log.
+         * @param masks true for each position in {@link #cmds(String[])} which should be masked, false to print
+         * @return this
+         * @see ArgumentListBuilder#add(String, boolean)
+         * @see #maskedPrintCommandLine(List, boolean[], FilePath)
+         */
         public ProcStarter masks(boolean... masks) {
             this.masks = masks;
             return this;

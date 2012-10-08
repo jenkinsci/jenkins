@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.478</version>
+    <version>1.485</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -104,7 +104,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-37</version>
+      <version>0.9.10-jenkins-38</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -420,7 +420,7 @@ THE SOFTWARE.
               <value><!-- run "mvn install" once will generate the.hpl -->
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
                   ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
-                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/javadoc.hpi
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>
             <systemProperty>

@@ -27,7 +27,6 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;

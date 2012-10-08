@@ -40,8 +40,7 @@ function updateListBox(listBox,url,config) {
     new Ajax.Request(url, config);
 }
 
-Behaviour.register({
-    "SELECT.select" : function(e) {
+Behaviour.specify("SELECT.select", 'select', 0, function(e) {
         // controls that this SELECT box depends on
         refillOnChange(e,function(params) {
             var value = e.value;
@@ -63,5 +62,4 @@ Behaviour.register({
                 }
             });
         });
-    }
 });

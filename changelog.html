@@ -61,7 +61,153 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.478>What's new in 1.478</a> <!--=DATE=--></h3>
+<h3><a name=v1.485>What's new in 1.485</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    NPE deleting a slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15369">issue 15369</a>)
+  <li class=bug>
+    Deadlock involving views.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15368">issue 15368</a>)
+  <li class='bug'>
+    Can't configure Maven Installations on Jenkins ver. 1.483, 1.484
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15293">issue 15293</a>)
+  <li class='rfe'>
+    Memory footprint improvement, especially under large HTTP request threads.
+  <li class='major rfe'>
+    Build records are now lazy loaded, resulting in a reduced startup time 
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.484>What's new in 1.484</a> (2012/09/30)</h3>
+<ul class=image>
+  <li class=bug>
+    Check view permissions before showing config page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15277">issue 15277</a>)
+  <li class=bug>
+    Displaying <code>/people</code> can consume huge resources.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15206">issue 15206</a>)
+  <li class=bug>
+    Log recorders do not work reliably.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15226">issue 15226</a>)
+  <li class=bug>
+    NPE in <code>MatrixProject.onLoad</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15271">issue 15271</a>)
+  <li class=bug>
+    <code>FilePath.validateAntFileMask</code> too slow for <code>/configure</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7214">issue 7214</a>)
+  <li class=rfe>
+    Mac OS X installer now sends log to <tt>/var/log/jenkins/jenkins.log</tt>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15178">issue 15178</a>)
+</ul>
+<h3><a name=v1.483>What's new in 1.483</a> (2012/09/23)</h3>
+<ul class=image>
+  <li class=bug>
+    Invalid warning message when the config-file-provider plugin is not installed
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15207">issue 15207</a>)
+  <li class=bug>
+    JDK installation failed on some slaves with <code>InvalidClassException: hudson.tools.JDKInstaller$Platform$1; local class incompatible: …</code>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14667">issue 14667</a>)
+  <li class=rfe>
+    Provide symlink support on all possible platforms when using Java 7+, including newer versions of Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13202">issue 13202</a>)
+  <li class=bug>
+    NPE at hudson.maven.MavenModuleSet.getMaven
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14510">issue 14510</a>)
+  <li class=bug>
+    Invalid JSON gets produced with duplicate keys (seen on change sets)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13336">issue 13336</a>)
+  <li class=bug>
+    Command line options to control the HTTP request handling thread behavior weren't working.
+  <li class=rfe>
+    Default max # of concurrent HTTP request handling threads were brought down to a sane number (from 1000(!) to 20)
+  <li class=rfe>
+    Display non-default update site URLs in the Advanced tab of Plugin Manager. (Currently not configurable from this UI.)
+  <li class=rfe>
+    Fixed the lock contention problem on <tt>Queue.getItems()</tt>
+  <li class=rfe>
+    Put slave back online automatically, if there's enough disk space again 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/514">pull 514</a>)
+  <li class=rfe>
+    Track and verify plugins used in configuration XML
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15003">issue 15003</a>)
+</ul>
+<h3><a name=v1.482>What's new in 1.482</a> (2012/09/16)</h3>
+<ul class=image>
+  <li class=bug>
+    Job created by posting <code>config.xml</code> to <code>/createItem</code> does not set GitHub webhook.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14759">issue 14759</a>)
+  <li class=bug>
+    “Took…on master” shown for a build which ran on a slave which was since deleted.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15042">issue 15042</a>)
+  <li class=rfe>
+    Report root causes of UpstreamCause in log and status pages.
+</ul>
+<h3><a name=v1.481>What's new in 1.481</a> (2012/09/09)</h3>
+<ul class=image>
+  <li class=bug>
+    Matrix jobs are kept forever even if it's not needed
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14991">issue 14991</a>)
+  <li class=bug>
+    'groovysh' command should be able to see all the plugin classes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14982">issue 14982</a>)
+  <li class=bug>
+    Handle version ranges in automatic maven module dependency wiring.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12735">issue 12735</a>)
+  <li class=bug>
+    Detect bugs relating to short <code>Descriptor</code> names early.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14995">issue 14995</a> continued)
+  <li class=rfe>
+    Allow the user to type in the reason why a node is offline
+    (<a href="https://github.com/jenkinsci/jenkins/pull/535">pull 535</a>)
+  <li class=rfe>
+    Parameters defined in matrix projects are now available in configuration builds.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/543">pull 543</a>)
+</ul>
+<h3><a name=v1.480>What's new in 1.480</a> (2012/09/03)</h3>
+<ul class=image>
+  <li class=bug>
+    Refactored <code>behavior.js</code> to run more predictably.
+    Plugin JavaScript should use <code>Behaviour.specify</code> in place of
+    <code>Behaviour.register</code>, <code>Behaviour.list</code>,
+    <code>hudsonRules</code>, and <code>jenkinsRules</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14495">issue 14495</a> cont'd)
+  <li class=bug>
+    Fixed a possible race condition in the remoting layer.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14909">issue 14909</a>)
+  <li class=bug>
+    <code>TarArchiver.visitSymlink</code> can throw undeclared <code>PosixException</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14922">issue 14922</a>)
+  <li class=bug>
+    Parameterized Trigger plugin can break form validation for regular “Build after other projects are built” trigger.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14995">issue 14995</a>)
+  <li class=bug>
+    <code>hpi:run</code> failed due to <code>IllegalAccessError</code>s.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14983">issue 14983</a>)
+</ul>
+<h3><a name=v1.479>What's new in 1.479</a> (2012/08/29)</h3>
+<ul class=image>
+  <li class=bug>
+    "Ping-pong" builds store excessively large <code>CauseAction</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14814">issue 14814</a>)
+  <li class=bug>
+    Avoid a 404 when navigating to upstream builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14816">issue 14816</a>)
+  <li class=bug>
+    Avoid a 404 when canceling queue items.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14813">issue 14813</a>)
+  <li class=bug>
+    Added missing parameters as defaults when called from CLI
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7162">issue 7162</a>)
+  <li class=bug>
+    NPE from <code>UpdateSite$Plugin.getNeededDependencies</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14769">issue 14769</a>)
+  <li class=bug>
+    Description preview and syntax highlighting broken since 1.477.
+  <li class=bug>
+    Parameter values disappear if user is not logged in
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7894">issue 7894</a>)
+</ul>
+<h3><a name=v1.478>What's new in 1.478</a> (2012/08/20)</h3>
 <ul class=image>
   <li class='major bug'>
     "Monitor External Job" broken since 1.468.
@@ -70,7 +216,6 @@ Upcoming changes</a>
     Matrix configuration axes are no longer automatically re-ordered to alphanumeric order on reload.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14696">issue 14696</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.477>What's new in 1.477</a> (2012/08/08)</h3>
 <ul class=image>
   <li class=bug>

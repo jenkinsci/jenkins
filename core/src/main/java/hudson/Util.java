@@ -26,6 +26,7 @@ package hudson;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -48,6 +49,8 @@ import org.kohsuke.stapler.Stapler;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,6 +66,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -310,6 +314,10 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(File file) throws IOException {
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
+        }
         if (Functions.isWindows()) {
           return Kernel32Utils.isJunctionOrSymlink(file);
         }
@@ -325,6 +333,18 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
+    }
+
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean isSymlinkJava7(File file) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(file);
+            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
+        } catch (NoSuchMethodException x) {
+            return null; // fine, Java 5/6
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
     }
 
     /**
@@ -985,9 +1005,13 @@ public class Util {
      *      Where to create a symlink in.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(Functions.isWindows() || NO_SYMLINK)   return;
-
         try {
+            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
+                return;
+            }
+            if (Functions.isWindows() || NO_SYMLINK) {
+                return;
+            }
             String errmsg = "";
             // if a file or a directory exists here, delete it first.
             // try simple delete first (whether exists() or not, as it may be symlink pointing
@@ -1029,6 +1053,39 @@ public class Util {
         }
     }
 
+    private static final AtomicBoolean warnedSymlinks = new AtomicBoolean();
+    private static boolean createSymlinkJava7(File baseDir, String targetPath, String symlinkPath) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
+            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
+            Class<?> filesC = Class.forName("java.nio.file.Files");
+            Class<?> pathC = Class.forName("java.nio.file.Path");
+            filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
+            filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+            return true;
+        } catch (NoSuchMethodException x) {
+            return false; // fine, Java 5/6
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return true; // no symlinks on this platform
+            }
+            if (Functions.isWindows() && String.valueOf(x2).contains("A required privilege is not held by the client.")) {
+                if (warnedSymlinks.compareAndSet(false, true)) {
+                    LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
+                }
+                return true;
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+    }
+
     /**
      * @deprecated as of 1.456
      *      Use {@link #resolveSymlink(File)}
@@ -1041,11 +1098,26 @@ public class Util {
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
-     *
-     * @param listener
-     *      If we rely on an external command to resolve symlink, this is it.
      */
     public static String resolveSymlink(File link) throws InterruptedException, IOException {
+        try { // Java 7
+            Object path = File.class.getMethod("toPath").invoke(link);
+            return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
+        } catch (NoSuchMethodException x) {
+            // fine, Java 5/6; fall through
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return null; // no symlinks on this platform
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+
         if(Functions.isWindows())     return null;
 
         String filename = link.getAbsolutePath();

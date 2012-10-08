@@ -161,10 +161,21 @@ public class Functions {
     
     public static void initPageVariables(JellyContext context) {
         String rootURL = Stapler.getCurrentRequest().getContextPath();
-        Functions h = new Functions();
 
-        context.setVariable("rootURL", rootURL);
+        Functions h = new Functions();
         context.setVariable("h", h);
+
+
+        // The path starts with a "/" character but does not end with a "/" character.
+        context.setVariable("rootURL", rootURL);
+
+        /*
+            load static resources from the path dedicated to a specific version.
+            This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
+            the same thing as "/abc/def.ghi", but this avoids the stale cache
+            problem when the user upgrades to new Jenkins. Stapler also sets a long
+            future expiration dates for such static resources.
+         */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
     }

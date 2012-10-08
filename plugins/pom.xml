@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.26</version>
+    <version>1.28</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.478-SNAPSHOT</version>
+  <version>1.485</version>
   <packaging>pom</packaging>
 
   <!--
@@ -33,7 +33,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.478-SNAPSHOT</version>
+        <version>1.485</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -43,25 +43,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.478-SNAPSHOT</version>
+      <version>1.485</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.478-SNAPSHOT</version>
+      <version>1.485</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.478-SNAPSHOT</version>
+      <version>1.485</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.478-SNAPSHOT</version>
+      <version>1.485</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -114,7 +114,7 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.74</version>
+        <version>1.90</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
@@ -249,6 +249,50 @@
             </additionalProjectnatures>
           </configuration>
         </plugin>
+        <!--
+            This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.
+            the plugins mention here are the ones we do not have direct control over, but are used for a jenkins plugin - all other
+            will be changed to in there source to support eclipse soon (hpi, license, localizer, access-modifier). 
+            see also: http://wiki.eclipse.org/M2E_compatible_maven_plugins
+        -->
+        <plugin>
+            <groupId>org.eclipse.m2e</groupId>
+            <artifactId>lifecycle-mapping</artifactId>
+            <version>1.0.0</version>
+            <configuration>
+                <lifecycleMappingMetadata>
+                    <pluginExecutions>
+                        <pluginExecution>
+                            <pluginExecutionFilter>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-enforcer-plugin</artifactId>
+                                <versionRange>[1.0,)</versionRange>
+                                <goals>
+                                    <goal>display-info</goal>
+                                </goals>
+                            </pluginExecutionFilter>
+                            <action>
+                                <ignore />
+                            </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                            <pluginExecutionFilter>
+                                <groupId>org.codehaus.gmaven</groupId>
+                                <artifactId>gmaven-plugin</artifactId>
+                                <versionRange>[1.0,)</versionRange>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                    <goal>generateTestStubs</goal>
+                                </goals>
+                            </pluginExecutionFilter>
+                            <action>
+                                <ignore />
+                            </action>
+                        </pluginExecution>
+                    </pluginExecutions>
+                </lifecycleMappingMetadata>
+            </configuration>
+        </plugin>        
         <plugin>
           <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
           <groupId>org.codehaus.mojo</groupId>
@@ -260,18 +304,26 @@
                 <goal>check</goal>
               </goals>
               <phase>test</phase>
-              <configuration>
-                <signature>
-                  <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java15</artifactId>
-                  <version>1.0</version>
-                </signature>
-              </configuration>
             </execution>
           </executions>
+          <configuration>
+            <!-- outside <execution> so that we can run 'animal-sniffer:check' from the top without breaking anything  -->
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
+    <extensions>
+      <extension>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.5</version>
+      </extension>
+    </extensions>
   </build>
 
   <repositories>
@@ -301,6 +353,10 @@
   </pluginRepositories>
 
   <distributionManagement>
+    <site>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-site.git:plugin-parent</url>
+    </site>
     <snapshotRepository>
       <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>

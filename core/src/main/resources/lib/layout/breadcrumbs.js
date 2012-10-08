@@ -117,17 +117,17 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    jenkinsRules["#breadcrumbs LI"] = function (e) {
+    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
         // when the mouse hovers over LI, activate the menu
         e = $(e);
         if (e.hasClassName("no-context-menu"))  return;
         e.observe("mouseover", function () { handleHover(e.firstChild,0) });
-    };
+    });
 
-    jenkinsRules["A.model-link"] = function (a) {
+    Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
         $(a).observe("mouseover", function () { handleHover(a,500); });
-    };
+    });
 
     /**
      * @namespace breadcrumbs

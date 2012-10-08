@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,11 +71,14 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
     }
 
     private void schedule(long interval) {
-        Trigger.timer.scheduleAtFixedRate(new SafeTimerTask() {
-            public void doRun() {
-                triggerUpdate();
-            }
-        }, interval, interval);
+        Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.scheduleAtFixedRate(new SafeTimerTask() {
+                public void doRun() {
+                    triggerUpdate();
+                }
+            }, interval, interval);
+        }
     }
 
     /**
@@ -129,6 +133,19 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
         return m==null || m.isIgnored();
     }
 
+    /**
+     * Utility method to mark the computer online for derived classes.
+     * 
+     * @return true 
+     *      if the node was actually taken online by this act (as opposed to us deciding not to do it,
+     *      or the computer was already online.)
+     */
+    protected boolean markOnline(Computer c) {
+        if(isIgnored() || c.isOnline()) return false; // noop
+        c.setTemporarilyOffline(false,null);
+        return true;
+    }
+    
     /**
      * Utility method to mark the computer offline for derived classes.
      *

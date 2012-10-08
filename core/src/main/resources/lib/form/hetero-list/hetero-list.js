@@ -2,8 +2,7 @@
 
 // do the ones that extract innerHTML so that they can get their original HTML before
 // other behavior rules change them (like YUI buttons.)
-Behaviour.list.unshift({
-    "DIV.hetero-list-container" : function(e) {
+Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) {
         e=$(e);
         if(isInsideRemovable(e))    return;
 
@@ -134,14 +133,14 @@ Behaviour.list.unshift({
                 }
             });
         }
-    },
+    });
 
-    "DIV.dd-handle" : function(e) {
-        e.addEventListener("mouseover",function() {
+Behaviour.specify("DIV.dd-handle", 'hetero-list', -100, function(e) {
+        e=$(e);
+        e.on("mouseover",function() {
             $(this).up(".repeated-chunk").addClassName("hover");
-        },false);
-        e.addEventListener("mouseout",function() {
+        });
+        e.on("mouseout",function() {
             $(this).up(".repeated-chunk").removeClassName("hover");
-        },false);
-    }
+        });
 });

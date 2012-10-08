@@ -27,11 +27,13 @@ import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
+import hudson.model.AbstractItem;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import hudson.model.ItemGroupMixIn;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.security.Permission;
@@ -41,12 +43,16 @@ import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
+import hudson.util.VersionNumber;
+import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -66,11 +72,15 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -86,13 +96,19 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import static hudson.init.InitMilestone.*;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -486,7 +502,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 				LOGGER.warning("Plugin strategy class not found: "
 						+ strategyName);
 			} catch (Exception e) {
-				LOGGER.log(Level.WARNING, "Could not instantiate plugin strategy: "
+				LOGGER.log(WARNING, "Could not instantiate plugin strategy: "
 						+ strategyName + ". Falling back to ClassicPluginStrategy", e);
 			}
 			LOGGER.info("Falling back to ClassicPluginStrategy");
@@ -663,10 +679,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
         for (UpdateSite s : sites) {
-            if (s.getId().equals("default"))
+            if (s.getId().equals(UpdateCenter.ID_DEFAULT))
                 sites.remove(s);
         }
-        sites.add(new UpdateSite("default",site));
+        sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
         
         return HttpResponses.redirectToContextRoot();
     }
@@ -728,6 +744,139 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     public Descriptor<ProxyConfiguration> getProxyDescriptor() {
         return Jenkins.getInstance().getDescriptor(ProxyConfiguration.class);
+    }
+
+    /**
+     * Prepares plugins for some expected XML configuration.
+     * If the configuration (typically a job’s {@code config.xml})
+     * needs some plugins to be installed (or updated), those jobs
+     * will be triggered.
+     * Plugins are dynamically loaded whenever possible.
+     * Requires {@link Jenkins#ADMINISTER}.
+     * @param configXml configuration that might be uploaded
+     * @return an empty list if all is well, else a list of submitted jobs which must be completed before this configuration can be fully read
+     * @throws IOException if loading or parsing the configuration failed
+     * @see ItemGroupMixIn#createProjectFromXML
+     * @see AbstractItem#updateByXml(javax.xml.transform.Source)
+     * @see XStream2
+     * @see hudson.model.UpdateSite.Plugin#deploy(boolean)
+     * @see PluginWrapper#supportsDynamicLoad
+     * @see hudson.model.UpdateCenter.DownloadJob.SuccessButRequiresRestart
+     * @since 1.483
+     */
+    public List<Future<UpdateCenter.UpdateCenterJob>> prevalidateConfig(InputStream configXml) throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<Future<UpdateCenter.UpdateCenterJob>>();
+        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+        // XXX call uc.updateAllSites() when available? perhaps not, since we should not block on network here
+        for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
+            PluginWrapper pw = getPlugin(requestedPlugin.getKey());
+            if (pw == null) { // install new
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                if (toInstall == null) {
+                    LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
+                    continue;
+                }
+                if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
+                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
+                }
+                if (toInstall.isForNewerHudson()) {
+                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
+                }
+                jobs.add(toInstall.deploy(true));
+            } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                if (toInstall == null) {
+                    LOGGER.log(WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
+                    continue;
+                }
+                if (!pw.isOlderThan(new VersionNumber(toInstall.version))) {
+                    LOGGER.log(WARNING, "{0}@{1} is no newer than what we already have", new Object[] {toInstall.name, toInstall.version});
+                    continue;
+                }
+                if (new VersionNumber(toInstall.version).compareTo(requestedPlugin.getValue()) < 0) {
+                    LOGGER.log(WARNING, "{0} can only be satisfied in @{1}", new Object[] {requestedPlugin, toInstall.version});
+                }
+                if (toInstall.isForNewerHudson()) {
+                    LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
+                }
+                if (!toInstall.isCompatibleWithInstalledVersion()) {
+                    LOGGER.log(WARNING, "{0}@{1} is incompatible with the installed @{2}", new Object[] {toInstall.name, toInstall.version, pw.getVersion()});
+                }
+                jobs.add(toInstall.deploy(true)); // dynamicLoad=true => sure to throw RestartRequiredException, but at least message is nicer
+            } // else already good
+        }
+        return jobs;
+    }
+
+    /**
+     * Like {@link #doInstallNecessaryPlugins(StaplerRequest)} but only checks if everything is installed
+     * or if some plugins need updates or installation.
+     *
+     * This method runs without side-effect. I'm still requiring the ADMINISTER permission since
+     * XML file can contain various external references and we don't configure parsers properly against
+     * that.
+     *
+     * @since 1.483
+     */
+    @RequirePOST
+    public JSONArray doPrevalidateConfig(StaplerRequest req) throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        JSONArray response = new JSONArray();
+
+        for (Map.Entry<String,VersionNumber> p : parseRequestedPlugins(req.getInputStream()).entrySet()) {
+            PluginWrapper pw = getPlugin(p.getKey());
+            JSONObject j = new JSONObject()
+                    .accumulate("name", p.getKey())
+                    .accumulate("version", p.getValue().toString());
+            if (pw == null) { // install new
+                response.add(j.accumulate("mode", "missing"));
+            } else if (pw.isOlderThan(p.getValue())) { // upgrade
+                response.add(j.accumulate("mode", "old"));
+            } // else already good
+        }
+
+        return response;
+    }
+
+    /**
+     * Runs {@link #prevalidateConfig} on posted XML and redirects to the {@link UpdateCenter}.
+     * @since 1.483
+     */
+    @RequirePOST
+    public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
+        prevalidateConfig(req.getInputStream());
+        return HttpResponses.redirectViaContextPath("updateCenter");
+    }
+
+    static Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
+        final Map<String,VersionNumber> requestedPlugins = new TreeMap<String,VersionNumber>();
+        try {
+            SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
+                @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                    String plugin = attributes.getValue("plugin");
+                    if (plugin == null) {
+                        return;
+                    }
+                    if (!plugin.matches("[^@]+@[^@]+")) {
+                        throw new SAXException("Malformed plugin attribute: " + plugin);
+                    }
+                    int at = plugin.indexOf('@');
+                    String shortName = plugin.substring(0, at);
+                    VersionNumber existing = requestedPlugins.get(shortName);
+                    VersionNumber requested = new VersionNumber(plugin.substring(at + 1));
+                    if (existing == null || existing.compareTo(requested) < 0) {
+                        requestedPlugins.put(shortName, requested);
+                    }
+                }
+            });
+        } catch (SAXException x) {
+            throw new IOException2("Failed to parse XML",x);
+        } catch (ParserConfigurationException e) {
+            throw new AssertionError(e); // impossible since we don't tweak XMLParser
+        }
+        return requestedPlugins;
     }
 
     /**
