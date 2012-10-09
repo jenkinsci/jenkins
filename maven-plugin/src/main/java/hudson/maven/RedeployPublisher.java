@@ -209,7 +209,7 @@ public class RedeployPublisher extends Recorder {
         String privateRepository = null;
         FilePath remoteSettingsFromConfig = null;
         
-        File tmpSettings = null;
+        File tmpSettings = File.createTempFile( "jenkins", "temp-settings.xml" );
         try {
             AbstractProject project = build.getProject();
             
@@ -269,25 +269,29 @@ public class RedeployPublisher extends Recorder {
                     // assume that build was made on master
                     buildNode = Jenkins.getInstance();
                 }
-                m = mavenModuleSet.getMaven().forNode(buildNode, listener);
 
                 if (StringUtils.isBlank( altSettingsPath ) ) {
                     // get userHome from the node where job has been executed
                     String remoteUserHome = build.getWorkspace().act( new GetUserHome() );
                     altSettingsPath = remoteUserHome + "/.m2/settings.xml";
                 }
-
-                // we copy this file in the master in a temporary file
+                
+                // we copy this file in the master in a  temporary file 
+                FilePath filePath = new FilePath( tmpSettings );
                 FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
-                if (remoteSettings != null) {
-                    listener.getLogger().println( "Maven RedeployPublisher use " + (buildNode != null ? buildNode.getNodeName() : "local" )
-                                                + " maven settings from : " + remoteSettings.getRemote() );
-                    tmpSettings = File.createTempFile( "jenkins", "temp-settings.xml" );
-                    FilePath filePath = new FilePath( tmpSettings );
-                    remoteSettings.copyTo( filePath );
-                    settingsLoc = tmpSettings;
+                if (!remoteSettings.exists()) {
+                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
+                    
+                    String mavenHome = 
+                        ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
+                    String settingsPath = mavenHome + "/conf/settings.xml";
+                    remoteSettings = build.getWorkspace().child( settingsPath);
                 }
-
+                listener.getLogger().println( "Maven RedeployPublisher use remote " + (buildNode != null ? buildNode.getNodeName() : "local" )
+                                              + " maven settings from : " + remoteSettings.getRemote() );
+                remoteSettings.copyTo( filePath );
+                settingsLoc = tmpSettings;
+                
             }
 
             MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest(listener,
