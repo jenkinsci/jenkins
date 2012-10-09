@@ -67,15 +67,22 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void lookup() {
+        assertNull(a.get(0));
         a.get(1).asserts(1,"A");
         assertNull(a.get(2));
         a.get(3).asserts(3,"B");
         assertNull(a.get(4));
         a.get(5).asserts(5,"C");
+        assertNull(a.get(6));
 
         assertNull(b.get(1));
         assertNull(b.get(3));
         assertNull(b.get(5));
+    }
+
+    @Test
+    public void lookup2() {
+        assertNull(a.get(6));
     }
 
     @Test
