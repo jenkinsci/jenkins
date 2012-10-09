@@ -48,6 +48,8 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
@@ -89,6 +91,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -603,9 +607,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         }
 
         // find all active configurations
-        Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
+        final Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
+        final boolean isDynamicFilter = isDynamicFilter(getCombinationFilter());
+
         for (Combination c : activeCombinations) {
-            if(c.evalGroovyExpression(axes,combinationFilter)) {
+            if(isDynamicFilter || c.evalGroovyExpression(axes,getCombinationFilter())) {
         		LOGGER.fine("Adding configuration: " + c);
 	            MatrixConfiguration config = configurations.get(c);
 	            if(config==null) {
@@ -620,6 +626,27 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.activeConfigurations = active;
 
         return active;
+    }
+
+    private boolean isDynamicFilter(final String filter) {
+
+        if (!isParameterized() || filter == null) return false;
+
+        final ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
+
+        for (final ParameterDefinition definition : paramDefProp.getParameterDefinitions()) {
+
+            final String name = definition.getName();
+
+            final Matcher matcher = Pattern
+                    .compile("\\b" + name + "\\b")
+                    .matcher(filter)
+            ;
+
+            if (matcher.find()) return true;
+        }
+
+        return false;
     }
 
     private File getConfigurationsDir() {
