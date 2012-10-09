@@ -67,7 +67,7 @@ THE SOFTWARE.
                     </j:if>
                   </div>
                 </td>
-                <td class="center pane" style="white-space:nowrap">
+                <td class="center pane" style="white-space:normal">
                   <a href="plugin/${p.shortName}/thirdPartyLicenses">
                     ${p.version}
                   </a>
