@@ -128,10 +128,15 @@ public class XStream2 extends XStream {
                 }
                 // TODO: possibly recursively scan super class to discover dependencies
                 PluginWrapper p = pm.whichPlugin(clazz);
-                return p != null ? p.getShortName() + '@' + p.getVersion() : null;
+                return p != null ? p.getShortName() + '@' + trimVersion(p.getVersion()) : null;
             }
         });
         return reflectionConverter;
+    }
+
+    static String trimVersion(String version) {
+        // XXX seems like there should be some trick with VersionNumber to do this
+        return version.replaceFirst(" .+$", "");
     }
 
     private void init() {
