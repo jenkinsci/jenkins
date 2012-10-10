@@ -101,7 +101,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             }
 
             public R next() {
-                R last = next;
+                last = next;
                 if (last!=null)
                     next = last.getPreviousBuild();
                 return last;
