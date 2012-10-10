@@ -193,7 +193,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This is where the log from the remote agent goes.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"slave-"+nodeName+".log");
+        File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
+        dir.mkdirs();
+        return new File(dir,"slave.log");
     }
 
     /**
