@@ -24,7 +24,10 @@
 package hudson.util.jna;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.WString;
@@ -59,6 +62,18 @@ public class Kernel32Utils {
     }
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-      return (file.exists() && (Kernel32.INSTANCE.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+      return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
     }
+
+    /*package*/ static Kernel32 load() {
+        try {
+            return (Kernel32) Native.loadLibrary("kernel32", Kernel32.class);
+        } catch (Throwable e) {
+            LOGGER.log(Level.SEVERE, "Failed to load Kernel32", e);
+            return InitializationErrorInvocationHandler.create(Kernel32.class,e);
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(Kernel32Utils.class.getName());
+
 }
