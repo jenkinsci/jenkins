@@ -443,6 +443,28 @@ THE SOFTWARE.
           </webApp>
         </configuration>
       </plugin>
+      <plugin>
+        <!-- generate aggregated javadoc that goes to http://javadoc.jenkins-ci.org/ -->
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <includeDependencySources>true</includeDependencySources>
+          <dependencySourceIncludes>
+            <dependencySourceInclude>org.jvnet.hudson*:*</dependencySourceInclude>
+            <dependencySourceInclude>org.jenkins-ci*:*</dependencySourceInclude>
+          </dependencySourceIncludes>
+          <dependencySourceExcludes>
+            <dependencySourceExclude>org.jenkins-ci:trilead-ssh2</dependencySourceExclude>
+            <dependencySourceExclude>*:commons-*</dependencySourceExclude>
+            <dependencySourceExclude>org.jvnet.hudson:jtidy</dependencySourceExclude>
+            <dependencySourceExclude>*:dom4j</dependencySourceExclude>
+            <dependencySourceExclude>*:activation</dependencySourceExclude>
+            <dependencySourceExclude>*:xstream</dependencySourceExclude>
+            <dependencySourceExclude>*:jmdns</dependencySourceExclude>
+          </dependencySourceExcludes>
+
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
