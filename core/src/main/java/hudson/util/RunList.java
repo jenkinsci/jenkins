@@ -103,7 +103,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
@@ -120,7 +120,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
