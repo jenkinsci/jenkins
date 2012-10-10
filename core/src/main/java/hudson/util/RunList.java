@@ -44,6 +44,7 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -126,6 +127,25 @@ public class RunList<R extends Run> extends AbstractList<R> {
     @Override
     public R get(int index) {
         return Iterators.get(iterator(),index);
+    }
+
+    /**
+     * {@link AbstractList#subList(int, int)} isn't very efficient on our {@link Iterable} based implementation.
+     * In fact the range check alone would require us to iterate all the elements,
+     * so we'd be better off just copying into ArrayList.
+     */
+    @Override
+    public List<R> subList(int fromIndex, int toIndex) {
+        List<R> r = new ArrayList<R>();
+        Iterator<R> itr = iterator();
+        Iterators.skip(itr,fromIndex);
+        for (int i=toIndex-fromIndex; i>0; i--) {
+            if (itr.hasNext())
+                r.add(itr.next());
+            else
+                throw new NoSuchElementException();
+        }
+        return r;
     }
 
     @Override

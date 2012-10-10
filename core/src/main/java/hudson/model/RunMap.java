@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,6 +105,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 last = next;
                 if (last!=null)
                     next = last.getPreviousBuild();
+                else
+                    throw new NoSuchElementException();
                 return last;
             }
 
