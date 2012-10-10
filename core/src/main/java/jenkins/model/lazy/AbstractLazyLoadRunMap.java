@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.ref.Reference;
-import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +95,7 @@ import static jenkins.model.lazy.Boundary.*;
  * updating {@link Index#byNumber} and {@link Index#byId}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.LAZYLOAD
+ * @since 1.485
  */
 public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
     /**
@@ -138,6 +137,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
         }
 
+        /**
+         * Returns the build record #M (<=n)
+         */
         private Map.Entry<Integer,BuildReference<R>> ceilingEntry(int n) {
 // switch to this once we depend on JDK6
 //            return byNumber.ceilingEntry(n);
@@ -147,6 +149,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             else                return s.iterator().next();
         }
 
+        /**
+         * Returns the build record #M (>=n)
+         */
+        // >= and not <= because byNumber is in the descending order
         private Map.Entry<Integer,BuildReference<R>> floorEntry(int n) {
 // switch to this once we depend on JDK6
 //            return byNumber.floorEntry(n);
@@ -162,13 +168,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Build IDs found as directories, in the ascending order.
      */
     // copy on write
-    private SortedList<String> idOnDisk = new SortedList<String>(Collections.<String>emptyList());
+    private volatile SortedList<String> idOnDisk = new SortedList<String>(Collections.<String>emptyList());
 
     /**
      * Build number shortcuts found on disk, in the ascending order.
      */
     // copy on write
-    private SortedIntList numberOnDisk = new SortedIntList(0);
+    private volatile SortedIntList numberOnDisk = new SortedIntList(0);
 
     /**
      * Base directory for data.
@@ -377,9 +383,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
         // capture the snapshot and work off with it since it can be overwritten by other threads
         SortedList<String> idOnDisk = this.idOnDisk;
-        boolean clonedIdOnDisk = false;
+        boolean clonedIdOnDisk = false; // if we modify idOnDisk we need to write it back. this flag is set to true when we overwrit idOnDisk local var
 
-        // slow path: we have to find the build from idOnDisk.
+        // slow path: we have to find the build from idOnDisk by guessing ID of the build.
         // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
         if (idOnDisk.isEmpty())     return null;
 
@@ -388,17 +394,37 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         // if bound is null, use a sentinel value
         String cid = c==null ? "\u0000"  : c.getValue().id;
         String fid = f==null ? "\uFFFF" : f.getValue().id;
+        // at this point, #n must be in (cid,fid)
 
-        // We know that the build we are looking for exists in this range
+        // We know that the build we are looking for exists in [lo,hi)  --- it's "hi)" and not "hi]" because we do +1.
         // we will narrow this down via binary search
+        final int initialSize = idOnDisk.size();
         int lo = idOnDisk.higher(cid);
         int hi = idOnDisk.lower(fid)+1;
 
-        // invariant: 0<=lo<=pivot<=hi<=idOnDisk.size()
+        final int initialLo = lo, initialHi = hi;
+
+        if (!(0<=lo && lo<=hi && hi<=idOnDisk.size())) {
+            // assertion error, but we are so far unable to get to the bottom of this bug.
+            // but don't let this kill the loading the hard way
+            String msg = String.format(
+                    "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d,size2=%d",
+                    n, d, lo, hi, idOnDisk.size(), initialSize);
+            LOGGER.log(Level.WARNING, msg,new Exception());
+            throw new ArrayIndexOutOfBoundsException(msg);
+        }
 
         while (lo<hi) {
             final int pivot = (lo+hi)/2;
-
+            if (!(0<=lo && lo<=pivot && pivot<hi && hi<=idOnDisk.size())) {
+                // assertion error, but we are so far unable to get to the bottom of this bug.
+                // but don't let this kill the loading the hard way
+                String msg = String.format(
+                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi, initialSize);
+                LOGGER.log(Level.WARNING, msg,new Exception());
+                throw new ArrayIndexOutOfBoundsException(msg);
+            }
             R r = load(idOnDisk.get(pivot), null);
             if (r==null) {
                 // this ID isn't valid. get rid of that and retry pivot
@@ -422,8 +448,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         if (clonedIdOnDisk)
             this.idOnDisk = idOnDisk;   // feedback the modified result atomically
 
+        assert lo==hi;
         // didn't find the exact match
-        // 'pivot' points to the insertion point on idOnDisk
+        // both lo and hi point to the insertion point on idOnDisk
         switch (d) {
         case ASC:
             if (hi==idOnDisk.size())    return null;
@@ -433,9 +460,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             if (lo-1>=idOnDisk.size()) {
                 // assertion error, but we are so far unable to get to the bottom of this bug.
                 // but don't let this kill the loading the hard way
-                LOGGER.log(Level.WARNING, MessageFormat.format(
-                        "Assertion error: failing to load #n {0}: lo={1},hi={2},size={3}",
-                        d,lo,hi,idOnDisk.size()),new Exception());
+                LOGGER.log(Level.WARNING, String.format(
+                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        n,d,lo,hi,idOnDisk.size(), initialLo,initialHi,initialSize),new Exception());
                 return null;
             }
             return getById(idOnDisk.get(lo-1));
@@ -693,5 +720,5 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     private static final SortedMap EMPTY_SORTED_MAP = Collections.unmodifiableSortedMap(new TreeMap());
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
+    static final Logger LOGGER = Logger.getLogger(AbstractLazyLoadRunMap.class.getName());
 }

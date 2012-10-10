@@ -30,6 +30,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -192,7 +193,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This is where the log from the remote agent goes.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"slave-"+nodeName+".log");
+        File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
+        dir.mkdirs();
+        return new File(dir,"slave.log");
     }
 
     /**
@@ -454,7 +457,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return getNode().getSelfLabel().loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : "").loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
@@ -566,7 +569,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
-        getNode().setTemporaryOfflineCause(offlineCause);
+        Node node = getNode();
+        if (node != null) {
+            node.setTemporaryOfflineCause(offlineCause);
+        }
         Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
@@ -1108,7 +1114,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
         
-        Node result = getNode().reconfigure(req, req.getSubmittedForm());
+        Node node = getNode();
+        if (node == null) {
+            throw new ServletException("No such node " + nodeName);
+        }
+        Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
         // take the user back to the slave top page.
@@ -1165,7 +1175,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="delete-node")
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
-        Jenkins.getInstance().removeNode(getNode());
+        Node node = getNode();
+        if (node == null) {
+            throw new IOException("Cannot delete " + nodeName + " since it does not still exist");
+        }
+        Jenkins.getInstance().removeNode(node);
         return new HttpRedirect("..");
     }
 

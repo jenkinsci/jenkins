@@ -42,9 +42,10 @@ THE SOFTWARE.
             <tr style="border-top: 0px;">
               <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
               <th initialSortDir="down">${%Name}</th>
-              <th width="32">${%Version}</th>
-              <th width="32">${%Previously installed version}</th>
-              <th width="32">${%Pinned}</th>
+              <th width="1">${%Version}</th>
+              <th width="1">${%Previously installed version}</th>
+              <th width="1">${%Pinned}</th>
+              <th width="1">${%Uninstall}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
@@ -67,7 +68,7 @@ THE SOFTWARE.
                     </j:if>
                   </div>
                 </td>
-                <td class="center pane" style="white-space:nowrap">
+                <td class="center pane" style="white-space:normal">
                   <a href="plugin/${p.shortName}/thirdPartyLicenses">
                     ${p.version}
                   </a>
@@ -84,6 +85,18 @@ THE SOFTWARE.
                     <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
                     <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
                   </j:if>
+                </td>
+                <td class="center pane">
+                  <j:choose>
+                    <j:when test="${p.isDeleted()}">
+                      <p>${%Uninstalltion pending}</p>
+                    </j:when>
+                    <j:when test="${!p.isBundled()}">
+                      <form method="post" action="plugin/${p.shortName}/uninstall">
+                        <input type="submit" value="${%Uninstall}"/>
+                      </form>
+                    </j:when>
+                  </j:choose>
                 </td>
               </tr>
             </j:forEach>
@@ -121,6 +134,7 @@ THE SOFTWARE.
 
           <!-- trigger -->
           new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+            method: "POST",
             onFailure : function(req,o) {
               $('needRestart').innerHTML = req.responseText;
             }
@@ -145,6 +159,7 @@ THE SOFTWARE.
 
         function unpin(button,shortName) {
           new Ajax.Request("./plugin/"+shortName+"/unpin", {
+            method: "POST",
             onFailure : function(t) {
               alert('Failed to unpin:'+t.responseText);
             },

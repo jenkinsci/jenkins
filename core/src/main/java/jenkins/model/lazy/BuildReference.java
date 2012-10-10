@@ -15,7 +15,7 @@ import java.lang.ref.SoftReference;
  * and find things in it.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.LAZYLOAD
+ * @since 1.485
  */
 public final class BuildReference<R> extends SoftReference<R> {
     final String id;

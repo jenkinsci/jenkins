@@ -25,6 +25,7 @@ package hudson.diagnosis;
 
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.ManagementLink;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
@@ -281,5 +282,27 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
         return new HttpRedirect("manage");
+    }
+
+    @Extension
+    public static class ManagementLinkImpl extends ManagementLink {
+        @Override
+        public String getIconFileName() {
+            return "document.png";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "administrativeMonitor/OldData/";
+        }
+
+        @Override
+        public String getDescription() {
+            return Messages.OldDataMonitor_Description();
+        }
+
+        public String getDisplayName() {
+            return Messages.OldDataMonitor_DisplayName();
+        }
     }
 }

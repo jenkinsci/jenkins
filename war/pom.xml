@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.485-SNAPSHOT</version>
+    <version>1.487-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -441,6 +441,28 @@ THE SOFTWARE.
           <webApp>
             <configurationDiscovered>false</configurationDiscovered>
           </webApp>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- generate aggregated javadoc that goes to http://javadoc.jenkins-ci.org/ -->
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <includeDependencySources>true</includeDependencySources>
+          <dependencySourceIncludes>
+            <dependencySourceInclude>org.jvnet.hudson*:*</dependencySourceInclude>
+            <dependencySourceInclude>org.jenkins-ci*:*</dependencySourceInclude>
+          </dependencySourceIncludes>
+          <dependencySourceExcludes>
+            <dependencySourceExclude>org.jenkins-ci:trilead-ssh2</dependencySourceExclude>
+            <dependencySourceExclude>*:commons-*</dependencySourceExclude>
+            <dependencySourceExclude>org.jvnet.hudson:jtidy</dependencySourceExclude>
+            <dependencySourceExclude>*:dom4j</dependencySourceExclude>
+            <dependencySourceExclude>*:activation</dependencySourceExclude>
+            <dependencySourceExclude>*:xstream</dependencySourceExclude>
+            <dependencySourceExclude>*:jmdns</dependencySourceExclude>
+          </dependencySourceExcludes>
+
         </configuration>
       </plugin>
     </plugins>

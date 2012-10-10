@@ -131,24 +131,24 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     }
 
     private static final int HALF_MAX_SIZE = 500;
-    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, String stdio) { // HUDSON-6516
+    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, CharSequence stdio) { // HUDSON-6516
         if (stdio == null) {
             return null;
         }
         if (keepLongStdio) {
-            return stdio;
+            return stdio.toString();
         }
         for (CaseResult result : results) {
             if (result.errorStackTrace != null) {
-                return stdio;
+                return stdio.toString();
             }
         }
         int len = stdio.length();
         int middle = len - HALF_MAX_SIZE * 2;
         if (middle <= 0) {
-            return stdio;
+            return stdio.toString();
         }
-        return stdio.substring(0, HALF_MAX_SIZE) + "...[truncated " + middle + " chars]..." + stdio.substring(len - HALF_MAX_SIZE, len);
+        return stdio.subSequence(0, HALF_MAX_SIZE) + "...[truncated " + middle + " chars]..." + stdio.subSequence(len - HALF_MAX_SIZE, len);
     }
 
     /**

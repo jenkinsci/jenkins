@@ -353,7 +353,7 @@ public class Maven extends Builder {
 			if(installations != null) {
 				Collections.addAll(tmpList, installations);
 				for(MavenInstallation installation : installations) {
-					if(Util.fixEmptyAndTrim(installation.getName()) == null || Util.fixEmptyAndTrim(installation.getHome()) == null) {
+					if(Util.fixEmptyAndTrim(installation.getName()) == null) {
 						tmpList.remove(installation);
 					}
 				}

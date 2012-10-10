@@ -1126,7 +1126,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      range of build numbers that represent which downstream builds are using this build.
-     *      The range will be empty if no build of that project matches this, but it'll never be null.
+     *      The range will be empty if no build of that project matches this (or there is no {@link FingerprintAction}), but it'll never be null.
      */
     public RangeSet getDownstreamRelationship(AbstractProject that) {
         RangeSet rs = new RangeSet();
@@ -1177,7 +1177,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      Build number of the upstream build that feed into this build,
-     *      or -1 if no record is available.
+     *      or -1 if no record is available (for example if there is no {@link FingerprintAction}, even if there is an {@link Cause.UpstreamCause}).
      */
     public int getUpstreamRelationship(AbstractProject that) {
         FingerprintAction f = getAction(FingerprintAction.class);
@@ -1224,7 +1224,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      For each project with fingerprinting enabled, returns the range
-     *      of builds (which can be empty if no build uses the artifact from this build.)
+     *      of builds (which can be empty if no build uses the artifact from this build or downstream is not {@link AbstractProject#isFingerprintConfigured}.)
      */
     public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
         Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
@@ -1238,7 +1238,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Gets the upstream builds of this build, which are the builds of the
      * upstream projects whose artifacts feed into this build.
-     *
+     * @return empty if there is no {@link FingerprintAction} (even if there is an {@link Cause.UpstreamCause})
      * @see #getTransitiveUpstreamBuilds()
      */
     public Map<AbstractProject,Integer> getUpstreamBuilds() {
@@ -1265,6 +1265,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Gets the changes in the dependency between the given build and this build.
+     * @return empty if there is no {@link FingerprintAction}
      */
     public Map<AbstractProject,DependencyChange> getDependencyChanges(AbstractBuild from) {
         if (from==null)             return Collections.emptyMap(); // make it easy to call this from views

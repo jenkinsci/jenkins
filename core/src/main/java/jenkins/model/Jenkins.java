@@ -295,6 +295,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Root object of the system.
@@ -1558,8 +1560,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Returns the label atom of the given name.
+     * @return non-null iff name is non-null
      */
-    public LabelAtom getLabelAtom(String name) {
+    public @Nullable LabelAtom getLabelAtom(@CheckForNull String name) {
         if (name==null)  return null;
 
         while(true) {
@@ -1669,7 +1672,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Removes a {@link Node} from Hudson.
      */
-    public synchronized void removeNode(Node n) throws IOException {
+    public synchronized void removeNode(@Nonnull Node n) throws IOException {
         Computer c = n.toComputer();
         if (c!=null)
             c.disconnect(OfflineCause.create(Messages._Hudson_NodeBeingRemoved()));

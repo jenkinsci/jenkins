@@ -334,7 +334,7 @@ public class Iterators {
      * Returns the elements in the base iterator until it hits any element that doesn't satisfy the filter.
      * Then the rest of the elements in the base iterator gets ignored.
      *
-     * @since 1.LAZYLOAD
+     * @since 1.485
      */
     public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
         return new Iterator<T>() {
