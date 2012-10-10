@@ -398,10 +398,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
         // We know that the build we are looking for exists in [lo,hi)  --- it's "hi)" and not "hi]" because we do +1.
         // we will narrow this down via binary search
+        final int initialSize = idOnDisk.size();
         int lo = idOnDisk.higher(cid);
         int hi = idOnDisk.lower(fid)+1;
 
         final int initialLo = lo, initialHi = hi;
+
+        if (!(0<=lo && lo<=hi && hi<=idOnDisk.size())) {
+            // assertion error, but we are so far unable to get to the bottom of this bug.
+            // but don't let this kill the loading the hard way
+            String msg = String.format(
+                    "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d,size2=%d",
+                    n, d, lo, hi, idOnDisk.size(), initialSize);
+            LOGGER.log(Level.WARNING, msg,new Exception());
+            throw new ArrayIndexOutOfBoundsException(msg);
+        }
 
         while (lo<hi) {
             final int pivot = (lo+hi)/2;
@@ -409,8 +420,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
                 // assertion error, but we are so far unable to get to the bottom of this bug.
                 // but don't let this kill the loading the hard way
                 String msg = String.format(
-                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d)",
-                        n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi);
+                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi, initialSize);
                 LOGGER.log(Level.WARNING, msg,new Exception());
                 throw new ArrayIndexOutOfBoundsException(msg);
             }
@@ -450,8 +461,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
                 // assertion error, but we are so far unable to get to the bottom of this bug.
                 // but don't let this kill the loading the hard way
                 LOGGER.log(Level.WARNING, String.format(
-                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d)",
-                        n,d,lo,hi,idOnDisk.size(), initialLo,initialHi),new Exception());
+                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        n,d,lo,hi,idOnDisk.size(), initialLo,initialHi,initialSize),new Exception());
                 return null;
             }
             return getById(idOnDisk.get(lo-1));
