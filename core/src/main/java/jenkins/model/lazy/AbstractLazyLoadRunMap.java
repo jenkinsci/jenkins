@@ -124,7 +124,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         private final TreeMap<Integer,BuildReference<R>> byNumber;
 
         /**
-         * Stores the build ID to build number for builds that we already know
+         * Stores the build ID to build number for builds that we already know.
+         *
+         * If we have known load failure of the given ID, we record that in the map
+         * by using the null value (not to be confused with a non-null {@link BuildReference}
+         * with null referent, which just means the record was GCed.)
          */
         private final TreeMap<String,BuildReference<R>> byId;
 
@@ -460,7 +464,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public R getById(String id) {
         Index snapshot = index;
         if (snapshot.byId.containsKey(id)) {
-            return unwrap(snapshot.byId.get(id));
+            BuildReference<R> ref = snapshot.byId.get(id);
+            if (ref==null)      return null;    // known failure
+            R v = unwrap(ref);
+            if (v!=null)        return v;       // already in memory
+            // otherwise fall through to load
         }
         return load(id,null);
     }
@@ -585,7 +593,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
 
     protected R load(String id, Index editInPlace) {
-        return load(new File(dir,id),editInPlace);
+        R v = load(new File(dir, id), editInPlace);
+        if (v==null && editInPlace!=null) {
+            // remember the failure.
+            // if editInPlace==null, we can create a new copy for this, but not sure if it's worth doing,
+            // given that we also update idOnDisk anyway.
+            editInPlace.byId.put(id,null);
+        }
+        return v;
     }
 
     /**
