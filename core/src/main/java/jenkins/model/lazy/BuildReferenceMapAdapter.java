@@ -2,12 +2,15 @@ package jenkins.model.lazy;
 
 import groovy.util.MapEntry;
 import hudson.util.AdaptedIterator;
+import hudson.util.Iterators;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -151,15 +154,20 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         }
 
         public Iterator<R> iterator() {
-            return new AdaptedIterator<BuildReference<R>,R>(core.iterator()) {
+            // silently drop null, as if we didn't have them in this collection in the first place
+            // this shouldn't be indistinguishable from concurrent modifications to the collection
+            return Iterators.removeNull(new AdaptedIterator<BuildReference<R>,R>(core.iterator()) {
                 protected R adapt(BuildReference<R> ref) {
                     return unwrap(ref);
                 }
-            };
+            });
         }
 
         public Object[] toArray() {
-            return _unwrap(core.toArray());
+            List<Object> list = new ArrayList<Object>();
+            for (R r : this)
+                list.add(r);
+            return list.toArray();
         }
 
         public <T> T[] toArray(T[] a) {
@@ -230,12 +238,6 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         public int hashCode() {
             return core.hashCode();
         }
-
-        private Object[] _unwrap(Object[] r) {
-            for (int i=0; i<r.length; i++)
-                r[i] = unwrap((BuildReference<R>) r[i]);
-            return r;
-        }
     }
 
     private class SetAdapter implements Set<Entry<Integer, R>> {
@@ -259,15 +261,18 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         }
 
         public Iterator<Entry<Integer, R>> iterator() {
-            return new AdaptedIterator<Entry<Integer,BuildReference<R>>,Entry<Integer,R>>(core.iterator()) {
+            return Iterators.removeNull(new AdaptedIterator<Entry<Integer,BuildReference<R>>,Entry<Integer, R>>(core.iterator()) {
                 protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
                     return _unwrap(e);
                 }
-            };
+            });
         }
 
         public Object[] toArray() {
-            return _unwrap(core.toArray());
+            List<Object> list = new ArrayList<Object>();
+            for (Entry<Integer, R> r : this)
+                list.add(r);
+            return list.toArray();
         }
 
         public <T> T[] toArray(T[] a) {
@@ -343,13 +348,9 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return new MapEntry(e.getKey(),wrap(e.getValue()));
         }
         private Entry<Integer, R> _unwrap(Entry<Integer, BuildReference<R>> e) {
-            return new MapEntry(e.getKey(),unwrap(e.getValue()));
-        }
-
-        private Object[] _unwrap(Object[] r) {
-            for (int i=0; i<r.length; i++)
-                r[i] = _unwrap((Entry) r[i]);
-            return r;
+            R v = unwrap(e.getValue());
+            if (v==null)    return null;
+            return new MapEntry(e.getKey(), v);
         }
     }
 }
