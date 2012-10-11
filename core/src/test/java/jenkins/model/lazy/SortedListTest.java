@@ -99,4 +99,22 @@ public class SortedListTest extends Assert {
         assertEquals("D",l.get(0));
         assertEquals("F",l.get(1));
     }
+
+    @Test
+    public void testClone() {
+        final int originalSize = l.size();
+        SortedList<String> l2 = new SortedList<String>(l);
+        assertEquals(originalSize, l2.size());
+        assertEquals(originalSize, l.size());
+        for (int i = 0; i < originalSize; i++) {
+            assertEquals(l.get(i), l2.get(i));
+        }
+        l.remove(0);
+        assertEquals(originalSize - 1, l.size());
+        assertEquals(originalSize, l2.size());
+        l2.remove(1);
+        l2.remove(1);
+        assertEquals(originalSize - 1, l.size());
+        assertEquals(originalSize - 2, l2.size());
+    }
 }
