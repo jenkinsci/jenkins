@@ -349,7 +349,8 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         }
         private Entry<Integer, R> _unwrap(Entry<Integer, BuildReference<R>> e) {
             R v = unwrap(e.getValue());
-            if (v==null)    return null;
+            if (v==null)
+                return null;
             return new MapEntry(e.getKey(), v);
         }
     }
