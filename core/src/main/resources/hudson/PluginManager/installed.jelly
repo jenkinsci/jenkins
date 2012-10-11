@@ -89,7 +89,7 @@ THE SOFTWARE.
                 <td class="center pane">
                   <j:choose>
                     <j:when test="${p.isDeleted()}">
-                      <p>${%Uninstalltion pending}</p>
+                      <p>${%Uninstallation pending}</p>
                     </j:when>
                     <j:when test="${!p.isBundled()}">
                       <form method="post" action="plugin/${p.shortName}/uninstall">
