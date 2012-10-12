@@ -345,6 +345,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
                         g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
                             public void run(Reactor session) throws Exception {
+                                if (!activePlugins.contains(p)) {
+                                    return;
+                                }
                                 try {
                                     p.getPlugin().postInitialize();
                                 } catch (Exception e) {
