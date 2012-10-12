@@ -200,10 +200,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
 
         /**
-         * Returns all the descriptors that produce types assignable to the item type.
+         * Returns all the descriptors that produce types assignable to the property type.
          */
         public List<? extends Descriptor> getApplicableDescriptors() {
             return Jenkins.getInstance().getDescriptorList(clazz);
+        }
+
+        /**
+         * Returns all the descriptors that produce types assignable to the item type for a collection property.
+         */
+        public List<? extends Descriptor> getApplicableItemDescriptors() {
+            return Jenkins.getInstance().getDescriptorList(getItemType());
         }
     }
 
