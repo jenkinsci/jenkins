@@ -1176,10 +1176,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         Node node = getNode();
-        if (node == null) {
-            throw new IOException("Cannot delete " + nodeName + " since it does not still exist");
+        if (node != null) {
+            Jenkins.getInstance().removeNode(node);
+        } else {
+            AbstractCIBase app = Jenkins.getInstance();
+            app.removeComputer(this);
         }
-        Jenkins.getInstance().removeNode(node);
         return new HttpRedirect("..");
     }
 
