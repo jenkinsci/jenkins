@@ -29,6 +29,8 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
@@ -73,6 +75,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -89,6 +92,8 @@ import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Inet4Address;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 
 import static javax.servlet.http.HttpServletResponse.*;
@@ -191,6 +196,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This is where the log from the remote agent goes.
+     *
+     * @see #relocateOldLogs()
      */
     protected File getLogFile() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
@@ -1248,6 +1255,40 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
         }
         return item;
+    }
+
+    /**
+     * Relocate log files in the old location to the new location.
+     *
+     * Files were used to be $JENKINS_ROOT/slave-NAME.log (and .1, .2, ...)
+     * but now they are at $JENKINS_ROOT/logs/slaves/NAME/slave.log (and .1, .2, ...)
+     *
+     * @see #getLogFile()
+     */
+    @Initializer
+    public static void relocateOldLogs() {
+        relocateOldLogs(Jenkins.getInstance().getRootDir());
+    }
+
+    /*package*/ static void relocateOldLogs(File dir) {
+        final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
+        File[] logfiles = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return logfile.matcher(name).matches();
+            }
+        });
+        if (logfiles==null)     return;
+
+        for (File f : logfiles) {
+            Matcher m = logfile.matcher(f.getName());
+            if (m.matches()) {
+                File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
+                newLocation.getParentFile().mkdirs();
+                f.renameTo(newLocation);
+            } else {
+                assert false;
+            }
+        }
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
