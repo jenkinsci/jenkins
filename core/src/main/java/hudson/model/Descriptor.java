@@ -193,6 +193,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         public Descriptor getItemTypeDescriptorOrDie() {
             Class it = getItemType();
+            if (it == null) {
+                throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://wiki.jenkins-ci.org/display/JENKINS/My+class+is+missing+descriptor");
+            }
             Descriptor d = Jenkins.getInstance().getDescriptor(it);
             if (d==null)
                 throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://wiki.jenkins-ci.org/display/JENKINS/My+class+is+missing+descriptor");
