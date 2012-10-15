@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.486</version>
+    <version>1.487-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
