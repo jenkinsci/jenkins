@@ -2450,7 +2450,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
-        if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {
+        if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
             if(projectsDir.exists())
                 throw new IOException(projectsDir+" is not a directory");
             throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
