@@ -26,11 +26,13 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 9)
+@Extension(ordinal = Integer.MAX_VALUE - 900)
 public class ConsoleLink extends ManagementLink {
 
     @Override
@@ -50,5 +52,10 @@ public class ConsoleLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "script/";
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.RUN_SCRIPTS;
     }
 }

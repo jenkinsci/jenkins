@@ -30,7 +30,7 @@ import hudson.model.ManagementLink;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 5)
+@Extension(ordinal = Integer.MAX_VALUE - 500)
 public class SystemInfoLink extends ManagementLink {
 
     @Override

@@ -32,7 +32,7 @@ import jenkins.model.Jenkins;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 10)
+@Extension(ordinal = Integer.MAX_VALUE - 1000)
 public class NodesLink extends ManagementLink {
 
     @Override

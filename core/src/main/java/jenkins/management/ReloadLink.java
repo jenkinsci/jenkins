@@ -30,7 +30,7 @@ import hudson.model.ManagementLink;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 3)
+@Extension(ordinal = Integer.MAX_VALUE - 300)
 public class ReloadLink extends ManagementLink {
 
     @Override
