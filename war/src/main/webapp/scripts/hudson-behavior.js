@@ -499,7 +499,7 @@ function renderOnDemand(e,callback,noBehaviour) {
         if (contextTagName=="TBODY") {
             c = document.createElement("DIV");
             c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c.firstChild.firstChild;
+            c = c./*JENKINS-15494*/lastChild.firstChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
@@ -1413,6 +1413,7 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
+                    if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
                     var next = hist.next();
                     p.removeChild(hist);

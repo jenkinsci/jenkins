@@ -28,7 +28,7 @@ THE SOFTWARE.
     Displays the build queue as &lt;l:pane>
 
     <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.items},
+      Queue items to be displayed. Normally you should specify ${app.queue.approximateItemsQuickly},
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
@@ -90,7 +90,7 @@ THE SOFTWARE.
   <!-- schedule updates only for the full page reload -->
   <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
     <script defer="defer">
-      refreshPart('buildQueue',"${h.hasView(it,'ajaxBuildQueue')?'.':rootURL}/ajaxBuildQueue");
+      refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue");
     </script>
   </j:if>
 </j:jelly>

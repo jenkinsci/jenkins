@@ -26,6 +26,7 @@ package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
+import hudson.model.ModelObject;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -49,6 +50,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.util.Enumeration;
 import java.util.jar.JarFile;
@@ -76,7 +78,7 @@ import java.util.jar.JarFile;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class PluginWrapper implements Comparable<PluginWrapper> {
+public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * {@link PluginManager} to which this belongs to.
      */
@@ -115,6 +117,11 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * @since 1.325
      */
     private final File pinFile;
+
+    /**
+     * A .jpi file, an exploded plugin directory, or a .jpl file.
+     */
+    private final File archive;
 
     /**
      * Short name of the plugin. The artifact Id of the plugin.
@@ -200,6 +207,11 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
+        this.archive = archive;
+    }
+
+    public String getDisplayName() {
+        return getLongName();
     }
 
     public Api getApi() {
@@ -514,6 +526,16 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     /**
+     * Returns true if this plugin is deleted.
+     *
+     * The plugin continues to function in this session, but in the next session it'll disappear.
+     */
+    @Exported
+    public boolean isDeleted() {
+        return !archive.exists();
+    }
+
+    /**
      * Sort by short name.
      */
     public int compareTo(PluginWrapper pw) {
@@ -559,28 +581,39 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 // Action methods
 //
 //
+    @RequirePOST
     public HttpResponse doMakeEnabled() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         enable();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doMakeDisabled() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         disable();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doPin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         new FileOutputStream(pinFile).close();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doUnpin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         pinFile.delete();
         return HttpResponses.ok();
+    }
+
+    @RequirePOST
+    public HttpResponse doDoUninstall() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        archive.delete();
+        return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
 
 

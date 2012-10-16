@@ -29,7 +29,10 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
@@ -72,6 +75,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -88,6 +92,8 @@ import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Inet4Address;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 
 import static javax.servlet.http.HttpServletResponse.*;
@@ -190,9 +196,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This is where the log from the remote agent goes.
+     *
+     * @see #relocateOldLogs()
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"slave-"+nodeName+".log");
+        File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
+        dir.mkdirs();
+        return new File(dir,"slave.log");
     }
 
     /**
@@ -454,7 +464,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return getNode().getSelfLabel().loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : "").loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
@@ -566,7 +576,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
         this.temporarilyOffline = temporarilyOffline;
-        getNode().setTemporaryOfflineCause(offlineCause);
+        Node node = getNode();
+        if (node != null) {
+            node.setTemporaryOfflineCause(offlineCause);
+        }
         Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
@@ -1108,7 +1121,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
         
-        Node result = getNode().reconfigure(req, req.getSubmittedForm());
+        Node node = getNode();
+        if (node == null) {
+            throw new ServletException("No such node " + nodeName);
+        }
+        Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
         // take the user back to the slave top page.
@@ -1165,7 +1182,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="delete-node")
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
-        Jenkins.getInstance().removeNode(getNode());
+        Node node = getNode();
+        if (node != null) {
+            Jenkins.getInstance().removeNode(node);
+        } else {
+            AbstractCIBase app = Jenkins.getInstance();
+            app.removeComputer(this);
+        }
         return new HttpRedirect("..");
     }
 
@@ -1232,6 +1255,40 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
         }
         return item;
+    }
+
+    /**
+     * Relocate log files in the old location to the new location.
+     *
+     * Files were used to be $JENKINS_ROOT/slave-NAME.log (and .1, .2, ...)
+     * but now they are at $JENKINS_ROOT/logs/slaves/NAME/slave.log (and .1, .2, ...)
+     *
+     * @see #getLogFile()
+     */
+    @Initializer
+    public static void relocateOldLogs() {
+        relocateOldLogs(Jenkins.getInstance().getRootDir());
+    }
+
+    /*package*/ static void relocateOldLogs(File dir) {
+        final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
+        File[] logfiles = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return logfile.matcher(name).matches();
+            }
+        });
+        if (logfiles==null)     return;
+
+        for (File f : logfiles) {
+            Matcher m = logfile.matcher(f.getName());
+            if (m.matches()) {
+                File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
+                newLocation.getParentFile().mkdirs();
+                f.renameTo(newLocation);
+            } else {
+                assert false;
+            }
+        }
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());

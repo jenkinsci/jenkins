@@ -37,7 +37,9 @@ import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
 import hudson.Util;
 import hudson.util.VariableResolver;
+import hudson.util.XStream2;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -182,6 +184,13 @@ public class XStreamDOM {
      */
     public static WriterImpl newWriter() {
         return new WriterImpl();
+    }
+
+    /**
+     * Writes this {@link XStreamDOM} into {@link OutputStream}.
+     */
+    public void writeTo(OutputStream os) {
+        new XStream2().toXML(this, os);
     }
 
     /**

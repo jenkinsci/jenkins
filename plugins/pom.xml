@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.27</version>
+    <version>1.28</version>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.485-SNAPSHOT</version>
+  <version>1.488-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -33,7 +33,7 @@
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>1.485-SNAPSHOT</version>
+        <version>1.488-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -43,25 +43,25 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.485-SNAPSHOT</version>
+      <version>1.488-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.485-SNAPSHOT</version>
+      <version>1.488-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.485-SNAPSHOT</version>
+      <version>1.488-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>ui-samples-plugin</artifactId>
-      <version>1.485-SNAPSHOT</version>
+      <version>1.488-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -304,15 +304,16 @@
                 <goal>check</goal>
               </goals>
               <phase>test</phase>
-              <configuration>
-                <signature>
-                  <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java15</artifactId>
-                  <version>1.0</version>
-                </signature>
-              </configuration>
             </execution>
           </executions>
+          <configuration>
+            <!-- outside <execution> so that we can run 'animal-sniffer:check' from the top without breaking anything  -->
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

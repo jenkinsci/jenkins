@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +69,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
 
     /**
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}.
      */
     public RunMap() {
@@ -101,9 +102,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             }
 
             public R next() {
-                R last = next;
+                last = next;
                 if (last!=null)
                     next = last.getPreviousBuild();
+                else
+                    throw new NoSuchElementException();
                 return last;
             }
 
@@ -143,7 +146,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     /**
-     * @deprecated  as of 1.LAZYLOAD
+     * @deprecated  as of 1.485
      *      Use {@link ReverseComparator}
      */
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
@@ -238,7 +241,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      *      Job that owns this map.
      * @param cons
      *      Used to create new instance of {@link Run}.
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}
      */
     public void load(Job job, Constructor<R> cons) {

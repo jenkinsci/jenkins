@@ -282,15 +282,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // see JENKINS-9431
         //
         // until we have that, putting this logic here.
-        synchronized (this) {
+        synchronized (PropertyList.class) {
             if (properties == null) {
                 properties = new PropertyList(this);
             } else {
                 properties.setOwner(this);
             }
+            return properties;
         }
-
-        return properties;
     }
 
     /**

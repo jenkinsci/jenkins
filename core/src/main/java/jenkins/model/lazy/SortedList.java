@@ -24,6 +24,7 @@
 package jenkins.model.lazy;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,7 +38,8 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     private List<T> data;
 
     public SortedList(List<T> data) {
-        this.data = data;
+        this.data = new ArrayList<T>(data);
+        assert isSorted();
     }
 
     /**
@@ -118,4 +120,14 @@ class SortedList<T extends Comparable<T>> extends AbstractList<T> {
     public boolean isInRange(int idx) {
         return 0<=idx && idx<data.size();
     }
+
+    private boolean isSorted() {
+        for (int i = 1; i < data.size(); i++) {
+            if (data.get(i).compareTo(data.get(i - 1)) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

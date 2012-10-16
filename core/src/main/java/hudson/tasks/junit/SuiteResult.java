@@ -26,7 +26,6 @@ package hudson.tasks.junit;
 import hudson.tasks.test.TestObject;
 import hudson.util.IOException2;
 import hudson.util.io.ParserConfigurator;
-import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -36,7 +35,12 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -182,17 +186,24 @@ public final class SuiteResult implements Serializable {
             addCase(new CaseResult(this, e, classname, keepLongStdio));
         }
 
-        String stdout = suite.elementText("system-out");
-        String stderr = suite.elementText("system-err");
+        String stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-out"));
+        String stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, suite.elementText("system-err"));
         if (stdout==null && stderr==null) {
-            // Surefire never puts stdout/stderr in the XML. Instead, it goes to a separate file
+            // Surefire never puts stdout/stderr in the XML. Instead, it goes to a separate file (when ${maven.test.redirectTestOutputToFile}).
             Matcher m = SUREFIRE_FILENAME.matcher(xmlReport.getName());
             if (m.matches()) {
                 // look for ***-output.txt from TEST-***.xml
                 File mavenOutputFile = new File(xmlReport.getParentFile(),m.group(1)+"-output.txt");
                 if (mavenOutputFile.exists()) {
                     try {
-                        stdout = FileUtils.readFileToString(mavenOutputFile);
+                        RandomAccessFile raf = new RandomAccessFile(mavenOutputFile, "r");
+                        try {
+                            ByteBuffer bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mavenOutputFile.length());
+                            CharBuffer cb = Charset.defaultCharset().decode(bb);
+                            stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, cb);
+                        } finally {
+                            raf.close();
+                        }
                     } catch (IOException e) {
                         throw new IOException2("Failed to read "+mavenOutputFile,e);
                     }
@@ -200,8 +211,8 @@ public final class SuiteResult implements Serializable {
             }
         }
 
-        this.stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, stdout);
-        this.stderr = CaseResult.possiblyTrimStdio(cases, keepLongStdio, stderr);
+        this.stdout = stdout;
+        this.stderr = stderr;
     }
 
     /*package*/ void addCase(CaseResult cr) {
