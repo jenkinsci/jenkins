@@ -87,9 +87,6 @@ THE SOFTWARE.
       <local:feature icon="computer.png"     href="systemInfo"  title="${%System Information}">
         ${%Displays various environmental information to assist trouble-shooting.}
       </local:feature>
-      <local:feature icon="clipboard.png"    href="log"         title="${%System Log}">
-        ${%SystemLogText}
-      </local:feature>
 
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
