@@ -51,6 +51,6 @@ public class NodesLink extends ManagementLink {
 
     @Override
     public String getUrlName() {
-        return "computer/";
+        return "computer";
     }
 }

@@ -49,6 +49,6 @@ public class PluginsLink extends ManagementLink {
 
     @Override
     public String getUrlName() {
-        return "pluginManager/";
+        return "pluginManager";
     }
 }

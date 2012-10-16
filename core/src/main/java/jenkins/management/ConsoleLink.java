@@ -51,7 +51,7 @@ public class ConsoleLink extends ManagementLink {
 
     @Override
     public String getUrlName() {
-        return "script/";
+        return "script";
     }
 
     @Override
