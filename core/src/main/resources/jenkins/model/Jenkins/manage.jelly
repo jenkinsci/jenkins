@@ -76,6 +76,7 @@ THE SOFTWARE.
           <j:if test="${m.iconFileName!=null}">
             <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
               <j:out value="${m.description}"/>
+              <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>
           </j:if>
         </l:hasPermission>
