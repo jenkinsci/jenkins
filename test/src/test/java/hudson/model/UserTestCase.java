@@ -26,9 +26,14 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
 
-public class UserTestCase extends HudsonTestCase {
+public class UserTestCase {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     public static class UserPropertyImpl extends UserProperty implements Action {
 
@@ -73,10 +78,8 @@ public class UserTestCase extends HudsonTestCase {
       }
     }
 
-    /**
-     * Asserts that bug# is fixed.
-     */
-    public void testUserPropertySummaryAndActionAreShownInUserPage() throws Exception {
+    @Bug(2331)
+    @Test public void userPropertySummaryAndActionAreShownInUserPage() throws Exception {
         
         UserProperty property = new UserPropertyImpl("NeedleInPage");
         UserProperty.all().add(property.getDescriptor());
@@ -84,7 +87,7 @@ public class UserTestCase extends HudsonTestCase {
         User user = User.get("user-test-case");
         user.addProperty(property);
         
-        HtmlPage page = new WebClient().goTo("user/user-test-case");
+        HtmlPage page = j.createWebClient().goTo("user/user-test-case");
         
         WebAssert.assertTextPresentInElement(page, "NeedleInPage", "main-panel");
         WebAssert.assertTextPresentInElement(page, ((Action) property).getDisplayName(), "side-panel");
@@ -94,9 +97,10 @@ public class UserTestCase extends HudsonTestCase {
     /**
      * Asserts that the default user avatar can be fetched (ie no 404)
      */
-    public void testDefaultUserAvatarCanBeFetched() throws Exception {
+    @Bug(7494)
+    @Test public void defaultUserAvatarCanBeFetched() throws Exception {
         User user = User.get("avatar-user", true);
-        HtmlPage page = new WebClient().goTo("user/" + user.getDisplayName());
-        assertAllImageLoadSuccessfully(page);
+        HtmlPage page = j.createWebClient().goTo("user/" + user.getDisplayName());
+        j.assertAllImageLoadSuccessfully(page);
     }
 }
