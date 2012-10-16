@@ -84,9 +84,6 @@ THE SOFTWARE.
           <span style="color:red; font-weight:bold">(${%updates available})</span>
         </j:if>
       </local:feature>
-      <local:feature icon="computer.png"     href="systemInfo"  title="${%System Information}">
-        ${%Displays various environmental information to assist trouble-shooting.}
-      </local:feature>
 
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
