@@ -78,12 +78,6 @@ THE SOFTWARE.
         ${%Discard all the loaded data in memory and reload everything from file system.}
         ${%Useful when you modified config files directly on disk.}
       </local:feature>
-      <local:feature icon="plugin.png"        href="pluginManager/" title="${%Manage Plugins}">
-        ${%Add, remove, disable or enable plugins that can extend the functionality of Jenkins.}
-        <j:if test="${it.updateCenter.hasUpdates()}">
-          <span style="color:red; font-weight:bold">(${%updates available})</span>
-        </j:if>
-      </local:feature>
 
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
