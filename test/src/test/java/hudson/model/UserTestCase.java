@@ -26,6 +26,13 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -103,4 +110,31 @@ public class UserTestCase {
         HtmlPage page = j.createWebClient().goTo("user/" + user.getDisplayName());
         j.assertAllImageLoadSuccessfully(page);
     }
+
+    @Test public void getAuthorities() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        realm.addGroups("administrator", "admins");
+        realm.addGroups("alice", "users");
+        realm.addGroups("bob", "users", "lpadmin");
+        j.jenkins.setSecurityRealm(realm);
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        auth.add(Jenkins.ADMINISTER, "admins");
+        auth.add(Permission.READ, "users");
+        j.jenkins.setAuthorizationStrategy(auth);
+        SecurityContext seccon = SecurityContextHolder.getContext();
+        Authentication orig = seccon.getAuthentication();
+        try {
+            seccon.setAuthentication(User.get("administrator").impersonate());
+            assertEquals("[admins]", User.get("administrator").getAuthorities().toString());
+            assertEquals("[users]", User.get("alice").getAuthorities().toString());
+            assertEquals("[lpadmin, users]", User.get("bob").getAuthorities().toString());
+            assertEquals("[]", User.get("MasterOfXaos").getAuthorities().toString());
+            seccon.setAuthentication(User.get("alice").impersonate());
+            assertEquals("[]", User.get("alice").getAuthorities().toString());
+            assertEquals("[]", User.get("bob").getAuthorities().toString());
+        } finally {
+            seccon.setAuthentication(orig);
+        }
+    }
+
 }
