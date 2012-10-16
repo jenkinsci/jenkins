@@ -71,15 +71,6 @@ THE SOFTWARE.
     <st:include page="downgrade.jelly" />
 
     <table style="padding-left: 2em;" id="management-links">
-      <local:feature icon="setting.png"          href="configure"    title="${%Configure System}">
-        ${%Configure global settings and paths.}
-      </local:feature>
-      <local:feature icon="refresh.png"          href="reload"       title="${%Reload Configuration from Disk}">
-        ${%Discard all the loaded data in memory and reload everything from file system.}
-        ${%Useful when you modified config files directly on disk.}
-      </local:feature>
-
-      <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
         <l:hasPermission permission="${m.requiredPermission}">
           <j:if test="${m.iconFileName!=null}">
