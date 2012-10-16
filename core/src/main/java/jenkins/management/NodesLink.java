@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.management.management;
+package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
@@ -32,25 +32,25 @@ import jenkins.model.Jenkins;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MIN_VALUE)
+@Extension(ordinal = Integer.MAX_VALUE - 10)
 public class NodesLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "system-log-out.png";
+        return "network.png";
     }
 
     public String getDisplayName() {
-        return Jenkins.getInstance().isQuietingDown() ? Messages.ShutdownLink_DisplayName_cancel() : Messages.ShutdownLink_DisplayName_prepare();
+        return Messages.NodesLink_DisplayName();
     }
 
     @Override
     public String getDescription() {
-        return Jenkins.getInstance().isQuietingDown() ? "" : Messages.ShutdownLink_Description();
+        return Messages.NodesLink_Description();
     }
 
     @Override
     public String getUrlName() {
-        return Jenkins.getInstance().isQuietingDown() ? "cancelQuietDown" : "quietDown";
+        return "computer/";
     }
 }

@@ -101,9 +101,6 @@ THE SOFTWARE.
           ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
         </local:feature>
       </l:hasPermission>
-      <local:feature icon="network.png"      href="computer/"   title="${%Manage Nodes}">
-        ${%Add, remove, control and monitor the various nodes that Jenkins runs jobs on.}
-      </local:feature>
       <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
         <j:if test="${m.iconFileName!=null}">
@@ -112,7 +109,6 @@ THE SOFTWARE.
           </local:feature>
         </j:if>
       </j:forEach>
-
     </table>
   </l:main-panel>
 </l:layout>
