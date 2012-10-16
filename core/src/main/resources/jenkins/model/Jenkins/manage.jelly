@@ -113,16 +113,6 @@ THE SOFTWARE.
         </j:if>
       </j:forEach>
 
-      <j:choose>
-        <j:when test="${it.quietingDown}">
-          <local:feature icon="system-log-out.png"   href="cancelQuietDown" title="${%Cancel Shutdown}"/>
-        </j:when>
-        <j:otherwise>
-          <local:feature icon="system-log-out.png"   href="quietDown" title="${%Prepare for Shutdown}">
-            ${%Stops executing new builds, so that the system can be eventually shut down safely.}
-          </local:feature>
-        </j:otherwise>
-      </j:choose>
     </table>
   </l:main-panel>
 </l:layout>
