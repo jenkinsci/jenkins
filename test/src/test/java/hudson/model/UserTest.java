@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 
-public class UserTestCase {
+public class UserTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
