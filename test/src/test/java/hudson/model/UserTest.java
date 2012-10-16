@@ -115,7 +115,7 @@ public class UserTest {
         JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
         realm.addGroups("administrator", "admins");
         realm.addGroups("alice", "users");
-        realm.addGroups("bob", "users", "lpadmin");
+        realm.addGroups("bob", "users", "lpadmin", "bob");
         j.jenkins.setSecurityRealm(realm);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         auth.add(Jenkins.ADMINISTER, "admins");
