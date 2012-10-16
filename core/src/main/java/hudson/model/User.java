@@ -630,7 +630,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Checks for authorities (groups) associated with this user.
      * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
      * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
-     * @since XXX
+     * @since 1.488
      * @return a possibly empty list
      */
     public @Nonnull List<String> getAuthorities() {
