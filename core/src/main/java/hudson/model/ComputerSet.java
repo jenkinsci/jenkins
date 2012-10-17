@@ -231,6 +231,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             String xml = Jenkins.XSTREAM.toXML(src);
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            if(result instanceof Slave){ //change userId too
+                User user = User.current();
+                ((Slave)result).setUserId(user==null ? "anonymous" : user.getId());
+             }
             result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
