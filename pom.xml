@@ -97,6 +97,7 @@ THE SOFTWARE.
 
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
+    <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
   </properties>
 
 
@@ -241,7 +242,7 @@ THE SOFTWARE.
       <!-- for JRE requirement check annotation -->
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
@@ -556,7 +557,7 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.8</version>
+	        <version>1.9</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -573,7 +574,7 @@ THE SOFTWARE.
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests javadoc:javadoc animal-sniffer:check deploy javadoc:aggregate</goals>
+          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy javadoc:aggregate</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
@@ -598,6 +599,13 @@ THE SOFTWARE.
         <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>

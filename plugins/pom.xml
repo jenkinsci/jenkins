@@ -90,7 +90,7 @@
       <!-- for JRE requirement check annotation -->
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
-      <version>1.7</version>
+      <version>1.9</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
@@ -297,7 +297,7 @@
           <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.7</version>
+          <version>1.9</version>
           <executions>
             <execution>
               <goals>
