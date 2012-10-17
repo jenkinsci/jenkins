@@ -125,6 +125,11 @@ public abstract class Slave extends Node implements Serializable {
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
+    
+    /**
+     * Id of user which creates this slave {@link User}.
+     */
+    private String userId;
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -154,7 +159,15 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
         
         this.nodeProperties.replaceBy(nodeProperties);
+         Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
+       if(node!=null){
+            this.userId= node.getUserId(); //slave has already existed
+        }
+       else{
+            User user = User.current();
+            userId = user!=null ? user.getId() : "anonymous";     
+        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -164,7 +177,20 @@ public abstract class Slave extends Node implements Serializable {
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
+    
+    /**
+     * Return id of user which created this slave
+     * 
+     * @return id of user
+     */
+    public String getUserId() {
+        return userId;
+    }
 
+    public void setUserId(String userId){
+        this.userId = userId;
+    }
+    
     public ComputerLauncher getLauncher() {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
