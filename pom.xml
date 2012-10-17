@@ -789,7 +789,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
           </plugin>
         </plugins>
       </build>

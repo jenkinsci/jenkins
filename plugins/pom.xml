@@ -4,7 +4,8 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.28</version>
+    <version>1.29</version>
+    <relativePath/>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -114,7 +115,6 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.90</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
