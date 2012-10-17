@@ -148,7 +148,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         if (middle <= 0) {
             return stdio.toString();
         }
-        return stdio.subSequence(0, HALF_MAX_SIZE) + "...[truncated " + middle + " chars]..." + stdio.subSequence(len - HALF_MAX_SIZE, len);
+        return stdio.subSequence(0, HALF_MAX_SIZE) + "\n...[truncated " + middle + " chars]...\n" + stdio.subSequence(len - HALF_MAX_SIZE, len);
     }
 
     /**

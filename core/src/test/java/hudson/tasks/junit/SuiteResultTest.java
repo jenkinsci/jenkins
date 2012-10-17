@@ -180,7 +180,7 @@ public class SuiteResultTest extends TestCase {
                 w.close();
             }
             SuiteResult sr = parseOne(data);
-            assertEquals(sr.getStderr(), 1028, sr.getStderr().length());
+            assertEquals(sr.getStderr(), 1030, sr.getStderr().length());
         } finally {
             data.delete();
         }
@@ -217,7 +217,7 @@ public class SuiteResultTest extends TestCase {
                     w.close();
                 }
                 SuiteResult sr = parseOne(data);
-                assertEquals(sr.getStdout(), 1028, sr.getStdout().length());
+                assertEquals(sr.getStdout(), 1030, sr.getStdout().length());
             } finally {
                 data2.delete();
             }
