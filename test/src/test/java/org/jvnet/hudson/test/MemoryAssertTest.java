@@ -35,6 +35,7 @@ public class MemoryAssertTest {
         Object[] biggie = new Object[1000];
         assertHeapUsage(biggie, 4016);
         assertHeapUsage(new WeakReference<Object>(biggie), 56);
+        assertHeapUsage("hello world", 64);
         AssertionError e = null;
         try {
             assertHeapUsage(biggie, 1016);
