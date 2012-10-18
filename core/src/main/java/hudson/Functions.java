@@ -1537,12 +1537,4 @@ public class Functions {
         DecimalFormat format = new DecimalFormat("##.00");
         return format.format(number) + " " + measure;
     }
-
-    /**
-     * 1.486 special
-     */
-    public static String getBackgroundImage() {
-        // for one week.
-        return System.currentTimeMillis() < 1350696100409L ? "i486.jpg" : "jenkins.png";
-    }
 }
