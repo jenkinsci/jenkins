@@ -140,6 +140,16 @@ THE SOFTWARE.
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-insane</artifactId>
+      <version>RELEASE72</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.stephenc.findbugs</groupId>
+      <artifactId>findbugs-annotations</artifactId>
+      <version>1.3.9-1</version>
+    </dependency>
   </dependencies>
 
   <build>
