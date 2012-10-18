@@ -145,7 +145,7 @@ public final class Secret implements Serializable {
     }
 
     /**
-     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * This method uses specific provider selected via hudson.util.Secret.provider system property
      * to provide a workaround for the above bug where default provide gives an unusable instance.
      * (Glassfish Enterprise users should set value of this property to "SunJCE")
@@ -201,7 +201,7 @@ public final class Secret implements Serializable {
     private static final String MAGIC = "::::MAGIC::::";
 
     /**
-     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
     private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");

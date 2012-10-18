@@ -77,7 +77,6 @@ public class XMLEntityResolver extends ParserConfigurator implements EntityResol
 
     /**
      * Install EntityResolver for resolving DTDs, which are in files created by TestNG.
-     * (see https://hudson.dev.java.net/servlets/ReadMsg?listName=users&msgNo=5530)
      */
     @Override
     public void configure(SAXReader reader, Object context) {

@@ -46,7 +46,7 @@ import javax.servlet.http.HttpSession;
  * dropped before the rest of Acegi sees it.
  *
  * <p>
- * See https://hudson.dev.java.net/issues/show_bug.cgi?id=1482
+ * See JENKINS-1482
  * 
  * @author Kohsuke Kawaguchi
  * @deprecated

@@ -22,7 +22,7 @@
 
 
 # definition of the IPS package.
-# see https://updatecenter2.dev.java.net/maven-makepkgs-plugin/ for more about this
+# see https://wikis.oracle.com/display/IpsBestPractices/Producing+and+Maintaining+Packages for more about this
 
 import builder;
 

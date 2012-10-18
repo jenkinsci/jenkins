@@ -55,7 +55,7 @@ public class CaseResultTest extends HudsonTestCase {
 //        configureDefaultMaven();
 //
 //        MavenModuleSet p = createMavenProject();
-//        p.setScm(new SubversionSCM("https://svn.dev.java.net/svn/hudson/trunk/hudson/test-projects/junit-failure@16411"));
+//        p.setScm(new SubversionSCM(".../hudson/test-projects/junit-failure@16411"));
 //        MavenModuleSetBuild b = assertBuildStatus(UNSTABLE,p.scheduleBuild2(0).get());
 //        AbstractTestResultAction<?> t = b.getTestResultAction();
 //        assertSame(1,t.getFailCount());
