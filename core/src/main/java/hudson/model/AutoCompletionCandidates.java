@@ -135,6 +135,11 @@ public class AutoCompletionCandidates implements HttpResponse {
             new Visitor("").onItemGroup(container);
             if (value.startsWith("/"))
                 new Visitor("/").onItemGroup(Jenkins.getInstance());
+
+            for ( String p="../"; value.startsWith(p); p+="../") {
+                container = ((Item)container).getParent();
+                new Visitor(p).onItemGroup(container);
+            }
         }
 
         return candidates;

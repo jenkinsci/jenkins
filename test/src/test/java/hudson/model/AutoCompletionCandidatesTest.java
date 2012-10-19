@@ -45,6 +45,10 @@ public class AutoCompletionCandidatesTest extends HudsonTestCase {
 
         c = AutoCompletionCandidates.ofJobNames(Item.class, "/bar/", x3, x3.getParent());
         assertContains(c, "/bar/x=1", "/bar/x=2", "/bar/x=3");
+
+        // relative path
+        c = AutoCompletionCandidates.ofJobNames(Item.class, "../", x3, x3.getParent());
+        assertContains(c, "../bar", "../foo");
     }
 
     private void assertContains(AutoCompletionCandidates c, String... values) {
