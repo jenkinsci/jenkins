@@ -28,6 +28,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.EnvVars;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -297,6 +298,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
+    }
+
+    @Override
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env =  super.getEnvironment(node, listener);
+
+        JDK jdk = getJDK();
+        if (jdk != null) {
+            if (node != null) { // just in case were not in a build
+                jdk = jdk.forNode(node, listener);
+            }
+            jdk.buildEnvVars(env);
+        }
+
+        return env;
     }
 
     @Override

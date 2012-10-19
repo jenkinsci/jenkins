@@ -931,19 +931,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         FilePath ws = getWorkspace();
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
-        // servlet container may have set CLASSPATH in its launch script,
-        // so don't let that inherit to the new child process.
-        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
-        env.put("CLASSPATH","");
 
-        JDK jdk = project.getJDK();
-        if (jdk != null) {
-            Computer computer = Computer.currentComputer();
-            if (computer != null) { // just in case were not in a build
-                jdk = jdk.forNode(computer.getNode(), log);
-            }
-            jdk.buildEnvVars(env);
-        }
         project.getScm().buildEnvVars(this,env);
 
         if (buildEnvironments!=null)
