@@ -78,7 +78,7 @@ THE SOFTWARE.
           Created by 
          <j:choose>
             <j:when test="${it.node.userId.equals('anonymous')}">
-             anonymous user
+             ${%anonymous user}
             </j:when>
            <j:otherwise>
              <a href="${app.rootUrl}${user.url}">${user.displayName}</a>
