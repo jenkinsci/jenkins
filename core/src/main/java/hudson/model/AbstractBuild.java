@@ -56,14 +56,11 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
-import hudson.util.AdaptedIterator;
-import hudson.util.IOException2;
-import hudson.util.Iterators;
-import hudson.util.LogTaskListener;
-import hudson.util.VariableResolver;
+import hudson.util.*;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.lazy.BuildReference;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -1348,20 +1345,28 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     //
 
     /**
+     * @deprecated as of 1.489
+     *      Use {@link #doStop()}
+     */
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doStop().generateResponse(req,rsp,this);
+    }
+
+    /**
      * Stops this build if it's still going.
      *
      * If we use this/executor/stop URL, it causes 404 if the build is already killed,
      * as {@link #getExecutor()} returns null.
      */
-    public synchronized void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
         if (e==null)
             e = getOneOffExecutor();
         if (e!=null)
-            e.doStop(req,rsp);
+            return e.doStop();
         else
             // nothing is building
-            rsp.forwardToPreviousPage(req);
+            return HttpResponses.forwardToPreviousPage();
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
