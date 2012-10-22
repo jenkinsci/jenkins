@@ -31,6 +31,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class XStreamDOMTest {
     }
 
     private String getTestData1() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).replaceAll("\r\n", "\n");
+        return IOUtils.toString(XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml")).replaceAll("\r\n", "\n");
     }
 
     private Foo createSomeFoo() {
@@ -74,7 +75,13 @@ public class XStreamDOMTest {
 
     @Test
     public void testUnmarshal() throws Exception {
-        Foo foo = (Foo) xs.fromXML(getClass().getResourceAsStream("XStreamDOMTest.data1.xml"));
+        InputStream is = XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml");
+        Foo foo;
+        try {
+            foo = (Foo) xs.fromXML(is);
+        } finally {
+            is.close();
+        }
         assertEquals("test1",foo.bar.getTagName());
         assertEquals("value",foo.bar.getAttribute("key"));
         assertEquals("text!",foo.bar.getValue());
