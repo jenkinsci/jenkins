@@ -1230,7 +1230,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Synonym to {@link #getNodeDescription()}.
+     * Synonym for {@link #getDescription}.
      */
     public String getSystemMessage() {
         return systemMessage;
