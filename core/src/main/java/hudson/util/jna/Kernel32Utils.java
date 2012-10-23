@@ -58,7 +58,10 @@ public class Kernel32Utils {
     }
 
     public static int getWin32FileAttributes(File file) throws IOException {
-      return Kernel32.INSTANCE.GetFileAttributesW(new WString(file.getCanonicalPath()));
+    	//prefix path to allow lookup of paths longer than MAX_PATH
+    	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
+    	String prefixedPath = file.getCanonicalPath().startsWith("\\\\?\\") ? file.getCanonicalPath() : "\\\\?\\" + file.getCanonicalPath();
+      return Kernel32.INSTANCE.GetFileAttributesW(new WString(prefixedPath));
     }
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {

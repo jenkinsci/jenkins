@@ -474,5 +474,32 @@ public class FilePathTest extends ChannelTestCase {
             Util.deleteRecursive(tmp);
         }
     }
-
+    
+    @Bug(15418)
+    public void testDeleteLongPathOnWindows() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(french, tmp.getPath());
+            
+            // construct a very long path with the pivot directory at char 255
+            StringBuilder sb = new StringBuilder();
+            while(sb.length() + tmp.getPath().length() < 255 - "very/".length()) {
+                sb.append("very/");
+            }
+            sb.append("pivot/very/very/long/path");
+            
+            FilePath longPath = d.child(sb.toString()); 
+            longPath.mkdirs();
+            FilePath childInLongPath = longPath.child("file.txt");
+            childInLongPath.touch(0);
+            
+            File firstDirectory = new File(tmp.getAbsolutePath() + "/very");
+            Util.deleteRecursive(firstDirectory);
+            
+            assertFalse("Could not delete directory!", firstDirectory.exists());
+            
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
 }
