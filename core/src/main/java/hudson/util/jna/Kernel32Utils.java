@@ -58,10 +58,22 @@ public class Kernel32Utils {
     }
 
     public static int getWin32FileAttributes(File file) throws IOException {
-    	//prefix path to allow lookup of paths longer than MAX_PATH
+    	// allow lookup of paths longer than MAX_PATH
     	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
-    	String prefixedPath = file.getCanonicalPath().startsWith("\\\\?\\") ? file.getCanonicalPath() : "\\\\?\\" + file.getCanonicalPath();
-      return Kernel32.INSTANCE.GetFileAttributesW(new WString(prefixedPath));
+    	String canonicalPath = file.getCanonicalPath();
+    	String path = null;
+    	if(canonicalPath.length() < 260) {
+    		// path is short, use as-is
+    		path = canonicalPath;
+    	} else if(canonicalPath.startsWith("\\\\")) {
+    		// network share
+    		// \\server\share --> \\?\UNC\server\share
+    		path = "\\\\?\\UNC\\" + canonicalPath.substring(2);
+    	} else {
+    		// prefix, canonical path should be normalized and absolute so this should work.
+    		path = "\\\\?\\" + canonicalPath;
+    	}
+      return Kernel32.INSTANCE.GetFileAttributesW(new WString(path));
     }
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {

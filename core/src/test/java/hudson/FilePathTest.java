@@ -481,9 +481,9 @@ public class FilePathTest extends ChannelTestCase {
         try {
             FilePath d = new FilePath(french, tmp.getPath());
             
-            // construct a very long path with the pivot directory at char 255
+            // construct a very long path
             StringBuilder sb = new StringBuilder();
-            while(sb.length() + tmp.getPath().length() < 255 - "very/".length()) {
+            while(sb.length() + tmp.getPath().length() < 260 - "very/".length()) {
                 sb.append("very/");
             }
             sb.append("pivot/very/very/long/path");
