@@ -1,6 +1,7 @@
 package jenkins.util;
 
 import org.apache.commons.beanutils.Converter;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,20 +32,26 @@ public class TimeDuration {
         return t.convert(millis,TimeUnit.MILLISECONDS);
     }
 
+    public static TimeDuration fromString(String delay) {
+        if (delay==null)
+            return null;
+
+        try {
+            // TODO: more unit handling
+            if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
+            if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
+            return new TimeDuration(Long.parseLong(delay));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid time duration value: "+delay);
+        }
+    }
+
     public static class StaplerConverterImpl implements Converter {
         public Object convert(Class type, Object value) {
             if (value==null)
                 return null;
             if (value instanceof String) {
-                String delay = (String)value;
-                try {
-                    // TODO: more unit handling
-                    if(delay.endsWith("sec"))   delay=delay.substring(0,delay.length()-3);
-                    if(delay.endsWith("secs"))  delay=delay.substring(0,delay.length()-4);
-                    return new TimeDuration(Long.parseLong(delay));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Invalid time duration value: "+delay);
-                }
+                return fromString((String) value);
             }
             throw new UnsupportedOperationException();
         }
