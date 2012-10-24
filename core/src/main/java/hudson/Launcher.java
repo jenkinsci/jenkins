@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -686,6 +687,52 @@ public abstract class Launcher {
                 boolean[] newArgs = new boolean[args.length+prefix.length];
                 System.arraycopy(args,0,newArgs,prefix.length,args.length);
                 return newArgs;
+            }
+        };
+    }
+
+    /**
+     * Returns a decorated {@link Launcher} that automatically adds the specified environment
+     * variables.
+     *
+     * Those that are specified in {@link ProcStarter#envs(String...)} will take precedence over
+     * what's specified here.
+     *
+     * @since 1.488
+     */
+    public final Launcher decorateByEnv(EnvVars _env) {
+        final EnvVars env = new EnvVars(_env);
+        final Launcher outer = this;
+        return new Launcher(outer) {
+            @Override
+            public Proc launch(ProcStarter starter) throws IOException {
+                EnvVars e = new EnvVars(env);
+                if (starter.envs!=null) {
+                    for (int i=0; i<starter.envs.length; i+=2)
+                        e.put(starter.envs[i],starter.envs[i+1]);
+                }
+
+                String[] r = new String[e.size()*2];
+                int idx=0;
+                for (Entry<String, String> i : e.entrySet()) {
+                    r[idx++] = i.getKey();
+                    r[idx++] = i.getValue();
+                }
+
+                starter.envs = r;
+                return outer.launch(starter);
+            }
+
+            @Override
+            public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+                EnvVars e = new EnvVars(env);
+                e.putAll(envVars);
+                return outer.launchChannel(cmd,out,workDir,e);
+            }
+
+            @Override
+            public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+                outer.kill(modelEnvVars);
             }
         };
     }

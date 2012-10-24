@@ -206,7 +206,7 @@ ${h.initPageVariables(context)}
       </l:breadcrumbBar>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${imagesURL}/${h.backgroundImage});
+        style="background-image: url(${imagesURL}/jenkins.png);
                background-repeat: no-repeat; background-position: bottom left;">
       <tr>
         <td id="side-panel" width="20%">
