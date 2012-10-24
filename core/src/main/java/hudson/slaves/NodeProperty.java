@@ -141,7 +141,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * outside the context of a build, such as polling, one time action (tagging, deployment, etc.)
      *
      * <p>
-     * Starting 1.488, this method and {@link #setUp(AbstractBuild, Launcher, BuildListener)} are
+     * Starting 1.489, this method and {@link #setUp(AbstractBuild, Launcher, BuildListener)} are
      * layered properly. That is, for launching processes for a build, this method
      * is called first and then {@link Environment#buildEnvVars(Map)} will be added on top.
      * This allows implementations to put node-scoped environment variables here, then
@@ -159,7 +159,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * @param listener
      *      Can be used to send messages.
      *
-     * @since 1.488
+     * @since 1.489
      */
     public void buildEnvVars(EnvVars env, TaskListener listener) throws IOException,InterruptedException {
         // default is no-op
