@@ -25,6 +25,9 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -45,6 +48,7 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
@@ -77,6 +81,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -875,6 +880,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         return EnvVars.getRemote(getChannel());
+    }
+
+    /**
+     * Creates an environment variable override to be used for launching processes on this node.
+     *
+     * @see ProcStarter#envs(Map)
+     * @since 1.489
+     */
+    public EnvVars buildEnvironment(TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env = new EnvVars();
+
+        Node node = getNode();
+        if (node==null)     return env; // bail out
+
+        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        for (NodeProperty nodeProperty: node.getNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        // TODO: hmm, they don't really belong
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if(rootUrl!=null) {
+            env.put("HUDSON_URL", rootUrl); // Legacy.
+            env.put("JENKINS_URL", rootUrl);
+        }
+
+        return env;
     }
 
     /**

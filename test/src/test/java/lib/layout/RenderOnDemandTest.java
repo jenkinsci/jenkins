@@ -46,4 +46,21 @@ public class RenderOnDemandTest extends HudsonTestCase {
         ScriptResult r = p.executeJavaScript("var r=document.getElementsBySelector('DIV.a'); r[0].innerHTML+r[1].innerHTML+r[2].innerHTML");
         assertEquals("AlphaBravoCharlie",r.getJavaScriptResult().toString());
     }
+
+    /**
+     * Makes sure that scripts get evaluated.
+     */
+    public void testScript() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testScript");
+
+        p.getElementById("button").click();
+        // all AJAX calls complete before the above method returns
+
+        ScriptResult r = p.executeJavaScript("x");
+        assertEquals("foo",r.getJavaScriptResult().toString());
+
+        // if you want to test this in the browser
+        System.out.println("Try http://localhost:"+localPort+"\"self/testScript");
+        interactiveBreak();
+    }
 }
