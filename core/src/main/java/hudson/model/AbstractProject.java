@@ -1462,7 +1462,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
                 // by having multiple workspaces
                 WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-                Launcher launcher = ws.createLauncher(listener);
+                Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
                 try {
                     LOGGER.fine("Polling SCM changes of " + getName());
                     if (pollingBaseline==null) // see NOTE-NO-BASELINE above
