@@ -698,7 +698,7 @@ public abstract class Launcher {
      * Those that are specified in {@link ProcStarter#envs(String...)} will take precedence over
      * what's specified here.
      *
-     * @since 1.488
+     * @since 1.489
      */
     public final Launcher decorateByEnv(EnvVars _env) {
         final EnvVars env = new EnvVars(_env);
