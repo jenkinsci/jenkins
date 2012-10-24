@@ -102,6 +102,10 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return (AbstractProject<?, ?>) owner;
     }
 
+    public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+    }
+
     /**
      * Interprets the form submission and schedules a build for a parameterized job.
      *
@@ -138,6 +142,10 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
+    }
+
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay) throws IOException, ServletException {
