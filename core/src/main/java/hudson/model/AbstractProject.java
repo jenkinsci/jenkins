@@ -88,6 +88,7 @@ import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1710,20 +1711,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Schedules a new build command.
      */
-    public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
+        if (delay==null)    delay=new TimeDuration(getQuietPeriod());
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
         if (pp != null) {
-            pp._doBuild(req,rsp);
+            pp._doBuild(req,rsp,delay);
             return;
         }
 
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        Jenkins.getInstance().getQueue().schedule(this, getDelay(req), getBuildCause(req));
+        Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
         rsp.forwardToPreviousPage(req);
     }
 
@@ -1744,6 +1746,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Computes the delay by taking the default value and the override in the request parameter into the account.
+     *
+     * @deprecated as of 1.488
+     *      Inject {@link TimeDuration}.
      */
     public int getDelay(StaplerRequest req) throws ServletException {
         String delay = req.getParameter("delay");
@@ -1763,12 +1768,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.
      */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
         if (pp != null) {
-            pp.buildWithParameters(req,rsp);
+            pp.buildWithParameters(req,rsp,delay);
         } else {
         	throw new IllegalStateException("This build is not parameterized!");
         }
