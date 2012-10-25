@@ -369,7 +369,7 @@ function parseHtml(html) {
  */
 function geval(script) {
     // see http://perfectionkills.com/global-eval-what-are-the-options/
-    (this.execScript || eval)(script);
+    return (this.execScript || eval)(script);
 }
 
 /**
@@ -404,7 +404,7 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return geval(this.getAttribute("checkUrl"));
+        return eval(this.getAttribute("checkUrl")); // need access to 'this'
     };
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
