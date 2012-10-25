@@ -221,7 +221,7 @@ public final class MavenArtifact implements Serializable {
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
         if (build.isArchivingDisabled()) {
-            listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + file);
+            LOGGER.fine("Archiving disabled - not archiving " + file);
         }
         else {
             FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
