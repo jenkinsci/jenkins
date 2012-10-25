@@ -600,6 +600,11 @@ THE SOFTWARE.
       <scope>system</scope>
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+      </dependency>
   </dependencies>
 
   <build>
