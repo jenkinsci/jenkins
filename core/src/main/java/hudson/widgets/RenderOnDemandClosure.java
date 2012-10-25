@@ -34,7 +34,9 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,12 +81,16 @@ public class RenderOnDemandClosure {
 
         this.variables = PackedMap.of(variables);
 
+<<<<<<< HEAD
         Set<String> _adjuncts = AdjunctsInPage.get().getIncluded();
         this.adjuncts = new String[_adjuncts.size()];
         int i = 0;
         for (String adjunct : _adjuncts) {
             this.adjuncts[i++] = adjunct.intern();
         }
+=======
+        this.adjuncts = AdjunctsInPage.get().getIncluded();
+>>>>>>> 6f7891f... Properly inherit adjuncts into renderOnDemand lazy pieces
     }
 
     /**
@@ -101,6 +108,13 @@ public class RenderOnDemandClosure {
                             for (int i=bodyStack.length-1; i>0; i--) {// exclude bodyStack[0]
                                 context = new JellyContext(context);
                                 context.setVariable("org.apache.commons.jelly.body",bodyStack[i]);
+                            }
+                            try {
+                                AdjunctsInPage.get().assumeIncluded(adjuncts);
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
+                            } catch (SAXException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
                             }
                             return context;
                         }
