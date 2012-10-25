@@ -36,6 +36,7 @@ import hudson.util.MultipartFormDataParser;
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
+    public static final String DEFAULT_CRUMB_HEADER_NAME = "crumb";
 
     /**
      * Get the name of the request parameter the crumb will be stored in. Exposed

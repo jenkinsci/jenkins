@@ -67,7 +67,7 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
      */
     public void setCrumbRequestField(String requestField) {
         if (Util.fixEmptyAndTrim(requestField) == null) {
-            crumbRequestField = ".crumb";
+            crumbRequestField = CrumbIssuer.DEFAULT_CRUMB_HEADER_NAME;
         } else {
             crumbRequestField = requestField;
         }
