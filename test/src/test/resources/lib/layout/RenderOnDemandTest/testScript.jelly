@@ -32,6 +32,7 @@ THE SOFTWARE.
     <input type="button" value="Test" id="button"/>
     <script>
       var x = null;
+      var y = null;
       $("button").onclick = function() {
         renderOnDemand(document.getElementsBySelector('.lazy')[0]);
       }
@@ -39,10 +40,11 @@ THE SOFTWARE.
 
 
     <l:renderOnDemand clazz="lazy">
-      <div id="eye">hello</div>
+      <div id="loaded">loaded</div>
       <script>
-        x = "foo";
+        x = "xxx";
       </script>
+      <script src="externalScript"></script>
     </l:renderOnDemand>
   </l:main-panel>
 </l:layout>
