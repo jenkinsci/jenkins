@@ -365,6 +365,14 @@ function parseHtml(html) {
 }
 
 /**
+ * Evaluates the script in global context.
+ */
+function geval(script) {
+    // see http://perfectionkills.com/global-eval-what-are-the-options/
+    (this.execScript || eval)(script);
+}
+
+/**
  * Emulate the firing of an event.
  *
  * @param {HTMLElement} element
@@ -396,7 +404,7 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl"));
+        return geval(this.getAttribute("checkUrl"));
     };
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
@@ -492,7 +500,7 @@ function isInsideRemovable(e) {
  */
 function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
-    var proxy = eval(e.getAttribute("proxy"));
+    var proxy = geval(e.getAttribute("proxy"));
     proxy.render(function (t) {
         var contextTagName = e.parentNode.tagName;
         var c;
@@ -537,7 +545,7 @@ function evalInnerHtmlScripts(text,callback) {
             });
         } else {
             q.push(function(cont) {
-                eval(s.match(matchOne)[2]);
+                geval(s.match(matchOne)[2]);
                 cont();
             });
         }
@@ -708,7 +716,7 @@ var jenkinsRules = {
         (function() {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
-            var readOnly = eval(e.getAttribute("script-readOnly")) || false;
+            var readOnly = geval(e.getAttribute("script-readOnly")) || false;
             
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
@@ -2134,7 +2142,7 @@ function validateButton(checkUrl,paramList,button) {
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
-              eval(s);
+              geval(s);
             } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
             }
