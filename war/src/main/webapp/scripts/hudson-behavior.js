@@ -369,7 +369,8 @@ function parseHtml(html) {
  */
 function geval(script) {
     // see http://perfectionkills.com/global-eval-what-are-the-options/
-    return (this.execScript || eval)(script);
+    // note that execScript cannot return value
+    (this.execScript || eval)(script);
 }
 
 /**
@@ -500,7 +501,7 @@ function isInsideRemovable(e) {
  */
 function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
-    var proxy = geval(e.getAttribute("proxy"));
+    var proxy = eval(e.getAttribute("proxy"));
     proxy.render(function (t) {
         var contextTagName = e.parentNode.tagName;
         var c;
@@ -716,7 +717,7 @@ var jenkinsRules = {
         (function() {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
-            var readOnly = geval(e.getAttribute("script-readOnly")) || false;
+            var readOnly = eval(e.getAttribute("script-readOnly")) || false;
             
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
