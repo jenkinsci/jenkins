@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import java.util.List;
@@ -91,5 +92,12 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      */
     public static ExtensionList<ManagementLink> all() {
         return Jenkins.getInstance().getExtensionList(ManagementLink.class);
+    }
+
+    /**
+     * @return permission required for user to access this management link, in addition to {@link Jenkins.ADMINISTER}
+     */
+    public Permission getRequiredPermission() {
+        return null;
     }
 }
