@@ -741,8 +741,13 @@ public class UpdateSite {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
-                LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
-                dep.deploy(dynamicLoad);
+                UpdateCenter.InstallationJob job = uc.getJob(dep);
+                if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
+                    LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    dep.deploy(dynamicLoad);
+                } else {
+                    LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                }
             }
             return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
         }
