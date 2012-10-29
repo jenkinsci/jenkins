@@ -310,7 +310,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         EnvVars env = new EnvVars();
         env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
         env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
-        env.put("JOB_NAME",getParent().getFullName());
+        env.put("JOB_NAME",getFullName());
         return env;
     }
 
