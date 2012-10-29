@@ -119,6 +119,6 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
         assertFalse(path.contains("${JOB_NAME}"));
-        assertTrue(b.getWorkspace().getName().equals(f.getName()));
+        assertEquals(b.getWorkspace().getName(),f.getName());
     }
 }
