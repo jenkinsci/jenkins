@@ -24,7 +24,6 @@
 package hudson.model;
 
 import antlr.ANTLRException;
-import hudson.Util;
 import static hudson.Util.fixNull;
 
 import hudson.model.labels.LabelAtom;
@@ -336,7 +335,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for( AbstractProject p : Util.filter(Jenkins.getInstance().getItems(),AbstractProject.class) ) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if(this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
