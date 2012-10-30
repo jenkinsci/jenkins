@@ -86,7 +86,7 @@ public class SuiteResultTest {
                     w.close();
                 }
                 SuiteResult sr = parseOne(data);
-                assertHeapUsage(sr, 250 + /* Unicode overhead */2 * (int) (/*259946*/data.length() + /*495600*/data2.length() + /* SuiteResult.file */data.getAbsolutePath().length()));
+                assertHeapUsage(sr, 252 + /* Unicode overhead */2 * (int) (/*259946*/data.length() + /*495600*/data2.length() + /* SuiteResult.file */data.getAbsolutePath().length()));
                 // XXX serialize using TestResultAction.XSTREAM and verify that round-tripped object has same size
             } finally {
                 data2.delete();
