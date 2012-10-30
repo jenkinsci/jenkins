@@ -298,6 +298,17 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         // do it now.
         if (failedSince==0 && getFailCount()==1) {
             CaseResult prev = getPreviousResult();
+
+            // [Jenkins-15634]
+            AbstractBuild<?, ?> previousBuild = getOwner().getPreviousBuild();
+            while (previousBuild != null &&
+                   previousBuild.getResult().toString().equals("ABORTED") &&
+                   prev.getPreviousResult() == null) {
+                
+                prev = prev.getPreviousResult();
+                previousBuild = previousBuild.getPreviousBuild();
+            }
+
             if(prev!=null && !prev.isPassed())
                 this.failedSince = prev.failedSince;
             else if (getOwner() != null) {
