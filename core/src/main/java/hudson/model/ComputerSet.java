@@ -167,7 +167,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public int getIdleExecutors() {
         int r=0;
         for (Computer c : get_all())
-            if(c.isOnline() || c.isConnecting())
+            if((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
     }
@@ -231,6 +231,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             String xml = Jenkins.XSTREAM.toXML(src);
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            if(result instanceof Slave){ //change userId too
+                User user = User.current();
+                ((Slave)result).setUserId(user==null ? "anonymous" : user.getId());
+             }
             result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);

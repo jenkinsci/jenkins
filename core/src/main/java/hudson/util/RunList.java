@@ -140,10 +140,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
         Iterator<R> itr = iterator();
         Iterators.skip(itr,fromIndex);
         for (int i=toIndex-fromIndex; i>0; i--) {
-            if (itr.hasNext())
-                r.add(itr.next());
-            else
-                throw new NoSuchElementException();
+            r.add(itr.next());
         }
         return r;
     }

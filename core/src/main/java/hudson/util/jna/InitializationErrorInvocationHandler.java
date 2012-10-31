@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.487
+ * @see <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7199848">Related bug report against JDK</a>
  */
 public class InitializationErrorInvocationHandler implements InvocationHandler {
     private final Throwable cause;
@@ -24,7 +25,7 @@ public class InitializationErrorInvocationHandler implements InvocationHandler {
         if (method.getDeclaringClass()==Object.class)
             return method.invoke(this,args);
 
-        throw new UnsupportedOperationException("Failed to link the library: ", cause);
+        throw new UnsupportedOperationException("Failed to link the library: "+method.getDeclaringClass(), cause);
     }
 
     public static <T> T create(Class<T> type, Throwable cause) {

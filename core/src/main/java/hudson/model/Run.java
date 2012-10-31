@@ -1958,12 +1958,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return the map with the environmental variables. Never <code>null</code>.
      * @since 1.305
      */
-    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
-        EnvVars env = getCharacteristicEnvVars();
+    public EnvVars getEnvironment(TaskListener listener) throws IOException, InterruptedException {
+        Computer c = Computer.currentComputer();
+        Node n = c==null ? null : c.getNode();
+
+        EnvVars env = getParent().getEnvironment(n,listener);
+        env.putAll(getCharacteristicEnvVars());
 
         // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
-            ec.buildEnvironmentFor(this,env,log);
+            ec.buildEnvironmentFor(this,env,listener);
 
         return env;
     }
@@ -1973,13 +1977,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
      */
     public final EnvVars getCharacteristicEnvVars() {
-        EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
-        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
+        EnvVars env = getParent().getCharacteristicEnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","jenkins-"+getParent().getFullName().replace('/', '-')+"-"+number);
-        env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
 

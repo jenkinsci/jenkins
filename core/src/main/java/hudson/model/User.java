@@ -588,7 +588,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Used to load/save user configuration.
      */
-    private static final XStream XSTREAM = new XStream2();
+    public static final XStream2 XSTREAM = new XStream2();
 
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
 

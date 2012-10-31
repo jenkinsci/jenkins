@@ -755,7 +755,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             Trigger.timer = new Timer("Jenkins cron thread");
-            queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
+            queue = new Queue(LoadBalancer.CONSISTENT_HASH);
 
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
@@ -1230,7 +1230,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Synonym to {@link #getNodeDescription()}.
+     * Synonym for {@link #getDescription}.
      */
     public String getSystemMessage() {
         return systemMessage;
@@ -2450,7 +2450,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
-        if(!projectsDir.isDirectory() && !projectsDir.mkdirs()) {
+        if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
             if(projectsDir.exists())
                 throw new IOException(projectsDir+" is not a directory");
             throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
@@ -3850,7 +3850,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
-    private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     /**
      * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
      */

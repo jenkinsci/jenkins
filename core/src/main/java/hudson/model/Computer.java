@@ -25,10 +25,15 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
@@ -43,6 +48,7 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
@@ -73,7 +79,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -89,6 +97,8 @@ import java.nio.charset.Charset;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Inet4Address;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 
 import static javax.servlet.http.HttpServletResponse.*;
@@ -191,6 +201,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This is where the log from the remote agent goes.
+     *
+     * @see #relocateOldLogs()
      */
     protected File getLogFile() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
@@ -871,6 +883,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Creates an environment variable override to be used for launching processes on this node.
+     *
+     * @see ProcStarter#envs(Map)
+     * @since 1.489
+     */
+    public EnvVars buildEnvironment(TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env = new EnvVars();
+
+        Node node = getNode();
+        if (node==null)     return env; // bail out
+
+        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        for (NodeProperty nodeProperty: node.getNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        // TODO: hmm, they don't really belong
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if(rootUrl!=null) {
+            env.put("HUDSON_URL", rootUrl); // Legacy.
+            env.put("JENKINS_URL", rootUrl);
+        }
+
+        return env;
+    }
+
+    /**
      * Gets the thread dump of the slave JVM.
      * @return
      *      key is the thread name, and the value is the pre-formatted dump.
@@ -1176,10 +1218,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         Node node = getNode();
-        if (node == null) {
-            throw new IOException("Cannot delete " + nodeName + " since it does not still exist");
+        if (node != null) {
+            Jenkins.getInstance().removeNode(node);
+        } else {
+            AbstractCIBase app = Jenkins.getInstance();
+            app.removeComputer(this);
         }
-        Jenkins.getInstance().removeNode(node);
         return new HttpRedirect("..");
     }
 
@@ -1246,6 +1290,40 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
         }
         return item;
+    }
+
+    /**
+     * Relocate log files in the old location to the new location.
+     *
+     * Files were used to be $JENKINS_ROOT/slave-NAME.log (and .1, .2, ...)
+     * but now they are at $JENKINS_ROOT/logs/slaves/NAME/slave.log (and .1, .2, ...)
+     *
+     * @see #getLogFile()
+     */
+    @Initializer
+    public static void relocateOldLogs() {
+        relocateOldLogs(Jenkins.getInstance().getRootDir());
+    }
+
+    /*package*/ static void relocateOldLogs(File dir) {
+        final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
+        File[] logfiles = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return logfile.matcher(name).matches();
+            }
+        });
+        if (logfiles==null)     return;
+
+        for (File f : logfiles) {
+            Matcher m = logfile.matcher(f.getName());
+            if (m.matches()) {
+                File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
+                newLocation.getParentFile().mkdirs();
+                f.renameTo(newLocation);
+            } else {
+                assert false;
+            }
+        }
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());

@@ -37,7 +37,9 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -45,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,6 +63,8 @@ public class RenderOnDemandClosure {
     private final Script[] bodyStack;
     private final Map<String,Object> variables;
     private final String currentDescriptorByNameUrl;
+
+    private final Set<String> adjuncts;
 
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
         List<Script> bodyStack = new ArrayList<Script>();
@@ -78,6 +83,8 @@ public class RenderOnDemandClosure {
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
 
         this.variables = PackedMap.of(variables);
+
+        this.adjuncts = AdjunctsInPage.get().getIncluded();
     }
 
     /**
@@ -95,6 +102,13 @@ public class RenderOnDemandClosure {
                             for (int i=bodyStack.length-1; i>0; i--) {// exclude bodyStack[0]
                                 context = new JellyContext(context);
                                 context.setVariable("org.apache.commons.jelly.body",bodyStack[i]);
+                            }
+                            try {
+                                AdjunctsInPage.get().assumeIncluded(adjuncts);
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
+                            } catch (SAXException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
                             }
                             return context;
                         }

@@ -27,7 +27,6 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.WString;
-import com.sun.jna.Native;
 
 /**
  * JNA interface to Windows Kernel32 exports.
@@ -35,7 +34,7 @@ import com.sun.jna.Native;
  * @author Kohsuke Kawaguchi
  */
 public interface Kernel32 extends StdCallLibrary {
-    Kernel32 INSTANCE = (Kernel32)Native.loadLibrary("kernel32", Kernel32.class);
+    Kernel32 INSTANCE = Kernel32Utils.load();
 
     /**
      * See http://msdn.microsoft.com/en-us/library/aa365240(VS.85).aspx

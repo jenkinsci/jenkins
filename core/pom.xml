@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.487-SNAPSHOT</version>
+    <version>1.490-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.197</stapler.version>
+    <stapler.version>1.199</stapler.version>
   </properties>
 
   <dependencies>
@@ -600,6 +600,11 @@ THE SOFTWARE.
       <scope>system</scope>
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+      </dependency>
   </dependencies>
 
   <build>

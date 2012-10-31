@@ -56,14 +56,11 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
-import hudson.util.AdaptedIterator;
-import hudson.util.IOException2;
-import hudson.util.Iterators;
-import hudson.util.LogTaskListener;
-import hudson.util.VariableResolver;
+import hudson.util.*;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.lazy.BuildReference;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -934,19 +931,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         FilePath ws = getWorkspace();
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
-        // servlet container may have set CLASSPATH in its launch script,
-        // so don't let that inherit to the new child process.
-        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
-        env.put("CLASSPATH","");
 
-        JDK jdk = project.getJDK();
-        if (jdk != null) {
-            Computer computer = Computer.currentComputer();
-            if (computer != null) { // just in case were not in a build
-                jdk = jdk.forNode(computer.getNode(), log);
-            }
-            jdk.buildEnvVars(env);
-        }
         project.getScm().buildEnvVars(this,env);
 
         if (buildEnvironments!=null)
@@ -1348,20 +1333,28 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     //
 
     /**
+     * @deprecated as of 1.489
+     *      Use {@link #doStop()}
+     */
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doStop().generateResponse(req,rsp,this);
+    }
+
+    /**
      * Stops this build if it's still going.
      *
      * If we use this/executor/stop URL, it causes 404 if the build is already killed,
      * as {@link #getExecutor()} returns null.
      */
-    public synchronized void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
         if (e==null)
             e = getOneOffExecutor();
         if (e!=null)
-            e.doStop(req,rsp);
+            return e.doStop();
         else
             // nothing is building
-            rsp.forwardToPreviousPage(req);
+            return HttpResponses.forwardToPreviousPage();
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
