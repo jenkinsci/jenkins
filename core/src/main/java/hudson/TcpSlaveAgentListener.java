@@ -94,6 +94,8 @@ public final class TcpSlaveAgentListener extends Thread {
                 // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
                 // by default in Linux) that this alone is enough to prevent that.
                 s.setKeepAlive(true);
+                // we take care of buffering on our own
+                s.setTcpNoDelay(true);
 
                 new ConnectionHandler(s).start();
             }
