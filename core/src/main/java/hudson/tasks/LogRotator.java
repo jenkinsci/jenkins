@@ -128,7 +128,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's the last stable build");
                     continue;
                 }
-                LOGGER.log(FINER,r.getFullDisplayName()+" is to be removed");
+                LOGGER.log(FINE,r.getFullDisplayName()+" is to be removed");
                 r.delete();
             }
         }
@@ -153,7 +153,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not GC-ed because it's still new");
                     continue;
                 }
-                LOGGER.log(FINER,r.getFullDisplayName()+" is to be removed");
+                LOGGER.log(FINE,r.getFullDisplayName()+" is to be removed");
                 r.delete();
             }
         }
@@ -173,6 +173,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's the last stable build");
                     continue;
                 }
+                LOGGER.log(FINE,r.getFullDisplayName()+" is to be purged of artifacts");
                 r.deleteArtifacts();
             }
         }
@@ -197,6 +198,7 @@ public class LogRotator implements Describable<LogRotator> {
                     LOGGER.log(FINER,r.getFullDisplayName()+" is not purged of artifacts because it's still new");
                     continue;
                 }
+                LOGGER.log(FINE,r.getFullDisplayName()+" is to be purged of artifacts");
                 r.deleteArtifacts();
             }
         }
