@@ -25,6 +25,8 @@ package hudson.cli;
 
 import java.util.Collection;
 import java.util.Collections;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.Extension;
@@ -48,7 +50,7 @@ public class ListJobsCommand extends CLICommand {
 
     protected int run() throws Exception {
         Jenkins h = Jenkins.getInstance();
-        Collection<TopLevelItem> jobs = null;
+        final Collection<TopLevelItem> jobs;
 
         // If name is given retrieve jobs for the given view.
         if (name != null) {
@@ -58,7 +60,15 @@ public class ListJobsCommand extends CLICommand {
                 jobs = view.getItems();
             }
             else {
-                jobs = Collections.emptyList();
+                final Item item = h.getItemByFullName(name);
+
+                if (item instanceof ItemGroup) {
+                    ItemGroup itemGroup = (ItemGroup) item;
+                    jobs = itemGroup.getItems();
+                }
+                else {
+                    jobs = Collections.emptyList();
+                }
             }
         }
         // Fallback to listing all jobs.
