@@ -30,8 +30,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
+import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
-import hudson.mvn.SettingsProvider;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
 

@@ -1,4 +1,4 @@
-package hudson.mvn;
+package jenkins.mvn;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -15,12 +15,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
  */
-public class FilePathSettingsProvider extends SettingsProvider {
+public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
 
     private final String path;
 
     @DataBoundConstructor
-    public FilePathSettingsProvider(String path) {
+    public FilePathGlobalSettingsProvider(String path) {
         this.path = path;
     }
 
@@ -29,14 +29,15 @@ public class FilePathSettingsProvider extends SettingsProvider {
     }
 
     @Override
-    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
-        if (StringUtils.isEmpty(path))
+    public FilePath supplySettings(AbstractBuild<?, ?> project, TaskListener listener) {
+        if (StringUtils.isEmpty(path)) {
             return null;
+        }
         if (IOUtils.isAbsolute(path)) {
             return new FilePath(new File(path));
         } else {
-            FilePath mrSettings = build.getModuleRoot().child(path);
-            FilePath wsSettings = build.getWorkspace().child(path);
+            FilePath mrSettings = project.getModuleRoot().child(path);
+            FilePath wsSettings = project.getWorkspace().child(path);
             try {
                 if (!wsSettings.exists() && mrSettings.exists()) {
                     wsSettings = mrSettings;
@@ -50,11 +51,12 @@ public class FilePathSettingsProvider extends SettingsProvider {
     }
 
     @Extension(ordinal = 10)
-    public static class DescriptorImpl extends SettingsProviderDescriptor {
+    public static class DescriptorImpl extends GlobalSettingsProviderDescriptor {
 
         @Override
         public String getDisplayName() {
-            return "File in project workspace";
+            return "global settings file in project workspace";
         }
+
     }
 }

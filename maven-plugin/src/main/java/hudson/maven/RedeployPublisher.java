@@ -35,8 +35,6 @@ import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.mvn.GlobalSettingsProvider;
-import hudson.mvn.SettingsProvider;
 import hudson.remoting.Callable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -54,6 +52,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import jenkins.model.Jenkins;
+import jenkins.mvn.GlobalSettingsProvider;
+import jenkins.mvn.SettingsProvider;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;

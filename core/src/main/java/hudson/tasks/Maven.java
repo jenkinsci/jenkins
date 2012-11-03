@@ -38,11 +38,11 @@ import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.GlobalSettingsProvider;
+import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
-import hudson.mvn.DefaultGlobalSettingsProvider;
-import hudson.mvn.DefaultSettingsProvider;
-import hudson.mvn.GlobalSettingsProvider;
-import hudson.mvn.SettingsProvider;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
@@ -127,13 +127,13 @@ public class Maven extends Builder {
     
     /**
      * Provides access to the settings.xml to be used for a build.
-     * @since 1.481
+     * @since 1.488
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
      * Provides access to the global settings.xml to be used for a build.
-     * @since 1.481
+     * @since 1.488
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 

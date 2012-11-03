@@ -1,4 +1,4 @@
-package hudson.mvn;
+package jenkins.mvn;
 
 import hudson.Extension;
 import hudson.FilePath;

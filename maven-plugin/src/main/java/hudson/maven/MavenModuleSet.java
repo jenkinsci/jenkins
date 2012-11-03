@@ -34,6 +34,7 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Plugin;
 import hudson.Util;
+import hudson.PluginManager.PluginUpdateMonitor;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
@@ -55,13 +56,6 @@ import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
-import hudson.mvn.DefaultGlobalSettingsProvider;
-import hudson.mvn.DefaultSettingsProvider;
-import hudson.mvn.FilePathSettingsProvider;
-import hudson.mvn.GlobalSettingsProvider;
-import hudson.mvn.GlobalSettingsProviderDescriptor;
-import hudson.mvn.SettingsProvider;
-import hudson.mvn.SettingsProviderDescriptor;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.BuildStep;
@@ -97,6 +91,13 @@ import java.util.Stack;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalSettingsProvider;
+import jenkins.mvn.GlobalSettingsProviderDescriptor;
+import jenkins.mvn.SettingsProvider;
+import jenkins.mvn.SettingsProviderDescriptor;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -274,12 +275,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     protected transient String globalSettingConfigPath;
 
     /**
-     * @since 1.481
+     * @since 1.488
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
-     * @since 1.481
+     * @since 1.488
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
@@ -299,7 +300,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             this.alternateSettings = null;
         } else if (plugin != null && StringUtils.isNotBlank(this.settingConfigId)) {
             try {
-                Class<? extends SettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.MvnSettingsProvider").asSubclass(SettingsProvider.class);
+                Class<? extends SettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.job.MvnSettingsProvider").asSubclass(SettingsProvider.class);
                 SettingsProvider newInstance = legacySettings.newInstance();
                 PropertyUtils.setProperty(newInstance, "settingsConfigId", this.settingConfigId);
                 this.settings = newInstance;
@@ -313,7 +314,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         
         if (plugin != null && StringUtils.isNotBlank(this.globalSettingConfigId)) {
             try {
-                Class<? extends GlobalSettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.MvnGlobalSettingsProvider").asSubclass(GlobalSettingsProvider.class);
+                Class<? extends GlobalSettingsProvider> legacySettings = plugin.getWrapper().classLoader.loadClass("org.jenkinsci.plugins.configfiles.maven.job.MvnGlobalSettingsProvider").asSubclass(GlobalSettingsProvider.class);
                 GlobalSettingsProvider newInstance = legacySettings.newInstance();
                 PropertyUtils.setProperty(newInstance, "settingsConfigId", this.globalSettingConfigId);
                 this.globalSettings = newInstance;

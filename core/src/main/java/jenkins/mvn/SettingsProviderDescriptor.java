@@ -1,9 +1,10 @@
-package hudson.mvn;
+package jenkins.mvn;
 
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 
 import java.util.List;
+
+import jenkins.model.Jenkins;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
