@@ -1058,18 +1058,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
         }
         
-        public PluginUpdateMonitor() {
-            init();
-        }
-        
-        private void init() {
-            ifPluginOlderThenReport("config-file-provider", "2.2.2", "The current installed version of 'config-file-provider' is not compatible with this core anymore");
-        }
-        
-        private void ifPluginOlderThenReport(String pluginName, String version, String message){
+        /**
+         * Report to the administrator if the plugin with the given name is older then the required version.
+         *  
+         * @param pluginName name of the plugin
+         * @param requiredVersion the lowest version which is OK (e.g. 2.2.2)
+         * @param message the message to show
+         */
+        public void ifPluginOlderThenReport(String pluginName, String requiredVersion, String message){
             Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
             if(plugin != null){
-                if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(version))) {
+                if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(requiredVersion))) {
                     pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
                 }
             }

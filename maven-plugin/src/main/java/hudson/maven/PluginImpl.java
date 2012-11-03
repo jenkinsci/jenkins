@@ -24,6 +24,9 @@
 package hudson.maven;
 
 import hudson.Plugin;
+import hudson.PluginManager.PluginUpdateMonitor;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Items;
 
 /**
@@ -38,6 +41,13 @@ public class PluginImpl extends Plugin {
         Items.XSTREAM.alias("dependency", ModuleDependency.class);
         Items.XSTREAM.alias("maven2-module-set", MavenModule.class);  // this was a bug, but now we need to keep it for compatibility
         Items.XSTREAM.alias("maven2-moduleset", MavenModuleSet.class);
+
+    }
+    
+    @Initializer(after=InitMilestone.PLUGINS_STARTED)
+    public static void init(){
+        // inform the admin if there is a version of the config file provider installed which is not compatible 
+        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.2.2", "The current installed version of 'config-file-provider' is not compatible with this core anymore (requires > 2.2.1)");        
     }
 
 }
