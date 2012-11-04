@@ -51,7 +51,7 @@ public class PluginImpl extends Plugin {
     @Initializer(after=InitMilestone.PLUGINS_STARTED)
     public static void init(){
         // inform the admin if there is a version of the config file provider installed which is not compatible 
-        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.2.2", Messages.PluginImpl_updateConfiProvider());        
+        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.3", Messages.PluginImpl_updateConfiProvider());        
     }
 
 }

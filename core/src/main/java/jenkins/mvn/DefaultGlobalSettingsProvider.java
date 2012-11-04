@@ -28,7 +28,7 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
 
         @Override
         public String getDisplayName() {
-            return "Use default maven global settings";
+            return Messages.DefaultGlobalSettingsProvider_DisplayName();
         }
     }
 }

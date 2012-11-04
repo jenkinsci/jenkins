@@ -9,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @author Dominik Bartholdi (imod)
  * @since 1.490
  */
 public class DefaultSettingsProvider extends SettingsProvider {
@@ -27,7 +28,7 @@ public class DefaultSettingsProvider extends SettingsProvider {
 
         @Override
         public String getDisplayName() {
-            return "Use default maven settings";
+            return Messages.DefaultSettingsProvider_DisplayName();
         }
     }
 }

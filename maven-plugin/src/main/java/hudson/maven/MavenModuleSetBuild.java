@@ -561,7 +561,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             
         	Result r = null;
         	PrintStream logger = listener.getLogger();
-            FilePath remoteSettings = null, remoteGlobalSettings = null;
 
             try {
             	
@@ -581,9 +580,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 setMavenVersionUsed( mavenVersion );
 
                 LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
-                
-                remoteSettings = SettingsProvider.getSettingsFilePath(project.getSettings(), MavenModuleSetBuild.this, listener);
-                remoteGlobalSettings = GlobalSettingsProvider.getSettingsFilePath(project.getGlobalSettings(), MavenModuleSetBuild.this, listener);
                 
                 if(!project.isAggregatorStyleBuild()) {
                     parsePoms(listener, logger, envVars, mvn, mavenVersion);
@@ -689,9 +685,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if(localRepo!=null)
                             margs.add("-Dmaven.repo.local="+localRepo.getRemote());
 
+                        FilePath remoteSettings = SettingsProvider.getSettingsFilePath(project.getSettings(), MavenModuleSetBuild.this, listener);
                         if (remoteSettings != null)
                             margs.add("-s" , remoteSettings.getRemote());
-                        
+
+                        FilePath remoteGlobalSettings = GlobalSettingsProvider.getSettingsFilePath(project.getGlobalSettings(), MavenModuleSetBuild.this, listener);
                         if (remoteGlobalSettings != null)
                             margs.add("-gs" , remoteGlobalSettings.getRemote());
                         
@@ -804,14 +802,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 logger.println("project.getRootModule()="+project.getRootModule());
                 throw e;
             } finally {
-                // delete tmp files used for MavenSettingsProvider
-                // TODO implement a hook to let SettingsProvider have the decision whether a settings.xml must be deleted
-//                if (remoteSettings != null) {
-//                    remoteSettings.delete();
-//                }
-//                if (remoteGlobalSettings != null ) {
-//                    remoteGlobalSettings.delete();
-//                }
             }
         }
 

@@ -57,7 +57,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
                 listener.getLogger().print("failed to get the path to the alternate global settings.xml");
             }
         }
-        return settingsPath == null ? null : settingsPath;
+        return settingsPath;
     }
 
     /**

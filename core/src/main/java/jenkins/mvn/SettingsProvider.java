@@ -52,7 +52,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
         if (settings != null) {
             settingsPath = settings.supplySettings(build, listener);
         }
-        return settingsPath == null ? null : settingsPath;
+        return settingsPath;
     }
 
     /**

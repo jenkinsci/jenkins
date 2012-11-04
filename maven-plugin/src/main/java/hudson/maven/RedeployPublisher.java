@@ -56,7 +56,6 @@ import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -281,7 +280,6 @@ public class RedeployPublisher extends Recorder {
             if (tmpSettings != null) {
                 tmpSettings.delete();
             }
-            // TODO implement hook to delete files after build
         }
     }
     
