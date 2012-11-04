@@ -1,12 +1,15 @@
 package jenkins.mvn;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.IOUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -30,25 +33,34 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public FilePath supplySettings(AbstractBuild<?, ?> project, TaskListener listener) {
+    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
         if (StringUtils.isEmpty(path)) {
             return null;
         }
-        if (IOUtils.isAbsolute(path)) {
-            return new FilePath(new File(path));
-        } else {
-            FilePath mrSettings = project.getModuleRoot().child(path);
-            FilePath wsSettings = project.getWorkspace().child(path);
-            try {
-                if (!wsSettings.exists() && mrSettings.exists()) {
-                    wsSettings = mrSettings;
+
+        try {
+            EnvVars env = build.getEnvironment(listener);
+            String targetPath = Util.replaceMacro(this.path, build.getBuildVariableResolver());
+            targetPath = env.expand(targetPath);
+
+            if (IOUtils.isAbsolute(targetPath)) {
+                return new FilePath(new File(targetPath));
+            } else {
+                FilePath mrSettings = build.getModuleRoot().child(targetPath);
+                FilePath wsSettings = build.getWorkspace().child(targetPath);
+                try {
+                    if (!wsSettings.exists() && mrSettings.exists()) {
+                        wsSettings = mrSettings;
+                    }
+                } catch (Exception e) {
+                    throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote());
                 }
-            } catch (Exception e) {
-                listener.getLogger().print("ERROR: failed to find settings.xml at: "+wsSettings.getRemote());
-                e.printStackTrace();
+                return wsSettings;
             }
-            return wsSettings;
+        } catch (Exception e) {
+            throw new IllegalStateException("failed to prepare global settings.xml");
         }
+
     }
 
     @Extension(ordinal = 10)
@@ -56,7 +68,7 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
 
         @Override
         public String getDisplayName() {
-            return "global settings file in project workspace";
+            return Messages.FilePathGlobalSettingsProvider_DisplayName();
         }
 
     }

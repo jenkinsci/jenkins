@@ -1,7 +1,9 @@
 package jenkins.mvn;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.IOUtils;
@@ -31,22 +33,31 @@ public class FilePathSettingsProvider extends SettingsProvider {
 
     @Override
     public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
-        if (StringUtils.isEmpty(path))
+        if (StringUtils.isEmpty(path)) {
             return null;
-        if (IOUtils.isAbsolute(path)) {
-            return new FilePath(new File(path));
-        } else {
-            FilePath mrSettings = build.getModuleRoot().child(path);
-            FilePath wsSettings = build.getWorkspace().child(path);
-            try {
-                if (!wsSettings.exists() && mrSettings.exists()) {
-                    wsSettings = mrSettings;
+        }
+
+        try {
+            EnvVars env = build.getEnvironment(listener);
+            String targetPath = Util.replaceMacro(this.path, build.getBuildVariableResolver());
+            targetPath = env.expand(targetPath);
+
+            if (IOUtils.isAbsolute(targetPath)) {
+                return new FilePath(new File(targetPath));
+            } else {
+                FilePath mrSettings = build.getModuleRoot().child(targetPath);
+                FilePath wsSettings = build.getWorkspace().child(targetPath);
+                try {
+                    if (!wsSettings.exists() && mrSettings.exists()) {
+                        wsSettings = mrSettings;
+                    }
+                } catch (Exception e) {
+                    throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote());
                 }
-            } catch (Exception e) {
-                listener.getLogger().print("ERROR: failed to find settings.xml at: "+wsSettings.getRemote());
-                e.printStackTrace();
+                return wsSettings;
             }
-            return wsSettings;
+        } catch (Exception e) {
+            throw new IllegalStateException("failed to prepare settings.xml");
         }
     }
 
@@ -55,7 +66,7 @@ public class FilePathSettingsProvider extends SettingsProvider {
 
         @Override
         public String getDisplayName() {
-            return "File in project workspace";
+            return Messages.FilePathSettingsProvider_DisplayName();
         }
     }
 }
