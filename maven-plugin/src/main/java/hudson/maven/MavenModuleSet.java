@@ -24,7 +24,6 @@
  */
 package hudson.maven;
 
-import static hudson.Util.*;
 import static hudson.model.ItemGroupMixIn.loadChildren;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
@@ -34,7 +33,6 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Plugin;
 import hudson.Util;
-import hudson.PluginManager.PluginUpdateMonitor;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
@@ -275,23 +273,26 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     protected transient String globalSettingConfigPath;
 
     /**
-     * @since 1.488
+     * @since 1.490
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
-     * @since 1.488
+     * @since 1.490
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
 
+    /**
+     * @since 1.490
+     */
     public Object readResolve() {
-        // backward compatibility
+        // backward compatibility, maven-plugin used to have a dependency to the config-file-provider plugin
         Plugin plugin = null;
         if(StringUtils.isNotBlank(this.settingConfigId) || StringUtils.isNotBlank(this.globalSettingConfigId)) {
             plugin = Jenkins.getInstance().getPlugin("config-file-provider");
             if(plugin == null || !plugin.getWrapper().isEnabled()){
-                System.err.println("ERROR: 'config-file-provider' is not installed or disabled, therefore the config cant be fully loaded!!");
+                System.err.println(Messages.MavenModuleSet_readResolve_missingConfigProvider());
             }  
         }
         
@@ -306,8 +307,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 this.settings = newInstance;
                 this.settingConfigId = null;
             } catch (Exception e) {
-                // The PluginUpdateMonitor is also informing the admin about the update
-                System.err.println("ERROR: Please update the 'config-file-provider' plugin, the current version is not supported anymore! (settingConfigId="+settingConfigId+")");
+                // The PluginUpdateMonitor is also informing the admin about the update (via hudson.maven.PluginImpl.init())
+                System.err.println(Messages.MavenModuleSet_readResolve_updateConfigProvider(settingConfigId));
                 e.printStackTrace();
             }
         }
@@ -320,8 +321,8 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 this.globalSettings = newInstance;
                 this.globalSettingConfigId = null;
             } catch (Exception e) {
-                // The PluginUpdateMonitor is also informing the admin about the update
-                System.err.println("ERROR: Please update the 'config-file-provider' plugin, the current version is not supported anymore! (globalSettingConfigId="+globalSettingConfigId+")");
+                // The PluginUpdateMonitor is also informing the admin about the update (via hudson.maven.PluginImpl.init())
+                System.err.println(Messages.MavenModuleSet_readResolve_updateConfigProvider(globalSettingConfigId));
                 e.printStackTrace();
             }
         }
@@ -579,6 +580,20 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
 
     public void setLocalRepository(LocalRepositoryLocator localRepository) {
         this.localRepository = localRepository;
+    }
+    
+    /**
+     * @since 1.490
+     */
+    public void setSettings(SettingsProvider settings) {
+        this.settings = settings;
+    }
+
+    /**
+     * @since 1.490
+     */
+    public void setGlobalSettings(GlobalSettingsProvider globalSettings) {
+        this.globalSettings = globalSettings;
     }
 
     public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {

@@ -14,6 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
+ * @since 1.490
  */
 public class FilePathSettingsProvider extends SettingsProvider {
 

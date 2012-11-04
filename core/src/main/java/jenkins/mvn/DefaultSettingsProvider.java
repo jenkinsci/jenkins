@@ -9,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since 1.490
  */
 public class DefaultSettingsProvider extends SettingsProvider {
 

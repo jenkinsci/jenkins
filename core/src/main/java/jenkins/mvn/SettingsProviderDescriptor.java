@@ -8,6 +8,7 @@ import jenkins.model.Jenkins;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since 1.490
  */
 public abstract class SettingsProviderDescriptor extends Descriptor<SettingsProvider> {
 

@@ -31,6 +31,7 @@ import hudson.model.Items;
 
 /**
  * @author huybrechts
+ * @author Dominik Bartholdi (imod)
  */
 public class PluginImpl extends Plugin {
     @Override
@@ -44,10 +45,13 @@ public class PluginImpl extends Plugin {
 
     }
     
+    /**
+     * @since 1.490
+     */
     @Initializer(after=InitMilestone.PLUGINS_STARTED)
     public static void init(){
         // inform the admin if there is a version of the config file provider installed which is not compatible 
-        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.2.2", "The current installed version of 'config-file-provider' is not compatible with this core anymore (requires > 2.2.1)");        
+        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.2.2", Messages.PluginImpl_updateConfiProvider());        
     }
 
 }

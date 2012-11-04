@@ -68,7 +68,6 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.List;
@@ -127,13 +126,13 @@ public class Maven extends Builder {
     
     /**
      * Provides access to the settings.xml to be used for a build.
-     * @since 1.488
+     * @since 1.490
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
      * Provides access to the global settings.xml to be used for a build.
-     * @since 1.488
+     * @since 1.490
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
@@ -167,11 +166,17 @@ public class Maven extends Builder {
     public String getTargets() {
         return targets;
     }
-    
+
+    /**
+     * @since 1.490
+     */
     public SettingsProvider getSettings() {
         return settings != null ? settings : new DefaultSettingsProvider();
     }
     
+    /**
+     * @since 1.490
+     */
     public GlobalSettingsProvider getGlobalSettings() {
         return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
