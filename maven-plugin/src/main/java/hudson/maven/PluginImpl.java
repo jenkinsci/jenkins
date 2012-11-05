@@ -46,7 +46,7 @@ public class PluginImpl extends Plugin {
     }
     
     /**
-     * @since 1.490
+     * @since 1.491
      */
     @Initializer(after=InitMilestone.PLUGINS_STARTED)
     public static void init(){

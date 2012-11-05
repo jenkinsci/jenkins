@@ -274,18 +274,18 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     protected transient String globalSettingConfigPath;
 
     /**
-     * @since 1.490
+     * @since 1.491
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
-     * @since 1.490
+     * @since 1.491
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
 
     /**
-     * @since 1.490
+     * @since 1.491
      */
     public Object readResolve() {
         // backward compatibility, maven-plugin used to have a dependency to the config-file-provider plugin
@@ -584,14 +584,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
     
     /**
-     * @since 1.490
+     * @since 1.491
      */
     public void setSettings(SettingsProvider settings) {
         this.settings = settings;
     }
 
     /**
-     * @since 1.490
+     * @since 1.491
      */
     public void setGlobalSettings(GlobalSettingsProvider globalSettings) {
         this.globalSettings = globalSettings;

@@ -126,13 +126,13 @@ public class Maven extends Builder {
     
     /**
      * Provides access to the settings.xml to be used for a build.
-     * @since 1.490
+     * @since 1.491
      */
     private SettingsProvider settings = new DefaultSettingsProvider();
     
     /**
      * Provides access to the global settings.xml to be used for a build.
-     * @since 1.490
+     * @since 1.491
      */
     private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
@@ -168,14 +168,14 @@ public class Maven extends Builder {
     }
 
     /**
-     * @since 1.490
+     * @since 1.491
      */
     public SettingsProvider getSettings() {
         return settings != null ? settings : new DefaultSettingsProvider();
     }
     
     /**
-     * @since 1.490
+     * @since 1.491
      */
     public GlobalSettingsProvider getGlobalSettings() {
         return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();

@@ -10,7 +10,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
- * @since 1.490
+ * @since 1.491
  */
 public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
 

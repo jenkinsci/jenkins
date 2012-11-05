@@ -16,7 +16,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
- * @since 1.490
+ * @since 1.491
  */
 public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<GlobalSettingsProvider> implements ExtensionPoint {
 

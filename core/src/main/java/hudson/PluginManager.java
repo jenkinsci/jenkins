@@ -1044,7 +1044,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     
     /**
      * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
-     * @since 1.490
+     * @since 1.491
      */
     @Extension
     public static final class PluginUpdateMonitor extends AdministrativeMonitor {
