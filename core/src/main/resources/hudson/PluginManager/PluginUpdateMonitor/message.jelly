@@ -28,7 +28,7 @@ THE SOFTWARE.
     ${%RequiredPluginUpdates}
     <ul>
 	    <j:forEach var="p" items="${it.pluginsToBeUpdated}">
-	        <li><j:out value="${p.pluginName}"/> - <j:out value="${p.message}"/></li>
+	        <li><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></li>
 	    </j:forEach>
     </ul>
   </div>

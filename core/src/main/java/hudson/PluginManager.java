@@ -1062,9 +1062,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         /**
          * Report to the administrator if the plugin with the given name is older then the required version.
          *  
-         * @param pluginName name of the plugin
+         * @param pluginName shortName of the plugin (artifactId)
          * @param requiredVersion the lowest version which is OK (e.g. 2.2.2)
-         * @param message the message to show
+         * @param message the message to show (plain text)
          */
         public void ifPluginOlderThenReport(String pluginName, String requiredVersion, String message){
             Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
@@ -1095,7 +1095,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public static class PluginUpdateInfo {
             public final String pluginName;
             public final String message;
-            public PluginUpdateInfo(String pluginName, String message) {
+            private PluginUpdateInfo(String pluginName, String message) {
                 this.pluginName = pluginName;
                 this.message = message;
             }

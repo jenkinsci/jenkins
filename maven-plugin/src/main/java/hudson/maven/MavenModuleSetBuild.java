@@ -184,7 +184,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     @Override
     public Result getResult() {
-        Result r = super.getResult(); 
+        Result r = super.getResult();
 
         for (MavenBuild b : getModuleLastBuilds().values()) {
             Result br = b.getResult();
@@ -1000,7 +1000,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private final Properties properties;
         private final String privateRepository;
         private final String alternateSettings;
-        private final String globalSetings;
+        private final String globalSettings;
         private final boolean nonRecursive;
         // We're called against the module root, not the workspace, which can cause a lot of confusion.
         private final String workspaceProper;
@@ -1056,7 +1056,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
             
             this.alternateSettings = SettingsProvider.getSettingsRemotePath(project.getSettings(), build, listener);
-            this.globalSetings = GlobalSettingsProvider.getSettingsRemotePath(project.getGlobalSettings(), build, listener);
+            this.globalSettings = GlobalSettingsProvider.getSettingsRemotePath(project.getGlobalSettings(), build, listener);
             
             this.mavenVersion = mavenVersion;
             this.resolveDependencies = project.isResolveDependencies();
@@ -1141,8 +1141,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 
                 mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
                 mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
-                if (globalSetings != null) {
-                    mavenEmbedderRequest.setGlobalSettings( new File(globalSetings) );
+                if (globalSettings != null) {
+                    mavenEmbedderRequest.setGlobalSettings( new File(globalSettings) );
                 }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
