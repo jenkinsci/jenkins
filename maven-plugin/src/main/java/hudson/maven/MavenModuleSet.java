@@ -85,6 +85,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
@@ -292,7 +293,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         if(StringUtils.isNotBlank(this.settingConfigId) || StringUtils.isNotBlank(this.globalSettingConfigId)) {
             plugin = Jenkins.getInstance().getPlugin("config-file-provider");
             if(plugin == null || !plugin.getWrapper().isEnabled()){
-                System.err.println(Messages.MavenModuleSet_readResolve_missingConfigProvider());
+                LOGGER.severe(Messages.MavenModuleSet_readResolve_missingConfigProvider());
             }  
         }
         
@@ -308,7 +309,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 this.settingConfigId = null;
             } catch (Exception e) {
                 // The PluginUpdateMonitor is also informing the admin about the update (via hudson.maven.PluginImpl.init())
-                System.err.println(Messages.MavenModuleSet_readResolve_updateConfigProvider(settingConfigId));
+                LOGGER.severe(Messages.MavenModuleSet_readResolve_updateConfigProvider(settingConfigId));
                 e.printStackTrace();
             }
         }
@@ -322,7 +323,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 this.globalSettingConfigId = null;
             } catch (Exception e) {
                 // The PluginUpdateMonitor is also informing the admin about the update (via hudson.maven.PluginImpl.init())
-                System.err.println(Messages.MavenModuleSet_readResolve_updateConfigProvider(globalSettingConfigId));
+                LOGGER.severe(Messages.MavenModuleSet_readResolve_updateConfigProvider(globalSettingConfigId));
                 e.printStackTrace();
             }
         }
@@ -1253,4 +1254,6 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             JUnitResultArchiver.class // done by SurefireArchiver
         ));
     }
+    
+    private static final Logger LOGGER = Logger.getLogger(MavenModuleSet.class.getName());
 }
