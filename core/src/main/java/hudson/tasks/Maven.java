@@ -286,13 +286,13 @@ public class Maven extends Builder {
             if(pom!=null)
                 args.add("-f",pom);
             
-            if(!targets.contains(" -s ")) {
+            if(!targets.matches("(.*)?(^-s | -s )(.*)?")) { // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
                 if(StringUtils.isNotBlank(settingsPath)){
                     args.add("-s", settingsPath);
                 }
             }
-            if(!targets.contains(" -gs ")) {
+            if(!targets.matches("(.*)?(^-gs | -gs )(.*)?")) {
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
                 if(StringUtils.isNotBlank(settingsPath)){
                     args.add("-gs", settingsPath);
