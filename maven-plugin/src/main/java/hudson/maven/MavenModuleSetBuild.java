@@ -79,6 +79,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -654,12 +655,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
-                        List<ModuleName> changedModules = new ArrayList<ModuleName>();
                         
-                        if (project.isIncrementalBuild() && !getChangeSet().isEmptySet()) {
-                            changedModules.addAll(getUnbuildModulesSinceLastSuccessfulBuild());
-                        }
-
+                        Set<ModuleName> changedModules = new TreeSet<ModuleName>();
+                        
                         for (MavenModule m : project.sortedActiveModules) {
                             MavenBuild mb = m.newBuild();
                             // JENKINS-8418
@@ -669,11 +667,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             if (!MavenModuleSetBuild.this.getChangeSet().isEmptySet()
                                 && project.isIncrementalBuild()) {
                                 //If there are changes for this module, add it.
-                                // Also add it if we've never seen this module before,
-                                // or if the previous build of this module failed or was unstable.
-                                if ((mb.getPreviousBuiltBuild() == null) ||
-                                    (!getChangeSetFor(m).isEmpty()) 
-                                    || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
+                                // Also add it if we've never seen this module before.
+                                // if the previous build of this module failed or was unstable, this is already added by
+                        	// ChangedModuleAction
+                                if ((mb.getPreviousBuiltBuild() == null) || (!getChangeSetFor(m).isEmpty())) {
                                     changedModules.add(m.getModuleName());
                                 }
                             }
@@ -731,13 +728,28 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         // then do the Maven incremental build commands.
                         // If there are no changed modules, we're building everything anyway.
                         boolean maven2_1orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("2.1") ) >= 0;
-                        boolean needsFullBuild = getPreviousCompletedBuild() != null &&
-                            getPreviousCompletedBuild().getAction(NeedsFullBuildAction.class) != null;
+                        
+                        MavenModuleSetBuild prevComplBuild = getPreviousCompletedBuild();
+			
+                        // if there is no previous completed build, we should always run a full build
+                        boolean needsFullBuild = 
+                        	prevComplBuild == null ||
+                        	prevComplBuild.getAction(NeedsFullBuildAction.class) != null ||
+                        	(prevComplBuild.getResult() != Result.SUCCESS && 
+                        	prevComplBuild.getAction(ChangedModulesAction.class) == null);
+                        
+                        ChangedModulesAction combinedChanges = getChangedModulesSinceLastSuccessfulBuild().clone();
+                        combinedChanges.addChangedModules(changedModules);
                         if (project.isIncrementalBuild() && !needsFullBuild && maven2_1orLater && !changedModules.isEmpty()) {
                             margs.add("-amd");
-                            margs.add("-pl", Util.join(changedModules, ","));
+                            margs.add("-pl", Util.join(combinedChanges.getChangedModules(), ","));
                         }
 
+                        if (project.isIncrementalBuild()) {
+                            // record changed modules
+                            addAction(combinedChanges);
+                        }
+                        
                         if (project.getAlternateSettings() != null) {
                             if (IOUtils.isAbsolute(project.getAlternateSettings())) {
                                 margs.add("-s").add(project.getAlternateSettings());
@@ -872,34 +884,27 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         }
 
         /**
-         * Returns the modules which have not been build since the last successful aggregator build
-         * though they should be because they had SCM changes.
-         * This can happen when the aggregator build fails before it reaches the module.
+         * Returns the modules which source codes have been changed since the last successful aggregator build.
          * 
-         * See JENKINS-5764
+         * See JENKINS-13758
          */
-        private Collection<ModuleName> getUnbuildModulesSinceLastSuccessfulBuild() {
-            Collection<ModuleName> unbuiltModules = new ArrayList<ModuleName>();
-            MavenModuleSetBuild previousSuccessfulBuild = getPreviousSuccessfulBuild();
-            if (previousSuccessfulBuild == null) {
-                // no successful build, yet. Just take the 1st build
-                previousSuccessfulBuild = getParent().getFirstBuild();
+        private ChangedModulesAction getChangedModulesSinceLastSuccessfulBuild() {
+            MavenModuleSetBuild previousBuild = getPreviousBuild();
+
+            if (previousBuild == null) return new ChangedModulesAction();
+            
+            // The last build was successful, so no modules need to be rebuilt
+            if (previousBuild.getResult() == Result.SUCCESS) return new ChangedModulesAction();
+            
+            ChangedModulesAction result = previousBuild.getAction(ChangedModulesAction.class);
+            
+            if (result == null) {
+        	// We have a previous build, but no changed modules, i.e. a legacy build
+        	// this is handled in doRun() (by triggering a full build), so we simply return an empty action
+        	return new ChangedModulesAction();
             }
             
-            if (previousSuccessfulBuild != null) {
-                MavenModuleSetBuild previousBuild = previousSuccessfulBuild;
-                do {
-                    UnbuiltModuleAction unbuiltModuleAction = previousBuild.getAction(UnbuiltModuleAction.class);
-                    if (unbuiltModuleAction != null) {
-                        for (ModuleName name : unbuiltModuleAction.getUnbuildModules()) {
-                            unbuiltModules.add(name);
-                        }
-                    }
-                    
-                    previousBuild = previousBuild.getNextBuild();
-                } while (previousBuild != null && previousBuild != MavenModuleSetBuild.this);
-            }
-            return unbuiltModules;
+            return result;
         }
 
         private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String mavenVersion) throws IOException, InterruptedException {
