@@ -561,7 +561,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         	Result r = null;
         	PrintStream logger = listener.getLogger();
-            FilePath remoteSettings = null, remoteGlobalSettings = null;
+            FilePath remoteSettings = null, remoteGlobalSettings = null, remoteToolchains = null;
 
             try {
             	
@@ -650,6 +650,24 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         	// make sure the transient field is clean
                         	project.globalSettingConfigPath = null;
                         }
+                        
+                        String toolchainsConfigId = project.getToolchainConfigId();
+                        if (StringUtils.isNotBlank(toolchainsConfigId)) {
+                            SettingConfig toolchainsConfig = SettingsProviderUtils.findSettings(toolchainsConfigId);
+                            if (toolchainsConfig == null) {
+                              logger.println(" your Apache Maven build is setup to use a toolchains config with id " + toolchainsConfigId
+                                  + " but cannot find the config");
+                            } else {
+                                logger.println("using toolchains config with name " + toolchainsConfig.name);
+                                if (toolchainsConfig.content != null ) {
+                                    remoteToolchains = SettingsProviderUtils.copyConfigContentToFilePath( toolchainsConfig, getWorkspace() );
+                                    project.toolchainsConfigPath = remoteToolchains.getRemote();
+                                }
+                            }
+                        } else {
+                          // make sure the transient field is clean
+                          project.toolchainsConfigPath = null;
+                        }
 
                         parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
@@ -721,6 +739,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         if (project.globalSettingConfigPath != null)
                             margs.add("-gs" , project.globalSettingConfigPath);
+                        
+                        if (project.toolchainsConfigPath != null) {
+                            if (maven3orLater) {
+                                margs.add("-t", project.toolchainsConfigPath);
+                            } else {
+                                logger.println("Using toolchains configuration on a pre Maven3 runtime, skipped");
+                            }
+                        }
 
 
                         
@@ -857,6 +883,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 if (remoteGlobalSettings != null ) {
                     remoteGlobalSettings.delete();
                 }
+                if (remoteToolchains != null ) {
+                  remoteToolchains.delete();
+              }
             }
         }
 

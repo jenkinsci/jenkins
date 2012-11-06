@@ -253,10 +253,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     private String globalSettingConfigId;
 
     /**
+     * @since 1.483
+     */
+    private String toolchainConfigId;
+
+    /**
      * used temporary during maven build to store file path
      * @since 1.426
      */
     protected transient String globalSettingConfigPath;
+    
+    /**
+     * used temporary during maven build to store toolchains file path
+     * @since 1.483
+     */
+    protected transient String toolchainsConfigPath;
+ 
     /**
      * Reporters configured at {@link MavenModuleSet} level. Applies to all {@link MavenModule} builds.
      */
@@ -573,6 +585,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public void setGlobalSettingConfigId( String globalSettingConfigId ) {
         this.globalSettingConfigId = globalSettingConfigId;
+    }
+
+    /**
+     * @since 1.483
+     * @return
+     */
+    public String getToolchainConfigId() {
+        return toolchainConfigId;
+    }
+
+    /**
+     * @since 1.483
+     * @param toolchainConfigId
+     */
+    public void setToolchainConfigId( String toolchainConfigId ) {
+        this.toolchainConfigId = toolchainConfigId;
     }
 
     /**
@@ -965,6 +993,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     /**
+     * @since 1.483
+     * @return
+     */
+    public List<SettingConfig> getAllMavenToolchainsConfigs() {
+        return SettingsProviderUtils.getAllMavenToolchainsConfigs();
+    }
+
+    /**
      * Set mavenOpts.
      */
     public void setMavenOpts(String mavenOpts) {
@@ -1067,6 +1103,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
         settingConfigId = req.getParameter( "maven.mavenSettingsConfigId" );
         globalSettingConfigId = req.getParameter( "maven.mavenGlobalSettingConfigId" );
+        toolchainConfigId = req.getParameter( "maven.mavenToolchainConfigId" );
 
         runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
         prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");

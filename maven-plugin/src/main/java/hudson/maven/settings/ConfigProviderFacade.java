@@ -42,6 +42,14 @@ public interface ConfigProviderFacade {
      * @return list of all global settings
      */
     public List<SettingConfig> getAllGlobalMavenSettingsConfigs();
+    
+    /**
+     * Gets all maven toolchains
+     * 
+     * @since 1.483
+     * @return list of all global settings
+     */
+    public List<SettingConfig> getAllMavenToolchainsConfigs();
 
     /**
      * Gets a settings config by its id.
