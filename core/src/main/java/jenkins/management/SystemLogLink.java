@@ -39,12 +39,12 @@ public class SystemLogLink extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return Messages.CliLink_DisplayName();
+        return Messages.SystemLogLink_DisplayName();
     }
 
     @Override
     public String getDescription() {
-        return Messages.CliLink_Description();
+        return Messages.SystemLogLink_Description();
     }
 
     @Override
