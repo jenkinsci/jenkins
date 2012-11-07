@@ -55,6 +55,18 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Support failsafe the same way as surefire in maven2 jobs
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.490>What's new in 1.490</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed the redirect handling in IPv6 literal address.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14452">issue 14452</a>)
   <li class=bug>
     Update logging levels in LogRotator - hudson.tasks.LogRotator perform
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15540">issue 15540</a>)
@@ -64,12 +76,11 @@ Upcoming changes</a>
   <li class=bug>
     When installing plugins with overlapping dependencies, Jenkins downloads the duplicate plugins multiple times.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10569">issue 10569</a>)
+  <li class=rfe>
+    Disable Nagle's algorithm for TCP/IP slave connection
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.489>What's new in 1.489</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.489>What's new in 1.489</a> (2012/11/04)</h3>
 <ul class=image>
   <li class=bug>
     JENKINS_HOME can be now on UNC path (like \\server\mount\dir)
@@ -80,7 +91,6 @@ Upcoming changes</a>
   <li class=rfe>
     Improved the auto-completion of job names to support hierarchy better.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.488>What's new in 1.488</a> (2012/10/28)</h3>
 <ul class=image>
   <li class=bug>
