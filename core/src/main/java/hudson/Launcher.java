@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -279,7 +278,8 @@ public abstract class Launcher {
          * becomes the "current" process), these variables will be also set.
          */
         public ProcStarter envs(Map<String, String> overrides) {
-            return envs(Util.mapToEnv(overrides));
+            this.envs = Util.mapToEnv(overrides);
+            return this;
         }
 
         /**
@@ -287,12 +287,19 @@ public abstract class Launcher {
          *      List of "VAR=VALUE". See {@link #envs(Map)} for the semantics.
          */
         public ProcStarter envs(String... overrides) {
+            if (overrides != null) {
+                for (String override : overrides) {
+                    if (override.indexOf('=') == -1) {
+                        throw new IllegalArgumentException(override);
+                    }
+                }
+            }
             this.envs = overrides;
             return this;
         }
 
         public String[] envs() {
-            return envs;
+            return envs.clone();
         }
 
         /**
@@ -708,18 +715,11 @@ public abstract class Launcher {
             public Proc launch(ProcStarter starter) throws IOException {
                 EnvVars e = new EnvVars(env);
                 if (starter.envs!=null) {
-                    for (int i=0; i<starter.envs.length; i+=2)
-                        e.put(starter.envs[i],starter.envs[i+1]);
+                    for (String env : starter.envs) {
+                        e.addLine(env);
+                    }
                 }
-
-                String[] r = new String[e.size()*2];
-                int idx=0;
-                for (Entry<String, String> i : e.entrySet()) {
-                    r[idx++] = i.getKey();
-                    r[idx++] = i.getValue();
-                }
-
-                starter.envs = r;
+                starter.envs = Util.mapToEnv(e);
                 return outer.launch(starter);
             }
 
