@@ -76,6 +76,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 /**
  * Build by using Maven.
@@ -138,6 +139,9 @@ public class Maven extends Builder {
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
+    
+    private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
+    private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
 
     public Maven(String targets,String name) {
         this(targets,name,null,null,null,false, null, null);
@@ -286,13 +290,14 @@ public class Maven extends Builder {
             if(pom!=null)
                 args.add("-f",pom);
             
-            if(!targets.matches("(.*)?(^-s | -s )(.*)?")) { // check the given target/goals do not contain settings parameter already
+            
+            if(!S_PATTERN.matcher(targets).find()){ // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
                 if(StringUtils.isNotBlank(settingsPath)){
                     args.add("-s", settingsPath);
                 }
             }
-            if(!targets.matches("(.*)?(^-gs | -gs )(.*)?")) {
+            if(!GS_PATTERN.matcher(targets).find()){
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
                 if(StringUtils.isNotBlank(settingsPath)){
                     args.add("-gs", settingsPath);
