@@ -48,7 +48,6 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.DescribableList;
-import hudson.util.IOUtils;
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
@@ -73,6 +72,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import jenkins.mvn.SettingsProvider;
 
 /**
  * {@link Run} for {@link MavenModule}.
@@ -700,20 +701,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             if(localRepo!=null)
                 // the workspace must be on this node, so getRemote() is safe.
                 margs.add("-Dmaven.repo.local="+localRepo.getRemote());
-
-            if (mms.getAlternateSettings() != null) {
-                if (IOUtils.isAbsolute(mms.getAlternateSettings())) {
-                    margs.add("-s").add(mms.getAlternateSettings());
-                } else {
-                    FilePath mrSettings = getModuleRoot().child(mms.getAlternateSettings());
-                    FilePath wsSettings = getWorkspace().child(mms.getAlternateSettings());
-                    if (!wsSettings.exists() && mrSettings.exists())
-                        wsSettings = mrSettings;
-
-                    margs.add("-s").add(wsSettings.getRemote());
-                }
+            
+            String settingsPath = SettingsProvider.getSettingsRemotePath(mms.getSettings(), MavenBuild.this, listener);
+            if (settingsPath != null) {
+                margs.add("-s").add(settingsPath);
             }
-
 
             margs.add("-f",getModuleRoot().child("pom.xml").getRemote());
             margs.addTokenized(getProject().getGoals());
