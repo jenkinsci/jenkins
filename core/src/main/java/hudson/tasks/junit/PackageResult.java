@@ -44,7 +44,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
      * All {@link ClassResult}s keyed by their short name.
      */
     private final Map<String,ClassResult> classes = new TreeMap<String,ClassResult>();
-    private int passCount,failCount,skipCount;
+    private int passCount,failCount,errorCount,skipCount;
     private final hudson.tasks.junit.TestResult parent;
     private float duration; 
 
@@ -138,6 +138,12 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
 
     @Exported
     @Override
+    public int getErrorCount() {
+        return errorCount;
+    }
+
+    @Exported
+    @Override
     public int getSkipCount() {
         return skipCount;
     }
@@ -166,7 +172,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
      */
     @Override
     public boolean hasChildren() {
-        int totalTests = passCount + failCount + skipCount;
+        int totalTests = passCount + failCount + errorCount + skipCount;
         return (totalTests != 0);
     }
 
@@ -179,7 +185,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         List<CaseResult> r = new ArrayList<CaseResult>();
         for (ClassResult clr : classes.values()) {
             for (CaseResult cr : clr.getChildren()) {
-                if (!cr.isPassed() && !cr.isSkipped()) {
+                if (!cr.isPassed() && !cr.isSkipped() && !cr.isFailureAnError()) {
                     r.add(cr);
             }
         }
@@ -187,6 +193,18 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         return r;
     }
 
+    public List<CaseResult> getErrorTests() {
+        List<CaseResult> r = new ArrayList<CaseResult>();
+        for (ClassResult clr : classes.values()) {
+            for (CaseResult cr : clr.getChildren()) {
+                if (!cr.isPassed() && !cr.isSkipped() && cr.isFailureAnError()) {
+                    r.add(cr);
+            }
+        }
+        }
+        return r;
+    }
+    
     /**
      * Returns a list of the failed cases, sorted by age.
      * @return
@@ -256,7 +274,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
      */
     @Override
     public boolean isPassed() {
-        return (failCount == 0 && skipCount == 0);
+        return (failCount == 0 && errorCount == 0 && skipCount == 0);
     }
 
     void add(CaseResult r) {
@@ -276,6 +294,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     public void tally() {
         passCount = 0;
         failCount = 0;
+        errorCount = 0;
         skipCount = 0;
         duration = 0;
 
@@ -283,17 +302,19 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
             cr.tally();
             passCount += cr.getPassCount();
             failCount += cr.getFailCount();
+            errorCount += cr.getErrorCount();
             skipCount += cr.getSkipCount();
             duration += cr.getDuration();
         }
     }
 
     void freeze() {
-        passCount = failCount = skipCount = 0;
+        passCount = failCount = errorCount = skipCount = 0;
         for (ClassResult cr : classes.values()) {
             cr.freeze();
             passCount += cr.getPassCount();
             failCount += cr.getFailCount();
+            errorCount += cr.getErrorCount();
             skipCount += cr.getSkipCount();
         }
     }

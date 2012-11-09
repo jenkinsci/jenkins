@@ -57,6 +57,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     private final boolean skipped;
     private final String errorStackTrace;
     private final String errorDetails;
+    private final boolean failureIsAnError;
     private transient SuiteResult parent;
 
     private transient ClassResult classResult;
@@ -121,6 +122,12 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         testName = nameAttr;
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
+        if(errorStackTrace!=null) {
+            failureIsAnError = isFailureAnError(testCase);
+        }
+        else {
+        	failureIsAnError = false; //defaults to false
+        }
         this.parent = parent;
         duration = parseTime(testCase);
         skipped = isMarkedAsSkipped(testCase);
@@ -159,6 +166,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.errorDetails = "";
+        this.failureIsAnError = false; //defaults to failure
         this.parent = parent;
         this.stdout = null;
         this.stderr = null;
@@ -188,6 +196,11 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         }
 
         return msg.attributeValue("message");
+    }
+
+    private static boolean isFailureAnError(Element testCase) {
+        String msg = testCase.elementText("error");
+        return (msg!=null);
     }
 
     /**
@@ -444,6 +457,10 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     public boolean isPassed() {
         return !skipped && errorStackTrace==null;
     }
+    
+    public boolean isFailureAnError() {
+        return !isPassed() && failureIsAnError;
+    }
 
     /**
      * Tests whether the test was skipped or not.  TestNG allows tests to be
@@ -498,13 +515,13 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         }
         CaseResult pr = getPreviousResult();
         if(pr==null) {
-            return isPassed() ? Status.PASSED : Status.FAILED;
+            return isPassed() ? Status.PASSED : failureIsAnError ? Status.ERROR : Status.FAILED;
         }
 
         if(pr.isPassed()) {
             return isPassed() ? Status.PASSED : Status.REGRESSION;
         } else {
-            return isPassed() ? Status.FIXED : Status.FAILED;
+            return isPassed() ? Status.FIXED : failureIsAnError ? Status.ERROR : Status.FAILED;
         }
     }
 
@@ -533,6 +550,10 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
          * This test failed, just like its previous run.
          */
         FAILED("result-failed",Messages._CaseResult_Status_Failed(),false),
+        /**
+         * This test failed with an error, just like its previous run.
+         */
+        ERROR("result-failed",Messages._CaseResult_Status_Failed(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
