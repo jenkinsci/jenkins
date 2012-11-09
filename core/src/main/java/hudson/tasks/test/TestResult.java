@@ -90,7 +90,7 @@ public abstract class TestResult extends TestObject {
      *
      */
     public Result getBuildResult() {
-        if (getFailCount() > 0) {
+        if (getFailCount() > 0 || getErrorCount() > 0) {
             return Result.UNSTABLE;
         } else {
             return null;
@@ -118,6 +118,9 @@ public abstract class TestResult extends TestObject {
         return 0;
     }
 
+    public /* abstract */ int getErrorCount() {
+        return 0;
+    }
 
     /**
      * Gets the total number of skipped tests.
@@ -170,6 +173,9 @@ public abstract class TestResult extends TestObject {
         return emptyList();
     }
 
+    public Collection<? extends TestResult> getErrorTests() {
+        return emptyList();
+    }
 
     /**
      * Gets the "children" of this test result that passed
@@ -195,11 +201,19 @@ public abstract class TestResult extends TestObject {
         return 0;
     }
 
+    public /* abstract */ int getErrorSince() {
+        return 0;
+    }
+
     /**
      * If this test failed, then return the run
      * when this test started failing.
      */
     public Run<?,?> getFailedSinceRun() {
+        return null;
+    }
+
+    public Run<?,?> getErrorSinceRun() {
         return null;
     }
 
@@ -235,7 +249,7 @@ public abstract class TestResult extends TestObject {
      * @return true if the test was not skipped and did not fail, false otherwise.
      */
     public boolean isPassed() {
-        return ((getSkipCount() == 0) && (getFailCount() == 0));
+        return ((getSkipCount() == 0) && (getFailCount() == 0) && (getErrorCount() == 0));
     }
 
     public String toPrettyString() {
@@ -244,6 +258,7 @@ public abstract class TestResult extends TestObject {
         sb.append("Name: ").append(this.getName()).append(", ");
         sb.append("Result: ").append(this.getBuildResult()).append(",\n");
         sb.append("Total Count: ").append(this.getTotalCount()).append(", ");
+        sb.append("Error: ").append(this.getErrorCount()).append(", ");
         sb.append("Fail: ").append(this.getFailCount()).append(", ");
         sb.append("Skipt: ").append(this.getSkipCount()).append(", ");
         sb.append("Pass: ").append(this.getSkipCount()).append(",\n");

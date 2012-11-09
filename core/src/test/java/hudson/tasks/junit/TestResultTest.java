@@ -144,6 +144,40 @@ public class TestResultTest extends TestCase {
         assertEquals("Wrong number of test cases", 1, testResult.getTotalCount());
         assertEquals("Wrong duration for test result", 1.0, testResult.getDuration(), 0.01);
     }
+    
+    @Bug(4951)
+    public void testDistinguishFailuresAndErrors() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("JENKINS-4951/junit-report-4951.xml"));
+        testResult.tally();
+
+        System.out.println("4951: passed count: "+testResult.getPassCount());
+        assertEquals("Wrong number of passed tests", 4, testResult.getPassCount());
+        System.out.println("4951: fail count: "+testResult.getFailCount());
+        assertEquals("Wrong number of failed tests", 2, testResult.getFailCount());
+        System.out.println("4951: error count: "+testResult.getErrorCount());
+        assertEquals("Wrong number of error tests", 1, testResult.getErrorCount());
+
+        SuiteResult suite = testResult.getSuite("tbrugz.jenkinstest.TestIt");
+        assertNotNull("suite should not be null", suite);
+
+        CaseResult crPassed = suite.getCase("testOK1");
+        System.out.println(crPassed.getDisplayName()+": e/f: "+crPassed.getErrorCount()+"/"+crPassed.getFailCount());
+        assertEquals("CaseResult should be passed but is failed", 0, crPassed.getFailCount());
+        assertEquals("CaseResult should be passed but is error", 0, crPassed.getErrorCount());
+        assertNull("passed CaseResult.isFailureAnError() should be null", crPassed.isFailureAnError());
+
+        CaseResult crError = suite.getCase("testError1");
+        System.out.println(crError.getDisplayName()+": e/f: "+crError.getErrorCount()+"/"+crError.getFailCount());
+        assertEquals("CaseResult should be an error", 1, crError.getErrorCount());
+        assertEquals("CaseResult.isFailureAnError() should be TRUE", Boolean.TRUE, crError.isFailureAnError());
+
+        CaseResult crFailure = suite.getCase("testFail1");
+        System.out.println(crFailure.getDisplayName()+": e/f: "+crFailure.getErrorCount()+"/"+crFailure.getFailCount());
+        assertEquals("CaseResult should be a failure", 1, crFailure.getFailCount());
+        assertEquals("CaseResult.isFailureAnError() should be FALSE", Boolean.FALSE, crFailure.isFailureAnError());
+        
+    }
 
     private static final XStream XSTREAM = new XStream2();
 
