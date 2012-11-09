@@ -844,6 +844,15 @@ THE SOFTWARE.
         <directory>${m2BuildDirectory}</directory>
         <plugins>
           <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <!-- Otherwise m2e is unhappy because of @Override annotations -->
+              <source>1.6</source>
+              <target>1.6</target>
+            </configuration>
+          </plugin>
+
+          <plugin>
             <groupId>org.maven.ide.eclipse</groupId>
             <artifactId>lifecycle-mapping</artifactId>
             <version>0.12.0</version>
