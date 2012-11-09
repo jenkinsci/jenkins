@@ -38,6 +38,10 @@ import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.GlobalSettingsProvider;
+import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -55,6 +59,8 @@ import hudson.util.VariableResolver;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
@@ -62,7 +68,6 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.List;
@@ -71,6 +76,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 /**
  * Build by using Maven.
@@ -118,30 +124,65 @@ public class Maven extends Builder {
      * @since 1.322
      */
     public boolean usePrivateRepository = false;
+    
+    /**
+     * Provides access to the settings.xml to be used for a build.
+     * @since 1.491
+     */
+    private SettingsProvider settings = new DefaultSettingsProvider();
+    
+    /**
+     * Provides access to the global settings.xml to be used for a build.
+     * @since 1.491
+     */
+    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
+    
+    private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
+    private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
 
     public Maven(String targets,String name) {
-        this(targets,name,null,null,null,false);
+        this(targets,name,null,null,null,false, null, null);
     }
 
     public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
-	this(targets, name, pom, properties, jvmOptions, false);
+        this(targets, name, pom, properties, jvmOptions, false, null, null);
+    }
+    
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
     
     @DataBoundConstructor
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
         this.usePrivateRepository = usePrivateRepository;
+        this.settings = settings != null ? settings : new DefaultSettingsProvider();
+        this.globalSettings = globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
 
     public String getTargets() {
         return targets;
+    }
+
+    /**
+     * @since 1.491
+     */
+    public SettingsProvider getSettings() {
+        return settings != null ? settings : new DefaultSettingsProvider();
+    }
+    
+    /**
+     * @since 1.491
+     */
+    public GlobalSettingsProvider getGlobalSettings() {
+        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
     }
 
     public void setUsePrivateRepository(boolean usePrivateRepository) {
@@ -248,6 +289,20 @@ public class Maven extends Builder {
             }
             if(pom!=null)
                 args.add("-f",pom);
+            
+            
+            if(!S_PATTERN.matcher(targets).find()){ // check the given target/goals do not contain settings parameter already
+                String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
+                if(StringUtils.isNotBlank(settingsPath)){
+                    args.add("-s", settingsPath);
+                }
+            }
+            if(!GS_PATTERN.matcher(targets).find()){
+                String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
+                if(StringUtils.isNotBlank(settingsPath)){
+                    args.add("-gs", settingsPath);
+                }
+            }
 
             Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
