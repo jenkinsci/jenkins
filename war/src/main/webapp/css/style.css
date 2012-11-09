@@ -745,6 +745,10 @@ TABLE.fileList TD.fileSize {
   color: #ef2929;
 }
 
+.result-error {
+  color: #af0909;
+}
+
 .result-regression {
   color: #ef2929;
   font-weight: bold;

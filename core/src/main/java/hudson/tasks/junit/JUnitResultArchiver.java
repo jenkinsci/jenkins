@@ -175,7 +175,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 		build.getActions().add(action);
 		CHECKPOINT.report();
 
-		if (action.getResult().getFailCount() > 0)
+		if (action.getResult().getFailCount() > 0 || action.getResult().getErrorCount() > 0)
 			build.setResult(Result.UNSTABLE);
 
 		return true;

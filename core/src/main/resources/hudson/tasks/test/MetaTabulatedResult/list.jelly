@@ -30,6 +30,7 @@ THE SOFTWARE.
         <td class="pane-header">${%Build}</td>
         <td class="pane-header">${%Description}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
+        <td class="pane-header" style="width:5em">${%Error}</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
         <td class="pane-header" style="width:5em">${%Total}</td>
@@ -48,6 +49,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" style="text-align:right"><j:out value="${p.description}"/></td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
+            <td class="pane" style="text-align:right">${p.errorCount}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
