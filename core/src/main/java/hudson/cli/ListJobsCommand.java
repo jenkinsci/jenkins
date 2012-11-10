@@ -59,13 +59,16 @@ public class ListJobsCommand extends CLICommand {
             if (view != null) {
                 jobs = view.getItems();
             }
+            // If no view was found, try with an item group.
             else {
                 final Item item = h.getItemByFullName(name);
 
+                // If item group was found use it's jobs.
                 if (item instanceof ItemGroup) {
                     ItemGroup itemGroup = (ItemGroup) item;
                     jobs = itemGroup.getItems();
                 }
+                // No view and no item group with the given name found.
                 else {
                     jobs = Collections.emptyList();
                 }
