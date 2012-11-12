@@ -144,6 +144,33 @@ public class TestResultTest extends TestCase {
         assertEquals("Wrong number of test cases", 1, testResult.getTotalCount());
         assertEquals("Wrong duration for test result", 1.0, testResult.getDuration(), 0.01);
     }
+    
+    @Bug(4951)
+    public void testDistinguishFailuresAndErrors() throws IOException, URISyntaxException {
+        TestResult testResult = new TestResult();
+        testResult.parse(getDataFile("junit-report-4951.xml"));
+        testResult.tally();
+
+        System.out.println("4951: fail count: "+testResult.getFailCount());
+        assertEquals("Wrong number of failed tests", 1, testResult.getFailCount());
+        System.out.println("4951: error count: "+testResult.getErrorCount());
+        assertEquals("Wrong number of error tests", 2, testResult.getErrorCount());
+
+        SuiteResult suite = testResult.getSuite("some.package.somewhere");
+        System.out.println(suite+" "+suite.getDuration());
+        /*List<CaseResult> cases = suite.getCases();
+        for(CaseResult cr: cases) {
+            System.out.println(cr.getDisplayName()+": "+cr.getErrorCount()+"/"+cr.getFailCount());
+        }*/
+
+        CaseResult crE = suite.getCase("testError");
+        System.out.println(crE.getDisplayName()+": "+crE.getErrorCount()+"/"+crE.getFailCount());
+        assertEquals("CaseResult should be an error", 1, crE.getErrorCount());
+
+        CaseResult crF = suite.getCase("testFailure");
+        assertEquals("CaseResult should be a failure", 1, crF.getFailCount());
+        
+    }
 
     private static final XStream XSTREAM = new XStream2();
 

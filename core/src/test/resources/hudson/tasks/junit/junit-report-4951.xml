@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="1" hostname="whocares" name="some.package.somewhere" tests="2" time="0.016" timestamp="2008-07-03T15:42:30">
+  <testcase classname="some.package.somewhere.WhooHoo" name="testError" time="0.016">
+    <error message="this normally has the string like, expected mullet, but got bream" type="org.junit.ComparisonFailure">	at some.package.somewhere.WhooHoo.testHudsonReporting(WhooHoo.java:48)</error>
+  </testcase>
+  <testcase classname="some.package.somewhere.WhooHoo" name="testError2" time="0.016">
+    <error message="this normally has the string like, expected mullet, but got bream" type="org.junit.ComparisonFailure">	at some.package.somewhere.WhooHoo.testHudsonReporting(WhooHoo.java:48)</error>
+  </testcase>
+  <testcase classname="some.package.somewhere.WhooHoo" name="testFailure" time="0.016">
+    <failure message="this normally has the string like, expected mullet, but got bream" type="org.junit.ComparisonFailure">	at some.package.somewhere.WhooHoo.testHudsonReporting(WhooHoo.java:48)</failure>
+  </testcase>
+</testsuite>

@@ -325,7 +325,7 @@ public final class TestResult extends MetaTabulatedResult {
     @Exported(visibility=999)
     @Override
     public int getPassCount() {
-        return totalTests-getFailCount()-getSkipCount();
+        return totalTests-getFailCount()-getErrorCount()-getSkipCount();
     }
 
     @Exported(visibility=999)
@@ -461,7 +461,7 @@ public final class TestResult extends MetaTabulatedResult {
      */
     @Override
     public boolean isPassed() {
-       return (getFailCount() == 0);
+       return (getFailCount() == 0) && (getErrorCount() == 0);
     }
 
     @Override
@@ -558,6 +558,7 @@ public final class TestResult extends MetaTabulatedResult {
             pr.tally();
             skippedTests += pr.getSkipCount();
             failedTests.addAll(pr.getFailedTests());
+            errorTests.addAll(pr.getErrorTests());
             totalTests += pr.getTotalCount();
         }
     }
