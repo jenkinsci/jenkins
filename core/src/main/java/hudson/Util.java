@@ -190,30 +190,53 @@ public class Util {
     }
 
     /**
-     * Deletes the contents of the given directory (but not the directory itself)
-     * recursively.
+     * Deletes the contents of the given directory (but not the directory
+     * itself) recursively (and does not take no for an answer). If necessary,
+     * it'll have multiple attempts at deleting things.
      *
      * @throws IOException
      *      if the operation fails.
      */
     public static void deleteContentsRecursive(File file) throws IOException {
-        File[] files = file.listFiles();
-        if(files==null)
-            return;     // the directory didn't exist in the first place
-        for (File child : files)
-            deleteRecursive(child);
+        IOException ex = tryToDeleteContents(file);
+        for( int i=1; i<=DELETION_RETRIES && ex!=null ; i++ ) {
+            waitBetweenDeletes(i);
+            ex = tryToDeleteContents(file);
+        }
+        if( ex!=null )
+            throw ex;
     }
 
     /**
-     * Deletes this file (and does not take no for an answer).
+     * Deletes this file (and does not take no for an answer). If necessary,
+     * it'll have multiple attempts at deleting things.
+     *
      * @param f a file to delete
      * @throws IOException if it exists but could not be successfully deleted
      */
     public static void deleteFile(File f) throws IOException {
+        IOException ex = tryToDeleteFile(f);
+        for( int i=1; i<=DELETION_RETRIES && ex!=null ; i++ ) {
+            waitBetweenDeletes(i);
+            ex = tryToDeleteFile(f);
+        }
+        if( ex!=null )
+            throw ex;
+    }
+
+    /**
+     * Deletes a file or folder, returning the first exception encountered, but
+     * having a goood go at deleting it.
+     *
+     * @param f
+     * What to delete. If a directory, it'll need to be empty.
+     * @return Any exception encountered, or null on success.
+     */
+    private static IOException tryToDeleteFile(File f) {
         if (!f.delete()) {
             if(!f.exists())
                 // we are trying to delete a file that no longer exists, so this is not an error
-                return;
+                return null;
 
             // perhaps this file is read-only?
             makeWritable(f);
@@ -239,10 +262,11 @@ public class Util {
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
-                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
-                throw new IOException("Unable to delete " + f.getPath());
+                    return new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
+                return new IOException("Unable to delete " + f.getPath());
             }
         }
+        return null;
     }
 
     /**
@@ -279,18 +303,116 @@ public class Util {
 
     }
 
+    /**
+     * Deletes the given directory (including its contents) recursively (and
+     * does not take no for an answer). If necessary, it'll have multiple
+     * attempts at deleting things.
+     *
+     * @throws IOException
+     * if the operation fails.
+     */
     public static void deleteRecursive(File dir) throws IOException {
-        if(!isSymlink(dir))
-            deleteContentsRecursive(dir);
-        try {
-            deleteFile(dir);
-        } catch (IOException e) {
+        IOException ex = tryToDeleteRecursive(dir);
+        for( int i=1; i<=DELETION_RETRIES && ex!=null ; i++ ) {
             // if some of the child directories are big, it might take long enough to delete that
             // it allows others to create new files, causing problemsl ike JENKINS-10113
-            // so give it one more attempt before we give up.
-            if(!isSymlink(dir))
-                deleteContentsRecursive(dir);
-            deleteFile(dir);
+            // so give it more attempts before we give up.
+            waitBetweenDeletes(i);
+            ex = tryToDeleteRecursive(dir);
+        }
+        if( ex!=null )
+            throw ex;
+    }
+
+    /**
+     * Deletes a file or folder, returning the first exception encountered, but
+     * having a go at deleting everything. i.e. it does not <em>stop</em> on the
+     * first exception, but only tries everything once.
+     *
+     * @param fileOrDirectory
+     * What to delete. If a directory, the contents will be deleted
+     * too.
+     * @return The first exception encountered.
+     */
+    private static IOException tryToDeleteRecursive(File fileOrDirectory) {
+        IOException firstCaught = null;
+        boolean isSymlink = false;
+        try {
+            isSymlink = isSymlink(fileOrDirectory);
+        } catch (IOException ex) {
+            if( firstCaught==null) {
+                firstCaught = ex;
+            }
+        }
+        if(!isSymlink) {
+            IOException justCaught = tryToDeleteContents(fileOrDirectory);
+            if( firstCaught==null) {
+                firstCaught = justCaught;
+            }
+        }
+        IOException justCaught = tryToDeleteFile(fileOrDirectory);
+        if( firstCaught==null) {
+            firstCaught = justCaught;
+        }
+        return firstCaught;
+    }
+
+    /**
+     * Deletes a folder's contents, returning the first exception encountered,
+     * but having a go at deleting everything. i.e. it does not <em>stop</em>
+     * on the first exception, but only tries everything once.
+     *
+     * @param directory
+     * The directory whose contents will be deleted.
+     * @return The first exception encountered.
+     */
+    private static IOException tryToDeleteContents(File directory) {
+        IOException firstCaught = null;
+        File[] directoryContents = directory.listFiles();
+        if(directoryContents!=null) {
+            for (File child : directoryContents) {
+                IOException justCaught = tryToDeleteRecursive(child);
+                if( firstCaught==null) {
+                    firstCaught = justCaught;
+                }
+            }
+        }
+        return firstCaught;
+    }
+
+    /**
+     * The pause between delete attempts.
+     * <p>
+     * See {@link #WAIT_BETWEEN_DELETION_RETRIES} for details of
+     * the pause duration.
+     */
+    private static void waitBetweenDeletes(int numberOfAttemptsSoFar) {
+        long delayInMs;
+        if (WAIT_BETWEEN_DELETION_RETRIES>0) {
+            delayInMs = WAIT_BETWEEN_DELETION_RETRIES;
+        } else if (WAIT_BETWEEN_DELETION_RETRIES==0) {
+            return;
+        } else {
+            delayInMs = -numberOfAttemptsSoFar*WAIT_BETWEEN_DELETION_RETRIES;
+        }
+        if (delayInMs>0) {
+            try {
+                Thread.sleep(delayInMs);
+            } catch (InterruptedException e) {
+                // ignored
+            }
+        }
+    }
+
+    /**
+     * Possibly call to the garbage collector to work around a
+     * Windows issue.
+     * <p>
+     * See {@link #GC_AFTER_FAILED_DELETE} for when the GC is called.
+     */
+    private static void possiblyCallGC() {
+        if (GC_AFTER_FAILED_DELETE) {
+            System.gc();
         }
     }
 
@@ -1265,4 +1387,48 @@ public class Util {
     public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
 
     public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
+
+    /**
+     * The number of times we'll attempt to delete files/directory trees before
+     * giving up and throwing an exception.
+     * <p>
+     * e.g. if some of the child directories are big, it might take long enough
+     * to delete that it allows others to create new files, causing problems
+     * like JENKINS-10113 we so give it multiple attempts before we give up.
+     * Or, if we're on Windows, then deletes can fail for transient reasons
+     * regardless of external activity; see JENKINS-15331.
+     */
+    public static int DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetries", 3).intValue();
+
+    /**
+     * The time we'll wait between attempts to delete files when retrying.<br>
+     * This has no effect unless {@link #DELETION_RETRIES} is non-zero.
+     * <p>
+     * If zero, we will not delay between attempts.<br>
+     * If negative, we will wait an (linearly) increasing multiple of this value between attempts.
+     */
+    public static int WAIT_BETWEEN_DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+
+    /**
+     * If this flag is set to true then we will perform a garbage collection
+     * after a deletion failure before we next retry the delete.<br>
+     * It defaults to <code>true</code> on Windows, <code>false</code> on other
+     * operating systems.
+     * <p>
+     * This has no effect unless {@link #DELETION_RETRIES} is non-zero.
+     * <p>
+     * Setting this flag to true is believed to resolve some problems on Windows
+     * but also for directory trees residing on an NFS share.
+     */
+    public static boolean GC_AFTER_FAILED_DELETE;
+    static {
+        final String propertyName = Util.class.getName() + ".performGCOnFailedDelete";
+        final String propertyValue = System.getProperty(propertyName);
+        if (propertyValue == null) {
+            GC_AFTER_FAILED_DELETE = Functions.isWindows();
+        }
+        else {
+            GC_AFTER_FAILED_DELETE = Boolean.parseBoolean(propertyValue);
+        }
+    }
 }
