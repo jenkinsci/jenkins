@@ -70,6 +70,7 @@ public class ListJobsCommand extends CLICommand {
                 }
                 // No view and no item group with the given name found.
                 else {
+                    stderr.println("No view or item group with the given name found");
                     jobs = Collections.emptyList();
                 }
             }
