@@ -42,6 +42,7 @@ import java.util.List;
  */
 public final class ClassResult extends TabulatedResult implements Comparable<ClassResult> {
     private final String className; // simple name
+    private transient String safeName;
 
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
 
@@ -112,8 +113,11 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         else            return className.substring(idx+1);
     }
 
-    public @Override String getSafeName() {
-        return uniquifyName(parent.getChildren(), safe(getName()));
+    public @Override synchronized String getSafeName() {
+        if (safeName != null) {
+            return safeName;
+        }
+        return safeName = uniquifyName(parent.getChildren(), safe(getName()));
     }
     
     public CaseResult getCaseResult(String name) {

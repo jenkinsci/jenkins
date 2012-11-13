@@ -40,6 +40,7 @@ import java.util.*;
 public final class PackageResult extends MetaTabulatedResult implements Comparable<PackageResult> {
 
     private final String packageName;
+    private transient String safeName;
     /**
      * All {@link ClassResult}s keyed by their short name.
      */
@@ -68,9 +69,12 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     }
 
     @Override
-    public String getSafeName() {
+    public synchronized String getSafeName() {
+        if (safeName != null) {
+            return safeName;
+        }
         Collection<PackageResult> siblings = (parent == null ? Collections.EMPTY_LIST : parent.getChildren());
-        return uniquifyName(
+        return safeName = uniquifyName(
                 siblings,
                 safe(getName()));
     }
