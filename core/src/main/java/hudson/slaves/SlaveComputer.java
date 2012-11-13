@@ -365,7 +365,7 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer());
-        channel.call(new WindowsSlaveInstaller(remoteFs));
+//        channel.call(new WindowsSlaveInstaller(remoteFs));
         for (ComputerListener cl : ComputerListener.all())
             cl.preOnline(this,channel,root,taskListener);
 
