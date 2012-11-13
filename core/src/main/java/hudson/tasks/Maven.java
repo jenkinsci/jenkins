@@ -394,6 +394,12 @@ public class Maven extends Builder {
             return "/help/project-config/maven.html";
         }
 
+        @Override
+        public String getHelpFile(String fieldName) {
+            if (fieldName.equals("globalSettings")) fieldName = "settings"; // same help file
+            return super.getHelpFile(fieldName);
+        }
+
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
