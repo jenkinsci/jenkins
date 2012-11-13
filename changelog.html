@@ -61,6 +61,9 @@ Upcoming changes</a>
   <li class=bug>
     Build records were broken if timezone was changed while running.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15816">issue 15816</a>)
+  <li class="major bug">
+    Jenkins kicks off the wrong downstream builds for Maven.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15367">issue 15367</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -71,9 +74,6 @@ Upcoming changes</a>
   <li class="major bug">
     <code>ArrayIndexOutOfBoundsException</code> or <code>StringIndexOutOfBoundsException</code> launching processes such as Mercurial polling. (Regression in 1.489.)
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15733">issue 15733</a>)
-  <li class=bug>
-    Jenkins kicks off the wrong downstream builds for Maven.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15367">issue 15367</a>)
   <li class=rfe>
     Support failsafe the same way as surefire in maven2 jobs
 </ul>
