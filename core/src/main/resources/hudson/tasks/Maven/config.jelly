@@ -50,11 +50,14 @@ THE SOFTWARE.
     <f:entry field="usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html">
       <f:checkbox checked="${it.usesPrivateRepository()}" />
     </f:entry>
-    <f:entry title="${%Settings file}" field="settings" help="/help/tasks/maven/maven-settings.html">
-       <f:dropdownDescriptorSelector descriptors="${descriptor.settingsProviders}"/>
+    <f:dropdownDescriptorSelector title="${%Settings file}" descriptors="${descriptor.settingsProviders}" field="settings"/>
+<!--
+    <f:entry   help="/help/tasks/maven/maven-settings.html">
+
     </f:entry>
-    <f:entry title="${%Global Settings file}" field="globalSettings" help="/help/tasks/maven/maven-settings.html">
-       <f:dropdownDescriptorSelector descriptors="${descriptor.globalSettingsProviders}"/>
-    </f:entry>          
+    <f:entry   help="/help/tasks/maven/maven-settings.html">
+    </f:entry>
+-->
+    <f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings" descriptors="${descriptor.globalSettingsProviders}"/>
   </f:advanced>
 </j:jelly>
