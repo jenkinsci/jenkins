@@ -75,7 +75,7 @@ THE SOFTWARE.
      <j:set var="user" value="${app.getUser(it.node.userId)}"/>
      <j:if test="${it.node.userId !=null and user!=null}">
        <p>
-          Created by 
+          ${%Created by} 
          <j:choose>
             <j:when test="${it.node.userId.equals('anonymous')}">
              ${%anonymous user}

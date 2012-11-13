@@ -4,7 +4,7 @@ def l = namespace(lib.LayoutTagLib)
 def f = namespace(lib.FormTagLib)
 
 l.layout {
-    def title = "Uninstalling ${my.shortName} plugin"
+    def title = _("title", my.shortName)
     l.header(title:title)
     l.main_panel {
         h1 {
