@@ -1182,6 +1182,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             mavenValidationLevels.put( "LEVEL_STRICT", ModelBuildingRequest.VALIDATION_LEVEL_STRICT );
         }
 
+        @Override
+        public String getHelpFile(String fieldName) {
+            String v = super.getHelpFile(fieldName);
+            if (v!=null)    return v;
+            return Jenkins.getInstance().getDescriptor(Maven.class).getHelpFile(fieldName);
+        }
+
         public List<SettingsProviderDescriptor> getSettingsProviders() {
             return Jenkins.getInstance().getDescriptorList(SettingsProvider.class);
         }
