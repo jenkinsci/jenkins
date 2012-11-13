@@ -39,7 +39,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
@@ -80,7 +79,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.EditDistance;
 import hudson.util.FormValidation;
-import hudson.util.RunList;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
@@ -285,13 +283,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
         this.builds = builds;
-
-        if(triggers==null) {
-            // it didn't exist in < 1.28
-            triggers = new Vector<Trigger<?>>();
-            OldDataMonitor.report(this, "1.28");
-        }
-        for (Trigger t : triggers)
+        for (Trigger t : triggers())
             t.start(this, Items.updatingByXml.get());
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
@@ -299,6 +291,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
+    }
+
+    private synchronized List<Trigger<?>> triggers() {
+        if (triggers == null) {
+            triggers = new Vector<Trigger<?>>();
+        }
+        return triggers;
     }
 
     @Override
@@ -1531,11 +1530,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Adds a new {@link Trigger} to this {@link Project} if not active yet.
      */
     public void addTrigger(Trigger<?> trigger) throws IOException {
-        addToList(trigger,triggers);
+        addToList(trigger,triggers());
     }
 
     public void removeTrigger(TriggerDescriptor trigger) throws IOException {
-        removeFromList(trigger,triggers);
+        removeFromList(trigger,triggers());
     }
 
     protected final synchronized <T extends Describable<T>>
@@ -1569,14 +1568,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @SuppressWarnings("unchecked")
     public synchronized Map<TriggerDescriptor,Trigger> getTriggers() {
-        return (Map)Descriptor.toMap(triggers);
+        return (Map)Descriptor.toMap(triggers());
     }
 
     /**
      * Gets the specific trigger, or null if the propert is not configured for this job.
      */
     public <T extends Trigger> T getTrigger(Class<T> clazz) {
-        for (Trigger p : triggers) {
+        for (Trigger p : triggers()) {
             if(clazz.isInstance(p))
                 return clazz.cast(p);
         }
@@ -1862,7 +1861,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         setScm(SCMS.parseSCM(req,this));
 
-        for (Trigger t : triggers)
+        for (Trigger t : triggers())
             t.stop();
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)

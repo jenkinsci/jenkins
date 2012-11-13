@@ -25,10 +25,8 @@
 package hudson.model;
 
 import hudson.Util;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
@@ -61,20 +59,17 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     /**
      * List of active {@link Builder}s configured for this project.
      */
-    private DescribableList<Builder,Descriptor<Builder>> builders =
-            new DescribableList<Builder,Descriptor<Builder>>(this);
+    private DescribableList<Builder,Descriptor<Builder>> builders;
 
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
-            new DescribableList<Publisher,Descriptor<Publisher>>(this);
+    private DescribableList<Publisher,Descriptor<Publisher>> publishers;
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
-            new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this);
+    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers;
 
     /**
      * Creates a new project.
@@ -86,15 +81,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-
-        if (buildWrappers==null) {
-            // it didn't exist in < 1.64
-            buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
-            OldDataMonitor.report(this, "1.64");
-        }
-        builders.setOwner(this);
-        publishers.setOwner(this);
-        buildWrappers.setOwner(this);
+        getBuildersList().setOwner(this);
+        getPublishersList().setOwner(this);
+        getBuildWrappersList().setOwner(this);
     }
 
     public AbstractProject<?, ?> asProject() {
@@ -102,7 +91,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     public List<Builder> getBuilders() {
-        return builders.toList();
+        return getBuildersList().toList();
     }
 
     /**
@@ -111,22 +100,31 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      *      Use {@link #getPublishersList()} instead.
      */
     public Map<Descriptor<Publisher>,Publisher> getPublishers() {
-        return publishers.toMap();
+        return getPublishersList().toMap();
     }
 
-    public DescribableList<Builder,Descriptor<Builder>> getBuildersList() {
+    public synchronized DescribableList<Builder,Descriptor<Builder>> getBuildersList() {
+        if (builders == null) {
+            builders = new DescribableList<Builder,Descriptor<Builder>>(this);
+        }
         return builders;
     }
     
-    public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+    public synchronized DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
+        if (publishers == null) {
+            publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+        }
         return publishers;
     }
 
     public Map<Descriptor<BuildWrapper>,BuildWrapper> getBuildWrappers() {
-        return buildWrappers.toMap();
+        return getBuildWrappersList().toMap();
     }
 
-    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+    public synchronized DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        if (buildWrappers == null) {
+            buildWrappers = new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this);
+        }
         return buildWrappers;
     }
 
@@ -135,9 +133,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
 
         activities.addAll(super.getResourceActivities());
-        activities.addAll(Util.filter(builders,ResourceActivity.class));
-        activities.addAll(Util.filter(publishers,ResourceActivity.class));
-        activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
+        activities.addAll(Util.filter(getBuildersList(),ResourceActivity.class));
+        activities.addAll(Util.filter(getPublishersList(),ResourceActivity.class));
+        activities.addAll(Util.filter(getBuildWrappersList(),ResourceActivity.class));
 
         return activities;
     }
@@ -149,7 +147,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      *      Use {@code getPublishersList().add(x)}
      */
     public void addPublisher(Publisher buildStep) throws IOException {
-        publishers.add(buildStep);
+        getPublishersList().add(buildStep);
     }
 
     /**
@@ -159,11 +157,11 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
      *      Use {@code getPublishersList().remove(x)}
      */
     public void removePublisher(Descriptor<Publisher> descriptor) throws IOException {
-        publishers.remove(descriptor);
+        getPublishersList().remove(descriptor);
     }
 
     public Publisher getPublisher(Descriptor<Publisher> descriptor) {
-        for (Publisher p : publishers) {
+        for (Publisher p : getPublishersList()) {
             if(p.getDescriptor()==descriptor)
                 return p;
         }
@@ -171,9 +169,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     }
 
     protected void buildDependencyGraph(DependencyGraph graph) {
-        publishers.buildDependencyGraph(this,graph);
-        builders.buildDependencyGraph(this,graph);
-        buildWrappers.buildDependencyGraph(this,graph);
+        getPublishersList().buildDependencyGraph(this,graph);
+        getBuildersList().buildDependencyGraph(this,graph);
+        getBuildWrappersList().buildDependencyGraph(this,graph);
     }
 
     @Override
@@ -198,9 +196,9 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
         JSONObject json = req.getSubmittedForm();
 
-        buildWrappers.rebuild(req,json, BuildWrappers.getFor(this));
-        builders.rebuildHetero(req,json, Builder.all(), "builder");
-        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
+        getBuildWrappersList().rebuild(req,json, BuildWrappers.getFor(this));
+        getBuildersList().rebuildHetero(req,json, Builder.all(), "builder");
+        getPublishersList().rebuildHetero(req, json, Publisher.all(), "publisher");
     }
 
     @Override
