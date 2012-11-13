@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import java.io.File;
 import java.util.SortedMap;
 
 /**
@@ -54,6 +55,10 @@ class StubJob extends Job {
     protected void removeRun(Run run) {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override protected File getBuildDir() {
+        return new File(System.getProperty("java.io.tmpdir"));
     }
     
     /**
