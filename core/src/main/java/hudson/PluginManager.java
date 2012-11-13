@@ -538,6 +538,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return failedPlugins;
     }
 
+    /**
+     * Get the plugin instance with the given short name.
+     * @param shortName the short name of the plugin
+     * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
+     */
     public PluginWrapper getPlugin(String shortName) {
         for (PluginWrapper p : plugins) {
             if(p.getShortName().equals(shortName))
