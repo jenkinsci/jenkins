@@ -54,18 +54,25 @@ public class ListPluginsCommand extends CLICommand {
             PluginWrapper plugin = pluginManager.getPlugin(this.name);
 
             if (plugin != null) {
-                printPlugin(plugin);
+                printPlugin(plugin, plugin.getShortName().length(), plugin.getDisplayName().length());
             }
             else {
                 stderr.println(String.format("No plugin with the name '%s' found", this.name));
             }
         }
         else {
+            int colWidthShortName = 1;
+            int colWidthDisplayName = 1;
             List<PluginWrapper> plugins = pluginManager.getPlugins();
 
             if (plugins != null) {
                 for (PluginWrapper plugin : plugins) {
-                    printPlugin(plugin);
+                    colWidthShortName = Math.max(colWidthShortName, plugin.getShortName().length());
+                    colWidthDisplayName = Math.max(colWidthDisplayName, plugin.getDisplayName().length());
+                }
+
+                for (PluginWrapper plugin : plugins) {
+                    printPlugin(plugin, colWidthShortName, colWidthDisplayName);
                 }
             }
         }
@@ -73,7 +80,7 @@ public class ListPluginsCommand extends CLICommand {
         return 0;
     }
 
-    private void printPlugin(PluginWrapper plugin) {
+    private void printPlugin(PluginWrapper plugin, int colWidthShortName, int colWidthDisplayName) {
         final String version;
 
         if (plugin.hasUpdate()) {
@@ -84,6 +91,7 @@ public class ListPluginsCommand extends CLICommand {
             version = plugin.getVersion();
         }
 
-        stdout.println(String.format("%s - %s - %s", plugin.getShortName(), plugin.getDisplayName(), version));
+        String formatString = String.format("%%-%ds %%-%ds %%s", colWidthShortName, colWidthDisplayName);
+        stdout.println(String.format(formatString, plugin.getShortName(), plugin.getDisplayName(), version));
     }
 }
