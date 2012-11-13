@@ -57,6 +57,9 @@ import static javax.swing.JOptionPane.*;
 
 /**
  * @author Kohsuke Kawaguchi
+ * @deprecated as of 1.491
+ *      The functionality is moved to windows-slave-installer-module to support
+ *      multiple platforms uniformly.
  */
 public class WindowsSlaveInstaller implements Callable<Void,RuntimeException>, ActionListener {
     /**
