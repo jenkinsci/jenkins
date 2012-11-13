@@ -113,14 +113,8 @@ THE SOFTWARE.
         </select>
       </f:entry>     
       
-      <f:entry title="${%Settings file}" field="settings" help="/help/tasks/maven/maven-settings.html">
-          <f:dropdownDescriptorSelector descriptors="${descriptor.settingsProviders}"/>
-      </f:entry>
-
-      <f:entry title="${%Global Settings file}" field="globalSettings" help="/help/tasks/maven/maven-settings.html">
-          <f:dropdownDescriptorSelector descriptors="${descriptor.globalSettingsProviders}"/>
-      </f:entry>      
-
+      <f:dropdownDescriptorSelector title="${%Settings file}" field="settings" descriptors="${descriptor.settingsProviders}"/>
+      <f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  descriptors="${descriptor.globalSettingsProviders}"/>
     </f:advanced>
   </f:section>
 
