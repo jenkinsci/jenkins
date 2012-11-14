@@ -1530,12 +1530,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                 try {
                     job.cleanUp(listener);
+                    RunListener.fireCompleted(this,listener);
                 } catch (Exception e) {
                     handleFatalBuildProblem(listener,e);
                     // too late to update the result now
                 }
-
-                RunListener.fireCompleted(this,listener);
 
                 if(listener!=null)
                     listener.finished(result);
