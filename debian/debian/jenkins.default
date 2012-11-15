@@ -52,7 +52,7 @@ PREFIX=/jenkins
 # --httpsPort=$HTTP_PORT
 # --ajp13Port=$AJP_PORT
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
-# --argumentsRealm.roles.$ADMIN_USER=admin
+# --argumentsRealm.$ADMIN_USER=admin
 # --webroot=~/.jenkins/war
 # --prefix=$PREFIX
 
