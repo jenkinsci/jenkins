@@ -216,6 +216,16 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     }
 
     /**
+     * Returns a list of the failed cases, sorted by age.
+     * @return
+     */
+    public List<CaseResult> getErrorTestsSortedByAge() {
+        List<CaseResult> errorTests = getErrorTests();
+        Collections.sort(errorTests, CaseResult.BY_AGE);
+        return errorTests;
+    }
+
+    /**
      * Gets the "children" of this test result that passed
      *
      * @return the children of this test result, if any, or an empty collection
