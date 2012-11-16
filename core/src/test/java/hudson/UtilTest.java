@@ -171,6 +171,7 @@ public class UtilTest {
         File d = Util.createTempDir();
         try {
             new FilePath(new File(d, "a")).touch(0);
+            assertNull(Util.resolveSymlink(new File(d, "a")));
             Util.createSymlink(d,"a","x", l);
             assertEquals("a",Util.resolveSymlink(new File(d,"x")));
 

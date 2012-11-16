@@ -1110,6 +1110,13 @@ public class Util {
             if (x2 instanceof UnsupportedOperationException) {
                 return null; // no symlinks on this platform
             }
+            try {
+                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
+                    return null;
+                }
+            } catch (ClassNotFoundException x3) {
+                assert false : x3; // should be Java 7+ here
+            }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;
             }
