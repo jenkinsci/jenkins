@@ -189,6 +189,33 @@ public class Iterators {
     }
 
     /**
+     * Returns an {@link Iterable} that lists items in the normal order
+     * but which hides the base iterator implementation details.
+     *
+     * @since 1.492
+     */
+    public static <T> Iterable<T> wrap(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                final Iterator<T> itr = base.iterator();
+                return new Iterator<T>() {
+                    public boolean hasNext() {
+                        return itr.hasNext();
+                    }
+
+                    public T next() {
+                        return itr.next();
+                    }
+
+                    public void remove() {
+                        itr.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
      * Returns a list that represents [start,end).
      *
      * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
