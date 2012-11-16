@@ -42,6 +42,10 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <div>
+          ${%errors(it.errorCount)}
+          <j:if test="${prev!=null}">
+            (${h.getDiffString(it.errorCount-prev.errorCount)})
+          </j:if>
           ${%failures(it.failCount)}
           <j:if test="${prev!=null}">
             (${h.getDiffString(it.failCount-prev.failCount)})
@@ -55,8 +59,10 @@ THE SOFTWARE.
           </j:if>
         </div>
         <div style="width:100%; height:1em; background-color: #729FCF">
+          <!-- Error tests part of the bar. -->
+          <div style="width:${it.errorCount*100/it.totalCount}%; height: 1em; background-color: #EF2929; float: left"></div>
           <!-- Failed tests part of the bar. -->
-          <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: #EF2929; float: left"></div>
+          <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: #EF6929; float: left"></div>
           <!-- Skipped tests part of the bar. -->
           <div style="width:${it.skipCount*100/it.totalCount}%; height: 1em; background-color: #FCE94F; float: left"></div>
         </div>
