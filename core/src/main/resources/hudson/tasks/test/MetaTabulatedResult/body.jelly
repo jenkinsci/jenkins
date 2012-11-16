@@ -90,6 +90,8 @@ THE SOFTWARE.
       <tr>
         <td class="pane-header">${it.childTitle}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
+        <td class="pane-header" style="width:5em">${%Error}</td>
+        <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
@@ -110,6 +112,10 @@ THE SOFTWARE.
                 </j:forEach>
             </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
+            <td class="pane" style="text-align:right">${p.errorCount}</td>
+            <td class="pane" style="text-align:right" data="${p.errorCount-prev.errorCount}">
+              ${h.getDiffString2(p.errorCount-prev.errorCount)}
+            </td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right" data="${p.failCount-prev.failCount}">
               ${h.getDiffString2(p.failCount-prev.failCount)}
