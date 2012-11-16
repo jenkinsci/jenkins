@@ -113,8 +113,10 @@ public class History {
                    data.add(((double) o.getDuration()) / (1000), "", new ChartLabel(o)  {
                        @Override
                        public Color getColor() {
-                           if (o.getFailCount() > 0)
+                           if (o.getErrorCount() > 0)
                                return ColorPalette.RED;
+                           else if (o.getFailCount() > 0)
+                               return ColorPalette.ORANGE;
                            else if (o.getSkipCount() > 0)
                                return ColorPalette.YELLOW;
                            else
@@ -146,8 +148,9 @@ public class History {
                 }
                 
                 for (TestResult o: list) {
-                    data.add(o.getPassCount(), "2Passed", new ChartLabel(o));
-                    data.add(o.getFailCount(), "1Failed", new ChartLabel(o));
+                    data.add(o.getPassCount(), "3Passed", new ChartLabel(o));
+                    data.add(o.getFailCount(), "2Failed", new ChartLabel(o));
+                    data.add(o.getErrorCount(), "1Error", new ChartLabel(o));
                     data.add(o.getSkipCount(), "0Skipped", new ChartLabel(o));
                 }
                 return data;
@@ -228,9 +231,10 @@ public class History {
                 }
             };
             plot.setRenderer(ar);
-            ar.setSeriesPaint(0,ColorPalette.RED); // Failures.
-            ar.setSeriesPaint(1,ColorPalette.YELLOW); // Skips.
-            ar.setSeriesPaint(2,ColorPalette.BLUE); // Total.
+            ar.setSeriesPaint(0,ColorPalette.YELLOW); // Skips.
+            ar.setSeriesPaint(1,ColorPalette.RED); // Errors.
+            ar.setSeriesPaint(2,ColorPalette.ORANGE); // Failures.
+            ar.setSeriesPaint(3,ColorPalette.BLUE); // Total.
 
             // crop extra space around the graph
             plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
