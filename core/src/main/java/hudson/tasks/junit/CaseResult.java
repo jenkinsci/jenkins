@@ -288,7 +288,12 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
 
     @Override
     public int getFailCount() {
-        if (!isPassed() && !isSkipped()) return 1; else return 0;
+        if (!isPassed() && !isSkipped() && !failureIsAnError) return 1; else return 0;
+    }
+
+    @Override
+    public int getErrorCount() {
+        if (!isPassed() && !isSkipped() && failureIsAnError) return 1; else return 0;
     }
 
     @Override

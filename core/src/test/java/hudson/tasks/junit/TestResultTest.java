@@ -164,10 +164,11 @@ public class TestResultTest extends TestCase {
         }*/
 
         CaseResult crE = suite.getCase("testError");
-        System.out.println(crE.getDisplayName()+": "+crE.getErrorCount()+"/"+crE.getFailCount());
+        System.out.println(crE.getDisplayName()+": e/f: "+crE.getErrorCount()+"/"+crE.getFailCount());
         assertEquals("CaseResult should be an error", 1, crE.getErrorCount());
 
         CaseResult crF = suite.getCase("testFailure");
+        System.out.println(crF.getDisplayName()+": e/f: "+crF.getErrorCount()+"/"+crF.getFailCount());
         assertEquals("CaseResult should be a failure", 1, crF.getFailCount());
         
     }
