@@ -111,6 +111,16 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         return " / "+Functions.getDiffString(this.getFailCount()-prev.getFailCount());
     }
 
+    /**
+     * Gets the diff string of failures.
+     */
+    public final String getErrorDiffString() {
+        T prev = getPreviousResult();
+        if(prev==null)  return "";  // no record
+
+        return " / "+Functions.getDiffString(this.getErrorCount()-prev.getErrorCount());
+    }
+
     public String getDisplayName() {
         return Messages.AbstractTestResultAction_getDisplayName();
     }

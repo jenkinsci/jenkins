@@ -34,14 +34,20 @@ THE SOFTWARE.
     <j:when test="${it.totalCount==0}">
       (${%no tests})
     </j:when>
-    <j:when test="${it.failCount==0}">
+    <j:when test="${it.failCount==0 &amp;&amp; it.errorCount==0}">
       (${%no failures})
     </j:when>
-    <j:when test="${it.failCount==1}">
+    <j:when test="${it.failCount==1 &amp;&amp; it.errorCount==0}">
       (${%1failure(it.failureDiffString)})
     </j:when>
-    <j:otherwise>
+    <j:when test="${it.failCount>1 &amp;&amp; it.errorCount==0}">
       (${%multifailures(it.failCount,it.failureDiffString)})
+    </j:when>
+    <j:when test="${it.failCount==0 &amp;&amp; it.errorCount>0}">
+      (${%multierrors(it.errorCount,it.errorDiffString)})
+    </j:when>
+    <j:otherwise>
+      (${%multierrorsandfailures(it.errorCount,it.errorDiffString,it.failCount,it.failureDiffString)})
     </j:otherwise>
   </j:choose>
 </j:jelly>
