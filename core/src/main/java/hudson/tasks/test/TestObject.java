@@ -382,7 +382,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     @Override
     public int getTotalCount() {
-        return getPassCount() + getFailCount() + getSkipCount();
+        return getPassCount() + getFailCount() + getErrorCount() + getSkipCount();
     }
 
     @Override

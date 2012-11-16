@@ -558,7 +558,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         /**
          * This test failed with an error, just like its previous run.
          */
-        ERROR("result-failed",Messages._CaseResult_Status_Failed(),false),
+        ERROR("result-failed",Messages._CaseResult_Status_Error(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
