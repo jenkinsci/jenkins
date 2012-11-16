@@ -123,6 +123,7 @@ public class AggregatedTestResultPublisher extends Recorder {
         private static long lastChanged = 0;
 
         private transient int failCount;
+        private transient int errorCount;
         private transient int totalCount;
         private transient List<AbstractTestResultAction> individuals;
         /**
@@ -171,6 +172,11 @@ public class AggregatedTestResultPublisher extends Recorder {
         public int getFailCount() {
             upToDateCheck();
             return failCount;
+        }
+
+        public int getErrorCount() {
+            upToDateCheck();
+            return errorCount;
         }
 
         public int getTotalCount() {
@@ -240,6 +246,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             lastUpdated = lastChanged+1;
 
             int failCount = 0;
+            int errorCount = 0;
             int totalCount = 0;
             List<AbstractTestResultAction> individuals = new ArrayList<AbstractTestResultAction>();
             List<AbstractProject> didntRun = new ArrayList<AbstractProject>();
@@ -277,6 +284,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
                         for( AbstractTestResultAction ta : b.getActions(AbstractTestResultAction.class)) {
                             failCount += ta.getFailCount();
+                            errorCount += ta.getErrorCount();
                             totalCount += ta.getTotalCount();
                             individuals.add(ta);
                         }
@@ -286,6 +294,7 @@ public class AggregatedTestResultPublisher extends Recorder {
             }
 
             this.failCount = failCount;
+            this.errorCount = errorCount;
             this.totalCount = totalCount;
             this.individuals = individuals;
             this.didntRun = didntRun;

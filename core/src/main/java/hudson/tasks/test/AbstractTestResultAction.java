@@ -77,6 +77,12 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     public abstract int getFailCount();
 
     /**
+     * Gets the number of error tests.
+     */
+    @Exported(visibility=2)
+    public abstract int getErrorCount();
+
+    /**
      * Gets the number of skipped tests.
      */
     @Exported(visibility=2)
@@ -121,12 +127,13 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     public HealthReport getBuildHealth() {
         final int totalCount = getTotalCount();
         final int failCount = getFailCount();
-        int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount) / totalCount));
+        final int errorCount = getErrorCount();
+        int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount+errorCount) / totalCount));
         Localizable description, displayName = Messages._AbstractTestResultAction_getDisplayName();
         if (totalCount == 0) {
         	description = Messages._AbstractTestResultAction_zeroTestDescription(displayName);
         } else {
-        	description = Messages._AbstractTestResultAction_TestsDescription(displayName, failCount, totalCount);
+        	description = Messages._AbstractTestResultAction_TestsDescription(displayName, failCount+errorCount, totalCount);
         }
         return new HealthReport(score, description);
     }
@@ -192,6 +199,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         return Collections.emptyList();
     }
 
+    public List<CaseResult> getErrorTests() {
+        return Collections.emptyList();
+    }
+
     /**
      * Generates a PNG image for the test result trend.
      */
@@ -244,10 +255,11 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
 
         for( AbstractTestResultAction<?> a=this; a!=null; a=a.getPreviousResult(AbstractTestResultAction.class) ) {
+            dsb.add( a.getErrorCount(), "error", new NumberOnlyBuildLabel(a.owner));
             dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
             if(!failureOnly) {
                 dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.owner));
-                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.owner));
+                dsb.add( a.getTotalCount()-a.getFailCount()-a.getErrorCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.owner));
             }
         }
         return dsb.build();
@@ -311,8 +323,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
                 AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
                 switch (row) {
                     case 0:
-                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_error(label.build.getDisplayName(), a.getErrorCount()));
                     case 1:
+                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
+                    case 2:
                         return String.valueOf(Messages.AbstractTestResultAction_skip(label.build.getDisplayName(), a.getSkipCount()));
                     default:
                         return String.valueOf(Messages.AbstractTestResultAction_test(label.build.getDisplayName(), a.getTotalCount()));
@@ -320,9 +334,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             }
         };
         plot.setRenderer(ar);
-        ar.setSeriesPaint(0,ColorPalette.RED); // Failures.
-        ar.setSeriesPaint(1,ColorPalette.YELLOW); // Skips.
-        ar.setSeriesPaint(2,ColorPalette.BLUE); // Total.
+        ar.setSeriesPaint(0,ColorPalette.RED); // Errors.
+        ar.setSeriesPaint(1,ColorPalette.ORANGE); // Failures.
+        ar.setSeriesPaint(2,ColorPalette.YELLOW); // Skips.
+        ar.setSeriesPaint(3,ColorPalette.BLUE); // Total.
 
         // crop extra space around the graph
         plot.setInsets(new RectangleInsets(0,0,0,5.0));

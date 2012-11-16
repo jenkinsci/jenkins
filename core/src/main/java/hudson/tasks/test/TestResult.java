@@ -249,7 +249,7 @@ public abstract class TestResult extends TestObject {
      * @return true if the test was not skipped and did not fail, false otherwise.
      */
     public boolean isPassed() {
-        return ((getSkipCount() == 0) && (getFailCount() == 0));
+        return ((getSkipCount() == 0) && (getFailCount() == 0) && (getErrorCount() == 0));
     }
 
     public String toPrettyString() {
@@ -258,6 +258,7 @@ public abstract class TestResult extends TestObject {
         sb.append("Name: ").append(this.getName()).append(", ");
         sb.append("Result: ").append(this.getBuildResult()).append(",\n");
         sb.append("Total Count: ").append(this.getTotalCount()).append(", ");
+        sb.append("Error: ").append(this.getErrorCount()).append(", ");
         sb.append("Fail: ").append(this.getFailCount()).append(", ");
         sb.append("Skipt: ").append(this.getSkipCount()).append(", ");
         sb.append("Pass: ").append(this.getSkipCount()).append(",\n");

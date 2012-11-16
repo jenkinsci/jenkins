@@ -37,6 +37,7 @@ import java.util.Arrays;
  */
 public class ColorPalette {
     public static final Color RED = new Color(0xEF,0x29,0x29);
+    public static final Color ORANGE = new Color(0xEF,0x69,0x29);
     public static final Color YELLOW = new Color(0xFC,0xE9,0x4F);
     public static final Color BLUE = new Color(0x72,0x9F,0xCF);
     public static final Color GREY = new Color(0xAB,0xAB,0xAB);

@@ -58,6 +58,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     // Hudson < 1.25 didn't set these fields, so use Integer
     // so that we can distinguish between 0 tests vs not-computed-yet.
     private int failCount;
+    private int errorCount;
     private int skipCount;
     private Integer totalCount;
     private List<Data> testData = new ArrayList<Data>();
@@ -75,6 +76,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 
         totalCount = result.getTotalCount();
         failCount = result.getFailCount();
+        errorCount = result.getErrorCount();
         skipCount = result.getSkipCount();
 
         // persist the data
@@ -107,6 +109,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         if(totalCount==null) {
             totalCount = r.getTotalCount();
             failCount = r.getFailCount();
+            errorCount = r.getErrorCount();
             skipCount = r.getSkipCount();
         }
         return r;
@@ -117,6 +120,13 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         if(totalCount==null)
             getResult();    // this will compute the result
         return failCount;
+    }
+
+    @Override
+    public int getErrorCount() {
+        if(totalCount==null)
+            getResult();    // this will compute the result
+        return errorCount;
     }
 
     @Override
