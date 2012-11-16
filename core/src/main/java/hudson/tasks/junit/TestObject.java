@@ -114,6 +114,9 @@ public abstract class TestObject extends AbstractModelObject implements Serializ
      */
     public abstract int getFailCount();
 
+    /**
+     * Gets the total number of error tests.
+     */
     public abstract int getErrorCount();
 
     /**
