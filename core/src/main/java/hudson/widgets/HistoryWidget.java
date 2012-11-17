@@ -134,8 +134,10 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
                 trimmed = itr.hasNext(); // if we don't have enough items in the base list, setting this to false will optimize the next getRenderList() invocation.
                 return updateFirstTransientBuildKey(lst);
             }
-        } else
+        } else {
+            // to prevent baseList's concrete type from getting picked up by <j:forEach> in view
             return updateFirstTransientBuildKey(Iterators.wrap(baseList));
+        }
     }
 
     public boolean isTrimmed() {
