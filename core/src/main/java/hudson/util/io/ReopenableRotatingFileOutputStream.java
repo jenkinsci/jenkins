@@ -54,7 +54,9 @@ public class ReopenableRotatingFileOutputStream extends ReopenableFileOutputStre
         for (int i=size-1;i>=0;i--) {
             File fi = getNumberedFileName(i);
             if (fi.exists()) {
-                fi.renameTo(getNumberedFileName(i+1));
+                File next = getNumberedFileName(i+1);
+                next.delete();
+                fi.renameTo(next);
             }
         }
     }
