@@ -43,9 +43,6 @@ public class ColorPalette {
     public static final Color BLUE = new Color(0x72,0x9F,0xCF);
     public static final Color GREY = new Color(0xAB,0xAB,0xAB);
 
-    public static final Color STATUS_ERROR = DARK_RED; //or RED?
-    public static final Color STATUS_FAILED = RED; //or ORANGE?
-
     /**
      * Color list usable for generating line charts.
      */

@@ -27,9 +27,12 @@ import org.jvnet.localizer.Localizable;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
+import hudson.util.ColorPalette;
+
 import org.dom4j.Element;
 import org.kohsuke.stapler.export.Exported;
 
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -545,37 +548,39 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         /**
          * This test runs OK, just like its previous run.
          */
-        PASSED("result-passed",Messages._CaseResult_Status_Passed(),true),
+        PASSED("result-passed", ColorPalette.BLUE, Messages._CaseResult_Status_Passed(),true),
         /**
          * This test was skipped due to configuration or the
          * failure or skipping of a method that it depends on.
          */
-        SKIPPED("result-skipped",Messages._CaseResult_Status_Skipped(),false),
+        SKIPPED("result-skipped", ColorPalette.YELLOW, Messages._CaseResult_Status_Skipped(),false),
         /**
          * This test failed, just like its previous run.
          */
-        FAILED("result-failed",Messages._CaseResult_Status_Failed(),false),
+        FAILED("result-failed", ColorPalette.RED, Messages._CaseResult_Status_Failed(),false),
         /**
          * This test failed with an error, just like its previous run.
          */
-        ERROR("result-error",Messages._CaseResult_Status_Error(),false),
+        ERROR("result-error", ColorPalette.DARK_RED, Messages._CaseResult_Status_Error(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
-        FIXED("result-fixed",Messages._CaseResult_Status_Fixed(),true),
+        FIXED("result-fixed", ColorPalette.BLUE, Messages._CaseResult_Status_Fixed(),true),
         /**
          * This test has been running OK, but now it failed.
          */
-        REGRESSION("result-regression",Messages._CaseResult_Status_Regression(),false);
+        REGRESSION("result-regression", ColorPalette.RED, Messages._CaseResult_Status_Regression(),false);
 
         private final String cssClass;
         private final Localizable message;
         public final boolean isOK;
+        public final Color color;
 
-        Status(String cssClass, Localizable message, boolean OK) {
+        Status(String cssClass, Color color, Localizable message, boolean OK) {
            this.cssClass = cssClass;
            this.message = message;
            isOK = OK;
+           this.color = color;
        }
 
         public String getCssClass() {
