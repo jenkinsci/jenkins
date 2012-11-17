@@ -264,12 +264,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (offlineCause == null) {
             return "";
         }
-        // remove header string from offline cause when a comment was set
-        String newString = offlineCause.toString().replaceAll(
-                "^Disconnected by [\\w]* \\: ","");
-        // remove header string from offline cause when no comment was set
-        return newString.replaceAll(
-                "^Disconnected by [\\w]*","");
+        // fetch the localized string for "Disconnected By"
+        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("","");
+        // regex to remove commented reason base string
+        String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
+        // regex to remove non-commented reason base string
+        String gsub2 = "^" + gsub_base + "[\\w\\W]*";
+
+        String newString = offlineCause.toString().replaceAll(gsub1, "");
+        return newString.replaceAll(gsub2, "");
     }
 
     /**
