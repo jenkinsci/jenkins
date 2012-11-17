@@ -96,7 +96,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.Jenkins;
-import jenkins.model.lazy.BuildReference;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
@@ -240,11 +239,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private volatile transient RunExecution runner;
 
-    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER =
-            new ThreadLocal<SimpleDateFormat>() {
+    private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
+    private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
                 @Override
                 protected SimpleDateFormat initialValue() {
-                    return new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+                    synchronized (CANONICAL_ID_FORMATTER) {
+                        return (SimpleDateFormat) CANONICAL_ID_FORMATTER.clone();
+                    }
                 }
             };
 
@@ -1562,7 +1564,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     handleFatalBuildProblem(listener,e);
                     // too late to update the result now
                 }
-
+                    
                 RunListener.fireCompleted(this,listener);
 
                 if(listener!=null)
@@ -1958,12 +1960,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return the map with the environmental variables. Never <code>null</code>.
      * @since 1.305
      */
-    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
-        EnvVars env = getCharacteristicEnvVars();
+    public EnvVars getEnvironment(TaskListener listener) throws IOException, InterruptedException {
+        Computer c = Computer.currentComputer();
+        Node n = c==null ? null : c.getNode();
+
+        EnvVars env = getParent().getEnvironment(n,listener);
+        env.putAll(getCharacteristicEnvVars());
 
         // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
-            ec.buildEnvironmentFor(this,env,log);
+            ec.buildEnvironmentFor(this,env,listener);
 
         return env;
     }
@@ -1973,13 +1979,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
      */
     public final EnvVars getCharacteristicEnvVars() {
-        EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
-        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
+        EnvVars env = getParent().getCharacteristicEnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
         env.put("BUILD_TAG","jenkins-"+getParent().getFullName().replace('/', '-')+"-"+number);
-        env.put("JOB_NAME",getParent().getFullName());
         return env;
     }
 

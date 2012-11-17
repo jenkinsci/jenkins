@@ -201,7 +201,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 return classLoader;
             }
         }
-        if(useAntClassLoader) {
+        if(useAntClassLoader && !Closeable.class.isAssignableFrom(URLClassLoader.class)) {
             // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
             AntClassLoader2 classLoader = new AntClassLoader2(parent);
             classLoader.addPathFiles(paths);
@@ -564,6 +564,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
+     * Deprecated as of Java 7, retained only for Java 5/6.
      */
     private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;

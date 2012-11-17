@@ -618,15 +618,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
 
-//    /**
-//     * Sets guest credentials to access java.net Subversion repo.
-//     */
-//    public void setJavaNetCredential() throws SVNException, IOException {
-//        // set the credential to access svn.dev.java.net
-//        jenkins.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn
-// /hudson/","guest","",null,new PrintWriter(new NullStream()));
-//    }
-
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
@@ -1595,7 +1586,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * Declares that this test case expects to start with one of the preset data sets.
-     * See https://svn.dev.java.net/svn/hudson/trunk/hudson/main/test/src/main/preset-data/
+     * See {@code test/src/main/preset-data/}
      * for available datasets and what they mean.
      */
     public JenkinsRule withPresetData(String name) {

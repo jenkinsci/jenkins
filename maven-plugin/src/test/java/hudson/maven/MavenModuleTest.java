@@ -235,6 +235,52 @@ public class MavenModuleTest {
         Assert.assertSame(dependZ.getVersion(), ((MavenModule) upstreamB.get(0)).getVersion());
     }
 
+    /**
+     * This tests a project that has a dependency on a specific version of X.
+     * The project X has moved on and so should not have any dependencies on ProjectA.
+     */
+    @Test
+    public void testProjectWithSpecifiedVersionAndNoDependencies() {
+        MavenProject projectA = createMavenProject("ProjectA", "test", "projectA", "1.0-SNAPSHOT", "jar");
+        Dependency dependencyA = createDependency("test", "library", "1.0");
+        projectA.getDependencies().add(dependencyA);
+
+        MavenProject dependX = createMavenProject("DependX-1.1", "test", "library", "1.2-SNAPSHOT", "jar");
+
+        MavenModuleSet parent = mock(MavenModuleSet.class);
+        when(parent.isAggregatorStyleBuild()).thenReturn(Boolean.FALSE);
+
+        //Now create maven modules for all the projects
+        MavenModule mavenModuleA = mockMavenModule(projectA);
+        MavenModule mavenModuleX = mockMavenModule(dependX);
+
+        Collection<AbstractProject<?,?>> allModules = Lists.<AbstractProject<?,?>>newArrayList(mavenModuleA,
+                mavenModuleX);
+
+        for (AbstractProject<?, ?> module : allModules) {
+            MavenModule mm = (MavenModule) module;
+            enhanceMavenModuleMock(mm, parent, allModules);
+        }
+
+        DependencyGraph graph = MockHelper.mockDependencyGraph(allModules);
+        doCallRealMethod().when(graph).getDownstream(Matchers.any(AbstractProject.class));
+        doCallRealMethod().when(graph).getUpstream(Matchers.any(AbstractProject.class));
+        doCallRealMethod().when(graph).compare(Matchers.<AbstractProject>any(), Matchers.<AbstractProject>any());
+        graph.build();
+
+        List<AbstractProject> downstreamA = graph.getDownstream(mavenModuleA);
+        List<AbstractProject> upstreamA = graph.getUpstream(mavenModuleA);
+
+        Assert.assertEquals(0, downstreamA.size());
+        Assert.assertEquals(0, upstreamA.size());
+
+        List<AbstractProject> downstreamX = graph.getDownstream(mavenModuleX);
+        List<AbstractProject> upstreamX = graph.getUpstream(mavenModuleX);
+
+        Assert.assertEquals(0, downstreamX.size());
+        Assert.assertEquals(0, upstreamX.size());
+    }
+
     private TestComponents createTestComponents(String libraryVersion) {
         MavenProject appProject = createMavenProject("testapp", "test", "application", "1.0-SNAPSHOT", "jar");
         Dependency dependency = createDependency("test", "library", libraryVersion);

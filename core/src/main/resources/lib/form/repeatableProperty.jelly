@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[]
+  <st:documentation> <![CDATA[
     Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well.
     The nested property type must be Describable and it needs to have config.jelly.
 

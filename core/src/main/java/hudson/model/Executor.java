@@ -465,15 +465,23 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Stops the current build.
+     * @deprecated as of 1.489
+     *      Use {@link #doStop()}.
      */
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        doStop().generateResponse(req,rsp,this);
+    }
+
+    /**
+     * Stops the current build.
+     */
+    public HttpResponse doStop() {
         Queue.Executable e = executable;
         if(e!=null) {
             Tasks.getOwnerTaskOf(getParentOf(e)).checkAbortPermission();
             interrupt();
         }
-        rsp.forwardToPreviousPage(req);
+        return HttpResponses.forwardToPreviousPage();
     }
 
     /**

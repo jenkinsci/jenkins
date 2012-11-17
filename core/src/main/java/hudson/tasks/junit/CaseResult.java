@@ -54,6 +54,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      * This field retains the method name.
      */
     private final String testName;
+    private transient String safeName;
     private final boolean skipped;
     private final String errorStackTrace;
     private final String errorDetails;
@@ -148,7 +149,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         if (middle <= 0) {
             return stdio.toString();
         }
-        return stdio.subSequence(0, HALF_MAX_SIZE) + "...[truncated " + middle + " chars]..." + stdio.subSequence(len - HALF_MAX_SIZE, len);
+        return stdio.subSequence(0, HALF_MAX_SIZE) + "\n...[truncated " + middle + " chars]...\n" + stdio.subSequence(len - HALF_MAX_SIZE, len);
     }
 
     /**
@@ -232,7 +233,10 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     /**
      * Gets the version of {@link #getName()} that's URL-safe.
      */
-    public @Override String getSafeName() {
+    public @Override synchronized String getSafeName() {
+        if (safeName != null) {
+            return safeName;
+        }
         StringBuilder buf = new StringBuilder(testName);
         for( int i=0; i<buf.length(); i++ ) {
             char ch = buf.charAt(i);
@@ -240,7 +244,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
                 buf.setCharAt(i,'_');
         }
         Collection<CaseResult> siblings = (classResult ==null ? Collections.<CaseResult>emptyList(): classResult.getChildren());
-        return uniquifyName(siblings, buf.toString());
+        return safeName = uniquifyName(siblings, buf.toString());
     }
 
     /**

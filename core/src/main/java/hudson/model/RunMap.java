@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +69,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
 
     /**
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}.
      */
     public RunMap() {
@@ -101,9 +102,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             }
 
             public R next() {
-                R last = next;
+                last = next;
                 if (last!=null)
                     next = last.getPreviousBuild();
+                else
+                    throw new NoSuchElementException();
                 return last;
             }
 
@@ -143,7 +146,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     /**
-     * @deprecated  as of 1.LAZYLOAD
+     * @deprecated  as of 1.485
      *      Use {@link ReverseComparator}
      */
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
@@ -191,7 +194,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
                 // Don't even bother trying.
                 if (!isCorrectDate(name)) {
-                    LOGGER.fine("Skipping "+new File(dir,name));
+                    LOGGER.log(FINE, "Skipping {0}", new File(dir,name));
                     return false;
                 }
                 return !name.startsWith("0000") && new File(dir,name).isDirectory();
@@ -216,8 +219,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
-                if (LOGGER.isLoggable(FINE) || LOG_RETRIEVAL)
-                    LOGGER.log(LOG_RETRIEVAL?INFO:FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
                 return b;
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
@@ -238,7 +241,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      *      Job that owns this map.
      * @param cons
      *      Used to create new instance of {@link Run}.
-     * @deprecated as of 1.LAZYLOAD
+     * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}
      */
     public void load(Job job, Constructor<R> cons) {
@@ -247,8 +250,6 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
-
-    public static boolean LOG_RETRIEVAL = false;
 
     private static class ThisIsHowItsLoaded extends Exception {}
 }

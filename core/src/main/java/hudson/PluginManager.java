@@ -345,6 +345,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
                         g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
                             public void run(Reactor session) throws Exception {
+                                if (!activePlugins.contains(p)) {
+                                    return;
+                                }
                                 try {
                                     p.getPlugin().postInitialize();
                                 } catch (Exception e) {
@@ -1038,4 +1041,65 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return pluginsWithCycle;
         }
     }
+    
+    /**
+     * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
+     * @since 1.491
+     */
+    @Extension
+    public static final class PluginUpdateMonitor extends AdministrativeMonitor {
+        
+        private Map<String, PluginUpdateInfo> pluginsToBeUpdated = new HashMap<String, PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();
+        
+        /**
+         * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
+         * @return this monitor.
+         */
+        public static final PluginUpdateMonitor getInstance() {
+            return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
+        }
+        
+        /**
+         * Report to the administrator if the plugin with the given name is older then the required version.
+         *  
+         * @param pluginName shortName of the plugin (artifactId)
+         * @param requiredVersion the lowest version which is OK (e.g. 2.2.2)
+         * @param message the message to show (plain text)
+         */
+        public void ifPluginOlderThenReport(String pluginName, String requiredVersion, String message){
+            Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
+            if(plugin != null){
+                if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(requiredVersion))) {
+                    pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
+                }
+            }
+        }
+
+        public boolean isActivated() {
+            return !pluginsToBeUpdated.isEmpty();
+        }
+        
+        /**
+         * adds a message about a plugin to the manage screen 
+         * @param pluginName the plugins name
+         * @param message the message to be displayed
+         */
+        public void addPluginToUpdate(String pluginName, String message) {
+            this.pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
+        }
+        
+        public Collection<PluginUpdateInfo> getPluginsToBeUpdated() {
+            return pluginsToBeUpdated.values();
+        }
+        
+        public static class PluginUpdateInfo {
+            public final String pluginName;
+            public final String message;
+            private PluginUpdateInfo(String pluginName, String message) {
+                this.pluginName = pluginName;
+                this.message = message;
+            }
+        }
+
+    }    
 }

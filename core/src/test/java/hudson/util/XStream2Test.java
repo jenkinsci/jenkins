@@ -311,4 +311,11 @@ public class XStream2Test extends TestCase {
         assertEquals(1,map.m.size());
         assertEquals("def",map.m.get("abc"));
     }
+
+    public void testTrimVersion() throws Exception {
+        assertEquals("3.2", XStream2.trimVersion("3.2"));
+        assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
+        assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
+    }
+
 }

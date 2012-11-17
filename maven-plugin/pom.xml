@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.486-SNAPSHOT</version>
+    <version>1.492-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -115,13 +115,6 @@ THE SOFTWARE.
       <version>${mavenInterceptorsVersion}</version>
     </dependency>
     <dependency>
-      <!-- this plugin is optional and is used to provide settigns.xml from a central UI -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>config-file-provider</artifactId>
-      <version>1.9.1</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
     </dependency>    
@@ -200,11 +193,6 @@ THE SOFTWARE.
           <artifactId>sisu-guava</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>

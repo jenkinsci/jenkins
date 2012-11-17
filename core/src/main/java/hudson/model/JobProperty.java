@@ -169,6 +169,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return getJobActions((J)project);
     }
 
+    /** @see Job#getOverrides */
     public Collection<?> getJobOverrides() {
         return Collections.emptyList();
     }

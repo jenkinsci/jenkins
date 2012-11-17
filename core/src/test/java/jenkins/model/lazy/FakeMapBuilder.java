@@ -100,6 +100,7 @@ public class FakeMapBuilder implements TestRule {
     }
 
     public FakeMap make() {
+        assert dir!=null;
         return new FakeMap(dir);
     }
 

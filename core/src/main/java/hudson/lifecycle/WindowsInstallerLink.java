@@ -252,7 +252,7 @@ public class WindowsInstallerLink extends ManagementLink {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
             // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
-            // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
+            // from JNLP), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
                 Jenkins.getInstance().getActions().add(link);

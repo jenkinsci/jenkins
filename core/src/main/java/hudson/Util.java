@@ -1071,7 +1071,7 @@ public class Util {
             if (x2 instanceof UnsupportedOperationException) {
                 return true; // no symlinks on this platform
             }
-            if (Functions.isWindows() && String.valueOf(x2).contains("A required privilege is not held by the client.")) {
+            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
                 if (warnedSymlinks.compareAndSet(false, true)) {
                     LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
                 }
@@ -1109,6 +1109,13 @@ public class Util {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {
                 return null; // no symlinks on this platform
+            }
+            try {
+                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
+                    return null;
+                }
+            } catch (ClassNotFoundException x3) {
+                assert false : x3; // should be Java 7+ here
             }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;
