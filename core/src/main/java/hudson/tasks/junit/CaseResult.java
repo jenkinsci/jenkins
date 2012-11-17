@@ -57,7 +57,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     private final boolean skipped;
     private final String errorStackTrace;
     private final String errorDetails;
-    private final boolean failureIsAnError;
+    private final Boolean failureIsAnError;
     private transient SuiteResult parent;
 
     private transient ClassResult classResult;
@@ -126,7 +126,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
             failureIsAnError = isFailureAnError(testCase);
         }
         else {
-        	failureIsAnError = false; //defaults to false
+        	failureIsAnError = null; //null if not an error or failure
         }
         this.parent = parent;
         duration = parseTime(testCase);
@@ -166,7 +166,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.errorDetails = "";
-        this.failureIsAnError = false; //defaults to failure
+        this.failureIsAnError = errorStackTrace!=null?false:null; //defaults to failure (not error)
         this.parent = parent;
         this.stdout = null;
         this.stderr = null;
@@ -288,12 +288,12 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
 
     @Override
     public int getFailCount() {
-        if (!isPassed() && !isSkipped() && !failureIsAnError) return 1; else return 0;
+        if (!isPassed() && !isSkipped() && (failureIsAnError==null || !failureIsAnError)) return 1; else return 0;
     }
 
     @Override
     public int getErrorCount() {
-        if (!isPassed() && !isSkipped() && failureIsAnError) return 1; else return 0;
+        if (!isPassed() && !isSkipped() && failureIsAnError!=null && failureIsAnError) return 1; else return 0;
     }
 
     @Override
@@ -463,8 +463,8 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         return !skipped && errorStackTrace==null;
     }
     
-    public boolean isFailureAnError() {
-        return !isPassed() && failureIsAnError;
+    public Boolean isFailureAnError() {
+        return failureIsAnError;
     }
 
     /**
@@ -520,13 +520,13 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         }
         CaseResult pr = getPreviousResult();
         if(pr==null) {
-            return isPassed() ? Status.PASSED : failureIsAnError ? Status.ERROR : Status.FAILED;
+            return isPassed() ? Status.PASSED : (failureIsAnError!=null && failureIsAnError) ? Status.ERROR : Status.FAILED;
         }
 
         if(pr.isPassed()) {
             return isPassed() ? Status.PASSED : Status.REGRESSION;
         } else {
-            return isPassed() ? Status.FIXED : failureIsAnError ? Status.ERROR : Status.FAILED;
+            return isPassed() ? Status.FIXED : (failureIsAnError!=null && failureIsAnError) ? Status.ERROR : Status.FAILED;
         }
     }
 

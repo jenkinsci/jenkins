@@ -188,7 +188,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
             else if(r.isPassed()) {
                 passCount++;
             }
-            else if(r.isFailureAnError()){
+            else if(r.isFailureAnError()!=null && r.isFailureAnError()){
                 errorCount++;
             }
             else {
@@ -210,7 +210,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
             else if(r.isPassed()) {
                 passCount++;
             }
-            else if(r.isFailureAnError()){
+            else if(r.isFailureAnError()!=null && r.isFailureAnError()){
                 errorCount++;
             }
             else {

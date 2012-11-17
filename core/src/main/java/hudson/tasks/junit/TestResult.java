@@ -593,7 +593,7 @@ public final class TestResult extends MetaTabulatedResult {
                 if(cr.isSkipped())
                     skippedTests++;
                 else if(!cr.isPassed()) {
-                    if(cr.isFailureAnError()) {
+                    if(cr.isFailureAnError()!=null && cr.isFailureAnError()) {
                         errorTests.add(cr);
                     }
                     else {
