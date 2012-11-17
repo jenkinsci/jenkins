@@ -1162,6 +1162,31 @@ public class Util {
     }
 
     /**
+     * Return true if the systemId denotes an absolute URI .
+     *
+     * The same algorithm can be seen in {@link URI}, but
+     * implementing this by ourselves allow it to be more lenient about
+     * escaping of URI.
+     */
+    public static boolean isAbsoluteUri(String uri) {
+        int idx = uri.indexOf(':');
+        if (idx<0)  return false;   // no ':'. can't be absolute
+
+        // #, ?, and / must not be before ':'
+        return idx<_indexOf(uri, '#') && idx<_indexOf(uri,'?') && idx<_indexOf(uri,'/');
+    }
+
+    /**
+     * Works like {@link String#indexOf(int)} but 'not found' is returned as s.length(), not -1.
+     * This enables more straight-forward comparison.
+     */
+    private static int _indexOf(String s, char ch) {
+        int idx = s.indexOf(ch);
+        if (idx<0)  return s.length();
+        return idx;
+    }
+
+    /**
      * Loads a key/value pair string as {@link Properties}
      * @since 1.392
      */
