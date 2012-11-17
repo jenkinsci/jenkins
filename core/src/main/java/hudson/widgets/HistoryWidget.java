@@ -26,6 +26,8 @@ package hudson.widgets;
 import hudson.Functions;
 import hudson.model.ModelObject;
 import hudson.model.Run;
+import hudson.util.Iterators;
+
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -133,7 +135,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
                 return updateFirstTransientBuildKey(lst);
             }
         } else
-            return updateFirstTransientBuildKey(baseList);
+            return updateFirstTransientBuildKey(Iterators.wrap(baseList));
     }
 
     public boolean isTrimmed() {

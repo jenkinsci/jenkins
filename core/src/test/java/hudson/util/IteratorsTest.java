@@ -26,6 +26,7 @@ package hudson.util;
 import hudson.util.Iterators.CountingPredicate;
 import junit.framework.TestCase;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Arrays.*;
@@ -49,6 +50,20 @@ public class IteratorsTest extends TestCase {
         assertEquals(2,(int)lst.get(1));
         assertEquals(3,(int)lst.get(2));
         assertEquals(3, lst.size());
+    }
+
+    public void testWrap() {
+        List<Integer> lst = Iterators.sequence(1,4);
+        Iterable<Integer> wrapped = Iterators.wrap(lst);
+        assertFalse(wrapped instanceof List);
+        Iterator<Integer> iter = wrapped.iterator();
+        assertTrue(iter.hasNext());
+        assertEquals(1,(int)iter.next());
+        assertTrue(iter.hasNext());
+        assertEquals(2,(int)iter.next());
+        assertTrue(iter.hasNext());
+        assertEquals(3,(int)iter.next());
+        assertFalse(iter.hasNext());
     }
 
     public void testLimit() {
