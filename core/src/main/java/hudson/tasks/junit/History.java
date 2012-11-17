@@ -114,9 +114,9 @@ public class History {
                        @Override
                        public Color getColor() {
                            if (o.getErrorCount() > 0)
-                               return ColorPalette.RED;
+                               return ColorPalette.STATUS_ERROR;
                            else if (o.getFailCount() > 0)
-                               return ColorPalette.ORANGE;
+                               return ColorPalette.STATUS_FAILED;
                            else if (o.getSkipCount() > 0)
                                return ColorPalette.YELLOW;
                            else
@@ -232,8 +232,8 @@ public class History {
             };
             plot.setRenderer(ar);
             ar.setSeriesPaint(0,ColorPalette.YELLOW); // Skips.
-            ar.setSeriesPaint(1,ColorPalette.RED); // Errors.
-            ar.setSeriesPaint(2,ColorPalette.ORANGE); // Failures.
+            ar.setSeriesPaint(1,ColorPalette.STATUS_ERROR); // Errors.
+            ar.setSeriesPaint(2,ColorPalette.STATUS_FAILED); // Failures.
             ar.setSeriesPaint(3,ColorPalette.BLUE); // Total.
 
             // crop extra space around the graph

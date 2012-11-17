@@ -742,11 +742,11 @@ TABLE.fileList TD.fileSize {
 }
 
 .result-failed {
-  color: #ef6929;
+  color: #ef2929;
 }
 
 .result-error {
-  color: #ef2929;
+  color: #cf0909;
 }
 
 .result-regression {

@@ -344,8 +344,8 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             }
         };
         plot.setRenderer(ar);
-        ar.setSeriesPaint(0,ColorPalette.RED); // Errors.
-        ar.setSeriesPaint(1,ColorPalette.ORANGE); // Failures.
+        ar.setSeriesPaint(0,ColorPalette.STATUS_ERROR); // Errors.
+        ar.setSeriesPaint(1,ColorPalette.STATUS_FAILED); // Failures.
         ar.setSeriesPaint(2,ColorPalette.YELLOW); // Skips.
         ar.setSeriesPaint(3,ColorPalette.BLUE); // Total.
 
