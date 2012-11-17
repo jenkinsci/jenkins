@@ -60,7 +60,7 @@ THE SOFTWARE.
         </div>
         <div style="width:100%; height:1em; background-color: #729FCF">
           <!-- Error tests part of the bar. -->
-          <div style="width:${it.errorCount*100/it.totalCount}%; height: 1em; background-color: #CF0909; float: left"></div>
+          <div style="width:${it.errorCount*100/it.totalCount}%; height: 1em; background-color: #AF0909; float: left"></div>
           <!-- Failed tests part of the bar. -->
           <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: #EF2929; float: left"></div>
           <!-- Skipped tests part of the bar. -->
