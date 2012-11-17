@@ -47,52 +47,16 @@ THE SOFTWARE.
 		}
   </script>
 
-  <j:if test="${it.errorCount!=0}">
-    <h2>${%All Error Tests}</h2>
-    <table class="pane sortable">
-      <tr>
-        <td class="pane-header">${%Test Name}</td>
-        <td class="pane-header" style="width:4em">${%Duration}</td>
-        <td class="pane-header" style="width:3em">${%Age}</td>
-      </tr>
-      <j:forEach var="f" items="${it.errorTests}" varStatus="i">
-        <tr>
-          <td class="pane">
-            <a id="test-${f.fullName}-showlink"
-               href="javascript:showStackTrace('test-${h.jsStringEscape(f.fullName)}','${f.getRelativePathFrom(it)}/summary')">&gt;&gt;&gt;</a>
-            <a id="test-${f.fullName}-hidelink" style="display:none"
-               href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
-            <st:nbsp/>
-            <a href="${f.getRelativePathFrom(it)}" class="model-link"><st:out value="${f.fullName}"/></a>
-            <st:nbsp/>
-            <j:forEach var="badge" items="${f.testActions}">
-              <st:include it="${badge}" page="badge.jelly" optional="true"/>
-            </j:forEach>
-            <div id="test-${f.fullName}" class="hidden" style="display:none">
-              ${%Loading...}
-            </div>
-          </td>
-          
-          <td class="pane" style="text-align:right;" data="${f.duration}">
-            ${f.durationString}
-          </td>
-          <td class="pane" style="text-align:right;">
-            <a href="${rootURL}/${f.failedSinceRun.url}" class="model-link">${f.age}</a>
-          </td>
-        </tr>
-      </j:forEach>
-    </table>
-  </j:if>
-
   <j:if test="${it.failCount!=0}">
     <h2>${%All Failed Tests}</h2>
     <table class="pane sortable">
       <tr>
         <td class="pane-header">${%Test Name}</td>
+        <td class="pane-header" style="width:4em">${%Status}</td>
         <td class="pane-header" style="width:4em">${%Duration}</td>
         <td class="pane-header" style="width:3em">${%Age}</td>
       </tr>
-      <j:forEach var="f" items="${it.failedTests}" varStatus="i">
+      <j:forEach var="f" items="${it.failedAndErrorTests}" varStatus="i">
         <tr>
           <td class="pane">
             <a id="test-${f.fullName}-showlink"
@@ -110,6 +74,12 @@ THE SOFTWARE.
             </div>
           </td>
           
+          <td class="pane" style="text-align:right;">
+            <j:set var="pst" value="${f.status}" />
+            <span class="${pst.cssClass}">
+              ${pst.message}
+            </span>
+          </td>
           <td class="pane" style="text-align:right;" data="${f.duration}">
             ${f.durationString}
           </td>

@@ -205,6 +205,16 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         }
         return r;
     }
+    
+    @Override
+    public Collection<? extends TestResult> getFailedAndErrorTests() {
+        List<CaseResult> r = new ArrayList<CaseResult>();
+        for (ClassResult clr : classes.values()) {
+            for (CaseResult cr : clr.getChildren()) {
+                if (!cr.isPassed() && !cr.isSkipped()) {
+                    r.add(cr);
+                }
+            }
         }
         return r;
     }

@@ -362,6 +362,14 @@ public final class TestResult extends MetaTabulatedResult {
         return errorTests;
     }
 
+    @Override
+    public List<CaseResult> getFailedAndErrorTests() {
+        List<CaseResult> list = new ArrayList<CaseResult>();
+        if(failedTests!=null) { list.addAll(failedTests); }
+        if(errorTests!=null) { list.addAll(errorTests); }
+        return list;
+    }
+
     /**
      * Gets the "children" of this test result that passed
      *
