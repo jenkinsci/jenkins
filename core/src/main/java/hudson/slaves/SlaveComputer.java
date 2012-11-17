@@ -35,7 +35,6 @@ import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.Futures;
 import hudson.FilePath;
-import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
 import hudson.AbortException;
 import hudson.remoting.Launcher;
@@ -365,7 +364,6 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer());
-//        channel.call(new WindowsSlaveInstaller(remoteFs));
         for (ComputerListener cl : ComputerListener.all())
             cl.preOnline(this,channel,root,taskListener);
 
