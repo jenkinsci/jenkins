@@ -83,6 +83,8 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 
 	private Set<String> sids = new HashSet<String>();
 
+    private boolean blocksInheritance = false;
+
     private AuthorizationMatrixProperty() {
     }
 
@@ -144,6 +146,10 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
                 return null;
 
             AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty();
+
+            // Disable inheritance, if so configured
+            amp.setBlocksInheritance(!formData.getJSONObject("blocksInheritance").isNullObject());
+
             for (Map.Entry<String, Object> r : (Set<Map.Entry<String, Object>>) formData.getJSONObject("data").entrySet()) {
                 String sid = r.getKey();
                 if (r.getValue() instanceof JSONObject) {
@@ -201,6 +207,25 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 	}
 
 	/**
+	 * Sets the flag to block inheritance
+	 *
+	 * @param blocksInheritance
+	 */
+	private void setBlocksInheritance(boolean blocksInheritance) {
+		this.blocksInheritance = blocksInheritance;
+	}
+
+	/**
+	 * Returns true if the authorization matrix is configured to block
+	 * inheritance from the parent.
+	 *
+	 * @return
+	 */
+	public boolean isBlocksInheritance() {
+		return this.blocksInheritance;
+	}
+
+	/**
 	 * Checks if the given SID has the given permission.
 	 */
 	public boolean hasPermission(String sid, Permission p) {
@@ -245,7 +270,13 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 				MarshallingContext context) {
 			AuthorizationMatrixProperty amp = (AuthorizationMatrixProperty) source;
 
-			for (Entry<Permission, Set<String>> e : amp.grantedPermissions
+            if (amp.isBlocksInheritance()) {
+                writer.startNode("blocksInheritance");
+                writer.setValue("true");
+                writer.endNode();
+            }
+
+            for (Entry<Permission, Set<String>> e : amp.grantedPermissions
 					.entrySet()) {
 				String p = e.getKey().getId();
 				for (String sid : e.getValue()) {
@@ -261,12 +292,20 @@ public class AuthorizationMatrixProperty extends JobProperty<Job<?, ?>> {
 			AuthorizationMatrixProperty as = new AuthorizationMatrixProperty();
 
 			String prop = reader.peekNextChild();
+
 			if (prop!=null && prop.equals("useProjectSecurity")) {
 				reader.moveDown();
 				reader.getValue(); // we used to use this but not any more.
 				reader.moveUp();
+				prop = reader.peekNextChild();
 			}
-            while (reader.hasMoreChildren()) {
+			else if ("blocksInheritance".equals(prop)) {
+			    reader.moveDown();
+			    as.setBlocksInheritance("true".equals(reader.getValue()));
+			    reader.moveUp();
+			}
+
+			while (reader.hasMoreChildren()) {
                 reader.moveDown();
                 try {
                     as.add(reader.getValue());
