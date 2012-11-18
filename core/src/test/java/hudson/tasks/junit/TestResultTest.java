@@ -148,28 +148,34 @@ public class TestResultTest extends TestCase {
     @Bug(4951)
     public void testDistinguishFailuresAndErrors() throws IOException, URISyntaxException {
         TestResult testResult = new TestResult();
-        testResult.parse(getDataFile("junit-report-4951.xml"));
+        testResult.parse(getDataFile("JENKINS-4951/junit-report-4951.xml"));
         testResult.tally();
 
+        System.out.println("4951: passed count: "+testResult.getPassCount());
+        assertEquals("Wrong number of passed tests", 4, testResult.getPassCount());
         System.out.println("4951: fail count: "+testResult.getFailCount());
-        assertEquals("Wrong number of failed tests", 1, testResult.getFailCount());
+        assertEquals("Wrong number of failed tests", 2, testResult.getFailCount());
         System.out.println("4951: error count: "+testResult.getErrorCount());
-        assertEquals("Wrong number of error tests", 2, testResult.getErrorCount());
+        assertEquals("Wrong number of error tests", 1, testResult.getErrorCount());
 
-        SuiteResult suite = testResult.getSuite("some.package.somewhere");
-        System.out.println(suite+" "+suite.getDuration());
-        /*List<CaseResult> cases = suite.getCases();
-        for(CaseResult cr: cases) {
-            System.out.println(cr.getDisplayName()+": "+cr.getErrorCount()+"/"+cr.getFailCount());
-        }*/
+        SuiteResult suite = testResult.getSuite("tbrugz.jenkinstest.TestIt");
+        assertNotNull("suite should not be null", suite);
 
-        CaseResult crE = suite.getCase("testError");
-        System.out.println(crE.getDisplayName()+": e/f: "+crE.getErrorCount()+"/"+crE.getFailCount());
-        assertEquals("CaseResult should be an error", 1, crE.getErrorCount());
+        CaseResult crPassed = suite.getCase("testOK1");
+        System.out.println(crPassed.getDisplayName()+": e/f: "+crPassed.getErrorCount()+"/"+crPassed.getFailCount());
+        assertEquals("CaseResult should be passed but is failed", 0, crPassed.getFailCount());
+        assertEquals("CaseResult should be passed but is error", 0, crPassed.getErrorCount());
+        assertNull("passed CaseResult.isFailureAnError() should be null", crPassed.isFailureAnError());
 
-        CaseResult crF = suite.getCase("testFailure");
-        System.out.println(crF.getDisplayName()+": e/f: "+crF.getErrorCount()+"/"+crF.getFailCount());
-        assertEquals("CaseResult should be a failure", 1, crF.getFailCount());
+        CaseResult crError = suite.getCase("testError1");
+        System.out.println(crError.getDisplayName()+": e/f: "+crError.getErrorCount()+"/"+crError.getFailCount());
+        assertEquals("CaseResult should be an error", 1, crError.getErrorCount());
+        assertEquals("CaseResult.isFailureAnError() should be TRUE", Boolean.TRUE, crError.isFailureAnError());
+
+        CaseResult crFailure = suite.getCase("testFail1");
+        System.out.println(crFailure.getDisplayName()+": e/f: "+crFailure.getErrorCount()+"/"+crFailure.getFailCount());
+        assertEquals("CaseResult should be a failure", 1, crFailure.getFailCount());
+        assertEquals("CaseResult.isFailureAnError() should be FALSE", Boolean.FALSE, crFailure.isFailureAnError());
         
     }
 
