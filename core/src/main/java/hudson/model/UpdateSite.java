@@ -673,6 +673,7 @@ public class UpdateSite {
          * @param dynamicLoad
          *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
          *      the plugin will only take effect after the reboot.
+         *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);

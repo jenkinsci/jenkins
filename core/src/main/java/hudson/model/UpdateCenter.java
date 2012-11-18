@@ -113,7 +113,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 
     /**
-     * {@link #getId} of the default update site.
+     * {@linkplain UpdateSite#getId() ID} of the default update site.
      * @since 1.483
      */
     public static final String ID_DEFAULT = "default";
@@ -151,8 +151,25 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     private UpdateCenterConfiguration config;
 
+    private boolean requiresRestart;
+
     public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
+    }
+
+    /**
+     * If any of the executed {@link UpdateCenterJob}s requires a restart
+     * to take effect, this method returns true.
+     *
+     * <p>
+     * This doesn't necessarily mean the user has scheduled or initiated
+     * the restart operation.
+     *
+     * @see #isRestartScheduled()
+     */
+    @Exported
+    public boolean isRestartRequiredForCompletion() {
+        return requiresRestart;
     }
 
     public Api getApi() {
@@ -384,8 +401,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
     
     /**
-     * Checks if restart is scheduled
-     * 
+     * Checks if the restart operation is scheduled
+     * (which means in near future Jenkins will restart by itself)
+     *
+     * @see #isRestartRequiredForCompletion()
      */
     public boolean isRestartScheduled() {
         for (UpdateCenterJob job : getJobs()) {
@@ -1042,6 +1061,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (InstallationStatus e) {
                 status = e;
                 if (status.isSuccess()) onSuccess();
+                requiresRestart |= status.requiresRestart();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
@@ -1091,6 +1111,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             public final String getType() {
                 return getClass().getSimpleName();
             }
+
+            /**
+             * Indicates that a restart is needed to complete the tasks.
+             */
+            public boolean requiresRestart() {
+                return false;
+            }
         }
 
         /**
@@ -1122,6 +1149,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
             public String getMessage() {
                 return message.toString();
+            }
+
+            @Override
+            public boolean requiresRestart() {
+                return true;
             }
         }
 
