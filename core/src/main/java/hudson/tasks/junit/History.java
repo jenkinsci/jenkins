@@ -149,9 +149,9 @@ public class History {
                 
                 for (TestResult o: list) {
                     data.add(o.getPassCount(), "3Passed", new ChartLabel(o));
-                    data.add(o.getFailCount(), "2Failed", new ChartLabel(o));
-                    data.add(o.getErrorCount(), "1Error", new ChartLabel(o));
-                    data.add(o.getSkipCount(), "0Skipped", new ChartLabel(o));
+                    data.add(o.getSkipCount(), "2Skipped", new ChartLabel(o));
+                    data.add(o.getFailCount(), "1Failed", new ChartLabel(o));
+                    data.add(o.getErrorCount(), "0Error", new ChartLabel(o));
                 }
                 return data;
             }
@@ -231,9 +231,9 @@ public class History {
                 }
             };
             plot.setRenderer(ar);
-            ar.setSeriesPaint(0,CaseResult.Status.SKIPPED.color); // Skips.
-            ar.setSeriesPaint(1,CaseResult.Status.ERROR.color); // Errors.
-            ar.setSeriesPaint(2,CaseResult.Status.FAILED.color); // Failures.
+            ar.setSeriesPaint(0,CaseResult.Status.ERROR.color); // Errors.
+            ar.setSeriesPaint(1,CaseResult.Status.FAILED.color); // Failures.
+            ar.setSeriesPaint(2,CaseResult.Status.SKIPPED.color); // Skips.
             ar.setSeriesPaint(3,CaseResult.Status.PASSED.color); // Total.
 
             // crop extra space around the graph
