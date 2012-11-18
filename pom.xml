@@ -328,6 +328,12 @@ THE SOFTWARE.
           <version>2.6</version>
         </plugin>
         <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+          </configuration>
+        </plugin>
+        <plugin>
           <artifactId>maven-gpg-plugin</artifactId>
           <version>1.2</version>
         </plugin>
