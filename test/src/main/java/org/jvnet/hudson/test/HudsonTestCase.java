@@ -258,7 +258,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 90;
+    public int timeout = 180;
 
     private volatile Timer timeoutTimer;
 
