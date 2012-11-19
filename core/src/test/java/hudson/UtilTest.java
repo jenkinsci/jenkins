@@ -291,4 +291,14 @@ public class UtilTest {
 			}
 		}
     }
+
+    public void testIsAbsoluteUri() {
+        assertTrue(Util.isAbsoluteUri("http://foobar/"));
+        assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
+        assertTrue(Util.isAbsoluteUri("d123://test/"));
+        assertFalse(Util.isAbsoluteUri("foo/bar/abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo?abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo#abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo/bar"));
+    }
 }
