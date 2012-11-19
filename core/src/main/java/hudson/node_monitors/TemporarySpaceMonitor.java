@@ -61,9 +61,10 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
+    @Extension
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
         public String getDisplayName() {
-            return Messages.TemporarySpaceMonitor_DisplayName();
+            return Functions.isMustangOrAbove() ? Messages.TemporarySpaceMonitor_DisplayName() : Messages.TemporarySpaceMonitor_DisplayName5();
         }
 
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
@@ -74,12 +75,6 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         }
     };
 
-    @Extension
-    public static DiskSpaceMonitorDescriptor install() {
-        if(Functions.isMustangOrAbove())    return DESCRIPTOR;
-        return null;
-    }
-    
     protected static final class GetTempSpace implements FileCallable<DiskSpace> {
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
