@@ -59,10 +59,9 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    @Extension
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
         public String getDisplayName() {
-            return Functions.isMustangOrAbove() ? Messages.DiskSpaceMonitor_DisplayName() : Messages.DiskSpaceMonitor_DisplayName5();
+            return Messages.DiskSpaceMonitor_DisplayName();
         }
 
         protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
@@ -73,4 +72,9 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
         }
     };
 
+    @Extension
+    public static DiskSpaceMonitorDescriptor install() {
+        if(Functions.isMustangOrAbove())    return DESCRIPTOR;
+        return null;
+    }
 }
