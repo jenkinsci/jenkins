@@ -47,6 +47,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -388,7 +389,16 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             if(xf.exists()) {
                 DescribableList<NodeMonitor,Descriptor<NodeMonitor>> persisted =
                         (DescribableList<NodeMonitor,Descriptor<NodeMonitor>>) xf.read();
-                r.replaceBy(persisted.toList());
+                List<NodeMonitor> sanitized = new ArrayList<NodeMonitor>();
+                for (NodeMonitor nm : persisted) {
+                    try {
+                        nm.getDescriptor();
+                        sanitized.add(nm);
+                    } catch (Throwable e) {
+                        // the descriptor didn't load? see JENKINS-15869
+                    }
+                }
+                r.replaceBy(sanitized);
             }
 
             // if we have any new monitors, let's add them
