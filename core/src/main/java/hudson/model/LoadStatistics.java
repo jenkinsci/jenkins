@@ -230,7 +230,7 @@ public abstract class LoadStatistics {
         private int count(List<Queue.BuildableItem> bis, Label l) {
             int q=0;
             for (Queue.BuildableItem bi : bis) {
-                if(bi.task.getAssignedLabel()==l)
+                if(bi.getAssignedLabel()==l)
                     q++;
             }
             return q;
