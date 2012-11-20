@@ -319,7 +319,6 @@ public class SurefireArchiver extends MavenReporter {
 
     private boolean isSurefireOrFailsafeMojo(MojoInfo mojo) {
       return mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test")
-          || mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")
           || mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "verify");
     }
     
