@@ -502,7 +502,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return search(n,Direction.EXACT);
     }
 
-    public final R put(R value) {
+    public R put(R value) {
+        return _put(value);
+    }
+
+    protected R _put(R value) {
         return put(getNumberOf(value),value);
     }
 
