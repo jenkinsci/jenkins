@@ -520,8 +520,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * Returns true if any new plugin was added, which means a restart is required
-     * for the change to take effect.
+     * Returns true if any new plugin was added.
      */
     public boolean isPluginUploaded() {
         return pluginUploaded;
