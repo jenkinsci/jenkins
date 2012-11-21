@@ -106,7 +106,7 @@ public class UpdateSite {
     /**
      * Latest data as read from the data file.
      */
-    private Data data;
+    private transient Data data;
 
     /**
      * ID string for this update source.
