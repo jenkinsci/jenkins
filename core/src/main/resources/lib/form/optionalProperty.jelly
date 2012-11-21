@@ -39,7 +39,7 @@ THE SOFTWARE.
     so override @checked manually.
   -->
   <f:optionalBlock field="${field}" title="${title}" checked="${instance[field]!=null}">
-    <j:set var="descriptor" value="${app.getDescriptorOrDie(descriptor.getPropertyType(instance,field).clazz)}" />
+    <j:set var="descriptor" value="${app.getDescriptorOrDie(descriptor.getPropertyTypeOrDie(instance,field).clazz)}" />
     <j:set var="instance" value="${instance[field]}"/>
     <st:include from="${descriptor}" page="${descriptor.configPage}" />
   </f:optionalBlock>

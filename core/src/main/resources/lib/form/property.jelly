@@ -35,7 +35,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:rowSet name="${field}">
-    <j:set var="descriptor" value="${attrs.propertyDescriptor ?: app.getDescriptorOrDie(descriptor.getPropertyType(instance,field).clazz)}" />
+    <j:set var="descriptor" value="${attrs.propertyDescriptor ?: app.getDescriptorOrDie(descriptor.getPropertyTypeOrDie(instance,field).clazz)}" />
     <j:set var="instance" value="${instance[field]}"/>
     <st:include from="${descriptor}" page="${descriptor.configPage}" />
   </f:rowSet>
