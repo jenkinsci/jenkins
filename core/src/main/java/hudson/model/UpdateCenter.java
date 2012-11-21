@@ -157,21 +157,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         configure(new UpdateCenterConfiguration());
     }
 
-    /**
-     * If any of the executed {@link UpdateCenterJob}s requires a restart
-     * to take effect, this method returns true.
-     *
-     * <p>
-     * This doesn't necessarily mean the user has scheduled or initiated
-     * the restart operation.
-     *
-     * @see #isRestartScheduled()
-     */
-    @Exported
-    public boolean isRestartRequiredForCompletion() {
-        return requiresRestart;
-    }
-
     public Api getApi() {
         return new Api(this);
     }
@@ -399,7 +384,22 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         response.sendRedirect2(".");
     }
-    
+
+    /**
+     * If any of the executed {@link UpdateCenterJob}s requires a restart
+     * to take effect, this method returns true.
+     *
+     * <p>
+     * This doesn't necessarily mean the user has scheduled or initiated
+     * the restart operation.
+     *
+     * @see #isRestartScheduled()
+     */
+    @Exported
+    public boolean isRestartRequiredForCompletion() {
+        return requiresRestart;
+    }
+
     /**
      * Checks if the restart operation is scheduled
      * (which means in near future Jenkins will restart by itself)
