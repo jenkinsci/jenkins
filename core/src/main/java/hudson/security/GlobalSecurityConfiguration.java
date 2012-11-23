@@ -23,47 +23,70 @@
  */
 package hudson.security;
 
+import hudson.BulkChange;
 import hudson.Extension;
 import hudson.markup.MarkupFormatter;
-import jenkins.model.GlobalConfiguration;
+import hudson.model.Descriptor.FormException;
+import hudson.model.ManagementLink;
+import hudson.util.FormApply;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Security configuration.
- *
+ * 
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=200)
-public class GlobalSecurityConfiguration extends GlobalConfiguration {
+@Extension()
+public class GlobalSecurityConfiguration extends ManagementLink {// implements RootAction { // GlobalConfiguration {
+    
+    private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
+
     public MarkupFormatter getMarkupFormatter() {
         return Jenkins.getInstance().getMarkupFormatter();
     }
-    
+
     public int getSlaveAgentPort() {
         return Jenkins.getInstance().getSlaveAgentPort();
     }
-    
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+
+    public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        // for compatibility reasons, the actual value is stored in Jenkins
+        BulkChange bc = new BulkChange(Jenkins.getInstance());
+        try{
+            boolean result = configure(req, req.getSubmittedForm());
+            LOGGER.log(Level.FINE, "security saved: "+result);
+            Jenkins.getInstance().save();
+            FormApply.success(req.getContextPath()+'/').generateResponse(req, rsp, null);
+        } finally {
+            bc.commit();
+        }
+    }
+
+    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
-
+        j.checkPermission(Jenkins.ADMINISTER);
         if (json.has("useSecurity")) {
             JSONObject security = json.getJSONObject("useSecurity");
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-
             try {
                 j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
             } catch (IOException e) {
-                throw new FormException(e,"slaveAgentPortType");
+                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
             }
-
             if (security.has("markupFormatter")) {
                 j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, security.getJSONObject("markupFormatter")));
             } else {
@@ -72,8 +95,22 @@ public class GlobalSecurityConfiguration extends GlobalConfiguration {
         } else {
             j.disableSecurity();
         }
-
+        // return true for backward compatibility reasons
         return true;
     }
-}
 
+    @Override
+    public String getDisplayName() {
+        return "Global Security";
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "help.png";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "globalSecurity";
+    }
+}
