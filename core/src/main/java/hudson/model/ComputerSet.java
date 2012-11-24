@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -262,9 +263,13 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.getInstance();
         app.checkPermission(Computer.CREATE);
-        checkName(name);
+        String fixedName = Util.fixEmptyAndTrim(name);
+        checkName(fixedName);
 
-        Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
+        JSONObject formData = req.getSubmittedForm();
+        formData.put("name", fixedName);
+        
+        Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
         app.addNode(result);
 
         // take the user back to the slave list top page
