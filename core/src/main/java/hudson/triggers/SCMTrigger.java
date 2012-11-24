@@ -73,9 +73,28 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class SCMTrigger extends Trigger<SCMedItem> {
-    @DataBoundConstructor
+    
+    private boolean ignorePostCommitHooks;
+    
     public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+        this(scmpoll_spec, false);
+    }
+    
+    @DataBoundConstructor
+    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ANTLRException {
         super(scmpoll_spec);
+        this.ignorePostCommitHooks = ignorePostCommitHooks;
+    }
+    
+    /**
+     * This trigger wants to ignore post-commit hooks.
+     * <p>
+     * SCM plugins must respect this and not run this trigger for post-commit notifications.
+     * 
+     * @since 1.493
+     */
+    public boolean isIgnorePostCommitHooks() {
+        return this.ignorePostCommitHooks;
     }
 
     @Override
