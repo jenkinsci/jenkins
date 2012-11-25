@@ -68,7 +68,7 @@ public class GlobalSecurityConfiguration extends ManagementLink {
             boolean result = configure(req, req.getSubmittedForm());
             LOGGER.log(Level.FINE, "security saved: "+result);
             Jenkins.getInstance().save();
-            FormApply.success(req.getContextPath()+'/').generateResponse(req, rsp, null);
+            FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
         } finally {
             bc.commit();
         }
@@ -117,5 +117,10 @@ public class GlobalSecurityConfiguration extends ManagementLink {
     @Override
     public String getUrlName() {
         return "globalSecurity";
+    }
+    
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 }
