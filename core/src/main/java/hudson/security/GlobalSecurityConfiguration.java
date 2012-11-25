@@ -48,8 +48,8 @@ import org.kohsuke.stapler.StaplerResponse;
  * 
  * @author Kohsuke Kawaguchi
  */
-@Extension()
-public class GlobalSecurityConfiguration extends ManagementLink {// implements RootAction { // GlobalConfiguration {
+@Extension(ordinal = Integer.MAX_VALUE - 210)
+public class GlobalSecurityConfiguration extends ManagementLink {
     
     private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
 
@@ -101,12 +101,17 @@ public class GlobalSecurityConfiguration extends ManagementLink {// implements R
 
     @Override
     public String getDisplayName() {
-        return "Global Security";
+        return Messages.GlobalSecurityConfiguration_DisplayName();
+    }
+    
+    @Override
+    public String getDescription() {
+        return Messages.GlobalSecurityConfiguration_Description();
     }
 
     @Override
     public String getIconFileName() {
-        return "help.png";
+        return "lock.png";
     }
 
     @Override
