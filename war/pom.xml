@@ -120,17 +120,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>launchd-slave-installer</artifactId>
       <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>launchd-slave-installer</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>upstart-slave-installer</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
