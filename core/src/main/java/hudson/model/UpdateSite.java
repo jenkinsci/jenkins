@@ -408,10 +408,10 @@ public class UpdateSite {
 
         Data(JSONObject o) {
             this.sourceId = (String)o.get("id");
-            if (sourceId.equals(UpdateCenter.ID_DEFAULT)) {
-                core = new Entry(sourceId, o.getJSONObject("core"), url);
-            }
-            else {
+            JSONObject c = o.optJSONObject("core");
+            if (c!=null) {
+                core = new Entry(sourceId, c, url);
+            } else {
                 core = null;
             }
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
