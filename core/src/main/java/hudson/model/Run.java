@@ -171,6 +171,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected transient final long timestamp;
 
     /**
+     * When the build has started running.
+     *
+     * For historical reasons, 0 means no value is recorded.
+     *
+     * @see #getStartTime()
+     */
+    private long startTime;
+
+    /**
      * The build result.
      * This value may change while the state is in {@link State#BUILDING}.
      */
@@ -520,6 +529,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * When the build is scheduled.
+     *
+     * @see #getStartTimeInMillis()
      */
     @Exported
     public Calendar getTimestamp() {
@@ -540,6 +551,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final long getTimeInMillis() {
         return timestamp;
+    }
+
+    /**
+     * When the build has started running in an executor.
+     *
+     * For example, if a build is scheduled 1pm, and stayed in the queue for 1 hour (say, no idle slaves),
+     * then this method returns 2pm, which is the time the job moved from the queue to the building state.
+     *
+     * @see #getTimestamp()
+     */
+    public final long getStartTimeInMillis() {
+        if (startTime==0)   return timestamp;   // fallback: approximate by the queuing time
+        return startTime;
     }
 
     @Exported
@@ -1620,6 +1644,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     protected void onStartBuilding() {
         state = State.BUILDING;
+        startTime = System.currentTimeMillis();
         if (runner!=null)
             RunnerStack.INSTANCE.push(runner);
     }
