@@ -92,18 +92,21 @@ public abstract class MailAddressResolver implements ExtensionPoint {
     public abstract String findMailAddressFor(User u);
     
     public static String resolve(User u) {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Resolving e-mail address for \""+u+"\" ID="+u.getId());
-        }
 
-        for (MailAddressResolver r : all()) {
-            String email = r.findMailAddressFor(u);
-            if(email!=null) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(r+" resolved "+u.getId()+" to "+email);
+        if (Mailer.descriptor().getTryToResolve()) {
+
+            log("Resolving e-mail address for \""+u+"\" ID="+u.getId());
+
+            for (MailAddressResolver r : all()) {
+                String email = r.findMailAddressFor(u);
+                if(email!=null) {
+                    log(r+" resolved "+u.getId()+" to "+email);
+                    return email;
                 }
-                return email;
             }
+        } else {
+
+            log("Skipping e-mail address resolution for \""+u+"\" ID="+u.getId());
         }
 
         // fall back logic
@@ -126,6 +129,13 @@ public abstract class MailAddressResolver implements ExtensionPoint {
             return u.getId()+ds;
         } else
             return null;
+    }
+
+    private static void log(final String msg) {
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(msg);
+        }
     }
 
     /**

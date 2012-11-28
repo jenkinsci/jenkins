@@ -61,6 +61,9 @@ THE SOFTWARE.
       <f:entry title="${%Charset}" field="charset">
         <f:textbox />
       </f:entry>
+      <f:entry title="${%Allow user address resolution}" field="tryToResolve">
+        <f:checkbox checked="${h.defaultToTrue(descriptor.tryToResolve)}" />
+      </f:entry>
     </f:advanced>
     <f:optionalBlock title="${%Test configuration by sending test e-mail}">
       <f:entry title="${%Test e-mail recipient}">
