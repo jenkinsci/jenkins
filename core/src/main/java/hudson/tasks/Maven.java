@@ -396,7 +396,7 @@ public class Maven extends Builder {
 
         @Override
         public String getHelpFile(String fieldName) {
-            if (fieldName.equals("globalSettings")) fieldName = "settings"; // same help file
+            if (fieldName != null && fieldName.equals("globalSettings")) fieldName = "settings"; // same help file
             return super.getHelpFile(fieldName);
         }
 
