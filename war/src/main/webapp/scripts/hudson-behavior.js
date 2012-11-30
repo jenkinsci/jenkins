@@ -1183,6 +1183,8 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
+        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
+
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
