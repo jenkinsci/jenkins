@@ -1434,13 +1434,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             // lock the workspace of the last build
             FilePath ws=lb.getWorkspace();
 
-            if (workspaceOffline(lb)) {
+            WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( lb );
+            if ( workspaceOfflineReason != null ) {
                 // workspace offline. build now, or nothing will ever be built
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
                     // no good. We should just wait for the slave to come back.
-                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().print(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
                 listener.getLogger().println( ws==null
@@ -1450,7 +1452,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
                     return NO_CHANGES;
                 } else {
-                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                    listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return BUILD_NOW;
                 }
             } else {
@@ -1486,22 +1489,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    private boolean workspaceOffline(R build) throws IOException, InterruptedException {
+    enum WorkspaceOfflineReason {
+        nonexisting_workspace,
+        builton_node_gone,
+        builton_node_no_executors
+    }
+
+    private WorkspaceOfflineReason workspaceOffline(R build) throws IOException, InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws==null || !ws.exists()) {
-            return true;
+            return WorkspaceOfflineReason.nonexisting_workspace;
         }
         
         Node builtOn = build.getBuiltOn();
         if (builtOn == null) { // node built-on doesn't exist anymore
-            return true;
+            return WorkspaceOfflineReason.builton_node_gone;
         }
         
         if (builtOn.toComputer() == null) { // node still exists, but has 0 executors - o.s.l.t.
-            return true;
+            return WorkspaceOfflineReason.builton_node_no_executors;
         }
-        
-        return false;
+
+        return null;
     }
 
     /**
