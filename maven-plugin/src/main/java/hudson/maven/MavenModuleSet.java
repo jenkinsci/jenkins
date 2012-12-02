@@ -265,6 +265,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @deprecated since 1.484 settings are provided by {@link #globalSettings}
      */
     private String globalSettingConfigId;
+    
+    /**
+     * Whether to participate in triggering downstream projects.
+     * @since 1.494
+     */
+    private boolean disableTriggerDownstreamProjects;
 
     /**
      * used temporary during maven build to store file path
@@ -851,6 +857,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         prebuilders.buildDependencyGraph(this,graph);
         postbuilders.buildDependencyGraph(this,graph);
     }
+    
+    public boolean isDisableTriggerDownstreamProjects() {
+      return disableTriggerDownstreamProjects;
+    }
+
+    public void setDisableTriggerDownstreamProjects(boolean disableTriggerDownstreamProjects) {
+      this.disableTriggerDownstreamProjects = disableTriggerDownstreamProjects;
+    }
 
     public MavenModule getRootModule() {
         if(rootModule==null)    return null;
@@ -1119,6 +1133,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        disableTriggerDownstreamProjects = req.hasParameter("maven.disableTriggerDownstreamProjects");
 
         runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
         prebuilders.rebuildHetero(req,json, Builder.all(), "prebuilder");

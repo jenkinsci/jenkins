@@ -488,7 +488,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
                 src = data.allModules.get(winner);
             }
 
-            if(src!=null) {
+            if(src!=null && !src.getParent().isDisableTriggerDownstreamProjects()) {
                 DependencyGraph.Dependency dep = new MavenModuleDependency(nodeOf(src),nodeOf(this));
                 if (!dep.pointsItself())
                     graph.addDependency(dep);
