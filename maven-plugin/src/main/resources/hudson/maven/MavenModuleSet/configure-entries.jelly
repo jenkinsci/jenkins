@@ -88,6 +88,10 @@ THE SOFTWARE.
                        title="${%Disable automatic artifact archiving}"
                        help="/plugin/maven-plugin/archivingDisabled.html"
                        checked="${it.isArchivingDisabled()}" />
+      <f:optionalBlock name="maven.disableTriggerDownstreamProjects"
+                       title="${%Disable triggering of downstream projects}"
+                       help="/plugin/maven-plugin/downstreamDisabled.html"
+                       checked="${it.isDisableTriggerDownstreamProjects()}" />
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
