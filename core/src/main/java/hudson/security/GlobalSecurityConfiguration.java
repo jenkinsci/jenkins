@@ -45,7 +45,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Security configuration.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = Integer.MAX_VALUE - 210)
