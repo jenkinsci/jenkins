@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuites>
+  <testsuite errors="0" failures="1" id="0" name="Test" package="test" tests="1" time="1.0">
+    <testcase time="1.0" classname="Test" name="testCase">
+      <error message="no message">
+        no message
+      </error>
+    </testcase>
+  </testsuite>
+</testsuites>
