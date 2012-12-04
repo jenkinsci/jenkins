@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 import junit.framework.TestCase;
-import org.junit.BeforeClass;
 
 import org.jvnet.localizer.LocaleProvider;
 
