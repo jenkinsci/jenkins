@@ -23,10 +23,7 @@ package hudson.tasks.junit;
 
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
-import hudson.model.Build;
 import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.StreamBuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
 
 import java.io.File;
@@ -73,7 +70,7 @@ public class CaseResultTest extends TestCase {
     public void testCalculateFailureAgeAfterAbort() throws Exception {
 
         int buildsNumber = 7;
-        String resultsPath = "JENKINS-15634" + java.io.File.separator;
+        String resultsPath = "JENKINS-15634" + File.separator;
         
         AbstractBuild[] buildArray = new AbstractBuild[buildsNumber];
         SuiteResult[] suiteResultArray = new SuiteResult[buildsNumber];
