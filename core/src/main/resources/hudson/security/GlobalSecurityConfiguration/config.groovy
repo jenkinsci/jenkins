@@ -10,7 +10,7 @@ f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.us
         f.serverTcpPort()
     }
 
-    f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: hudson.markup.MarkupFormatterDescriptor.all())
+    f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: hudson.markup.MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
     f.entry(title:_("Access Control")) {
         table(style:"width:100%") {
