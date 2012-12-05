@@ -139,8 +139,6 @@ public class SurefireArchiver extends MavenReporter {
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
-                //allow gc to free some memory
-                result = null;
                 
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                         private static final long serialVersionUID = -1023888330720922136L;
