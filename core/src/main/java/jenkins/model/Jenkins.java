@@ -2237,7 +2237,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             if (ctx instanceof ItemGroup) {
                 ItemGroup g = (ItemGroup) ctx;
                 Item i = g.getItem(s);
-                if (i==null || !i.hasPermission(Item.READ)) {
+                if (i==null || !i.hasPermission(Item.READ)) { // XXX consider DISCOVER
                     ctx=null;    // can't go up further
                     break;
                 }
@@ -2305,7 +2305,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 return null;    // this item can't have any children
 
             if (!item.hasPermission(Item.READ))
-                return null;
+                return null; // XXX consider DISCOVER
 
             parent = (ItemGroup) item;
         }
