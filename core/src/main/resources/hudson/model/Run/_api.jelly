@@ -46,7 +46,7 @@ THE SOFTWARE.
     You can retrieve in-progress console output by making repeated GET requests with a parameter.
     You'll basically send GET request to
     <a href="../logText/progressiveText?start=0">this URL</a> (or <a href="../logText/progressiveHtml?start=0">this URL</a> if you
-    want HTML that can be put into &lt;pre> tag.)
+    want HTML that can be put into &amp;lt;pre> tag.)
     The <tt>start</tt> parameter controls the byte offset of where you start.
   </p><p>
     The response will contain a chunk of the console output, as well as the <tt>X-Text-Size</tt> header that represents
