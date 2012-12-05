@@ -25,14 +25,11 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
-import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
@@ -81,7 +78,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -100,6 +96,7 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -281,7 +278,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return
      *      never null when {@link #isOffline()}==false.
      */
-    public abstract VirtualChannel getChannel();
+    public abstract @Nullable VirtualChannel getChannel();
 
     /**
      * Gets the default charset of this computer.

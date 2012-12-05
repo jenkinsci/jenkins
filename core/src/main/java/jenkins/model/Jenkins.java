@@ -1635,7 +1635,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Gets the slave node of the give name, hooked under this Hudson.
      */
-    public Node getNode(String name) {
+    public @CheckForNull Node getNode(String name) {
         return slaves.getNode(name);
     }
 

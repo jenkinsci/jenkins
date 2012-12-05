@@ -263,7 +263,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return
      *      null, for example if the slave that this build run no longer exists.
      */
-    public Node getBuiltOn() {
+    public @CheckForNull Node getBuiltOn() {
         if (builtOn==null || builtOn.equals(""))
             return Jenkins.getInstance();
         else
