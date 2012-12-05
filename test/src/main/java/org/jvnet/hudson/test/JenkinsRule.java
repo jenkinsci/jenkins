@@ -739,6 +739,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         return jenkins.createProject(MavenModuleSet.class,name);
     }
 
+    /**
+     * Creates a simple folder that other jobs can be placed in.
+     * @since 1.494
+     */
+    public MockFolder createFolder(String name) throws IOException {
+        return jenkins.createProject(MockFolder.class, name);
+    }
+
     protected String createUniqueProjectName() {
         return "test"+jenkins.getItems().size();
     }
