@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
@@ -139,8 +140,6 @@ public class SurefireArchiver extends MavenReporter {
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
-                //allow gc to free some memory
-                result = null;
                 
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                         private static final long serialVersionUID = -1023888330720922136L;
@@ -166,6 +165,20 @@ public class SurefireArchiver extends MavenReporter {
             }
         }
 
+        return true;
+    }
+    
+    @Override
+    public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        //Discard unneeded test result objects so they can't waste memory
+        for(MavenReporter reporter: build.getProject().getReporters()) {
+            if(reporter instanceof SurefireArchiver) {
+                SurefireArchiver surefireReporter = (SurefireArchiver) reporter;
+                if(surefireReporter.result != null) {
+                    surefireReporter.result = null;
+                }
+            }
+        }    
         return true;
     }
     
