@@ -25,7 +25,9 @@ package hudson.security;
 
 import hudson.BulkChange;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.markup.MarkupFormatter;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.ManagementLink;
 import hudson.util.FormApply;
@@ -95,9 +97,23 @@ public class GlobalSecurityConfiguration extends ManagementLink {
         } else {
             j.disableSecurity();
         }
-        // return true for backward compatibility reasons
-        return true;
+
+        // persist all the additional security configs
+        boolean result = true;
+        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalSecurityConfig()){
+            result &= configureDescriptor(req,json,d);
+        }
+        
+        return result;
     }
+    
+    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
+        // collapse the structure to remain backward compatible with the JSON structure before 1.
+        String name = d.getJsonSafeClassName();
+        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
+        json.putAll(js);
+        return d.configure(req, js);
+    }    
 
     @Override
     public String getDisplayName() {

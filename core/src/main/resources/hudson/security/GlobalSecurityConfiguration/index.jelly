@@ -28,6 +28,13 @@
 				<j:set var="instance" value="${it}" />
 				<j:set var="descriptor" value="${instance.descriptor}" />
 				<st:include page="config.groovy" />
+			    <!-- global security configuration from everyone -->
+			    <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalSecurityConfig()}">
+			      <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
+			      <f:rowSet name="${descriptor.jsonSafeClassName}">
+			        <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
+			      </f:rowSet>
+			    </j:forEach>							
 				<f:block>
 					<div id="bottom-sticker">
 						<div class="bottom-sticker-inner">

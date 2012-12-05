@@ -57,6 +57,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalSecurityConfigurationPart;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
@@ -74,7 +75,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
-import javax.management.modelmbean.DescriptorSupport;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -771,30 +771,6 @@ public class Functions {
      * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        class Tag implements Comparable<Tag> {
-            double ordinal;
-            String hierarchy;
-            Descriptor d;
-
-            Tag(double ordinal, Descriptor d) {
-                this.ordinal = ordinal;
-                this.d = d;
-                this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
-            }
-
-            private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
-                Class sc = c.getSuperclass();
-                if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
-                return buf.append(c.getName());
-            }
-
-            public int compareTo(Tag that) {
-                int r = Double.compare(this.ordinal, that.ordinal);
-                if (r!=0)   return -r; // descending for ordinal
-                return this.hierarchy.compareTo(that.hierarchy);
-            }
-        }
-
         ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
         List<Tag> r = new ArrayList<Tag>(exts.size());
 
@@ -812,7 +788,47 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalSecurityConfig() {
+        ExtensionList<GlobalSecurityConfigurationPart> exts = Jenkins.getInstance().getExtensionList(GlobalSecurityConfigurationPart.class);
+        
+        List<Tag> r = new ArrayList<Tag>(exts.size());
+        for (ExtensionComponent<GlobalSecurityConfigurationPart> c : exts.getComponents()) {
+            Descriptor d = c.getInstance();
+            if (d.getGlobalConfigPage()==null)  continue;
+            r.add(new Tag(c.ordinal(), d));
+        }
+        Collections.sort(r);
 
+        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
+        for (Tag d : r) answer.add(d.d);
+
+        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
+        
+    }
+    
+    private static class Tag implements Comparable<Tag> {
+        double ordinal;
+        String hierarchy;
+        Descriptor d;
+
+        Tag(double ordinal, Descriptor d) {
+            this.ordinal = ordinal;
+            this.d = d;
+            this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
+        }
+
+        private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+            Class sc = c.getSuperclass();
+            if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+            return buf.append(c.getName());
+        }
+
+        public int compareTo(Tag that) {
+            int r = Double.compare(this.ordinal, that.ordinal);
+            if (r!=0)   return -r; // descending for ordinal
+            return this.hierarchy.compareTo(that.hierarchy);
+        }
+    }
     /**
      * Computes the path to the icon of the given action
      * from the context path.
