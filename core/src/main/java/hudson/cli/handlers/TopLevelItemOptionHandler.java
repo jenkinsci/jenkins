@@ -28,7 +28,7 @@ public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
         Jenkins h = Jenkins.getInstance();
         String src = params.getParameter(0);
 
-        TopLevelItem s = h.getItem(src);
+        TopLevelItem s = h.getItemByFullName(src, TopLevelItem.class);
         if (s==null) {
             AbstractProject nearest = AbstractProject.findNearest(src);
             if (nearest!=null)
