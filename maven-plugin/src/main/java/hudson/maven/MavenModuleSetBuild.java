@@ -702,9 +702,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         boolean maven2_1orLater = new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("2.1") ) >= 0;
                         boolean needsFullBuild = getPreviousCompletedBuild() != null &&
                             getPreviousCompletedBuild().getAction(NeedsFullBuildAction.class) != null;
-                        if (project.isIncrementalBuild() && !needsFullBuild && maven2_1orLater && !changedModules.isEmpty()) {
-                            margs.add("-amd");
-                            margs.add("-pl", Util.join(changedModules, ","));
+                        if (project.isIncrementalBuild()) {
+                            if (!needsFullBuild && maven2_1orLater && !changedModules.isEmpty()) {
+                                margs.add("-amd");
+                                margs.add("-pl", Util.join(changedModules, ","));
+                            } else {
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine(String.format("Skipping incremental build: needsFullBuild=%s, maven2.1orLater=%s, changedModulesEmpty?=%s",
+                                            needsFullBuild, maven2_1orLater, changedModules.isEmpty()));
+                                }
+                            }
                         }
 
 
