@@ -31,6 +31,9 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.tasks.LogRotatorTest.TestsFail;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.File;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.IOException;
@@ -148,6 +151,20 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertEquals("file", kids[0].getName());
     }
 
+    public void testCompressed() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, true)));
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
+        assertEquals(Result.SUCCESS, build(project));
+        assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        assertEquals(1, project.getBuildByNumber(1).getArtifacts().size());
+        assertEquals(ArtifactArchiver.archiveName, project.getBuildByNumber(1).getArtifacts().get(0).getFileName());
+        DataInputStream zipStream = new DataInputStream(new BufferedInputStream(new FileInputStream(project.getBuildByNumber(1).getArtifacts().get(0).getFile())));
+        int zipTest = zipStream.readInt();
+        zipStream.close();
+        assertEquals(0x504b0304,zipTest);
+    }
+    
     static class CreateArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");

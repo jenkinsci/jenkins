@@ -70,6 +70,11 @@ public class ArtifactArchiver extends Recorder {
     */
     private final boolean compressed;
     
+    /**
+     * File name of the the archive where compressed artifacts will be stored 
+     */
+    public static final String archiveName = "archive.zip";
+    
     private static final Boolean allowEmptyArchive = 
     	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
@@ -130,7 +135,7 @@ public class ArtifactArchiver extends Recorder {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
             int archived = 0;
             if(compressed)
-                archived = ws.zip(new FilePath(new FilePath(dir),"archive.zip").write(), new DirScanner.Glob(artifacts, excludes));
+                archived = ws.zip(new FilePath(new FilePath(dir),archiveName).write(), new DirScanner.Glob(artifacts, excludes));
             else
                 archived = ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir));
             if(archived==0) {
