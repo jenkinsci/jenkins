@@ -373,7 +373,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      *      Use {@link #MavenModuleSet(ItemGroup, String)}
      */
     public MavenModuleSet(String name) {
-        this(Jenkins.getInstance(),name);
+        this(Jenkins.getInstance(), name);
     }
 
     public MavenModuleSet(ItemGroup parent, String name) {
@@ -1042,10 +1042,13 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * If null, we pick any random Maven installation.
      */
     public MavenInstallation getMaven() {
-        for( MavenInstallation i : DESCRIPTOR.getMavenDescriptor().getInstallations() ) {
+        MavenInstallation[] installations = DESCRIPTOR.getMavenDescriptor().getInstallations();
+        for( MavenInstallation i : installations) {
             if(mavenName==null || i.getName().equals(mavenName))
                 return i;
         }
+        if (installations.length==1)
+            return installations[0];
         return null;
     }
 
@@ -1129,10 +1132,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         archivingDisabled = req.hasParameter("maven.archivingDisabled");
         resolveDependencies = req.hasParameter( "maven.resolveDependencies" );
         processPlugins = req.hasParameter( "maven.processPlugins" );
-        mavenValidationLevel = NumberUtils.toInt( req.getParameter( "maven.validationLevel" ), -1 );
+        mavenValidationLevel = NumberUtils.toInt(req.getParameter("maven.validationLevel"), -1);
         reporters.rebuild(req,json,MavenReporters.getConfigurableList());
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
-        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
         disableTriggerDownstreamProjects = req.hasParameter("maven.disableTriggerDownstreamProjects");
 
         runPostStepsIfResult = Result.fromString(req.getParameter( "post-steps.runIfResult"));
