@@ -34,5 +34,8 @@ THE SOFTWARE.
     <f:entry title="" field="latestOnly" >
       <f:checkbox title="${%lastBuildOnly}"/>
     </f:entry>
+    <f:entry title="" field="compressed" >
+      <f:checkbox title="${%compressedArtifacts}"/>
+    </f:entry>
   </f:advanced>
 </j:jelly>
