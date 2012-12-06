@@ -10,7 +10,7 @@ Event.observe(window, "load", function () {
             id = cur.id;
             caption = caption.substring(caption.indexOf("&lt;/a>") + 4);
         } else
-            $(e.section).insert({top:"<a id=" + id + " class='section-anchor'>#<;/a>"});
+            $(e.section).insert({top:"<a id=" + id + " class='section-anchor'>#</a>"});
         menu.add('#' + id, null, caption);
     });
     breadcrumbs.attachMenu('inpage-nav', menu);
