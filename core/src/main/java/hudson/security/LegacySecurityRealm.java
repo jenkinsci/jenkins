@@ -32,10 +32,16 @@ import groovy.lang.Binding;
 import hudson.model.Descriptor;
 import hudson.util.spring.BeanBuilder;
 import hudson.Extension;
+import hudson.model.Action;
+import hudson.model.UnprotectedRootAction;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 import net.sf.json.JSONObject;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
+import jenkins.model.Jenkins;
 
 /**
  * {@link SecurityRealm} that accepts {@link ContainerAuthentication} object
@@ -86,6 +92,24 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         WebApplicationContext context = builder.createApplicationContext();
         
         return (Filter) context.getBean("legacy");
+    }
+
+    /**
+     * Gets a list of unprotected root actions.
+     * These URL prefixes should be exempted from access control checks by container-managed security.
+     * Ideally would be synchronized with {@link Jenkins#getTarget}.
+     * @return a list of {@linkplain Action#getUrlName URL names}
+     * @since 1.494
+     */
+    public Collection<String> getUnprotectedRootActions() {
+        Set<String> names = new TreeSet<String>();
+        names.add("jnlpJars");
+        for (Action a : Jenkins.getInstance().getActions()) {
+            if (a instanceof UnprotectedRootAction) {
+                names.add(a.getUrlName());
+            }
+        }
+        return names;
     }
 
     @Extension
