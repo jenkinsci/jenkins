@@ -3533,7 +3533,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
-            || rest.startsWith("/whoAmI")
+            || rest.startsWith("/whoAmI") // XXX why hardcoded here when it is an URA already?
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
