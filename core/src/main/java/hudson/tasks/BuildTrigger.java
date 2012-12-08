@@ -32,6 +32,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -209,7 +210,8 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
                 continue;
             }
             List<Action> buildActions = new ArrayList<Action>();
-            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+            UpstreamCause cause = (UpstreamCause) build.getCause(UpstreamCause.class);
+            if (!isProjectPresentInUpstremCauses(cause, p.getName()) && dep.shouldTriggerBuild(build, listener, buildActions)) {
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = ModelHyperlinkNote.encodeTo(p)+" #"+p.getNextBuildNumber();
@@ -223,6 +225,24 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
         }
 
         return true;
+    }
+
+    private static boolean isProjectPresentInUpstremCauses(UpstreamCause cause, String projectName) {
+        if (cause == null) {
+            return false;
+        } else {
+            if (cause.getUpstreamProject().equals(projectName)) {
+                return true;
+            }
+            for (Cause upstreamCause : cause.getUpstreamCauses()) {
+                if (upstreamCause instanceof UpstreamCause) {
+                    if (isProjectPresentInUpstremCauses((UpstreamCause) upstreamCause, projectName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {

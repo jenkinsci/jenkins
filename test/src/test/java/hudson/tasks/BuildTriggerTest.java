@@ -23,10 +23,16 @@
  */
 package hudson.tasks;
 
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Fingerprint.RangeSet;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -41,8 +47,8 @@ import org.jvnet.hudson.test.MockBuilder;
  */
 public class BuildTriggerTest extends HudsonTestCase {
 
-    private FreeStyleProject createDownstreamProject() throws Exception {
-        FreeStyleProject dp = createFreeStyleProject("downstream");
+    private FreeStyleProject createDownstreamProject(String projectName) throws Exception {
+        FreeStyleProject dp = createFreeStyleProject(projectName);
 
         // Hm, no setQuietPeriod, have to submit form..
         WebClient webClient = new WebClient();
@@ -59,7 +65,7 @@ public class BuildTriggerTest extends HudsonTestCase {
     private void doTriggerTest(boolean evenWhenUnstable, Result triggerResult,
             Result dontTriggerResult) throws Exception {
         FreeStyleProject p = createFreeStyleProject(),
-                dp = createDownstreamProject();
+                dp = createDownstreamProject("downstream");
         p.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
         p.getBuildersList().add(new MockBuilder(dontTriggerResult));
         jenkins.rebuildDependencyGraph();
@@ -97,7 +103,7 @@ public class BuildTriggerTest extends HudsonTestCase {
     }
 
     private void doMavenTriggerTest(boolean evenWhenUnstable) throws Exception {
-        FreeStyleProject dp = createDownstreamProject();
+        FreeStyleProject dp = createDownstreamProject("downstream");
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
         m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
@@ -130,5 +136,53 @@ public class BuildTriggerTest extends HudsonTestCase {
 
     public void testMavenTriggerEvenWhenUnstable() throws Exception {
         doMavenTriggerTest(true);
+    }
+
+    public void testCircularDirectDownstreamBuildDoesNotLoopForever() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject("main");
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        MavenModuleSet dp = createMavenProject("downstream");
+        dp.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        m.setGoals("clean");
+        dp.setGoals("clean");
+        m.getPublishersList().add(new BuildTrigger("downstream", false));
+        dp.getPublishersList().add(new BuildTrigger("main", false));
+        m.scheduleBuild2(0).get();
+
+        waitForProjectToBuild(dp);
+
+        assertFalse(m.isBuilding());
+        assertFalse(m.isInQueue());
+    }
+
+    public void testCircularNonDirectDownstreamBuildDoesNotLoopForever() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject("main");
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        MavenModuleSet dp = createMavenProject("downstream");
+        dp.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        MavenModuleSet dp2 = createMavenProject("downstream2");
+        dp2.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
+        m.setGoals("clean");
+        dp.setGoals("clean");
+        dp2.setGoals("clean");
+        m.getPublishersList().add(new BuildTrigger("downstream", false));
+        dp.getPublishersList().add(new BuildTrigger("downstream2", false));
+        dp2.getPublishersList().add(new BuildTrigger("main", false));
+        m.scheduleBuild2(0).get();
+
+        waitForProjectToBuild(dp);
+        waitForProjectToBuild(dp2);
+
+        assertFalse(m.isBuilding());
+        assertFalse(m.isInQueue());
+    }
+
+    private void waitForProjectToBuild(MavenModuleSet project) throws InterruptedException {
+        for (int i = 0; project.isInQueue() || project.isBuilding() && i < 40; i++) {
+            Thread.sleep(200);
+        }
+        assertNotNull(project.getLastBuild());
     }
 }
