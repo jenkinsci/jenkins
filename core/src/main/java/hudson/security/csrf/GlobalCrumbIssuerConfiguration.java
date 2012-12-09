@@ -24,7 +24,7 @@
 package hudson.security.csrf;
 
 import hudson.Extension;
-import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalSecurityConfigurationPart;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -35,7 +35,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal=195) // immediately after the security setting
-public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
+public class GlobalCrumbIssuerConfiguration extends GlobalSecurityConfigurationPart {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins

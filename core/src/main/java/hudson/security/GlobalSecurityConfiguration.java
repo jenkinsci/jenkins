@@ -23,47 +23,72 @@
  */
 package hudson.security;
 
+import hudson.BulkChange;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.markup.MarkupFormatter;
-import jenkins.model.GlobalConfiguration;
+import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
+import hudson.model.ManagementLink;
+import hudson.util.FormApply;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Security configuration.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=200)
-public class GlobalSecurityConfiguration extends GlobalConfiguration {
+@Extension(ordinal = Integer.MAX_VALUE - 210)
+public class GlobalSecurityConfiguration extends ManagementLink {
+    
+    private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
+
     public MarkupFormatter getMarkupFormatter() {
         return Jenkins.getInstance().getMarkupFormatter();
     }
-    
+
     public int getSlaveAgentPort() {
         return Jenkins.getInstance().getSlaveAgentPort();
     }
-    
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+
+    public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        // for compatibility reasons, the actual value is stored in Jenkins
+        BulkChange bc = new BulkChange(Jenkins.getInstance());
+        try{
+            boolean result = configure(req, req.getSubmittedForm());
+            LOGGER.log(Level.FINE, "security saved: "+result);
+            Jenkins.getInstance().save();
+            FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
+        } finally {
+            bc.commit();
+        }
+    }
+
+    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
-
+        j.checkPermission(Jenkins.ADMINISTER);
         if (json.has("useSecurity")) {
             JSONObject security = json.getJSONObject("useSecurity");
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-
             try {
                 j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
             } catch (IOException e) {
-                throw new FormException(e,"slaveAgentPortType");
+                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
             }
-
             if (security.has("markupFormatter")) {
                 j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, security.getJSONObject("markupFormatter")));
             } else {
@@ -73,7 +98,45 @@ public class GlobalSecurityConfiguration extends GlobalConfiguration {
             j.disableSecurity();
         }
 
-        return true;
+        // persist all the additional security configs
+        boolean result = true;
+        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalSecurityConfig()){
+            result &= configureDescriptor(req,json,d);
+        }
+        
+        return result;
+    }
+    
+    private boolean configureDescriptor(StaplerRequest req, JSONObject json, Descriptor<?> d) throws FormException {
+        // collapse the structure to remain backward compatible with the JSON structure before 1.
+        String name = d.getJsonSafeClassName();
+        JSONObject js = json.has(name) ? json.getJSONObject(name) : new JSONObject(); // if it doesn't have the property, the method returns invalid null object.
+        json.putAll(js);
+        return d.configure(req, js);
+    }    
+
+    @Override
+    public String getDisplayName() {
+        return Messages.GlobalSecurityConfiguration_DisplayName();
+    }
+    
+    @Override
+    public String getDescription() {
+        return Messages.GlobalSecurityConfiguration_Description();
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "lock.png";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "globalSecurity";
+    }
+    
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 }
-
