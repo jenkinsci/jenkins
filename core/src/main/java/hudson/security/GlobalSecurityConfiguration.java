@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import com.google.common.base.Predicate;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
@@ -38,6 +39,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONObject;
@@ -100,7 +102,7 @@ public class GlobalSecurityConfiguration extends ManagementLink {
 
         // persist all the additional security configs
         boolean result = true;
-        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalSecurityConfig()){
+        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
             result &= configureDescriptor(req,json,d);
         }
         
@@ -132,11 +134,17 @@ public class GlobalSecurityConfiguration extends ManagementLink {
 
     @Override
     public String getUrlName() {
-        return "globalSecurity";
+        return "configureSecurity";
     }
     
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
+
+    public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
+        public boolean apply(GlobalConfigurationCategory input) {
+            return input instanceof GlobalConfigurationCategory.Security;
+        }
+    };
 }

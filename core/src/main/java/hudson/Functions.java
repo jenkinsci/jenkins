@@ -25,6 +25,8 @@
  */
 package hudson;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
@@ -33,6 +35,7 @@ import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
@@ -57,7 +60,8 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.GlobalSecurityConfigurationPart;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.GlobalConfigurationCategory.Unclassified;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
@@ -769,8 +773,11 @@ public class Functions {
      * Perhaps it is better to introduce another annotation element? But then,
      * extensions shouldn't normally concern themselves about ordering too much, and the only reason
      * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
+     *
+     * @param predicate
+     *      Filter the descriptors based on {@link GlobalConfigurationCategory}
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
         List<Tag> r = new ArrayList<Tag>(exts.size());
 
@@ -778,7 +785,13 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
-            r.add(new Tag(d instanceof GlobalConfiguration ? c.ordinal() : 0, d));
+            if (d instanceof GlobalConfiguration) {
+                if (predicate.apply(((GlobalConfiguration)d).getCategory()))
+                    r.add(new Tag(c.ordinal(), d));
+            } else {
+                if (predicate.apply(GlobalConfigurationCategory.get(Unclassified.class)))
+                    r.add(new Tag(0, d));
+            }
         }
         Collections.sort(r);
 
@@ -788,22 +801,12 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalSecurityConfig() {
-        ExtensionList<GlobalSecurityConfigurationPart> exts = Jenkins.getInstance().getExtensionList(GlobalSecurityConfigurationPart.class);
-        
-        List<Tag> r = new ArrayList<Tag>(exts.size());
-        for (ExtensionComponent<GlobalSecurityConfigurationPart> c : exts.getComponents()) {
-            Descriptor d = c.getInstance();
-            if (d.getGlobalConfigPage()==null)  continue;
-            r.add(new Tag(c.ordinal(), d));
-        }
-        Collections.sort(r);
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+        return getSortedDescriptorsForGlobalConfig(Predicates.<GlobalConfigurationCategory>alwaysTrue());
+    }
 
-        List<Descriptor> answer = new ArrayList<Descriptor>(r.size());
-        for (Tag d : r) answer.add(d.d);
-
-        return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
-        
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
+        return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
     }
     
     private static class Tag implements Comparable<Tag> {
