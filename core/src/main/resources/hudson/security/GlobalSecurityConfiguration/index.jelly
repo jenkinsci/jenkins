@@ -20,7 +20,7 @@
 	<l:layout norefresh="true" permission="${app.ADMINISTER}"
 		title="${it.displayName}">
 		<l:main-panel>
-			<h1><img src="${imagesURL}/48x48/lock.png" height="48" width="48" /> ${it.displayName}</h1>
+			<h1><img src="${imagesURL}/48x48/secure.png" height="48" width="48" /> ${it.displayName}</h1>
 			<p>
 			</p>
 			<div class="behavior-loading">${%LOADING}</div>

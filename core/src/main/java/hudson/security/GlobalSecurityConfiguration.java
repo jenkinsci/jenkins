@@ -127,7 +127,7 @@ public class GlobalSecurityConfiguration extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "lock.png";
+        return "secure.png";
     }
 
     @Override
