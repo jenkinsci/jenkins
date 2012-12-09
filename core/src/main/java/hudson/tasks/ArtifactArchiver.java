@@ -31,6 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.util.DirScanner;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -64,14 +65,29 @@ public class ArtifactArchiver extends Recorder {
      */
     private final boolean latestOnly;
     
+    /**
+    * Compress all artifacts into one archive file
+    */
+    private final boolean compressed;
+    
+    /**
+     * File name of the the archive where compressed artifacts will be stored 
+     */
+    public static final String archiveName = "archive.zip";
+    
     private static final Boolean allowEmptyArchive = 
     	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
-    @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
+    	this(artifacts, excludes, latestOnly, false);
+    }
+    
+    @DataBoundConstructor
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean compressed) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
+        this.compressed = compressed;
     }
 
     public String getArtifacts() {
@@ -84,6 +100,10 @@ public class ArtifactArchiver extends Recorder {
 
     public boolean isLatestOnly() {
         return latestOnly;
+    }
+    
+    public boolean isCompressed() {
+    	return compressed;
     }
     
     private void listenerWarnOrError(BuildListener listener, String message) {
@@ -113,7 +133,12 @@ public class ArtifactArchiver extends Recorder {
             }
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
-            if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
+            int archived = 0;
+            if(compressed)
+                archived = ws.zip(new FilePath(new FilePath(dir),archiveName).write(), new DirScanner.Glob(artifacts, excludes));
+            else
+                archived = ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir));
+            if(archived==0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
@@ -131,7 +156,7 @@ public class ArtifactArchiver extends Recorder {
                 	build.setResult(Result.FAILURE);
                 }
                 return true;
-            }
+            } 
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error(
