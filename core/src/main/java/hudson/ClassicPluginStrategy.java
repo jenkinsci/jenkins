@@ -221,6 +221,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
      */
     private static final class DetachedPlugin {
         private final String shortName;
+        /**
+         * Plugins built for this Jenkins version (and earlier) will automatically be assumed to have
+         * this plugin in its dependency.
+         *
+         * When core/pom.xml version is 1.123-SNAPSHOT when the code is removed, then this value should
+         * be "1.123.*" (because 1.124 will be the first version that doesn't include the removed code.)
+         */
         private final VersionNumber splitWhen;
         private final String requireVersion;
 
@@ -252,7 +259,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("javadoc","1.430.*","1.0"),
         new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
         new DetachedPlugin("ldap","1.467.*","1.0"),
-        new DetachedPlugin("pam-auth","1.467.*","1.0")
+        new DetachedPlugin("pam-auth","1.467.*","1.0"),
+        new DetachedPlugin("mailer","1.493.*","1.2")
     );
 
     /**
