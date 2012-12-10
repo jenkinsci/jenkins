@@ -44,20 +44,20 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-      <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-test-harness</artifactId>
-        <version>${project.version}</version>
-        <scope>test</scope>
-      </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-war</artifactId>
-            <type>war</type>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <type>war</type>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
