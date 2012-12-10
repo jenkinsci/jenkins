@@ -3,9 +3,13 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -82,6 +86,24 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         req.bindJSON(this,json);
         return true;
+    }
+
+    /**
+     * Checks the URL in <tt>global.jelly</tt>
+     */
+    public FormValidation doCheckUrl(@QueryParameter String value) {
+        if(value.startsWith("http://localhost"))
+            return FormValidation.warning(Messages.Mailer_Localhost_Error());
+        return FormValidation.ok();
+    }
+
+    public FormValidation doCheckAdminAddress(@QueryParameter String value) {
+        try {
+            new InternetAddress(value);
+            return FormValidation.ok();
+        } catch (AddressException e) {
+            return FormValidation.error(e.getMessage());
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(JenkinsLocationConfiguration.class.getName());
