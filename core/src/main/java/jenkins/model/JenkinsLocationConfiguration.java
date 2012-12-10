@@ -1,6 +1,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.XmlFile;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -66,11 +67,14 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     }
 
     public String getUrl() {
-        return hudsonUrl;
+        return jenkinsUrl;
     }
 
     public void setUrl(String hudsonUrl) {
-        this.hudsonUrl = hudsonUrl;
+        String url = Util.nullify(hudsonUrl);
+        if(url!=null && !url.endsWith("/"))
+            url += '/';
+        this.jenkinsUrl = url;
         save();
     }
 
