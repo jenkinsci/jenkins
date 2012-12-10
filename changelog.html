@@ -56,6 +56,22 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Fixed <tt>java.lang.NoSuchMethodError: hudson.model.RunMap.put(Lhudson/model/Run;)Lhudson/model/Run;</tt>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15487">issue 15487</a>)
+  <li class=bug>
+    Saving the update center list after the metadata has been fetched results in 
+    the metadata being persisted twice
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15889">issue 15889</a>)
+  <li class=rfe>
+    Added <tt>list-plugins</tt> CLI command.
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.494>What's new in 1.494</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
     Using file parameters could cause build records to not load.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13536">issue 13536</a>)
   <li class=bug>
@@ -71,17 +87,17 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-1295">issue 1295</a>)
   <li class=rfe>
     When using container-managed security, display unprotected root actions at <code>/securityRealm/</code> for convenience.
+  <li class=rfe>
+    E-mail delivery feature was split off to a separate plugin for better modularity.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/629">pull 629</a>)
   <li class=bug>
     Context menu and tooltip of the queue items were colliding with each other
-    <li class=bug>
+  <li class=bug>
     Fix combobox ui component
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16069">issue 16069</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.493>What's new in 1.493</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.493>What's new in 1.493</a> (2012/12/09)</h3>
 <ul class=image>
   <li class=bug>
     Slave's Name should be trimmed of spaces at the beginning and end of the Name on Save.
@@ -92,7 +108,6 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6846">issue 6846</a>)
 
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.492>What's new in 1.492</a> (2012/11/25)</h3>
 <ul class=image>
   <li class=rfe>
@@ -126,8 +141,6 @@ Upcoming changes</a>
   <li class=bug>
     "Disable Project" button breaks Free style project pages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15887">issue 15887</a>)
-    
-
 </ul>
 <h3><a name=v1.491>What's new in 1.491</a> (2012/11/18)</h3>
 <ul class=image>

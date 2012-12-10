@@ -160,7 +160,6 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -1833,7 +1832,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
-        String url = Mailer.descriptor().getUrl();
+        String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
             if (!url.endsWith("/")) url += '/';
             return url;

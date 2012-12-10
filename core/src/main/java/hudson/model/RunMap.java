@@ -172,6 +172,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         return r.getId();
     }
 
+    @Override
+    public R put(R r) {
+        return super._put(r);
+    }
+
     /**
      * Reuses the same reference as much as we can.
      * <p>

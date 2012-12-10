@@ -24,6 +24,7 @@
  */
 package org.jvnet.hudson.test;
 
+import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.google.inject.Injector;
 import hudson.ClassicPluginStrategy;
@@ -1656,6 +1657,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
 
                 public void contextReleased(Context cx) {
+                }
+            });
+
+            setAlertHandler(new AlertHandler() {
+                public void handleAlert(Page page, String message) {
+                    throw new AssertionError("Alert dialog poped up: "+message);
                 }
             });
 
