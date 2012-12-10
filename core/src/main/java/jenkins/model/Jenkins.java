@@ -3529,24 +3529,40 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
-            || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
-            || rest.startsWith("/whoAmI") // XXX why hardcoded here when it is an URA already?
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
 
-            for (Action a : getActions()) {
-                if (a instanceof UnprotectedRootAction) {
-                    if (rest.startsWith("/"+a.getUrlName()+"/") || rest.equals("/"+a.getUrlName()))
-                        return this;
+            for (String name : getUnprotectedRootActions()) {
+                if (rest.startsWith("/" + name + "/") || rest.equals("/" + name)) {
+                    return this;
                 }
             }
 
             throw e;
         }
         return this;
+    }
+
+    /**
+     * Gets a list of unprotected root actions.
+     * These URL prefixes should be exempted from access control checks by container-managed security.
+     * Ideally would be synchronized with {@link #getTarget}.
+     * @return a list of {@linkplain Action#getUrlName URL names}
+     * @since 1.495
+     */
+    public Collection<String> getUnprotectedRootActions() {
+        Set<String> names = new TreeSet<String>();
+        names.add("jnlpJars"); // XXX cleaner to refactor doJnlpJars into a URA
+        // XXX consider caching (expiring cache when actions changes)
+        for (Action a : getActions()) {
+            if (a instanceof UnprotectedRootAction) {
+                names.add(a.getUrlName());
+            }
+        }
+        return names;
     }
 
     /**
