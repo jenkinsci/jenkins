@@ -69,7 +69,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
@@ -82,12 +81,14 @@ import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -2008,7 +2009,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
 
                 public String getEntryAuthor(FeedItem entry) {
-                    return Mailer.descriptor().getAdminAddress();
+                    return JenkinsLocationConfiguration.get().getAdminAddress();
                 }
             },
             req, rsp );
