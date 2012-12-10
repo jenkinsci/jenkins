@@ -50,10 +50,17 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     }
 
     public String getAdminAddress() {
-        return adminAddress;
+        String v = adminAddress;
+        if(v==null)     v = Messages.Mailer_Address_Not_Configured();
+        return v;
     }
 
     public void setAdminAddress(String adminAddress) {
+        if(adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
+            // some users apparently quote the whole thing. Don't konw why
+            // anyone does this, but it's a machine's job to forgive human mistake
+            adminAddress = adminAddress.substring(1,adminAddress.length()-1);
+        }
         this.adminAddress = adminAddress;
         save();
     }
