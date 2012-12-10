@@ -317,6 +317,60 @@ public class SlaveComputer extends Computer {
     }
 
     /**
+     * Shows {@link Channel#classLoadingCount}.
+     * @since 1.495
+     */
+    public int getClassLoadingCount() throws IOException, InterruptedException {
+        return channel.call(new LoadingCount(false));
+    }
+
+    /**
+     * Shows {@link Channel#resourceLoadingCount}.
+     * @since 1.495
+     */
+    public int getResourceLoadingCount() throws IOException, InterruptedException {
+        return channel.call(new LoadingCount(true));
+    }
+
+    /**
+     * Shows {@link Channel#classLoadingTime}.
+     * @since 1.495
+     */
+    public long getClassLoadingTime() throws IOException, InterruptedException {
+        return channel.call(new LoadingTime(false));
+    }
+
+    /**
+     * Shows {@link Channel#resourceLoadingTime}.
+     * @since 1.495
+     */
+    public long getResourceLoadingTime() throws IOException, InterruptedException {
+        return channel.call(new LoadingTime(true));
+    }
+
+    static class LoadingCount implements Callable<Integer,RuntimeException> {
+        private final boolean resource;
+        LoadingCount(boolean resource) {
+            this.resource = resource;
+        }
+        @Override public Integer call() {
+            Channel c = Channel.current();
+            return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
+        }
+    }
+
+    static class LoadingTime implements Callable<Long,RuntimeException> {
+        private final boolean resource;
+        LoadingTime(boolean resource) {
+            this.resource = resource;
+        }
+        @Override public Long call() {
+            Channel c = Channel.current();
+            return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
+        }
+    }
+
+    /**
      * Sets up the connection through an exsting channel.
      *
      * @since 1.444
