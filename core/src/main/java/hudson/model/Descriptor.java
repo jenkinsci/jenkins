@@ -223,7 +223,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * @see #getHelpFile(String) 
      */
-    private final Map<String,String> helpRedirect = new HashMap<String, String>();
+    private transient final Map<String,String> helpRedirect = new HashMap<String, String>();
 
     /**
      *
