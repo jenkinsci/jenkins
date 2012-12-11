@@ -102,6 +102,8 @@ public abstract class CommandInterpreter extends Builder {
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
                 e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
+            } catch (Exception e) {
+                e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
             }
         }
     }
