@@ -365,6 +365,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     protected Charset getClientCharset() throws IOException, InterruptedException {
+        if (channel==null)
+            // for SSH, assume the platform default encoding
+            // this is in-line with the standard SSH behavior
+            return Charset.defaultCharset();
+
         String charsetName = checkChannel().call(new GetCharset());
         try {
             return Charset.forName(charsetName);
