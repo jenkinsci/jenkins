@@ -33,9 +33,9 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class StreamCopyThread extends Thread {
-    private final InputStream in;
-    private final OutputStream out;
-    private final boolean closeOut;
+    private InputStream in;
+    private OutputStream out;
+    private boolean closeOut;
 
     public StreamCopyThread(String threadName, InputStream in, OutputStream out, boolean closeOut) {
         super(threadName);
@@ -54,20 +54,38 @@ public class StreamCopyThread extends Thread {
     @Override
     public void run() {
         try {
-            try {
-                byte[] buf = new byte[8192];
-                int len;
-                while ((len = in.read(buf)) > 0)
-                    out.write(buf, 0, len);
-            } finally {
-                // it doesn't make sense not to close InputStream that's already EOF-ed,
-                // so there's no 'closeIn' flag.
-                in.close();
-                if(closeOut)
-                    out.close();
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
             }
         } catch (IOException e) {
-            // TODO: what to do?
+        } finally {
+            // it doesn't make sense not to close InputStream that's already
+            // EOF-ed,
+            // so there's no 'closeIn' flag.
+            close(closeOut);
+        }
+
+    }
+
+    public void close(boolean closeOut) {
+        if (closeOut) {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+                out = null;
+            } catch (IOException e) {
+            }
+        }
+
+        try {
+            if (in != null) {
+                in.close();
+            }
+            in = null;
+        } catch (IOException e) {
         }
     }
 }
