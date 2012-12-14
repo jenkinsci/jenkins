@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
@@ -178,6 +179,11 @@ public abstract class Cause {
         @Exported(visibility=3)
         public int getUpstreamBuild() {
             return upstreamBuild;
+        }
+
+        public @CheckForNull Run getUpstreamRun() {
+            Job job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
+            return job.getBuildByNumber(upstreamBuild);
         }
 
         @Exported(visibility=3)
