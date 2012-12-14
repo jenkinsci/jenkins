@@ -27,8 +27,7 @@ body {
   background: white;
 }
 
-body, table, form, input, td, th, p, textarea, select
-{
+body, table, form, input, td, th, p, textarea, select {
   font-family: Verdana, Helvetica, sans serif;
   font-size: 11px;
 }
@@ -93,7 +92,7 @@ dt {
   font-size: 8pt;
   margin-top: 10em;
   padding: 10px;
-  border-top: 1px solid #bbb;
+  border-top: 1px solid #BBB;
 }
 
 #tasks {
@@ -108,7 +107,7 @@ dt {
 #shutdown-msg {
   font-weight: bold;
   color: white;
-  background-color: #ef2929;
+  background-color: #EF2929;
   text-align: center;
   margin-left: 2em;
   margin-right: 2em;
@@ -124,7 +123,7 @@ a:link {
 
 a:visited {
   text-decoration: underline;
-  color: #5c3566;
+  color: #5C3566;
 }
 
 a.lowkey:link {
@@ -163,8 +162,8 @@ a.tip:hover span {
   top: 2em;
   left: 2em;
   width: 400px;
-  border: 1px solid #bbbbbb;
-  background-color: #fffff0;
+  border: 1px solid #BBB;
+  background-color: #FFFFF0;
   color: #000;
   text-align: left
 }
@@ -187,18 +186,18 @@ table.tab {
 td.selected_tab {
   vertical-align: middle;
   border: 1px #090 solid;
-  background: #ffffff;
+  background: #FFF;
 }
 
 td.tab_filler {
-  background: #ffffff;
+  background: #FFF;
   border-bottom: 1px #090 solid;
 }
 
 td.tab {
   vertical-align: middle;
   border: 1px #090 solid;
-  background: #f0f0f0;
+  background: #F0F0F0;
 }
 
 .dashboard td {
@@ -302,44 +301,44 @@ div.dashboard {
 table.pane {
   width: 100%;
   border-collapse: collapse;
-  border: 1px #bbb solid;
+  border: 1px #BBB solid;
 }
 table.pane > tbody > tr > td:last-child {
-  border-right: 1px #bbb solid;
+  border-right: 1px #BBB solid;
 }
 
 td.pane {
-  border: 1px #bbb solid;
+  border: 1px #BBB solid;
   padding: 3px 4px 3px 4px;
   vertical-align: middle;
 }
 
 td.pane-header {
-  border: 1px #bbb solid;
+  border: 1px #BBB solid;
   border-right: none;
   border-left: none;
-  background-color: #f0f0f0;
+  background-color: #F0F0F0;
   font-weight: bold;
 }
 
 th.pane {
-  border: 1px #bbb solid;
+  border: 1px #BBB solid;
   font-weight: bold;
 }
 
 .bigtable tr {
-  border: 1px solid #bbb;
+  border: 1px solid #BBB;
   padding: 3px 4px 3px 4px;
 }
 
 .bigtable tr:hover {
-  background-color: #f0f0f0;
+  background-color: #F0F0F0;
 }
 
 .bigtable th {
   font-weight: bold;
   border: none;
-  background-color: #f0f0f0;
+  background-color: #F0F0F0;
   padding: 3px 4px 3px 4px;
 }
 
@@ -383,8 +382,8 @@ th.pane {
 
 #foldertab li a:hover {
   color: white;
-  background: #6c0;
-  border-color: #6c0;
+  background: #6C0;
+  border-color: #6C0;
 }
 
 #foldertab li a#current {
@@ -394,8 +393,8 @@ th.pane {
 }
 
 .changeset-message {
-  border: 1px solid #ccb;
-  background: #eed;
+  border: 1px solid #CCB;
+  background: #EED;
   padding: 4px;
   white-space: normal;
 }
@@ -445,7 +444,7 @@ div.behavior-loading {
   position: absolute;
   width: 80%;
   height: 100%;
-  background-color: #e4e4e4;
+  background-color: #E4E4E4;
   text-align: center;
   font-size: 300%;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
@@ -494,7 +493,7 @@ label.attach-previous {
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
-  color: #CC0000;
+  color: #C00;
   font-weight: bold;
   padding-left: 20px;
   min-height: 16px;
@@ -504,7 +503,7 @@ label.attach-previous {
 }
 
 .error-inline {
-  color: #CC0000;
+  color: #C00;
   font-weight: bold;
 }
 
@@ -552,8 +551,8 @@ label.attach-previous {
 
 .help {
   display: none;  /* hidden until loaded */
-  border: solid #bbb 1px;
-  background-color: #f0f0f0;
+  border: solid #BBB 1px;
+  background-color: #F0F0F0;
   padding: 1em;
   margin-bottom: 1em;
 }
@@ -571,23 +570,23 @@ label.attach-previous {
 /* ====================== project view tab bar ===================================== */
 #viewList {
   border: none;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   width: 100%;
   white-space: nowrap;
 }
 #viewList td {
-  padding: 0px;
+  padding: 0;
 }
 #viewList td.inactive {
-  border: solid 1px #ccc;
-  border-bottom-color: #bbb;
+  border: solid 1px #CCC;
+  border-bottom-color: #BBB;
 }
 #viewList td.inactive:hover {
   background-color: #777;
 }
 #viewList td.inactive a {
   text-decoration: none;
-  color: #444
+  color: #444;
 }
 #viewList td.noleft {
   border-left: none;
@@ -596,7 +595,7 @@ label.attach-previous {
   border-right: none;
 }
 #viewList td.active {
-  border: solid 1px #bbb;
+  border: solid 1px #BBB;
   padding: 0.5em;
   border-bottom: none;
   vertical-align: middle;
@@ -606,7 +605,7 @@ label.attach-previous {
 }
 #viewList td.filler {
   border: none;
-  border-bottom: solid 1px #bbb;
+  border-bottom: solid 1px #BBB;
   width: 100%;
   text-align: right;
 }
@@ -641,7 +640,7 @@ table.parameters .setting-description {
 }
 
 table.parameters > tbody:hover {
-  background-color: #f0f0f0;
+  background-color: #F0F0F0;
 }
 
 /* ============================ health report hover ========================== */
@@ -661,8 +660,8 @@ table.parameters > tbody:hover {
 .healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
   display: block;
   position: absolute;
-  background-color: #ffe;
-  border: 1px solid #bbb;
+  background-color: #FFE;
+  border: 1px solid #BBB;
   margin-left: 32px; /* move it across a bit */
   z-index: 26;
 }
@@ -736,24 +735,24 @@ table.fileList td.fileSize {
 
 /* ========================= test result ========================= */
 .result-passed {
-  color: #3465a4;
+  color: #3465A4;
 }
 
 .result-skipped {
-  color: #ddbb00;
+  color: #DB0;
 }
 
 .result-fixed {
-  color: #3465a4;
+  color: #3465A4;
   font-weight: bold;
 }
 
 .result-failed {
-  color: #ef2929;
+  color: #EF2929;
 }
 
 .result-regression {
-  color: #ef2929;
+  color: #EF2929;
   font-weight: bold;
 }
 .test-trend-caption {
@@ -807,7 +806,7 @@ table.fingerprint-in-build td {
 }
 
 #plugins tr.already-upgraded {
-  background-color: #e8eeee;
+  background-color: #E8EEEE;
 }
 
 
@@ -868,7 +867,7 @@ div.yahooTree td {
 
 .yui-tt {
   border: 1px solid black !important;
-  background-color: #FFFFFF !important;
+  background-color: #FFF !important;
   padding: 2px !important;
   font-family: inherit !important;
   color: inherit !important;
@@ -993,21 +992,21 @@ textarea.rich-editor {
   white-space: normal;
   margin-top: 0.5em;
   padding-left: 2em;
-  color: #888a85;
+  color: #888A85;
 }
 
 #plugins .compatWarning {
   white-space: normal;
   margin-top: 0.5em;
   padding-left: 2em;
-  color: #FF0000;
+  color: #F00;
 }
 
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
   border-collapse: collapse;
-  border: 1px solid #3465a4;
+  border: 1px solid #3465A4;
   height: 6px;
   width: 100px;
   clear: none;
@@ -1018,22 +1017,22 @@ table.progress-bar tr.unknown {
 }
 
 td.progress-bar-done {
-  background-color: #3465a4;
+  background-color: #3465A4;
 }
 
 td.progress-bar-left {
-  background-color: #ffffff;
+  background-color: #FFF;
 }
 
 table.progress-bar.red {
-  border: 1px solid #cc0000;
+  border: 1px solid #C00;
 }
 
 table.progress-bar.red tr.unknown {
   background-image: url(../images/progress-unknown-red.gif);
 }
 table.progress-bar.red td.progress-bar-done {
-  background-color: #cc0000;
+  background-color: #C00;
 }
 
 /* ========================= notification bar ========================= */
@@ -1041,7 +1040,7 @@ table.progress-bar.red td.progress-bar-done {
   width: 100%;
   position: fixed;
   text-align: center;
-  left: 0px;
+  left: 0;
   font-size: 2em;
   z-index: 1000;
   border-bottom: 1px solid black;
@@ -1091,27 +1090,27 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-  border: 1px #BBBBBB solid;
+  border: 1px #BBB solid;
   border-collapse: collapse;
 }
 tr.matrix-row {
-  background: #f0f0f0;
+  background: #F0F0F0;
   font-weight: bold;
 }
 td.matrix-header {
-  border: 1px #BBBBBB solid;
+  border: 1px #BBB solid;
   padding: 3px;
 }
 td#matrix-title {
   padding: 3px;
 }
 td.matrix-leftcolumn {
-  border: 1px #BBBBBB solid;
+  border: 1px #BBB solid;
   font-weight: bold;
-  background: #f0f0f0;
+  background: #F0F0F0;
   padding: 3px;
 }
 td.matrix-cell {
-  border: 1px #BBBBBB solid;
+  border: 1px #BBB solid;
   text-align: center;
 }
