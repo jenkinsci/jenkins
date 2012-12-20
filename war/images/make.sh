@@ -21,6 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# this script requires these tools to be installed:
+# * ImageMagick (http://www.imagemagick.org/)
+# * inkscape (http://inkscape.org/)
 
 for src in *.svg
 do
