@@ -398,6 +398,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return postbuilders;
     }
 	
+	void addPostBuilder(Builder builder) throws IOException{
+	    postbuilders.add(builder);
+	}
+	
 	/**
      * {@link #postbuilders} are run if the result is better or equal to this threshold.
      *
