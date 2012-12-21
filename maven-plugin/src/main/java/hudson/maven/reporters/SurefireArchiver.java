@@ -168,7 +168,7 @@ public class SurefireArchiver extends TestFailureDetector {
                 // intercept that (or otherwise build will be marked as failure)
                 if(failCount>0) {
                     markBuildAsSuccess(error,build.getMavenBuildInformation());
-                    hasTestFailures.compareAndSet(false, true);
+                    hasTestFailures.set(true);
                 }
             }
         }
