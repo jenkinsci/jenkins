@@ -197,6 +197,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
         }
         
+        /**
+         * Whether there where test failures detected during the build.
+         * @since 1.496
+         */
         public boolean hasTestFailures(){
             return hasTestFailures.get();
         }

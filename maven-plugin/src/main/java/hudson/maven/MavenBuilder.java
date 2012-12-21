@@ -369,5 +369,9 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Whether there where test failures detected during the build.
+     * @since 1.496
+     */
     public abstract boolean hasBuildFailures();
 }
