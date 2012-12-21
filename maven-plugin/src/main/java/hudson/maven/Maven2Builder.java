@@ -25,6 +25,7 @@
 package hudson.maven;
 
 import hudson.maven.MavenBuild.ProxyImpl2;
+import hudson.maven.reporters.TestFailureDetector;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import java.io.IOException;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
@@ -56,7 +58,7 @@ final class Maven2Builder extends MavenBuilder {
     private long mojoStartTime;
 
     private MavenBuildProxy2 lastProxy;
-
+    private final AtomicBoolean hasTestFailures = new AtomicBoolean();
     
 
     public Maven2Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String,String> systemProps,  MavenBuildInformation mavenBuildInformation) {
@@ -151,9 +153,15 @@ final class Maven2Builder extends MavenBuilder {
         mojoList.add(new ExecutedMojo(mojoInfo,System.currentTimeMillis()-mojoStartTime));
 
         MavenBuildProxy2 proxy = proxies.get(name);
-        for (MavenReporter r : reporters.get(name))
-            if(!r.postExecute(proxy,project,mojoInfo,listener,exception))
+        for (MavenReporter r : reporters.get(name)){
+            if(!r.postExecute(proxy,project,mojoInfo,listener,exception)) {
                 throw new hudson.maven.agent.AbortException(r+" failed");
+            } else if (r instanceof TestFailureDetector) {
+                if(((TestFailureDetector) r).hasTestFailures()) {
+                    hasTestFailures.compareAndSet(false, true);
+                }
+            }
+        }
         if(exception!=null)
             proxy.setResult(Result.FAILURE);
     }
@@ -166,7 +174,10 @@ final class Maven2Builder extends MavenBuilder {
                 throw new hudson.maven.agent.AbortException(r+" failed");
     }
     
-    
+    @Override
+    public boolean hasBuildFailures() {
+        return hasTestFailures.get();
+    }    
 
     private static final long serialVersionUID = 1L;
 }

@@ -14,7 +14,7 @@ public abstract class TestFailureDetector extends MavenReporter {
     /**
      * Have any test failures been detected?
      * 
-     * @return <code>true</code> if there ar test failures
+     * @return <code>true</code> if there are test failures
      */
     public abstract boolean hasTestFailures();
 

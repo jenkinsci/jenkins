@@ -436,12 +436,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 try {
                     mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, problem);
                     if (mavenReporter instanceof TestFailureDetector) {
-                        TestFailureDetector detector = (TestFailureDetector) mavenReporter;
-                        if(detector.hasTestFailures()) {
-                            System.out.println("+++++++>>>>"+mavenReporter.getClass());
+                        if(((TestFailureDetector) mavenReporter).hasTestFailures()) {
                             hasTestFailures.compareAndSet(false, true);
-                        }else{
-                            System.out.println("------->>>>"+mavenReporter.getClass());
                         }
                     }
                 } catch ( InterruptedException e ) {

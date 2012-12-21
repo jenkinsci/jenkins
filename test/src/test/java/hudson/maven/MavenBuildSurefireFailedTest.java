@@ -52,12 +52,23 @@ public class MavenBuildSurefireFailedTest extends HudsonTestCase {
     public void testMaven3SkipPostBuilder() throws Exception {
         MavenModuleSet m = createMavenProject();
         m.setMaven( configureMaven3().getName() );
-        m.setGoals( "test -Dmaven.test.failure.ignore=false" );
+        m.setGoals( "test" );
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimodule-unit-failure.zip")));
         // run dummy command only if build state is SUCCESS
         m.setRunPostStepsIfResult(Result.SUCCESS);
-        m.addPostBuilder(new Shell("no-command"));
+        m.addPostBuilder(new Shell("no-valid-command"));
         assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
     }        
     
+    @Bug(14102)
+    public void testMaven2SkipPostBuilder() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+        m.setGoals( "test" );
+        m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimodule-unit-failure.zip")));
+        // run dummy command only if build state is SUCCESS
+        m.setRunPostStepsIfResult(Result.SUCCESS);
+        m.addPostBuilder(new Shell("no-valid-command"));        
+        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+    }    
 }
