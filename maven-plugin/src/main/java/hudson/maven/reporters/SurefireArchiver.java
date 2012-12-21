@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -64,8 +65,9 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * Records the surefire test result.
  * @author Kohsuke Kawaguchi
  */
-public class SurefireArchiver extends MavenReporter {
+public class SurefireArchiver extends TestFailureDetector {
     private transient TestResult result;
+    private final AtomicBoolean hasTestFailures = new AtomicBoolean();
     
     /**
      * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
@@ -73,6 +75,11 @@ public class SurefireArchiver extends MavenReporter {
      * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
      */
     private transient ConcurrentMap<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();
+    
+    @Override
+    public boolean hasTestFailures() {
+        return hasTestFailures.get();
+    }
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
         if (isTestMojo(mojo)) {
@@ -161,6 +168,7 @@ public class SurefireArchiver extends MavenReporter {
                 // intercept that (or otherwise build will be marked as failure)
                 if(failCount>0) {
                     markBuildAsSuccess(error,build.getMavenBuildInformation());
+                    hasTestFailures.set(true);
                 }
             }
         }

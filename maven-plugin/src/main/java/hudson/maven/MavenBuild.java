@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
+import hudson.maven.reporters.TestFailureDetector;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.maven.agent.AbortException;
@@ -71,6 +72,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import jenkins.mvn.SettingsProvider;
@@ -296,6 +298,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      */
     private static final class Builder extends MavenBuilder {
         private final MavenBuildProxy buildProxy;
+        private final AtomicBoolean hasTestFailures = new AtomicBoolean();
 
         /**
          * Records of what was executed.
@@ -350,9 +353,15 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         void postExecute(MavenProject project, MojoInfo info, Exception exception) throws IOException, InterruptedException, AbortException {
             executedMojos.add(new ExecutedMojo(info,System.currentTimeMillis()-startTime));
 
-            for (MavenReporter r : reporters.get(moduleName))
-                if(!r.postExecute(buildProxy,project,info,listener,exception))
+            for (MavenReporter r : reporters.get(moduleName)){
+                if(!r.postExecute(buildProxy,project,info,listener,exception)) {
                     throw new AbortException(r+" failed");
+                } else if (r instanceof TestFailureDetector) {
+                    if(((TestFailureDetector) r).hasTestFailures()) {
+                        hasTestFailures.compareAndSet(false, true);
+                    }
+                }
+            }
         }
 
         @Override
@@ -376,6 +385,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                     throw new AbortException(r+" failed");
         }
 
+        @Override
+        public boolean hasBuildFailures() {
+            return hasTestFailures.get();
+        }
+        
         private static final long serialVersionUID = 1L;
     }
 
