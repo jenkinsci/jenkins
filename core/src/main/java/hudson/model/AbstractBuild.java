@@ -189,7 +189,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         if(nextBuild!=null) {
             AbstractBuild nb = nextBuild.get();
-            if (nb!=null)   nb.previousBuild = previousBuild;
+            if (nb!=null) {
+                // remove the oldest build
+                if (previousBuild == selfReference) 
+                    nb.previousBuild = nextBuild;
+                else 
+                    nb.previousBuild = previousBuild;
+            }
         }
         if(previousBuild!=null) {
             AbstractBuild pb = previousBuild.get();
