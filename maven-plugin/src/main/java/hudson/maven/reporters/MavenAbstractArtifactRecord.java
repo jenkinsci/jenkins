@@ -24,47 +24,30 @@
 package hudson.maven.reporters;
 
 import hudson.console.AnnotatedLargeText;
-import hudson.maven.MavenEmbedder;
-import hudson.maven.MavenEmbedderException;
-import hudson.maven.MavenUtil;
+import hudson.maven.*;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Api;
-import hudson.model.BallColor;
-import hudson.model.BuildBadgeAction;
-import hudson.model.Result;
-import hudson.model.TaskAction;
-import hudson.model.TaskListener;
-import hudson.model.TaskThread;
+import hudson.model.*;
 import hudson.model.TaskThread.ListenerAndText;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.servlet.ServletException;
-
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import javax.servlet.ServletException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * UI to redeploy artifacts after the fact.
@@ -215,7 +198,8 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     public final HttpResponse doRedeploy(
             @QueryParameter("_.id") final String id,
             @QueryParameter("_.url") final String repositoryUrl,
-            @QueryParameter("_.uniqueVersion") final boolean uniqueVersion) throws ServletException, IOException {
+            @QueryParameter("_.uniqueVersion") final boolean uniqueVersion,
+            @QueryParameter("_.changeBuildStatus") final boolean changeBuildStatus) throws ServletException, IOException {
         getACL().checkPermission(REDEPLOY);
 
         File logFile = new File(getBuild().getRootDir(),"maven-deployment."+records.size()+".log");
@@ -237,9 +221,26 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
                     deploy(embedder,repo,listener);
 
                     record.result = Result.SUCCESS;
+                } catch (MavenEmbedderException e) {
+                    e.printStackTrace(listener.error(e.getMessage()));
+                } catch (ComponentLookupException e) {
+                    e.printStackTrace(listener.error(e.getMessage()));
+                } catch (ArtifactDeploymentException e) {
+                    e.printStackTrace(listener.error(e.getMessage()));
                 } finally {
                     if(record.result==null)
                         record.result = Result.FAILURE;
+                    listener.getLogger().println("[INFO] Finished. Status: " + record.result);
+
+                    // Update Maven build status according to redeploy status if checkBuildStatus checkbox is set
+                    if (changeBuildStatus && record.result.equals(Result.SUCCESS)) {
+                        // Since we can redeploy failed build due to redeploy problem or user want to redeploy specific artifact,
+                        // need to calculate result from the build itself (cycle between all modules and check it's status)
+                        Result buildResult = calculateBuildStatus(getBuild(), listener);
+                        getBuild().setResult(buildResult);
+                        listener.getLogger().println("[INFO] Changed build status to " + buildResult);
+                    }
+
                     // persist the record
                     getBuild().save();
                 }
@@ -247,6 +248,35 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
         }.start();
 
         return HttpRedirect.DOT;
+    }
+
+    private Result calculateBuildStatus(T build, TaskListener listener) {
+        // check if we want to deploy multimodule build
+        if (build instanceof MavenModuleSetBuild) {
+            // in this case we calculate build result from all modules in the build
+            MavenModuleSetBuild mavenBuild = (MavenModuleSetBuild) build;
+
+            // get all records about all maven modules in the build
+            List<MavenAbstractArtifactRecord> actions = new ArrayList<MavenAbstractArtifactRecord>();
+            for (Map.Entry<MavenModule, MavenBuild> e : mavenBuild.getModuleLastBuilds().entrySet()) {
+                MavenAbstractArtifactRecord a = e.getValue().getAction( MavenAbstractArtifactRecord.class );
+                if (a == null) {
+                    listener.getLogger().println("No artifacts are recorded for module" + e.getKey().getName() + ". Is this a Maven project?");
+                } else {
+                    actions.add( a );
+                }
+            }
+
+            // If one of module have status ABORTED, FAILURE or UNSTABLE return this status as status of whole build
+            // else return SUCCESS
+            for (MavenAbstractArtifactRecord module : actions) {
+                if (module.getBuild().getResult().equals(Result.ABORTED) || module.getBuild().getResult().equals(Result.FAILURE) || module.getBuild().getResult().equals(Result.UNSTABLE)) {
+                    return module.getBuild().getResult();
+                }
+            }
+            return Result.SUCCESS;
+        }
+        return build.getResult();
     }
 
     /**
