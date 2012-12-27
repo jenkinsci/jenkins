@@ -202,7 +202,11 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     }
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        return records.get(Integer.valueOf(token));
+        try {
+            return records.get(Integer.valueOf(token));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     /**
