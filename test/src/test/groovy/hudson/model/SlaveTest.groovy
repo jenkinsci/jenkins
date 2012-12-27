@@ -72,7 +72,7 @@ public class SlaveTest extends GroovyHudsonTestCase {
         HttpURLConnection con = new URL(this.getURL(),url).openConnection();
         con.requestMethod = "POST"
         con.setRequestProperty("Content-Type","application/xml;charset=UTF-8")
-        con.setRequestProperty(".crumb","test")
+        con.setRequestProperty("crumb","test")
         con.doOutput = true;
         con.outputStream.write(xml.getBytes("UTF-8"))
         con.outputStream.close();

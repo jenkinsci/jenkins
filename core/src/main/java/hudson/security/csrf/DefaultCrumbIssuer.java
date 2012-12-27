@@ -118,7 +118,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         public DescriptorImpl() {
-            super(Jenkins.getInstance().getSecretKey(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            super(Jenkins.getInstance().getSecretKey(), System.getProperty("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_HEADER_NAME));
             load();
         }
 
