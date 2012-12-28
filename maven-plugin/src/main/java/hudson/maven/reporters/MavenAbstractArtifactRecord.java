@@ -237,7 +237,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
                         // Since we can redeploy failed build due to redeploy problem or user want to redeploy specific artifact,
                         // need to calculate result from the build itself (cycle between all modules and check it's status)
                         Result buildResult = calculateBuildStatus(getBuild(), listener);
-                        getBuild().setResult(buildResult);
+                        getBuild().setResultForce(buildResult);
                         listener.getLogger().println("[INFO] Changed build status to " + buildResult);
                     }
 
@@ -270,7 +270,10 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
             // If one of module have status ABORTED, FAILURE or UNSTABLE return this status as status of whole build
             // else return SUCCESS
             for (MavenAbstractArtifactRecord module : actions) {
-                if (module.getBuild().getResult().equals(Result.ABORTED) || module.getBuild().getResult().equals(Result.FAILURE) || module.getBuild().getResult().equals(Result.UNSTABLE)) {
+                if (module.getBuild().getResult().equals(Result.ABORTED) ||
+                    module.getBuild().getResult().equals(Result.FAILURE) ||
+                    module.getBuild().getResult().equals(Result.UNSTABLE)
+                   ) {
                     return module.getBuild().getResult();
                 }
             }

@@ -374,6 +374,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return result;
     }
 
+
+    public void setResultForce(Result r) {
+        result = r;
+        LOGGER.log(WARNING, toString()+" : result is set to "+r,new Exception());
+    }
+
     public void setResult(Result r) {
         // state can change only when we are building
         assert state==State.BUILDING;
