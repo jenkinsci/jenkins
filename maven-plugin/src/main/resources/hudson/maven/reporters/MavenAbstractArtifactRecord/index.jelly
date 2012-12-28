@@ -49,6 +49,9 @@ THE SOFTWARE.
 
           <f:form method="post" action="redeploy">
             <st:include page="/hudson/maven/RedeployPublisher/config.jelly" />
+            <f:entry field="changeBuildStatus">
+               <f:checkbox title="${%Change maven build status according to redeploy status}" default="false"/>
+            </f:entry>
             <f:block>
               <f:submit value="${%OK}" style="margin-top:1em;" />
             </f:block>
