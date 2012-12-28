@@ -73,6 +73,10 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
  * after a build is fully succeeded. 
+ * <p>
+ * Note that the - historical given - name of this class is quite misleading as this publisher usually does no REdeployment
+ * of artifacts. If you're looking for the redeploy functionality in the Jenkins UI: that is implemented in
+ * {@link MavenAbstractArtifactRecord#doRedeploy(String, String, boolean)}!
  *
  * @author Kohsuke Kawaguchi
  * @since 1.191
