@@ -77,6 +77,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -681,9 +682,13 @@ public final class FilePath implements Serializable {
      */
     public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
         try {
+            FilePath timestamp = this.child(".timestamp");
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
+                if (timestamp.exists()) {
+                    con.setIfModifiedSince(timestamp.lastModified());
+                }
                 con.connect();
             } catch (IOException x) {
                 if (this.exists()) {
@@ -696,8 +701,13 @@ public final class FilePath implements Serializable {
                     throw x;
                 }
             }
+
+            if (con instanceof HttpURLConnection
+                    && ((HttpURLConnection)con).getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                return false;
+            }
+
             long sourceTimestamp = con.getLastModified();
-            FilePath timestamp = this.child(".timestamp");
 
             if(this.exists()) {
                 if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
