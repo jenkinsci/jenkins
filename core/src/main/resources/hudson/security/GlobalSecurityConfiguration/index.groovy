@@ -46,13 +46,9 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                 }
             }
 
-            f.block {
-                div(id:"bottom-sticker") {
-                    div(class:"bottom-sticker-inner") {
-                        f.submit(value:_("Save"))
-                        f.apply()
-                    }
-                }
+            f.bottomButtonBar {
+                f.submit(value:_("Save"))
+                f.apply()
             }
         }
     }

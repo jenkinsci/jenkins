@@ -54,14 +54,10 @@ THE SOFTWARE.
           </j:if>
         </j:forEach>
 
-        <f:block>
-          <div id="bottom-sticker">
-            <div class="bottom-sticker-inner">
-              <f:submit value="${%Save}" />
-              <f:apply />
-            </div>
-          </div>
-        </f:block>
+        <f:bottomButtonBar>
+          <f:submit value="${%Save}" />
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

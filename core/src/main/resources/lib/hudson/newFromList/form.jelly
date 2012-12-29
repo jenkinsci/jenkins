@@ -89,19 +89,15 @@ THE SOFTWARE.
       </s:entry>
     </j:if>
 
-    <s:block>
-      <div id="bottom-sticker" >
-        <div class="bottom-sticker-inner">
-          <!--
-            when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
-            So always force non-empty array
-           -->
-          <input type="radio" name="mode" value="dummy1" style="display:none" />
-          <input type="radio" name="mode" value="dummy2" style="display:none" />
-          <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-        </div>
-      </div>
-    </s:block>
+    <s:bottomButtonBar>
+      <!--
+        when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
+        So always force non-empty array
+       -->
+      <input type="radio" name="mode" value="dummy1" style="display:none" />
+      <input type="radio" name="mode" value="dummy2" style="display:none" />
+      <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
+    </s:bottomButtonBar>
   </s:form>
   <script><![CDATA[
     var okButton = makeButton($('ok'),null);
