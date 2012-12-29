@@ -33,6 +33,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
@@ -529,7 +530,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         save();
 
-        rsp.sendRedirect(".");
+        FormApply.success(".").generateResponse(req,rsp,this);
     }
 
     /**

@@ -54,6 +54,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
+import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
@@ -2052,7 +2053,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } finally {
             bc.abort();
         }
-        return HttpResponses.redirectToDot();
+        return FormApply.success(".");
     }
 
     protected void submit(JSONObject json) throws IOException {
