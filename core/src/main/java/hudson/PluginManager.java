@@ -857,7 +857,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return HttpResponses.redirectViaContextPath("updateCenter");
     }
 
-    static Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
+    /**
+     * Parses configuration XML files and picks up references to XML files.
+     */
+    public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<String,VersionNumber>();
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
