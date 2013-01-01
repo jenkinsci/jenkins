@@ -1351,6 +1351,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * If we use this/executor/stop URL, it causes 404 if the build is already killed,
      * as {@link #getExecutor()} returns null.
+     * 
+     * @since 1.489
      */
     public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();

@@ -474,6 +474,8 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * Stops the current build.
+     * 
+     * @since 1.489
      */
     public HttpResponse doStop() {
         Queue.Executable e = executable;
