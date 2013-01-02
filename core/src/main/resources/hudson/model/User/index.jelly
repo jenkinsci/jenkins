@@ -38,6 +38,15 @@ THE SOFTWARE.
       <j:forEach var="p" items="${it.allProperties}">
         <st:include page="summary.jelly" from="${p}" optional="true" it="${p}" />
       </j:forEach>
+      <j:set var="authorities" value="${it.authorities}"/>
+      <j:if test="${!authorities.isEmpty()}">
+        <div>${%Groups}:</div>
+        <ul>
+          <j:forEach var="a" items="${authorities}">
+            <li>${a}</li>
+          </j:forEach>
+        </ul>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -40,11 +40,12 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -52,7 +53,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -254,11 +254,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         try {
             UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
-        } catch (AuthenticationException e) {
-            // TODO: use the stored GrantedAuthorities
-            return new UsernamePasswordAuthenticationToken(id, "",
-                new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+        } catch (UsernameNotFoundException e) {
+            // ignore
+        } catch (DataAccessException e) {
+            // ignore
         }
+        // TODO: use the stored GrantedAuthorities
+        return new UsernamePasswordAuthenticationToken(id, "",
+            new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
 
     /**
@@ -622,6 +625,30 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public boolean canDelete() {
         return hasPermission(Jenkins.ADMINISTER) && !id.equals(Jenkins.getAuthentication().getName())
                 && new File(getRootDir(), id).exists();
+    }
+
+    /**
+     * Checks for authorities (groups) associated with this user.
+     * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
+     * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
+     * @since 1.498
+     * @return a possibly empty list
+     */
+    public @Nonnull List<String> getAuthorities() {
+        if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            return Collections.emptyList();
+        }
+        List<String> r = new ArrayList<String>();
+        for (GrantedAuthority a : impersonate().getAuthorities()) {
+            if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+                continue;
+            }
+            String n = a.getAuthority();
+            if (n != null && !n.equals(id)) {
+                r.add(n);
+            }
+        }
+        return r;
     }
 
     public Descriptor getDescriptorByName(String className) {
