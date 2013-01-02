@@ -24,6 +24,7 @@
  */
 package org.jvnet.hudson.test;
 
+import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.google.inject.Injector;
 import hudson.ClassicPluginStrategy;
@@ -258,7 +259,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 90;
+    public int timeout = 180;
 
     private volatile Timer timeoutTimer;
 
@@ -562,14 +563,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
     }
     
-//    /**
-//     * Sets guest credentials to access java.net Subversion repo.
-//     */
-//    protected void setJavaNetCredential() throws SVNException, IOException {
-//        // set the credential to access svn.dev.java.net
-//        hudson.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn/hudson/","guest","",null,new PrintWriter(new NullStream()));
-//    }
-
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
@@ -1553,7 +1546,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     /**
      * Declares that this test case expects to start with one of the preset data sets.
-     * See https://svn.dev.java.net/svn/hudson/trunk/hudson/main/test/src/main/preset-data/
+     * See {@code test/src/main/preset-data/}
      * for available datasets and what they mean.
      */
     public HudsonTestCase withPresetData(String name) {
@@ -1664,6 +1657,12 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
 
                 public void contextReleased(Context cx) {
+                }
+            });
+
+            setAlertHandler(new AlertHandler() {
+                public void handleAlert(Page page, String message) {
+                    throw new AssertionError("Alert dialog poped up: "+message);
                 }
             });
 

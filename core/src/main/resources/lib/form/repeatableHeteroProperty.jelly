@@ -63,6 +63,11 @@ THE SOFTWARE.
       If true, insert new addition by default to their 'desired' location, which
       is the order induced by the descriptors.
     </st:attribute>
+    <st:attribute name="capture">
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
+    </st:attribute>
   </st:documentation>
 
   <!--
@@ -74,6 +79,7 @@ THE SOFTWARE.
                  hasHeader="${attrs.hasHeader}" honorOrder="${attrs.honorOrder}"
                  menuAlign="${attrs.menuAlign}" oneEach="${attrs.oneEach}"
                  targetType="${attrs.targetType}"
+                 capture="${attrs.capture}"
           />
   <!-- TODO: there should be a mechanism to pass-through map as parameters -->
 </j:jelly>

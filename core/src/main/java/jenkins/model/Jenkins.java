@@ -160,7 +160,6 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
-import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
@@ -755,7 +754,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
             Trigger.timer = new Timer("Jenkins cron thread");
-            queue = new Queue(CONSISTENT_HASH?LoadBalancer.CONSISTENT_HASH:LoadBalancer.DEFAULT);
+            queue = new Queue(LoadBalancer.CONSISTENT_HASH);
 
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
@@ -982,6 +981,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Does this {@link View} has any associated user information recorded?
+     * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
     public boolean hasPeople() {
         return View.People.isApplicable(items.values());
@@ -1230,7 +1230,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Synonym to {@link #getNodeDescription()}.
+     * Synonym for {@link #getDescription}.
      */
     public String getSystemMessage() {
         return systemMessage;
@@ -1635,7 +1635,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Gets the slave node of the give name, hooked under this Hudson.
      */
-    public Node getNode(String name) {
+    public @CheckForNull Node getNode(String name) {
         return slaves.getNode(name);
     }
 
@@ -1833,7 +1833,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public String getRootUrl() {
         // for compatibility. the actual data is stored in Mailer
-        String url = Mailer.descriptor().getUrl();
+        String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
             if (!url.endsWith("/")) url += '/';
             return url;
@@ -2237,7 +2237,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             if (ctx instanceof ItemGroup) {
                 ItemGroup g = (ItemGroup) ctx;
                 Item i = g.getItem(s);
-                if (i==null || !i.hasPermission(Item.READ)) {
+                if (i==null || !i.hasPermission(Item.READ)) { // XXX consider DISCOVER
                     ctx=null;    // can't go up further
                     break;
                 }
@@ -2305,7 +2305,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 return null;    // this item can't have any children
 
             if (!item.hasPermission(Item.READ))
-                return null;
+                return null; // XXX consider DISCOVER
 
             parent = (ItemGroup) item;
         }
@@ -2794,7 +2794,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         Map<String,Future<Map<String,String>>> future = new HashMap<String, Future<Map<String, String>>>();
 
         for (Computer c : getComputers()) {
-            future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
+            try {
+                future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
+            } catch(Exception e) {
+                LOGGER.info("Failed to get thread dump for node " + c.getName() + ": " + e.getMessage());
+            }
         }
 		if (toComputer() == null) {
 			future.put("master", RemotingDiagnostics.getThreadDumpAsync(MasterComputer.localChannel));
@@ -3530,24 +3534,40 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
-            || rest.startsWith("/jnlpJars/")
             || rest.startsWith("/tcpSlaveAgentListener")
             || rest.startsWith("/cli")
-            || rest.startsWith("/whoAmI")
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
 
-            for (Action a : getActions()) {
-                if (a instanceof UnprotectedRootAction) {
-                    if (rest.startsWith("/"+a.getUrlName()+"/") || rest.equals("/"+a.getUrlName()))
-                        return this;
+            for (String name : getUnprotectedRootActions()) {
+                if (rest.startsWith("/" + name + "/") || rest.equals("/" + name)) {
+                    return this;
                 }
             }
 
             throw e;
         }
         return this;
+    }
+
+    /**
+     * Gets a list of unprotected root actions.
+     * These URL prefixes should be exempted from access control checks by container-managed security.
+     * Ideally would be synchronized with {@link #getTarget}.
+     * @return a list of {@linkplain Action#getUrlName URL names}
+     * @since 1.495
+     */
+    public Collection<String> getUnprotectedRootActions() {
+        Set<String> names = new TreeSet<String>();
+        names.add("jnlpJars"); // XXX cleaner to refactor doJnlpJars into a URA
+        // XXX consider caching (expiring cache when actions changes)
+        for (Action a : getActions()) {
+            if (a instanceof UnprotectedRootAction) {
+                names.add(a.getUrlName());
+            }
+        }
+        return names;
     }
 
     /**
@@ -3850,7 +3870,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
-    private static final boolean CONSISTENT_HASH = true; // Boolean.getBoolean(Hudson.class.getName()+".consistentHash");
     /**
      * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
      */

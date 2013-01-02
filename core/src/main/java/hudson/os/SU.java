@@ -62,6 +62,8 @@ public abstract class SU {
     /**
      * Returns a {@link VirtualChannel} that's connected to the priviledge-escalated environment.
      *
+     * @param listener
+     *      What this method is doing (such as what process it's invoking) will be sent here.
      * @return
      *      Never null. This may represent a channel to a separate JVM, or just {@link LocalChannel}.
      *      Close this channel and the SU environment will be shut down.

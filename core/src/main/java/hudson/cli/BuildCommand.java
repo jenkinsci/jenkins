@@ -43,6 +43,7 @@ import hudson.util.StreamTaskListener;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.concurrent.ExecutionException;
 
 import jenkins.model.Jenkins;
 
@@ -136,30 +138,35 @@ public class BuildCommand extends CLICommand {
             stdout.println("Started "+b.getFullDisplayName());
 
             if (sync) {
-                if (consoleOutput) {
-                    // read output in a retry loop, by default try only once
-                    // writeWholeLogTo may fail with FileNotFound
-                    // exception on a slow/busy machine, if it takes
-                    // longish to create the log file
-                    int retryInterval = 100;
-                    for (int i=0;i<=retryCnt;) {
-                        try {
-                            b.writeWholeLogTo(stdout);
-                            break;
-                        }
-                        catch (FileNotFoundException e) {
-                            if ( i == retryCnt ) {
-                                throw e;
+                try {
+                    if (consoleOutput) {
+                        // read output in a retry loop, by default try only once
+                        // writeWholeLogTo may fail with FileNotFound
+                        // exception on a slow/busy machine, if it takes
+                        // longish to create the log file
+                        int retryInterval = 100;
+                        for (int i=0;i<=retryCnt;) {
+                            try {
+                                b.writeWholeLogTo(stdout);
+                                break;
                             }
-                            i++;
-                            Thread.sleep(retryInterval);
+                            catch (FileNotFoundException e) {
+                                if ( i == retryCnt ) {
+                                    throw e;
+                                }
+                                i++;
+                                Thread.sleep(retryInterval);
+                            }
                         }
                     }
+                    f.get();    // wait for the completion
+                    stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
+                    return b.getResult().ordinal;
+                } catch (InterruptedException e) {
+                    // if the CLI is aborted, try to abort the build as well
+                    f.cancel(true);
+                    throw e;
                 }
-                // TODO: should we abort the build if the CLI is cancelled?
-                f.get();    // wait for the completion
-                stdout.println("Completed "+b.getFullDisplayName()+" : "+b.getResult());
-                return b.getResult().ordinal;
             }
         }
 

@@ -171,6 +171,7 @@ public class UtilTest {
         File d = Util.createTempDir();
         try {
             new FilePath(new File(d, "a")).touch(0);
+            assertNull(Util.resolveSymlink(new File(d, "a")));
             Util.createSymlink(d,"a","x", l);
             assertEquals("a",Util.resolveSymlink(new File(d,"x")));
 
@@ -289,5 +290,15 @@ public class UtilTest {
 				}
 			}
 		}
+    }
+
+    public void testIsAbsoluteUri() {
+        assertTrue(Util.isAbsoluteUri("http://foobar/"));
+        assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
+        assertTrue(Util.isAbsoluteUri("d123://test/"));
+        assertFalse(Util.isAbsoluteUri("foo/bar/abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo?abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo#abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo/bar"));
     }
 }

@@ -29,8 +29,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.maven.reporters.MavenArtifactRecord;
-import hudson.maven.settings.SettingConfig;
-import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -47,16 +45,16 @@ import hudson.tasks.Recorder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
 import jenkins.model.Jenkins;
+import jenkins.mvn.GlobalSettingsProvider;
+import jenkins.mvn.SettingsProvider;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
@@ -75,6 +73,10 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
  * after a build is fully succeeded. 
+ * <p>
+ * Note that the - historical given - name of this class is quite misleading as this publisher usually does no REdeployment
+ * of artifacts. If you're looking for the redeploy functionality in the Jenkins UI: that is implemented in
+ * {@link MavenAbstractArtifactRecord#doRedeploy(String, String, boolean)}!
  *
  * @author Kohsuke Kawaguchi
  * @since 1.191
@@ -147,7 +149,7 @@ public class RedeployPublisher extends Recorder {
           return true;
         }
 
-        long startupTime = Calendar.getInstance().getTimeInMillis();
+        long startupTime = System.currentTimeMillis();
 
         try {
             MavenEmbedder embedder = createEmbedder(listener, build);
@@ -173,7 +175,7 @@ public class RedeployPublisher extends Recorder {
                 }
                 mavenAbstractArtifactRecord.deploy(embedder, artifactRepository, listener);
             }
-            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
+            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(System.currentTimeMillis() - startupTime));
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));
@@ -184,7 +186,7 @@ public class RedeployPublisher extends Recorder {
         }
         // failed
         build.setResult(Result.FAILURE);
-        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
+        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(System.currentTimeMillis() - startupTime));
         return true;
     }
 
@@ -227,42 +229,12 @@ public class RedeployPublisher extends Recorder {
                 
                 // TODO check if the remoteSettings has a localRepository configured and disabled it
 
-                String settingsConfigId = mavenModuleSet.getSettingConfigId();
-                String altSettingsPath = null;
-
-                if (!StringUtils.isBlank(settingsConfigId)) {
-                    SettingConfig config = SettingsProviderUtils.findSettings(settingsConfigId);
-                    if (config == null) {
-                        listener.getLogger().println(
-                            " your Apache Maven build is setup to use a config with id " + settingsConfigId
-                                + " but cannot find the config" );
-                    } else {
-                        listener.getLogger().println( "redeploy publisher using settings config with name " + config.name );
-                        if (config.content != null ) {
-                            remoteSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFilePath( config, build.getWorkspace() );
-                            altSettingsPath = remoteSettingsFromConfig.getRemote();
-                        }
-                    }
+                String altSettingsPath = SettingsProvider.getSettingsRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
+                String remoteGlobalSettingsPath = GlobalSettingsProvider.getSettingsRemotePath(((MavenModuleSet) project).getGlobalSettings(), build, listener);
+                if(remoteGlobalSettingsPath != null){
+                    remoteGlobalSettingsFromConfig = new File(remoteGlobalSettingsPath);
                 }
 
-                if (mavenModuleSet.getAlternateSettings() != null ) {
-                    altSettingsPath = mavenModuleSet.getAlternateSettings();
-                }
-
-                String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
-                if (!StringUtils.isBlank(globalSettingsConfigId)) {
-                    SettingConfig config = SettingsProviderUtils.findSettings(globalSettingsConfigId);
-                    if (config == null) {
-                        listener.getLogger().println(
-                            " your Apache Maven build is setup to use a global settings config with id "
-                                + globalSettingsConfigId + " but cannot find the config" );
-                    } else {
-                        listener.getLogger().println( "redeploy publisher using global settings config with name " + config.name );
-                        if (config.content != null ) {
-                            remoteGlobalSettingsFromConfig = SettingsProviderUtils.copyConfigContentToFile( config );
-                        }
-                    }
-                }
                 Node buildNode = build.getBuiltOn();
                 
                 if(buildNode == null) {
@@ -280,10 +252,9 @@ public class RedeployPublisher extends Recorder {
                 FilePath filePath = new FilePath( tmpSettings );
                 FilePath remoteSettings = build.getWorkspace().child( altSettingsPath );
                 if (!remoteSettings.exists()) {
-                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven do
+                    // JENKINS-9084 we finally use $M2_HOME/conf/settings.xml as maven does
                     
-                    String mavenHome = 
-                        ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
+                    String mavenHome = ((MavenModuleSet) project).getMaven().forNode(buildNode, listener ).getHome();
                     String settingsPath = mavenHome + "/conf/settings.xml";
                     remoteSettings = build.getWorkspace().child( settingsPath);
                 }
@@ -312,10 +283,6 @@ public class RedeployPublisher extends Recorder {
             if (tmpSettings != null) {
                 tmpSettings.delete();
             }
-            if (remoteSettingsFromConfig != null) {
-                remoteSettingsFromConfig.delete();
-            }
-            FileUtils.deleteQuietly(remoteGlobalSettingsFromConfig);
         }
     }
     

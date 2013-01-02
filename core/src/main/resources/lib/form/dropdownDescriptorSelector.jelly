@@ -42,7 +42,7 @@ THE SOFTWARE.
       If specified, this will be chosen as the default value in case the current selection is null.
     </st:attribute>
   </st:documentation>
-
+  <f:prepareDatabinding /> 
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
 
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">

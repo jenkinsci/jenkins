@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${%Project} ${it.displayName}</h1>
       <j:if test="${it.name!=it.displayName}">
-        ${%Project name}: ${it.name}
+        ${%Project name}: ${it.fullName}
       </j:if>
       <t:editableDescription permission="${it.CONFIGURE}"/>
 

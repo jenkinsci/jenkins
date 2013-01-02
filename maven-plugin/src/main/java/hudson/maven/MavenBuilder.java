@@ -43,6 +43,8 @@ import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ReactorManager;
@@ -169,10 +171,18 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                 logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
             }
 
-            if(r==0)    return Result.SUCCESS;
+            if(r==0){
+                if(a.hasBuildFailures()){
+                    return Result.UNSTABLE;
+                }
+                return Result.SUCCESS;
+            }
 
             if(markAsSuccess) {
                 listener.getLogger().println(Messages.MavenBuilder_Failed());
+                if(a.hasBuildFailures()){
+                    return Result.UNSTABLE;
+                }
                 return Result.SUCCESS;
             }
             return Result.FAILURE;
@@ -264,6 +274,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         private MavenProject lastModule;
 
         private final MavenBuilder listener;
+        private final AtomicBoolean hasTestFailures = new AtomicBoolean();
 
         /**
          * Number of total nanoseconds {@link MavenBuilder} spent.
@@ -308,6 +319,8 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
             long startTime = System.nanoTime();
             listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval),exception);
+            if(listener.hasBuildFailures())
+                hasTestFailures.compareAndSet(false, true);
             overheadTime += System.nanoTime()-startTime;
         }
 
@@ -327,6 +340,10 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                 listener.postModule(lastModule);
                 lastModule = null;
             }
+        }
+        
+        public boolean hasBuildFailures() {
+            return hasTestFailures.get();
         }
     }
 
@@ -351,4 +368,10 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
     public static boolean markAsSuccess;
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Whether there where test failures detected during the build.
+     * @since 1.496
+     */
+    public abstract boolean hasBuildFailures();
 }

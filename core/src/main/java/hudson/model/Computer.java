@@ -25,11 +25,11 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
-import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
@@ -45,6 +45,7 @@ import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
@@ -95,6 +96,7 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -262,12 +264,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (offlineCause == null) {
             return "";
         }
-        // remove header string from offline cause when a comment was set
-        String newString = offlineCause.toString().replaceAll(
-                "^Disconnected by [\\w]* \\: ","");
-        // remove header string from offline cause when no comment was set
-        return newString.replaceAll(
-                "^Disconnected by [\\w]*","");
+        // fetch the localized string for "Disconnected By"
+        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("","");
+        // regex to remove commented reason base string
+        String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
+        // regex to remove non-commented reason base string
+        String gsub2 = "^" + gsub_base + "[\\w\\W]*";
+
+        String newString = offlineCause.toString().replaceAll(gsub1, "");
+        return newString.replaceAll(gsub2, "");
     }
 
     /**
@@ -276,7 +281,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return
      *      never null when {@link #isOffline()}==false.
      */
-    public abstract VirtualChannel getChannel();
+    public abstract @Nullable VirtualChannel getChannel();
 
     /**
      * Gets the default charset of this computer.
@@ -875,6 +880,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         return EnvVars.getRemote(getChannel());
+    }
+
+    /**
+     * Creates an environment variable override to be used for launching processes on this node.
+     *
+     * @see ProcStarter#envs(Map)
+     * @since 1.489
+     */
+    public EnvVars buildEnvironment(TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env = new EnvVars();
+
+        Node node = getNode();
+        if (node==null)     return env; // bail out
+
+        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        for (NodeProperty nodeProperty: node.getNodeProperties()) {
+            nodeProperty.buildEnvVars(env,listener);
+        }
+
+        // TODO: hmm, they don't really belong
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if(rootUrl!=null) {
+            env.put("HUDSON_URL", rootUrl); // Legacy.
+            env.put("JENKINS_URL", rootUrl);
+        }
+
+        return env;
     }
 
     /**

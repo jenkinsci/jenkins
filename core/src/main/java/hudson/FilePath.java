@@ -95,6 +95,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 
 import com.sun.jna.Native;
+import hudson.os.PosixException;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -1362,7 +1363,7 @@ public final class FilePath implements Serializable {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException {
+    public int mode() throws IOException, InterruptedException, PosixException {
         if(!isUnix())   return -1;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {

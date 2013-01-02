@@ -172,6 +172,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         return r.getId();
     }
 
+    @Override
+    public R put(R r) {
+        return super._put(r);
+    }
+
     /**
      * Reuses the same reference as much as we can.
      * <p>
@@ -194,7 +199,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
                 // Don't even bother trying.
                 if (!isCorrectDate(name)) {
-                    LOGGER.fine("Skipping "+new File(dir,name));
+                    LOGGER.log(FINE, "Skipping {0}", new File(dir,name));
                     return false;
                 }
                 return !name.startsWith("0000") && new File(dir,name).isDirectory();
@@ -219,8 +224,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
-                if (LOGGER.isLoggable(FINE) || LOG_RETRIEVAL)
-                    LOGGER.log(LOG_RETRIEVAL?INFO:FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
                 return b;
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
@@ -250,8 +255,6 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunMap.class.getName());
-
-    public static boolean LOG_RETRIEVAL = false;
 
     private static class ThisIsHowItsLoaded extends Exception {}
 }

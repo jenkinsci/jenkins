@@ -867,6 +867,17 @@ DIV.yahooTree td {
   border: none !important;
   background-color: #FFF !important;
 }
+
+.yuimenu LI .yui-menu-tooltip {
+  color: #A6A6A6;
+}
+
+.yuimenu LI.yui-menuitem-tooltip {
+  border-bottom: 1px solid #808080;
+  padding-bottom: 3px;
+  margin-bottom: 1em;
+}
+
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.gif) no-repeat 2px center;

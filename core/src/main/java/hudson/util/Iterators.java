@@ -23,11 +23,8 @@
  */
 package hudson.util;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -178,6 +175,33 @@ public class Iterators {
 
                     public T next() {
                         return itr.previous();
+                    }
+
+                    public void remove() {
+                        itr.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Returns an {@link Iterable} that lists items in the normal order
+     * but which hides the base iterator implementation details.
+     *
+     * @since 1.492
+     */
+    public static <T> Iterable<T> wrap(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                final Iterator<T> itr = base.iterator();
+                return new Iterator<T>() {
+                    public boolean hasNext() {
+                        return itr.hasNext();
+                    }
+
+                    public T next() {
+                        return itr.next();
                     }
 
                     public void remove() {

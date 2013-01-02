@@ -149,7 +149,7 @@ THE SOFTWARE.
             return String(e.checked)!=e.getAttribute('original');
           });
 
-          <j:if test="${it.isPluginUploaded()}">
+          <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
             e = true;
           </j:if>
           $('needRestart').style.display = (e!=null?"block":"none");

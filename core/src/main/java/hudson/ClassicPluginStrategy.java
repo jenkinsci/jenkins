@@ -79,6 +79,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     private PluginManager pluginManager;
 
+    /**
+     * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
+     */
+    private final MaskingClassLoader coreClassLoader = new MaskingClassLoader(getClass().getClassLoader());
+
     public ClassicPluginStrategy(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
@@ -175,7 +180,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
         for (DetachedPlugin detached : DETACHED_LIST)
             detached.fix(atts,optionalDependencies);
 
-        ClassLoader dependencyLoader = new DependencyClassLoader(getClass().getClassLoader(), archive, Util.join(dependencies,optionalDependencies));
+        // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
+        // such as database plugin for JPA support. The Mask-Classes attribute is insufficient because those classes
+        // also need to be masked by all the other plugins that depend on the database plugin.
+        String masked = atts.getValue("Global-Mask-Classes");
+        if(masked!=null) {
+            for (String pkg : masked.trim().split("[ \t\r\n]+"))
+                coreClassLoader.add(pkg);
+        }
+
+        ClassLoader dependencyLoader = new DependencyClassLoader(coreClassLoader, archive, Util.join(dependencies,optionalDependencies));
         dependencyLoader = getBaseClassLoader(atts, dependencyLoader);
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
@@ -201,7 +215,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 return classLoader;
             }
         }
-        if(useAntClassLoader) {
+        if(useAntClassLoader && !Closeable.class.isAssignableFrom(URLClassLoader.class)) {
             // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
             AntClassLoader2 classLoader = new AntClassLoader2(parent);
             classLoader.addPathFiles(paths);
@@ -221,6 +235,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
      */
     private static final class DetachedPlugin {
         private final String shortName;
+        /**
+         * Plugins built for this Jenkins version (and earlier) will automatically be assumed to have
+         * this plugin in its dependency.
+         *
+         * When core/pom.xml version is 1.123-SNAPSHOT when the code is removed, then this value should
+         * be "1.123.*" (because 1.124 will be the first version that doesn't include the removed code.)
+         */
         private final VersionNumber splitWhen;
         private final String requireVersion;
 
@@ -252,7 +273,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("javadoc","1.430.*","1.0"),
         new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
         new DetachedPlugin("ldap","1.467.*","1.0"),
-        new DetachedPlugin("pam-auth","1.467.*","1.0")
+        new DetachedPlugin("pam-auth","1.467.*","1.0"),
+        new DetachedPlugin("mailer","1.493.*","1.2")
     );
 
     /**
@@ -564,6 +586,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
+     * Deprecated as of Java 7, retained only for Java 5/6.
      */
     private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;

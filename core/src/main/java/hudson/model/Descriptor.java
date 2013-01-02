@@ -31,7 +31,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormApply;
-import hudson.util.QuotedStringTokenizer;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
@@ -72,6 +71,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Metadata about a configurable instance.
@@ -222,7 +223,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * @see #getHelpFile(String) 
      */
-    private final Map<String,String> helpRedirect = new HashMap<String, String>();
+    private transient final Map<String,String> helpRedirect = new HashMap<String, String>();
 
     /**
      *
@@ -470,9 +471,25 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
      */
-    public PropertyType getPropertyType(Object instance, String field) {
+    public @CheckForNull PropertyType getPropertyType(@Nonnull Object instance, @Nonnull String field) {
         // in global.jelly, instance==descriptor
         return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
+    }
+
+    /**
+     * Akin to {@link #getPropertyType(Object,String) but never returns null.
+     * @throws AssertionError in case the field cannot be found
+     * @since 1.492
+     */
+    public @Nonnull PropertyType getPropertyTypeOrDie(@Nonnull Object instance, @Nonnull String field) {
+        PropertyType propertyType = getPropertyType(instance, field);
+        if (propertyType != null) {
+            return propertyType;
+        } else if (instance == this) {
+            throw new AssertionError(getClass().getName() + " has no property " + field);
+        } else {
+            throw new AssertionError(clazz.getName() + " has no property " + field);
+        }
     }
 
     /**
@@ -792,7 +809,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
     }
 
-    private XmlFile getConfigFile() {
+    protected final XmlFile getConfigFile() {
         return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
     }
 

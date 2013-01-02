@@ -24,6 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -63,8 +65,9 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * Records the surefire test result.
  * @author Kohsuke Kawaguchi
  */
-public class SurefireArchiver extends MavenReporter {
+public class SurefireArchiver extends TestFailureDetector {
     private transient TestResult result;
+    private final AtomicBoolean hasTestFailures = new AtomicBoolean();
     
     /**
      * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
@@ -72,12 +75,15 @@ public class SurefireArchiver extends MavenReporter {
      * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
      */
     private transient ConcurrentMap<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();
+    
+    @Override
+    public boolean hasTestFailures() {
+        return hasTestFailures.get();
+    }
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
-        if (isSurefireTest(mojo)) {
-		if ((!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
-		    && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
-		    && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test"))) {
+        if (isTestMojo(mojo)) {
+            if (!isSoapUiMojo(mojo)) {
                 // tell surefire:test to keep going even if there was a failure,
                 // so that we can record this as yellow.
                 // note that because of the way Maven works, just updating system property at this point is too late
@@ -103,13 +109,12 @@ public class SurefireArchiver extends MavenReporter {
     }
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if (!isSurefireTest(mojo)) return true;
+        if (!isTestMojo(mojo)) return true;
 
         listener.getLogger().println(Messages.SurefireArchiver_Recording());
 
         File reportsDir;
-        if (mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test") ||
-            mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")) {
+        if (isSurefireOrFailsafeMojo(mojo)) {
             try {
                 reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
             } catch (ComponentConfigurationException e) {
@@ -142,7 +147,7 @@ public class SurefireArchiver extends MavenReporter {
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
-    
+                
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                         private static final long serialVersionUID = -1023888330720922136L;
 
@@ -163,10 +168,25 @@ public class SurefireArchiver extends MavenReporter {
                 // intercept that (or otherwise build will be marked as failure)
                 if(failCount>0) {
                     markBuildAsSuccess(error,build.getMavenBuildInformation());
+                    hasTestFailures.set(true);
                 }
             }
         }
 
+        return true;
+    }
+    
+    @Override
+    public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        //Discard unneeded test result objects so they can't waste memory
+        for(MavenReporter reporter: build.getProject().getReporters()) {
+            if(reporter instanceof SurefireArchiver) {
+                SurefireArchiver surefireReporter = (SurefireArchiver) reporter;
+                if(surefireReporter.result != null) {
+                    surefireReporter.result = null;
+                }
+            }
+        }    
         return true;
     }
     
@@ -233,23 +253,20 @@ public class SurefireArchiver extends MavenReporter {
         }
     }
 
-    private boolean isSurefireTest(MojoInfo mojo) {
+    private boolean isTestMojo(MojoInfo mojo) {
         if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
             && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
             && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
             && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
             && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
-            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test"))
-            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test"))
-            && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
-            && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
-            && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
-            && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test")))
+            && (!isAndroidMojo(mojo))
+            && (!isSurefireOrFailsafeMojo(mojo))
+            && (!isSoapUiMojo(mojo)))
             return false;
 
         try {
-            if (mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test")) {
-                Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
+            if (isSurefireOrFailsafeMojo(mojo)) {
+               Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
                 if (((skip != null) && (skip))) {
                     return false;
                 }
@@ -292,12 +309,7 @@ public class SurefireArchiver extends MavenReporter {
                 if (((skipTests != null) && (skipTests))) {
                     return false;
                 }
-            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")) {
+            } else if (isAndroidMojo(mojo)) {
                 if (mojo.pluginName.version.compareTo("3.0.0-alpha-6") < 0) {
                     // Earlier versions do not support tests
                     return false;
@@ -310,12 +322,7 @@ public class SurefireArchiver extends MavenReporter {
             } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
                     // gwt-maven-plugin < 1.2 does not implement required Surefire option
                     return false;
-            } else if (mojo.is("eviware", "maven-soapui-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (mojo.is("eviware", "maven-soapui-pro-plugin", "test")) {
+            } else if (isSoapUiMojo(mojo)) {
                 Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
                 if (((skipTests != null) && (skipTests))) {
                     return false;
@@ -326,6 +333,21 @@ public class SurefireArchiver extends MavenReporter {
         }
 
         return true;
+    }
+
+    private boolean isAndroidMojo(MojoInfo mojo) {
+      return mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")
+          || mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test");
+    }
+
+    private boolean isSurefireOrFailsafeMojo(MojoInfo mojo) {
+      return mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test")
+          || mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "verify");
+    }
+    
+    private boolean isSoapUiMojo(MojoInfo mojo) {
+      return mojo.is("eviware", "maven-soapui-plugin", "test")
+          || mojo.is("eviware", "maven-soapui-pro-plugin", "test");
     }
     
     // I'm not sure if SurefireArchiver is actually ever (de-)serialized,

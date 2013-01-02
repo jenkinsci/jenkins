@@ -42,8 +42,10 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,6 +82,7 @@ public final class SuiteResult implements Serializable {
      * All test cases.
      */
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
+    private transient Map<String,CaseResult> casesByName;
     private transient hudson.tasks.junit.TestResult parent;
 
     SuiteResult(String name, String stdout, String stderr) {
@@ -87,6 +90,16 @@ public final class SuiteResult implements Serializable {
         this.stderr = stderr;
         this.stdout = stdout;
         this.file = null;
+    }
+
+    private synchronized Map<String,CaseResult> casesByName() {
+        if (casesByName == null) {
+            casesByName = new HashMap<String,CaseResult>();
+            for (CaseResult c : cases) {
+                casesByName.put(c.getName(), c);
+            }
+        }
+        return casesByName;
     }
 
     /**
@@ -217,6 +230,7 @@ public final class SuiteResult implements Serializable {
 
     /*package*/ void addCase(CaseResult cr) {
         cases.add(cr);
+        casesByName().put(cr.getName(), cr);
         duration += cr.getDuration();
     }
 
@@ -294,11 +308,7 @@ public final class SuiteResult implements Serializable {
      * Note that test name needs not be unique.
      */
     public CaseResult getCase(String name) {
-        for (CaseResult c : cases) {
-            if(c.getName().equals(name))
-                return c;
-        }
-        return null;
+        return casesByName().get(name);
     }
 
 	public Set<String> getClassNames() {

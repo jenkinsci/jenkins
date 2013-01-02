@@ -31,6 +31,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import hudson.Util;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
@@ -50,6 +51,9 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 
         if (targetUrl == null)
             return getDefaultTargetUrl();
+
+        if (Util.isAbsoluteUri(targetUrl))
+            return "."; // avoid open redirect
 
         // URL returned from determineTargetUrl() is resolved against the context path,
         // whereas the "from" URL is resolved against the top of the website, so adjust this.

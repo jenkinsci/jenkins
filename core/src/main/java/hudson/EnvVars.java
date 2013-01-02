@@ -157,6 +157,10 @@ public class EnvVars extends TreeMap<String,String> {
 		}
 	}
 
+    /**
+     * Convenience message
+     * @since 1.485
+     **/
     public String get(String key, String defaultValue) {
         String v = get(key);
         if (v==null)    v=defaultValue;

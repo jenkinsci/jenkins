@@ -26,12 +26,16 @@ package hudson;
 
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
+
+import java.io.File;
+
 import static org.junit.Assert.*;
 
 public class PluginManagerTest {
 
     @Test public void parseRequestedPlugins() throws Exception {
-        assertEquals("{other=2.0, stuff=1.2}", PluginManager.parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
+        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(Util.createTempDir())
+                .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
     }
 
 }

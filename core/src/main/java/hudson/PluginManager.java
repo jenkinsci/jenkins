@@ -520,8 +520,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * Returns true if any new plugin was added, which means a restart is required
-     * for the change to take effect.
+     * Returns true if any new plugin was added.
      */
     public boolean isPluginUploaded() {
         return pluginUploaded;
@@ -539,6 +538,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return failedPlugins;
     }
 
+    /**
+     * Get the plugin instance with the given short name.
+     * @param shortName the short name of the plugin
+     * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
+     */
     public PluginWrapper getPlugin(String shortName) {
         for (PluginWrapper p : plugins) {
             if(p.getShortName().equals(shortName))
@@ -853,7 +857,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return HttpResponses.redirectViaContextPath("updateCenter");
     }
 
-    static Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
+    /**
+     * Parses configuration XML files and picks up references to XML files.
+     */
+    public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<String,VersionNumber>();
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
@@ -1041,4 +1048,65 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return pluginsWithCycle;
         }
     }
+    
+    /**
+     * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
+     * @since 1.491
+     */
+    @Extension
+    public static final class PluginUpdateMonitor extends AdministrativeMonitor {
+        
+        private Map<String, PluginUpdateInfo> pluginsToBeUpdated = new HashMap<String, PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();
+        
+        /**
+         * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
+         * @return this monitor.
+         */
+        public static final PluginUpdateMonitor getInstance() {
+            return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
+        }
+        
+        /**
+         * Report to the administrator if the plugin with the given name is older then the required version.
+         *  
+         * @param pluginName shortName of the plugin (artifactId)
+         * @param requiredVersion the lowest version which is OK (e.g. 2.2.2)
+         * @param message the message to show (plain text)
+         */
+        public void ifPluginOlderThenReport(String pluginName, String requiredVersion, String message){
+            Plugin plugin = Jenkins.getInstance().getPlugin(pluginName);
+            if(plugin != null){
+                if(plugin.getWrapper().getVersionNumber().isOlderThan(new VersionNumber(requiredVersion))) {
+                    pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
+                }
+            }
+        }
+
+        public boolean isActivated() {
+            return !pluginsToBeUpdated.isEmpty();
+        }
+        
+        /**
+         * adds a message about a plugin to the manage screen 
+         * @param pluginName the plugins name
+         * @param message the message to be displayed
+         */
+        public void addPluginToUpdate(String pluginName, String message) {
+            this.pluginsToBeUpdated.put(pluginName, new PluginUpdateInfo(pluginName, message));
+        }
+        
+        public Collection<PluginUpdateInfo> getPluginsToBeUpdated() {
+            return pluginsToBeUpdated.values();
+        }
+        
+        public static class PluginUpdateInfo {
+            public final String pluginName;
+            public final String message;
+            private PluginUpdateInfo(String pluginName, String message) {
+                this.pluginName = pluginName;
+                this.message = message;
+            }
+        }
+
+    }    
 }

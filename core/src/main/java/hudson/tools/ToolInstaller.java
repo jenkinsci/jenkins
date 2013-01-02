@@ -113,7 +113,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         }
         String home = Util.fixEmptyAndTrim(tool.getHome());
         if (home == null) {
-            home = sanitize(tool.getDescriptor().getDisplayName()) + File.separatorChar + sanitize(tool.getName());
+            home = sanitize(tool.getDescriptor().getId()) + File.separatorChar + sanitize(tool.getName());
         }
         FilePath root = node.getRootPath();
         if (root == null) {

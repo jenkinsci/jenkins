@@ -103,7 +103,8 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate. 
      */
     private boolean isHtml() {
-        return Stapler.getCurrentRequest().getAttribute("html")!=null;
+        StaplerRequest req = Stapler.getCurrentRequest();
+        return req!=null && req.getAttribute("html")!=null;
     }
 
     @Override
