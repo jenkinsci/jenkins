@@ -629,6 +629,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Does this {@link View} has any associated user information recorded?
+     * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
     public boolean hasPeople() {
         return People.isApplicable(getItems());
@@ -710,6 +711,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return new Api(this);
         }
 
+        /**
+         * @deprecated Potentially very expensive call; do not use from Jelly views.
+         */
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
@@ -787,6 +791,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                     }
                                 }
                             }
+                            // XXX consider also adding the user of the UserCause when applicable
                             buildCount++;
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
