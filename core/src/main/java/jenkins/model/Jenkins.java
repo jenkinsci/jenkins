@@ -981,6 +981,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Does this {@link View} has any associated user information recorded?
+     * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
     public boolean hasPeople() {
         return View.People.isApplicable(items.values());
