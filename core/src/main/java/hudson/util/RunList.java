@@ -262,13 +262,14 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public RunList<R> byTimestamp(final long start, final long end) {
         return
         limit(new CountingPredicate<R>() {
-            public boolean apply(int index,R r) {
-                return r.getTimeInMillis()<end;
-            }
-        }).filter(new Predicate<R>() {
-            public boolean apply(R r) {
+            public boolean apply(int index, R r) {
                 return start<=r.getTimeInMillis();
             }
+        }).filter(
+        		new Predicate<R>() {
+                    public boolean apply(R r) {
+                        return r.getTimeInMillis()<end;
+                    }
         });
     }
 
