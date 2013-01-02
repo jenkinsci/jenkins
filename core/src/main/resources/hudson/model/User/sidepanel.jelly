@@ -34,7 +34,6 @@ THE SOFTWARE.
       <l:task icon="images/24x24/up.png" href="${rootURL}/asynchPeople/" title="${%People}" contextMenu="false"/>
       <l:task icon="images/24x24/search.png" href="${rootURL}/${it.url}/" title="${%Status}" contextMenu="false"/>
       <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}/builds" title="${%Builds}" />
-      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}/my-views/" title="${%My Views}" />
       <l:task icon="images/24x24/setting.png" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}" />
       <t:actions actions="${it.propertyActions}"/>
       <t:actions actions="${it.transientActions}"/>
