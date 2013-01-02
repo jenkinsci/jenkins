@@ -330,7 +330,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         user.setFullName(si.fullname);
         try {
             // legacy hack. mail support has moved out to a separate plugin
-            Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer.UserProperty");
+            Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
             Constructor<?> c = up.getDeclaredConstructor(String.class);
             user.addProperty((UserProperty)c.newInstance(si.email));
         } catch (RuntimeException e) {
