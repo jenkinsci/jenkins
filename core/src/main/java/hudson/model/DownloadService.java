@@ -32,7 +32,6 @@ import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
@@ -45,6 +44,8 @@ import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import static hudson.util.TimeUnit2.DAYS;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -167,6 +168,12 @@ public class DownloadService extends PageDecorator {
             this.interval = interval;
         }
 
+        public Downloadable() {
+            this.id = getClass().getName().replace('$','.');
+            this.url = this.id+".json";
+            this.interval = DEFAULT_INTERVAL;
+        }
+
         /**
          * Uses the class name as an ID.
          */
@@ -179,7 +186,7 @@ public class DownloadService extends PageDecorator {
         }
 
         public Downloadable(String id, String url) {
-            this(id,url,TimeUnit2.DAYS.toMillis(1));
+            this(id,url, DEFAULT_INTERVAL);
         }
 
         public String getId() {
@@ -283,6 +290,8 @@ public class DownloadService extends PageDecorator {
         }
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
+        private static final long DEFAULT_INTERVAL =
+                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");

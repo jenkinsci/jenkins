@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Config page
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true" permission="${it.CONFIGURE}" title="${%title(it.displayName)}">
-    <st:include page="sidepanel.jelly"/>
-    <l:main-panel>
-      <f:form method="post" action="configSubmit" name="config">
-        <j:set var="instance" value="${it.node}" />
-        <j:set var="descriptor" value="${instance.descriptor}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Creates a button bar at the bottom of the page for things like "Submit".
+    The actual buttons should be specified as the body of this tag.
+    This area will always be visible in the bottom of the screen.
+  </st:documentation>
 
-        <f:entry title="${%Name}" field="name">
-          <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. -->
-        </f:entry>
-
-        <!-- main body of the configuration -->
-        <st:include it="${instance}" page="configure-entries.jelly" />
-
-        <f:bottomButtonBar>
-          <f:submit value="${%Save}"/>
-        </f:bottomButtonBar>
-      </f:form>
-    </l:main-panel>
-  </l:layout>
+  <f:block>
+    <div id="bottom-sticker" >
+      <div class="bottom-sticker-inner">
+        <d:invokeBody />
+      </div>
+    </div>
+  </f:block>
 </j:jelly>

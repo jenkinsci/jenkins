@@ -189,7 +189,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         if(nextBuild!=null) {
             AbstractBuild nb = nextBuild.get();
-            if (nb!=null)   nb.previousBuild = previousBuild;
+            if (nb!=null) {
+                // remove the oldest build
+                if (previousBuild == selfReference) 
+                    nb.previousBuild = nextBuild;
+                else 
+                    nb.previousBuild = previousBuild;
+            }
         }
         if(previousBuild!=null) {
             AbstractBuild pb = previousBuild.get();
@@ -1345,6 +1351,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * If we use this/executor/stop URL, it causes 404 if the build is already killed,
      * as {@link #getExecutor()} returns null.
+     * 
+     * @since 1.489
      */
     public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();

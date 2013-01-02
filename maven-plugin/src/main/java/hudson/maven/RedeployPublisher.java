@@ -45,7 +45,6 @@ import hudson.tasks.Recorder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -74,6 +73,10 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
  * after a build is fully succeeded. 
+ * <p>
+ * Note that the - historical given - name of this class is quite misleading as this publisher usually does no REdeployment
+ * of artifacts. If you're looking for the redeploy functionality in the Jenkins UI: that is implemented in
+ * {@link MavenAbstractArtifactRecord#doRedeploy(String, String, boolean)}!
  *
  * @author Kohsuke Kawaguchi
  * @since 1.191
@@ -146,7 +149,7 @@ public class RedeployPublisher extends Recorder {
           return true;
         }
 
-        long startupTime = Calendar.getInstance().getTimeInMillis();
+        long startupTime = System.currentTimeMillis();
 
         try {
             MavenEmbedder embedder = createEmbedder(listener, build);
@@ -172,7 +175,7 @@ public class RedeployPublisher extends Recorder {
                 }
                 mavenAbstractArtifactRecord.deploy(embedder, artifactRepository, listener);
             }
-            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
+            listener.getLogger().println("[INFO] Deployment done in " + Util.getTimeSpanString(System.currentTimeMillis() - startupTime));
             return true;
         } catch (MavenEmbedderException e) {
             e.printStackTrace(listener.error(e.getMessage()));
@@ -183,7 +186,7 @@ public class RedeployPublisher extends Recorder {
         }
         // failed
         build.setResult(Result.FAILURE);
-        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(Calendar.getInstance().getTimeInMillis() - startupTime));
+        listener.getLogger().println("[INFO] Deployment failed after " + Util.getTimeSpanString(System.currentTimeMillis() - startupTime));
         return true;
     }
 

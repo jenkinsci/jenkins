@@ -37,9 +37,10 @@ THE SOFTWARE.
         </f:entry>
 
         <j:if test="${h.hasPermission(it,it.UPDATE)}">
-          <f:block>
+          <f:bottomButtonBar>
             <f:submit value="${%Save}" />
-          </f:block>
+            <f:apply />
+          </f:bottomButtonBar>
         </j:if>
       </f:form>
     </l:main-panel>

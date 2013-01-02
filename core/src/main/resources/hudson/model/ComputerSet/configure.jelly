@@ -39,9 +39,10 @@ THE SOFTWARE.
                           descriptors="${it.nodeMonitorDescriptors}"
                           instances="${it.nonIgnoredMonitors}" />
 
-        <f:block>
-          <f:submit value="OK" />
-        </f:block>
+        <f:bottomButtonBar>
+          <f:submit value="${%OK}" />
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

@@ -33,8 +33,10 @@ import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
 import hudson.util.DescribableList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -315,7 +317,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Accepts submission from the configuration page.
      */
     @RequirePOST
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
@@ -334,7 +336,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 nm.triggerUpdate();
             }
 
-            rsp.sendRedirect2(".");
+            return FormApply.success(".");
         } finally {
             bc.commit();
         }

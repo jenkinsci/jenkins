@@ -49,6 +49,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
+import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.XStream2;
@@ -902,7 +903,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         save();
 
-        rsp.sendRedirect2("../"+name);
+        FormApply.success("../"+name).generateResponse(req,rsp,this);
     }
 
     /**

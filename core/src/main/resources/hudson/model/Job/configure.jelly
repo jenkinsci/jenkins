@@ -61,15 +61,11 @@ THE SOFTWARE.
         <st:include page="configure-entries.jelly" />
 
         <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-          <f:block>
-            <div id="bottom-sticker">
-              <div class="bottom-sticker-inner">
-                <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-                <f:submit value="${%Save}" />
-                <f:apply />
-              </div>
-            </div>
-          </f:block>
+          <f:bottomButtonBar>
+            <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
+            <f:submit value="${%Save}" />
+            <f:apply />
+          </f:bottomButtonBar>
         </j:if>
       </f:form>
     </l:main-panel>

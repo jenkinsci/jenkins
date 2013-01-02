@@ -55,15 +55,33 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=bug>
-    Aborting download of workspace files make Jenkins unstable
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7114">issue 7114</a>)
+  <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.495>What's new in 1.495</a> <!--=DATE=--></h3>
+<h3><a name=v1.497>What's new in 1.497</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Delete the oldest build but it still come up on HistoryWidget
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16194">issue 16194</a>)
+
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.496>What's new in 1.496</a> (2012/12/30)</h3>
+<ul class=image>
+  <li class=bug>
+    Aborting download of workspace files make Jenkins unstable
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7114">issue 7114</a>)
+  <li class=bug>
+    Unstable main build of maven projects leads to post steps being executed even if configured not to
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14102">issue 14102</a>)  
+  <li class=bug>
+     Channel is already closed exception during threadDump
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16193">issue 16193</a>)  
+</ul>
+<h3><a name=v1.495>What's new in 1.495</a> (2012/12/24)</h3>
 <ul class=image>
   <li class=bug>
     Fixed <tt>java.lang.NoSuchMethodError: hudson.model.RunMap.put(Lhudson/model/Run;)Lhudson/model/Run;</tt>
@@ -81,7 +99,6 @@ Upcoming changes</a>
   <li class=rfe>
     Added <tt>console</tt> CLI command that dumps console output from a build.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.494>What's new in 1.494</a> (2012/12/16)</h3>
 <ul class=image>
   <li class=bug>

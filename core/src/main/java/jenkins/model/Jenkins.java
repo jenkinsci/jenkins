@@ -2793,7 +2793,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         Map<String,Future<Map<String,String>>> future = new HashMap<String, Future<Map<String, String>>>();
 
         for (Computer c : getComputers()) {
-            future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
+            try {
+                future.put(c.getName(), RemotingDiagnostics.getThreadDumpAsync(c.getChannel()));
+            } catch(Exception e) {
+                LOGGER.info("Failed to get thread dump for node " + c.getName() + ": " + e.getMessage());
+            }
         }
 		if (toComputer() == null) {
 			future.put("master", RemotingDiagnostics.getThreadDumpAsync(MasterComputer.localChannel));
