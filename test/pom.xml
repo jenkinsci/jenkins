@@ -197,18 +197,15 @@ THE SOFTWARE.
               <value>${mavenDebug}</value>
             </property>
             <property>
-              <name>java.io.tmpdir</name>
-              <value>${project.build.directory}</value>
-            </property>
-            <property>
               <name>buildDirectory</name>
               <value>${project.build.directory}</value>
             </property>
-            <property>
-              <name>java.awt.headless</name>
-              <value>true</value>
-            </property>
           </systemProperties>
+          <!-- also consider parallel=methods
+          <reuseForks>true</reuseForks>
+          <forkMode>perthread</forkMode>
+          <threadCount>1</threadCount>
+          -->
         </configuration>
       </plugin>
       <plugin>
