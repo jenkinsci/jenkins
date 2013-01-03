@@ -65,7 +65,9 @@ public class RenderOnDemandTest extends HudsonTestCase {
         assertEquals("yyy",r.getJavaScriptResult().toString());
 
         // if you want to test this in the browser
+        /*
         System.out.println("Try http://localhost:"+localPort+"/self/testScript");
         interactiveBreak();
+        */
     }
 }
