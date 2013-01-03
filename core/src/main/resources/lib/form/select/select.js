@@ -57,6 +57,8 @@ Behaviour.specify("SELECT.select", 'select', 0, function(e) {
                         }
                     }
 
+                    fireEvent(e,"filled"); // let other interested parties know that the items have changed
+
                     // if the update changed the current selection, others listening to this control needs to be notified.
                     if (e.value!=value) fireEvent(e,"change");
                 }

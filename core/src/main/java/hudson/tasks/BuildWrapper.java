@@ -27,8 +27,10 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
+import hudson.util.ArgumentListBuilder;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -194,7 +196,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * 
      * <p>
      * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
-     *
+     * <p>({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param logger
@@ -207,6 +209,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
      *      to suppress stack trace.
      * @since 1.374
+     * @see ConsoleLogFilter
      */
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
         return logger;

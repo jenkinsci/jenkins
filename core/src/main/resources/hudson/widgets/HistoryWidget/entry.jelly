@@ -68,7 +68,7 @@ THE SOFTWARE.
     <tr class="${transitive}">
       <td></td>
       <td colspan="2" class="desc">
-        <j:out value="${build.truncatedDescription}"/>
+        <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
       </td>
     </tr>
   </j:if>

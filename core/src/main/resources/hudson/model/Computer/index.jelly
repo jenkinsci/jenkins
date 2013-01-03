@@ -36,6 +36,9 @@ THE SOFTWARE.
               <form method="post" action="toggleOffline">
                 <f:submit value="${%submit.temporarilyOffline}"  />
               </form>
+              <form method="post" action="setOfflineCause">
+              <f:submit value="${%submit.updateOfflineCause}"  />
+              </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
@@ -68,6 +71,21 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
+     <!-- Display user which created this node -->
+     <j:set var="user" value="${app.getUser(it.node.userId)}"/>
+     <j:if test="${it.node.userId !=null and user!=null}">
+       <p>
+          ${%Created by} 
+         <j:choose>
+            <j:when test="${it.node.userId.equals('anonymous')}">
+             ${%anonymous user}
+            </j:when>
+           <j:otherwise>
+             <a href="${app.rootUrl}${user.url}">${user.displayName}</a>
+            </j:otherwise>
+         </j:choose>
+       </p>
+      </j:if>
 
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
@@ -93,7 +111,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" />
+          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
         </j:otherwise>
       </j:choose>
 

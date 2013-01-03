@@ -28,6 +28,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.EnvVars;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -38,7 +39,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
@@ -46,7 +46,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.listeners.SCMListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.Queue.WaitingItem;
@@ -70,7 +69,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
@@ -83,10 +81,14 @@ import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -160,7 +162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient /*almost final*/ RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds = new RunMap<R>();
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -269,27 +271,49 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        if (this.builds==null)
-            this.builds = new RunMap<R>();
-        this.builds.load(this,new Constructor<R>() {
+        RunMap<R> builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
             public R create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
-
-        if(triggers==null) {
-            // it didn't exist in < 1.28
-            triggers = new Vector<Trigger<?>>();
-            OldDataMonitor.report(this, "1.28");
+        if (this.builds!=null) {
+            // if we are reloading, keep all those that are still building intact
+            for (R r : this.builds.getLoadedBuilds().values()) {
+                if (r.isBuilding())
+                    builds.put(r);
+            }
         }
-        for (Trigger t : triggers)
-            t.start(this,false);
+        this.builds = builds;
+        for (Trigger t : triggers())
+            t.start(this, Items.updatingByXml.get());
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
+    }
+
+    private synchronized List<Trigger<?>> triggers() {
+        if (triggers == null) {
+            triggers = new Vector<Trigger<?>>();
+        }
+        return triggers;
+    }
+
+    @Override
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env =  super.getEnvironment(node, listener);
+
+        JDK jdk = getJDK();
+        if (jdk != null) {
+            if (node != null) { // just in case were not in a build
+                jdk = jdk.forNode(node, listener);
+            }
+            jdk.buildEnvVars(env);
+        }
+
+        return env;
     }
 
     @Override
@@ -947,13 +971,58 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public SortedMap<Integer, ? extends R> _getRuns() {
-        return builds.getView();
+    public RunMap<R> _getRuns() {
+        return builds;
     }
 
     @Override
     public void removeRun(R run) {
         this.builds.remove(run);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuild(String id) {
+        return builds.getById(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getBuildByNumber(int n) {
+        return builds.getByNumber(n);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * More efficient implementation.
+     */
+    @Override
+    public R getFirstBuild() {
+        return builds.oldestBuild();
+    }
+
+    @Override
+    public R getLastBuild() {
+        return builds.newestBuild();
+    }
+
+    @Override
+    public R getNearestBuild(int n) {
+        return builds.search(n, Direction.ASC);
+    }
+
+    @Override
+    public R getNearestOldBuild(int n) {
+        return builds.search(n, Direction.DESC);
     }
 
     /**
@@ -1366,13 +1435,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             // lock the workspace of the last build
             FilePath ws=lb.getWorkspace();
 
-            if (workspaceOffline(lb)) {
+            WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( lb );
+            if ( workspaceOfflineReason != null ) {
                 // workspace offline. build now, or nothing will ever be built
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
                     // no good. We should just wait for the slave to come back.
-                    listener.getLogger().println(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().print(Messages.AbstractProject_NoWorkspace());
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
                 listener.getLogger().println( ws==null
@@ -1382,7 +1453,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
                     return NO_CHANGES;
                 } else {
-                    listener.getLogger().println(Messages.AbstractProject_NewBuildForWorkspace());
+                    listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return BUILD_NOW;
                 }
             } else {
@@ -1394,7 +1466,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
                 // by having multiple workspaces
                 WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-                Launcher launcher = ws.createLauncher(listener);
+                Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
                 try {
                     LOGGER.fine("Polling SCM changes of " + getName());
                     if (pollingBaseline==null) // see NOTE-NO-BASELINE above
@@ -1418,22 +1490,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    private boolean workspaceOffline(R build) throws IOException, InterruptedException {
+    enum WorkspaceOfflineReason {
+        nonexisting_workspace,
+        builton_node_gone,
+        builton_node_no_executors
+    }
+
+    private WorkspaceOfflineReason workspaceOffline(R build) throws IOException, InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws==null || !ws.exists()) {
-            return true;
+            return WorkspaceOfflineReason.nonexisting_workspace;
         }
         
         Node builtOn = build.getBuiltOn();
         if (builtOn == null) { // node built-on doesn't exist anymore
-            return true;
+            return WorkspaceOfflineReason.builton_node_gone;
         }
         
         if (builtOn.toComputer() == null) { // node still exists, but has 0 executors - o.s.l.t.
-            return true;
+            return WorkspaceOfflineReason.builton_node_no_executors;
         }
-        
-        return false;
+
+        return null;
     }
 
     /**
@@ -1462,11 +1540,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Adds a new {@link Trigger} to this {@link Project} if not active yet.
      */
     public void addTrigger(Trigger<?> trigger) throws IOException {
-        addToList(trigger,triggers);
+        addToList(trigger,triggers());
     }
 
     public void removeTrigger(TriggerDescriptor trigger) throws IOException {
-        removeFromList(trigger,triggers);
+        removeFromList(trigger,triggers());
     }
 
     protected final synchronized <T extends Describable<T>>
@@ -1500,14 +1578,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @SuppressWarnings("unchecked")
     public synchronized Map<TriggerDescriptor,Trigger> getTriggers() {
-        return (Map)Descriptor.toMap(triggers);
+        return (Map)Descriptor.toMap(triggers());
     }
 
     /**
      * Gets the specific trigger, or null if the propert is not configured for this job.
      */
     public <T extends Trigger> T getTrigger(Class<T> clazz) {
-        for (Trigger p : triggers) {
+        for (Trigger p : triggers()) {
             if(clazz.isInstance(p))
                 return clazz.cast(p);
         }
@@ -1627,7 +1705,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget<R>(this,getBuilds(),HISTORY_ADAPTER);
+        return new BuildHistoryWidget<R>(this,builds,HISTORY_ADAPTER);
     }
     
     public boolean isParameterized() {
@@ -1642,20 +1720,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Schedules a new build command.
      */
-    public void doBuild( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+    public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
+        if (delay==null)    delay=new TimeDuration(getQuietPeriod());
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
         if (pp != null) {
-            pp._doBuild(req,rsp);
+            pp._doBuild(req,rsp,delay);
             return;
         }
 
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        Jenkins.getInstance().getQueue().schedule(this, getDelay(req), getBuildCause(req));
+        Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
         rsp.forwardToPreviousPage(req);
     }
 
@@ -1676,6 +1755,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Computes the delay by taking the default value and the override in the request parameter into the account.
+     *
+     * @deprecated as of 1.488
+     *      Inject {@link TimeDuration}.
      */
     public int getDelay(StaplerRequest req) throws ServletException {
         String delay = req.getParameter("delay");
@@ -1695,12 +1777,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Supports build trigger with parameters via an HTTP GET or POST.
      * Currently only String parameters are supported.
      */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
         if (pp != null) {
-            pp.buildWithParameters(req,rsp);
+            pp.buildWithParameters(req,rsp,delay);
         } else {
         	throw new IllegalStateException("This build is not parameterized!");
         }
@@ -1789,7 +1871,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         setScm(SCMS.parseSCM(req,this));
 
-        for (Trigger t : triggers)
+        for (Trigger t : triggers())
             t.stop();
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
@@ -1927,7 +2009,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
 
                 public String getEntryAuthor(FeedItem entry) {
-                    return Mailer.descriptor().getAdminAddress();
+                    return JenkinsLocationConfiguration.get().getAdminAddress();
                 }
             },
             req, rsp );

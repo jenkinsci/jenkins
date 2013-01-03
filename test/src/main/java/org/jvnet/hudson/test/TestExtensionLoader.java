@@ -29,6 +29,7 @@ import hudson.ExtensionFinder.GuiceExtensionAnnotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.junit.runner.Description;
 
 /**
  * Loads {@link TestExtension}s.
@@ -54,33 +55,34 @@ public class TestExtensionLoader extends GuiceExtensionAnnotation<TestExtension>
     @Override
     protected boolean isActive(AnnotatedElement e) {
         TestEnvironment env = TestEnvironment.get();
+        if (env == null) {
+            return false;
+        }
 
         TestExtension a = e.getAnnotation(TestExtension.class);
         if (a==null)        return false;   // stale index
         String testName = a.value();
-        if (testName.length()>0 && env!=null && env.testCase!=null && !env.testCase.getName().equals(testName))
+        Description description = env.description();
+        if (testName.length()>0 && !testName.equals(description.getMethodName()))
             return false;   // doesn't apply to this test
-
+        String className = description.getClassName();
         if (e instanceof Class) {
-            return isActive(env, (Class)e);
+            for (Class<?> outer = (Class) e; outer != null; outer = outer.getEnclosingClass()) {
+                if (outer.getName().equals(className)) {
+                    return true;      // enclosed
+                }
+            }
+            return false;
         }
         if (e instanceof Field) {
             Field f = (Field) e;
-            return f.getDeclaringClass().isInstance(env.testCase);
+            return f.getDeclaringClass().getName().equals(className);
         }
         if (e instanceof Method) {
             Method m = (Method) e;
-            return m.getDeclaringClass().isInstance(env.testCase);
+            return m.getDeclaringClass().getName().equals(className);
         }
         return false;
     }
 
-    private boolean isActive(TestEnvironment env, Class<?> extType) {
-        if (env == null || env.testCase == null)
-            return false;
-        for (Class<?> outer = extType; outer!=null; outer=outer.getEnclosingClass())
-            if (outer.isInstance(env.testCase))
-                return true;      // enclosed
-        return false;
-    }
 }

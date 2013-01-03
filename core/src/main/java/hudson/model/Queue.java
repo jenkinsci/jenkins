@@ -24,8 +24,10 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import hudson.AbortException;
 import hudson.BulkChange;
+import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -83,14 +85,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -160,6 +163,41 @@ public class Queue extends ResourceController implements Saveable {
      * has not started yet.
      */
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
+
+    private final CachedItemList itemsView = new CachedItemList();
+
+    /**
+     * Maintains a copy of {@link Queue#getItems()}
+     *
+     * @see Queue#getApproximateItemsQuickly()
+     */
+    private class CachedItemList {
+        /**
+         * The current cached value.
+         */
+        @CopyOnWrite
+        private volatile List<Item> itemsView = Collections.emptyList();
+        /**
+         * When does the cache info expire?
+         */
+        private final AtomicLong expires = new AtomicLong();
+
+        List<Item> get() {
+            long t = System.currentTimeMillis();
+            long d = expires.get();
+            if (t>d) {// need to refresh the cache
+                long next = t+1000;
+                if (expires.compareAndSet(d,next)) {
+                    // avoid concurrent cache update via CAS.
+                    // if the getItems() lock is contended,
+                    // some threads will end up serving stale data,
+                    // but that's OK.
+                    itemsView = ImmutableList.copyOf(getItems());
+                }
+            }
+            return itemsView;
+        }
+    }
 
     /**
      * Data structure created for each idle {@link Executor}.
@@ -608,6 +646,27 @@ public class Queue extends ResourceController implements Saveable {
         for (BuildableItem p : reverse(pendings.values()))
             r[idx++] = p;
         return r;
+    }
+
+    /**
+     * Like {@link #getItems()}, but returns an approximation that might not be completely up-to-date.
+     *
+     * <p>
+     * At the expense of accuracy, this method does not usually lock {@link Queue} and therefore is faster
+     * in a highly concurrent situation.
+     *
+     * <p>
+     * The list obtained is an accurate snapshot of the queue at some point in the past. The snapshot
+     * is updated and normally no more than one second old, but this is a soft commitment that might
+     * get violated when the lock on {@link Queue} is highly contended.
+     *
+     * <p>
+     * This method is primarily added to make UI threads run faster.
+     *
+     * @since 1.483
+     */
+    public List<Item> getApproximateItemsQuickly() {
+        return itemsView.get();
     }
     
     public synchronized Item getItem(int id) {
@@ -1687,8 +1746,11 @@ public class Queue extends ResourceController implements Saveable {
         MaintainTask(Queue queue) {
             this.queue = new WeakReference<Queue>(queue);
 
-            long interval = 5 * Timer.ONE_SECOND;
-            Trigger.timer.schedule(this, interval, interval);
+            long interval = 5000;
+            Timer timer = Trigger.timer;
+            if (timer != null) {
+                timer.schedule(this, interval, interval);
+            }
         }
 
         protected void doRun() {

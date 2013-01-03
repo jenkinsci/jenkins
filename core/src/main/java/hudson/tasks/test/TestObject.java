@@ -32,8 +32,6 @@ import hudson.tasks.junit.TestAction;
 import hudson.tasks.junit.TestResultAction;
 import jenkins.model.Jenkins;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -41,8 +39,6 @@ import com.google.common.collect.MapMaker;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -335,19 +331,25 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     /**
      * #2988: uniquifies a {@link #getSafeName} amongst children of the parent.
      */
-    protected final synchronized String uniquifyName(
-            Collection<? extends TestObject> siblings, String base) {
-        String uniquified = base;
-        int sequence = 1;
-        for (TestObject sibling : siblings) {
-            if (sibling != this && uniquified.equals(UNIQUIFIED_NAMES.get(sibling))) {
-                uniquified = base + '_' + ++sequence;
+    protected final String uniquifyName(Collection<? extends TestObject> siblings, String base) {
+        synchronized (UNIQUIFIED_NAMES) {
+            String uniquified = base;
+            Map<TestObject,Void> taken = UNIQUIFIED_NAMES.get(base);
+            if (taken == null) {
+                taken = new WeakHashMap<TestObject,Void>();
+                UNIQUIFIED_NAMES.put(base, taken);
+            } else {
+                Set<TestObject> similars = new HashSet<TestObject>(taken.keySet());
+                similars.retainAll(new HashSet<TestObject>(siblings));
+                if (!similars.isEmpty()) {
+                    uniquified = base + '_' + (similars.size() + 1);
+                }
             }
+            taken.put(this, null);
+            return uniquified;
         }
-        UNIQUIFIED_NAMES.put(this, uniquified);
-        return uniquified;
     }
-    private static final Map<TestObject, String> UNIQUIFIED_NAMES = new MapMaker().weakKeys().makeMap();
+    private static final Map<String,Map<TestObject,Void>> UNIQUIFIED_NAMES = new MapMaker().makeMap();
 
     /**
      * Replaces URL-unsafe characters.

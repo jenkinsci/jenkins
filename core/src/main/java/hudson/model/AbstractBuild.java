@@ -56,12 +56,11 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
-import hudson.util.AdaptedIterator;
-import hudson.util.IOException2;
-import hudson.util.Iterators;
-import hudson.util.LogTaskListener;
-import hudson.util.VariableResolver;
+import hudson.util.*;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.lazy.BuildReference;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -154,6 +153,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
+    /**
+     * Pointers to form bi-directional link between adjacent {@link AbstractBuild}s.
+     *
+     * <p>
+     * Unlike {@link Run}, {@link AbstractBuild}s do lazy-loading, so we don't use
+     * {@link Run#previousBuild} and {@link Run#nextBuild}, and instead use these
+     * fields and point to {@link #selfReference} of adjacent builds.
+     */
+    private volatile transient BuildReference<R> previousBuild, nextBuild;
+
+    /*package*/ final transient BuildReference<R> selfReference = new BuildReference<R>(getId(),_this());
+
+
+
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -170,13 +183,93 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
+    @Override
+    void dropLinks() {
+        super.dropLinks();
+
+        if(nextBuild!=null) {
+            AbstractBuild nb = nextBuild.get();
+            if (nb!=null) {
+                // remove the oldest build
+                if (previousBuild == selfReference) 
+                    nb.previousBuild = nextBuild;
+                else 
+                    nb.previousBuild = previousBuild;
+            }
+        }
+        if(previousBuild!=null) {
+            AbstractBuild pb = previousBuild.get();
+            if (pb!=null)   pb.nextBuild = nextBuild;
+        }
+    }
+
+    @Override
+    public R getPreviousBuild() {
+        while (true) {
+            BuildReference<R> r = previousBuild;    // capture the value once
+
+            if (r==null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                R pb = getParent().builds.search(number-1, Direction.DESC);
+                if (pb!=null) {
+                    ((AbstractBuild)pb).nextBuild = selfReference;   // establish bi-di link
+                    this.previousBuild = pb.selfReference;
+                    return pb;
+                } else {
+                    // this indicates that we know there's no previous build
+                    // (as opposed to we don't know if/what our previous build is.
+                    this.previousBuild = selfReference;
+                    return null;
+                }
+            }
+            if (r==selfReference)
+                return null;
+
+            R referent = r.get();
+            if (referent!=null) return referent;
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.previousBuild = null;
+        }
+    }
+
+    @Override
+    public R getNextBuild() {
+        while (true) {
+            BuildReference<R> r = nextBuild;    // capture the value once
+
+            if (r==null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                R nb = getParent().builds.search(number+1, Direction.ASC);
+                if (nb!=null) {
+                    ((AbstractBuild)nb).previousBuild = selfReference;   // establish bi-di link
+                    this.nextBuild = nb.selfReference;
+                    return nb;
+                } else {
+                    // this indicates that we know there's no next build
+                    // (as opposed to we don't know if/what our next build is.
+                    this.nextBuild = selfReference;
+                    return null;
+                }
+            }
+            if (r==selfReference)
+                return null;
+
+            R referent = r.get();
+            if (referent!=null) return referent;
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.nextBuild = null;
+        }
+    }
+
     /**
      * Returns a {@link Slave} on which this build was done.
      *
      * @return
      *      null, for example if the slave that this build run no longer exists.
      */
-    public Node getBuiltOn() {
+    public @CheckForNull Node getBuiltOn() {
         if (builtOn==null || builtOn.equals(""))
             return Jenkins.getInstance();
         else
@@ -844,19 +937,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         FilePath ws = getWorkspace();
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
-        // servlet container may have set CLASSPATH in its launch script,
-        // so don't let that inherit to the new child process.
-        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
-        env.put("CLASSPATH","");
 
-        JDK jdk = project.getJDK();
-        if (jdk != null) {
-            Computer computer = Computer.currentComputer();
-            if (computer != null) { // just in case were not in a build
-                jdk = jdk.forNode(computer.getNode(), log);
-            }
-            jdk.buildEnvVars(env);
-        }
         project.getScm().buildEnvVars(this,env);
 
         if (buildEnvironments!=null)
@@ -1036,7 +1117,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      range of build numbers that represent which downstream builds are using this build.
-     *      The range will be empty if no build of that project matches this, but it'll never be null.
+     *      The range will be empty if no build of that project matches this (or there is no {@link FingerprintAction}), but it'll never be null.
      */
     public RangeSet getDownstreamRelationship(AbstractProject that) {
         RangeSet rs = new RangeSet();
@@ -1087,7 +1168,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      Build number of the upstream build that feed into this build,
-     *      or -1 if no record is available.
+     *      or -1 if no record is available (for example if there is no {@link FingerprintAction}, even if there is an {@link Cause.UpstreamCause}).
      */
     public int getUpstreamRelationship(AbstractProject that) {
         FingerprintAction f = getAction(FingerprintAction.class);
@@ -1134,7 +1215,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @return
      *      For each project with fingerprinting enabled, returns the range
-     *      of builds (which can be empty if no build uses the artifact from this build.)
+     *      of builds (which can be empty if no build uses the artifact from this build or downstream is not {@link AbstractProject#isFingerprintConfigured}.)
      */
     public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
         Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
@@ -1148,7 +1229,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Gets the upstream builds of this build, which are the builds of the
      * upstream projects whose artifacts feed into this build.
-     *
+     * @return empty if there is no {@link FingerprintAction} (even if there is an {@link Cause.UpstreamCause})
      * @see #getTransitiveUpstreamBuilds()
      */
     public Map<AbstractProject,Integer> getUpstreamBuilds() {
@@ -1175,6 +1256,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Gets the changes in the dependency between the given build and this build.
+     * @return empty if there is no {@link FingerprintAction}
      */
     public Map<AbstractProject,DependencyChange> getDependencyChanges(AbstractBuild from) {
         if (from==null)             return Collections.emptyMap(); // make it easy to call this from views
@@ -1257,20 +1339,30 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     //
 
     /**
+     * @deprecated as of 1.489
+     *      Use {@link #doStop()}
+     */
+    public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doStop().generateResponse(req,rsp,this);
+    }
+
+    /**
      * Stops this build if it's still going.
      *
      * If we use this/executor/stop URL, it causes 404 if the build is already killed,
      * as {@link #getExecutor()} returns null.
+     * 
+     * @since 1.489
      */
-    public synchronized void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
         if (e==null)
             e = getOneOffExecutor();
         if (e!=null)
-            e.doStop(req,rsp);
+            return e.doStop();
         else
             // nothing is building
-            rsp.forwardToPreviousPage(req);
+            return HttpResponses.forwardToPreviousPage();
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());

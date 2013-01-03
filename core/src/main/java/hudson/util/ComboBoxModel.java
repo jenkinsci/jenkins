@@ -62,8 +62,6 @@ public class ComboBoxModel extends ArrayList<String> implements HttpResponse {
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         rsp.setContentType(Flavor.JSON.contentType);
         PrintWriter w = rsp.getWriter();
-        w.print('(');
         JSONArray.fromObject(this).write(w);
-        w.print(')');
     }
 }

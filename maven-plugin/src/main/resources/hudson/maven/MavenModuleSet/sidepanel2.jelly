@@ -31,6 +31,6 @@ THE SOFTWARE.
       sense when modules are built in parallel.
       See related HUDSON-1892 for how this confuses users.
     -->
-    <t:queue items="${it.queueItems}"/>
+    <t:queue items="${it.approximateQueueItemsQuickly}"/>
   </j:if>
 </j:jelly>

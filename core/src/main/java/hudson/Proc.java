@@ -429,7 +429,7 @@ public abstract class Proc {
     /**
      * Remotely launched process via {@link Channel}.
      *
-     * @deprecated as of 1.399
+     * @deprecated as of 1.399. Replaced by {@link Launcher.RemoteLauncher.ProcImpl}
      */
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;

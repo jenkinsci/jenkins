@@ -203,7 +203,12 @@ public abstract class ItemGroupMixIn {
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
         // reload from the new config
-        result = (T)Items.load(parent,result.getRootDir());
+        Items.updatingByXml.set(true);
+        try {
+            result = (T)Items.load(parent,result.getRootDir());
+        } finally {
+            Items.updatingByXml.set(false);
+        }
         result.onCopiedFrom(src);
 
         add(result);
@@ -224,7 +229,13 @@ public abstract class ItemGroupMixIn {
             IOUtils.copy(xml,configXml);
 
             // load it
-            TopLevelItem result = (TopLevelItem)Items.load(parent,configXml.getParentFile());
+            TopLevelItem result;
+            Items.updatingByXml.set(true);
+            try {
+                result = (TopLevelItem)Items.load(parent,configXml.getParentFile());
+            } finally {
+                Items.updatingByXml.set(false);
+            }
             add(result);
 
             ItemListener.fireOnCreated(result);

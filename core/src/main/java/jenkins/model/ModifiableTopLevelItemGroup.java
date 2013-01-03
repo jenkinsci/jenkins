@@ -35,6 +35,7 @@ import java.io.InputStream;
  * including copying, creating from descriptor and from XML.
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since 1.480
  */
 public interface ModifiableTopLevelItemGroup extends ModifiableItemGroup<TopLevelItem> {
 

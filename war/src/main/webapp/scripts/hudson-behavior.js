@@ -365,6 +365,15 @@ function parseHtml(html) {
 }
 
 /**
+ * Evaluates the script in global context.
+ */
+function geval(script) {
+    // see http://perfectionkills.com/global-eval-what-are-the-options/
+    // note that execScript cannot return value
+    (this.execScript || eval)(script);
+}
+
+/**
  * Emulate the firing of an event.
  *
  * @param {HTMLElement} element
@@ -396,7 +405,7 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl"));
+        return eval(this.getAttribute("checkUrl")); // need access to 'this'
     };
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
@@ -499,7 +508,7 @@ function renderOnDemand(e,callback,noBehaviour) {
         if (contextTagName=="TBODY") {
             c = document.createElement("DIV");
             c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c.firstChild.firstChild;
+            c = c./*JENKINS-15494*/lastChild.firstChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
@@ -537,7 +546,7 @@ function evalInnerHtmlScripts(text,callback) {
             });
         } else {
             q.push(function(cont) {
-                eval(s.match(matchOne)[2]);
+                geval(s.match(matchOne)[2]);
                 cont();
             });
         }
@@ -1174,6 +1183,8 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
+        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
+
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -1413,6 +1424,7 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
+                    if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
                     var next = hist.next();
                     p.removeChild(hist);
@@ -1955,12 +1967,69 @@ function loadScript(href,callback) {
     head.insertBefore( script, head.firstChild );
 }
 
+/**
+ * Loads a dynamically created invisible IFRAME.
+ */
+function createIframe(src,callback) {
+    var iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.style.display = "none";
+
+    var done = false;
+    iframe.onload = iframe.onreadystatechange = function() {
+        if ( !done && (!this.readyState ||
+                this.readyState === "loaded" || this.readyState === "complete") ) {
+            done = true;
+            callback();
+        }
+    };
+
+    document.body.appendChild(iframe);
+    return iframe;
+}
+
 var downloadService = {
     continuations: {},
 
     download : function(id,url,info, postBack,completionHandler) {
-        this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
-        loadScript(url+"?"+Hash.toQueryString(info));
+        var tag = {id:id,postBack:postBack,completionHandler:completionHandler,received:false};
+        this.continuations[id] = tag;
+
+        // use JSONP to download the data
+        function fallback() {
+            loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
+        }
+
+        if (window.postMessage) {
+            // try downloading the postMessage version of the data,
+            // if we don't receive postMessage (which probably means the server isn't ready with these new datasets),
+            // fallback to JSONP
+            tag.iframe = createIframe(url+".html?id="+id+'&'+Hash.toQueryString(info),function() {
+                window.setTimeout(function() {
+                    if (!tag.received)
+                        fallback();
+                },100); // bit of delay in case onload on our side fires first
+            });
+        } else {
+            // this browser doesn't support postMessage
+            fallback();
+        }
+
+        // NOTE:
+        //   the only reason we even try fallback() is in case our server accepts the submission without a signature
+        //   (which it really shouldn't)
+    },
+
+    /**
+     * Call back to postMessage
+     */
+    receiveMessage : function(ev) {
+        var self = this;
+        Object.values(this.continuations).each(function(tag) {
+            if (tag.iframe.contentWindow==ev.source) {
+                self.post(tag.id,JSON.parse(ev.data));
+            }
+        })
     },
 
     post : function(id,data) {
@@ -1969,15 +2038,22 @@ var downloadService = {
             data = id;
             id = data.id;
         }
-        var o = this.continuations[id];
+        var tag = this.continuations[id];
+        if (tag==undefined) {
+            console.log("Submission from update center that we don't know: "+id);
+            console.log("Likely mismatch between the registered ID vs ID in JSON");
+            return;
+        }
+        tag.received = true;
+
         // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
-        new Ajax.Request(o.postBack, {
+        new Ajax.Request(tag.postBack, {
             contentType:"application/json",
             encoding:"UTF-8",
             postBody:Object.toJSON(data),
             onSuccess: function() {
-                if(o.completionHandler!=null)
-                    o.completionHandler();
+                if(tag.completionHandler!=null)
+                    tag.completionHandler();
                 else if(downloadService.completionHandler!=null)
                     downloadService.completionHandler();
             }
@@ -1987,6 +2063,8 @@ var downloadService = {
 
 // update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
+
+YAHOO.util.Event.addListener(window, "message", function(ev) { downloadService.receiveMessage(ev); })
 
 /*
 redirects to a page once the page is ready.
@@ -2067,7 +2145,7 @@ function validateButton(checkUrl,paramList,button) {
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
-              eval(s);
+              geval(s);
             } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
             }

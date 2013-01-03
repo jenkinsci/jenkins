@@ -67,6 +67,10 @@ var breadcrumbs = (function() {
     }
 
     /**
+     * Called when the mouse cursor comes into the context menu hot spot.
+     *
+     * If the mouse stays there for a while, a context menu gets displayed.
+     *
      * @param {HTMLElement} e
      *      anchor tag
      * @param {Number} delay
@@ -87,6 +91,7 @@ var breadcrumbs = (function() {
                     menu.addItems(items);
                     menu.render("breadcrumb-menu-target");
                     menu.show();
+                    $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
                 }
                 menuDelay = null;
             },delay);
@@ -108,6 +113,13 @@ var breadcrumbs = (function() {
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
                     }
                     a.each(fillMenuItem);
+
+                    var tooltip = e.getAttribute('tooltip');
+                    if (tooltip) {
+                        // join the tooltip into the context menu. color #000 to cancel out the text effect on disabled menu items
+                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true})
+                    }
+
                     e.items = function() { return a };
                     showMenu(a);
                 }

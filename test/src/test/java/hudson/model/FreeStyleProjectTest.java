@@ -25,8 +25,10 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
+import java.io.ByteArrayInputStream;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -119,6 +121,28 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
         assertFalse(path.contains("${JOB_NAME}"));
-        assertTrue(b.getWorkspace().getName().equals(f.getName()));
+        assertEquals(b.getWorkspace().getName(),f.getName());
     }
+
+    @Bug(15817)
+    @SuppressWarnings("DM_DEFAULT_ENCODING")
+    public void testMinimalConfigXml() throws Exception {
+        // Make sure it can be created without exceptions:
+        FreeStyleProject project = (FreeStyleProject) jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        System.out.println(project.getConfigFile().asString());
+        // and round-tripped:
+        Shell shell = new Shell("echo hello");
+        project.getBuildersList().add(shell);
+        WebClient webClient = new WebClient();
+        HtmlPage page = webClient.getPage(project,"configure");
+        HtmlForm form = page.getFormByName("config");
+        submit(form);
+        List<Builder> builders = project.getBuilders();
+        assertEquals(1,builders.size());
+        assertEquals(Shell.class,builders.get(0).getClass());
+        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
+        assertTrue(builders.get(0)!=shell);
+        System.out.println(project.getConfigFile().asString());
+    }
+
 }

@@ -44,6 +44,9 @@ THE SOFTWARE.
           <h2>${t.key}</h2>
           <pre>${t.value}</pre>
         </j:forEach>
+        <j:if test="${it.channel != null}">
+          <st:include page="statistics.groovy"/>
+        </j:if>
       </l:hasPermission>
     </l:main-panel>
   </l:layout>

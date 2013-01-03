@@ -414,13 +414,16 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          * Instead, we should just drop the failing plugins.
          */
         public static final Scope FAULT_TOLERANT_SCOPE = new Scope() {
-            public <T> Provider<T> scope(Key<T> key, Provider<T> unscoped) {
+            public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
                 final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
                 return new Provider<T>() {
                     public T get() {
                         try {
                             return base.get();
                         } catch (Exception e) {
+                            LOGGER.log(Level.WARNING,"Failed to instantiate. Skipping this component",e);
+                            return null;
+                        } catch (LinkageError e) {
                             LOGGER.log(Level.WARNING,"Failed to instantiate. Skipping this component",e);
                             return null;
                         }

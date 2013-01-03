@@ -29,7 +29,6 @@ import static org.jvnet.hudson.wmi.Win32Service.Win32OwnProcess;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
-import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.*;
 import hudson.os.windows.ManagedWindowsServiceAccount.AnotherUser;
 import hudson.os.windows.ManagedWindowsServiceAccount.LocalSystem;
@@ -286,7 +285,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
 //                }
 //            }
 
-            String id = WindowsSlaveInstaller.generateServiceId(path);
+            String id = generateServiceId(path);
             Win32Service slaveService = services.getService(id);
             if(slaveService==null) {
                 logger.println(Messages.ManagedWindowsServiceLauncher_InstallingSlaveService());
@@ -456,8 +455,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
     
     private String createAndCopyJenkinsSlaveXml(String java, String serviceId, PrintStream logger, SmbFile remoteRoot) throws IOException {
         logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveXml());
-        String xml = WindowsSlaveInstaller.generateSlaveXml(serviceId,
-                java+"w.exe", vmargs, "-tcp %BASE%\\port.txt");
+        String xml = generateSlaveXml(serviceId,
+                java + "w.exe", vmargs, "-tcp %BASE%\\port.txt");
         copyStreamAndClose(new ByteArrayInputStream(xml.getBytes("UTF-8")), new SmbFile(remoteRoot,"jenkins-slave.xml").getOutputStream());
         return xml;
     }
@@ -485,7 +484,7 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
             JISession session = JISession.createSession(auth);
             session.setGlobalSocketTimeout(60000);
             SWbemServices services = WMI.connect(session, determineHost(computer));
-            String id = WindowsSlaveInstaller.generateServiceId(computer.getNode().getRemoteFS());
+            String id = generateServiceId(computer.getNode().getRemoteFS());
             Win32Service slaveService = services.getService(id);
             if(slaveService!=null) {
                 listener.getLogger().println(Messages.ManagedWindowsServiceLauncher_StoppingService());
@@ -502,6 +501,19 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         } catch (IOException e) {
             e.printStackTrace(listener.error(e.getMessage()));
         }
+    }
+
+    String generateServiceId(String slaveRoot) throws IOException {
+        return "jenkinsslave-"+slaveRoot.replace(':','_').replace('\\','_').replace('/','_');
+    }
+
+    String generateSlaveXml(String id, String java, String vmargs, String args) throws IOException {
+        String xml = org.apache.commons.io.IOUtils.toString(getClass().getResourceAsStream("/windows-service/jenkins-slave.xml"), "UTF-8");
+        xml = xml.replace("@ID@", id);
+        xml = xml.replace("@JAVA@", java);
+        xml = xml.replace("@VMARGS@", StringUtils.defaultString(vmargs));
+        xml = xml.replace("@ARGS@", args);
+        return xml;
     }
 
     @Extension

@@ -83,7 +83,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
-        return createDescriptorList((Jenkins)hudson,describableType);
+        return (DescriptorExtensionList)createDescriptorList((Jenkins)hudson,describableType);
     }
 
     /**

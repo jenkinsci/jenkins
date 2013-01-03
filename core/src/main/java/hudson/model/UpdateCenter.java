@@ -111,6 +111,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+
+    /**
+     * {@linkplain UpdateSite#getId() ID} of the default update site.
+     * @since 1.483
+     */
+    public static final String ID_DEFAULT = "default";
 	
     /**
      * {@link ExecutorService} that performs installation.
@@ -145,6 +151,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     private UpdateCenterConfiguration config;
 
+    private boolean requiresRestart;
+
     public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
     }
@@ -178,6 +186,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         synchronized (jobs) {
             return new ArrayList<UpdateCenterJob>(jobs);
         }
+    }
+
+    /**
+     * Gets a job by its ID.
+     *
+     * Primarily to make {@link UpdateCenterJob} bound to URL.
+     */
+    public UpdateCenterJob getJob(int id) {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job.id==id)
+                    return job;
+            }
+        }
+        return null;
     }
 
     /**
@@ -228,11 +251,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return sites.toList();
     }
 
+    /**
+     * Alias for {@link #getById}.
+     */
     public UpdateSite getSite(String id) {
-        for (UpdateSite site : sites)
-            if (site.getId().equals(id))
-                return site;
-        return null;
+        return getById(id);
     }
 
     /**
@@ -361,10 +384,27 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         response.sendRedirect2(".");
     }
-    
+
     /**
-     * Checks if restart is scheduled
-     * 
+     * If any of the executed {@link UpdateCenterJob}s requires a restart
+     * to take effect, this method returns true.
+     *
+     * <p>
+     * This doesn't necessarily mean the user has scheduled or initiated
+     * the restart operation.
+     *
+     * @see #isRestartScheduled()
+     */
+    @Exported
+    public boolean isRestartRequiredForCompletion() {
+        return requiresRestart;
+    }
+
+    /**
+     * Checks if the restart operation is scheduled
+     * (which means in near future Jenkins will restart by itself)
+     *
+     * @see #isRestartRequiredForCompletion()
      */
     public boolean isRestartScheduled() {
         for (UpdateCenterJob job : getJobs()) {
@@ -464,7 +504,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite("default", config.getUpdateCenterUrl() + "update-center.json");
+        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
@@ -793,6 +833,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @ExportedBean
     public abstract class UpdateCenterJob implements Runnable {
         /**
+         * Unique ID that identifies this job.
+         *
+         * @see UpdateCenter#getJob(int)
+         */
+        @Exported
+        public final int id = iota.incrementAndGet();
+
+        /**
          * Which {@link UpdateSite} does this belong to?
          */
         public final UpdateSite site;
@@ -844,12 +892,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Restarts jenkins.
      */
     public class RestartJenkinsJob extends UpdateCenterJob {
-        /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
-               
          /**
          * Immutable state of this job.
          */
@@ -969,11 +1011,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     public abstract class DownloadJob extends UpdateCenterJob {
         /**
-         * Unique ID that identifies this job.
-         */
-        @Exported
-        public final int id = iota.incrementAndGet();
-        /**
          * Immutable object representing the current state of this job.
          */
         @Exported(inline=true)
@@ -1024,6 +1061,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (InstallationStatus e) {
                 status = e;
                 if (status.isSuccess()) onSuccess();
+                requiresRestart |= status.requiresRestart();
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
@@ -1073,6 +1111,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             public final String getType() {
                 return getClass().getSimpleName();
             }
+
+            /**
+             * Indicates that a restart is needed to complete the tasks.
+             */
+            public boolean requiresRestart() {
+                return false;
+            }
         }
 
         /**
@@ -1104,6 +1149,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
             public String getMessage() {
                 return message.toString();
+            }
+
+            @Override
+            public boolean requiresRestart() {
+                return true;
             }
         }
 

@@ -41,6 +41,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.PluginManager;
+import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
@@ -56,15 +58,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.CheckForNull;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
-    private Converter reflectionConverter;
+    private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
-
+    private final ClassOwnership classOwnership;
     private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
 
     /**
@@ -74,11 +77,18 @@ public class XStream2 extends XStream {
 
     public XStream2() {
         init();
+        classOwnership = null;
     }
 
     public XStream2(HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(hierarchicalStreamDriver);
         init();
+        classOwnership = null;
+    }
+
+    XStream2(ClassOwnership classOwnership) {
+        init();
+        this.classOwnership = classOwnership;
     }
 
     @Override
@@ -101,8 +111,32 @@ public class XStream2 extends XStream {
     @Override
     protected Converter createDefaultConverter() {
         // replace default reflection converter
-        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider());
+        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new ClassOwnership() {
+            PluginManager pm;
+            @Override public String ownerOf(Class<?> clazz) {
+                if (classOwnership != null) {
+                    return classOwnership.ownerOf(clazz);
+                }
+                if (pm == null) {
+                    Jenkins j = Jenkins.getInstance();
+                    if (j != null) {
+                        pm = j.getPluginManager();
+                    }
+                }
+                if (pm == null) {
+                    return null;
+                }
+                // TODO: possibly recursively scan super class to discover dependencies
+                PluginWrapper p = pm.whichPlugin(clazz);
+                return p != null ? p.getShortName() + '@' + trimVersion(p.getVersion()) : null;
+            }
+        });
         return reflectionConverter;
+    }
+
+    static String trimVersion(String version) {
+        // XXX seems like there should be some trick with VersionNumber to do this
+        return version.replaceFirst(" .+$", "");
     }
 
     private void init() {
@@ -331,4 +365,17 @@ public class XStream2 extends XStream {
 
         protected abstract void callback(T obj, UnmarshallingContext context);
     }
+
+    /**
+     * Marks serialized classes as being owned by particular components.
+     */
+    interface ClassOwnership {
+        /**
+         * Looks up the owner of a class, if any.
+         * @param clazz a class which might be from a plugin
+         * @return an identifier such as plugin name, or null
+         */
+        @CheckForNull String ownerOf(Class<?> clazz);
+    }
+
 }

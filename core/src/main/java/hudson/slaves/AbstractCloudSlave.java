@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 
 /**
  * Partial implementation of {@link Slave} to be used by {@link AbstractCloudImpl}.
- *
+ * You may want to implement {@link EphemeralNode} too.
  * @author Kohsuke Kawaguchi
  * @since 1.382
  */

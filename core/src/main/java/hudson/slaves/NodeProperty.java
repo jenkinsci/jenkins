@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -30,6 +31,7 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.ReconfigurableDescribable;
+import hudson.model.TaskListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
 import hudson.model.AbstractBuild;
@@ -44,6 +46,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Extensible property of {@link Node}.
@@ -127,6 +130,39 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      */
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
     	return new Environment() {};
+    }
+
+    /**
+     * Creates environment variable override for launching child processes in this node.
+     *
+     * <p>
+     * Whereas {@link #setUp(AbstractBuild, Launcher, BuildListener)} is used specifically for
+     * executing builds, this method is used for other process launch activities that happens
+     * outside the context of a build, such as polling, one time action (tagging, deployment, etc.)
+     *
+     * <p>
+     * Starting 1.489, this method and {@link #setUp(AbstractBuild, Launcher, BuildListener)} are
+     * layered properly. That is, for launching processes for a build, this method
+     * is called first and then {@link Environment#buildEnvVars(Map)} will be added on top.
+     * This allows implementations to put node-scoped environment variables here, then
+     * build scoped variables to {@link #setUp(AbstractBuild, Launcher, BuildListener)}.
+     *
+     * <p>
+     * Unfortunately, Jenkins core earlier than 1.488 only calls {@link #setUp(AbstractBuild, Launcher, BuildListener)},
+     * so if the backward compatibility with these earlier versions is important, implementations
+     * should invoke this method from {@link Environment#buildEnvVars(Map)}.
+     *
+     * @param env
+     *      Manipulate this variable (normally by adding more entries.)
+     *      Note that this is an override, so it doesn't contain environment variables that are
+     *      currently set for the slave process itself.
+     * @param listener
+     *      Can be used to send messages.
+     *
+     * @since 1.489
+     */
+    public void buildEnvVars(EnvVars env, TaskListener listener) throws IOException,InterruptedException {
+        // default is no-op
     }
 
     public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {

@@ -86,7 +86,7 @@ import java.util.logging.Logger;
  * Put {@link Extension} on your implementation to have it discovered by Hudson.
  *
  * <li>
- * Use <a href="http://args4j.dev.java.net/">args4j</a> annotation on your implementation to define
+ * Use <a href="https://github.com/kohsuke/args4j">args4j</a> annotation on your implementation to define
  * options and arguments (however, if you don't like that, you could override
  * the {@link #main(List, Locale, InputStream, PrintStream, PrintStream)} method directly.
  *
@@ -365,6 +365,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     protected Charset getClientCharset() throws IOException, InterruptedException {
+        if (channel==null)
+            // for SSH, assume the platform default encoding
+            // this is in-line with the standard SSH behavior
+            return Charset.defaultCharset();
+
         String charsetName = checkChannel().call(new GetCharset());
         try {
             return Charset.forName(charsetName);

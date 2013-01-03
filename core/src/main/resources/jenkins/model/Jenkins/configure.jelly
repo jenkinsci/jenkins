@@ -53,21 +53,17 @@ THE SOFTWARE.
       </f:entry>
 
       <!-- global configuration from everyone -->
-      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
+      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigNoSecurity()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
         <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>
 
-      <f:block>
-        <div id="bottom-sticker" >
-          <div class="bottom-sticker-inner">
-            <f:submit value="${%Save}" />
-            <f:apply />
-          </div>
-        </div>
-      </f:block>
+      <f:bottomButtonBar>
+        <f:submit value="${%Save}" />
+        <f:apply />
+      </f:bottomButtonBar>
     </f:form>
   </l:main-panel>
 </l:layout>

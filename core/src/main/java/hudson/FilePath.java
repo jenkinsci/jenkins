@@ -95,6 +95,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 
 import com.sun.jna.Native;
+import hudson.os.PosixException;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -828,9 +829,18 @@ public final class FilePath implements Serializable {
         if(channel!=null) {
             // run this on a remote system
             try {
-                return channel.call(new FileCallableWrapper<T>(callable,cl));
+                DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
+                Jenkins instance = Jenkins.getInstance();
+                if (instance != null) { // this happens during unit tests
+                    ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
+                    for (FileCallableWrapperFactory factory : factories) {
+                        wrapper = factory.wrap(wrapper);
+                    }
+                }
+
+                return channel.call(wrapper);
             } catch (TunneledInterruptedException e) {
-                throw (InterruptedException)new InterruptedException().initCause(e);
+                throw (InterruptedException)new InterruptedException(e.getMessage()).initCause(e);
             } catch (AbortException e) {
                 throw e;    // pass through so that the caller can catch it as AbortException
             } catch (IOException e) {
@@ -844,13 +854,76 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * This extension point allows to contribute a wrapper around a fileCallable so that a plugin can "intercept" a
+     * call.
+     * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on master
+     * (and may collect contextual data if needed) and the returned wrapper will be executed on remote.
+     *
+     * @since 1.482
+     * @see AbstractInterceptorCallableWrapper
+     */
+    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
+
+        public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
+
+    }
+
+    /**
+     * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
+     * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
+     * @since 1.482
+     */
+    public static abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+
+        private final DelegatingCallable<T, IOException> callable;
+
+        public AbstractInterceptorCallableWrapper(DelegatingCallable<T, IOException> callable) {
+            this.callable = callable;
+        }
+
+        @Override
+        public final ClassLoader getClassLoader() {
+            return callable.getClassLoader();
+        }
+
+        public final T call() throws IOException {
+            before();
+            try {
+                return callable.call();
+            } finally {
+                after();
+            }
+        }
+
+        /**
+         * Executed before the actual FileCallable is invoked. This code will run on remote
+         */
+        protected void before() {}
+
+        /**
+         * Executed after the actual FileCallable is invoked (even if this one failed). This code will run on remote
+         */
+        protected void after() {}
+    }
+
+
+    /**
      * Executes some program on the machine that this {@link FilePath} exists,
      * so that one can perform local file operations.
      */
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
+            DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable);
+            Jenkins instance = Jenkins.getInstance();
+            if (instance != null) { // this happens during unit tests
+                ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
+                for (FileCallableWrapperFactory factory : factories) {
+                    wrapper = factory.wrap(wrapper);
+                }
+            }
+
             return (channel!=null ? channel : Jenkins.MasterComputer.localChannel)
-                .callAsync(new FileCallableWrapper<T>(callable));
+                .callAsync(wrapper);
         } catch (IOException e) {
             // wrap it into a new IOException so that we get the caller's stack trace as well.
             throw new IOException2("remote file operation failed",e);
@@ -1290,7 +1363,7 @@ public final class FilePath implements Serializable {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException {
+    public int mode() throws IOException, InterruptedException, PosixException {
         if(!isUnix())   return -1;
         return act(new FileCallable<Integer>() {
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
@@ -1903,8 +1976,26 @@ public final class FilePath implements Serializable {
      * @see #validateFileMask(FilePath, String)
      */
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
+        return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
+     * <p>Whereas the unbounded overload is appropriate for calling from cancelable, long-running tasks such as build steps,
+     * this overload should be used when an answer is needed quickly, such as for {@link #validateFileMask(String)}
+     * or anything else returning {@link FormValidation}.
+     * <p>If a positive match is found, {@code null} is returned immediately.
+     * A message is returned in case the file pattern can definitely be determined to not match anything in the directory within the alloted time.
+     * If the time runs out without finding a match but without ruling out the possibility that there might be one, {@link InterruptedException} is thrown,
+     * in which case the calling code should give the user the benefit of the doubt and use {@link hudson.util.FormValidation.Kind#OK} (with or without a message).
+     * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; 10_000 is a reasonable pick
+     * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
+     * @since 1.484
+     */
+    public String validateAntFileMask(final String fileMasks, final int bound) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
-            public String invoke(File dir, VirtualChannel channel) throws IOException {
+            private static final long serialVersionUID = 1;
+            public String invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
                 if(fileMasks.startsWith("~"))
                     return Messages.FilePath_TildaDoesntWork();
 
@@ -2001,10 +2092,28 @@ public final class FilePath implements Serializable {
                 return null; // no error
             }
 
-            private boolean hasMatch(File dir, String pattern) {
-                FileSet fs = Util.createFileSet(dir,pattern);
-                DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-
+            private boolean hasMatch(File dir, String pattern) throws InterruptedException {
+                class Cancel extends RuntimeException {}
+                DirectoryScanner ds = bound == Integer.MAX_VALUE ? new DirectoryScanner() : new DirectoryScanner() {
+                    int ticks;
+                    @Override public synchronized boolean isCaseSensitive() {
+                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound) {
+                            throw new Cancel();
+                        }
+                        return super.isCaseSensitive();
+                    }
+                };
+                ds.setBasedir(dir);
+                ds.setIncludes(new String[] {pattern});
+                try {
+                    ds.scan();
+                } catch (Cancel c) {
+                    if (ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0) {
+                        return true;
+                    } else {
+                        throw new InterruptedException("no matches found within " + bound);
+                    }
+                }
                 return ds.getIncludedFilesCount()!=0 || ds.getIncludedDirsCount()!=0;
             }
 
@@ -2053,11 +2162,11 @@ public final class FilePath implements Serializable {
             if(!exists()) // no workspace. can't check
                 return FormValidation.ok();
 
-            String msg = validateAntFileMask(value);
+            String msg = validateAntFileMask(value, 10000);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
         } catch (InterruptedException e) {
-            return FormValidation.ok();
+            return FormValidation.ok(Messages.FilePath_did_not_manage_to_validate_may_be_too_sl(value));
         }
     }
 

@@ -26,6 +26,8 @@ package hudson;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.ExtensionFilter;
 
 /**
@@ -38,6 +40,7 @@ import jenkins.ExtensionFilter;
  * @see ExtensionFilter
  */
 public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> {
+    private static final Logger LOG = Logger.getLogger(ExtensionComponent.class.getName());
     private final T instance;
     private final double ordinal;
 
@@ -90,9 +93,14 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
 
         // make the order bit more deterministic among extensions of the same ordinal
         if (this.instance instanceof Descriptor && that.instance instanceof Descriptor) {
-            return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull(((Descriptor)that.instance).getDisplayName()));
-        } else {
-            return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
+            try {
+                return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull(((Descriptor)that.instance).getDisplayName()));
+            } catch (RuntimeException x) {
+                LOG.log(Level.WARNING, null, x);
+            } catch (LinkageError x) {
+                LOG.log(Level.WARNING, null, x);
+            }
         }
+        return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
     }
 }

@@ -34,7 +34,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.search.SearchIndexBuilder;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -586,7 +585,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
             // try to reflect the changes by reloading
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            onLoad(getParent(), getRootDir().getName());
+            Items.updatingByXml.set(true);
+            try {
+                onLoad(getParent(), getRootDir().getName());
+            } finally {
+                Items.updatingByXml.set(false);
+            }
             Jenkins.getInstance().rebuildDependencyGraph();
 
             // if everything went well, commit this new version
@@ -596,7 +600,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             out.abort(); // don't leave anything behind
         }
     }
-    
+
 
     /* (non-Javadoc)
      * @see hudson.model.AbstractModelObject#getSearchName()

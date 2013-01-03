@@ -71,58 +71,16 @@ THE SOFTWARE.
     <st:include page="downgrade.jelly" />
 
     <table style="padding-left: 2em;" id="management-links">
-      <local:feature icon="setting.png"          href="configure"    title="${%Configure System}">
-        ${%Configure global settings and paths.}
-      </local:feature>
-      <local:feature icon="refresh.png"          href="reload"       title="${%Reload Configuration from Disk}">
-        ${%Discard all the loaded data in memory and reload everything from file system.}
-        ${%Useful when you modified config files directly on disk.}
-      </local:feature>
-      <local:feature icon="plugin.png"        href="pluginManager/" title="${%Manage Plugins}">
-        ${%Add, remove, disable or enable plugins that can extend the functionality of Jenkins.}
-        <j:if test="${it.updateCenter.hasUpdates()}">
-          <span style="color:red; font-weight:bold">(${%updates available})</span>
-        </j:if>
-      </local:feature>
-      <local:feature icon="computer.png"     href="systemInfo"  title="${%System Information}">
-        ${%Displays various environmental information to assist trouble-shooting.}
-      </local:feature>
-      <local:feature icon="clipboard.png"    href="log"         title="${%System Log}">
-        ${%SystemLogText}
-      </local:feature>
-      <local:feature icon="monitor.png"    href="load-statistics"         title="${%Load Statistics}">
-        ${%LoadStatisticsText}
-      </local:feature>
-      <local:feature icon="terminal.png"    href="cli"         title="${%Jenkins CLI}">
-        ${%JenkinsCliText}
-      </local:feature>
-      <l:hasPermission permission="${it.RUN_SCRIPTS}">
-        <local:feature icon="notepad.png"      href="script"      title="${%Script Console}">
-          ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
-        </local:feature>
-      </l:hasPermission>
-      <local:feature icon="network.png"      href="computer/"   title="${%Manage Nodes}">
-        ${%Add, remove, control and monitor the various nodes that Jenkins runs jobs on.}
-      </local:feature>
-      <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
-        <j:if test="${m.iconFileName!=null}">
-          <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
-            <j:out value="${m.description}"/>
-          </local:feature>
-        </j:if>
+        <l:hasPermission permission="${m.requiredPermission}">
+          <j:if test="${m.iconFileName!=null}">
+            <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
+              <j:out value="${m.description}"/>
+              <st:include it="${m}" page="info.jelly" optional="true"/>
+            </local:feature>
+          </j:if>
+        </l:hasPermission>
       </j:forEach>
-
-      <j:choose>
-        <j:when test="${it.quietingDown}">
-          <local:feature icon="system-log-out.png"   href="cancelQuietDown" title="${%Cancel Shutdown}"/>
-        </j:when>
-        <j:otherwise>
-          <local:feature icon="system-log-out.png"   href="quietDown" title="${%Prepare for Shutdown}">
-            ${%Stops executing new builds, so that the system can be eventually shut down safely.}
-          </local:feature>
-        </j:otherwise>
-      </j:choose>
     </table>
   </l:main-panel>
 </l:layout>

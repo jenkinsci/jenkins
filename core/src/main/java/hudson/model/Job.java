@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.PermalinkList;
@@ -51,6 +52,7 @@ import hudson.util.DataSetBuilder;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
+import hudson.util.ProcessTree;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -301,6 +303,47 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Builds up the environment variable map that's sufficient to identify a process
+     * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
+     */
+    public EnvVars getCharacteristicEnvVars() {
+        EnvVars env = new EnvVars();
+        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
+        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
+        env.put("JOB_NAME",getFullName());
+        return env;
+    }
+
+    /**
+     * Creates an environment variable override for launching processes for this project.
+     *
+     * <p>
+     * This is for process launching outside the build execution (such as polling, tagging, deployment, etc.)
+     * that happens in a context of a specific job.
+     *
+     * @param node
+     *      Node to eventually run a process on. The implementation must cope with this parameter being null
+     *      (in which case none of the node specific properties would be reflected in the resulting override.)
+     */
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env;
+
+        if (node!=null)
+            env = node.toComputer().buildEnvironment(listener);
+        else
+            env = new EnvVars();
+
+        env.putAll(getCharacteristicEnvVars());
+
+        // servlet container may have set CLASSPATH in its launch script,
+        // so don't let that inherit to the new child process.
+        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
+        env.put("CLASSPATH","");
+
+        return env;
+    }
+
+    /**
      * Programatically updates the next build number.
      * 
      * <p>
@@ -453,6 +496,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Overrides from job properties.
+     * @see JobProperty#getJobOverrides
      */
     public Collection<?> getOverrides() {
         List<Object> r = new ArrayList<Object>();
@@ -518,10 +562,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @return never null. The first entry is the latest build.
      */
-    @Exported
+    @Exported(name="allBuilds",visibility=-2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
         return RunList.fromRuns(_getRuns().values());
+    }
+
+    /**
+     * Gets the read-only view of the recent builds.
+     *
+     * @since 1.485
+     */
+    @Exported(name="builds")
+    public RunList<RunT> getNewBuilds() {
+        return getBuilds().newBuilds();
     }
 
     /**
@@ -600,7 +654,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      */
-    public final RunT getNearestBuild(int n) {
+    public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
                                                                           // include n, so n-1
         if (m.isEmpty())
@@ -614,7 +668,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      */
-    public final RunT getNearestOldBuild(int n) {
+    public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
         if (m.isEmpty())
             return null;
@@ -626,7 +680,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) {
         try {
             // try to interpret the token as build number
-            return _getRuns().get(Integer.valueOf(token));
+            return getBuildByNumber(Integer.valueOf(token));
         } catch (NumberFormatException e) {
             // try to map that to widgets
             for (Widget w : getWidgets()) {
@@ -660,7 +714,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets all the runs.
      * 
-     * The resulting map must be immutable (by employing copy-on-write
+     * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      */
     protected abstract SortedMap<Integer, ? extends RunT> _getRuns();
