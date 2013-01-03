@@ -151,14 +151,18 @@ public class MojoInfo {
         PlexusConfiguration child = configuration.getChild(configName);
         if(child==null) return null;    // no such config
        
-        ClassLoader cl;
+        final ClassLoader cl;
         PluginDescriptor pd = mojoExecution.getMojoDescriptor().getPluginDescriptor();
-        // for maven2 builds ClassRealm doesn't extends ClassLoader !
-        // so check stuff with reflection
+        
+        // For maven2 builds getClassRealm returns a org.codehaus.classworlds.ClassRealm (instead of
+        // org.codehaus.plexus.classworlds.realm.ClassRealm)
+        // which doesn't extends ClassLoader !
+        // So get this with reflection and access the nested classloader ("getClassLoader")
         Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
        
-        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm) {
-            ClassRealm cr = (ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+        Object classRealm = ReflectionUtils.invokeMethod( method, pd );
+        if ( classRealm instanceof ClassRealm) {
+            ClassRealm cr = (ClassRealm) classRealm;
             cl = cr.getClassLoader();
         } else {
             cl = mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm();
