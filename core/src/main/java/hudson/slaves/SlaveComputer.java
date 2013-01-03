@@ -59,6 +59,7 @@ import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
 import jenkins.model.Jenkins;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -126,6 +127,10 @@ public class SlaveComputer extends Computer {
     @Override
     public boolean isAcceptingTasks() {
         return acceptingTasks;
+    }
+
+    public String getJnlpMac() {
+        return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
     }
 
     /**

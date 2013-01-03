@@ -46,7 +46,7 @@ public class DNSMultiCast implements Closeable {
                     if (tal!=null)
                         props.put("slave-port",String.valueOf(tal.getPort()));
 
-                    props.put("server-id", Util.getDigestOf(jenkins.getSecretKey()));
+                    props.put("server-id", jenkins.getLegacyInstanceId());
 
                     URL jenkins_url = new URL(rootURL);
                     int jenkins_port = jenkins_url.getPort();

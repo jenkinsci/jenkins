@@ -86,7 +86,7 @@ public class UDPBroadcastThread extends Thread {
                 StringBuilder rsp = new StringBuilder("<hudson>");
                 tag(rsp,"version", Jenkins.VERSION);
                 tag(rsp,"url", jenkins.getRootUrl());
-                tag(rsp,"server-id", Util.getDigestOf(jenkins.getSecretKey()));
+                tag(rsp,"server-id", jenkins.getLegacyInstanceId());
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());
 
                 for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
