@@ -8,6 +8,7 @@ import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.security.HMACConfidentialKey;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,10 +32,10 @@ import java.util.logging.Logger;
  * unauthorized remote slaves.
  *
  * <p>
- * The approach here is to have {@link Jenkins#getSecretKey() a secret key} on the master.
- * This key is sent to the slave inside the <tt>.jnlp</tt> file
+ * We do this by computing HMAC of the slave name.
+ * This code is sent to the slave inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
- * we use everywhere else in Hudson), and the slave sends this
+ * we use everywhere else in Jenkins), and the slave sends this
  * token back when it connects to the master.
  * Unauthorized slaves can't access the protected <tt>.jnlp</tt> file,
  * so it can't impersonate a valid slave.
@@ -84,12 +85,15 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         }
 
         protected void run() throws IOException, InterruptedException {
-            if(!getSecretKey().equals(in.readUTF())) {
+            final String secret = in.readUTF();
+            final String nodeName = in.readUTF();
+
+            if(!SLAVE_SECRET.mac(nodeName).equals(secret)) {
                 error(out, "Unauthorized access");
                 return;
             }
 
-            final String nodeName = in.readUTF();
+
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);
@@ -138,10 +142,6 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             }
         }
 
-        protected String getSecretKey() {
-            return Jenkins.getInstance().getSecretKey();
-        }
-
         protected void error(PrintWriter out, String msg) throws IOException {
             out.println(msg);
             LOGGER.log(Level.WARNING,Thread.currentThread().getName()+" is aborted: "+msg);
@@ -150,4 +150,9 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
     }
 
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol.class.getName());
+
+    /**
+     * This secret value is used as a seed for slaves.
+     */
+    public static final HMACConfidentialKey SLAVE_SECRET = new HMACConfidentialKey(JnlpSlaveAgentProtocol.class,"secret");
 }

@@ -31,7 +31,6 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -103,10 +102,10 @@ public class ApiTokenProperty extends UserProperty {
          * because there's no guarantee that the property is saved.
          *
          * But we also need to make sure that an attacker won't be able to guess
-         * the initial API token value. So we take the seed by hasing the instance secret key + user ID.
+         * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
         public ApiTokenProperty newInstance(User user) {
-            return new ApiTokenProperty(Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + user.getId()));
+            return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
@@ -123,4 +122,9 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    /**
+     * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
+     */
+    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
 }
