@@ -201,11 +201,9 @@ THE SOFTWARE.
               <value>${project.build.directory}</value>
             </property>
           </systemProperties>
-          <!-- also consider parallel=methods
-          <reuseForks>true</reuseForks>
-          <forkMode>perthread</forkMode>
-          <threadCount>1</threadCount>
-          -->
+          <forkMode>perthread</forkMode> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-946 so use kill -9 to stop -->
+          <reuseForks>true</reuseForks> <!-- https://jira.codehaus.org/browse/SUREFIRE-751 -->
+          <threadCount>4</threadCount> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-947 -->
         </configuration>
       </plugin>
       <plugin>
