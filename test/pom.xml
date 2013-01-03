@@ -251,6 +251,7 @@ THE SOFTWARE.
                 <include>**/UseRecipesWithJenkinsRuleTest.java</include>
                 <include>hudson/model/CauseTest.java</include>
                 <include>hudson/model/UpdateSiteTest.java</include>
+                <include>hudson/model/UserTest.class</include>
                 <include>hudson/triggers/TriggerStartTest.java</include>
               </includes>
             </configuration>
@@ -297,6 +298,7 @@ THE SOFTWARE.
                     <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
                     <exclude>hudson/model/CauseTest.class</exclude>
                     <exclude>hudson/model/UpdateSiteTest.class</exclude>
+                    <exclude>hudson/model/UserTest.class</exclude>
                     <exclude>hudson/triggers/TriggerStartTest.class</exclude>
                   </excludes>
                 </configuration>
