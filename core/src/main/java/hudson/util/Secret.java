@@ -34,8 +34,6 @@ import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
 import org.kohsuke.stapler.Stapler;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
 import java.io.Serializable;
@@ -105,7 +103,7 @@ public final class Secret implements Serializable {
      * This is no longer the key we use to encrypt new information, but we still need this
      * to be able to decrypt what's already persisted.
      */
-    /*package*/ static SecretKey getLegacyKey() throws UnsupportedEncodingException, GeneralSecurityException {
+    /*package*/ static SecretKey getLegacyKey() throws GeneralSecurityException {
         String secret = SECRET;
         if(secret==null)    return Jenkins.getInstance().getSecretKeyAsAES128();
         return Util.toAes128Key(secret);
@@ -152,14 +150,14 @@ public final class Secret implements Serializable {
         }
     }
 
-    private static Secret tryDecrypt(Cipher cipher, byte[] in) throws UnsupportedEncodingException {
+    /*package*/ static Secret tryDecrypt(Cipher cipher, byte[] in) throws UnsupportedEncodingException {
         try {
             String plainText = new String(cipher.doFinal(in), "UTF-8");
             if(plainText.endsWith(MAGIC))
                 return new Secret(plainText.substring(0,plainText.length()-MAGIC.length()));
             return null;
         } catch (GeneralSecurityException e) {
-            return null;
+            return null; // if the key doesn't match with the bytes, it can result in BadPaddingException
         }
     }
 

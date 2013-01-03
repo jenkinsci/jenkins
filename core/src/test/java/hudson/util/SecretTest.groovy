@@ -26,15 +26,10 @@ package hudson.util
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins
 import jenkins.security.ConfidentialStoreRule;
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 import javax.crypto.Cipher;
-import java.security.SecureRandom;
-
-import hudson.Util;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -43,18 +38,8 @@ public class SecretTest {
     @Rule
     public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule()
 
-    @Test @Before
-    void setUp() {
-        def sr = new SecureRandom();
-        byte[] random = new byte[32];
-        sr.nextBytes(random);
-        Secret.SECRET = Util.toHexString(random);
-    }
-
-    @Test @After
-    void tearDown() {
-        Secret.SECRET = null;
-    }
+    @Rule
+    public MockSecretRule mockSecretRule = new MockSecretRule()
 
     @Test
     void testEncrypt() {
