@@ -41,6 +41,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
@@ -67,7 +68,7 @@ import javax.annotation.CheckForNull;
 public class XStream2 extends XStream {
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
-    private final ClassOwnership classOwnership;
+    private final @CheckForNull ClassOwnership classOwnership;
     private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
 
     /**
@@ -111,26 +112,7 @@ public class XStream2 extends XStream {
     @Override
     protected Converter createDefaultConverter() {
         // replace default reflection converter
-        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new ClassOwnership() {
-            PluginManager pm;
-            @Override public String ownerOf(Class<?> clazz) {
-                if (classOwnership != null) {
-                    return classOwnership.ownerOf(clazz);
-                }
-                if (pm == null) {
-                    Jenkins j = Jenkins.getInstance();
-                    if (j != null) {
-                        pm = j.getPluginManager();
-                    }
-                }
-                if (pm == null) {
-                    return null;
-                }
-                // TODO: possibly recursively scan super class to discover dependencies
-                PluginWrapper p = pm.whichPlugin(clazz);
-                return p != null ? p.getShortName() + '@' + trimVersion(p.getVersion()) : null;
-            }
-        });
+        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new PluginClassOwnership());
         return reflectionConverter;
     }
 
@@ -376,6 +358,31 @@ public class XStream2 extends XStream {
          * @return an identifier such as plugin name, or null
          */
         @CheckForNull String ownerOf(Class<?> clazz);
+    }
+    
+    class PluginClassOwnership implements ClassOwnership {
+
+        private PluginManager pm;
+
+        @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
+        @Override public String ownerOf(Class<?> clazz) {
+            if (classOwnership != null) {
+                return classOwnership.ownerOf(clazz);
+            }
+            if (pm == null) {
+                Jenkins j = Jenkins.getInstance();
+                if (j != null) {
+                    pm = j.getPluginManager();
+                }
+            }
+            if (pm == null) {
+                return null;
+            }
+            // TODO: possibly recursively scan super class to discover dependencies
+            PluginWrapper p = pm.whichPlugin(clazz);
+            return p != null ? p.getShortName() + '@' + trimVersion(p.getVersion()) : null;
+        }
+
     }
 
 }

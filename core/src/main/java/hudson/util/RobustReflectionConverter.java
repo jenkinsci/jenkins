@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -71,10 +72,10 @@ public class RobustReflectionConverter implements Converter {
     protected final Mapper mapper;
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
-    private final XStream2.ClassOwnership classOwnership;
+    private final @Nonnull XStream2.ClassOwnership classOwnership;
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
-        this(mapper, reflectionProvider, null);
+        this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
     }
     RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider, XStream2.ClassOwnership classOwnership) {
         this.mapper = mapper;
@@ -96,7 +97,7 @@ public class RobustReflectionConverter implements Converter {
         }
 
         OwnerContext oc = OwnerContext.find(context);
-        oc.startVisiting(writer, classOwnership == null ? null : classOwnership.ownerOf(original.getClass()));
+        oc.startVisiting(writer, classOwnership.ownerOf(original.getClass()));
         try {
             doMarshal(source, writer, context);
         } finally {
