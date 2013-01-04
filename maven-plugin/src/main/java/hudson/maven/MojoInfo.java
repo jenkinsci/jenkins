@@ -148,7 +148,7 @@ public class MojoInfo {
      *      the configuration in POM is syntactically incorrect. 
      */
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
-        PlexusConfiguration child = configuration.getChild(configName);
+        PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        
         final ClassLoader cl;

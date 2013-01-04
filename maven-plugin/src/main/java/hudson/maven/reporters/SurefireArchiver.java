@@ -64,6 +64,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 /**
  * Records the surefire test result.
  * @author Kohsuke Kawaguchi
+ * @author Christoph Kutzinski
  */
 public class SurefireArchiver extends TestFailureDetector {
     private transient TestResult result;
@@ -114,16 +115,19 @@ public class SurefireArchiver extends TestFailureDetector {
         listener.getLogger().println(Messages.SurefireArchiver_Recording());
 
         File reportsDir;
-        if (isSurefireOrFailsafeMojo(mojo)) {
-            try {
-                reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
-            } catch (ComponentConfigurationException e) {
-                e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
-                build.setResult(Result.FAILURE);
-                return true;
-            }
+        
+        try {
+            // seems like almost all test mojos have this config value:
+            reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
+        } catch (ComponentConfigurationException e) {
+            e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
+            build.setResult(Result.FAILURE);
+            return true;
         }
-        else {
+        
+        if (reportsDir == null) {
+            // if test mojo doesn't have such config value, still almost all
+            // default to target/surefire-reports
             reportsDir = new File(pom.getBasedir(), "target/surefire-reports");
         }
 
@@ -254,85 +258,57 @@ public class SurefireArchiver extends TestFailureDetector {
     }
 
     boolean isTestMojo(MojoInfo mojo) {
-        if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
-            && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
-            && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
-            && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
-            && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
-            && (!isAndroidMojo(mojo))
-            && (!isSurefireOrFailsafeMojo(mojo))
-            && (!isSoapUiMojo(mojo)))
+        if (!isSurefireOrFailsafeMojo(mojo)
+            && !isAndroidMojo(mojo)
+            && !goalIsIn(mojo, "test", "test-run", "toolkit-resolve-test")) { 
             return false;
+        }
 
+        if (isAndroidMojo(mojo)) {
+            if (mojo.pluginName.version.compareTo("3.0.0-alpha-6") < 0) {
+                // Earlier versions do not support tests
+                return false;
+            }
+        }
+            
+        if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
+            // gwt-maven-plugin < 1.2 does not implement required Surefire option
+            return false;
+        }
+        
         try {
-            if (isSurefireOrFailsafeMojo(mojo)) {
-               Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
-                if (((skip != null) && (skip))) {
-                    return false;
-                }
-                
-                if (mojo.pluginName.version.compareTo("2.3") >= 0) {
-                    Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
-                    
-                    if (((skipExec != null) && (skipExec))) {
-                        return false;
-                    }
-                }
-                
-                if (mojo.pluginName.version.compareTo("2.4") >= 0) {
-                    Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                    
-                    if (((skipTests != null) && (skipTests))) {
-                        return false;
-                    }
-                }
+           Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
+            if (((skip != null) && (skip))) {
+                return false;
             }
-            else if (mojo.is("com.sun.maven", "maven-junit-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
+            
+            Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
+            if (((skipExec != null) && (skipExec))) {
+                return false;
             }
-            else if (mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-	        } else if (mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-	        } else if (mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (isAndroidMojo(mojo)) {
-                if (mojo.pluginName.version.compareTo("3.0.0-alpha-6") < 0) {
-                    // Earlier versions do not support tests
-                    return false;
-                } else {
-                    Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                    if (((skipTests != null) && (skipTests))) {
-                        return false;
-                    }
-                }
-            } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
-                    // gwt-maven-plugin < 1.2 does not implement required Surefire option
-                    return false;
-            } else if (isSoapUiMojo(mojo)) {
-                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
+            Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
+                
+            if (((skipTests != null) && (skipTests))) {
+                return false;
+            }
+            Boolean skipTest = mojo.getConfigurationValue("skipTest", Boolean.class);
+            if (((skipTest != null) && (skipTest))) {
+                return false;
             }
         } catch (ComponentConfigurationException e) {
             return false;
         }
 
         return true;
+    }
+    
+    private boolean goalIsIn(MojoInfo mojo, String... goalNames) {
+        for (String name : goalNames) {
+            if (mojo.getGoal().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAndroidMojo(MojoInfo mojo) {
