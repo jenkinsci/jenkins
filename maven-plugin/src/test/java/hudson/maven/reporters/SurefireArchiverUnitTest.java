@@ -13,6 +13,7 @@ import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenProjectActionBuilder;
 import hudson.maven.MavenReporter;
 import hudson.maven.MojoInfo;
+import hudson.maven.MojoInfoBuilder;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Result;
@@ -28,9 +29,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.junit.Assert;
@@ -69,17 +67,8 @@ public class SurefireArchiverUnitTest {
     }
 
     private MojoInfo createMojoInfo() throws ComponentConfigurationException {
-        PluginDescriptor pluginDescriptor = new PluginDescriptor();
-        pluginDescriptor.setGroupId("org.apache.maven.plugins");
-        pluginDescriptor.setArtifactId("maven-surefire-plugin");
-        pluginDescriptor.setVersion("2.9");
-        
-        MojoDescriptor mojoDescriptor = new MojoDescriptor();
-        mojoDescriptor.setPluginDescriptor(pluginDescriptor);
-        mojoDescriptor.setGoal("test");
-        
-        MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
-        MojoInfo info = new MojoInfo(mojoExecution, null, null, null);
+        MojoInfo info = MojoInfoBuilder.mojoBuilder("org.apache.maven.plugins", "maven-surefire-plugin", "test")
+                .version("2.9").build();
         
         MojoInfo spy = spy(info);
         

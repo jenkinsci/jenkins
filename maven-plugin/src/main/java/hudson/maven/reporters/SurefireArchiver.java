@@ -253,7 +253,7 @@ public class SurefireArchiver extends TestFailureDetector {
         }
     }
 
-    private boolean isTestMojo(MojoInfo mojo) {
+    boolean isTestMojo(MojoInfo mojo) {
         if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
             && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
             && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
