@@ -160,4 +160,15 @@ public class SurefireArchiverDetectTestMojosTest {
         mojo = builder.copy().configValue("skip", "true").build();
         assertFalse(this.surefireArchiver.isTestMojo(mojo));
     }
+    
+    @Test
+    public void shouldDetectToolkitResolverPlugin() {
+        MojoInfoBuilder builder = mojoBuilder("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test");
+        
+        MojoInfo mojo = builder.build();
+        assertTrue(this.surefireArchiver.isTestMojo(mojo));
+        
+        mojo = builder.copy().configValue("skipTests", "true").build();
+        assertFalse(this.surefireArchiver.isTestMojo(mojo));
+    }
 }
