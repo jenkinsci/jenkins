@@ -48,6 +48,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -237,6 +238,13 @@ public class XStreamDOM {
 
     public static XStreamDOM from(HierarchicalStreamReader in) {
         return new ConverterImpl().unmarshalElement(in, null);
+    }
+
+    public Map<String, String> getAttributeMap() {
+        Map<String,String> r = new HashMap<String, String>();
+        for (int i=0; i<attributes.length; i+=2)
+            r.put(attributes[i],attributes[i+1]);
+        return r;
     }
 
     private static class ReaderImpl extends AbstractXmlReader implements DocumentReader {
