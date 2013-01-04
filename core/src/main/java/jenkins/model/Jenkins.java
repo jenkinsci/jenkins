@@ -1485,7 +1485,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Returns true if the current running Hudson is upgraded from a version earlier than the specified version.
+     * Returns true if the current running Jenkins is upgraded from a version earlier than the specified version.
      *
      * <p>
      * This method continues to return true until the system configuration is saved, at which point

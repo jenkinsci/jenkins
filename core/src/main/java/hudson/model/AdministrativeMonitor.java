@@ -38,16 +38,16 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Checks the health of a subsystem of Hudson and if there's something
+ * Checks the health of a subsystem of Jenkins and if there's something
  * that requires administrator's attention, notify the administrator.
  *
  * <h2>How to implement?</h2>
  * <p>
  * Plugins who wish to contribute such notifications can implement this
- * class and put {@link Extension} on it to register it to Hudson.
+ * class and put {@link Extension} on it to register it to Jenkins.
  *
  * <p>
- * Once installed, it's the implementor's responsibility to perform
+ * Once installed, it's the implementer's responsibility to perform
  * monitoring and activate/deactivate the monitor accordingly. Sometimes
  * this can be done by updating a flag from code (see {@link SCMTrigger}
  * for one such example), while other times it's more convenient to do
@@ -63,7 +63,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <dd>
  * If {@link #isActivated()} returns true, Hudson will use the <tt>message.jelly</tt>
  * view of this object to render the warning text. This happens in the
- * <tt>http://SERVER/hudson/manage</tt> page. This view should typically render
+ * <tt>http://SERVER/jenkins/manage</tt> page. This view should typically render
  * a DIV box with class='error' or class='warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
  * about the problem.
