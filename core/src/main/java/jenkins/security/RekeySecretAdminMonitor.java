@@ -64,7 +64,9 @@ public class RekeySecretAdminMonitor extends AdministrativeMonitor implements St
         // this computation needs to be done and the value be captured,
         // since $JENKINS_HOME/config.xml can be saved later before the user has
         // actually rewritten XML files.
-        if (Jenkins.getInstance().isUpgradedFromBefore(new VersionNumber("1.496.*")))
+        Jenkins j = Jenkins.getInstance();
+        if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
+        &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
             needed.on();
     }
 
