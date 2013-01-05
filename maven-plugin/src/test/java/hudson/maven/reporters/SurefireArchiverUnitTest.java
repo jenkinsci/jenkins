@@ -51,8 +51,6 @@ public class SurefireArchiverUnitTest {
     @Before
     @SuppressWarnings("unchecked")
     public void before() throws ComponentConfigurationException, URISyntaxException {
-        //suppress(constructor(MavenBuild.class, new Class[0]));
-        
         this.archiver = new SurefireArchiver();
         this.build = mock(MavenBuild.class);
         when(build.getAction(Matchers.any(Class.class))).thenCallRealMethod();
@@ -92,6 +90,7 @@ public class SurefireArchiverUnitTest {
     public void testArchiveResults() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
+        
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
         
@@ -194,7 +193,7 @@ public class SurefireArchiverUnitTest {
     private void touchReportFiles(File reportsDir) {
         File[] files = reportsDir.listFiles();
         for(File f : files) {
-            f.setLastModified(System.currentTimeMillis());
+            f.setLastModified(this.mojoInfo.getStartTime());
         }
     }
 

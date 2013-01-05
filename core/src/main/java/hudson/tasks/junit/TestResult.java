@@ -153,15 +153,8 @@ public final class TestResult extends MetaTabulatedResult {
         for (String value : reportFiles) {
             File reportFile = new File(baseDir, value);
             // only count files that were actually updated during this build
-            if ( (buildTime-3000/*error margin*/ <= reportFile.lastModified()) || !checkTimestamps) {
-                if(reportFile.length()==0) {
-                    // this is a typical problem when JVM quits abnormally, like OutOfMemoryError during a test.
-                    SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");
-                    sr.addCase(new CaseResult(sr,"<init>","Test report file "+reportFile.getAbsolutePath()+" was length 0"));
-                    add(sr);
-                } else {
-                    parse(reportFile);
-                }
+            if ( (buildTime-3000/*error margin*/ <= reportFile.lastModified())) {
+                parsePossiblyEmpty(reportFile);
                 parsed = true;
             }
         }
@@ -183,7 +176,29 @@ public final class TestResult extends MetaTabulatedResult {
                 Util.getTimeSpanString(buildTime-f.lastModified())));
         }
     }
+    
+    /**
+     * Collect reports from the given report files
+     * 
+     * @since TODO
+     */ 
+    public void parse(Iterable<File> reportFiles) throws IOException {
+        for (File reportFile : reportFiles) {
+            parsePossiblyEmpty(reportFile);
+        }
+    }
 
+    private void parsePossiblyEmpty(File reportFile) throws IOException {
+        if(reportFile.length()==0) {
+            // this is a typical problem when JVM quits abnormally, like OutOfMemoryError during a test.
+            SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");
+            sr.addCase(new CaseResult(sr,"<init>","Test report file "+reportFile.getAbsolutePath()+" was length 0"));
+            add(sr);
+        } else {
+            parse(reportFile);
+        }
+    }
+    
     private void add(SuiteResult sr) {
         for (SuiteResult s : suites) {
             // JENKINS-12457: If a testsuite is distributed over multiple files, merge it into a single SuiteResult:
@@ -588,6 +603,4 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     private static final long serialVersionUID = 1L;
-    private static final boolean checkTimestamps = true; // TODO: change to System.getProperty
-
 }

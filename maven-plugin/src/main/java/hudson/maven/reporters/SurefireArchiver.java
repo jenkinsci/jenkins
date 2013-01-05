@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,10 @@ import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * Records the surefire test result.
@@ -147,7 +152,9 @@ public class SurefireArchiver extends TestFailureDetector {
                 rememberCheckedFiles(reportsDir, reportFiles);
     
                 if(result==null)    result = new TestResult();
-                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
+                
+                Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
+                result.parse(reportFilesFiltered);
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
@@ -180,6 +187,11 @@ public class SurefireArchiver extends TestFailureDetector {
         return true;
     }
     
+    private static Iterable<File> getFilesBetween(final File reportsDir,
+            final String[] reportFiles, final long from, final long to) {
+        return new FilteredReportsFileIterable(reportsDir, reportFiles, from, to);
+    }
+
     @Override
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         //Discard unneeded test result objects so they can't waste memory
@@ -245,6 +257,106 @@ public class SurefireArchiver extends TestFailureDetector {
             MavenProjectActionBuilder b =  itr.next();
             if (b instanceof SurefireArchiver)
                 itr.set(new FactoryImpl());
+        }
+    }
+
+    /**
+     * Provides an {@link Iterable} view on the reports files while filtering out all files
+     * which don't have a lastModified time in between from and to.
+     */
+    static class FilteredReportsFileIterable implements Iterable<File> {
+        private final File reportsDir;
+        private final String[] reportFiles;
+        private final long from;
+        private final long to;
+
+        FilteredReportsFileIterable(File reportsDir,
+                String[] reportFiles, long from, long to) {
+            this.reportsDir = reportsDir;
+            this.reportFiles = reportFiles;
+            
+            // FAT filesystems have a max resolution of 2 seconds so we need to subtract/add 2 seconds to
+            // the range borders.
+            // All other fs should have a equal or better precision
+            this.from = from - 2000;
+            this.to = to + 2000;
+        }
+
+        @Override
+        public Iterator<File> iterator() {
+            
+            Predicate<File> fileWithinFromAndTo = new Predicate<File>() {
+                @Override
+                public boolean apply(File file) {
+                    long lastModified = file.lastModified();
+                    if (lastModified>=from && lastModified<=to) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            
+            return Iterators.filter(
+                    Iterators.transform(
+                        Iterators.forArray(reportFiles),
+                        new Function<String, File>() {
+                            @Override
+                            public File apply(String file) {
+                                return getFile(reportsDir,file);
+                            }
+                        }),
+                    fileWithinFromAndTo);
+//            return new Iterator<File>() {
+//                File next;
+//                int nextIndex=-1;
+//
+//                {
+//                    getNext();
+//                }
+//
+//                private void getNext() {
+//                    nextIndex++;
+//                    File n = null;
+//                    while(n == null) {
+//                        if (nextIndex >= reportFiles.length) {
+//                            break;
+//                        }
+//                        File f = getFile(reportsDir,reportFiles[nextIndex]);
+//                        long lastModified = f.lastModified();
+//                        if (lastModified>=from && lastModified<=to) {
+//                            n=f;
+//                        } else {
+//                            nextIndex++;
+//                        }
+//                    }
+//                    next=n;
+//                }
+//                
+//                @Override
+//                public boolean hasNext() {
+//                    return next != null;
+//                }
+//
+//                @Override
+//                public File next() {
+//                    File n = next;
+//                    if (n == null) {
+//                        throw new NoSuchElementException();
+//                    }
+//                    getNext();
+//                    return n;
+//                }
+//
+//                @Override
+//                public void remove() {
+//                    throw new UnsupportedOperationException();
+//                }
+//            };
+        }
+        
+        // here for mocking purposes:
+        File getFile(File parent, String child) {
+            return new File(parent,child);
         }
     }
 

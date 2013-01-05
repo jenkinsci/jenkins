@@ -218,8 +218,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             return reporters.get( new ModuleName( mavenProject ) );
         }        
         
-        private void initMojoStartTime( MavenProject mavenProject) {
-            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), System.currentTimeMillis());
+        private long initMojoStartTime( MavenProject mavenProject) {
+            long mojoStartTime = System.currentTimeMillis();
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), mojoStartTime);
+            return mojoStartTime;
         }
         
         private Long getMojoStartTime(MavenProject mavenProject) {
@@ -395,10 +397,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
         
         private void recordMojoStarted(ExecutionEvent event) {
-            initMojoStartTime( event.getProject() );
+            long startTime = initMojoStartTime( event.getProject() );
             
             MavenProject mavenProject = event.getProject();
-            MojoInfo mojoInfo = new MojoInfo(event);
+            MojoInfo mojoInfo = new MojoInfo(event,startTime);
 
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
@@ -426,7 +428,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private void recordMojoEnded(ExecutionEvent event, Exception problem) {
             MavenProject mavenProject = event.getProject();
-            MojoInfo mojoInfo = new MojoInfo(event);
+            MojoInfo mojoInfo = new MojoInfo(event,getMojoStartTime(event.getProject()));
 
             recordExecutionTime(event,mojoInfo);
 

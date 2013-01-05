@@ -20,6 +20,7 @@ public class MojoInfoBuilder {
     private String goalName;
     private String version = "1.0";
     private Map<String, String> configValues = new HashMap<String, String>();
+    private long startTime = System.currentTimeMillis();
     
     public static MojoInfoBuilder mojoBuilder(String groupId, String artifactId, String goalName) {
         return new MojoInfoBuilder(groupId, artifactId, goalName);
@@ -40,6 +41,11 @@ public class MojoInfoBuilder {
     
     public MojoInfoBuilder version(String version) {
         this.version = version;
+        return this;
+    }
+    
+    public MojoInfoBuilder startTime(long startTime) {
+        this.startTime = startTime;
         return this;
     }
     
@@ -77,7 +83,7 @@ public class MojoInfoBuilder {
             }
         };
         
-        MojoInfo info = new MojoInfo(mojoExecution, null, configuration, evaluator);
+       MojoInfo info = new MojoInfo(mojoExecution, null, configuration, evaluator, startTime);
         return info;
     }
     
