@@ -1,6 +1,5 @@
 package jenkins.security;
 
-import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.IOException2;
@@ -28,7 +27,7 @@ import java.security.SecureRandom;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=-99999) // small ordinal value to allow other higher ones to take over
+// @MetaInfServices --- not annotated because this is the fallback implementation
 public class DefaultConfidentialStore extends ConfidentialStore {
     private final SecureRandom sr = new SecureRandom();
 
