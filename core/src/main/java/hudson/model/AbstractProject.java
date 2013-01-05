@@ -261,6 +261,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
+    public synchronized void save() throws IOException {
+        super.save();
+        updateTransientActions();
+    }
+
+    @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
         // solicit initial contributions, especially from TransientProjectActionFactory
