@@ -1,5 +1,6 @@
 package hudson.maven.reporters;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -29,7 +30,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -118,19 +118,22 @@ public class SurefireArchiverUnitTest {
     }
     
     @Test
-    public void testAlreadyCheckedFilesAreNotParsedAgain() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
+    public void testResultsAreNotCountedTwice() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
         
-        FileSet fileSet = this.archiver.getFileSet(reportsDir);
-        Assert.assertEquals(2, fileSet.getDirectoryScanner().getIncludedFilesCount());
-        
         this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
-
-        fileSet = this.archiver.getFileSet(reportsDir);
-        Assert.assertEquals(0, fileSet.getDirectoryScanner().getIncludedFilesCount());
+        SurefireReport action = this.build.getAction(SurefireReport.class);
+        TestResult result = action.getResult();
+        assertEquals(2658, result.getTotalCount());
+        
+        // result count shouldn't increase if mojo is called again
+        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
+        action = this.build.getAction(SurefireReport.class);
+        result = action.getResult();
+        assertEquals(2658, result.getTotalCount());
     }
     
     @Test

@@ -27,15 +27,10 @@ import hudson.AbortException;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.MetaTabulatedResult;
 import hudson.tasks.test.TestObject;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.IOException2;
-import org.apache.tools.ant.DirectoryScanner;
-import org.dom4j.DocumentException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +43,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.apache.tools.ant.DirectoryScanner;
+import org.dom4j.DocumentException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
 
 /**
  * Root of all the test results for one build.
@@ -175,6 +176,37 @@ public final class TestResult extends MetaTabulatedResult {
                 "For example, %s is %s old%n", f,
                 Util.getTimeSpanString(buildTime-f.lastModified())));
         }
+    }
+    
+
+    public void parse(long buildTime, Iterable<File> reportFiles) throws IOException {
+        boolean parsed=false;
+
+        for (File reportFile : reportFiles) {
+            // only count files that were actually updated during this build
+            if ( (buildTime-3000/*error margin*/ <= reportFile.lastModified())) {
+                parsePossiblyEmpty(reportFile);
+                parsed = true;
+            }
+        }
+
+        if(!parsed) {
+            long localTime = System.currentTimeMillis();
+            if(localTime < buildTime-1000) /*margin*/
+                // build time is in the the future. clock on this slave must be running behind
+                throw new AbortException(
+                    "Clock on this slave is out of sync with the master, and therefore \n" +
+                    "I can't figure out what test results are new and what are old.\n" +
+                    "Please keep the slave clock in sync with the master.");
+
+            File f = reportFiles.iterator().next();
+            throw new AbortException(
+                String.format(
+                "Test reports were found but none of them are new. Did tests run? %n"+
+                "For example, %s is %s old%n", f,
+                Util.getTimeSpanString(buildTime-f.lastModified())));
+        }
+        
     }
     
     /**
@@ -603,4 +635,5 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     private static final long serialVersionUID = 1L;
+
 }
