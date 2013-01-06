@@ -31,6 +31,7 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -61,12 +62,18 @@ public class ApiTokenProperty extends UserProperty {
      * We don't let the external code set the API token,
      * but for the initial value of the token we need to compute the seed by ourselves.
      */
-    private ApiTokenProperty(String seed) {
+    /*package*/ ApiTokenProperty(String seed) {
         apiToken = Secret.fromString(seed);
     }
 
     public String getApiToken() {
-        return Util.getDigestOf(apiToken.getPlainText());
+        String p = apiToken.getPlainText();
+        if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
+            // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
+            // force using the newer value
+            apiToken = Secret.fromString(p=API_KEY_SEED.mac(user.getId()));
+        }
+        return Util.getDigestOf(p);
     }
 
     public boolean matchesPassword(String password) {
