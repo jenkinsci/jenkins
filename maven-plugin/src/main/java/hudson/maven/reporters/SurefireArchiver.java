@@ -133,7 +133,7 @@ public class SurefireArchiver extends TestFailureDetector {
         if (reportsDir == null) {
             // if test mojo doesn't have such config value, still almost all
             // default to target/surefire-reports
-            reportsDir = new File(pom.getBasedir(), "target/surefire-reports");
+            reportsDir = new File(pom.getBasedir(), pom.getBuild().getDirectory()+File.separator+"surefire-reports");
         }
 
         if(reportsDir.exists()) {
@@ -153,8 +153,12 @@ public class SurefireArchiver extends TestFailureDetector {
     
                 if(result==null)    result = new TestResult();
                 
-                Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
-                result.parse(reportFilesFiltered);
+                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
+                
+                // TODO kutzi: the following is a 'more correct' way to get the reports associated to a mojo,
+                // but needs more testing
+//                Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
+//                result.parse(reportFilesFiltered);
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
@@ -187,11 +191,6 @@ public class SurefireArchiver extends TestFailureDetector {
         return true;
     }
     
-    private static Iterable<File> getFilesBetween(final File reportsDir,
-            final String[] reportFiles, final long from, final long to) {
-        return new FilteredReportsFileIterable(reportsDir, reportFiles, from, to);
-    }
-
     @Override
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         //Discard unneeded test result objects so they can't waste memory
@@ -260,6 +259,11 @@ public class SurefireArchiver extends TestFailureDetector {
         }
     }
 
+//    private static Iterable<File> getFilesBetween(final File reportsDir,
+//            final String[] reportFiles, final long from, final long to) {
+//        return new FilteredReportsFileIterable(reportsDir, reportFiles, from, to);
+//    }
+    
     /**
      * Provides an {@link Iterable} view on the reports files while filtering out all files
      * which don't have a lastModified time in between from and to.
@@ -306,52 +310,6 @@ public class SurefireArchiver extends TestFailureDetector {
                             }
                         }),
                     fileWithinFromAndTo);
-//            return new Iterator<File>() {
-//                File next;
-//                int nextIndex=-1;
-//
-//                {
-//                    getNext();
-//                }
-//
-//                private void getNext() {
-//                    nextIndex++;
-//                    File n = null;
-//                    while(n == null) {
-//                        if (nextIndex >= reportFiles.length) {
-//                            break;
-//                        }
-//                        File f = getFile(reportsDir,reportFiles[nextIndex]);
-//                        long lastModified = f.lastModified();
-//                        if (lastModified>=from && lastModified<=to) {
-//                            n=f;
-//                        } else {
-//                            nextIndex++;
-//                        }
-//                    }
-//                    next=n;
-//                }
-//                
-//                @Override
-//                public boolean hasNext() {
-//                    return next != null;
-//                }
-//
-//                @Override
-//                public File next() {
-//                    File n = next;
-//                    if (n == null) {
-//                        throw new NoSuchElementException();
-//                    }
-//                    getNext();
-//                    return n;
-//                }
-//
-//                @Override
-//                public void remove() {
-//                    throw new UnsupportedOperationException();
-//                }
-//            };
         }
         
         // here for mocking purposes:
