@@ -84,17 +84,14 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         int base = id.indexOf(myID);
         if (base > 0) {
             int caseNameStart = base + myID.length() + 1;
-            int caseNameLength = id.length() - caseNameStart;
-			if (caseNameLength > 0) {
+			if (id.length() > caseNameStart) {
             	caseName = id.substring(caseNameStart);
             }
         } 
-
         CaseResult child = getCaseResult(caseName);
         if (child != null) {
             return child;
         }
-
         return null;
     }
 
