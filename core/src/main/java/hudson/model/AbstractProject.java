@@ -691,7 +691,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected List<Action> createTransientActions() {
         Vector<Action> ta = new Vector<Action>();
 
-        for (JobProperty<? super P> p : properties)
+        for (JobProperty<? super P> p : Util.fixNull(properties))
             ta.addAll(p.getJobActions((P)this));
 
         for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
