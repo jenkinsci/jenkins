@@ -118,7 +118,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         public DescriptorImpl() {
-            super(Jenkins.getInstance().getSecretKey(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            // salt just needs to be unique, and it doesn't have to be a secret
+            super(Jenkins.getInstance().getLegacyInstanceId(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
             load();
         }
 
