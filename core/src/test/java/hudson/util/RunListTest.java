@@ -43,54 +43,54 @@ public class RunListTest extends TestCase {
 
 	// RunList for byTimestamp tests
 	private RunList rlist;
-	
+
 	// RunList<Run> is ordered from most to least recent
 	private void setUpByTimestampRuns() {
-	  	Run r1 = PowerMockito.mock(Run.class);
-      	Run r2 = PowerMockito.mock(Run.class);
-		
-      	when(r1.getNumber()).thenReturn(1);
-      	when(r2.getNumber()).thenReturn(2);
-      	
-      	when(r1.getTimeInMillis()).thenReturn(new Long(200));      	
-      	when(r2.getTimeInMillis()).thenReturn(new Long(300));
-      	
-      	ArrayList<Run> list = new ArrayList<Run>();
-      	list.add(r2);
-      	list.add(r1);
-      	      	      	
-    	rlist = RunList.fromRuns(list);
-    	
+		Run r1 = PowerMockito.mock(Run.class);
+		Run r2 = PowerMockito.mock(Run.class);
+
+		when(r1.getNumber()).thenReturn(1);
+		when(r2.getNumber()).thenReturn(2);
+
+		when(r1.getTimeInMillis()).thenReturn(new Long(200));      	
+		when(r2.getTimeInMillis()).thenReturn(new Long(300));
+
+		ArrayList<Run> list = new ArrayList<Run>();
+		list.add(r2);
+		list.add(r1);
+
+		rlist = RunList.fromRuns(list);
+
 	}
-	
+
 	@PrepareForTest({Run.class})
-    public void testbyTimestampAllRuns() {
-    	
+	public void testbyTimestampAllRuns() {
+
 		setUpByTimestampRuns();
-        	
-    	RunList<Run> tested = rlist.byTimestamp(0, 400);
-    	assertEquals(2, tested.toArray().length);
 
-    }
-	
+		RunList<Run> tested = rlist.byTimestamp(0, 400);
+		assertEquals(2, tested.toArray().length);
+
+	}
+
 	@PrepareForTest({Run.class})
-    public void testbyTimestampFirstRun() {
-    	setUpByTimestampRuns();
-    	// Only r1
-    	RunList<Run> tested = rlist.byTimestamp(150, 250);
-    	assertEquals(1, tested.toArray().length);
-    	assertEquals(1, tested.getFirstBuild().getNumber());
+	public void testbyTimestampFirstRun() {
+		setUpByTimestampRuns();
+		// Only r1
+		RunList<Run> tested = rlist.byTimestamp(150, 250);
+		assertEquals(1, tested.toArray().length);
+		assertEquals(1, tested.getFirstBuild().getNumber());
 
-    }
-    
+	}
+
 	@PrepareForTest({Run.class})
-    public void testbyTimestampLastRun() {
+	public void testbyTimestampLastRun() {
 
-    	setUpByTimestampRuns();
-    	// Only r2
-    	RunList<Run> tested = rlist.byTimestamp(250, 350);
-    	assertEquals(1, tested.toArray().length);
-    	assertEquals(2, tested.getFirstBuild().getNumber());
-    }
-    
+		setUpByTimestampRuns();
+		// Only r2
+		RunList<Run> tested = rlist.byTimestamp(250, 350);
+		assertEquals(1, tested.toArray().length);
+		assertEquals(2, tested.getFirstBuild().getNumber());
+	}
+
 }
