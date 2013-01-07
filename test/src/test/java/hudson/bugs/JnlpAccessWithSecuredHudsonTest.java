@@ -23,6 +23,7 @@
  */
 package hudson.bugs;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -39,6 +40,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +60,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
         return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @PresetData(DataSet.ANONYMOUS_READONLY)
     @Email("http://www.nabble.com/Launching-slave-by-JNLP-with-Active-Directory-plugin-and-matrix-security-problem-td18980323.html")
     public void test() throws Exception {
         jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
@@ -79,6 +81,14 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             // now make sure that these URLs are unprotected
             Page jarResource = jnlpAgent.getPage(url);
             assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));
+        }
+
+
+        try {
+            jnlp = (XmlPage) jnlpAgent.goTo("computer/test/slave-agent.jnlp", "application/x-java-jnlp-file");
+            fail("anonymous users must not be able to get secrets");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
         }
     }
 }

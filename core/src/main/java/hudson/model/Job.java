@@ -62,6 +62,7 @@ import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -308,8 +309,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public EnvVars getCharacteristicEnvVars() {
         EnvVars env = new EnvVars();
-        env.put("JENKINS_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey()));
-        env.put("HUDSON_SERVER_COOKIE",Util.getDigestOf("ServerID:"+ Jenkins.getInstance().getSecretKey())); // Legacy compatibility
+        env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
+        env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
         return env;
     }
@@ -1313,4 +1314,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
+
+    private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
 }

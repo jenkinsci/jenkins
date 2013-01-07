@@ -516,10 +516,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             this.rememberMe = rememberMe;
         }
 
+        @SuppressWarnings("deprecation")
         private static RememberMeServices createRememberMeService(UserDetailsService uds) {
             // create our default TokenBasedRememberMeServices, which depends on the availability of the secret key
             TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2();
             rms.setUserDetailsService(uds);
+            /*
+                TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
+                and both needs to use the same key (this is a reflection of a poor design in AcgeiSecurity, if you ask me)
+                and various security plugins have its own groovy script that configures them.
+
+                So if we change this, it creates a painful situation for those plugins by forcing them to choose
+                to work with earlier version of Jenkins or newer version of Jenkins, and not both.
+
+                So we keep this here.
+             */
             rms.setKey(Jenkins.getInstance().getSecretKey());
             rms.setParameter("remember_me"); // this is the form field name in login.jelly
             return rms;
