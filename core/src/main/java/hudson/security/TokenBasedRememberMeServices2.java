@@ -23,10 +23,10 @@
  */
 package hudson.security;
 
+import jenkins.security.HMACConfidentialKey;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.Authentication;
-import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -41,7 +41,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices {
     @Override
     protected String makeTokenSignature(long tokenExpiryTime, UserDetails userDetails) {
-        String expectedTokenSignature = DigestUtils.md5Hex(userDetails.getUsername() + ":" + tokenExpiryTime + ":"
+        String expectedTokenSignature = MAC.mac(userDetails.getUsername() + ":" + tokenExpiryTime + ":"
                 + "N/A" + ":" + getKey());
         return expectedTokenSignature;
     }
@@ -50,4 +50,9 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     protected String retrievePassword(Authentication successfulAuthentication) {
         return "N/A";
     }
+
+    /**
+     * Used to compute the token signature securely.
+     */
+    private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class,"mac");
 }

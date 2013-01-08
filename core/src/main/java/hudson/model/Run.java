@@ -4,6 +4,8 @@
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
  * Darek Ostolski, CloudBees, Inc.
+ *
+ * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1189,7 +1191,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the log file.
      */
     public File getLogFile() {
-        return new File(getRootDir(),"log");
+        File rawF = new File(getRootDir(), "log");
+        if (rawF.isFile()) {
+            return rawF;
+        }
+        File gzF = new File(getRootDir(), "log.gz");
+        if (gzF.isFile()) {
+            return gzF;
+        }
+        //If both fail, return the standard, uncompressed log file
+        return rawF;
     }
 
     /**
@@ -1202,13 +1213,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public InputStream getLogInputStream() throws IOException {
     	File logFile = getLogFile();
-    	if (logFile.exists() ) {
-            return new FileInputStream(logFile);
-    	}
-
-    	File compressedLogFile = new File(logFile.getParentFile(), logFile.getName()+ ".gz");
-    	if (compressedLogFile.exists()) {
-            return new GZIPInputStream(new FileInputStream(compressedLogFile));
+    	
+    	if (logFile != null && logFile.exists() ) {
+    	    // Checking if a ".gz" file was return
+    	    FileInputStream fis = new FileInputStream(logFile);
+    	    if (logFile.getName().endsWith(".gz")) {
+    	        return new GZIPInputStream(fis);
+    	    } else {
+    	        return fis;
+    	    }
     	}
     	
     	return new NullInputStream(0);

@@ -57,12 +57,13 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
             Properties request = new Properties();
             request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
 
-            if(!getSecretKey().equals(request.getProperty("Secret-Key"))) {
+            final String nodeName = request.getProperty("Node-Name");
+
+            if(!SLAVE_SECRET.mac(nodeName).equals(request.getProperty("Secret-Key"))) {
                 error(out, "Unauthorized access");
                 return;
             }
 
-            final String nodeName = request.getProperty("Node-Name");
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
                 error(out, "No such slave: "+nodeName);

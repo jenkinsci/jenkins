@@ -35,12 +35,20 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
+import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.Util;
 import hudson.util.VariableResolver;
 import hudson.util.XStream2;
+import org.apache.commons.io.IOUtils;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +70,16 @@ import java.util.Stack;
  * <p>
  * The reverse operation is {@link #from(XStream, Object)} method, which marshals an object
  * into {@link XStreamDOM}.
+ *
+ * <p>
+ * You can also use this class to parse an entire XML document into a DOM like tree with
+ * {@link #from(HierarchicalStreamReader)} and {@link #writeTo(HierarchicalStreamWriter)}.
+ * These two methods support variants that accept other forms.
+ * <p>
+ * Whereas the above methods read from and write to {@link HierarchicalStreamReader} and,
+ * {@link HierarchicalStreamWriter}, we can also create {@link HierarchicalStreamReader}
+ * that read from DOM and {@link HierarchicalStreamWriter} that writes to DOM. See
+ * {@link #newReader()} and {@link #newWriter()} for those operations.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.473
@@ -190,7 +208,15 @@ public class XStreamDOM {
      * Writes this {@link XStreamDOM} into {@link OutputStream}.
      */
     public void writeTo(OutputStream os) {
-        new XStream2().toXML(this, os);
+        writeTo(new XppDriver().createWriter(os));
+    }
+
+    public void writeTo(Writer w) {
+        writeTo(new XppDriver().createWriter(w));
+    }
+
+    public void writeTo(HierarchicalStreamWriter w) {
+        new ConverterImpl().marshal(this,w,null);
     }
 
     /**
@@ -200,6 +226,25 @@ public class XStreamDOM {
         WriterImpl w = newWriter();
         xs.marshal(obj, w);
         return w.getOutput();
+    }
+
+    public static XStreamDOM from(InputStream in) {
+        return from(new XppDriver().createReader(in));
+    }
+
+    public static XStreamDOM from(Reader in) {
+        return from(new XppDriver().createReader(in));
+    }
+
+    public static XStreamDOM from(HierarchicalStreamReader in) {
+        return new ConverterImpl().unmarshalElement(in, null);
+    }
+
+    public Map<String, String> getAttributeMap() {
+        Map<String,String> r = new HashMap<String, String>();
+        for (int i=0; i<attributes.length; i+=2)
+            r.put(attributes[i],attributes[i+1]);
+        return r;
     }
 
     private static class ReaderImpl extends AbstractXmlReader implements DocumentReader {
@@ -405,9 +450,17 @@ public class XStreamDOM {
             w.endNode();
         }
 
+        /**
+         * Unmarshals a single child element.
+         */
         public XStreamDOM unmarshal(HierarchicalStreamReader r, UnmarshallingContext context) {
             r.moveDown();
+            XStreamDOM dom = unmarshalElement(r,context);
+            r.moveUp();
+            return dom;
+        }
 
+        public XStreamDOM unmarshalElement(HierarchicalStreamReader r, UnmarshallingContext context) {
             String name = r.getNodeName();
 
             int c = r.getAttributeCount();
@@ -427,7 +480,6 @@ public class XStreamDOM {
             } else {
                 value = r.getValue();
             }
-            r.moveUp();
 
             return new XStreamDOM(name,attributes,children,value);
         }
