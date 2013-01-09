@@ -114,16 +114,6 @@ THE SOFTWARE.
         <enabled>false</enabled>
       </snapshots>
     </repository>
-    <repository><!-- only until we release ant and javadoc plugins -->
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org/content/repositories/snapshots/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
