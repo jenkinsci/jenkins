@@ -67,8 +67,13 @@ public class XStreamDOMTest {
     }
 
     private String getTestData1() throws IOException {
-        return IOUtils.toString(XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml")).replaceAll("\r\n", "\n");
+        return getTestData("XStreamDOMTest.data1.xml");
     }
+
+    private String getTestData(String resourceName) throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream(resourceName)).replaceAll("\r\n", "\n");
+    }
+
 
     private Foo createSomeFoo() {
         Foo foo = new Foo();
@@ -160,7 +165,7 @@ public class XStreamDOMTest {
     @Test
     public void readFromInputStream() throws Exception {
         for (String name : new String[]{"XStreamDOMTest.data1.xml","XStreamDOMTest.data2.xml"}) {
-            String input = IOUtils.toString(getClass().getResourceAsStream(name));
+            String input = getTestData(name);
             XStreamDOM dom = XStreamDOM.from(new StringReader(input));
             StringWriter sw = new StringWriter();
             dom.writeTo(sw);
