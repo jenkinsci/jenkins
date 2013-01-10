@@ -361,10 +361,22 @@ public class Iterators {
      * @since 1.485
      */
     public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
+        return limit(base, filter, false);
+    }
+
+    /**
+     * Returns the elements in the base iterator, optionaly starting at the first one that satisfies the filter, until it hits any element that doesn't satisfy the filter.
+     * Then the rest of the elements in the base iterator gets ignored.
+     *
+     * @since 1.500
+     */
+    public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter, final boolean startsAtFirst) {
         return new Iterator<T>() {
             private T next;
             private boolean end;
             private int index=0;
+            private boolean foundFirst = false;
+
             public boolean hasNext() {
                 fetch();
                 return next!=null;
@@ -383,7 +395,13 @@ public class Iterators {
                         next = base.next();
                         if (!filter.apply(index++,next)) {
                             next = null;
-                            end = true;
+                            if (startsAtFirst && !foundFirst) {
+                                fetch();
+                            } else {
+                                end = true;
+                            }
+                        } else {
+                            foundFirst = true;
                         }
                     } else {
                         end = true;
