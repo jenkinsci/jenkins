@@ -578,6 +578,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
          */
         private AbstractProject project;
 
+        /** @see UserAvatarResolver */
+        String avatar;
+
         UserInfo(User user, AbstractProject p, Calendar lastChange) {
             this.user = user;
             this.project = p;
@@ -779,12 +782,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             }
                             for (ChangeLogSet.Entry entry : build.getChangeSet()) {
                                 User user = entry.getAuthor();
-                                synchronized (this) {
-                                    UserInfo info = users.get(user);
-                                    if (info == null) {
-                                        users.put(user, new UserInfo(user, p, build.getTimestamp()));
+                                UserInfo info = users.get(user);
+                                if (info == null) {
+                                    UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
+                                    userInfo.avatar = UserAvatarResolver.resolve(user, iconSize);
+                                    synchronized (this) {
+                                        users.put(user, userInfo);
                                         modified.add(user);
-                                    } else if (info.getLastChange().before(build.getTimestamp())) {
+                                    }
+                                } else if (info.getLastChange().before(build.getTimestamp())) {
+                                    synchronized (this) {
                                         info.project = p;
                                         info.lastChange = build.getTimestamp();
                                         modified.add(user);
@@ -809,8 +816,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         continue;
                     }
                     if (!users.containsKey(u)) {
+                        UserInfo userInfo = new UserInfo(u, null, null);
+                        userInfo.avatar = UserAvatarResolver.resolve(u, iconSize);
                         synchronized (this) {
-                            users.put(u, new UserInfo(u, null, null));
+                            users.put(u, userInfo);
                             modified.add(u);
                         }
                     }
@@ -826,7 +835,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", UserAvatarResolver.resolve(u, iconSize)).
+                        accumulate("avatar", i.avatar).
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 AbstractProject<?,?> p = i.getProject();
