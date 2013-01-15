@@ -25,9 +25,15 @@
 package org.jvnet.hudson.test;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
 import org.netbeans.insane.scanner.CountingVisitor;
+import org.netbeans.insane.scanner.Filter;
 import org.netbeans.insane.scanner.ScannerUtils;
 
 /**
@@ -54,10 +60,72 @@ public class MemoryAssert {
      * @param max the maximum desired memory usage (in bytes)
      */
     public static void assertHeapUsage(Object o, int max) throws Exception {
+        // XXX could use ScannerUtils.recursiveSizeOf here
         CountingVisitor v = new CountingVisitor();
         ScannerUtils.scan(ScannerUtils.skipNonStrongReferencesFilter(), v, Collections.singleton(o), false);
         int memoryUsage = v.getTotalSize();
         assertTrue(o + " consumes " + memoryUsage + " bytes of heap, " + (memoryUsage - max) + " over the limit of " + max, memoryUsage <= max);
+    }
+
+    /**
+     * @see #increasedMemory
+     * @since 1.500
+     */
+    public static final class HistogramElement implements Comparable<HistogramElement> {
+        public final String className;
+        public final int instanceCount;
+        public final int byteSize;
+        HistogramElement(String className, int instanceCount, int byteSize) {
+            this.className = className;
+            this.instanceCount = instanceCount;
+            this.byteSize = byteSize;
+        }
+        @Override public int compareTo(HistogramElement o) {
+            int r = o.byteSize - byteSize;
+            return r != 0 ? r : className.compareTo(o.className);
+        }
+        @Override public boolean equals(Object obj) {
+            if (!(obj instanceof HistogramElement)) {
+                return false;
+            }
+            HistogramElement o = (HistogramElement) obj;
+            return o.className.equals(className);
+        }
+        @Override public int hashCode() {
+            return className.hashCode();
+        }
+    }
+
+    /**
+     * Counts how much more memory is held in Jenkins by doing some operation.
+     * @param callable an action
+     * @param filters things to exclude
+     * @return a histogram of the heap delta after running the operation
+     * @since 1.500
+     */
+    public static List<HistogramElement> increasedMemory(Callable<Void> callable, Filter... filters) throws Exception {
+        Filter f = ScannerUtils.skipNonStrongReferencesFilter();
+        if (filters.length > 0) {
+            Filter[] fs = new Filter[filters.length + 1];
+            fs[0] = f;
+            System.arraycopy(filters, 0, fs, 1, filters.length);
+            f = ScannerUtils.compoundFilter(fs);
+        }
+        CountingVisitor v1 = new CountingVisitor();
+        ScannerUtils.scan(f, v1, Collections.singleton(Jenkins.getInstance()), false);
+        Set<Class<?>> old = v1.getClasses();
+        callable.call();
+        CountingVisitor v2 = new CountingVisitor();
+        ScannerUtils.scan(f, v2, Collections.singleton(Jenkins.getInstance()), false);
+        List<HistogramElement> elements = new ArrayList<HistogramElement>();
+        for (Class<?> c : v2.getClasses()) {
+            int delta = v2.getCountForClass(c) - (old.contains(c) ? v1.getCountForClass(c) : 0);
+            if (delta > 0) {
+                elements.add(new HistogramElement(c.getName(), delta, v2.getSizeForClass(c) - (old.contains(c) ? v1.getSizeForClass(c) : 0)));
+            }
+        }
+        Collections.sort(elements);
+        return elements;
     }
 
 }
