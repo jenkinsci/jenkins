@@ -34,6 +34,7 @@ import java.net.URL;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Bug;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.mockito.Mockito;
@@ -84,6 +85,7 @@ public class JenkinsGetRootUrlTest {
         rootUrlIs("http://configured.host/");
     }
 
+    @Bug(16368)
     @Test
     public void inheritProtocolWhenDispatchingRequest() {
 
