@@ -22,16 +22,18 @@
 # THE SOFTWARE.
 
 
-# build a flashing animation image from a still picture
-# Usage <src gif> <dst gif>
+# build a glowing animation from two still pictures
+# Usage <src gif 1> <src gif 2> <dst gif>
 t=/tmp/flash$$
 
-src=$1
-dst=$2
-for p in 20 40 60 80 100
+src1=$1
+src2=$2
+dst=$3
+for p1 in 20 40 60 80
 do
-  convert $src -fill white -colorize ${p}% -transparent-color white $t.$p.gif
+  p2=`expr 100 - $p1`
+  composite -blend ${p1}%x${p2}% "$src1" "$src2" $t.${p1}.gif
 done
-convert -delay 10 $src $t.20.gif $t.40.gif $t.60.gif $t.80.gif $t.100.gif $t.80.gif $t.60.gif $t.40.gif $t.20.gif -loop 0 $dst
+convert -delay 15 "$src1" $t.80.gif $t.60.gif $t.40.gif $t.20.gif "$src2" $t.20.gif $t.40.gif $t.60.gif $t.80.gif -loop 0 "$dst"
 
 rm $t.*.gif

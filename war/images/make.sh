@@ -23,7 +23,8 @@
 
 # this script requires these tools to be installed:
 # * ImageMagick (http://www.imagemagick.org/)
-# * inkscape (http://inkscape.org/)
+# * Pngcrush (http://pmt.sourceforge.net/pngcrush/)
+# * OptiPNG (http://optipng.sourceforge.net/)
 
 for src in *.svg
 do
@@ -35,7 +36,7 @@ do
     if [ ! -e $dst -o $src -nt $dst ];
     then
       mkdir ${sz}x${sz} > /dev/null 2>&1 || true
-      ./svg2png -w $sz -h $sz < $src > $dst
+      convert -density 192 -background none -resize ${sz}x${sz} $src $dst
       ./compress_png.sh $dst
       #convert t.png \( +clone -fill white -draw 'color 0,0 reset' \) \
       #   -compose Dst_Over $dst

@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="yellow.svg"
+   sodipodi:docname="yellow_dark.svg"
    inkscape:version="0.48.4 r9939"
    sodipodi:version="0.32"
    id="svg4376"
    height="48px"
    width="48px"
-   inkscape:export-filename="/tmp/yellow.png"
+   inkscape:export-filename="/tmp/yellow_dark.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    version="1.1">
@@ -24,22 +24,15 @@
      id="defs3">
     <linearGradient
        id="linearGradient5522">
-      <stop offset="0" style="stop-color:#FFF5C2"/>
-      <stop offset="0.0796" style="stop-color:#FFF4BD"/>
-      <stop offset="0.1722" style="stop-color:#FFF2AF"/>
-      <stop offset="0.2713" style="stop-color:#FFEE98"/>
-      <stop offset="0.3749" style="stop-color:#FFE877"/>
-      <stop offset="0.4821" style="stop-color:#FFE04D"/>
-      <stop offset="0.5907" style="stop-color:#FFD81A"/>
-      <stop offset="0.6416" style="stop-color:#FFD300"/>
-      <stop offset="0.6825" style="stop-color:#FACF00"/>
-      <stop offset="0.7286" style="stop-color:#EDC401"/>
-      <stop offset="0.7773" style="stop-color:#D6B203"/>
-      <stop offset="0.8277" style="stop-color:#B79805"/>
-      <stop offset="0.8795" style="stop-color:#8E7708"/>
-      <stop offset="0.9325" style="stop-color:#5C4E0C"/>
-      <stop offset="0.9854" style="stop-color:#221F10"/>
-      <stop offset="1" style="stop-color:#111111"/>
+      <stop offset="0.0936" style="stop-color:#FFD300"/>
+      <stop offset="0.1908" style="stop-color:#FBD000"/>
+      <stop offset="0.2923" style="stop-color:#EEC500"/>
+      <stop offset="0.3957" style="stop-color:#D9B400"/>
+      <stop offset="0.5005" style="stop-color:#BC9C00"/>
+      <stop offset="0.6064" style="stop-color:#967C00"/>
+      <stop offset="0.7132" style="stop-color:#685600"/>
+      <stop offset="0.8187" style="stop-color:#322A00"/>
+      <stop offset="0.9064" style="stop-color:#000000"/>
     </linearGradient>
     <linearGradient
        id="linearGradient3290">

@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="yellow.svg"
+   sodipodi:docname="green_dark.svg"
    inkscape:version="0.48.4 r9939"
    sodipodi:version="0.32"
    id="svg4376"
    height="48px"
    width="48px"
-   inkscape:export-filename="/tmp/yellow.png"
+   inkscape:export-filename="/tmp/green_dark.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    version="1.1">
@@ -24,22 +24,12 @@
      id="defs3">
     <linearGradient
        id="linearGradient5522">
-      <stop offset="0" style="stop-color:#FFF5C2"/>
-      <stop offset="0.0796" style="stop-color:#FFF4BD"/>
-      <stop offset="0.1722" style="stop-color:#FFF2AF"/>
-      <stop offset="0.2713" style="stop-color:#FFEE98"/>
-      <stop offset="0.3749" style="stop-color:#FFE877"/>
-      <stop offset="0.4821" style="stop-color:#FFE04D"/>
-      <stop offset="0.5907" style="stop-color:#FFD81A"/>
-      <stop offset="0.6416" style="stop-color:#FFD300"/>
-      <stop offset="0.6825" style="stop-color:#FACF00"/>
-      <stop offset="0.7286" style="stop-color:#EDC401"/>
-      <stop offset="0.7773" style="stop-color:#D6B203"/>
-      <stop offset="0.8277" style="stop-color:#B79805"/>
-      <stop offset="0.8795" style="stop-color:#8E7708"/>
-      <stop offset="0.9325" style="stop-color:#5C4E0C"/>
-      <stop offset="0.9854" style="stop-color:#221F10"/>
-      <stop offset="1" style="stop-color:#111111"/>
+      <stop offset="0" style="stop-color:#74BF6A"/>
+      <stop offset="0.5726" style="stop-color:#1D710D"/>
+      <stop offset="0.6396" style="stop-color:#1B670C"/>
+      <stop offset="0.7524" style="stop-color:#144D09"/>
+      <stop offset="0.8961" style="stop-color:#092304"/>
+      <stop offset="1" style="stop-color:#000000"/>
     </linearGradient>
     <linearGradient
        id="linearGradient3290">
