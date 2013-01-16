@@ -29,6 +29,9 @@ THE SOFTWARE.
          version="2.4">
   <display-name>Jenkins v${project.version}</display-name>
   <description>Build management system</description>
+  <session-config>
+    <session-timeout>2880</session-timeout> 
+  </session-config>
 
   <servlet>
     <servlet-name>Stapler</servlet-name>
