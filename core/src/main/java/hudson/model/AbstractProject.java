@@ -1379,7 +1379,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             listener.getLogger().println(Messages.AbstractProject_NoSCM());
             return NO_CHANGES;
         }
-        if (isDisabled()) {
+        if (!isBuildable()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
