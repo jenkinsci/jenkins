@@ -28,7 +28,6 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
@@ -105,6 +104,8 @@ import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -846,7 +847,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         public Api getApi() {
-            return new Api(parent instanceof Jenkins ? new People((Jenkins) parent) : new People((View) parent));
+            return new Api(new People());
+        }
+
+        /** JENKINS-16397 workaround */
+        @Restricted(NoExternalUse.class)
+        @ExportedBean
+        public final class People {
+
+            private View.People people;
+
+            @Exported public synchronized List<UserInfo> getUsers() {
+                if (people == null) {
+                    people = parent instanceof Jenkins ? new View.People((Jenkins) parent) : new View.People((View) parent);
+                }
+                return people.users;
+            }
         }
 
     }
