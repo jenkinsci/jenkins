@@ -19,6 +19,7 @@ import org.jvnet.hudson.test.recipes.Recipe;
  * This is JUnit4 version of {@link Recipe}.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.436
  */
 @Retention(RUNTIME)
 @Documented

@@ -39,6 +39,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  * @see HudsonTestCase#computerConnectorTester
+ * @since 1.436
  */
 public class JenkinsComputerConnectorTester extends AbstractDescribableImpl<JenkinsComputerConnectorTester> {
     public final JenkinsRule jenkinsRule;
