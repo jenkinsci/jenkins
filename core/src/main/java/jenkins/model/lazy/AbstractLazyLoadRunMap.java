@@ -202,7 +202,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
-        if (buildDirs==null)    buildDirs=EMPTY_STRING_ARRAY;
+        if (buildDirs==null) {
+            buildDirs=EMPTY_STRING_ARRAY;
+            LOGGER.log(Level.WARNING, "failed to load list of builds from {0}", dir);
+        }
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
         idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
