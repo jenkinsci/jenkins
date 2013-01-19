@@ -103,7 +103,10 @@ public class MojoInfo {
      */
     private final ConverterLookup converterLookup = new DefaultConverterLookup();
 
-    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+    private long startTime;
+
+    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator,
+            long startTime) {
         // in Maven3 there's no easy way to get the Mojo instance that's being executed,
         // so we just can't pass it in.
         if (mojo==null) mojo = new Maven3ProvidesNoAccessToMojo();
@@ -112,12 +115,13 @@ public class MojoInfo {
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;
         this.pluginName = new PluginName(mojoExecution.getMojoDescriptor().getPluginDescriptor());
+        this.startTime = startTime;
     }
 
-    public MojoInfo(ExecutionEvent event) {
+    public MojoInfo(ExecutionEvent event, long startTime) {
         this(event.getMojoExecution(), null,
                 new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() ),
-                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ));
+                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ), startTime);
     }
 
     /**
@@ -148,7 +152,7 @@ public class MojoInfo {
      *      the configuration in POM is syntactically incorrect. 
      */
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
-        PlexusConfiguration child = configuration.getChild(configName);
+        PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        
         final ClassLoader cl;
@@ -277,5 +281,9 @@ public class MojoInfo {
         public void execute() throws MojoExecutionException, MojoFailureException {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public long getStartTime() {
+        return this.startTime;
     }
 }
