@@ -49,8 +49,9 @@ public final class MavenReportInfo extends MojoInfo {
      */
     public final MavenReport report;
 
-    public MavenReportInfo(MojoExecution mojoExecution, MavenReport mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
-        super(mojoExecution, (Mojo)mojo, configuration, expressionEvaluator);
+    public MavenReportInfo(MojoExecution mojoExecution, MavenReport mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator,
+            long mojoStartTime) {
+        super(mojoExecution, (Mojo)mojo, configuration, expressionEvaluator,mojoStartTime);
         this.report = mojo;
     }
 }

@@ -1,5 +1,6 @@
 package hudson.maven.reporters;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -13,6 +14,7 @@ import hudson.maven.MavenBuildProxy;
 import hudson.maven.MavenProjectActionBuilder;
 import hudson.maven.MavenReporter;
 import hudson.maven.MojoInfo;
+import hudson.maven.MojoInfoBuilder;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Result;
@@ -28,10 +30,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,8 +51,6 @@ public class SurefireArchiverUnitTest {
     @Before
     @SuppressWarnings("unchecked")
     public void before() throws ComponentConfigurationException, URISyntaxException {
-        //suppress(constructor(MavenBuild.class, new Class[0]));
-        
         this.archiver = new SurefireArchiver();
         this.build = mock(MavenBuild.class);
         when(build.getAction(Matchers.any(Class.class))).thenCallRealMethod();
@@ -69,17 +65,8 @@ public class SurefireArchiverUnitTest {
     }
 
     private MojoInfo createMojoInfo() throws ComponentConfigurationException {
-        PluginDescriptor pluginDescriptor = new PluginDescriptor();
-        pluginDescriptor.setGroupId("org.apache.maven.plugins");
-        pluginDescriptor.setArtifactId("maven-surefire-plugin");
-        pluginDescriptor.setVersion("2.9");
-        
-        MojoDescriptor mojoDescriptor = new MojoDescriptor();
-        mojoDescriptor.setPluginDescriptor(pluginDescriptor);
-        mojoDescriptor.setGoal("test");
-        
-        MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
-        MojoInfo info = new MojoInfo(mojoExecution, null, null, null);
+        MojoInfo info = MojoInfoBuilder.mojoBuilder("org.apache.maven.plugins", "maven-surefire-plugin", "test")
+                .version("2.9").build();
         
         MojoInfo spy = spy(info);
         
@@ -103,6 +90,7 @@ public class SurefireArchiverUnitTest {
     public void testArchiveResults() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
+        
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
         
@@ -130,19 +118,22 @@ public class SurefireArchiverUnitTest {
     }
     
     @Test
-    public void testAlreadyCheckedFilesAreNotParsedAgain() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
+    public void testResultsAreNotCountedTwice() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test2");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
         
-        FileSet fileSet = this.archiver.getFileSet(reportsDir);
-        Assert.assertEquals(2, fileSet.getDirectoryScanner().getIncludedFilesCount());
-        
         this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
-
-        fileSet = this.archiver.getFileSet(reportsDir);
-        Assert.assertEquals(0, fileSet.getDirectoryScanner().getIncludedFilesCount());
+        SurefireReport action = this.build.getAction(SurefireReport.class);
+        TestResult result = action.getResult();
+        assertEquals(2658, result.getTotalCount());
+        
+        // result count shouldn't increase if mojo is called again
+        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
+        action = this.build.getAction(SurefireReport.class);
+        result = action.getResult();
+        assertEquals(2658, result.getTotalCount());
     }
     
     @Test
@@ -205,7 +196,7 @@ public class SurefireArchiverUnitTest {
     private void touchReportFiles(File reportsDir) {
         File[] files = reportsDir.listFiles();
         for(File f : files) {
-            f.setLastModified(System.currentTimeMillis());
+            f.setLastModified(this.mojoInfo.getStartTime());
         }
     }
 
