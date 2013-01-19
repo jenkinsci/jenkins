@@ -178,7 +178,11 @@ public final class TestResult extends MetaTabulatedResult {
         }
     }
     
-
+    /**
+     * Collect reports from the given report files
+     * 
+     * @since 1.500
+     */
     public void parse(long buildTime, Iterable<File> reportFiles) throws IOException {
         boolean parsed=false;
 
@@ -209,17 +213,6 @@ public final class TestResult extends MetaTabulatedResult {
         
     }
     
-    /**
-     * Collect reports from the given report files
-     * 
-     * @since TODO
-     */ 
-    public void parse(Iterable<File> reportFiles) throws IOException {
-        for (File reportFile : reportFiles) {
-            parsePossiblyEmpty(reportFile);
-        }
-    }
-
     private void parsePossiblyEmpty(File reportFile) throws IOException {
         if(reportFile.length()==0) {
             // this is a typical problem when JVM quits abnormally, like OutOfMemoryError during a test.

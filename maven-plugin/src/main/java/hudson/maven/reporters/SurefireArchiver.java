@@ -114,7 +114,7 @@ public class SurefireArchiver extends TestFailureDetector {
     }
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        TestMojo testMojo = TestMojo.lookup(mojo);
+        TestMojo testMojo = getTestMojo(mojo);
         if (testMojo == null) return true;
 
         listener.getLogger().println(Messages.SurefireArchiver_Recording());
@@ -302,11 +302,14 @@ public class SurefireArchiver extends TestFailureDetector {
     }
 
     boolean isTestMojo(MojoInfo mojo) {
-        
+        return getTestMojo(mojo) != null;
+    }
+    
+    private TestMojo getTestMojo(MojoInfo mojo) {
         TestMojo testMojo = TestMojo.lookup(mojo);
 
         if (testMojo == null)
-            return false;
+            return null;
         
         try {
             // most test plugins have at least on of the test-skip properties:
@@ -314,14 +317,14 @@ public class SurefireArchiver extends TestFailureDetector {
             for (String skipProperty : skipProperties) {
                 Boolean skip = mojo.getConfigurationValue(skipProperty, Boolean.class);
                 if (((skip != null) && (skip))) {
-                    return false;
+                    return null;
                 }
             }
         } catch (ComponentConfigurationException e) {
-            return false;
+            return null;
         }
 
-        return true;
+        return testMojo;
     }
     
     // I'm not sure if SurefireArchiver is actually ever (de-)serialized,
