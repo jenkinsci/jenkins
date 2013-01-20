@@ -726,8 +726,8 @@ public final class FilePath implements Serializable {
             try {
                 if(archive.toExternalForm().endsWith(".zip"))
                     unzipFrom(cis);
-            else
-                untarFrom(cis,GZIP);
+                else
+                    untarFrom(cis,GZIP);
             } catch (IOException e) {
                 throw new IOException2(String.format("Failed to unpack %s (%d bytes read of total %d)",
                         archive,cis.getByteCount(),con.getContentLength()),e);
