@@ -76,15 +76,15 @@ public class SecretRewriter {
      *      if the rewrite doesn't happen, no copying.
      */
     public boolean rewrite(File f, File backup) throws InvalidKeyException, IOException {
-        FileInputStream fin = new FileInputStream(f);
+        AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
         try {
-            BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
-            AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
-            try {
-                PrintWriter out = new PrintWriter(new BufferedWriter(w));
+            PrintWriter out = new PrintWriter(new BufferedWriter(w));
 
-                boolean modified = false; // did we actually change anything?
+            boolean modified = false; // did we actually change anything?
+            try {
+                FileInputStream fin = new FileInputStream(f);
                 try {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
                     String line;
                     StringBuilder buf = new StringBuilder();
 
@@ -110,22 +110,22 @@ public class SecretRewriter {
                         out.println(buf.toString());
                     }
                 } finally {
-                    out.close();
+                    fin.close();
                 }
-
-                if (modified) {
-                    if (backup!=null) {
-                        backup.getParentFile().mkdirs();
-                        FileUtils.copyFile(f,backup);
-                    }
-                    w.commit();
-                }
-                return modified;
             } finally {
-                w.abort();
+                out.close();
             }
+
+            if (modified) {
+                if (backup!=null) {
+                    backup.getParentFile().mkdirs();
+                    FileUtils.copyFile(f,backup);
+                }
+                w.commit();
+            }
+            return modified;
         } finally {
-            fin.close();
+            w.abort();
         }
     }
 
