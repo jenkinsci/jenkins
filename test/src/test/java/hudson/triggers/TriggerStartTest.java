@@ -64,7 +64,7 @@ public class TriggerStartTest {
         MockTrigger t = new MockTrigger();
         p.addTrigger(t);
         p.save();
-        p = j.configRoundtrip(p);
+        p = (FreeStyleProject)j.configRoundtrip((Item)p);
         t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
         assertEquals("[true]", t.calls.toString());

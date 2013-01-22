@@ -106,7 +106,7 @@ public class UpdateSite {
     /**
      * Latest data as read from the data file.
      */
-    private Data data;
+    private transient Data data;
 
     /**
      * ID string for this update source.
@@ -408,10 +408,10 @@ public class UpdateSite {
 
         Data(JSONObject o) {
             this.sourceId = (String)o.get("id");
-            if (sourceId.equals(UpdateCenter.ID_DEFAULT)) {
-                core = new Entry(sourceId, o.getJSONObject("core"), url);
-            }
-            else {
+            JSONObject c = o.optJSONObject("core");
+            if (c!=null) {
+                core = new Entry(sourceId, c, url);
+            } else {
                 core = null;
             }
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
@@ -673,13 +673,19 @@ public class UpdateSite {
          * @param dynamicLoad
          *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
          *      the plugin will only take effect after the reboot.
+         *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
-                LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
-                dep.deploy(dynamicLoad);
+                UpdateCenter.InstallationJob job = uc.getJob(dep);
+                if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
+                    LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    dep.deploy(dynamicLoad);
+                } else {
+                    LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                }
             }
             return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
         }

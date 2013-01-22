@@ -53,7 +53,7 @@ public class ExecutedMojoTest {
         // Faking JUnit's Assert to be the plugin class
         this.mojoDescriptor.setImplementation(Assert.class.getName());
         MojoExecution execution = new MojoExecution(this.mojoDescriptor);
-        MojoInfo info = new MojoInfo(execution, null, null, null);
+        MojoInfo info = new MojoInfo(execution, null, null, null, -1);
         
         ExecutedMojo executedMojo = new ExecutedMojo(info, 1L);
         
@@ -66,7 +66,7 @@ public class ExecutedMojoTest {
         // Faking this class as the mojo impl:
         this.mojoDescriptor.setImplementation(getClass().getName());
         MojoExecution execution = new MojoExecution(this.mojoDescriptor);
-        MojoInfo info = new MojoInfo(execution, null, null, null);
+        MojoInfo info = new MojoInfo(execution, null, null, null, -1);
         
         ExecutedMojo executedMojo = new ExecutedMojo(info, 1L);
         

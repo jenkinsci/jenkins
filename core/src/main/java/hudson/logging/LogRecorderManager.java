@@ -30,8 +30,8 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
 import jenkins.model.Jenkins;
 import hudson.model.RSS;
-import hudson.tasks.Mailer;
 import hudson.util.CopyOnWriteMap;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -171,7 +171,7 @@ public class LogRecorderManager extends AbstractModelObject {
             }
 
             public String getEntryAuthor(LogRecord entry) {
-                return Mailer.descriptor().getAdminAddress();
+                return JenkinsLocationConfiguration.get().getAdminAddress();
             }
         },req,rsp);
     }

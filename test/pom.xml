@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.487-SNAPSHOT</version>
+    <version>1.500-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -75,6 +75,11 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>subversion</artifactId>
       <version>1.26</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
@@ -139,6 +144,16 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-insane</artifactId>
+      <version>RELEASE72</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.stephenc.findbugs</groupId>
+      <artifactId>findbugs-annotations</artifactId>
+      <version>1.3.9-1</version>
     </dependency>
   </dependencies>
 
@@ -236,6 +251,7 @@ THE SOFTWARE.
                 <include>**/UseRecipesWithJenkinsRuleTest.java</include>
                 <include>hudson/model/CauseTest.java</include>
                 <include>hudson/model/UpdateSiteTest.java</include>
+                <include>hudson/model/UserTest.class</include>
                 <include>hudson/triggers/TriggerStartTest.java</include>
               </includes>
             </configuration>
@@ -282,6 +298,7 @@ THE SOFTWARE.
                     <exclude>org/jvnet/hudson/main/UseRecipesWithJenkinsRuleTest.class</exclude>
                     <exclude>hudson/model/CauseTest.class</exclude>
                     <exclude>hudson/model/UpdateSiteTest.class</exclude>
+                    <exclude>hudson/model/UserTest.class</exclude>
                     <exclude>hudson/triggers/TriggerStartTest.class</exclude>
                   </excludes>
                 </configuration>

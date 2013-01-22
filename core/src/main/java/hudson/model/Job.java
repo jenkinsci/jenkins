@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.PermalinkList;
@@ -51,6 +52,7 @@ import hudson.util.DataSetBuilder;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
+import hudson.util.ProcessTree;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -60,6 +62,7 @@ import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -301,6 +304,47 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Builds up the environment variable map that's sufficient to identify a process
+     * as ours. This is used to kill run-away processes via {@link ProcessTree#killAll(Map)}.
+     */
+    public EnvVars getCharacteristicEnvVars() {
+        EnvVars env = new EnvVars();
+        env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
+        env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
+        env.put("JOB_NAME",getFullName());
+        return env;
+    }
+
+    /**
+     * Creates an environment variable override for launching processes for this project.
+     *
+     * <p>
+     * This is for process launching outside the build execution (such as polling, tagging, deployment, etc.)
+     * that happens in a context of a specific job.
+     *
+     * @param node
+     *      Node to eventually run a process on. The implementation must cope with this parameter being null
+     *      (in which case none of the node specific properties would be reflected in the resulting override.)
+     */
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env;
+
+        if (node!=null)
+            env = node.toComputer().buildEnvironment(listener);
+        else
+            env = new EnvVars();
+
+        env.putAll(getCharacteristicEnvVars());
+
+        // servlet container may have set CLASSPATH in its launch script,
+        // so don't let that inherit to the new child process.
+        // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
+        env.put("CLASSPATH","");
+
+        return env;
+    }
+
+    /**
      * Programatically updates the next build number.
      * 
      * <p>
@@ -453,6 +497,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Overrides from job properties.
+     * @see JobProperty#getJobOverrides
      */
     public Collection<?> getOverrides() {
         List<Object> r = new ArrayList<Object>();
@@ -527,7 +572,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets the read-only view of the recent builds.
      *
-     * @since 1.LAZYLOAD
+     * @since 1.485
      */
     @Exported(name="builds")
     public RunList<RunT> getNewBuilds() {
@@ -1269,4 +1314,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
+
+    private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
 }

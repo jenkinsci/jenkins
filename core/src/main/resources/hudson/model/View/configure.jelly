@@ -54,9 +54,10 @@ THE SOFTWARE.
         <!-- view property configurations -->
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
-        <f:block>
-          <f:submit value="OK" />
-        </f:block>
+        <f:bottomButtonBar>
+          <f:submit value="${%OK}" />
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

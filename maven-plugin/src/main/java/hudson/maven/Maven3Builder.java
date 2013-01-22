@@ -24,6 +24,7 @@
 package hudson.maven;
 
 import hudson.maven.MavenBuild.ProxyImpl2;
+import hudson.maven.reporters.TestFailureDetector;
 import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import static hudson.Util.*;
@@ -120,7 +122,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             PrintStream logger = listener.getLogger();
             
-            if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) return Result.SUCCESS;
+            if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) {
+                if(mavenExecutionListener.hasTestFailures()){
+                    return Result.UNSTABLE;    
+                }
+                return Result.SUCCESS;
+            }
             
             if (!mavenExecutionResult.getThrowables().isEmpty()) {
                 logger.println( "mavenExecutionResult exceptions not empty");
@@ -137,6 +144,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             if(markAsSuccess) {
                 listener.getLogger().println(Messages.MavenBuilder_Failed());
+                if(mavenExecutionListener.hasTestFailures()){
+                    return Result.UNSTABLE;    
+                }
                 return Result.SUCCESS;
             }
             return Result.FAILURE;
@@ -158,6 +168,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         private static final long serialVersionUID = 4942789836756366116L;
 
         private final Maven3Builder maven3Builder;
+        
+        private AtomicBoolean hasTestFailures = new AtomicBoolean();
        
         /**
          * Number of total nanoseconds {@link Maven3Builder} spent.
@@ -185,6 +197,14 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
         }
         
+        /**
+         * Whether there where test failures detected during the build.
+         * @since 1.496
+         */
+        public boolean hasTestFailures(){
+            return hasTestFailures.get();
+        }
+        
         private MavenBuildProxy2 getMavenBuildProxy2(MavenProject mavenProject) {
             for (Entry<ModuleName,FilterImpl> entry : proxies.entrySet()) {   
                if (entry.getKey().compareTo( new ModuleName( mavenProject ) ) == 0) {
@@ -198,8 +218,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             return reporters.get( new ModuleName( mavenProject ) );
         }        
         
-        private void initMojoStartTime( MavenProject mavenProject) {
-            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), System.currentTimeMillis());
+        private long initMojoStartTime( MavenProject mavenProject) {
+            long mojoStartTime = System.currentTimeMillis();
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), mojoStartTime);
+            return mojoStartTime;
         }
         
         private Long getMojoStartTime(MavenProject mavenProject) {
@@ -375,10 +397,10 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         }
         
         private void recordMojoStarted(ExecutionEvent event) {
-            initMojoStartTime( event.getProject() );
+            long startTime = initMojoStartTime( event.getProject() );
             
             MavenProject mavenProject = event.getProject();
-            MojoInfo mojoInfo = new MojoInfo(event);
+            MojoInfo mojoInfo = new MojoInfo(event,startTime);
 
             List<MavenReporter> mavenReporters = getMavenReporters( mavenProject );                
             
@@ -406,7 +428,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private void recordMojoEnded(ExecutionEvent event, Exception problem) {
             MavenProject mavenProject = event.getProject();
-            MojoInfo mojoInfo = new MojoInfo(event);
+            MojoInfo mojoInfo = new MojoInfo(event,getMojoStartTime(event.getProject()));
 
             recordExecutionTime(event,mojoInfo);
 
@@ -419,6 +441,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             for (MavenReporter mavenReporter : fixNull(mavenReporters)) {
                 try {
                     mavenReporter.postExecute( mavenBuildProxy2, mavenProject, mojoInfo, maven3Builder.listener, problem);
+                    if (mavenReporter instanceof TestFailureDetector) {
+                        if(((TestFailureDetector) mavenReporter).hasTestFailures()) {
+                            hasTestFailures.compareAndSet(false, true);
+                        }
+                    }
                 } catch ( InterruptedException e ) {
                     e.printStackTrace();
                 } catch ( IOException e ) {

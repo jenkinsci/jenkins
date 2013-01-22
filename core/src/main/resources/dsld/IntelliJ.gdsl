@@ -25,11 +25,14 @@ contributor(ctx) {
         for (def f=ct.containingFile.virtualFile; f!=null && !roots.contains(f); f=f.parent) {
             contentPaths << f.name
         }
-        def fqcn = contentPaths.reverse()[0..-2].join('.')
+        if (contentPaths.size()>0) {
+            // directory portion matches the FQCN
+            def fqcn = contentPaths.reverse()[0..<contentPaths.size()-1].join('.')
 
-        property name:"my", type:fqcn // but this is still shadowed by JellyBuilder.getMy
-        property name:"instance", type:fqcn
-        property name:"descriptor", type:fqcn+".DescriptorImpl"
+            property name:"my", type:fqcn // but this is still shadowed by JellyBuilder.getMy
+            property name:"instance", type:fqcn
+            property name:"descriptor", type:fqcn+".DescriptorImpl"
+        }
     }
 
     // normally, built-in delegateTo function would do, except in this case

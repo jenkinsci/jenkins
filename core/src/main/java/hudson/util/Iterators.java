@@ -23,11 +23,8 @@
  */
 package hudson.util;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -189,6 +186,33 @@ public class Iterators {
     }
 
     /**
+     * Returns an {@link Iterable} that lists items in the normal order
+     * but which hides the base iterator implementation details.
+     *
+     * @since 1.492
+     */
+    public static <T> Iterable<T> wrap(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                final Iterator<T> itr = base.iterator();
+                return new Iterator<T>() {
+                    public boolean hasNext() {
+                        return itr.hasNext();
+                    }
+
+                    public T next() {
+                        return itr.next();
+                    }
+
+                    public void remove() {
+                        itr.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
      * Returns a list that represents [start,end).
      *
      * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
@@ -334,7 +358,7 @@ public class Iterators {
      * Returns the elements in the base iterator until it hits any element that doesn't satisfy the filter.
      * Then the rest of the elements in the base iterator gets ignored.
      *
-     * @since 1.LAZYLOAD
+     * @since 1.485
      */
     public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
         return new Iterator<T>() {

@@ -135,7 +135,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -183,11 +182,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -201,6 +204,7 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.acegisecurity.GrantedAuthorityImpl;
 
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -618,15 +622,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
 
-//    /**
-//     * Sets guest credentials to access java.net Subversion repo.
-//     */
-//    public void setJavaNetCredential() throws SVNException, IOException {
-//        // set the credential to access svn.dev.java.net
-//        jenkins.getDescriptorByType(SubversionSCM.DescriptorImpl.class).postCredential("https://svn.dev.java.net/svn
-// /hudson/","guest","",null,new PrintWriter(new NullStream()));
-//    }
-
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
@@ -748,6 +743,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         return jenkins.createProject(MavenModuleSet.class,name);
     }
 
+    /**
+     * Creates a simple folder that other jobs can be placed in.
+     * @since 1.494
+     */
+    public MockFolder createFolder(String name) throws IOException {
+        return jenkins.createProject(MockFolder.class, name);
+    }
+
     protected String createUniqueProjectName() {
         return "test"+jenkins.getItems().size();
     }
@@ -780,26 +783,62 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Creates a test {@link hudson.security.SecurityRealm} that recognizes username==password as valid.
      */
-    public SecurityRealm createDummySecurityRealm() {
-        return new AbstractPasswordBasedSecurityRealm() {
-            @Override
-            protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-                if (username.equals(password))
-                    return loadUserByUsername(username);
-                throw new BadCredentialsException(username);
-            }
+    public DummySecurityRealm createDummySecurityRealm() {
+        return new DummySecurityRealm();
+    }
 
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
-                    DataAccessException {
-                return new org.acegisecurity.userdetails.User(username,"",true,true,true,true,new GrantedAuthority[]{AUTHENTICATED_AUTHORITY});
-            }
+    /** @see #createDummySecurityRealm */
+    public static class DummySecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
-            @Override
-            public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
-                throw new UsernameNotFoundException(groupname);
+        private final Map<String,Set<String>> groupsByUser = new HashMap<String,Set<String>>();
+
+        DummySecurityRealm() {}
+
+        @Override
+        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+            if (username.equals(password))
+                return loadUserByUsername(username);
+            throw new BadCredentialsException(username);
+        }
+
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
+                DataAccessException {
+            List<GrantedAuthority> auths = new ArrayList<GrantedAuthority>();
+            auths.add(AUTHENTICATED_AUTHORITY);
+            Set<String> groups = groupsByUser.get(username);
+            if (groups != null) {
+                for (String g : groups) {
+                    auths.add(new GrantedAuthorityImpl(g));
+                }
             }
-        };
+            return new org.acegisecurity.userdetails.User(username,"",true,true,true,true, auths.toArray(new GrantedAuthority[auths.size()]));
+        }
+
+        @Override
+        public GroupDetails loadGroupByGroupname(final String groupname) throws UsernameNotFoundException, DataAccessException {
+            for (Set<String> groups : groupsByUser.values()) {
+                if (groups.contains(groupname)) {
+                    return new GroupDetails() {
+                        @Override
+                        public String getName() {
+                            return groupname;
+                        }
+                    };
+                }
+            }
+            throw new UsernameNotFoundException(groupname);
+        }
+
+        /** Associate some groups with a username. */
+        public void addGroups(String username, String... groups) {
+            Set<String> gs = groupsByUser.get(username);
+            if (gs == null) {
+                groupsByUser.put(username, gs = new TreeSet<String>());
+            }
+            gs.addAll(Arrays.asList(groups));
+        }
+
     }
 
     /**
@@ -1595,7 +1634,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * Declares that this test case expects to start with one of the preset data sets.
-     * See https://svn.dev.java.net/svn/hudson/trunk/hudson/main/test/src/main/preset-data/
+     * See {@code test/src/main/preset-data/}
      * for available datasets and what they mean.
      */
     public JenkinsRule withPresetData(String name) {

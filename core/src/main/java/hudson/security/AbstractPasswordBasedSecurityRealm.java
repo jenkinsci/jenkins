@@ -5,7 +5,6 @@ import hudson.FilePath;
 import hudson.cli.CLICommand;
 import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
-import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -93,7 +92,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * return it as a {@link UserDetails} object. {@link org.acegisecurity.userdetails.User} is a convenient
      * implementation to use, but if your backend offers additional data, you may want to use your own subtype
      * so that the rest of Hudson can use those additional information (such as e-mail address --- see
-     * {@link MailAddressResolver}.)
+     * MailAddressResolver.)
      *
      * <p>
      * Properties like {@link UserDetails#getPassword()} make no sense, so just return an empty value from it.

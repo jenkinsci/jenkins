@@ -35,7 +35,6 @@ import org.apache.maven.model.Extension;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -161,6 +160,15 @@ public final class ModuleDependency implements Serializable {
         return result;
     }
 
+    /**
+     * Returns true if the version specification is a version range per maven version range syntax.
+     *
+     * @return true if version specification is a range.
+     */
+    public boolean isVersionRange() {
+        return version.startsWith("[") || version.startsWith("(");
+    }
+
     public VersionRange getVersionAsRange() throws InvalidVersionSpecificationException {
         if (range==null)
             range = VersionRange.createFromVersionSpec(version);
@@ -204,7 +212,8 @@ public final class ModuleDependency implements Serializable {
 
     /**
      * Checks whether this ModuleDependency is satisfied by the dependency of the given ModuleDependency.
-     * This caters for versions where the version string defines a version range.
+     * If the version string is a defined version, then it does a comparison. If the version string
+     * is a version range if parses this and caters for this.
      *
      * @param other The dependency to check for.
      * @return true if contained false otherwise.
@@ -214,7 +223,9 @@ public final class ModuleDependency implements Serializable {
             return false;
 
         try {
-            return getVersionAsRange().containsVersion(other.parseVersion());
+            return isVersionRange()
+                    ? getVersionAsRange().containsVersion(other.parseVersion())
+                    : parseVersion().compareTo(other.parseVersion()) == 0;
         } catch (InvalidVersionSpecificationException ivse) {
             return false;
         }

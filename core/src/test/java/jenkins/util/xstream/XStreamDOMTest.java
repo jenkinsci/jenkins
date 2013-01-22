@@ -23,7 +23,9 @@
  */
 package jenkins.util.xstream;
 
+import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.util.XStream2;
+import jenkins.util.xstream.XStreamDOM.ConverterImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,8 +67,13 @@ public class XStreamDOMTest {
     }
 
     private String getTestData1() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream("XStreamDOMTest.data1.xml")).replaceAll("\r\n", "\n");
+        return getTestData("XStreamDOMTest.data1.xml");
     }
+
+    private String getTestData(String resourceName) throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream(resourceName)).replaceAll("\r\n", "\n");
+    }
+
 
     private Foo createSomeFoo() {
         Foo foo = new Foo();
@@ -74,7 +84,13 @@ public class XStreamDOMTest {
 
     @Test
     public void testUnmarshal() throws Exception {
-        Foo foo = (Foo) xs.fromXML(getClass().getResourceAsStream("XStreamDOMTest.data1.xml"));
+        InputStream is = XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml");
+        Foo foo;
+        try {
+            foo = (Foo) xs.fromXML(is);
+        } finally {
+            is.close();
+        }
         assertEquals("test1",foo.bar.getTagName());
         assertEquals("value",foo.bar.getAttribute("key"));
         assertEquals("text!",foo.bar.getValue());
@@ -144,6 +160,16 @@ public class XStreamDOMTest {
                 assertXStreamDOMEquals(expected.getChildren().get(i), actual.getChildren().get(i));
             }
         }
-        
+    }
+
+    @Test
+    public void readFromInputStream() throws Exception {
+        for (String name : new String[]{"XStreamDOMTest.data1.xml","XStreamDOMTest.data2.xml"}) {
+            String input = getTestData(name);
+            XStreamDOM dom = XStreamDOM.from(new StringReader(input));
+            StringWriter sw = new StringWriter();
+            dom.writeTo(sw);
+            assertEquals(input.trim(),sw.toString().trim());
+        }
     }
 }

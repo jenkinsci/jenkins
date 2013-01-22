@@ -153,19 +153,16 @@ public class MavenArtifactArchiver extends MavenReporter {
         // do we have any assembly artifacts?
 //        System.out.println("Considering "+assemblies+" at "+MavenArtifactArchiver.this);
 //        new Exception().fillInStackTrace().printStackTrace();
-        if (assemblies!=null) {
+        if (build.isArchivingDisabled()) {
+          listener.getLogger().println("[JENKINS] Archiving disabled");
+        } else if (assemblies!=null) {
             for (File assembly : assemblies) {
                 if(mavenArtifacts.contains(assembly))
                     continue;   // looks like this is already archived
-                if (build.isArchivingDisabled()) {
-                    listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + assembly);
-                }
-                else {
-                    FilePath target = build.getArtifactsDir().child(assembly.getName());
-                    listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                    new FilePath(assembly).copyTo(target);
-                    // TODO: fingerprint
-                }
+                FilePath target = build.getArtifactsDir().child(assembly.getName());
+                listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
+                new FilePath(assembly).copyTo(target);
+                // TODO: fingerprint
             }
         }
 

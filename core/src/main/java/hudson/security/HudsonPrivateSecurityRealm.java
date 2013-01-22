@@ -36,7 +36,6 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
-import hudson.tasks.Mailer;
 import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
@@ -52,6 +51,7 @@ import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -72,10 +72,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -323,8 +327,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         // register the user
         User user = createAccount(si.username,si.password1);
-        user.addProperty(new Mailer.UserProperty(si.email));
         user.setFullName(si.fullname);
+        try {
+            // legacy hack. mail support has moved out to a separate plugin
+            Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+            Constructor<?> c = up.getDeclaredConstructor(String.class);
+            user.addProperty((UserProperty)c.newInstance(si.email));
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to set the e-mail address",e);
+        }
         user.save();
         return user;
     }
@@ -689,4 +702,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public void destroy() {
         }
     };
+
+    private static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
 }

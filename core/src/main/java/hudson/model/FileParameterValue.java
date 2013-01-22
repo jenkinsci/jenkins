@@ -59,7 +59,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterValue extends ParameterValue {
-    private final FileItem file;
+    private transient final FileItem file;
 
     /**
      * The name of the originally uploaded file.
@@ -77,17 +77,20 @@ public class FileParameterValue extends ParameterValue {
         this(name, new FileItemImpl(file), originalFileName);
     }
 
-    private FileParameterValue(String name, FileItem file, String originalFileName) {
+    protected FileParameterValue(String name, FileItem file, String originalFileName) {
         super(name);
         this.file = file;
         this.originalFileName = originalFileName;
     }
 
     // post initialization hook
-    /*package*/ void setLocation(String location) {
+    protected void setLocation(String location) {
         this.location = location;
     }
 
+    public String getLocation() {
+        return location;
+    }
 
     /**
      * Exposes the originalFileName as an environment variable.
@@ -115,6 +118,10 @@ public class FileParameterValue extends ParameterValue {
      */
     public String getOriginalFileName() {
         return originalFileName;
+    }
+
+    public FileItem getFile() {
+        return file;
     }
 
     @Override

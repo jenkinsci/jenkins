@@ -103,7 +103,10 @@ public class MojoInfo {
      */
     private final ConverterLookup converterLookup = new DefaultConverterLookup();
 
-    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+    private long startTime;
+
+    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator,
+            long startTime) {
         // in Maven3 there's no easy way to get the Mojo instance that's being executed,
         // so we just can't pass it in.
         if (mojo==null) mojo = new Maven3ProvidesNoAccessToMojo();
@@ -112,12 +115,13 @@ public class MojoInfo {
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;
         this.pluginName = new PluginName(mojoExecution.getMojoDescriptor().getPluginDescriptor());
+        this.startTime = startTime;
     }
 
-    public MojoInfo(ExecutionEvent event) {
+    public MojoInfo(ExecutionEvent event, long startTime) {
         this(event.getMojoExecution(), null,
                 new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() ),
-                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ));
+                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ), startTime);
     }
 
     /**
@@ -148,17 +152,21 @@ public class MojoInfo {
      *      the configuration in POM is syntactically incorrect. 
      */
     public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
-        PlexusConfiguration child = configuration.getChild(configName);
+        PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        
-        ClassLoader cl;
+        final ClassLoader cl;
         PluginDescriptor pd = mojoExecution.getMojoDescriptor().getPluginDescriptor();
-        // for maven2 builds ClassRealm doesn't extends ClassLoader !
-        // so check stuff with reflection
+        
+        // For maven2 builds getClassRealm returns a org.codehaus.classworlds.ClassRealm (instead of
+        // org.codehaus.plexus.classworlds.realm.ClassRealm)
+        // which doesn't extends ClassLoader !
+        // So get this with reflection and access the nested classloader ("getClassLoader")
         Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
        
-        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm) {
-            ClassRealm cr = (ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+        Object classRealm = ReflectionUtils.invokeMethod( method, pd );
+        if ( classRealm instanceof ClassRealm) {
+            ClassRealm cr = (ClassRealm) classRealm;
             cl = cr.getClassLoader();
         } else {
             cl = mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm();
@@ -273,5 +281,9 @@ public class MojoInfo {
         public void execute() throws MojoExecutionException, MojoFailureException {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public long getStartTime() {
+        return this.startTime;
     }
 }

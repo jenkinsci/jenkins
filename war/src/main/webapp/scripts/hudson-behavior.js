@@ -365,6 +365,15 @@ function parseHtml(html) {
 }
 
 /**
+ * Evaluates the script in global context.
+ */
+function geval(script) {
+    // see http://perfectionkills.com/global-eval-what-are-the-options/
+    // note that execScript cannot return value
+    (this.execScript || eval)(script);
+}
+
+/**
  * Emulate the firing of an event.
  *
  * @param {HTMLElement} element
@@ -396,7 +405,7 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl"));
+        return eval(this.getAttribute("checkUrl")); // need access to 'this'
     };
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
@@ -499,7 +508,7 @@ function renderOnDemand(e,callback,noBehaviour) {
         if (contextTagName=="TBODY") {
             c = document.createElement("DIV");
             c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c.firstChild.firstChild;
+            c = c./*JENKINS-15494*/lastChild.firstChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
@@ -537,7 +546,7 @@ function evalInnerHtmlScripts(text,callback) {
             });
         } else {
             q.push(function(cont) {
-                eval(s.match(matchOne)[2]);
+                geval(s.match(matchOne)[2]);
                 cont();
             });
         }
@@ -1174,6 +1183,8 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
+        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
+
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -2134,7 +2145,7 @@ function validateButton(checkUrl,paramList,button) {
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
-              eval(s);
+              geval(s);
             } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
             }

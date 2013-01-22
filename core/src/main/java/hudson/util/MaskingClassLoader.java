@@ -23,7 +23,10 @@
  */
 package hudson.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * {@link ClassLoader} that masks a specified set of classes
@@ -38,15 +41,15 @@ public class MaskingClassLoader extends ClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
-    private final String[] masks;
+    private List<String> masks;
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
-        super(parent);
-        this.masks = masks;
+        this(parent, Arrays.asList(masks));
     }
 
     public MaskingClassLoader(ClassLoader parent, Collection<String> masks) {
-        this(parent, masks.toArray(new String[masks.size()]));
+        super(parent);
+        this.masks = new ArrayList<String>(masks);
     }
 
     @Override
@@ -57,5 +60,9 @@ public class MaskingClassLoader extends ClassLoader {
         }
 
         return super.loadClass(name, resolve);
+    }
+
+    public synchronized void add(String prefix) {
+        masks.add(prefix);
     }
 }

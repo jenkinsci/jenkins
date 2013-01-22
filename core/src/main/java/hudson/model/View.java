@@ -28,7 +28,6 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
@@ -49,6 +48,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
+import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.XStream2;
@@ -99,6 +99,8 @@ import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -577,6 +579,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
          */
         private AbstractProject project;
 
+        /** @see UserAvatarResolver */
+        String avatar;
+
         UserInfo(User user, AbstractProject p, Calendar lastChange) {
             this.user = user;
             this.project = p;
@@ -628,6 +633,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Does this {@link View} has any associated user information recorded?
+     * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
     public boolean hasPeople() {
         return People.isApplicable(getItems());
@@ -709,6 +715,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return new Api(this);
         }
 
+        /**
+         * @deprecated Potentially very expensive call; do not use from Jelly views.
+         */
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
@@ -774,18 +783,23 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             }
                             for (ChangeLogSet.Entry entry : build.getChangeSet()) {
                                 User user = entry.getAuthor();
-                                synchronized (this) {
-                                    UserInfo info = users.get(user);
-                                    if (info == null) {
-                                        users.put(user, new UserInfo(user, p, build.getTimestamp()));
+                                UserInfo info = users.get(user);
+                                if (info == null) {
+                                    UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
+                                    userInfo.avatar = UserAvatarResolver.resolve(user, iconSize);
+                                    synchronized (this) {
+                                        users.put(user, userInfo);
                                         modified.add(user);
-                                    } else if (info.getLastChange().before(build.getTimestamp())) {
+                                    }
+                                } else if (info.getLastChange().before(build.getTimestamp())) {
+                                    synchronized (this) {
                                         info.project = p;
                                         info.lastChange = build.getTimestamp();
                                         modified.add(user);
                                     }
                                 }
                             }
+                            // XXX consider also adding the user of the UserCause when applicable
                             buildCount++;
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
@@ -803,8 +817,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         continue;
                     }
                     if (!users.containsKey(u)) {
+                        UserInfo userInfo = new UserInfo(u, null, null);
+                        userInfo.avatar = UserAvatarResolver.resolve(u, iconSize);
                         synchronized (this) {
-                            users.put(u, new UserInfo(u, null, null));
+                            users.put(u, userInfo);
                             modified.add(u);
                         }
                     }
@@ -820,7 +836,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", UserAvatarResolver.resolve(u, iconSize)).
+                        accumulate("avatar", i.avatar).
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 AbstractProject<?,?> p = i.getProject();
@@ -834,7 +850,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         public Api getApi() {
-            return new Api(parent instanceof Jenkins ? new People((Jenkins) parent) : new People((View) parent));
+            return new Api(new People());
+        }
+
+        /** JENKINS-16397 workaround */
+        @Restricted(NoExternalUse.class)
+        @ExportedBean
+        public final class People {
+
+            private View.People people;
+
+            @Exported public synchronized List<UserInfo> getUsers() {
+                if (people == null) {
+                    people = parent instanceof Jenkins ? new View.People((Jenkins) parent) : new View.People((View) parent);
+                }
+                return people.users;
+            }
         }
 
     }
@@ -902,7 +933,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         save();
 
-        rsp.sendRedirect2("../"+name);
+        FormApply.success("../"+name).generateResponse(req,rsp,this);
     }
 
     /**

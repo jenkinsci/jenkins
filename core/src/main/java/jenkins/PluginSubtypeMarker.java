@@ -58,7 +58,6 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("*")
 @MetaInfServices(Processor.class)
-// TODO: needs to pick up animal-sniffer 1.9 for this to take effect at a class (JENKINS-15426)
 @IgnoreJRERequirement
 @SuppressWarnings({"Since15"})
 public class PluginSubtypeMarker extends AbstractProcessor {

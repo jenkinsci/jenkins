@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Represents SCM change list.
@@ -207,7 +208,11 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgAnnotated() {
             MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
-                a.annotate(parent.build,this,markup);
+                try {
+                    a.annotate(parent.build,this,markup);
+                } catch(Exception e) {
+                    LOGGER.fine("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                }
 
             return markup.toString(false);
         }
@@ -218,6 +223,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
+        
+        static final Logger LOGGER = Logger.getLogger(ChangeLogSet.Entry.class.getName());
     }
     
     /**

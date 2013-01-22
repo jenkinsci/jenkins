@@ -24,7 +24,7 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
-import hudson.Util;
+import hudson.Launcher;
 import hudson.maven.Maven3Builder;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildInformation;
@@ -46,56 +46,67 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+
 /**
  * Records the surefire test result.
  * @author Kohsuke Kawaguchi
+ * @author Christoph Kutzinski
  */
-public class SurefireArchiver extends MavenReporter {
+public class SurefireArchiver extends TestFailureDetector {
     private transient TestResult result;
+    private final AtomicBoolean hasTestFailures = new AtomicBoolean();
     
     /**
-     * Store the filesets here as we want to track ignores between multiple runs of this class<br/>
-     * Note: Because this class can be run with different mojo goals with different path settings, 
-     * we track multiple {@link FileSet}s for each encountered <tt>reportsDir</tt>
+     * Store result files already parsed, so we don't parse them again,
+     * if a later running mojo specifies the same reports directory.
      */
-    private transient ConcurrentMap<File, FileSet> fileSets = new ConcurrentHashMap<File,FileSet>();
+    private transient ConcurrentMap<File, File> parsedFiles = new ConcurrentHashMap<File,File>();
+    
+    @Override
+    public boolean hasTestFailures() {
+        return hasTestFailures.get();
+    }
 
     public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
-        if (isSurefireTest(mojo)) {
-		if ((!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
-		    && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
-		    && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test"))) {
-                // tell surefire:test to keep going even if there was a failure,
-                // so that we can record this as yellow.
-                // note that because of the way Maven works, just updating system property at this point is too late
-                XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
-                if(c!=null && c.getValue() != null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
-                    if (build.getMavenBuildInformation().isMaven3OrLater()) {
-                        String fieldName = "testFailureIgnore";
-                        if (mojo.mojoExecution.getConfiguration().getChild( fieldName ) != null) {
-                          mojo.mojoExecution.getConfiguration().getChild( fieldName ).setValue( Boolean.TRUE.toString() );
-                        } else {
-                            Xpp3Dom child = new Xpp3Dom( fieldName );
-                            child.setValue( Boolean.TRUE.toString() );
-                            mojo.mojoExecution.getConfiguration().addChild( child );
-                        }
-                        
+        if (isTestMojo(mojo)) {
+            // tell test mojo to keep going even if there was a failure,
+            // so that we can record this as yellow.
+            // note that because of the way Maven works, just updating system property at this point is too late
+            
+            // Many test plugins have - as surefire - a configuration key 'testFailureIgnore' which defaults to
+            // ${maven.test.failure.ignore}, so just try that one and change value to true,
+            // if it's still at that default:
+            XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
+            if(c!=null && c.getValue() != null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
+                if (build.getMavenBuildInformation().isMaven3OrLater()) {
+                    String fieldName = "testFailureIgnore";
+                    if (mojo.mojoExecution.getConfiguration().getChild( fieldName ) != null) {
+                      mojo.mojoExecution.getConfiguration().getChild( fieldName ).setValue( Boolean.TRUE.toString() );
                     } else {
-                        c.setValue(Boolean.TRUE.toString());
+                        Xpp3Dom child = new Xpp3Dom( fieldName );
+                        child.setValue( Boolean.TRUE.toString() );
+                        mojo.mojoExecution.getConfiguration().addChild( child );
                     }
+                    
+                } else {
+                    c.setValue(Boolean.TRUE.toString());
                 }
             }
         }
@@ -103,46 +114,49 @@ public class SurefireArchiver extends MavenReporter {
     }
 
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
-        if (!isSurefireTest(mojo)) return true;
+        TestMojo testMojo = getTestMojo(mojo);
+        if (testMojo == null) return true;
 
         listener.getLogger().println(Messages.SurefireArchiver_Recording());
 
-        File reportsDir;
-        if (mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test") ||
-            mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test")) {
-            try {
-                reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
-            } catch (ComponentConfigurationException e) {
-                e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
-                build.setResult(Result.FAILURE);
-                return true;
-            }
+        Iterable<File> fileSet;
+        
+        try {
+            fileSet = testMojo.getReportFiles(pom, mojo);
+        } catch (ComponentConfigurationException e) {
+            e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
+            build.setResult(Result.FAILURE);
+            return true;
         }
-        else {
-            reportsDir = new File(pom.getBasedir(), "target/surefire-reports");
-        }
-
-        if(reportsDir.exists()) {
-            // surefire:test just skips itself when the current project is not a java project
-
+        
+        if(fileSet != null) {
             synchronized (build) {
-            	FileSet fileSet = getFileSet(reportsDir);
             	
-                DirectoryScanner ds = fileSet.getDirectoryScanner();
+                if(result==null)    result = new TestResult();
                 
-                if(ds.getIncludedFilesCount()==0)
-                    // no test in this module
+                // filter all the already parsed files:
+                fileSet = Iterables.filter(fileSet, new Predicate<File>() {
+                    @Override
+                    public boolean apply(File input) {
+                        return !parsedFiles.containsKey(input);
+                    }
+                });
+                
+                if (!fileSet.iterator().hasNext())
                     return true;
                 
-                String[] reportFiles = ds.getIncludedFiles();
-                rememberCheckedFiles(reportsDir, reportFiles);
-    
-                if(result==null)    result = new TestResult();
-                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), reportsDir, reportFiles);
+                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), fileSet);
+                // TODO kutzi: the following is a 'more correct' way to get the reports associated to a mojo,
+                // but needs more testing
+//                Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
+//                result.parse(reportFilesFiltered);
+                
+                
+                rememberCheckedFiles(fileSet);
                 
                 // final reference in order to serialize it:
                 final TestResult r = result;
-    
+                
                 int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                         private static final long serialVersionUID = -1023888330720922136L;
 
@@ -163,10 +177,25 @@ public class SurefireArchiver extends MavenReporter {
                 // intercept that (or otherwise build will be marked as failure)
                 if(failCount>0) {
                     markBuildAsSuccess(error,build.getMavenBuildInformation());
+                    hasTestFailures.set(true);
                 }
             }
         }
 
+        return true;
+    }
+    
+    @Override
+    public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        //Discard unneeded test result objects so they can't waste memory
+        for(MavenReporter reporter: build.getProject().getReporters()) {
+            if(reporter instanceof SurefireArchiver) {
+                SurefireArchiver surefireReporter = (SurefireArchiver) reporter;
+                if(surefireReporter.result != null) {
+                    surefireReporter.result = null;
+                }
+            }
+        }    
         return true;
     }
     
@@ -180,32 +209,12 @@ public class SurefireArchiver extends MavenReporter {
     }
     
     /**
-     * Returns the appropriate FileSet for the selected baseDir
-     * @param baseDir
-     * @return
-     */
-    FileSet getFileSet(File baseDir) {
-    	FileSet fs = fileSets.get(baseDir);
-    	if (fs == null) {
-    		fs = Util.createFileSet(baseDir, "*.xml","testng-results.xml,testng-failed.xml");
-    		FileSet previous = fileSets.putIfAbsent(baseDir, fs);
-    		if (previous != null) {
-    		    return previous;
-    		}
-    	}
-    	
-    	return fs;
-    }
-    
-    /**
      * Add checked files to the exclude list of the fileSet
      */
-    private void rememberCheckedFiles(File baseDir, String[] reportFiles) {
-    	FileSet fileSet = getFileSet(baseDir);
-    	
-    	for (String file : reportFiles) {
-    		fileSet.createExclude().setName(file);
-    	}
+    private void rememberCheckedFiles(Iterable<File> fileSet) {
+        for (File f : fileSet) {
+            this.parsedFiles.put(f, f);
+        }
     }
 
     /**
@@ -224,6 +233,65 @@ public class SurefireArchiver extends MavenReporter {
         }
     }
 
+//    private static Iterable<File> getFilesBetween(final File reportsDir,
+//            final String[] reportFiles, final long from, final long to) {
+//        return new FilteredReportsFileIterable(reportsDir, reportFiles, from, to);
+//    }
+    
+    /**
+     * Provides an {@link Iterable} view on the reports files while filtering out all files
+     * which don't have a lastModified time in between from and to.
+     */
+    static class FilteredReportsFileIterable implements Iterable<File> {
+        private final File reportsDir;
+        private final String[] reportFiles;
+        private final long from;
+        private final long to;
+
+        FilteredReportsFileIterable(File reportsDir,
+                String[] reportFiles, long from, long to) {
+            this.reportsDir = reportsDir;
+            this.reportFiles = reportFiles;
+            
+            // FAT filesystems have a max resolution of 2 seconds so we need to subtract/add 2 seconds to
+            // the range borders.
+            // All other fs should have a equal or better precision
+            this.from = from - 2000;
+            this.to = to + 2000;
+        }
+
+        @Override
+        public Iterator<File> iterator() {
+            
+            Predicate<File> fileWithinFromAndTo = new Predicate<File>() {
+                @Override
+                public boolean apply(File file) {
+                    long lastModified = file.lastModified();
+                    if (lastModified>=from && lastModified<=to) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            
+            return Iterators.filter(
+                    Iterators.transform(
+                        Iterators.forArray(reportFiles),
+                        new Function<String, File>() {
+                            @Override
+                            public File apply(String file) {
+                                return getFile(reportsDir,file);
+                            }
+                        }),
+                    fileWithinFromAndTo);
+        }
+        
+        // here for mocking purposes:
+        File getFile(File parent, String child) {
+            return new File(parent,child);
+        }
+    }
+
     /**
      * Part of the serialization data attached to {@link MavenBuild}.
      */
@@ -233,105 +301,36 @@ public class SurefireArchiver extends MavenReporter {
         }
     }
 
-    private boolean isSurefireTest(MojoInfo mojo) {
-        if ((!mojo.is("com.sun.maven", "maven-junit-plugin", "test"))
-            && (!mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run"))
-            && (!mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test"))
-            && (!mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test"))
-            && (!mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test"))
-            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test"))
-            && (!mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test"))
-            && (!mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test"))
-            && (!mojo.is("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test"))
-            && (!mojo.is("eviware", "maven-soapui-plugin", "test"))
-            && (!mojo.is("eviware", "maven-soapui-pro-plugin", "test")))
-            return false;
+    boolean isTestMojo(MojoInfo mojo) {
+        return getTestMojo(mojo) != null;
+    }
+    
+    private TestMojo getTestMojo(MojoInfo mojo) {
+        TestMojo testMojo = TestMojo.lookup(mojo);
 
+        if (testMojo == null)
+            return null;
+        
         try {
-            if (mojo.is("org.apache.maven.plugins", "maven-surefire-plugin", "test")) {
-                Boolean skip = mojo.getConfigurationValue("skip", Boolean.class);
+            // most test plugins have at least on of the test-skip properties:
+            String[] skipProperties = {"skip", "skipExec", "skipTests", "skipTest"};
+            for (String skipProperty : skipProperties) {
+                Boolean skip = mojo.getConfigurationValue(skipProperty, Boolean.class);
                 if (((skip != null) && (skip))) {
-                    return false;
-                }
-                
-                if (mojo.pluginName.version.compareTo("2.3") >= 0) {
-                    Boolean skipExec = mojo.getConfigurationValue("skipExec", Boolean.class);
-                    
-                    if (((skipExec != null) && (skipExec))) {
-                        return false;
-                    }
-                }
-                
-                if (mojo.pluginName.version.compareTo("2.4") >= 0) {
-                    Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                    
-                    if (((skipTests != null) && (skipTests))) {
-                        return false;
-                    }
-                }
-            }
-            else if (mojo.is("com.sun.maven", "maven-junit-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            }
-            else if (mojo.is("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-	        } else if (mojo.is("org.sonatype.tycho", "maven-osgi-test-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-	        } else if (mojo.is("org.eclipse.tycho", "tycho-surefire-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTest", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "android-maven-plugin", "internal-integration-test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (mojo.is("com.jayway.maven.plugins.android.generation2", "maven-android-plugin", "internal-integration-test")) {
-                if (mojo.pluginName.version.compareTo("3.0.0-alpha-6") < 0) {
-                    // Earlier versions do not support tests
-                    return false;
-                } else {
-                    Boolean skipTests = mojo.getConfigurationValue("skipTests", Boolean.class);
-                    if (((skipTests != null) && (skipTests))) {
-                        return false;
-                    }
-                }
-            } else if (mojo.is("org.codehaus.mojo", "gwt-maven-plugin", "test") && mojo.pluginName.version.compareTo("1.2") < 0) {
-                    // gwt-maven-plugin < 1.2 does not implement required Surefire option
-                    return false;
-            } else if (mojo.is("eviware", "maven-soapui-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
-                }
-            } else if (mojo.is("eviware", "maven-soapui-pro-plugin", "test")) {
-                Boolean skipTests = mojo.getConfigurationValue("skip", Boolean.class);
-                if (((skipTests != null) && (skipTests))) {
-                    return false;
+                    return null;
                 }
             }
         } catch (ComponentConfigurationException e) {
-            return false;
+            return null;
         }
 
-        return true;
+        return testMojo;
     }
     
     // I'm not sure if SurefireArchiver is actually ever (de-)serialized,
     // but just to be sure, set fileSets here
     protected Object readResolve() {
-        fileSets = new ConcurrentHashMap<File,FileSet>();
+        parsedFiles = new ConcurrentHashMap<File,File>();
         return this;
     }
 

@@ -50,7 +50,6 @@ public class UseRecipesWithJenkinsRuleTest {
             wc.goTo("loginError");
             fail("Expecting a 401 error");
         } catch (FailingHttpStatusCodeException e) {
-            e.printStackTrace();
             assertEquals(SC_UNAUTHORIZED,e.getStatusCode());
         }
 

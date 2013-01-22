@@ -79,13 +79,7 @@ THE SOFTWARE.
       <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
-      <f:entry title="${%Alternate settings file}"
-               help="/plugin/maven-plugin/alternate-settings.html">
-        <f:textbox name="alternateSettings"
-                   value="${it.alternateSettings}" 
-                   checkUrl="'checkFileRelative?value='+escape(this.value)"
-                   />
-      </f:entry>
+      		
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"
@@ -94,6 +88,10 @@ THE SOFTWARE.
                        title="${%Disable automatic artifact archiving}"
                        help="/plugin/maven-plugin/archivingDisabled.html"
                        checked="${it.isArchivingDisabled()}" />
+      <f:optionalBlock name="maven.disableTriggerDownstreamProjects"
+                       title="${%Disable triggering of downstream projects}"
+                       help="/plugin/maven-plugin/downstreamDisabled.html"
+                       checked="${it.isDisableTriggerDownstreamProjects()}" />
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
@@ -117,28 +115,10 @@ THE SOFTWARE.
             <f:option selected="${it.mavenValidationLevel == level.value}" value="${level.value}">${level.key}</f:option>
           </j:forEach>
         </select>
-      </f:entry>
-
-      <j:set var="mavenSettingsConfigs" value="${it.allMavenSettingsConfigs}" />
-      <f:entry title="${%Maven Settings Configs}">
-        <select class="setting-input" name="maven.mavenSettingsConfigId">
-          <f:option value="">- select -</f:option>
-          <j:forEach var="settingConfig" items="${mavenSettingsConfigs}">
-            <f:option selected="${it.settingConfigId == settingConfig.id}" value="${settingConfig.id}">${settingConfig.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-
-      <j:set var="mavenGlobalSettingsConfigs" value="${it.allGlobalMavenSettingsConfigs}" />
-      <f:entry title="${%Maven Global Settings Configs}">
-        <select class="setting-input" name="maven.mavenGlobalSettingConfigId">
-          <f:option value="">- select -</f:option>
-          <j:forEach var="globalSettingConfig" items="${mavenGlobalSettingsConfigs}">
-            <f:option selected="${it.globalSettingConfigId == globalSettingConfig.id}" value="${globalSettingConfig.id}">${globalSettingConfig.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-
+      </f:entry>     
+      
+      <f:dropdownDescriptorSelector title="${%Settings file}" field="settings" descriptors="${descriptor.settingsProviders}"/>
+      <f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  descriptors="${descriptor.globalSettingsProviders}"/>
     </f:advanced>
   </f:section>
 

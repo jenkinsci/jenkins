@@ -54,9 +54,10 @@ THE SOFTWARE.
           </j:if>
         </j:forEach>
 
-        <f:block>
+        <f:bottomButtonBar>
           <f:submit value="${%Save}" />
-        </f:block>
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

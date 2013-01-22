@@ -7,6 +7,7 @@ complete {
     def cddl = license("CDDL","http://www.sun.com/cddl/")
     def lgpl = license("LGPL 2.1","http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html")
     def mitLicense = license("MIT License","http://www.opensource.org/licenses/mit-license.php")
+    def bsdLicense = license("BSD License","http://opensource.org/licenses/BSD-2-Clause")
     def jenkinsLicense = license("MIT License","http://jenkins-ci.org/mit-license")
 
 
@@ -26,7 +27,7 @@ complete {
     // we elect to take them under CDDL.
     // note that central has a different POM from m.g.o-public (http://repo2.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.pom
     // vs http://maven.glassfish.org/content/groups/public/javax/mail/mail/1.4/mail-1.4.pom), so we aren't using  rewriteLicense here
-    match(["javax.mail:*","org.jvnet.hudson:activation","org.jvnet:tiger-types","javax.servlet:jstl"]) {
+    match(["javax.mail:*","org.jvnet.hudson:activation","org.jvnet:tiger-types","javax.servlet:jstl","javax.xml.stream:stax-api"]) {
         if (dependency.licenses.isEmpty())
             dependency.licenses=[cddl]
     }
@@ -37,10 +38,6 @@ complete {
 
     match("jaxen:jaxen") {
         rewriteLicense([], license("BSD License","http://jaxen.codehaus.org/license.html"))
-    }
-
-    match("args4j:args4j") {
-        rewriteLicense([], mitLicense)
     }
 
     match("*:dom4j") {
@@ -57,9 +54,9 @@ complete {
         rewriteLicense([],license("BSD License","http://simile.mit.edu/license.html"))
     }
 
-    match("*:txw2") {
-        // see http://java.net/projects/jaxb/sources/version2/content/trunk/txw2/license.txt?rev=3611
-        rewriteLicense([],cddl)
+    match("relaxngDatatype:relaxngDatatype") {
+        // see http://sourceforge.net/projects/relaxng/
+        rewriteLicense([],bsdLicense);
     }
 
     match(["org.kohsuke.jinterop:j-interop","org.kohsuke.jinterop:j-interopdeps"]) {
