@@ -340,6 +340,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
+            // "Utils.resolveSymlink(file)" does with NTFS symlinks what "file.getCanonicalFile()" is unable to 
+            // leaving original getCanonicalFile in case it is there for any additional reason
+            if(Util.isSymlink(buildDir)) {
+                buildDir = new File(Util.resolveSymlink(buildDir));
+            }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks
             return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
