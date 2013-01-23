@@ -516,7 +516,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public final FilePath getSomeWorkspace() {
         R b = getSomeBuildWithWorkspace();
-        return b!=null ? b.getWorkspace() : null;
+        if (b!=null) return b.getWorkspace();
+        for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+            FilePath f = browser.getWorkspace(this);
+            if (f != null) return f;
+        }
+        return null;
     }
 
     /**
@@ -1449,7 +1454,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
             WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( lb );
             if ( workspaceOfflineReason != null ) {
-                // workspace offline. build now, or nothing will ever be built
+                // workspace offline
+                for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+                    ws = browser.getWorkspace(this);
+                    if (ws != null) {
+                        return pollWithWorkspace(listener, scm, lb, ws, browser.getWorkspaceList());
+                    }
+                }
+
+                // build now, or nothing will ever be built
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1471,24 +1484,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             } else {
                 WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
-                // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
-                //
-                // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
-                // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
-                // by having multiple workspaces
-                WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-                Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
-                try {
-                    LOGGER.fine("Polling SCM changes of " + getName());
-                    if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                        calcPollingBaseline(lb,launcher,listener);
-                    PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
-                    pollingBaseline = r.remote;
-                    return r;
-                } finally {
-                    lease.release();
-                }
+                return pollWithWorkspace(listener, scm, lb, ws, l);
+
             }
         } else {
             // polling without workspace
@@ -1499,6 +1496,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
             pollingBaseline = r.remote;
             return r;
+        }
+    }
+
+    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
+        // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
+        // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
+        //
+        // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
+        // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
+        // by having multiple workspaces
+        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
+        Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
+        try {
+            LOGGER.fine("Polling SCM changes of " + getName());
+            if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                calcPollingBaseline(lb,launcher,listener);
+            PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
+            pollingBaseline = r.remote;
+            return r;
+        } finally {
+            lease.release();
         }
     }
 
