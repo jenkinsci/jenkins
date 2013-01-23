@@ -47,6 +47,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Receives notifications about builds.
@@ -86,7 +87,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      which becomes a part of the "console output" of this build. But when this method runs,
      *      the build is considered completed, so its status cannot be changed anymore.
      */
-    public void onCompleted(R r, TaskListener listener) {}
+    public void onCompleted(R r, @Nonnull TaskListener listener) {}
 
     /**
      * Called after a build is moved to the {@link Run.State#COMPLETED} state.
@@ -174,7 +175,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     /**
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
-    public static void fireCompleted(Run r, TaskListener listener) {
+    public static void fireCompleted(Run r, @Nonnull TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 try {

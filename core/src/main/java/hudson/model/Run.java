@@ -104,7 +104,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -112,12 +111,15 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import hudson.model.Run.RunExecution;
+import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import static java.util.logging.Level.*;
+import javax.annotation.Nonnull;
 
 /**
  * A particular execution of {@link Job}.
@@ -1224,7 +1226,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	    }
     	}
     	
-    	return new NullInputStream(0);
+        String message = "No such file: " + logFile;
+    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
     }
 
     public Reader getLogReader() throws IOException {
@@ -1465,7 +1468,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Among other things, this is often a necessary pre-condition
          * before invoking other builds that depend on this build.
          */
-        public abstract void cleanUp(BuildListener listener) throws Exception;
+        public abstract void cleanUp(@Nonnull BuildListener listener) throws Exception;
 
         public RunT getBuild() {
             return _this();
@@ -1597,19 +1600,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // see issue #980.
                 state = State.POST_PRODUCTION;
 
-                try {
-                    job.cleanUp(listener);
-                } catch (Exception e) {
-                    handleFatalBuildProblem(listener,e);
-                    // too late to update the result now
-                }
-                    
-                RunListener.fireCompleted(this,listener);
-
-                if(listener!=null)
+                if (listener != null) {
+                    try {
+                        job.cleanUp(listener);
+                    } catch (Exception e) {
+                        handleFatalBuildProblem(listener,e);
+                        // too late to update the result now
+                    }
+                    RunListener.fireCompleted(this,listener);
                     listener.finished(result);
-                if(listener!=null)
                     listener.closeQuietly();
+                }
 
                 try {
                     save();

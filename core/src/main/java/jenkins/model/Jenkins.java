@@ -94,7 +94,6 @@ import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -111,7 +110,6 @@ import hudson.UDPBroadcastThread;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
-import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.cli.CLICommand;
 import hudson.cli.CliEntryPoint;
@@ -135,7 +133,6 @@ import hudson.search.SearchItem;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
-import hudson.security.BasicAuthenticationFilter;
 import hudson.security.FederatedLoginService;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonFilter;
@@ -263,7 +260,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.text.Collator;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -381,17 +377,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     private ProjectNamingStrategy projectNamingStrategy = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
 
     /**
-     * Root directory for the workspaces. This value will be variable-expanded against
-     * job name and JENKINS_HOME.
-     *
+     * Root directory for the workspaces.
+     * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getWorkspaceFor(TopLevelItem)
      */
     private String workspaceDir = "${ITEM_ROOTDIR}/"+WORKSPACE_DIRNAME;
 
     /**
-     * Root directory for the workspaces. This value will be variable-expanded against
-     * job name and JENKINS_HOME.
-     *
+     * Root directory for the builds.
+     * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getBuildDirFor(Job)
      */
     private String buildsDir = "${ITEM_ROOTDIR}/builds";
@@ -1770,6 +1764,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
             return FormValidation.validateNonNegativeInteger(value);
+        }
+
+        public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
+            if (!value.contains("${")) {
+                File d = new File(value);
+                if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
+                    return FormValidation.error(value + " does not exist and probably cannot be created");
+                }
+                // XXX failure to use either ITEM_* variable might be an error too?
+            }
+            return FormValidation.ok(); // XXX assumes it will be OK after substitution, but can we be sure?
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
