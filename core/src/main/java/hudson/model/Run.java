@@ -2039,6 +2039,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         int number = Integer.parseInt(id.substring(hash + 1));
 
         Job<?,?> job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
+        if (job == null) {
+            throw new IllegalArgumentException("no such job " + jobName);
+        }
         return job.getBuildByNumber(number);
     }
 
