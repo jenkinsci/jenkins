@@ -86,6 +86,7 @@ public class AutoCompletionCandidates implements HttpResponse {
      *      For example, if you are configuring a job, this is the job being configured.
      * @param container
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     * @since 1.489
      */
     public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, @CheckForNull Item self, ItemGroup container) {
         if (self==container)
