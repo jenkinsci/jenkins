@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * Data representation of the auto-completion candidates.
@@ -86,7 +87,7 @@ public class AutoCompletionCandidates implements HttpResponse {
      * @param container
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
      */
-    public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, Item self, ItemGroup container) {
+    public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, @CheckForNull Item self, ItemGroup container) {
         if (self==container)
             container = self.getParent();
 

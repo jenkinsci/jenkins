@@ -101,7 +101,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
@@ -2028,7 +2027,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public String getExternalizableId() {
-        return project.getName() + "#" + getNumber();
+        return project.getFullName() + "#" + getNumber();
     }
 
     public static Run<?,?> fromExternalizableId(String id) {
@@ -2039,7 +2038,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         String jobName = id.substring(0, hash);
         int number = Integer.parseInt(id.substring(hash + 1));
 
-        Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItem(jobName);
+        Job<?,?> job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
         return job.getBuildByNumber(number);
     }
 
