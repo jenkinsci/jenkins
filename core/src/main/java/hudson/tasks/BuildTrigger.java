@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 /**
  * Triggers builds of other projects.
@@ -310,9 +311,9 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             return true;
         }
 
-        public boolean showEvenIfUnstableOption(Class<? extends AbstractProject> jobType) {
+        public boolean showEvenIfUnstableOption(@CheckForNull Class<? extends AbstractProject<?,?>> jobType) {
             // UGLY: for promotion process, this option doesn't make sense.
-            return !jobType.getName().contains("PromotionProcess");
+            return jobType == null || !jobType.getName().contains("PromotionProcess");
         }
 
         /**
