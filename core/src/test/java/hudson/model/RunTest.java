@@ -76,5 +76,33 @@ public class RunTest {
             TimeZone.setDefault(origTZ);
         }
     }
+    
+
+    @Bug(15587)
+    @Test 
+    public void testParseTimestampFromBuildDir() throws Exception {
+        //Assume.assumeTrue(!Functions.isWindows() || (NTFS && JAVA7) || ...);
+        
+        String buildDateTime = "2012-12-21_14-02-28";
+        long buildTimestamp = 1356091348000L;
+        int buildNumber = 155;
+        
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         StreamTaskListener l = new StreamTaskListener(baos);
+         
+         File tempDir = Util.createTempDir();    
+    	 File buildDir = new File(tempDir, buildDateTime);  
+         assertEquals(buildDir.mkdir(), true);  
+    	 File buildDirSymLink = new File(tempDir, Integer.toString(buildNumber));
+    	 
+         try {
+        	 buildDir.mkdir();
+        	 
+             Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
+             assertEquals(Run.parseTimestampFromBuildDir(buildDirSymLink), buildTimestamp);
+         } finally {
+             Util.deleteRecursive(tempDir);
+         }
+    }
 
 }
