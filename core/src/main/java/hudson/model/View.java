@@ -224,6 +224,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Sets the {@link ViewGroup} that this view belongs to.
+     */
+    public void setOwner(ViewGroup owner) {
+        this.owner = owner;
+    }
+
+    /**
      * Backward-compatible way of getting {@code getOwner().getItemGroup()}
      */
     public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
@@ -273,7 +280,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-    
+
+    /**
+     * Message displayed in the top page. Can be null. Includes HTML.
+     */
+    public void setDescription(String description) throws IOException {
+        synchronized (this) {
+            this.description = Util.fixEmptyAndTrim(description);
+        }
+        save();
+    }
+
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -355,10 +372,30 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     /**
+     * If true, only show relevant executors
+     */
+    public void setFilterExecutors(boolean filterExecutors) throws IOException {
+        synchronized (this) {
+            this.filterExecutors = filterExecutors;
+        }
+        save();
+    }
+    
+    /**
      * If true, only show relevant queue items
      */
     public boolean isFilterQueue() {
         return filterQueue;
+    }
+    
+    /**
+     * If true, only show relevant queue items
+     */
+    public void setFilterQueue(boolean filterQueue) throws IOException {
+        synchronized (this) {
+            this.filterQueue = filterQueue;
+        }
+        save();
     }
 
     /**
