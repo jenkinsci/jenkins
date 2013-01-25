@@ -225,6 +225,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Sets the {@link ViewGroup} that this view belongs to.
+     * @since 1.500
      */
     public void setOwner(ViewGroup owner) {
         this.owner = owner;
@@ -283,6 +284,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Message displayed in the top page. Can be null. Includes HTML.
+     * @since 1.500
      */
     public void setDescription(String description) throws IOException {
         synchronized (this) {
@@ -373,6 +375,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     /**
      * If true, only show relevant executors
+     * @since 1.500
      */
     public void setFilterExecutors(boolean filterExecutors) throws IOException {
         synchronized (this) {
@@ -390,6 +393,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     /**
      * If true, only show relevant queue items
+     * @since 1.500
      */
     public void setFilterQueue(boolean filterQueue) throws IOException {
         synchronized (this) {
