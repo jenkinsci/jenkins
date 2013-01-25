@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import jenkins.model.DependencyDeclarer;
 import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import hudson.security.NotSerilizableSecurityContext;
@@ -222,12 +223,12 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     /**
-     * Lists up {@link DependecyDeclarer} from the collection and let them builds dependencies.
+     * Lists up {@link DependencyDeclarer} from the collection and let them builds dependencies.
      */
     public void addDependencyDeclarers(AbstractProject upstream, Collection<?> possibleDependecyDeclarers) {
         for (Object o : possibleDependecyDeclarers) {
-            if (o instanceof DependecyDeclarer) {
-                DependecyDeclarer dd = (DependecyDeclarer) o;
+            if (o instanceof DependencyDeclarer) {
+                DependencyDeclarer dd = (DependencyDeclarer) o;
                 dd.buildDependencyGraph(upstream,this);
             }
         }
