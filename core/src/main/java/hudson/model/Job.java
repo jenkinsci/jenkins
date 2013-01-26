@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -679,6 +680,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public Object getDynamic(String token, StaplerRequest req,
             StaplerResponse rsp) {
+
         try {
             // try to interpret the token as build number
             return getBuildByNumber(Integer.valueOf(token));
@@ -691,10 +693,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             // is this a permalink?
             for (Permalink p : getPermalinks()) {
-                if(p.getId().equals(token))
+                if (p.getId().equals(token))
                     return p.resolve(this);
             }
 
+            // try to map that to build name
+            for (RunT build : getBuilds()) {
+
+                if (build.hasCustomDisplayName() && build.getDisplayName().equals(token)) {
+
+                    return build;
+                }
+            }
             return super.getDynamic(token, req, rsp);
         }
     }
