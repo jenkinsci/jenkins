@@ -81,16 +81,12 @@ public class RenderOnDemandClosure {
 
         this.variables = PackedMap.of(variables);
 
-<<<<<<< HEAD
         Set<String> _adjuncts = AdjunctsInPage.get().getIncluded();
         this.adjuncts = new String[_adjuncts.size()];
         int i = 0;
         for (String adjunct : _adjuncts) {
             this.adjuncts[i++] = adjunct.intern();
         }
-=======
-        this.adjuncts = AdjunctsInPage.get().getIncluded();
->>>>>>> 6f7891f... Properly inherit adjuncts into renderOnDemand lazy pieces
     }
 
     /**
