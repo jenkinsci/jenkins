@@ -179,4 +179,12 @@ public class SurefireArchiverDetectTestMojosTest {
         MojoInfo mojo = builder.build();
         assertTrue(this.surefireArchiver.isTestMojo(mojo));
     }
+    
+    @Test
+    public void shouldNotDetectNonTestGoal() {
+        MojoInfoBuilder builder = mojoBuilder("some.weird.internal","test-mojo", "verify");
+        
+        MojoInfo mojo = builder.build();
+        assertFalse(this.surefireArchiver.isTestMojo(mojo));
+    }
 }
