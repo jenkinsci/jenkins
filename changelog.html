@@ -74,6 +74,40 @@ Upcoming changes</a>
   <li class=bug>
     Slow rendering of view pages in large installations due to eager check whether the “People” link would show anything.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16244">issue 16244</a>)
+  <li class=bug>
+    Reduced size of memory leak in render-on-demand functionality used e.g. in configuration pages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16341">issue 16341</a>)
+  <li class=bug>
+    Improving responsiveness of <b>People</b> page.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16342">issue 16342</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16397">issue 16397</a>)
+  <li class=bug>
+    Exception printed to log while adding <b>Build other projects</b> post-build step.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16444">issue 16444</a>)
+  <li class=bug>
+    <code>BindException</code> when using <code>--daemon</code> with JMX.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14529">issue 14529</a>)
+  <li class=bug>
+    Improved logging and error output from SSHD in Jenkins.
+  <li class=rfe>
+    Linking to the <code>/threadDump</code> page from <code>/systemInfo</code> so it is discoverable.
+  <li class='major bug'>
+    Rekeying operation (from SECURITY-49 fix in 1.498) failed on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16319">issue 16319</a>)
+  <li class=bug>
+    JNLP slave index page failed to explain how to pass <code>-jnlpCredentials</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16273">issue 16273</a>)
+  <li class=bug>
+    Links should preserve used protocol
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16368">issue 16368</a>)
+  <li class=bug>
+    Don't report the same plugin twice in the update center if the filtering is in effect.
+   <li class=bug>
+     Accept any plugin with a 'test' goal as a test plugin in Maven jobs
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8334">issue 8334</a>)
+   <li class=rfe>
+      Avoid unnecessary downloads if automatically installed tools are up-to-date
+      (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16215">issue 16215</a>)
 </ul>
 </div><!--=END=-->
 <h3><a name=v1.499>What's new in 1.499</a> (2013/01/13)</h3>
