@@ -1866,20 +1866,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see #getRootUrlFromRequest()
      */
     public String getRootUrl() {
-
         String url = JenkinsLocationConfiguration.get().getUrl();
-        if(url!=null && !url.endsWith("/")) {
-            url += '/';
+        if(url!=null) {
+            if (!url.endsWith("/")) url += '/';
+            return url;
         }
-
         StaplerRequest req = Stapler.getCurrentRequest();
-
-        if(req == null) return url;
-
-        if(url == null) return getRootUrlFromRequest();
-
-        // replace current protocol, if any, with request protocol
-        return url.replaceFirst("^\\w+(?=://)", req.getScheme());
+        if(req!=null)
+            return getRootUrlFromRequest();
+        return null;
     }
 
     /**
