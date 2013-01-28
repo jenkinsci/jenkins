@@ -117,12 +117,22 @@ var breadcrumbs = (function() {
     jenkinsRules["#breadcrumbs LI"] = function (e) {
         // when the mouse hovers over LI, activate the menu
         $(e).observe("mouseover", function () { handleHover(e.firstChild,0) });
+        $(e).observe("mouseout",function() { hideMenu(document.getElementById("breadcrumb-menu"),0) });
     };
 
     jenkinsRules["A.model-link"] = function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
         $(a).observe("mouseover", function () { handleHover(a,500); });
+        $(a).observe("mouseout",function() { hideMenu(document.getElementById("breadcrumb-menu"),400); });
     };
+    
+    function hideMenu(e, delay){
+        window.setTimeout(function() {
+            if(!(Dom.getRegion(e).contains(mouse))){
+                menu.hide();
+            }
+        },delay);
+    }
 
     /**
      * @namespace breadcrumbs
