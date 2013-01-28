@@ -478,8 +478,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         private void debug(String msg) {
             LOGGER.fine(msg);
-            if (DEBUG)
-                maven3Builder.listener.getLogger().println(msg);
         }
         
 
@@ -561,8 +559,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     public static boolean markAsSuccess;
 
     private static final long serialVersionUID = 1L;
-
-    public static boolean DEBUG = true;
 
     private static final Logger LOGGER = Logger.getLogger(Maven3Builder.class.getName());
 }
