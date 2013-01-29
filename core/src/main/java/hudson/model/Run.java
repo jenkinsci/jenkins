@@ -1336,6 +1336,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         File rootDir = getRootDir();
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
+        if (tmp.exists()) {
+            Util.deleteRecursive(tmp);
+        }
+        // XXX on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
         // some user reported that they see some left-over .xyz files in the workspace,
