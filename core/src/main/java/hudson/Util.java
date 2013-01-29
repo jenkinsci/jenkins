@@ -703,8 +703,8 @@ public class Util {
     private static final boolean[] uriMap = new boolean[123];
     static {
         String raw =
-    "!  $  '()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %&        /          :;< >?                           [\]^ `                          {|}~
+    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %         /          :;< >?                           [\]^ `                          {|}~
   //  ^--so these are encoded
         int i;
         // Encode control chars and space
