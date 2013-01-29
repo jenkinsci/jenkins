@@ -507,6 +507,15 @@ public class Util {
         else                return s;
     }
 
+    public static String ensureEndsWith(String subject, String suffix) {
+
+        if (subject == null) return null;
+
+        if (subject.endsWith(suffix)) return subject;
+
+        return subject + suffix;
+    }
+
     /**
      * Computes MD5 digest of the given input stream.
      *

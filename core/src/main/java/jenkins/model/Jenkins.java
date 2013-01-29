@@ -256,6 +256,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.BindException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
@@ -291,6 +292,7 @@ import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -1866,15 +1868,43 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see #getRootUrlFromRequest()
      */
     public String getRootUrl() {
-        String url = JenkinsLocationConfiguration.get().getUrl();
+        final String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
-            if (!url.endsWith("/")) url += '/';
-            return url;
+            return Util.ensureEndsWith(url, "/");
         }
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null)
             return getRootUrlFromRequest();
         return null;
+    }
+
+    /**
+     * Get context path of Jenkins such as "/jenkins/" in "http://example.com/jenkins/"
+     * 
+     * <p>
+     * This methods relies upon {@link Jenkins#getRootUrl()}. Returned value can
+     * be used as a prefix for relative URLs.
+     * 
+     * @return
+     *      This method returns null if URL is unknown to Jenkins.
+     *      Returned String will always have the trailing '/'.
+     * @see #getRootUrl()
+     */
+    public String getRootContextPath() {
+
+        final String rootUrl = getRootUrl();
+        if (rootUrl == null) return null;
+
+        URL url;
+        try {
+
+            url = new URL(rootUrl);
+        } catch (MalformedURLException e) {
+
+            return null;
+        }
+
+        return Util.ensureEndsWith(url.getPath(), "/");
     }
 
     /**

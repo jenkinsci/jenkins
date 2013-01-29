@@ -54,7 +54,7 @@ public class HyperlinkNote extends ConsoleNote {
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         String url = this.url;
         if (url.startsWith("/"))
-            url = Jenkins.getInstance().getRootUrl()+url.substring(1);
+            url = Jenkins.getInstance().getRootContextPath()+url.substring(1);
         text.addMarkup(charPos, charPos + length, "<a href='" + url + "'"+extraAttributes()+">", "</a>");
         return null;
     }
