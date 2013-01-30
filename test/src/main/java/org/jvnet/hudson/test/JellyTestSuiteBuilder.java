@@ -59,7 +59,7 @@ public class JellyTestSuiteBuilder {
 
         if (res.isDirectory()) {
             for (final File jelly : (Collection <File>)FileUtils.listFiles(res,new String[]{"jelly"},true))
-                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jelly.getAbsolutePath().substring(0, (res.getAbsolutePath() + File.separator).length()), jct, requirePI));
+                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jelly.getAbsolutePath().substring((res.getAbsolutePath() + File.separator).length()), jct, requirePI));
         }
         if (res.getName().endsWith(".jar")) {
             String jarUrl = res.toURI().toURL().toExternalForm();
