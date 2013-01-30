@@ -2145,7 +2145,7 @@ function validateButton(checkUrl,paramList,button) {
           var s = rsp.getResponseHeader("script");
           if(s!=null)
             try {
-              geval(s);
+              eval(s);
             } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
             }
