@@ -34,6 +34,7 @@ import java.io.IOException;
  * Server-side code related to the &lt;f:apply> button.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.453
  */
 public class FormApply {
     /**
