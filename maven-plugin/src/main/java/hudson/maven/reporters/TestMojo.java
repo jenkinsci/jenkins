@@ -101,7 +101,7 @@ enum TestMojo {
     public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
         if (this.reportDirectoryConfigKey != null) {
             File reportsDir = mojo.getConfigurationValue(this.reportDirectoryConfigKey, File.class);
-            if (reportsDir.exists()) {
+            if (reportsDir != null && reportsDir.exists()) {
                 return getReportFiles(reportsDir, getFileSet(reportsDir));
             } 
             
