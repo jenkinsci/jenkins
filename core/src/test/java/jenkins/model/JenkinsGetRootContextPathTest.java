@@ -57,7 +57,7 @@ public class JenkinsGetRootContextPathTest {
     }
 
     @Test
-    public void getSlashFotEmptyPath() {
+    public void getSlashForEmptyPath() {
 
         forJenkinsAt("http://localhost:8080/");
         rootContextPathIs("/");

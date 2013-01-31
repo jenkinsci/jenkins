@@ -1888,9 +1888,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @return
      *      This method returns null if URL is unknown to Jenkins.
      *      Returned String will always have the trailing '/'.
+     * @since 1.501
      * @see #getRootUrl()
      */
-    public String getRootContextPath() {
+    public @CheckForNull String getRootContextPath() {
 
         final String rootUrl = getRootUrl();
         if (rootUrl == null) return null;
