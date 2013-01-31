@@ -201,7 +201,7 @@ public abstract class Cause {
                     ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
                     ModelHyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
             );
-            if(upstreamCauses != null && upstreamCauses.size() > 0) {
+            if (upstreamCauses != null && !upstreamCauses.isEmpty()) {
                 listener.getLogger().println(Messages.Cause_UpstreamCause_CausedBy());
                 for (Cause cause : upstreamCauses) {
                     cause.print(listener);
