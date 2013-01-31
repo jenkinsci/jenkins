@@ -45,6 +45,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 
+import javax.annotation.CheckForNull;
+
 import hudson.util.InvocationInterceptor;
 import hudson.util.ReflectionUtils;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -145,13 +147,14 @@ public class MojoInfo {
      *
      * @return
      *      The configuration value either specified in POM, or inherited from
-     *      parent POM, or default value if one is specified in mojo.
+     *      parent POM, or default value if one is specified in mojo,
+     *      or null if no such configuration value exists.
      *
      * @throws ComponentConfigurationException
      *      Not sure when exactly this is thrown, but it's probably when
      *      the configuration in POM is syntactically incorrect. 
      */
-    public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
+    @CheckForNull public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
         PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        

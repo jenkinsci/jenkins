@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import javax.annotation.CheckForNull;
+
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
@@ -60,7 +62,10 @@ enum TestMojo {
             File reportsDir = mojo.getConfigurationValue("jasmineTargetDir", File.class);
             String junitFileName = mojo.getConfigurationValue("junitXmlReportFileName", String.class);
             
-            return Collections.singleton(new File(reportsDir,junitFileName));
+            if (reportsDir != null && junitFileName != null) {
+                return Collections.singleton(new File(reportsDir,junitFileName));
+            }
+            return null;
         }
     },
     TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory");
@@ -98,7 +103,7 @@ enum TestMojo {
         return mojo.pluginName.version.compareTo(this.minimalRequiredVersion) >= 0;
     }
     
-    public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
+    @CheckForNull public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
         if (this.reportDirectoryConfigKey != null) {
             File reportsDir = mojo.getConfigurationValue(this.reportDirectoryConfigKey, File.class);
             if (reportsDir != null && reportsDir.exists()) {
