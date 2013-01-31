@@ -438,7 +438,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependecyDe
                 if (job==null)  continue;   // project no longer exists
                 if (job.getParent()==build.getParent())
                     continue;   // we are the parent of the build owner, that is almost like we are the owner 
-                if(job.getBuildByNumber(bp.getNumber())==null && !includeMissing)
+                if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
                     continue;               // build no longer exists
 
                 Integer existing = r.get(job);
