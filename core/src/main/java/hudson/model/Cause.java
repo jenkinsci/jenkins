@@ -34,6 +34,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
 /**
@@ -106,6 +107,10 @@ public abstract class Cause {
          * Maximum depth of transitive upstream causes we want to record.
          */
         private static final int MAX_DEPTH = 10;
+        /**
+         * Maximum number of transitive upstream causes we want to record.
+         */
+        private static final int MAX_LEAF = 25;
         private String upstreamProject, upstreamUrl;
         private int upstreamBuild;
         /**
@@ -128,8 +133,9 @@ public abstract class Cause {
             upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
             upstreamCauses = new ArrayList<Cause>();
+            AtomicInteger leaf = new AtomicInteger(MAX_LEAF);
             for (Cause c : up.getCauses()) {
-                upstreamCauses.add(trim(c, MAX_DEPTH));
+                upstreamCauses.add(trim(c, MAX_DEPTH, leaf));
             }
         }
 
@@ -140,7 +146,7 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
-        private @Nonnull Cause trim(@Nonnull Cause c, int depth) {
+        private @Nonnull Cause trim(@Nonnull Cause c, int depth, AtomicInteger leaf) {
             if (!(c instanceof UpstreamCause)) {
                 return c;
             }
@@ -148,7 +154,11 @@ public abstract class Cause {
             List<Cause> cs = new ArrayList<Cause>();
             if (depth > 0) {
                 for (Cause c2 : uc.upstreamCauses) {
-                    cs.add(trim(c2, depth - 1));
+                    if (leaf.decrementAndGet() > 0) {
+                        cs.add(trim(c2, depth - 1, leaf));
+                    } else {
+                        cs.add(new DeeplyNestedUpstreamCause());
+                    }
                 }
             } else {
                 cs.add(new DeeplyNestedUpstreamCause());
