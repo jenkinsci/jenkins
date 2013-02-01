@@ -118,6 +118,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -441,8 +442,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
-    public Executor getExecutor() {
-        for( Computer c : Jenkins.getInstance().getComputers() ) {
+    public @CheckForNull Executor getExecutor() {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return null;
+        }
+        for (Computer c : j.getComputers()) {
             for (Executor e : c.getExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;
