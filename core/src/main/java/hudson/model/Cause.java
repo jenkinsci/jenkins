@@ -196,15 +196,32 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
+            print(listener, 0);
+        }
+
+        private void indent(TaskListener listener, int depth) {
+            for (int i = 0; i < depth; i++) {
+                listener.getLogger().print(' ');
+            }
+        }
+
+        private void print(TaskListener listener, int depth) {
+            indent(listener, depth);
             listener.getLogger().println(
                 Messages.Cause_UpstreamCause_ShortDescription(
                     ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
                     ModelHyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
             );
             if (upstreamCauses != null && !upstreamCauses.isEmpty()) {
+                indent(listener, depth);
                 listener.getLogger().println(Messages.Cause_UpstreamCause_CausedBy());
                 for (Cause cause : upstreamCauses) {
-                    cause.print(listener);
+                    if (cause instanceof UpstreamCause) {
+                        ((UpstreamCause) cause).print(listener, depth + 1);
+                    } else {
+                        indent(listener, depth + 1);
+                        cause.print(listener);
+                    }
                 }
             }
         }
