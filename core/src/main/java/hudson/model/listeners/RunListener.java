@@ -204,6 +204,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
+        if (Jenkins.getInstance() == null) {
+            return;
+        }
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 try {
