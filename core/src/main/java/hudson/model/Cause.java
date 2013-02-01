@@ -34,7 +34,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 /**
@@ -133,9 +134,9 @@ public abstract class Cause {
             upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
             upstreamCauses = new ArrayList<Cause>();
-            AtomicInteger leaf = new AtomicInteger(MAX_LEAF);
+            Set<String> traversed = new HashSet<String>();
             for (Cause c : up.getCauses()) {
-                upstreamCauses.add(trim(c, MAX_DEPTH, leaf));
+                upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
         }
 
@@ -146,21 +147,19 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
-        private @Nonnull Cause trim(@Nonnull Cause c, int depth, AtomicInteger leaf) {
+        private @Nonnull Cause trim(@Nonnull Cause c, int depth, Set<String> traversed) {
             if (!(c instanceof UpstreamCause)) {
                 return c;
             }
             UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<Cause>();
             if (depth > 0) {
-                for (Cause c2 : uc.upstreamCauses) {
-                    if (leaf.decrementAndGet() > 0) {
-                        cs.add(trim(c2, depth - 1, leaf));
-                    } else {
-                        cs.add(new DeeplyNestedUpstreamCause());
+                if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
+                    for (Cause c2 : uc.upstreamCauses) {
+                        cs.add(trim(c2, depth - 1, traversed));
                     }
                 }
-            } else {
+            } else if (traversed.size() < MAX_LEAF) {
                 cs.add(new DeeplyNestedUpstreamCause());
             }
             return new UpstreamCause(uc.upstreamProject, uc.upstreamBuild, uc.upstreamUrl, cs);
