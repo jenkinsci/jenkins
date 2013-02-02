@@ -189,7 +189,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         } else {
             // From the old Hudson, or doCreateItem. Create this file now.
             saveNextBuildNumber();
-            save(); // and delete it from the config.xml
         }
 
         if (properties == null) // didn't exist < 1.72
