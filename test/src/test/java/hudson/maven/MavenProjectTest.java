@@ -57,6 +57,7 @@ public class MavenProjectTest extends HudsonTestCase {
     public void testCopyFromExistingMavenProject() throws Exception {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("abcdefg");
+        project.save();
         
         MavenModuleSet copy = (MavenModuleSet) Jenkins.getInstance().copy((AbstractProject<?, ?>)project, "copy" + System.currentTimeMillis());
         assertNotNull("Copied project must not be null", copy);
