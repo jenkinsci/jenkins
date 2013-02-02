@@ -561,10 +561,11 @@ THE SOFTWARE.
       <version>1.2</version>
     </dependency>
 
-    <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.4 until we figure out a mechanism to let plugins load its own -->
+    <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.7</version>
+      <!--  NOTE: 1.7 requires Java 6, so don't use it! -->
+      <version>1.6</version>
     </dependency>
 
     <dependency>
