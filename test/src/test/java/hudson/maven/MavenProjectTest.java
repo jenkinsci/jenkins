@@ -23,12 +23,15 @@
  */
 package hudson.maven;
 
+import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Shell;
 
 import java.io.File;
+
+import jenkins.model.Jenkins;
 
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
@@ -41,12 +44,24 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
  * @author huybrechts
  */
 public class MavenProjectTest extends HudsonTestCase {
+    
 
     public void testOnMaster() throws Exception {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("validate");
 
         buildAndAssertSuccess(project);
+    }
+    
+    @Bug(16499)
+    public void testCopyFromExistingMavenProject() throws Exception {
+        MavenModuleSet project = createSimpleProject();
+        project.setGoals("abcdefg");
+        project.save();
+        
+        MavenModuleSet copy = (MavenModuleSet) Jenkins.getInstance().copy((AbstractProject<?, ?>)project, "copy" + System.currentTimeMillis());
+        assertNotNull("Copied project must not be null", copy);
+        assertEquals(project.getGoals(), copy.getGoals());
     }
 
     private MavenModuleSet createSimpleProject() throws Exception {

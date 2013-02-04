@@ -55,12 +55,23 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.501>What's new in 1.501</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class='major bug'>
     Reverted change in 1.500 causing serious regression in HTTPS reverse proxy setups.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16368">issue 16368</a>)
   <li class='major bug'>
     Getting test results from custom test mojos failed build.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16573">issue 16573</a>)
+  <li class='major bug'>
+    Restored Java 5 compatibility.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16554">issue 16554</a>)
   <li class=bug>
     Bogus “Build Record Root Directory” inadequately diagnosed.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16457">issue 16457</a>)
@@ -81,14 +92,11 @@ Upcoming changes</a>
   <li class=bug>
     Fixed RememberMe cookie signature generation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16278">issue 16278</a>)
+  <li class=bug>
+    Fixed NullPointerException when copying from existing Maven job
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16499">issue 16499</a>)
     
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.501>What's new in 1.501</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
 </div><!--=END=-->
 <h3><a name=v1.500>What's new in 1.500</a> (2013/01/26)</h3>
 <ul class=image>
