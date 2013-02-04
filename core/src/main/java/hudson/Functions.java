@@ -96,6 +96,8 @@ import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
@@ -114,8 +116,10 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -1234,8 +1238,14 @@ public class Functions {
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-        if(SCHEME.matcher(urlName).find())
-            return urlName; // absolute URL
+        try {
+            if (new URI(urlName).isAbsolute()) {
+                return urlName;
+            }
+        } catch (URISyntaxException x) {
+            Logger.getLogger(Functions.class.getName()).log(Level.WARNING, "Failed to parse URL for {0}: {1}", new Object[] {action, x});
+            return null;
+        }
         if(urlName.startsWith("/"))
             return joinPath(Stapler.getCurrentRequest().getContextPath(),urlName);
         else
@@ -1428,8 +1438,6 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(context,descriptors);
     }
     
-    private static final Pattern SCHEME = Pattern.compile("^([a-zA-Z][a-zA-Z0-9+.-]*):");
-
     /**
      * Returns true if we are running unit tests.
      */

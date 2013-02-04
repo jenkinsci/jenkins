@@ -100,6 +100,12 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    @PrepareForTest(Stapler.class)
+    public void testGetActionUrl_unparsable() throws Exception{
+        assertEquals(null, Functions.getActionUrl(null, createMockAction("http://nowhere.net/stuff?something=^woohoo")));
+    }
+
     private static Action createMockAction(String uri) {
         Action action = mock(Action.class);
         when(action.getUrlName()).thenReturn(uri);
