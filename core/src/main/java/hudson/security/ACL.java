@@ -121,6 +121,7 @@ public abstract class ACL {
      * <p>
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
+     * @since 1.462
      */
     public static SecurityContext impersonate(Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
