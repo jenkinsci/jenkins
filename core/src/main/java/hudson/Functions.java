@@ -1548,6 +1548,9 @@ public class Functions {
      */
     public static String humanReadableByteSize(long size){
         String measure = "B";
+        if(size < 1024){
+            return size + " " + measure;
+        }
         Double number = new Double(size);
         if(number>=1024){
             number = number/1024;
@@ -1561,7 +1564,7 @@ public class Functions {
                 }
             }
         }
-        DecimalFormat format = new DecimalFormat("##.00");
+        DecimalFormat format = new DecimalFormat("#0.00");
         return format.format(number) + " " + measure;
     }
 }
