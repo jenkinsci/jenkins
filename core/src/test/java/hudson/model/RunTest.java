@@ -24,10 +24,19 @@
 
 package hudson.model;
 
+import hudson.Util;
+import hudson.util.StreamTaskListener;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.xml.stream.events.Characters;
+
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -87,22 +96,22 @@ public class RunTest {
         long buildTimestamp = 1356091348000L;
         int buildNumber = 155;
         
-         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         StreamTaskListener l = new StreamTaskListener(baos);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
+        
+        File tempDir = Util.createTempDir();    
+        File buildDir = new File(tempDir, buildDateTime);
+        assertEquals(true, buildDir.mkdir());
+        File buildDirSymLink = new File(tempDir, Integer.toString(buildNumber));
+        
+        try {
+        	buildDir.mkdir();
          
-         File tempDir = Util.createTempDir();    
-    	 File buildDir = new File(tempDir, buildDateTime);  
-         assertEquals(buildDir.mkdir(), true);  
-    	 File buildDirSymLink = new File(tempDir, Integer.toString(buildNumber));
-    	 
-         try {
-        	 buildDir.mkdir();
-        	 
-             Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
-             assertEquals(Run.parseTimestampFromBuildDir(buildDirSymLink), buildTimestamp);
-         } finally {
-             Util.deleteRecursive(tempDir);
-         }
+            Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
+            assertEquals(buildTimestamp, Run.parseTimestampFromBuildDir(buildDirSymLink));
+        } finally {
+            Util.deleteRecursive(tempDir);
+        }
     }
 
 }
