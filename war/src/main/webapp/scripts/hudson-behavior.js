@@ -221,7 +221,7 @@ function findNearBy(e,name) {
             var p = e;
             for (var i=0; i<prefixes.length; i++) {
                 p = findFormParent(p,null,true);
-                if (p.getAttribute("name")!=prefixes[i])
+                if (p.getAttribute("name")!=prefixes[i] && p.getAttribute("name")!=('_.' + prefixes[i]))
                     return null;
             }
             if (findFormParent(p,null,true)==owner)
@@ -635,6 +635,118 @@ var jenkinsRules = {
         e = null;
     },
 
+    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+        // set start.ref to checkbox in preparation of row-set-end processing
+        var checkbox = e.firstChild.firstChild;
+        e.setAttribute("ref", checkbox.id = "cb"+(iota++));
+    },
+
+    // see RowVisibilityGroupTest
+    "TR.rowvg-start" : function(e) {
+        // figure out the corresponding end marker
+        function findEnd(e) {
+            for( var depth=0; ; e=$(e).next()) {
+                if(Element.hasClassName(e,"rowvg-start"))    depth++;
+                if(Element.hasClassName(e,"rowvg-end"))      depth--;
+                if(depth==0)    return e;
+            }
+        }
+
+        e.rowVisibilityGroup = {
+            outerVisible: true,
+            innerVisible: true,
+            /**
+             * TR that marks the beginning of this visibility group.
+             */
+            start: e,
+            /**
+             * TR that marks the end of this visibility group.
+             */
+            end: findEnd(e),
+
+            /**
+             * Considers the visibility of the row group from the point of view of outside.
+             * If you think of a row group like a logical DOM node, this is akin to its .style.display.
+             */
+            makeOuterVisisble : function(b) {
+                this.outerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
+             * shares the single visibility, this just needs to be one boolean, as opposed to many.
+             *
+             * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
+             */
+            makeInnerVisisble : function(b) {
+                this.innerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
+             */
+            updateVisibility : function() {
+                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+                for (var e=this.start; e!=this.end; e=$(e).next()) {
+                    if (e.rowVisibilityGroup && e!=this.start) {
+                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+                    } else {
+                        e.style.display = display;
+                    }
+                }
+                layoutUpdateCallback.call();
+            },
+
+            /**
+             * Enumerate each row and pass that to the given function.
+             *
+             * @param {boolean} recursive
+             *      If true, this visits all the rows from nested visibility groups.
+             */
+            eachRow : function(recursive,f) {
+                if (recursive) {
+                    for (var e=this.start; e!=this.end; e=$(e).next())
+                        f(e);
+                } else {
+                    throw "not implemented yet";
+                }
+            }
+        };
+    },
+
+    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+        // figure out the corresponding start block
+        e = $(e);
+        var end = e;
+
+        for( var depth=0; ; e=e.previous()) {
+            if(e.hasClassName("row-set-end"))        depth++;
+            if(e.hasClassName("row-set-start"))      depth--;
+            if(depth==0)    break;
+        }
+        var start = e;
+
+        // @ref on start refers to the ID of the element that controls the JSON object created from these rows
+        // if we don't find it, turn the start node into the governing node (thus the end result is that you
+        // created an intermediate JSON object that's always on.)
+        var ref = start.getAttribute("ref");
+        if(ref==null)
+            start.id = ref = "rowSetStart"+(iota++);
+
+        applyNameRef(start,end,ref);
+    },
+
+    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+        // this is suffixed by a pointless string so that two processing for optional-block-start
+        // can sandwitch row-set-end
+        // this requires "TR.row-set-end" to mark rows
+        var checkbox = e.firstChild.firstChild;
+        updateOptionalBlock(checkbox,false);
+    },
+
 // form fields that are validated via AJAX call to the server
 // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
     "INPUT.validated" : registerValidator,
@@ -885,118 +997,6 @@ var jenkinsRules = {
 
     "INPUT.yui-button" : function(e) {
         makeButton(e);
-    },
-
-    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
-        // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.firstChild.firstChild;
-        e.setAttribute("ref", checkbox.id = "cb"+(iota++));
-    },
-
-    // see RowVisibilityGroupTest
-    "TR.rowvg-start" : function(e) {
-        // figure out the corresponding end marker
-        function findEnd(e) {
-            for( var depth=0; ; e=$(e).next()) {
-                if(Element.hasClassName(e,"rowvg-start"))    depth++;
-                if(Element.hasClassName(e,"rowvg-end"))      depth--;
-                if(depth==0)    return e;
-            }
-        }
-
-        e.rowVisibilityGroup = {
-            outerVisible: true,
-            innerVisible: true,
-            /**
-             * TR that marks the beginning of this visibility group.
-             */
-            start: e,
-            /**
-             * TR that marks the end of this visibility group.
-             */
-            end: findEnd(e),
-
-            /**
-             * Considers the visibility of the row group from the point of view of outside.
-             * If you think of a row group like a logical DOM node, this is akin to its .style.display.
-             */
-            makeOuterVisisble : function(b) {
-                this.outerVisible = b;
-                this.updateVisibility();
-            },
-
-            /**
-             * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
-             * shares the single visibility, this just needs to be one boolean, as opposed to many.
-             *
-             * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
-             */
-            makeInnerVisisble : function(b) {
-                this.innerVisible = b;
-                this.updateVisibility();
-            },
-
-            /**
-             * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
-             */
-            updateVisibility : function() {
-                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
-                for (var e=this.start; e!=this.end; e=$(e).next()) {
-                    if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
-                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
-                    } else {
-                        e.style.display = display;
-                    }
-                }
-                layoutUpdateCallback.call();
-            },
-
-            /**
-             * Enumerate each row and pass that to the given function.
-             *
-             * @param {boolean} recursive
-             *      If true, this visits all the rows from nested visibility groups.
-             */
-            eachRow : function(recursive,f) {
-                if (recursive) {
-                    for (var e=this.start; e!=this.end; e=$(e).next())
-                        f(e);
-                } else {
-                    throw "not implemented yet";
-                }
-            }
-        };
-    },
-
-    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
-        // figure out the corresponding start block
-        e = $(e);
-        var end = e;
-
-        for( var depth=0; ; e=e.previous()) {
-            if(e.hasClassName("row-set-end"))        depth++;
-            if(e.hasClassName("row-set-start"))      depth--;
-            if(depth==0)    break;
-        }
-        var start = e;
-
-        // @ref on start refers to the ID of the element that controls the JSON object created from these rows
-        // if we don't find it, turn the start node into the governing node (thus the end result is that you
-        // created an intermediate JSON object that's always on.)
-        var ref = start.getAttribute("ref");
-        if(ref==null)
-            start.id = ref = "rowSetStart"+(iota++);
-
-        applyNameRef(start,end,ref);
-    },
-
-    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
-        // this is suffixed by a pointless string so that two processing for optional-block-start
-        // can sandwitch row-set-end
-        // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.firstChild.firstChild;
-        updateOptionalBlock(checkbox,false);
     },
 
     // image that shows [+] or [-], with hover effect.

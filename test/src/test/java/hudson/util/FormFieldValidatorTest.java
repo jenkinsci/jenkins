@@ -23,15 +23,25 @@
  */
 package hudson.util;
 
+import hudson.Extension;
+import hudson.RelativePath;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
+//import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 import org.jvnet.hudson.test.recipes.WithPlugin;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -44,6 +54,9 @@ public class FormFieldValidatorTest extends HudsonTestCase {
         new WebClient().getPage(p,"configure");
     }
 
+    /**
+     * Used in testNegative for Bug(3382)
+     */
     public static class BrokenFormValidatorBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
             public boolean isApplicable(Class jobType) {
@@ -69,7 +82,7 @@ public class FormFieldValidatorTest extends HudsonTestCase {
      */
     @Bug(3382)
     public void testNegative() throws Exception {
-        DescriptorImpl d = new DescriptorImpl();
+        Descriptor d = new BrokenFormValidatorBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
             FreeStyleProject p = createFreeStyleProject();
@@ -86,4 +99,98 @@ public class FormFieldValidatorTest extends HudsonTestCase {
         }
     }
 
+    /**
+     * Used in testOptionalCompoundFieldDependentValidation for Bug(16676)
+     */
+    public static class CompoundFieldValidatorBuilder extends Publisher {
+        private CompoundField compoundField;
+        private String foo;
+        
+        @DataBoundConstructor
+        public CompoundFieldValidatorBuilder(CompoundField compoundField, String foo) {
+            this.compoundField = compoundField;
+            this.foo = foo;
+        }
+        
+        @Extension
+        public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+            public boolean isApplicable(Class jobType) {
+                return true;
+            }
+
+            public void doCheckFoo(@QueryParameter boolean compoundField,
+                    @QueryParameter @RelativePath("compoundField") String abc, 
+                    @QueryParameter @RelativePath("compoundField") String xyz, String value) {
+                if (compoundField && (abc == null || xyz == null)) {
+                    throw new Error("doCheckFoo is broken");
+                }
+            }
+
+            public String getDisplayName() {
+                return "Compound Field form field validation";
+            }
+        }
+
+        public CompoundField getCompoundField() {
+            return compoundField;
+        }
+
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.BUILD;
+        }
+    }
+
+    /**
+     * Used in testOptionalCompoundFieldDependentValidation for Bug(16676)
+     */
+    public static class CompoundField extends AbstractDescribableImpl<CompoundField> {
+        private final String abc;
+        private final String xyz;
+
+        @DataBoundConstructor
+        public CompoundField(String abc, String xyz) {
+            this.abc = abc;
+            this.xyz = xyz;
+        }
+
+        public String getAbc() {
+            return abc;
+        }
+
+        public String getXyz() {
+            return xyz;
+        }
+        
+        @Extension
+        public static final class DescriptorImpl extends Descriptor<CompoundField> {
+            public String getDisplayName() { return ""; }
+        }
+    }
+
+    /**
+     * Confirms that relative paths work in field validation
+     */
+    @Bug(16676)
+    public void testOptionalCompoundFieldDependentValidation() throws Exception {
+        Descriptor d1 = new CompoundFieldValidatorBuilder.DescriptorImpl();
+        Publisher.all().add(d1);
+        Descriptor d2 = new CompoundField.DescriptorImpl();
+        Publisher.all().add(d2);
+        FreeStyleProject p = createFreeStyleProject();
+        p.getPublishersList().add(new CompoundFieldValidatorBuilder(new CompoundField("AABBCC", "XXYYZZ"), "FFOOOO"));
+        try {
+            new WebClient().getPage(p,"configure");
+            
+        } catch(AssertionError e) {
+            if(e.getMessage().contains("doCheckFoo is broken")) {
+                fail("Optional nested field values were null");
+            } else {
+                throw e;
+            }
+        } finally {
+            Publisher.all().remove(d1);
+            Publisher.all().remove(d2);
+        }
+    }
 }
