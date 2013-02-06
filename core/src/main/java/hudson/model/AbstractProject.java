@@ -162,7 +162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds;
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -271,6 +271,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.onCreatedFromScratch();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
+        assert builds==null;
+        builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
+            public R create(File dir) throws IOException {
+        	return loadBuild(dir);
+            }
+        });
     }
 
     @Override
