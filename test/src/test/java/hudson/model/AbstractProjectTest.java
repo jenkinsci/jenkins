@@ -41,15 +41,14 @@ import hudson.util.OneShotEvent;
 import java.io.IOException;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -284,46 +283,11 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastStable, 1);
     }
 
-    // Force garbage collection of ref's referent. Taken from NetBeans code.
-    public static void forceGc(final Reference<?> ref) {
-        ArrayList<byte[]> alloc = new ArrayList<byte[]>();
-        int size = 100000;
-        System.out.print("forcing garbage collection...");
-        for (int i = 0; i < 50; i++) {
-            if (ref.get() == null) {
-                System.out.println("succeeded");
-                return;
-            }
-            try {
-                System.gc();
-                System.runFinalization();
-            } catch (OutOfMemoryError error) {
-                // OK
-            }
-            try {
-                alloc.add(new byte[size]);
-                size = (int)(((double)size) * 1.3);
-            } catch (OutOfMemoryError error) {
-                size = size / 2;
-            }
-            try {
-                if (i % 3 == 0) {
-                    Thread.sleep(321);
-                }
-            } catch (InterruptedException t) {
-                // ignore
-            }
-        }
-        System.out.println("failed");
-    }
-
     @Bug(15156)
-    public void testGetBuildAfterGc() throws Exception {
+    public void testGetBuildAfterGC() throws Exception {
         FreeStyleProject job = createFreeStyleProject();
-        job.scheduleBuild2(0, new Cause.UserCause()).get();
-        // If this fails to garbage-collect, the test run will not have any value, but it will
-        // at least not fail.
-        forceGc(new WeakReference(job.getLastBuild()));
+        job.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assertTrue(job.getLastBuild() != null);
     }
 }

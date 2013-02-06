@@ -203,7 +203,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
         if (buildDirs==null) {
-            // the job may just have been created
+            // the job may have just been created
             buildDirs=EMPTY_STRING_ARRAY;
         }
         // wrap into ArrayList to enable mutation
