@@ -122,6 +122,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 	
     /**
      * {@link ExecutorService} that performs installation.
+     * @since 1.501
      */
     private final ExecutorService installerService = Executors.newSingleThreadExecutor(
         new DaemonThreadFactory(new ThreadFactory() {

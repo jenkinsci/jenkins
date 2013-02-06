@@ -42,15 +42,14 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -164,15 +163,16 @@ public class UpdateSite {
                 public FormValidation call() throws Exception {
                     URL src = new URL(getUrl());
                     URLConnection conn = ProxyConfiguration.open(src);
-                    BufferedInputStream is = new BufferedInputStream(conn.getInputStream());
+                    InputStream is = conn.getInputStream();
                     try {
-                        // remove non-json characters from update center
-                        is.mark(1);
-                        for (int r = is.read(); r > 0 && (char)r != '{'; r = is.read()) {
-                            is.mark(1);
+                        String uncleanJson = IOUtils.toString(is,"UTF-8");
+                        int jsonStart = uncleanJson.indexOf("{\"");
+                        if (jsonStart >= 0) {
+                            return updateData(uncleanJson.substring(jsonStart));
+                        } else {
+                            throw new IOException("Could not find json in content of " +
+                            		"update center from url: "+src.toExternalForm());
                         }
-                        is.reset();
-                        return updateData(is);
                     } finally {
                         if (is != null)
                             is.close();
@@ -187,16 +187,14 @@ public class UpdateSite {
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        dataTimestamp = System.currentTimeMillis();
-        return updateData(req.getInputStream());
+        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"));
     }
 
-    private FormValidation updateData(java.io.InputStream is)
+    private FormValidation updateData(String json)
             throws IOException {
 
         dataTimestamp = System.currentTimeMillis();
 
-        String json = IOUtils.toString(is,"UTF-8");
         JSONObject o = JSONObject.fromObject(json);
 
         int v = o.getInt("updateCenterVersion");
@@ -205,8 +203,8 @@ public class UpdateSite {
 
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
-            if (e.kind!=Kind.OK && Stapler.getCurrentRequest() != null) {
-                LOGGER.severe(e.renderHtml());
+            if (e.kind!=Kind.OK) {
+                LOGGER.severe(e.getMessage());
                 return e;
             }
         }
