@@ -32,16 +32,12 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-//import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * @author Kohsuke Kawaguchi
