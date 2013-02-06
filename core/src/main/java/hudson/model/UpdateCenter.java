@@ -41,6 +41,7 @@ import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
@@ -76,6 +77,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -130,6 +132,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }));
 
+    /**
+     * An {@link ExecutorService} for updating UpdateSites.
+     */
+    protected final ExecutorService updateService = Executors.newCachedThreadPool(
+        new DaemonThreadFactory(new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("Update site data downloader");
+                return t;
+            }
+        }));
+        
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
      */
@@ -601,6 +615,32 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         return new ArrayList<Plugin>(pluginMap.values());
+    }
+    
+    /**
+     * Ensure that all UpdateSites are up to date, without requiring a user to
+     * browse to the instance.
+     * 
+     * @return a list of {@link FormValidation} for each updated Update Site
+     * @throws ExecutionException 
+     * @throws InterruptedException 
+     * @since 1.501
+     * 
+     */
+    public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
+        List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
+        for (UpdateSite site : getSites()) {
+            Future<FormValidation> future = site.updateDirectly();
+            if (future != null) {
+                futures.add(future);
+            }
+        }
+        
+        List<FormValidation> results = new ArrayList<FormValidation>(); 
+        for (Future<FormValidation> f : futures) {
+            results.add(f.get());
+        }
+        return results;
     }
 
 

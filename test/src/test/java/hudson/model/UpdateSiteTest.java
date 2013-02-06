@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import hudson.model.UpdateSite.Data;
+import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.net.URL;
 import java.util.Arrays;
@@ -64,4 +65,19 @@ public class UpdateSiteTest {
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
     }
 
+    @Test public void updateDirectlyWithJson() throws Exception {
+        UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json").toExternalForm());
+        assertNull(us.getPlugin("AdaptivePlugin"));
+        FormValidation result = us.updateDirectly().get();
+        assertTrue(result.equals(FormValidation.ok()));
+        assertNotNull(us.getPlugin("AdaptivePlugin"));
+    }
+    
+    @Test public void updateDirectlyWithHtml() throws Exception {
+        UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json").toExternalForm());
+        assertNull(us.getPlugin("AdaptivePlugin"));
+        FormValidation result = us.updateDirectly().get();
+        assertTrue(result.equals(FormValidation.ok()));
+        assertNotNull(us.getPlugin("AdaptivePlugin"));
+    }
 }

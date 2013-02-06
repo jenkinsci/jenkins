@@ -27,6 +27,7 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
@@ -41,14 +42,18 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,11 +151,52 @@ public class UpdateSite {
     }
 
     /**
+     * Update the json file from the given URL if the file
+     * does not exist, or is otherwise due for update.
+     * 
+     * @return null if no updates are necessary, or the future result
+     * @since 1.501
+     */
+    public Future<FormValidation> updateDirectly() {
+        if (! getDataFile().exists() || isDue()) {
+            return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
+                
+                public FormValidation call() throws Exception {
+                    URL src = new URL(getUrl());
+                    URLConnection conn = ProxyConfiguration.open(src);
+                    BufferedInputStream is = new BufferedInputStream(conn.getInputStream());
+                    try {
+                        // remove non-json characters from update center
+                        is.mark(1);
+                        for (int r = is.read(); r > 0 && (char)r != '{'; r = is.read()) {
+                            is.mark(1);
+                        }
+                        is.reset();
+                        return updateData(is);
+                    } finally {
+                        if (is != null)
+                            is.close();
+                    }
+                }
+            });
+        }
+            return null;
+    }
+    
+    /**
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
         dataTimestamp = System.currentTimeMillis();
-        String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+        return updateData(req.getInputStream());
+    }
+
+    private FormValidation updateData(java.io.InputStream is)
+            throws IOException {
+
+        dataTimestamp = System.currentTimeMillis();
+
+        String json = IOUtils.toString(is,"UTF-8");
         JSONObject o = JSONObject.fromObject(json);
 
         int v = o.getInt("updateCenterVersion");
@@ -158,7 +205,7 @@ public class UpdateSite {
 
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
-            if (e.kind!=Kind.OK) {
+            if (e.kind!=Kind.OK && Stapler.getCurrentRequest() != null) {
                 LOGGER.severe(e.renderHtml());
                 return e;
             }
