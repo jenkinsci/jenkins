@@ -69,7 +69,7 @@ public class UpdateSiteTest {
         UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         FormValidation result = us.updateDirectly().get();
-        assertTrue(result.equals(FormValidation.ok()));
+        assertEquals(FormValidation.ok(), result);
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
     
@@ -77,7 +77,7 @@ public class UpdateSiteTest {
         UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json.html").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         FormValidation result = us.updateDirectly().get();
-        assertTrue(result.equals(FormValidation.ok()));
+        assertEquals(FormValidation.ok(), result);
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
 }
