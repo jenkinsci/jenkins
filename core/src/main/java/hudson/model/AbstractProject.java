@@ -162,7 +162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds;
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -271,17 +271,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.onCreatedFromScratch();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
+        assert builds == null;
+        builds = createBuildRunMap();
     }
 
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        RunMap<R> builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
-            public R create(File dir) throws IOException {
-                return loadBuild(dir);
-            }
-        });
+        RunMap<R> builds = createBuildRunMap();
         if (this.builds!=null) {
             // if we are reloading, keep all those that are still building intact
             for (R r : this.builds.getLoadedBuilds().values()) {
@@ -298,6 +296,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
+    }
+
+    private RunMap<R> createBuildRunMap() {
+        return new RunMap<R>(getBuildDir(), new Constructor<R>() {
+            public R create(File dir) throws IOException {
+                return loadBuild(dir);
+            }
+        });
     }
 
     private synchronized List<Trigger<?>> triggers() {

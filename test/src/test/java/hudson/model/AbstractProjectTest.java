@@ -41,12 +41,14 @@ import hudson.util.OneShotEvent;
 import java.io.IOException;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
+import java.lang.ref.WeakReference;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -279,5 +281,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         // Links should not be updated since build failed
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
+    }
+
+    @Bug(15156)
+    public void testGetBuildAfterGC() throws Exception {
+        FreeStyleProject job = createFreeStyleProject();
+        job.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
+        assertTrue(job.getLastBuild() != null);
     }
 }
