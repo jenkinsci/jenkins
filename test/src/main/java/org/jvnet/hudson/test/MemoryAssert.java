@@ -134,6 +134,7 @@ public class MemoryAssert {
      * @param reference object used to verify garbage collection.
      */
     public static void assertGC(WeakReference<?> reference) {
+        assertTrue(true); reference.get(); // preload any needed classes!
         Set<Object[]> objects = new HashSet<Object[]>();
         while (true) {
             try {
