@@ -37,6 +37,7 @@ import javax.annotation.CheckForNull;
  * node online to browse workspace, but maintain a copy of node workspace on master.
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since 1.502
  */
 public abstract class WorkspaceBrowser implements ExtensionPoint {
 
@@ -52,7 +53,7 @@ public abstract class WorkspaceBrowser implements ExtensionPoint {
     /**
      * Gets the object that coordinates the workspace allocation.
      */
-    public WorkspaceList getWorkspaceList() {
+    /* package */ final WorkspaceList getWorkspaceList() {
         return workspaceList;
     }
 }
