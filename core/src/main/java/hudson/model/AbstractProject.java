@@ -269,10 +269,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
-        // solicit initial contributions, especially from TransientProjectActionFactory
-        updateTransientActions();
         assert builds == null;
         builds = createBuildRunMap();
+        // solicit initial contributions, especially from TransientProjectActionFactory
+        updateTransientActions();
     }
 
     @Override
