@@ -162,7 +162,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected transient RunMap<R> builds;
+    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
+    protected transient RunMap<R> builds = new RunMap<R>();
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -269,7 +270,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
-        assert builds == null;
         builds = createBuildRunMap();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
