@@ -204,7 +204,7 @@ public class UpdateSite {
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
             if (e.kind!=Kind.OK) {
-                LOGGER.severe(e.getMessage());
+                LOGGER.severe(e.toString());
                 return e;
             }
         }
