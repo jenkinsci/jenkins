@@ -23,6 +23,9 @@
  */
 package hudson;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+
 import hudson.model.Action;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -117,4 +120,21 @@ public class FunctionsTest {
         when(req.getContextPath()).thenReturn(contextPath);
         return req;
     }
+
+    @Test
+    @Bug(16630)
+    public void testhumanReadableFileSize(){
+        DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
+        DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
+        char sep = symbols.getDecimalSeparator();
+        assertEquals("0 B", Functions.humanReadableByteSize(0));
+        assertEquals("1023 B", Functions.humanReadableByteSize(1023));
+        assertEquals("1"+sep+"00 KB", Functions.humanReadableByteSize(1024));
+        assertEquals("1"+sep+"50 KB", Functions.humanReadableByteSize(1536));
+        assertEquals("20"+sep+"00 KB", Functions.humanReadableByteSize(20480));
+        assertEquals("1023"+sep+"00 KB", Functions.humanReadableByteSize(1047552));
+        assertEquals("1"+sep+"00 MB", Functions.humanReadableByteSize(1048576));
+        assertEquals("1"+sep+"50 GB", Functions.humanReadableByteSize(1610612700));
+    }
+
 }
