@@ -807,7 +807,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 mon = BuildStepMonitor.BUILD;
             }
             Result oldResult = AbstractBuild.this.getResult();
+            for (BuildStepListener bsl : BuildStepListener.all()) {
+                bsl.started(AbstractBuild.this, bs, listener);
+            }
             boolean canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+            for (BuildStepListener bsl : BuildStepListener.all()) {
+                bsl.finished(AbstractBuild.this, bs, listener, canContinue);
+            }
             Result newResult = AbstractBuild.this.getResult();
             if (newResult != oldResult) {
                 String buildStepName = getBuildStepName(bs);
