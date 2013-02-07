@@ -24,16 +24,12 @@
 
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
-import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,14 +45,7 @@ public class UpdateSiteTest {
         URL url = UpdateSiteTest.class.getResource("/plugins/tasks-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
-        UpdateSite.signatureCheck = false;
-        { // XXX pending UpdateSite.updateDirectly:
-            j.jenkins.setCrumbIssuer(null);
-            WebRequestSettings wrs = new WebRequestSettings(new URL(j.getURL(), "/updateCenter/byId/default/postBack"), HttpMethod.POST);
-            wrs.setRequestBody(IOUtils.toString(url.openStream()));
-            Page p = j.createWebClient().getPage(wrs);
-            assertEquals(/* FormValidation.OK */"<div/>", p.getWebResponse().getContentAsString());
-        }
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         Data data = site.getData();
         assertNotNull(data);
         assertEquals(new URL(url, "jenkins.war").toString(), data.core.url);
@@ -68,16 +57,14 @@ public class UpdateSiteTest {
     @Test public void updateDirectlyWithJson() throws Exception {
         UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
-        FormValidation result = us.updateDirectly().get();
-        assertEquals(FormValidation.ok(), result);
+        assertEquals(FormValidation.ok(), us.updateDirectly(false).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
     
     @Test public void updateDirectlyWithHtml() throws Exception {
         UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json.html").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
-        FormValidation result = us.updateDirectly().get();
-        assertEquals(FormValidation.ok(), result);
+        assertEquals(FormValidation.ok(), us.updateDirectly(false).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
 }

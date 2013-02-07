@@ -150,13 +150,14 @@ public class UpdateSite {
     }
 
     /**
-     * Update the json file from the given URL if the file
+     * Update the data file from the given URL if the file
      * does not exist, or is otherwise due for update.
-     * 
+     * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
+     * @param signatureCheck whether to enforce the signature (may be off only for testing!)
      * @return null if no updates are necessary, or the future result
-     * @since 1.501
+     * @since 1.502
      */
-    public Future<FormValidation> updateDirectly() {
+    public Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
             return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
                 
@@ -168,7 +169,7 @@ public class UpdateSite {
                         String uncleanJson = IOUtils.toString(is,"UTF-8");
                         int jsonStart = uncleanJson.indexOf("{\"");
                         if (jsonStart >= 0) {
-                            return updateData(uncleanJson.substring(jsonStart));
+                            return updateData(uncleanJson.substring(jsonStart), signatureCheck);
                         } else {
                             throw new IOException("Could not find json in content of " +
                             		"update center from url: "+src.toExternalForm());
@@ -187,19 +188,24 @@ public class UpdateSite {
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"));
+        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
     }
 
-    private FormValidation updateData(String json)
+    private FormValidation updateData(String json, boolean signatureCheck)
             throws IOException {
 
         dataTimestamp = System.currentTimeMillis();
 
         JSONObject o = JSONObject.fromObject(json);
 
-        int v = o.getInt("updateCenterVersion");
-        if(v !=1)
-            throw new IllegalArgumentException("Unrecognized update center version: "+v);
+        try {
+            int v = o.getInt("updateCenterVersion");
+            if (v != 1) {
+                throw new IllegalArgumentException("Unrecognized update center version: " + v);
+            }
+        } catch (JSONException x) {
+            throw new IllegalArgumentException("Could not find (numeric) updateCenterVersion in " + json, x);
+        }
 
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
@@ -775,8 +781,4 @@ public class UpdateSite {
     // The name uses UpdateCenter for compatibility reason.
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
-    /**
-     * Off by default until we know this is reasonably working.
-     */
-    public static boolean signatureCheck = true; // Boolean.getBoolean(UpdateCenter.class.getName()+".signatureCheck");
 }
