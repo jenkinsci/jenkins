@@ -32,7 +32,6 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import hudson.model.Executor;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -117,7 +116,8 @@ public abstract class ACL {
      * 
      * <p>
      * When the impersonation is over, be sure to restore the previous authentication
-     * via {@code SecurityContextHolder.setContext(returnValueFromThisMethod)}.
+     * via {@code SecurityContextHolder.setContext(returnValueFromThisMethod)};
+     * or just use {@link #impersonate(Authentication,Runnable)}.
      * 
      * <p>
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
@@ -129,4 +129,20 @@ public abstract class ACL {
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return old;
     }
+
+    /**
+     * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
+     * @param auth authentication, such as {@link #SYSTEM}
+     * @param body an action to run with this alternate authentication in effect
+     * @since 1.502
+     */
+    public static void impersonate(Authentication auth, Runnable body) {
+        SecurityContext old = impersonate(auth);
+        try {
+            body.run();
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
+    }
+
 }
