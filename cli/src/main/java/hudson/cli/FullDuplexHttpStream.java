@@ -115,8 +115,9 @@ public class FullDuplexHttpStream {
     	private void getData() {
             try {
                 String base = createCrumbUrlBase();
-                crumbName = readData(base+"?xpath=/*/crumbRequestField/text()");
-                crumb = readData(base+"?xpath=/*/crumb/text()");
+                String[] pair = readData(base + "?xpath=concat(//crumbRequestField,\":\",//crumb)").split(":", 2);
+                crumbName = pair[0];
+                crumb = pair[1];
                 isValid = true;
                 LOGGER.fine("Crumb data: "+crumbName+"="+crumb);
             } catch (IOException e) {
