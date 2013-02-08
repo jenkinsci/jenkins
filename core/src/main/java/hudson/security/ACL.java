@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
@@ -125,7 +126,7 @@ public abstract class ACL {
      */
     public static SecurityContext impersonate(Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(new NotSerilizableSecurityContext(auth));
+        SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return old;
     }
 }
