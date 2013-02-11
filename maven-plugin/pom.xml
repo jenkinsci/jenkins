@@ -301,17 +301,6 @@ THE SOFTWARE.
           <groupId>org.apache.maven.wagon</groupId>
           <artifactId>wagon-webdav</artifactId>
         </exclusion>
-
-        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Jenkins -->
-        <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>nekohtml</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>nekohtml</groupId>
-          <artifactId>xercesMinimal</artifactId>
-        </exclusion>
-
       </exclusions>
     </dependency>
 
@@ -330,7 +319,7 @@ THE SOFTWARE.
           <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
-        <!-- prefer net.sourceforge.nekohtml:nekohtml:jar:1.9.13 so that we use consistent version across Jenkins -->
+        <!-- SECURITY-61: unused -->
         <exclusion>
           <groupId>nekohtml</groupId>
           <artifactId>nekohtml</artifactId>
@@ -340,12 +329,6 @@ THE SOFTWARE.
           <artifactId>xercesMinimal</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sourceforge.nekohtml</groupId>
-      <artifactId>nekohtml</artifactId>
-      <version>1.9.13</version>
     </dependency>
 
     <dependency>
