@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Build;
 import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import org.kohsuke.stapler.Ancestor;
@@ -123,6 +124,25 @@ public class MatrixRun extends Build<MatrixConfiguration,MatrixRun> {
                 r.put(e.getKey(), e.getValue());
         }
         return r;
+    }
+
+    @Override
+    /** Override adds the Axis values to Environment list
+     */
+    public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
+        EnvVars env = super.getEnvironment(log);
+
+        AxisList axes = getParent().getParent().getAxes();
+        for (Map.Entry<String,String> e : getParent().getCombination().entrySet()) {
+            Axis a = axes.find(e.getKey());
+            if (a!=null) {
+                a.addBuildVariable(e.getValue(),env);
+            } else {
+                env.put(e.getKey(), e.getValue());
+            }
+        }
+        EnvVars.resolve(env);
+        return env;
     }
 
     /**
