@@ -21,6 +21,13 @@ import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
+import java.io.IOException;
+import java.io.OutputStream;
+import javax.servlet.ServletException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * A CrumbIssuer represents an algorithm to generate a nonce value, known as a
@@ -153,7 +160,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     }
 
     public Api getApi() {
-        return new Api(this);
+        return new RestrictedApi(this);
     }
 
     /**
@@ -180,4 +187,45 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             }
         });
     }
+
+    @Restricted(NoExternalUse.class)
+    public static class RestrictedApi extends Api {
+
+        RestrictedApi(CrumbIssuer instance) {
+            super(instance);
+        }
+
+        @Override public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter String xpath, @QueryParameter String wrapper, @QueryParameter String tree, @QueryParameter int depth) throws IOException, ServletException {
+            String text;
+            CrumbIssuer ci = (CrumbIssuer) bean;
+            if ("/*/crumbRequestField/text()".equals(xpath)) { // old FullDuplexHttpStream
+                text = ci.getCrumbRequestField();
+            } else if ("/*/crumb/text()".equals(xpath)) { // ditto
+                text = ci.getCrumb();
+            } else if ("concat(//crumbRequestField,\":\",//crumb)".equals(xpath)) { // new FullDuplexHttpStream; Main
+                text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
+            } else if ("concat(//crumbRequestField,'=',//crumb)".equals(xpath)) { // NetBeans
+                if (ci.getCrumbRequestField().startsWith(".")) {
+                    text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
+                } else {
+                    text = null;
+                }
+            } else {
+                text = null;
+            }
+            if (text != null) {
+                OutputStream o = rsp.getCompressedOutputStream(req);
+                try {
+                    rsp.setContentType("text/plain;charset=UTF-8");
+                    o.write(text.getBytes("UTF-8"));
+                } finally {
+                    o.close();
+                }
+            } else {
+                super.doXml(req, rsp, xpath, wrapper, tree, depth);
+            }
+        }
+
+    }
+
 }
