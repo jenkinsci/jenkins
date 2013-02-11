@@ -36,7 +36,8 @@ enum TestMojo {
     },
     
     MAVEN_SUREFIRE("org.apache.maven.plugins", "maven-surefire-plugin","test","reportsDirectory"),
-    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
+    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test","reportsDirectory"),
+    MAVEN_FAILSAFE_B("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
     
     MAVEN_JUNIT("com.sun.maven", "maven-junit-plugin", "test","reportsDirectory"),
     FLEXMOJOS("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run",null),
@@ -159,7 +160,7 @@ enum TestMojo {
             }
         }
         
-        if (goal.equals("test") || goal.equals("test-run")) {
+        if (goal.equals("test") || goal.equals("test-run") || goal.equals("integration-test")) {
             return FALLBACK;
         }
         
