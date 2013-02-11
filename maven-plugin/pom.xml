@@ -396,7 +396,6 @@ THE SOFTWARE.
       not to have version number in the .hpi file name.
     -->
     <finalName>${project.artifactId}</finalName>
-    <defaultGoal>package</defaultGoal>
     <plugins>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
