@@ -55,6 +55,7 @@ public class TestMojoTest {
 		assertTrue(reportsDir.mkdirs());
 		
 		File testResults = new File(reportsDir, testResultsName);
+        try {
 		FileWriter fw = new FileWriter(testResults, false);
 		fw.write("this is a fake surefire reports output file");
 		fw.close();
@@ -76,5 +77,8 @@ public class TestMojoTest {
         	found = true;
         }
         assertTrue("report file not found", found);
+        } finally {
+            testResults.delete();
+        }
     }
 }
