@@ -61,12 +61,25 @@ public class NodeProvisioner {
         public final String displayName;
         public final Future<Node> future;
         public final int numExecutors;
+        public final Cloud cloud;
+        public final Object cloudData;
 
         public PlannedNode(String displayName, Future<Node> future, int numExecutors) {
             if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
             this.displayName = displayName;
             this.future = future;
             this.numExecutors = numExecutors;
+            this.cloud = null;
+            this.cloudData = null;
+        }
+
+        public PlannedNode(String displayName, Future<Node> future, int numExecutors, Cloud cloud, Object cloudData) {
+            if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
+            this.displayName = displayName;
+            this.future = future;
+            this.numExecutors = numExecutors;
+            this.cloud = cloud;
+            this.cloudData = cloudData;
         }
     }
 
@@ -152,6 +165,11 @@ public class NodeProvisioner {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
                 }
+
+                if (f.cloud != null) {
+                    f.cloud.finalizePlannedNode(f);
+                }
+
                 itr.remove();
             } else
                 plannedCapacitySnapshot += f.numExecutors;
