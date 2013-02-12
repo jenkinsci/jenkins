@@ -138,7 +138,17 @@ public class FullDuplexHttpStream {
             }
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                return reader.readLine();
+                String line = reader.readLine();
+                String nextLine = reader.readLine();
+                if (nextLine != null) {
+                    System.err.println("Warning: received junk from " + dest);
+                    System.err.println(line);
+                    System.err.println(nextLine);
+                    while ((nextLine = reader.readLine()) != null) {
+                        System.err.println(nextLine);
+                    }
+                }
+                return line;
             }
             finally {
                 con.disconnect();
