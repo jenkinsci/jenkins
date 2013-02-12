@@ -61,7 +61,7 @@ THE SOFTWARE.
       </resources>
 
       <application-desc main-class="hudson.remoting.jnlp.Main">
-        <argument>${jnlpMac}</argument>
+        <argument>${it.jnlpMac}</argument>
         <argument>${it.node.nodeName}</argument>
         <j:if test="${it.launcher.tunnel!=null}">
           <argument>-tunnel</argument>
