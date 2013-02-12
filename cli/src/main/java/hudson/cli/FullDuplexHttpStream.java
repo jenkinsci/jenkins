@@ -37,6 +37,7 @@ public class FullDuplexHttpStream {
         return output;
     }
 
+    @Deprecated
     public FullDuplexHttpStream(URL target) throws IOException {
         this(target,basicAuth(target.getUserInfo()));
     }
