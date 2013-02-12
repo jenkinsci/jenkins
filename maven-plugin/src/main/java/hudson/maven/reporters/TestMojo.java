@@ -114,7 +114,7 @@ enum TestMojo {
         }
 
         // some plugins just default to this:        
-        File reportsDir = new File(pom.getBasedir(), pom.getBuild().getDirectory()+File.separator+"surefire-reports");
+        File reportsDir = new File(pom.getBuild().getDirectory(), "surefire-reports");
         if (reportsDir.exists()) {
             return getReportFiles(reportsDir, getFileSet(reportsDir));
         }
