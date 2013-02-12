@@ -61,7 +61,11 @@ public class CLIConnectionFactory {
      * Convenience method to call {@link #authorization} with the HTTP basic authentication.
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
-        return authorization("Basic " + new String(Base64.encodeBase64((username+':'+password).getBytes())));
+        return basicAuth(username+':'+password);
+    }
+
+    public CLIConnectionFactory basicAuth(String userInfo) {
+        return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
     }
     
     public CLI connect() throws IOException, InterruptedException {
