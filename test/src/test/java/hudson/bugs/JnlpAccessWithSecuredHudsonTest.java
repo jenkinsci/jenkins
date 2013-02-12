@@ -83,7 +83,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));
         }
 
-
+        // XXX this should be the only part with ANONYMOUS_READONLY
         try {
             jnlp = (XmlPage) jnlpAgent.goTo("computer/test/slave-agent.jnlp", "application/x-java-jnlp-file");
             fail("anonymous users must not be able to get secrets");
@@ -91,4 +91,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
         }
     }
+
+    // XXX try to use -secret
+
 }
