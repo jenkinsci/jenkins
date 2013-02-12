@@ -111,11 +111,22 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      provisioning operations. Can be empty but must not be null.
      *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}s
      *      into Hudson via {@link jenkins.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
-     *      just needs to return {@link PlannedNode}s that, when their call() methods are invoked,
-     *      return {@link Node} objects.
+     *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
+     *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
+     *      provisioned {@link Node} object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
 
+    /**
+     * Indicate to this cloud that one of its {@link PlannedNode}s is being finalized.
+     *
+     * {@link NodeProvisioner} will call this method if the {@link PlannedNode#cloud} field
+     * points to this cloud. This indicates that the {@link PlannedNode}'s work has been completed
+     * (successfully or otherwise) and it is about to be removed from the list of pending
+     * {@link Node}s to be launched.
+     *
+     * @since 1.502
+     */
     public void finalizePlannedNode(PlannedNode node) {
     }
 
