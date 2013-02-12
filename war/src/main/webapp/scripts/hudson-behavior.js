@@ -1647,7 +1647,7 @@ function createSearchBox(searchURL) {
     function updatePos() {
         function max(a,b) { if(a>b) return a; else return b; }
 
-        sizer.innerHTML = box.value;
+        sizer.innerHTML = box.value.escapeHTML();
         var w = max(sizer.offsetWidth,minW.offsetWidth);
         box.style.width =
         comp.style.width = 
