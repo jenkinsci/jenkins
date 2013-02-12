@@ -41,6 +41,7 @@ import hudson.AbortException;
 import hudson.remoting.Launcher;
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
+import hudson.util.Secret;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -59,6 +60,13 @@ import java.util.concurrent.Future;
 import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.security.GeneralSecurityException;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -68,7 +76,11 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponseWrapper;
+import org.kohsuke.stapler.ResponseImpl;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.compression.FilterServletOutputStream;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -130,6 +142,9 @@ public class SlaveComputer extends Computer {
         return acceptingTasks;
     }
 
+    /**
+     * @since 1.498
+     */
     public String getJnlpMac() {
         return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
     }
@@ -481,6 +496,40 @@ public class SlaveComputer extends Computer {
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
+    }
+
+    @WebMethod(name="slave-agent.jnlp")
+    public void doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
+        RequestDispatcher view = req.getView(this, "slave-agent.jnlp.jelly");
+        if ("true".equals(req.getParameter("encrypt"))) {
+            req.setAttribute("jnlpMac", "SLAVE_SECRET");
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
+                @Override public ServletOutputStream getOutputStream() throws IOException {
+                    return new FilterServletOutputStream(baos);
+                }
+                @Override public PrintWriter getWriter() throws IOException {
+                    throw new IllegalStateException();
+                }
+            });
+            view.forward(req, temp);
+            byte[] jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName().getBytes("UTF-8"));
+            SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
+            byte[] encrypted;
+            try {
+                Cipher c = Secret.getCipher("AES");
+                c.init(Cipher.ENCRYPT_MODE, key);
+                encrypted = c.doFinal(baos.toByteArray());
+            } catch (GeneralSecurityException x) {
+                throw new IOException(x);
+            }
+            res.setContentType("application/octet-stream");
+            res.getOutputStream().write(encrypted);
+        } else {
+            checkPermission(CONNECT);
+            req.setAttribute("jnlpMac", getJnlpMac());
+            view.forward(req, res);
+        }
     }
 
     @Override
