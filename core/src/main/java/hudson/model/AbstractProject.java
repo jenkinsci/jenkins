@@ -1838,6 +1838,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Cancels a scheduled build.
      */
+    @RequirePOST
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(ABORT);
 

@@ -88,6 +88,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -1360,6 +1361,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * 
      * @since 1.489
      */
+    @RequirePOST
     public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
         if (e==null)
