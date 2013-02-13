@@ -368,6 +368,8 @@ function parseHtml(html) {
  * Evaluates the script in global context.
  */
 function geval(script) {
+    // execScript chokes on "" but eval doesn't, so we need to reject it first.
+    if (script==null || script=="") return;
     // see http://perfectionkills.com/global-eval-what-are-the-options/
     // note that execScript cannot return value
     (this.execScript || eval)(script);
@@ -2143,12 +2145,11 @@ function validateButton(checkUrl,paramList,button) {
           Behaviour.applySubtree(target);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
-          if(s!=null)
-            try {
+          try {
               geval(s);
-            } catch(e) {
+          } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
-            }
+          }
       }
   });
 }
