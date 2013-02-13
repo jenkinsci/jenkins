@@ -1752,10 +1752,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
         if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        if (pp != null && !req.getMethod().equals("POST")) {
+            // show the parameter entry form.
+            req.getView(pp, "index.jelly").forward(req, rsp);
+            return;
+        }
+
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+
         if (pp != null) {
             pp._doBuild(req,rsp,delay);
             return;
@@ -1765,7 +1772,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
         Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**
@@ -1825,7 +1832,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
         schedulePolling();
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**

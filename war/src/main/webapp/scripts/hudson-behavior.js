@@ -1917,11 +1917,14 @@ var hoverNotification = (function() {
         msgBox.render();
     }
 
-    return function(title,anchor) {
+    return function(title, anchor, offset) {
+        if (typeof offset === 'undefined') {
+            offset = 48;
+        }
         init();
         body.innerHTML = title;
         var xy = YAHOO.util.Dom.getXY(anchor);
-        xy[0] += 48;
+        xy[0] += offset;
         xy[1] += anchor.offsetHeight;
         msgBox.cfg.setProperty("xy",xy);
         msgBox.show();
