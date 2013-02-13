@@ -3567,6 +3567,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
+            // XXX SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            || rest.matches("/computer/.+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
             || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
