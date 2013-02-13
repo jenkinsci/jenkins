@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
+Copyright 2013 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +24,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <td>
-          <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-              <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
-                  <img src="${imagesURL}/${subIconSize}/clock.png"
-                       title="${%Schedule a build}" alt="${%Schedule a build}"
-                       onclick="${job.parameterized ? null : 'return build(this)'}"
-                       border="0"/>
-              </a>
-              <script>
-                function build(img) {
-                  new Ajax.Request(img.parentNode.href);
-                  hoverNotification('${%Build scheduled}', img, -100);
-                  return false;
-                }
-              </script>
-          </j:if>
-      </td>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:l="/lib/layout">
+    <l:layout title="${%Form post required}">
+        <l:main-panel>
+            <p>${%use_post}</p>
+            <form method="POST">
+                <input type="submit" value="${%Proceed}"/>
+            </form>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>
