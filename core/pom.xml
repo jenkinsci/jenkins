@@ -511,7 +511,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.3.0-jenkins-3</version>
+      <version>3.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
