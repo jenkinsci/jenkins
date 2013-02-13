@@ -72,6 +72,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import javax.annotation.CheckForNull;
 
 /**
  * Metadata about a configurable instance.
@@ -909,7 +910,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
                 String kind = jo.getString("kind");
-                items.add(find(descriptors,kind).newInstance(req,jo));
+                Descriptor<T> d = find(descriptors, kind);
+                if (d != null) {
+                    items.add(d.newInstance(req, jo));
+                }
             }
         }
 
@@ -919,7 +923,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Finds a descriptor from a collection by its class name.
      */
-    public static <T extends Descriptor> T find(Collection<? extends T> list, String className) {
+    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String className) {
         for (T d : list) {
             if(d.getClass().getName().equals(className))
                 return d;
@@ -933,7 +937,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return null;
     }
 
-    public static Descriptor find(String className) {
+    public static @CheckForNull Descriptor find(String className) {
         return find(Jenkins.getInstance().getExtensionList(Descriptor.class),className);
     }
 

@@ -107,12 +107,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
      * This method is supposed to be invoked from {@link AbstractProject#doBuild(StaplerRequest, StaplerResponse)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!req.getMethod().equals("POST")) {
-            // show the parameter entry form.
-            req.getView(this,"index.jelly").forward(req,rsp);
-            return;
-        }
-
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         
         JSONObject formData = req.getSubmittedForm();

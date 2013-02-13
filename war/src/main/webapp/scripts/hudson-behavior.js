@@ -1635,7 +1635,7 @@ function createSearchBox(searchURL) {
     function updatePos() {
         function max(a,b) { if(a>b) return a; else return b; }
 
-        sizer.innerHTML = box.value;
+        sizer.innerHTML = box.value.escapeHTML();
         var w = max(sizer.offsetWidth,minW.offsetWidth);
         box.style.width =
         comp.style.width = 
@@ -1905,11 +1905,14 @@ var hoverNotification = (function() {
         msgBox.render();
     }
 
-    return function(title,anchor) {
+    return function(title, anchor, offset) {
+        if (typeof offset === 'undefined') {
+            offset = 48;
+        }
         init();
         body.innerHTML = title;
         var xy = YAHOO.util.Dom.getXY(anchor);
-        xy[0] += 48;
+        xy[0] += offset;
         xy[1] += anchor.offsetHeight;
         msgBox.cfg.setProperty("xy",xy);
         msgBox.show();
