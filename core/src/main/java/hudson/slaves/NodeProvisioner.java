@@ -59,14 +59,64 @@ public class NodeProvisioner {
          * can be just a name of the template being provisioned (like the machine image ID.)
          */
         public final String displayName;
+
+	/**
+	 * Used to launch and return a {@link Node} object. {@link NodeProvisioner} will check
+	 * this {@link Future}'s isDone() method to determine when to finalize this object.
+	 */
         public final Future<Node> future;
+
+	/**
+	 * The number of executors that will be provided by the {@link Node} launched by
+	 * this object. This is used for capacity planning in {@link NodeProvisioner#update}.
+	 */
         public final int numExecutors;
 
+	/**
+	 * The {@link Cloud} instance that should be notified of this object's finalization, if any.
+	 * The {@link NodeProvisioner} will call {@link Cloud#finalizePlannedNode} and pass this object
+	 * when it has completed handling the object.
+	 *
+	 * @since 1.502
+	 */
+        public final Cloud cloud;
+
+	/**
+	 * Data object provided by a {@link Cloud} instance, passed back to it for use during finalization of this object.
+	 *
+	 * @since 1.502
+	 */
+        public final Object cloudData;
+
+	/**
+	 * Construct a PlannedNode instance without {@link Cloud} callback for finalization.
+	 *
+	 * @param displayName Used to display this object in the UI.
+	 * @param future Used to launch a @{link Node} object.
+	 * @param numExecutors The number of executors that will be provided by the launched {@link Node}.
+	 */
         public PlannedNode(String displayName, Future<Node> future, int numExecutors) {
+	    this(displayName, future, numExecutors, null, null);
+        }
+
+	/**
+	 * Construct a PlannedNode instance without {@link Cloud} callback for finalization.
+	 *
+	 * @param displayName Used to display this object in the UI.
+	 * @param future Used to launch a @{link Node} object.
+	 * @param numExecutors The number of executors that will be provided by the launched {@link Node}.
+	 * @param cloud A {@link Cloud} object that should be notified of this object's finalization.
+	 * @param cloudData Data that can be used by the {@link Cloud} object during this object's finalization.
+	 *
+	 * @since 1.502
+	 */
+        public PlannedNode(String displayName, Future<Node> future, int numExecutors, Cloud cloud, Object cloudData) {
             if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
             this.displayName = displayName;
             this.future = future;
             this.numExecutors = numExecutors;
+            this.cloud = cloud;
+            this.cloudData = cloudData;
         }
     }
 
@@ -152,6 +202,11 @@ public class NodeProvisioner {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
                 }
+
+                if (f.cloud != null) {
+                    f.cloud.finalizePlannedNode(f);
+                }
+
                 itr.remove();
             } else
                 plannedCapacitySnapshot += f.numExecutors;
