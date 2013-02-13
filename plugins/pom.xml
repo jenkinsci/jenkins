@@ -10,7 +10,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.480-SNAPSHOT</version>
+  <version>1.480.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
