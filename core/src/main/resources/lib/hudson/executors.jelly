@@ -91,7 +91,7 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
-                    <a href="${rootURL}/${c.url}${url}/stop"><img src="${imagesURL}/16x16/stop.png" alt="${%terminate this build}" height="16" width="16" /></a>
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>
                   </j:if>
                 </td>
               </j:otherwise>
