@@ -60,9 +60,9 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
         return new DumbSlave(name,"",System.getProperty("java.io.tmpdir")+'/'+name,"2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
     }
 
-    @PresetData(DataSet.ANONYMOUS_READONLY)
-    @Email("http://www.nabble.com/Launching-slave-by-JNLP-with-Active-Directory-plugin-and-matrix-security-problem-td18980323.html")
-    public void test() throws Exception {
+    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @Email("http://markmail.org/message/on4wkjdaldwi2atx")
+    public void testAnonymousCanAlwaysLoadJARs() throws Exception {
         jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         HudsonTestCase.WebClient wc = new WebClient();
         HtmlPage p = wc.login("alice").goTo("computer/test/");
@@ -82,10 +82,13 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             Page jarResource = jnlpAgent.getPage(url);
             assertTrue(jarResource.getWebResponse().getContentType().toLowerCase(Locale.ENGLISH).startsWith("application/"));
         }
+    }
 
-        // XXX this should be the only part with ANONYMOUS_READONLY
+    @PresetData(DataSet.ANONYMOUS_READONLY)
+    public void testAnonymousCannotGetSecrets() throws Exception {
+        jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         try {
-            jnlp = (XmlPage) jnlpAgent.goTo("computer/test/slave-agent.jnlp", "application/x-java-jnlp-file");
+            new WebClient().goTo("computer/test/slave-agent.jnlp", "application/x-java-jnlp-file");
             fail("anonymous users must not be able to get secrets");
         } catch (FailingHttpStatusCodeException x) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
