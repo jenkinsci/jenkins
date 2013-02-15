@@ -1,3 +1,13 @@
 <div>
-    Defines the job from which the user can pick runs. The last run will be the default.
+    Defines the job from which the user can pick runs. The last run will be the default.<br/>
+    <br/>
+    These parameters are exposed to build as environment variables:<br/>
+    <br/>
+    PARAMETER_NAME=&lt;jenkins_url&gt;/job/&lt;job_name&gt;/&lt;run_number/<br/>
+    <br/>
+    PARAMETER_NAME.jobName=&lt;job_name&gt;<br/>
+    PARAMETER_NAME_jobName=&lt;job_name&gt;<br/>
+    <br/>
+    PARAMETER_NAME.number=&lt;run_number&gt;<br/>
+    PARAMETER_NAME_number=&lt;run_number&gt;
 </div>
