@@ -26,10 +26,10 @@ package hudson.model;
 import hudson.util.AdaptedIterator;
 
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Collection;
 import java.util.AbstractCollection;
 import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Controls mutual exclusion of {@link ResourceList}.
@@ -39,7 +39,7 @@ public class ResourceController {
     /**
      * {@link ResourceList}s that are used by activities that are in progress.
      */
-    private final Set<ResourceActivity> inProgress = new HashSet<ResourceActivity>();
+    private final Set<ResourceActivity> inProgress = new CopyOnWriteArraySet<ResourceActivity>();
 
     /**
      * View of {@link #inProgress} that exposes its {@link ResourceList}.
@@ -125,7 +125,7 @@ public class ResourceController {
      * the given activity, or null if it's not blocked (and thus the
      * given activity can be executed immediately.)
      */
-    public synchronized ResourceActivity getBlockingActivity(ResourceActivity activity) {
+    public ResourceActivity getBlockingActivity(ResourceActivity activity) {
         ResourceList res = activity.getResourceList();
         for (ResourceActivity a : inProgress)
             if(res.isCollidingWith(a.getResourceList()))
