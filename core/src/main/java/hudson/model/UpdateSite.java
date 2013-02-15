@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -162,7 +163,8 @@ public class UpdateSite {
             return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
                 
                 public FormValidation call() throws Exception {
-                    URL src = new URL(getUrl());
+                    URL src = new URL(getUrl() + "?id=" + URLEncoder.encode(getId(),"UTF-8") 
+                            + "&version="+URLEncoder.encode(Jenkins.VERSION, "UTF-8"));
                     URLConnection conn = ProxyConfiguration.open(src);
                     InputStream is = conn.getInputStream();
                     try {
