@@ -1933,7 +1933,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return new File(Util.replaceMacro(base, ImmutableMap.of(
                 "JENKINS_HOME", getRootDir().getPath(),
                 "ITEM_ROOTDIR", item.getRootDir().getPath(),
-                "ITEM_FULLNAME", item.getFullName())));
+                "ITEM_FULLNAME", item.getFullName().replace(':', '$'))));
     }
     
     public String getRawWorkspaceDir() {
