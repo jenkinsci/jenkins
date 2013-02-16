@@ -56,6 +56,10 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    ${ITEM_FULLNAME} variable was not working for Maven projects on Windows,
+    so introduced ${ITEM_FULL_NAME} instead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12251">issue 12251</a>)
+  <li class=bug>
     Lock contention issue in build history view.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16831">issue 16831</a>)
   <li class=bug>
