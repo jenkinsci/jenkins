@@ -23,11 +23,14 @@
  */
 package hudson.matrix;
 
+import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Executor;
 import hudson.model.InvisibleAction;
+import hudson.model.Node;
 import hudson.model.Queue.QueueAction;
+import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
@@ -85,7 +88,23 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
     }
-    
+
+    @Override
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env =  super.getEnvironment(node, listener);
+
+        AxisList axes = getParent().getAxes();
+        for (Map.Entry<String,String> e : getCombination().entrySet()) {
+            Axis a = axes.find(e.getKey());
+            if (a!=null)
+                a.addBuildVariable(e.getValue(),env); // TODO: hijacking addBuildVariable but perhaps we need addEnvVar?
+            else
+                env.put(e.getKey(), e.getValue());
+        }
+
+        return env;
+    }
+
     @Override
     protected void updateTransientActions(){
         // This method is exactly the same as in {@link #AbstractProject}. 
