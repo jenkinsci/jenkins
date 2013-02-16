@@ -35,6 +35,7 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
+import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -297,10 +298,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
-    public LogRotator getLogRotator() {
-        LogRotator lr = getParent().getLogRotator();
-        return new LinkedLogRotator(lr != null ? lr.getArtifactDaysToKeep() : -1,
-                                    lr != null ? lr.getArtifactNumToKeep() : -1);
+    public BuildDiscarder getBuildDiscarder() {
+        // TODO: LinkedLogRotator doesn't work very well in the face of pluggable BuildDiscarder but I don't know what to do
+        BuildDiscarder bd = getParent().getBuildDiscarder();
+        if (bd instanceof LogRotator) {
+            LogRotator lr = (LogRotator) bd;
+            return new LinkedLogRotator(lr.getArtifactDaysToKeep(),lr.getArtifactNumToKeep());
+        }
+        return new LinkedLogRotator();
     }
 
     @Override
@@ -328,7 +333,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Value is controlled by {@link MatrixProject}.
      */
     @Override
-    public void setLogRotator(LogRotator logRotator) {
+    public void setBuildDiscarder(BuildDiscarder logRotator) {
         throw new UnsupportedOperationException();
     }
 

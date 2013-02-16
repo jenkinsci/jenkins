@@ -51,7 +51,6 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.LogRotator;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -97,6 +96,7 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.io.OnMaster;
@@ -110,7 +110,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
-import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -181,7 +180,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * For historical reasons, 0 means no value is recorded.
      *
-     * @see #getStartTime()
+     * @see #getStartTimeInMillis()
      */
     private long startTime;
 
@@ -513,7 +512,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns true if this log file should be kept and not deleted.
      *
-     * This is used as a signal to the {@link LogRotator}.
+     * This is used as a signal to the {@link BuildDiscarder}.
      */
     @Exported
     public final boolean isKeepLog() {
