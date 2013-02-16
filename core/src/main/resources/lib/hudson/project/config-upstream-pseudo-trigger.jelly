@@ -38,7 +38,7 @@ THE SOFTWARE.
     <f:entry title="${%Project names}"
              description="${%Multiple projects can be specified like 'abc, def'}">
       <f:textbox name="upstreamProjects" value="${h.getProjectListString(up)}"
-        checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?value='+encodeURIComponent(this.value)"
+        checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?upstream=true&amp;value='+encodeURIComponent(this.value)"
         autoCompleteField="upstreamProjects"/>
     </f:entry>
   </f:optionalBlock>

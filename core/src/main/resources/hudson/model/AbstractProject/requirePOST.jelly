@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright 2013 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-    displays a caption for build/externalRun.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<h1>
-	  <j:if test="${it.building}">
-	    <div style="float:right">
-	      <table class="middle-align"><tr>
-	        <td>
-	          ${%Progress}:
-	        </td><td>
-	          <t:buildProgressBar build="${it}"/>
-	        </td><td>
-            <j:if test="${it.parent.hasAbortPermission()}">
-              <l:stopButton href="stop" alt="[${%cancel}]"/>
-            </j:if>
-	        </td>
-	      </tr></table>
-	    </div>
-	  </j:if>
-	  
-	  <img src="${imagesURL}/48x48/${it.buildStatusUrl}" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
-	  <d:invokeBody />
-	</h1>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:l="/lib/layout">
+    <l:layout title="${%Form post required}">
+        <l:main-panel>
+            <p>${%use_post}</p>
+            <form method="POST">
+                <input type="submit" value="${%Proceed}"/>
+            </form>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>

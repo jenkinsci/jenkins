@@ -8,6 +8,7 @@ package hudson.security.csrf;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -95,4 +96,31 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
         // The crumb should still match if we remove the proxy info
         submit(p.getFormByName("config"));
    }
+
+    public void testApiXml() throws Exception {
+        WebClient wc = new WebClient();
+        assertXPathValue(wc.goToXml("crumbIssuer/api/xml"), "//crumbRequestField", jenkins.getCrumbIssuer().getCrumbRequestField());
+        String text = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.matches("\\Q" + jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E=[0-9a-f]+"));
+        text = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.matches("\\Q" + jenkins.getCrumbIssuer().getCrumbRequestField() + "\\E:[0-9a-f]+"));
+        text = wc.goTo("crumbIssuer/api/xml?xpath=/*/crumbRequestField/text()", "text/plain").getWebResponse().getContentAsString();
+        assertEquals(jenkins.getCrumbIssuer().getCrumbRequestField(), text);
+        text = wc.goTo("crumbIssuer/api/xml?xpath=/*/crumb/text()", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.matches("[0-9a-f]+"));
+        wc.assertFails("crumbIssuer/api/xml?xpath=concat('hack=\"',//crumb,'\"')", HttpURLConnection.HTTP_FORBIDDEN);
+        wc.assertFails("crumbIssuer/api/xml?xpath=concat(\"hack='\",//crumb,\"'\")", HttpURLConnection.HTTP_FORBIDDEN);
+        wc.assertFails("crumbIssuer/api/xml?xpath=concat('{',//crumb,':1}')", HttpURLConnection.HTTP_FORBIDDEN); // 37.5% chance that crumb ~ /[a-f].+/
+        wc.assertFails("crumbIssuer/api/xml?xpath=concat('hack.',//crumb,'=1')", HttpURLConnection.HTTP_FORBIDDEN); // ditto
+        jenkins.getCrumbIssuer().getDescriptor().setCrumbRequestField("_crumb");
+        wc.assertFails("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", HttpURLConnection.HTTP_FORBIDDEN); // perhaps interpretable as JS number
+    }
+
+    public void testApiJson() throws Exception {
+        WebClient wc = new WebClient();
+        String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
+        assertTrue(json, json.matches("\\Q{\"crumb\":\"\\E[0-9a-f]+\\Q\",\"crumbRequestField\":\"" + jenkins.getCrumbIssuer().getCrumbRequestField() + "\"}\\E"));
+        wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
 }
