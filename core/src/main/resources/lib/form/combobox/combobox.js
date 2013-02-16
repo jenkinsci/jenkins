@@ -1,4 +1,4 @@
-Behaviour.specify("INPUT.combobox2", 'combobox', 0, function(e) {
+Behaviour.specify("INPUT.combobox2", 'combobox', 100, function(e) {
         var items = [];
 
         var c = new ComboBox(e,function(value) {
