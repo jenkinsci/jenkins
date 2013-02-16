@@ -72,11 +72,11 @@ public class RunParameterValue extends ParameterValue {
         String value = Jenkins.getInstance().getRootUrl() + getRun().getUrl();
         env.put(name, value);
 
-        env.put(name + ".jobName", getJobName());
-        env.put(name + "_jobName", getJobName());
+        env.put(name + ".jobName", getJobName());   // undocumented, left for backward compatibility
+        env.put(name + "_JOBNAME", getJobName());   // prefer this version
 
-        env.put(name + ".number" , getNumber ());
-        env.put(name + "_number" , getNumber ());
+        env.put(name + ".number" , getNumber ());   // same as above
+        env.put(name + "_NUMBER" , getNumber ());
 
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
 
