@@ -1115,7 +1115,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see TransientProjectActionFactory
      */
     @Override
-    public synchronized List<Action> getActions() {
+    public List<Action> getActions() {
         // add all the transient actions, too
         List<Action> actions = new Vector<Action>(super.getActions());
         actions.addAll(transientActions);

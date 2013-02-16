@@ -1834,7 +1834,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     return new Summary(worseOverride != null ? worseOverride : true,
                             Messages.Run_Summary_TestFailures(trN.getFailCount()));
             } else {
-                if(trN.getFailCount()!= 0) {
+                if(trN!=null && trN.getFailCount()!= 0) {
                     if(trP.getFailCount()==0)
                         return new Summary(worseOverride != null ? worseOverride : true,
                                 Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));

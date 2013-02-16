@@ -440,7 +440,13 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
-        CLI cli = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy).connect();
+        CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
+        String userInfo = new URL(url).getUserInfo();
+        if (userInfo != null) {
+            factory = factory.basicAuth(userInfo);
+        }
+
+        CLI cli = factory.connect();
         try {
             if (!candidateKeys.isEmpty()) {
                 try {
