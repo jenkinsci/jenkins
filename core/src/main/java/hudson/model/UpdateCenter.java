@@ -924,6 +924,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         @Exported
+        public String getErrorMessage() {
+            return error != null ? error.getMessage() : null;
+        }
+        
         public Throwable getError() {
             return error;
         }
