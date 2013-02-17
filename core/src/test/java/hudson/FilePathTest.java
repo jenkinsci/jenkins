@@ -577,4 +577,33 @@ public class FilePathTest extends ChannelTestCase {
 
         return new ByteArrayInputStream(buf.toByteArray());
     }
+
+    @Bug(16846)
+    public void testMoveAllChildrenTo() throws IOException, InterruptedException {
+        final File tmp = Util.createTempDir();
+        try
+        {
+            final String dirname = "sub";
+            final File top = new File(tmp, "test");
+            final File sub = new File(top, dirname);
+            final File subsub = new File(sub, dirname);
+
+            subsub.mkdirs();
+
+            final File subFile1 = new File( sub.getAbsolutePath() + "/file1.txt" );
+            subFile1.createNewFile();
+            final File subFile2 = new File( subsub.getAbsolutePath() + "/file2.txt" );
+            subFile2.createNewFile();
+
+            final FilePath src = new FilePath(sub);
+            final FilePath dst = new FilePath(top);
+            
+            // test conflict subdir
+            src.moveAllChildrenTo(dst);
+        }
+        finally
+        {
+          Util.deleteRecursive(tmp);
+        }
+    }
 }

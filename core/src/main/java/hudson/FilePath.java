@@ -1657,15 +1657,40 @@ public final class FilePath implements Serializable {
         }
         act(new FileCallable<Void>() {
             private static final long serialVersionUID = 1L;
-            public Void invoke(File f, VirtualChannel channel) throws IOException {
-                File t = new File(target.getRemote());
-                
+            private void recursive_invoke(final File t, final File f ) throws IOException {
                 for(File child : f.listFiles()) {
                     File target = new File(t, child.getName());
+                    LOGGER.log(Level.FINE,"child=" + child.getAbsolutePath() + "\ntarget=" + target.getAbsolutePath() );
+                    if ( child.isDirectory() && target.isDirectory() )
+                    {
+                        final String childName = child.getName();
+                        final String targetName = target.getName();
+                        if ( null != childName && null != targetName )
+                        {
+                            if ( 0 == childName.compareTo( targetName ) )
+                            {
+                                if ( Util.isSymlink( child ) ) {
+                                    if(!child.renameTo(target)) {
+                                        throw new IOException("Failed to rename "+child+" to "+target);
+                                    }
+                                } else {
+                                    // avoid fail to exec child.renameTo(taget)
+                                    recursive_invoke( target, child );
+                                }
+                                continue;
+                            }
+                        }
+                    }
                     if(!child.renameTo(target))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
                 f.delete();
+            }
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                File t = new File(target.getRemote());
+
+                recursive_invoke( t, f );
+
                 return null;
             }
         });
