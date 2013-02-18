@@ -178,6 +178,28 @@ public class BuildStatusSummaryTest {
         assertTrue(summary.isWorse);
         assertEquals(Messages.Run_Summary_TestsStartedToFail(1), summary.message);
     }
+
+    @Test
+    public void testBuildGotNoTests() {
+        // previous build has no tests at all
+        mockBuilds(AbstractBuild.class);
+
+        when(this.build.getResult()).thenReturn(Result.UNSTABLE);
+        when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
+        // Null test result action recorded
+        when(((AbstractBuild) this.build).getTestResultAction()).thenReturn(null);
+
+        Summary summary = this.build.getBuildStatusSummary();
+
+        assertFalse(summary.isWorse);
+        assertEquals(Messages.Run_Summary_Unstable(), summary.message);
+
+        // same thing should happen if previous build has tests, but no failing ones:
+        buildHasTestResult((AbstractBuild) this.prevBuild, 0);
+        summary = this.build.getBuildStatusSummary();
+        assertFalse(summary.isWorse);
+        assertEquals(Messages.Run_Summary_Unstable(), summary.message);
+    }
     
     @Test
     public void testBuildEqualAmountOfTestsFailing() {

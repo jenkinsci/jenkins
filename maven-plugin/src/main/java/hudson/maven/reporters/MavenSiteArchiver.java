@@ -72,7 +72,7 @@ public class MavenSiteArchiver extends MavenReporter {
             return true;
         }
 
-        if(destDir.exists()) {
+        if(destDir != null && destDir.exists()) {
             // try to get the storage location if this is a multi-module project.
             final String moduleName = getModuleName(build, pom);
             // store at MavenModuleSet level and moduleName

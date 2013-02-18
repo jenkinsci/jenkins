@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import javax.annotation.CheckForNull;
+
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
@@ -34,7 +36,8 @@ enum TestMojo {
     },
     
     MAVEN_SUREFIRE("org.apache.maven.plugins", "maven-surefire-plugin","test","reportsDirectory"),
-    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
+    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test","reportsDirectory"),
+    MAVEN_FAILSAFE_B("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
     
     MAVEN_JUNIT("com.sun.maven", "maven-junit-plugin", "test","reportsDirectory"),
     FLEXMOJOS("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run",null),
@@ -60,7 +63,10 @@ enum TestMojo {
             File reportsDir = mojo.getConfigurationValue("jasmineTargetDir", File.class);
             String junitFileName = mojo.getConfigurationValue("junitXmlReportFileName", String.class);
             
-            return Collections.singleton(new File(reportsDir,junitFileName));
+            if (reportsDir != null && junitFileName != null) {
+                return Collections.singleton(new File(reportsDir,junitFileName));
+            }
+            return null;
         }
     },
     TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory");
@@ -98,17 +104,17 @@ enum TestMojo {
         return mojo.pluginName.version.compareTo(this.minimalRequiredVersion) >= 0;
     }
     
-    public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
+    @CheckForNull public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
         if (this.reportDirectoryConfigKey != null) {
             File reportsDir = mojo.getConfigurationValue(this.reportDirectoryConfigKey, File.class);
-            if (reportsDir.exists()) {
+            if (reportsDir != null && reportsDir.exists()) {
                 return getReportFiles(reportsDir, getFileSet(reportsDir));
             } 
             
         }
 
         // some plugins just default to this:        
-        File reportsDir = new File(pom.getBasedir(), pom.getBuild().getDirectory()+File.separator+"surefire-reports");
+        File reportsDir = new File(pom.getBuild().getDirectory(), "surefire-reports");
         if (reportsDir.exists()) {
             return getReportFiles(reportsDir, getFileSet(reportsDir));
         }
@@ -154,7 +160,7 @@ enum TestMojo {
             }
         }
         
-        if (goal.equals("test") || goal.equals("test-run")) {
+        if (goal.equals("test") || goal.equals("test-run") || goal.equals("integration-test")) {
             return FALLBACK;
         }
         

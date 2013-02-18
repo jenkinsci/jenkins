@@ -29,11 +29,13 @@ THE SOFTWARE.
                             app.getItemByFullName(it.upstreamProject).getBuildByNumber(it.upstreamBuild)!=null ?
                           "%started_by_project(it.upstreamProject,it.upstreamBuild.toString(),it.upstreamUrl,rootURL)" :
                           it.shortDescription}'/>
-        <j:if test="${it.upstreamCauses.size() > 0}">
-            <br /><j:out value="${%caused_by}" />                 
+        <j:if test="${!it.upstreamCauses.isEmpty()}">
+            <br /><j:out value="${%caused_by}" />
+            <ul>
 	        <j:forEach var="c" items="${it.upstreamCauses}">
 	          <li><st:include page="description.jelly" it="${c}" /></li>
 	        </j:forEach>
-	    </j:if>
+            </ul>
+        </j:if>
     </span>
 </j:jelly>

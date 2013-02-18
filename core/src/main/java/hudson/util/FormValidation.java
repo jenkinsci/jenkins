@@ -233,6 +233,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
                         Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
+            @Override public String toString() {
+                return kind + ": " + message;
+            }
         };
     }
 
@@ -243,6 +246,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return new FormValidation(kind) {
             public String renderHtml() {
                 return html;
+            }
+            @Override public String toString() {
+                return kind + ": " + html;
             }
         };
     }

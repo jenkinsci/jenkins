@@ -167,7 +167,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         private static final long serialVersionUID = 4942789836756366116L;
 
-        private final Maven3Builder maven3Builder;
+        private final AbstractMavenBuilder maven3Builder;
         
         private AtomicBoolean hasTestFailures = new AtomicBoolean();
        
@@ -187,14 +187,24 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private ExecutionEventLogger eventLogger;
 
-        public MavenExecutionListener(Maven3Builder maven3Builder) {
+        public MavenExecutionListener(AbstractMavenBuilder maven3Builder) {
             this.maven3Builder = maven3Builder;
             this.proxies = new ConcurrentHashMap<ModuleName, FilterImpl>(maven3Builder.proxies);
             for (ModuleName name : this.proxies.keySet()) {
                 executedMojosPerModule.put( name, new CopyOnWriteArrayList<ExecutedMojo>() );
             }
             this.reporters = new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters);
-            this.eventLogger = new ExecutionEventLogger( new PrintStreamLogger( maven3Builder.listener.getLogger() ) );
+            
+            // TODO: we should think about reusing the code in org.apache.maven.cli.DefaultMavenExecutionRequestBuilder#logging?
+            // E.g. there's also the option to redirect logging to a file which is handled there, but not here.
+            PrintStreamLogger logger = new PrintStreamLogger( maven3Builder.listener.getLogger() );
+            if (maven3Builder.isDebug()) {
+                logger.setThreshold(PrintStreamLogger.LEVEL_DEBUG);
+            } else if (maven3Builder.isQuiet()) {
+                logger.setThreshold(PrintStreamLogger.LEVEL_ERROR);
+            }
+            
+            this.eventLogger = new ExecutionEventLogger( logger );
         }
         
         /**
@@ -478,8 +488,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         private void debug(String msg) {
             LOGGER.fine(msg);
-            if (DEBUG)
-                maven3Builder.listener.getLogger().println(msg);
         }
         
 
@@ -561,8 +569,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     public static boolean markAsSuccess;
 
     private static final long serialVersionUID = 1L;
-
-    public static boolean DEBUG = true;
 
     private static final Logger LOGGER = Logger.getLogger(Maven3Builder.class.getName());
 }

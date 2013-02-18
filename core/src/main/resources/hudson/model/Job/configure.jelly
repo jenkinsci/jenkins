@@ -49,8 +49,8 @@ THE SOFTWARE.
           <!-- log rotator -->
           <f:optionalBlock name="logrotate"
             help="/help/project-config/log-rotation.html"
-            title="${%Discard Old Builds}" checked="${it.logRotator!=null}">
-            <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
+            title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
+            <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
           </f:optionalBlock>
         </j:if>
 

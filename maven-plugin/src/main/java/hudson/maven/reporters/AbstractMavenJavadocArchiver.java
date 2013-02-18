@@ -66,7 +66,7 @@ public abstract class AbstractMavenJavadocArchiver extends MavenReporter {
 
         File destDir;
         try {
-            aggregated = mojo.getConfigurationValue("aggregate",Boolean.class) || mojo.getGoal().equals("aggregate")
+            aggregated = mojo.getConfigurationValue("aggregate",Boolean.class, Boolean.FALSE) || mojo.getGoal().equals("aggregate")
                             || mojo.getGoal().equals("test-aggregate");
             if(aggregated && !pom.isExecutionRoot())
                 return true;    // in the aggregated mode, the generation will only happen for the root module
@@ -80,7 +80,7 @@ public abstract class AbstractMavenJavadocArchiver extends MavenReporter {
             return true;
         }
 
-        if(destDir.exists()) {
+        if(destDir != null && destDir.exists()) {
             // javadoc:javadoc just skips itself when the current project is not a java project
             if(aggregated) {
                 // store at MavenModuleSet level. 

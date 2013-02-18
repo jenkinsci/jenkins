@@ -61,7 +61,7 @@ public class Kernel32Utils {
    	// allow lookup of paths longer than MAX_PATH
     	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
     	String canonicalPath = file.getCanonicalPath();
-    	String path = null;
+    	String path;
     	if(canonicalPath.length() < 260) {
     		// path is short, use as-is
     		path = canonicalPath;
@@ -77,7 +77,13 @@ public class Kernel32Utils {
     }
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-      return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+        try {
+            return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+        } catch (UnsupportedOperationException e) {
+            return false;
+        } catch (LinkageError e) {
+            return false;
+        }
     }
 
     /*package*/ static Kernel32 load() {

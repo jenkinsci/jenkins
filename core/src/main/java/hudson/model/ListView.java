@@ -154,11 +154,11 @@ public class ListView extends View implements Saveable {
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
-        for (String n : names) {
-            TopLevelItem item = getOwnerItemGroup().getItem(n);
+        for (TopLevelItem item : getOwnerItemGroup().getItems()) {
+            if (!names.contains(item.getName())) continue;
             // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter))
+            if(statusFilter == null || !(item instanceof AbstractProject)
+                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
                 items.add(item);
         }
 

@@ -87,12 +87,20 @@ public class JenkinsGetRootUrlTest {
 
     @Bug(16368)
     @Test
-    public void inheritProtocolWhenDispatchingRequest() {
+    public void doNotInheritProtocolWhenDispatchingRequest() {
 
         configured("http://configured.host/");
         accessing("https://real.host/");
 
-        rootUrlIs("https://configured.host/");
+        rootUrlIs("http://configured.host/");
+    }
+
+    @Bug(16511)
+    @Test
+    public void doNotInheritProtocolWhenDispatchingRequest2() {
+        configured("https://ci/jenkins/");
+        accessing("http://localhost:8080/");
+        rootUrlIs("https://ci/jenkins/");
     }
 
     private void rootUrlIs(final String expectedRootUrl) {

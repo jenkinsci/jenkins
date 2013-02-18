@@ -36,6 +36,12 @@ public class SurefireArchiverDetectTestMojosTest {
     }
     
     @Test
+    public void shouldDetectMavenFailsafe2() {
+        MojoInfo mojo = mojoBuilder("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test").build();
+        assertTrue(this.surefireArchiver.isTestMojo(mojo));
+    }
+    
+    @Test
     public void shouldDetectMavenSurefireSkip() {
         MojoInfoBuilder builder = mojoBuilder("org.apache.maven.plugins", "maven-surefire-plugin", "test");
         MojoInfo mojo = builder.copy()
@@ -178,5 +184,13 @@ public class SurefireArchiverDetectTestMojosTest {
         
         MojoInfo mojo = builder.build();
         assertTrue(this.surefireArchiver.isTestMojo(mojo));
+    }
+    
+    @Test
+    public void shouldNotDetectNonTestGoal() {
+        MojoInfoBuilder builder = mojoBuilder("some.weird.internal","test-mojo", "verify");
+        
+        MojoInfo mojo = builder.build();
+        assertFalse(this.surefireArchiver.isTestMojo(mojo));
     }
 }

@@ -45,6 +45,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 
+import javax.annotation.CheckForNull;
+
 import hudson.util.InvocationInterceptor;
 import hudson.util.ReflectionUtils;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -142,16 +144,45 @@ public class MojoInfo {
      *      can be read as {@link String}, often different types have a different
      *      conversion rules associated with it (for example, {@link File} would
      *      resolve relative path against POM base directory.)
+     *  @param defaultValue
+     *     The default value to return in case the mojo doesn't have such
+     *     configuration value
      *
      * @return
      *      The configuration value either specified in POM, or inherited from
-     *      parent POM, or default value if one is specified in mojo.
+     *      parent POM, or default value if one is specified in mojo,
+     *      or the defaultValue parameter if no such configuration value exists.
      *
      * @throws ComponentConfigurationException
      *      Not sure when exactly this is thrown, but it's probably when
      *      the configuration in POM is syntactically incorrect. 
      */
-    public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
+    public <T> T getConfigurationValue(String configName, Class<T> type, T defaultValue) throws ComponentConfigurationException {
+        T value = getConfigurationValue(configName, type);
+        return value != null ? value : defaultValue;
+    }
+    
+    /**
+     * Obtains the configuration value of the mojo.
+     *
+     * @param configName
+     *      The name of the child element in the &lt;configuration> of mojo.
+     * @param type
+     *      The Java class of the configuration value. While every element
+     *      can be read as {@link String}, often different types have a different
+     *      conversion rules associated with it (for example, {@link File} would
+     *      resolve relative path against POM base directory.)
+     *
+     * @return
+     *      The configuration value either specified in POM, or inherited from
+     *      parent POM, or default value if one is specified in mojo,
+     *      or null if no such configuration value exists.
+     *
+     * @throws ComponentConfigurationException
+     *      Not sure when exactly this is thrown, but it's probably when
+     *      the configuration in POM is syntactically incorrect. 
+     */
+    @CheckForNull public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
         PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        
@@ -197,8 +228,9 @@ public class MojoInfo {
      * @deprecated as of 1.427
      *      See the discussion in {@link #mojo}
      */
+    @SuppressWarnings("unchecked")
     public <T> T inject(String name, T value) throws NoSuchFieldException {
-        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+        for(Class<?> c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
             try {
                 Field f = c.getDeclaredField(name);
                 f.setAccessible(true);
@@ -238,7 +270,7 @@ public class MojoInfo {
      *      See the discussion in {@link #mojo}
      */
     public void intercept(String fieldName, final InvocationInterceptor interceptor) throws NoSuchFieldException {
-        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+        for(Class<?> c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
             Field f;
             try {
                 f = c.getDeclaredField(fieldName);

@@ -27,6 +27,7 @@ package org.jvnet.hudson.test;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -126,6 +127,23 @@ public class MemoryAssert {
         }
         Collections.sort(elements);
         return elements;
+    }
+
+    /**
+     * Forces GC by causing an OOM and then verifies the given {@link WeakReference} has been garbage collected.
+     * @param reference object used to verify garbage collection.
+     */
+    public static void assertGC(WeakReference<?> reference) {
+        assertTrue(true); reference.get(); // preload any needed classes!
+        Set<Object[]> objects = new HashSet<Object[]>();
+        while (true) {
+            try {
+                objects.add(new Object[1024]);
+            } catch (OutOfMemoryError ignore) {
+                break;
+            }
+        }
+        assertTrue(reference.get() == null);
     }
 
 }

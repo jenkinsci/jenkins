@@ -1,4 +1,5 @@
-{
+updateCenter.post(
+{"connectionCheckUrl":"http://www.google.com/", // has to be here because updateDirectly sniffs only very limited formats
     "core": {
         "buildDate": "Dec 31, 1969",
         "name": "core",
@@ -34,3 +35,4 @@
     },
     "updateCenterVersion": 1
 }
+);

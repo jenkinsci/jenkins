@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import java.util.Locale;
+
 import hudson.model.Action;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -100,6 +102,12 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    @PrepareForTest(Stapler.class)
+    public void testGetActionUrl_unparsable() throws Exception{
+        assertEquals(null, Functions.getActionUrl(null, createMockAction("http://nowhere.net/stuff?something=^woohoo")));
+    }
+
     private static Action createMockAction(String uri) {
         Action action = mock(Action.class);
         when(action.getUrlName()).thenReturn(uri);
@@ -111,4 +119,24 @@ public class FunctionsTest {
         when(req.getContextPath()).thenReturn(contextPath);
         return req;
     }
+
+    @Test
+    @Bug(16630)
+    public void testHumanReadableFileSize(){
+        Locale defaultLocale = Locale.getDefault();
+        try{
+            Locale.setDefault(Locale.ENGLISH);
+            assertEquals("0 B", Functions.humanReadableByteSize(0));
+            assertEquals("1023 B", Functions.humanReadableByteSize(1023));
+            assertEquals("1.00 KB", Functions.humanReadableByteSize(1024));
+            assertEquals("1.50 KB", Functions.humanReadableByteSize(1536));
+            assertEquals("20.00 KB", Functions.humanReadableByteSize(20480));
+            assertEquals("1023.00 KB", Functions.humanReadableByteSize(1047552));
+            assertEquals("1.00 MB", Functions.humanReadableByteSize(1048576));
+            assertEquals("1.50 GB", Functions.humanReadableByteSize(1610612700));
+        }finally{
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
 }

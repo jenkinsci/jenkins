@@ -34,6 +34,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 /**
@@ -106,6 +108,10 @@ public abstract class Cause {
          * Maximum depth of transitive upstream causes we want to record.
          */
         private static final int MAX_DEPTH = 10;
+        /**
+         * Maximum number of transitive upstream causes we want to record.
+         */
+        private static final int MAX_LEAF = 25;
         private String upstreamProject, upstreamUrl;
         private int upstreamBuild;
         /**
@@ -128,8 +134,9 @@ public abstract class Cause {
             upstreamProject = up.getParent().getFullName();
             upstreamUrl = up.getParent().getUrl();
             upstreamCauses = new ArrayList<Cause>();
+            Set<String> traversed = new HashSet<String>();
             for (Cause c : up.getCauses()) {
-                upstreamCauses.add(trim(c, MAX_DEPTH));
+                upstreamCauses.add(trim(c, MAX_DEPTH, traversed));
             }
         }
 
@@ -140,17 +147,19 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
-        private @Nonnull Cause trim(@Nonnull Cause c, int depth) {
+        private @Nonnull Cause trim(@Nonnull Cause c, int depth, Set<String> traversed) {
             if (!(c instanceof UpstreamCause)) {
                 return c;
             }
             UpstreamCause uc = (UpstreamCause) c;
             List<Cause> cs = new ArrayList<Cause>();
             if (depth > 0) {
-                for (Cause c2 : uc.upstreamCauses) {
-                    cs.add(trim(c2, depth - 1));
+                if (traversed.add(uc.upstreamUrl + uc.upstreamBuild)) {
+                    for (Cause c2 : uc.upstreamCauses) {
+                        cs.add(trim(c2, depth - 1, traversed));
+                    }
                 }
-            } else {
+            } else if (traversed.size() < MAX_LEAF) {
                 cs.add(new DeeplyNestedUpstreamCause());
             }
             return new UpstreamCause(uc.upstreamProject, uc.upstreamBuild, uc.upstreamUrl, cs);
@@ -196,15 +205,32 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
+            print(listener, 0);
+        }
+
+        private void indent(TaskListener listener, int depth) {
+            for (int i = 0; i < depth; i++) {
+                listener.getLogger().print(' ');
+            }
+        }
+
+        private void print(TaskListener listener, int depth) {
+            indent(listener, depth);
             listener.getLogger().println(
                 Messages.Cause_UpstreamCause_ShortDescription(
                     ModelHyperlinkNote.encodeTo('/' + upstreamUrl, upstreamProject),
                     ModelHyperlinkNote.encodeTo('/'+upstreamUrl+upstreamBuild, Integer.toString(upstreamBuild)))
             );
-            if(upstreamCauses != null && upstreamCauses.size() > 0) {
+            if (upstreamCauses != null && !upstreamCauses.isEmpty()) {
+                indent(listener, depth);
                 listener.getLogger().println(Messages.Cause_UpstreamCause_CausedBy());
                 for (Cause cause : upstreamCauses) {
-                    cause.print(listener);
+                    if (cause instanceof UpstreamCause) {
+                        ((UpstreamCause) cause).print(listener, depth + 1);
+                    } else {
+                        indent(listener, depth + 1);
+                        cause.print(listener);
+                    }
                 }
             }
         }
