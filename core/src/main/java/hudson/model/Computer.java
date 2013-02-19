@@ -1177,6 +1177,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (req.getMethod().equals("GET")) {
             // read
             rsp.setContentType("application/xml");
+            rsp.getOutputStream().write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
             Jenkins.XSTREAM2.toXML(getNode(), rsp.getOutputStream());
             return;
         }
