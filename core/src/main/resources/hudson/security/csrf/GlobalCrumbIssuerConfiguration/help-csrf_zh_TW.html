@@ -1,0 +1,9 @@
+<div>
+  跨站要求偽造 (Cross-Site Request Forgery，簡寫 CSRF/XSRF) 是一種由未經授權的第三方，
+  以您的身分在網站上做事情的入侵政擊。在 Jenkins 裡，代表別人可以刪除專案、建置或修改 Jenkins 設定。
+  <p>
+  啟動這個選項後，Jenkins 會檢查任何可能修改 Jenkins 伺服器設定的要求，看看產生的 Nonce 值 (或叫做 "Crumb") 是否正確。
+  這類要求包含表單送出，以及呼叫遠端 API。
+  <p>
+  您可以在<a href="http://www.owasp.org/index.php/Cross-Site_Request_Forgery">這裡</a>找到更多有關 CSRF 入侵的資訊。
+</div>

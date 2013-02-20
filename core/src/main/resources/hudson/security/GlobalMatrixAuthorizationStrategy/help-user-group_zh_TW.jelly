@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<l:ajax xmlns:l="/lib/layout">
+  <div>
+    不同的安全性領域對群組名稱有不一樣的慣例。
+    最好的方法就是登入後，到<a href="${rootURL}/whoAmI" target="_new">診斷頁</a>看您所屬的群組名稱。
+
+    <p>
+      另外，還可以使用特別群組 "authenticated" 來代表所有驗證通過 (已登入) 的使用者。
+    </p>
+  </div>
+</l:ajax>
