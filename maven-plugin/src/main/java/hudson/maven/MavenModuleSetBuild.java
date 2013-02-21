@@ -905,6 +905,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     } else {// this looks like a new module
                         logger.println(Messages.MavenModuleSetBuild_DiscoveredModule(pom.name,pom.displayName));
                         mm = new MavenModule(project,pom,getNumber());
+                        mm.onCreatedFromScratch();
                         modules.put(mm.getModuleName(),mm);
                         needsDependencyGraphRecalculation = true;
                     }
