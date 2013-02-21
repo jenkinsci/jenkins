@@ -186,21 +186,12 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
-          <systemProperties>
-            <property>
+          <systemPropertyVariables>
               <!-- use AntClassLoader that supports predictable file handle release -->
-              <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
-              <value>true</value>
-            </property>
-            <property>
-              <name>hudson.maven.debug</name>
-              <value>${mavenDebug}</value>
-            </property>
-            <property>
-              <name>buildDirectory</name>
-              <value>${project.build.directory}</value>
-            </property>
-          </systemProperties>
+              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+              <buildDirectory>${project.build.directory}</buildDirectory>
+          </systemPropertyVariables>
           <forkMode>perthread</forkMode> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-946 so use kill -9 to stop -->
           <reuseForks>true</reuseForks> <!-- https://jira.codehaus.org/browse/SUREFIRE-751 -->
           <threadCount>4</threadCount> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-947 -->
