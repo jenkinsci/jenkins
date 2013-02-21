@@ -42,7 +42,7 @@ import java.util.Locale;
  * @author Kohsuke Kawaguchi
  * @see Jenkins#getFingerprintMap()
  */
-public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintParams> {
+public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintMap.FingerprintParams> {
 
     /**
      * Returns true if there's some data in the fingerprint database.
@@ -93,9 +93,8 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
     protected Fingerprint load(String key) throws IOException {
         return Fingerprint.load(toByteArray(key));
     }
-}
 
-class FingerprintParams {
+static class FingerprintParams {
     /**
      * Null if the build isn't claiming to be the owner.
      */
@@ -108,4 +107,5 @@ class FingerprintParams {
 
         assert fileName!=null;
     }
+}
 }

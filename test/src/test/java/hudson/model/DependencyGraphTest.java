@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.DependencyDeclarer;
 import hudson.security.ACL;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
@@ -84,7 +85,7 @@ public class DependencyGraphTest extends HudsonTestCase {
         assertNotNull("down1 should be triggered", r);
     }
 
-    private static class TestDeclarer extends MockBuilder implements DependecyDeclarer {
+    private static class TestDeclarer extends MockBuilder implements DependencyDeclarer {
         private AbstractProject down;
         private TestDeclarer(Result buildResult, AbstractProject down) {
             super(buildResult);

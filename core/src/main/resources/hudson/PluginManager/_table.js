@@ -24,9 +24,17 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
       function applyFilter() {
           var filter = e.value.toLowerCase();
           ["TR.plugin","TR.plugin-category"].each(function(clz) {
+            var encountered = {};
             var items = document.getElementsBySelector(clz);
             for (var i=0; i<items.length; i++) {
                 var visible = (filter=="" || items[i].innerHTML.toLowerCase().indexOf(filter)>=0);
+                var name = items[i].getAttribute("name");
+                if (visible && name != null) {
+                    if (encountered[name]) {
+                        visible = false;
+                    }
+                    encountered[name] = true;
+                }
                 items[i].style.display = (visible ? "" : "none");
             }
           });

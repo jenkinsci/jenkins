@@ -35,7 +35,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.DependecyDeclarer;
+import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Fingerprint;
@@ -81,7 +81,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class Fingerprinter extends Recorder implements Serializable, DependecyDeclarer {
+public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer {
     public static boolean enableFingerprintsInDependencyGraph = Boolean.parseBoolean(System.getProperty(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph", "false"));
     
     /**
@@ -438,7 +438,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependecyDe
                 if (job==null)  continue;   // project no longer exists
                 if (job.getParent()==build.getParent())
                     continue;   // we are the parent of the build owner, that is almost like we are the owner 
-                if(job.getBuildByNumber(bp.getNumber())==null && !includeMissing)
+                if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
                     continue;               // build no longer exists
 
                 Integer existing = r.get(job);

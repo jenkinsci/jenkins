@@ -81,6 +81,43 @@ import java.util.Stack;
  * that read from DOM and {@link HierarchicalStreamWriter} that writes to DOM. See
  * {@link #newReader()} and {@link #newWriter()} for those operations.
  *
+ * <h3>XStreamDOM as a field of another XStream-enabled class</h3>
+ * <p>
+ * {@link XStreamDOM} can be used as a type of a field of another class that's itself XStream-enabled,
+ * such as this:
+ *
+ * <pre>
+ * class Foo {
+ *     XStreamDOM bar;
+ * }
+ * </pre>
+ *
+ * With the following XML:
+ *
+ * <pre>
+ * &lt;foo>
+ *   &lt;bar>
+ *     &lt;payload>
+ *       ...
+ *     &lt;/payload>
+ *   &lt;/bar>
+ * &lt;/foo>
+ * </pre>
+ *
+ * <p>
+ * The {@link XStreamDOM} object in the bar field will have the "payload" element in its tag name
+ * (which means the bar element cannot have multiple children.)
+ *
+ * <h3>XStream and name escaping</h3>
+ * <p>
+ * Because XStream wants to use letters like '$' that's not legal as a name char in XML,
+ * the XML data model that it thinks of (unescaped) is actually translated into the actual
+ * XML-compliant infoset via {@link XmlFriendlyReplacer}. This translation is done by
+ * {@link HierarchicalStreamReader} and {@link HierarchicalStreamWriter}, transparently
+ * from {@link Converter}s. In {@link XStreamDOM}, we'd like to hold the XML infoset
+ * (escaped form, in XStream speak), so in our {@link ConverterImpl} we go out of the way
+ * to cancel out this effect.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.473
  */
@@ -435,11 +472,26 @@ public class XStreamDOM {
             return type==XStreamDOM.class;
         }
 
+        /**
+         * {@link XStreamDOM} holds infoset (which is 'escaped' from XStream's PoV),
+         * whereas {@link HierarchicalStreamWriter} expects unescaped names,
+         * so we need to unescape it first before calling into {@link HierarchicalStreamWriter}.
+         */
+        // TODO: ideally we'd like to use the contextual HierarchicalStreamWriter to unescape,
+        // but this object isn't exposed to us
+        private String unescape(String s) {
+            return REPLACER.unescapeName(s);
+        }
+
+        private String escape(String s) {
+            return REPLACER.escapeName(s);
+        }
+
         public void marshal(Object source, HierarchicalStreamWriter w, MarshallingContext context) {
             XStreamDOM dom = (XStreamDOM)source;
-            w.startNode(dom.tagName);
+            w.startNode(unescape(dom.tagName));
             for (int i=0; i<dom.attributes.length; i+=2)
-                w.addAttribute(dom.attributes[i],dom.attributes[i+1]);
+                w.addAttribute(unescape(dom.attributes[i]),dom.attributes[i+1]);
             if (dom.value!=null)
                 w.setValue(dom.value);
             else {
@@ -461,12 +513,12 @@ public class XStreamDOM {
         }
 
         public XStreamDOM unmarshalElement(HierarchicalStreamReader r, UnmarshallingContext context) {
-            String name = r.getNodeName();
+            String name = escape(r.getNodeName());
 
             int c = r.getAttributeCount();
             String[] attributes = new String[c*2];
             for (int i=0; i<c; i++) {
-                attributes[i*2]   = r.getAttributeName(i);
+                attributes[i*2]   = escape(r.getAttributeName(i));
                 attributes[i*2+1] = r.getAttribute(i);
             }
 
@@ -484,4 +536,6 @@ public class XStreamDOM {
             return new XStreamDOM(name,attributes,children,value);
         }
     }
+
+    public static XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

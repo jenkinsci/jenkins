@@ -57,6 +57,7 @@ import java.lang.reflect.Method;
 
 import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.FINE;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 
 /**
@@ -468,6 +469,7 @@ public class Executor extends Thread implements ModelObject {
      * @deprecated as of 1.489
      *      Use {@link #doStop()}.
      */
+    @RequirePOST
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

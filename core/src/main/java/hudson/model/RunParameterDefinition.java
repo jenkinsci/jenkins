@@ -30,6 +30,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import hudson.Extension;
+import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
@@ -65,7 +66,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     public Job getProject() {
-        return (Job) Jenkins.getInstance().getItem(projectName);
+        return Jenkins.getInstance().getItemByFullName(projectName, Job.class);
     }
 
     @Extension
@@ -84,6 +85,11 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
+        
+        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
+            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.getInstance());
+        }
+
     }
 
     @Override

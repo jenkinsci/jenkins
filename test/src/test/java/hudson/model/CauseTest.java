@@ -26,6 +26,8 @@ package hudson.model;
 
 import hudson.XmlFile;
 import java.io.File;
+import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +54,29 @@ public class CauseTest {
         assertTrue("keeps full history:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
         buildXml = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString();
         assertFalse("too big:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
+    }
+
+    @Bug(15747)
+    @Test public void broadlyNestedCauses() throws Exception {
+        FreeStyleProject a = j.createFreeStyleProject("a");
+        FreeStyleProject b = j.createFreeStyleProject("b");
+        FreeStyleProject c = j.createFreeStyleProject("c");
+        Run<?,?> last = null;
+        for (int i = 1; i <= 10; i++) {
+            Cause cause = last == null ? null : new Cause.UpstreamCause(last);
+            Future<? extends Run<?,?>> next1 = a.scheduleBuild2(0, cause);
+            a.scheduleBuild2(0, cause);
+            cause = new Cause.UpstreamCause(next1.get());
+            Future<? extends Run<?,?>> next2 = b.scheduleBuild2(0, cause);
+            b.scheduleBuild2(0, cause);
+            cause = new Cause.UpstreamCause(next2.get());
+            Future<? extends Run<?,?>> next3 = c.scheduleBuild2(0, cause);
+            c.scheduleBuild2(0, cause);
+            last = next3.get();
+        }
+        int count = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString().split(Pattern.quote("<hudson.model.Cause_-UpstreamCause")).length;
+        assertFalse("too big at " + count, count > 100);
+        //j.interactiveBreak();
     }
 
 }

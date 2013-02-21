@@ -162,6 +162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
+    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
     protected transient RunMap<R> builds = new RunMap<R>();
 
     /**
@@ -269,6 +270,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
+        builds = createBuildRunMap();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
     }
@@ -277,11 +279,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
 
-        RunMap<R> builds = new RunMap<R>(getBuildDir(), new Constructor<R>() {
-            public R create(File dir) throws IOException {
-                return loadBuild(dir);
-            }
-        });
+        RunMap<R> builds = createBuildRunMap();
         if (this.builds!=null) {
             // if we are reloading, keep all those that are still building intact
             for (R r : this.builds.getLoadedBuilds().values()) {
@@ -298,6 +296,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
+    }
+
+    private RunMap<R> createBuildRunMap() {
+        return new RunMap<R>(getBuildDir(), new Constructor<R>() {
+            public R create(File dir) throws IOException {
+                return loadBuild(dir);
+            }
+        });
     }
 
     private synchronized List<Trigger<?>> triggers() {
@@ -510,7 +516,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public final FilePath getSomeWorkspace() {
         R b = getSomeBuildWithWorkspace();
-        return b!=null ? b.getWorkspace() : null;
+        if (b!=null) return b.getWorkspace();
+        for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+            FilePath f = browser.getWorkspace(this);
+            if (f != null) return f;
+        }
+        return null;
     }
 
     /**
@@ -1104,7 +1115,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see TransientProjectActionFactory
      */
     @Override
-    public synchronized List<Action> getActions() {
+    public List<Action> getActions() {
         // add all the transient actions, too
         List<Action> actions = new Vector<Action>(super.getActions());
         actions.addAll(transientActions);
@@ -1379,7 +1390,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             listener.getLogger().println(Messages.AbstractProject_NoSCM());
             return NO_CHANGES;
         }
-        if (isDisabled()) {
+        if (!isBuildable()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
@@ -1443,7 +1454,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
             WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( lb );
             if ( workspaceOfflineReason != null ) {
-                // workspace offline. build now, or nothing will ever be built
+                // workspace offline
+                for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+                    ws = browser.getWorkspace(this);
+                    if (ws != null) {
+                        return pollWithWorkspace(listener, scm, lb, ws, browser.getWorkspaceList());
+                    }
+                }
+
+                // build now, or nothing will ever be built
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1465,24 +1484,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             } else {
                 WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
-                // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
-                //
-                // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
-                // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
-                // by having multiple workspaces
-                WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-                Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
-                try {
-                    LOGGER.fine("Polling SCM changes of " + getName());
-                    if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                        calcPollingBaseline(lb,launcher,listener);
-                    PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
-                    pollingBaseline = r.remote;
-                    return r;
-                } finally {
-                    lease.release();
-                }
+                return pollWithWorkspace(listener, scm, lb, ws, l);
+
             }
         } else {
             // polling without workspace
@@ -1493,6 +1496,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
             pollingBaseline = r.remote;
             return r;
+        }
+    }
+
+    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
+        // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
+        // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
+        //
+        // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
+        // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
+        // by having multiple workspaces
+        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
+        Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
+        try {
+            LOGGER.fine("Polling SCM changes of " + getName());
+            if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+                calcPollingBaseline(lb,launcher,listener);
+            PollingResult r = scm.poll(this, launcher, ws, listener, pollingBaseline);
+            pollingBaseline = r.remote;
+            return r;
+        } finally {
+            lease.release();
         }
     }
 
@@ -1728,10 +1752,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
         if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        if (pp != null && !req.getMethod().equals("POST")) {
+            // show the parameter entry form.
+            req.getView(pp, "index.jelly").forward(req, rsp);
+            return;
+        }
+
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+
         if (pp != null) {
             pp._doBuild(req,rsp,delay);
             return;
@@ -1741,7 +1772,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
         Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**
@@ -1801,12 +1832,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
         schedulePolling();
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**
      * Cancels a scheduled build.
      */
+    @RequirePOST
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(ABORT);
 
@@ -1882,6 +1914,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
             t.start(this,true);
+
+        for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
+            BuildTrigger t = (BuildTrigger) _t;
+            for (AbstractProject downstream : t.getChildProjects(this)) {
+                downstream.checkPermission(BUILD);
+            }
+        }
     }
 
     /**

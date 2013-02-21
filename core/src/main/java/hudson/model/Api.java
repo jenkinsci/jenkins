@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,15 +154,14 @@ public class Api extends AbstractModelObject {
 
         OutputStream o = rsp.getCompressedOutputStream(req);
         try {
-            if(result instanceof CharacterData) {
-                rsp.setContentType("text/plain;charset=UTF-8");
-                o.write(((CharacterData)result).getText().getBytes("UTF-8"));
-                return;
-            }
-
-            if(result instanceof String || result instanceof Number || result instanceof Boolean) {
-                rsp.setContentType("text/plain;charset=UTF-8");
-                o.write(result.toString().getBytes("UTF-8"));
+            if (result instanceof CharacterData || result instanceof String || result instanceof Number || result instanceof Boolean) {
+                if (INSECURE) {
+                    rsp.setContentType("text/plain;charset=UTF-8");
+                    String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
+                    o.write(text.getBytes("UTF-8"));
+                } else {
+                    rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "primitive XPath result sets forbidden; can use -Dhudson.model.Api.INSECURE=true if you run without security");
+                }
                 return;
             }
 
@@ -188,8 +188,12 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as JSON.
      */
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        if (INSECURE || req.getParameter("jsonp") == null) {
         setHeaders(rsp);
-        rsp.serveExposedBean(req,bean, Flavor.JSON);
+            rsp.serveExposedBean(req,bean, Flavor.JSON);
+        } else {
+            rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; can use -Dhudson.model.Api.INSECURE=true if you run without security");
+        }
     }
 
     /**
@@ -207,4 +211,6 @@ public class Api extends AbstractModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(Api.class.getName());
     private static final ModelBuilder MODEL_BUILDER = new ModelBuilder();
+    private static final boolean INSECURE = "true".equals(System.getProperty("hudson.model.Api.INSECURE"));
+
 }

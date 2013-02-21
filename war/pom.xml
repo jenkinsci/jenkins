@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.499-SNAPSHOT</version>
+    <version>1.504-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -104,7 +104,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-40</version>
+      <version>0.9.10-jenkins-42</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -115,6 +115,11 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>slave-installer</artifactId>
       <version>1.2</version>
     </dependency>
     <dependency>
@@ -265,6 +270,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
+                  <!-- when upgrading may need to add credentials and ssh-credentials too: https://github.com/jenkinsci/ssh-slaves-plugin/commit/7f7031bdaae528baf8e4a1cf29a95849ef268c5c -->
                   <version>0.22</version>
                   <type>hpi</type>
                 </artifactItem>
@@ -295,7 +301,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>translation</artifactId>
-                  <version>1.8</version>
+                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

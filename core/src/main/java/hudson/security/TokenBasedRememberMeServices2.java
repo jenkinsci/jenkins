@@ -23,10 +23,17 @@
  */
 package hudson.security;
 
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import jenkins.security.HMACConfidentialKey;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.Authentication;
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.util.Assert;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -50,6 +57,37 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     protected String retrievePassword(Authentication successfulAuthentication) {
         return "N/A";
     }
+
+    @Override
+	public void loginSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication successfulAuthentication) {
+		// Exit if the principal hasn't asked to be remembered
+		if (!rememberMeRequested(request, getParameter())) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Did not send remember-me cookie (principal did not set parameter '" +
+						getParameter() + "')");
+			}
+
+			return;
+		}
+
+		Assert.notNull(successfulAuthentication.getPrincipal());
+		Assert.notNull(successfulAuthentication.getCredentials());
+		Assert.isInstanceOf(UserDetails.class, successfulAuthentication.getPrincipal());
+
+		long expiryTime = System.currentTimeMillis() + (tokenValiditySeconds * 1000);
+		String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
+
+		String signatureValue = makeTokenSignature(expiryTime, (UserDetails)successfulAuthentication.getPrincipal());
+		String tokenValue = username + ":" + expiryTime + ":" + signatureValue;
+		String tokenValueBase64 = new String(Base64.encodeBase64(tokenValue.getBytes()));
+		response.addCookie(makeValidCookie(tokenValueBase64, request, tokenValiditySeconds));
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Added remember-me cookie for user '" + username + "', expiry: '" + new Date(expiryTime)
+							+ "'");
+		}
+	}
 
     /**
      * Used to compute the token signature securely.

@@ -368,6 +368,8 @@ function parseHtml(html) {
  * Evaluates the script in global context.
  */
 function geval(script) {
+    // execScript chokes on "" but eval doesn't, so we need to reject it first.
+    if (script==null || script=="") return;
     // see http://perfectionkills.com/global-eval-what-are-the-options/
     // note that execScript cannot return value
     (this.execScript || eval)(script);
@@ -1647,7 +1649,7 @@ function createSearchBox(searchURL) {
     function updatePos() {
         function max(a,b) { if(a>b) return a; else return b; }
 
-        sizer.innerHTML = box.value;
+        sizer.innerHTML = box.value.escapeHTML();
         var w = max(sizer.offsetWidth,minW.offsetWidth);
         box.style.width =
         comp.style.width = 
@@ -1917,11 +1919,14 @@ var hoverNotification = (function() {
         msgBox.render();
     }
 
-    return function(title,anchor) {
+    return function(title, anchor, offset) {
+        if (typeof offset === 'undefined') {
+            offset = 48;
+        }
         init();
         body.innerHTML = title;
         var xy = YAHOO.util.Dom.getXY(anchor);
-        xy[0] += 48;
+        xy[0] += offset;
         xy[1] += anchor.offsetHeight;
         msgBox.cfg.setProperty("xy",xy);
         msgBox.show();
@@ -2143,12 +2148,11 @@ function validateButton(checkUrl,paramList,button) {
           Behaviour.applySubtree(target);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
-          if(s!=null)
-            try {
+          try {
               geval(s);
-            } catch(e) {
+          } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
-            }
+          }
       }
   });
 }

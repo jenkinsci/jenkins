@@ -23,11 +23,14 @@
  */
 package hudson.matrix;
 
+import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Executor;
 import hudson.model.InvisibleAction;
+import hudson.model.Node;
 import hudson.model.Queue.QueueAction;
+import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import hudson.model.AbstractBuild;
@@ -35,6 +38,7 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
+import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -84,7 +88,23 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         // directory name is not a name for us --- it's taken from the combination name
         super.onLoad(parent, combination.toString());
     }
-    
+
+    @Override
+    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+        EnvVars env =  super.getEnvironment(node, listener);
+
+        AxisList axes = getParent().getAxes();
+        for (Map.Entry<String,String> e : getCombination().entrySet()) {
+            Axis a = axes.find(e.getKey());
+            if (a!=null)
+                a.addBuildVariable(e.getValue(),env); // TODO: hijacking addBuildVariable but perhaps we need addEnvVar?
+            else
+                env.put(e.getKey(), e.getValue());
+        }
+
+        return env;
+    }
+
     @Override
     protected void updateTransientActions(){
         // This method is exactly the same as in {@link #AbstractProject}. 
@@ -297,10 +317,14 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
-    public LogRotator getLogRotator() {
-        LogRotator lr = getParent().getLogRotator();
-        return new LinkedLogRotator(lr != null ? lr.getArtifactDaysToKeep() : -1,
-                                    lr != null ? lr.getArtifactNumToKeep() : -1);
+    public BuildDiscarder getBuildDiscarder() {
+        // TODO: LinkedLogRotator doesn't work very well in the face of pluggable BuildDiscarder but I don't know what to do
+        BuildDiscarder bd = getParent().getBuildDiscarder();
+        if (bd instanceof LogRotator) {
+            LogRotator lr = (LogRotator) bd;
+            return new LinkedLogRotator(lr.getArtifactDaysToKeep(),lr.getArtifactNumToKeep());
+        }
+        return new LinkedLogRotator();
     }
 
     @Override
@@ -328,7 +352,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      *      Value is controlled by {@link MatrixProject}.
      */
     @Override
-    public void setLogRotator(LogRotator logRotator) {
+    public void setBuildDiscarder(BuildDiscarder logRotator) {
         throw new UnsupportedOperationException();
     }
 

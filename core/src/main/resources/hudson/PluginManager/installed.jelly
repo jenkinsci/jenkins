@@ -83,7 +83,7 @@ THE SOFTWARE.
                 <td class="center pane" id='unpin-${p.shortName}'>
                   <j:if test="${p.isPinned()}">
                     <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
-                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
+                    <a href="${%wiki.url}" target="_blank"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
                   </j:if>
                 </td>
                 <td class="center pane">

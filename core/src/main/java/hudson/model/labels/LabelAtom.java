@@ -94,7 +94,7 @@ public class LabelAtom extends Label implements Saveable {
      * should do so by implementing {@link LabelAtomProperty#getActions(LabelAtom)}.
      */
     @Override
-    public synchronized List<Action> getActions() {
+    public List<Action> getActions() {
         // add all the transient actions, too
         List<Action> actions = new Vector<Action>(super.getActions());
         actions.addAll(transientActions);

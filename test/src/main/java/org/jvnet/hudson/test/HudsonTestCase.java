@@ -177,6 +177,7 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -186,6 +187,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import java.net.HttpURLConnection;
 
 /**
  * Base class for all Jenkins test cases.
@@ -1467,10 +1469,22 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                     if(dependencies!=null) {
                         MavenEmbedder embedder = MavenUtil.createEmbedder(new StreamTaskListener(System.out,Charset.defaultCharset()),(File)null,null);
                         for( String dep : dependencies.split(",")) {
+                            String suffix = ";resolution:=optional";
+                            boolean optional = dep.endsWith(suffix);
+                            if (optional) {
+                                dep = dep.substring(0, dep.length() - suffix.length());
+                            }
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
                             String version = tokens[1];
                             File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
+                            if (dependencyJar == null) {
+                                if (optional) {
+                                    System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
+                                    continue;
+                                }
+                                throw new IOException("Could not resolve " + dep);
+                            }
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
@@ -1840,6 +1854,19 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 return null;
         }
         
+        /**
+         * Verify that the server rejects an attempt to load the given page.
+         * @param url a URL path (relative to Jenkins root)
+         * @param statusCode the expected failure code (such as {@link HttpURLConnection#HTTP_FORBIDDEN})
+         * @since 1.502
+         */
+        public void assertFails(String url, int statusCode) throws Exception {
+            try {
+                fail(url + " should have been rejected but produced: " + super.getPage(getContextPath() + url).getWebResponse().getContentAsString());
+            } catch (FailingHttpStatusCodeException x) {
+                assertEquals(statusCode, x.getStatusCode());
+            }
+        }
 
         /**
          * Returns the URL of the webapp top page.

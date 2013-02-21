@@ -202,7 +202,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
-        if (buildDirs==null)    buildDirs=EMPTY_STRING_ARRAY;
+        if (buildDirs==null) {
+            // the job may have just been created
+            buildDirs=EMPTY_STRING_ARRAY;
+        }
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
         idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
@@ -622,6 +625,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
 
     protected R load(String id, Index editInPlace) {
+        assert dir != null;
         R v = load(new File(dir, id), editInPlace);
         if (v==null && editInPlace!=null) {
             // remember the failure.

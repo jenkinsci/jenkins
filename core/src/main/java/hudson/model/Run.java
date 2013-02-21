@@ -51,7 +51,6 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.LogRotator;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -97,14 +96,13 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -112,12 +110,15 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * A particular execution of {@link Job}.
@@ -179,7 +180,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * For historical reasons, 0 means no value is recorded.
      *
-     * @see #getStartTime()
+     * @see #getStartTimeInMillis()
      */
     private long startTime;
 
@@ -440,8 +441,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
-    public Executor getExecutor() {
-        for( Computer c : Jenkins.getInstance().getComputers() ) {
+    public @CheckForNull Executor getExecutor() {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return null;
+        }
+        for (Computer c : j.getComputers()) {
             for (Executor e : c.getExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;
@@ -507,7 +512,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns true if this log file should be kept and not deleted.
      *
-     * This is used as a signal to the {@link LogRotator}.
+     * This is used as a signal to the {@link BuildDiscarder}.
      */
     @Exported
     public final boolean isKeepLog() {
@@ -1224,7 +1229,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	    }
     	}
     	
-    	return new NullInputStream(0);
+        String message = "No such file: " + logFile;
+    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
     }
 
     public Reader getLogReader() throws IOException {
@@ -1334,6 +1340,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         File rootDir = getRootDir();
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
+        if (tmp.exists()) {
+            Util.deleteRecursive(tmp);
+        }
+        // XXX on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
         // some user reported that they see some left-over .xyz files in the workspace,
@@ -1465,7 +1475,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Among other things, this is often a necessary pre-condition
          * before invoking other builds that depend on this build.
          */
-        public abstract void cleanUp(BuildListener listener) throws Exception;
+        public abstract void cleanUp(@Nonnull BuildListener listener) throws Exception;
 
         public RunT getBuild() {
             return _this();
@@ -1597,19 +1607,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // see issue #980.
                 state = State.POST_PRODUCTION;
 
-                try {
-                    job.cleanUp(listener);
-                } catch (Exception e) {
-                    handleFatalBuildProblem(listener,e);
-                    // too late to update the result now
-                }
-                    
-                RunListener.fireCompleted(this,listener);
-
-                if(listener!=null)
+                if (listener != null) {
+                    try {
+                        job.cleanUp(listener);
+                    } catch (Exception e) {
+                        handleFatalBuildProblem(listener,e);
+                        // too late to update the result now
+                    }
+                    RunListener.fireCompleted(this,listener);
                     listener.finished(result);
-                if(listener!=null)
                     listener.closeQuietly();
+                }
 
                 try {
                     save();
@@ -1826,7 +1834,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     return new Summary(worseOverride != null ? worseOverride : true,
                             Messages.Run_Summary_TestFailures(trN.getFailCount()));
             } else {
-                if(trN.getFailCount()!= 0) {
+                if(trN!=null && trN.getFailCount()!= 0) {
                     if(trP.getFailCount()==0)
                         return new Summary(worseOverride != null ? worseOverride : true,
                                 Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
@@ -2027,7 +2035,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public String getExternalizableId() {
-        return project.getName() + "#" + getNumber();
+        return project.getFullName() + "#" + getNumber();
     }
 
     public static Run<?,?> fromExternalizableId(String id) {
@@ -2038,7 +2046,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         String jobName = id.substring(0, hash);
         int number = Integer.parseInt(id.substring(hash + 1));
 
-        Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItem(jobName);
+        Job<?,?> job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
+        if (job == null) {
+            throw new IllegalArgumentException("no such job " + jobName);
+        }
         return job.getBuildByNumber(number);
     }
 

@@ -27,6 +27,7 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
@@ -48,7 +49,11 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,21 +151,68 @@ public class UpdateSite {
     }
 
     /**
+     * Update the data file from the given URL if the file
+     * does not exist, or is otherwise due for update.
+     * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
+     * @param signatureCheck whether to enforce the signature (may be off only for testing!)
+     * @return null if no updates are necessary, or the future result
+     * @since 1.502
+     */
+    public Future<FormValidation> updateDirectly(final boolean signatureCheck) {
+        if (! getDataFile().exists() || isDue()) {
+            return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
+                
+                public FormValidation call() throws Exception {
+                    URL src = new URL(getUrl() + "?id=" + URLEncoder.encode(getId(),"UTF-8") 
+                            + "&version="+URLEncoder.encode(Jenkins.VERSION, "UTF-8"));
+                    URLConnection conn = ProxyConfiguration.open(src);
+                    InputStream is = conn.getInputStream();
+                    try {
+                        String uncleanJson = IOUtils.toString(is,"UTF-8");
+                        int jsonStart = uncleanJson.indexOf("{\"");
+                        if (jsonStart >= 0) {
+                            return updateData(uncleanJson.substring(jsonStart), signatureCheck);
+                        } else {
+                            throw new IOException("Could not find json in content of " +
+                            		"update center from url: "+src.toExternalForm());
+                        }
+                    } finally {
+                        if (is != null)
+                            is.close();
+                    }
+                }
+            });
+        }
+            return null;
+    }
+    
+    /**
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
+        return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
+    }
+
+    private FormValidation updateData(String json, boolean signatureCheck)
+            throws IOException {
+
         dataTimestamp = System.currentTimeMillis();
-        String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+
         JSONObject o = JSONObject.fromObject(json);
 
-        int v = o.getInt("updateCenterVersion");
-        if(v !=1)
-            throw new IllegalArgumentException("Unrecognized update center version: "+v);
+        try {
+            int v = o.getInt("updateCenterVersion");
+            if (v != 1) {
+                throw new IllegalArgumentException("Unrecognized update center version: " + v);
+            }
+        } catch (JSONException x) {
+            throw new IllegalArgumentException("Could not find (numeric) updateCenterVersion in " + json, x);
+        }
 
         if (signatureCheck) {
             FormValidation e = verifySignature(o);
             if (e.kind!=Kind.OK) {
-                LOGGER.severe(e.renderHtml());
+                LOGGER.severe(e.toString());
                 return e;
             }
         }
@@ -730,8 +783,4 @@ public class UpdateSite {
     // The name uses UpdateCenter for compatibility reason.
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
-    /**
-     * Off by default until we know this is reasonably working.
-     */
-    public static boolean signatureCheck = true; // Boolean.getBoolean(UpdateCenter.class.getName()+".signatureCheck");
 }

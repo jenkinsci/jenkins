@@ -58,7 +58,7 @@ THE SOFTWARE.
         </td><td style="padding:0">
           <!-- Check ABORT permission for Project, Admin permission otherwise -->
           <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
-            <a href="${link}stop"><img src="${imagesURL}/16x16/stop.png" alt="[cancel]" height="16" width="16"/></a>
+            <l:stopButton href="${link}stop" alt="[cancel]"/>
           </j:if>
         </td></tr>
       </table>

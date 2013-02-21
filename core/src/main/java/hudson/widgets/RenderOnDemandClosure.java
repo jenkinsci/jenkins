@@ -25,15 +25,12 @@ package hudson.widgets;
 
 import hudson.Util;
 import hudson.model.Descriptor;
-import hudson.model.DescriptorByNameOwner;
 import hudson.util.IOException2;
 import hudson.util.PackedMap;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
@@ -64,7 +61,7 @@ public class RenderOnDemandClosure {
     private final Map<String,Object> variables;
     private final String currentDescriptorByNameUrl;
 
-    private final Set<String> adjuncts;
+    private final String[] adjuncts;
 
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
         List<Script> bodyStack = new ArrayList<Script>();
@@ -77,14 +74,19 @@ public class RenderOnDemandClosure {
 
         Map<String,Object> variables = new HashMap<String, Object>();
         for (String v : Util.fixNull(attributesToCapture).split(","))
-            variables.put(v,context.getVariable(v));
+            variables.put(v.intern(),context.getVariable(v));
 
         // capture the current base of context for descriptors
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
 
         this.variables = PackedMap.of(variables);
 
-        this.adjuncts = AdjunctsInPage.get().getIncluded();
+        Set<String> _adjuncts = AdjunctsInPage.get().getIncluded();
+        this.adjuncts = new String[_adjuncts.size()];
+        int i = 0;
+        for (String adjunct : _adjuncts) {
+            this.adjuncts[i++] = adjunct.intern();
+        }
     }
 
     /**

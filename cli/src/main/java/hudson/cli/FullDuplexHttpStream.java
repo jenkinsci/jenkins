@@ -37,6 +37,7 @@ public class FullDuplexHttpStream {
         return output;
     }
 
+    @Deprecated
     public FullDuplexHttpStream(URL target) throws IOException {
         this(target,basicAuth(target.getUserInfo()));
     }
@@ -115,8 +116,9 @@ public class FullDuplexHttpStream {
     	private void getData() {
             try {
                 String base = createCrumbUrlBase();
-                crumbName = readData(base+"?xpath=/*/crumbRequestField/text()");
-                crumb = readData(base+"?xpath=/*/crumb/text()");
+                String[] pair = readData(base + "?xpath=concat(//crumbRequestField,\":\",//crumb)").split(":", 2);
+                crumbName = pair[0];
+                crumb = pair[1];
                 isValid = true;
                 LOGGER.fine("Crumb data: "+crumbName+"="+crumb);
             } catch (IOException e) {
@@ -137,7 +139,17 @@ public class FullDuplexHttpStream {
             }
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                return reader.readLine();
+                String line = reader.readLine();
+                String nextLine = reader.readLine();
+                if (nextLine != null) {
+                    System.err.println("Warning: received junk from " + dest);
+                    System.err.println(line);
+                    System.err.println(nextLine);
+                    while ((nextLine = reader.readLine()) != null) {
+                        System.err.println(nextLine);
+                    }
+                }
+                return line;
             }
             finally {
                 con.disconnect();
