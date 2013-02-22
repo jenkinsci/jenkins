@@ -66,6 +66,13 @@ var breadcrumbs = (function() {
         return a+'/'+b+qs;
     }
 
+    function postRequest(action, event, url) {
+        new Ajax.Request(url);
+        if (event.length == 1 && event[0].target != null) {
+            hoverNotification('Done.', event[0].target);
+        }
+    }
+
     /**
      * Called when the mouse cursor comes into the context menu hot spot.
      *
@@ -111,6 +118,10 @@ var breadcrumbs = (function() {
                         e.text = makeMenuHtml(e.icon, e.displayName);
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
+                        if (e.post) {
+                            e.onclick = {fn: postRequest, obj: e.url};
+                            delete e.url;
+                        }
                     }
                     a.each(fillMenuItem);
 

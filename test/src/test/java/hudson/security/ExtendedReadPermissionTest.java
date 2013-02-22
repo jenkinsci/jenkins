@@ -1,10 +1,10 @@
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Item;
+import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -64,15 +64,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
         assertFalse("Charlie should not have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
         WebClient wc = new WebClient().login("charlie","charlie");
-        try {
-            HtmlPage page = wc.goTo("job/a/configure");
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(403,e.getStatusCode());
-            return;
-        }
-
-        fail("Charlie should not have been able to access the configuration page");
+        wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @LocalData
@@ -85,15 +77,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
         assertFalse("Bob should not have extended read for this test", gas.hasExplicitPermission("bob",Item.EXTENDED_READ));
 
         WebClient wc = new WebClient().login("bob","bob");
-        try {
-            HtmlPage page = wc.goTo("job/a/configure");
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(403,e.getStatusCode());
-            return;
-        }
-
-        fail("Bob should not have been able to access the configuration page");
+        wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
 /*
