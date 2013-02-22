@@ -56,6 +56,11 @@ THE SOFTWARE.
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
     </st:attribute>
+    <st:attribute name="post" type="boolean">
+      If true, send a POST rather than a GET request.
+      (onclick supersedes this except in the context menu.)
+      (since 1.504)
+    </st:attribute>
   </st:documentation>
 
   <!--
@@ -98,14 +103,24 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="task">
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,icon,title) : null}
+          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true') : null}
 
-          <a href="${href}" onclick="${attrs.onclick}">
+          <j:if test="${attrs.onclick == null &amp;&amp; post}">
+              <script>
+                  function postRequest(a) {
+                      new Ajax.Request(a.href);
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
+                  }
+              </script>
+          </j:if>
+
+          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
             <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
           </a>
           <st:nbsp />
 
-          <a href="${href}" onclick="${attrs.onclick}">
+          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
             <j:choose>
               <j:when test="${match}">
                 <b>${title}</b>
