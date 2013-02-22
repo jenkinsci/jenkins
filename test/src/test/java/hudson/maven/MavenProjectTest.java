@@ -38,7 +38,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import java.net.HttpURLConnection;
 
 /**
  * @author huybrechts
@@ -98,12 +98,7 @@ public class MavenProjectTest extends HudsonTestCase {
         // this should succeed
         HudsonTestCase.WebClient wc = new WebClient();
         wc.getPage(project,"site");
-        try {
-            wc.getPage(project,"site/no-such-file");
-            fail("should have resulted in 404");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(404,e.getStatusCode());
-        }
+        wc.assertFails(project.getUrl() + "site/no-such-file", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     /**

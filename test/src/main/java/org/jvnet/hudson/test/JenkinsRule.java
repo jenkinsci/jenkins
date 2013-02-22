@@ -210,8 +210,7 @@ import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 /**
@@ -1924,6 +1923,19 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 return null;
         }
 
+        /**
+         * Verify that the server rejects an attempt to load the given page.
+         * @param url a URL path (relative to Jenkins root)
+         * @param statusCode the expected failure code (such as {@link HttpURLConnection#HTTP_FORBIDDEN})
+         * @since 1.504
+         */
+        public void assertFails(String url, int statusCode) throws Exception {
+            try {
+                fail(url + " should have been rejected but produced: " + super.getPage(getContextPath() + url).getWebResponse().getContentAsString());
+            } catch (FailingHttpStatusCodeException x) {
+                assertEquals(statusCode, x.getStatusCode());
+            }
+        }
 
         /**
          * Returns the URL of the webapp top page.

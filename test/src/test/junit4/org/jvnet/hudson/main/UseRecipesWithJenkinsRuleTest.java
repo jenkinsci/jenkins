@@ -4,7 +4,6 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import hudson.LocalPluginManager;
 
 import java.io.File;
@@ -22,7 +21,6 @@ import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 import org.xml.sax.SAXException;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class UseRecipesWithJenkinsRuleTest {
@@ -46,13 +44,7 @@ public class UseRecipesWithJenkinsRuleTest {
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void testPresetData() throws Exception {
         WebClient wc = rule.createWebClient();
-        try {
-            wc.goTo("loginError");
-            fail("Expecting a 401 error");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(SC_UNAUTHORIZED,e.getStatusCode());
-        }
-
+        wc.assertFails("loginError", SC_UNAUTHORIZED);
         // but not once the user logs in.
         verifyNotError(wc.login("alice"));
     }

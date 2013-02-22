@@ -23,8 +23,8 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
+import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 
@@ -58,11 +58,7 @@ public class ApiTest extends HudsonTestCase {
     }
 
     public void testUnwrappedZeroItems() throws Exception {
-        try {
-            new WebClient().goTo("api/xml?xpath=/hudson/nonexistent", "application/xml");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(404, x.getStatusCode());
-        }
+        new WebClient().assertFails("api/xml?xpath=/hudson/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     public void testUnwrappedOneItem() throws Exception {
@@ -81,10 +77,6 @@ public class ApiTest extends HudsonTestCase {
     public void testUnwrappedMultipleItems() throws Exception {
         createFreeStyleProject();
         createFreeStyleProject();
-        try {
-            new WebClient().goTo("api/xml?xpath=/hudson/job/name", "application/xml");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(500, x.getStatusCode());
-        }
+        new WebClient().assertFails("api/xml?xpath=/hudson/job/name", HttpURLConnection.HTTP_INTERNAL_ERROR);
     }
 }
