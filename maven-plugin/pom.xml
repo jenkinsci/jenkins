@@ -46,7 +46,7 @@ THE SOFTWARE.
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.13.1</aetherVersion>
     <sisuInjectVersion>2.3.0</sisuInjectVersion>
-    <wagonVersion>2.3</wagonVersion>
+    <wagonVersion>2.4</wagonVersion>
   </properties>
 
   <issueManagement>
