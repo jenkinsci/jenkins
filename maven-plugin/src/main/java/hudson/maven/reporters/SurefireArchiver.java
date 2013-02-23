@@ -93,7 +93,7 @@ public class SurefireArchiver extends TestFailureDetector {
             // Many test plugins have - as surefire - a configuration key 'testFailureIgnore' which defaults to
             // ${maven.test.failure.ignore}, so just try that one and change value to true,
             // if it's still at that default:
-            XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore");
+            XmlPlexusConfiguration c = (XmlPlexusConfiguration) mojo.configuration.getChild("testFailureIgnore",false);
             if(c!=null && c.getValue() != null && c.getValue().equals("${maven.test.failure.ignore}") && System.getProperty("maven.test.failure.ignore")==null) {
                 if (build.getMavenBuildInformation().isMaven3OrLater()) {
                     String fieldName = "testFailureIgnore";

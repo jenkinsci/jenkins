@@ -24,7 +24,6 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -49,6 +48,7 @@ import java.io.File;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -100,12 +100,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue("Workspace should exist by now",b.getWorkspace().exists());
 
         // make sure that the action link is protected
-        try {
-            new WebClient().getPage(project,"doWipeOutWorkspace");
-            fail("Should have failed");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(e.getStatusCode(),403);
-        }
+        new WebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     /**

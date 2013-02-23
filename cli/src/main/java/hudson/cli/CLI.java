@@ -36,6 +36,11 @@ import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -60,6 +65,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
@@ -398,6 +404,20 @@ public class CLI {
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
                 args = args.subList(2,args.size());
+                continue;
+            }
+            if (head.equals("-noCertificateCheck")) {
+                System.out.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+                SSLContext context = SSLContext.getInstance("TLS");
+                context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
+                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+                // bypass host name check, too.
+                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String s, SSLSession sslSession) {
+                        return true;
+                    }
+                });
+                args = args.subList(1,args.size());
                 continue;
             }
             if(head.equals("-i") && args.size()>=2) {

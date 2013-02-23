@@ -23,7 +23,6 @@
  */
 package hudson.bugs;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -90,12 +89,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void testAnonymousCannotGetSecrets() throws Exception {
         jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
-        try {
-            new WebClient().goTo("computer/test/slave-agent.jnlp", "application/x-java-jnlp-file");
-            fail("anonymous users must not be able to get secrets");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-        }
+        new WebClient().assertFails("computer/test/slave-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)

@@ -296,7 +296,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildTrigger newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             String childProjectsString = formData.getString("childProjects").trim();
             if (childProjectsString.endsWith(",")) {
                 childProjectsString = childProjectsString.substring(0, childProjectsString.length() - 1).trim();

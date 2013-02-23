@@ -1,6 +1,5 @@
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -38,14 +37,7 @@ public class LoginTest extends HudsonTestCase {
     public void testLoginErrorRedirect2() throws Exception {
         // in a secured Hudson, the error page should render.
         WebClient wc = createWebClient();
-        try {
-            wc.goTo("loginError");
-            fail("Expecting a 401 error");
-        } catch (FailingHttpStatusCodeException e) {
-            e.printStackTrace();
-            assertEquals(SC_UNAUTHORIZED,e.getStatusCode());
-        }
-
+        wc.assertFails("loginError", SC_UNAUTHORIZED);
         // but not once the user logs in.
         verifyNotError(wc.login("alice"));
     }
