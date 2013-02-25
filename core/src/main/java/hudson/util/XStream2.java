@@ -54,9 +54,14 @@ import hudson.model.Saveable;
 import hudson.util.xstream.ImmutableListConverter;
 import hudson.util.xstream.ImmutableMapConverter;
 import hudson.util.xstream.MapperDelegate;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckForNull;
@@ -163,6 +168,25 @@ public class XStream2 extends XStream {
 
     public Mapper getMapperInjectionPoint() {
         return mapperInjectionPoint.getDelegate();
+    }
+
+    /**
+     * @deprecated Uses default encoding yet fails to write an encoding header. Prefer {@link #toXMLUTF8}.
+     */
+    @Deprecated
+    @Override public void toXML(Object obj, OutputStream out) {
+        super.toXML(obj, out);
+    }
+
+    /**
+     * Serializes to a byte stream.
+     * Uses UTF-8 encoding and specifies that in the XML encoding declaration.
+     * @since 1.504
+     */
+    public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
+        Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
+        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        toXML(obj, w);
     }
 
     /**
