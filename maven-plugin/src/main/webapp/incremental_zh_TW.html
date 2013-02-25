@@ -1,0 +1,10 @@
+<div>
+  啟用後，Jenkins 只會建置在 SCM 中有變動到的模組，以及相依這些模組的其他模組
+  (用 Maven 的 <code>"-amd -pl group1:artifact1,group1:artifact2"</code> 命令列選項)。
+  但是如果 SCM 裡沒有任何模組有異動，會建置所有模組。
+  請參考 <a href="http://docs.codehaus.org/display/MAVEN/Make+Like+Reactor+Mode">http://docs.codehaus.org/display/MAVEN/Make+Like+Reactor+Mode</a>
+  了解更多這個功能用到的 Maven 行為模式資訊。
+
+  <p>
+  這個功能要在 Maven 2.1 或更新的版本才能用，而且選用「平行建置模組」時也不會生效。
+</div>

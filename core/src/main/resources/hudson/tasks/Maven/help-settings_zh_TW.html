@@ -1,0 +1,17 @@
+<div>
+  <code>settings.xml</code> 中的 settings 元素，就像 <code>pom.xml</code>一樣，包含可以定義 Maven 執行方式的各種元素。
+  裡面的內容都是不應該跟特定專案綁死，或是可以散佈出去的。
+  例如本地端儲存庫的位置、替代用遠端儲存庫伺服器以及驗證資訊。
+  <br>
+  預設有兩個地方會有 <code>settings.xml</code> 檔:
+
+  <ul>
+    <li>Maven 安裝目錄    - 預設位置: <code>$M2_HOME/conf/settings.xml</code></li>
+    <li>使用者各別設定    - 預設位置: <code>${user.home}/.m2/settings.xml</code></li>
+  </ul>
+
+  第一個 settings.xml 也叫做全域設定，後面那個叫做使用者設定。
+  兩者同時存在時，內容會合併，但以使用者自定的 settings.xml 為準。
+  <p>
+  請參考: <a href="http://maven.apache.org/settings.html"><code>settings.xml</code> 參考資料</a>
+</div>

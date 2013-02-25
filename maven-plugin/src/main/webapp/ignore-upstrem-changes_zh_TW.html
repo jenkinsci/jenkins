@@ -1,0 +1,14 @@
+<div>
+  啟用的話，Jenkins 會剖析專案裡的 POM，看看裡面是不是有相依的快照版 (Snapshot)
+  專案也是由同一個 Jenkins 建置。
+  如果有，Jenkins 會設定建置相依關聯，只要相依的作業建置，產出新的 SNAPSHOT 版 jar 檔後，Jenkins
+  會再排程建置這個專案。
+
+  <p>
+  這個功能對自動做持續整合很方便。Jenkins 會從 POM 的 &lt;dependency&gt;
+  元素裡檢查快照版相依專案。同時也會檢查 POM 裡用到的 &lt;plugin&gt; 跟
+  &lt;extension&gt;。
+
+  <p>
+  如果這種行為會引起問題，請不要用這個選項。
+</div>
