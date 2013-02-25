@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Config page.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <st:include page="configure-common.jelly" />
 
@@ -37,6 +38,15 @@ THE SOFTWARE.
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
+  <f:section title="${%Pre Steps}">
+    <f:block>
+      <f:hetero-list name="prebuilder" hasHeader="true"
+                     descriptors="${h.getBuilderDescriptors(it)}"
+                     items="${it.prebuilders}"
+                     addCaption="${%Add pre-build step}"/>
+    </f:block>
+  </f:section>
+  
   <f:section title="${%Build}">
     <j:set var="mavens" value="${it.descriptor.mavenDescriptor.installations}" />
     <j:if test="${empty(mavens)}">
@@ -69,13 +79,7 @@ THE SOFTWARE.
       <f:entry title="MAVEN_OPTS" help="/plugin/maven-plugin/maven-opts.html">
         <f:expandableTextbox name="mavenOpts" value="${it.mavenOpts}" />
       </f:entry>
-      <f:entry title="${%Alternate settings file}"
-               help="/plugin/maven-plugin/alternate-settings.html">
-        <f:textbox name="alternateSettings"
-                   value="${it.alternateSettings}" 
-                   checkUrl="'checkFileRelative?value='+escape(this.value)"
-                   />
-      </f:entry>
+      		
       <f:optionalBlock name="maven.incrementalBuild"
                        title="${%Incremental build - only build changed modules}"
                        help="/plugin/maven-plugin/incremental.html"
@@ -84,14 +88,25 @@ THE SOFTWARE.
                        title="${%Disable automatic artifact archiving}"
                        help="/plugin/maven-plugin/archivingDisabled.html"
                        checked="${it.isArchivingDisabled()}" />
+      <f:optionalBlock name="maven.disableTriggerDownstreamProjects"
+                       title="${%Disable triggering of downstream projects}"
+                       help="/plugin/maven-plugin/downstreamDisabled.html"
+                       checked="${it.isDisableTriggerDownstreamProjects()}" />
       <f:optionalBlock name="maven.perModuleBuild" title="${%Build modules in parallel}" help="/plugin/maven-plugin/aggregator.html"
         checked="${!it.aggregatorStyleBuild}" />
       <f:optionalBlock name="maven.usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html"
-        checked="${it.usesPrivateRepository()}" />
+                       checked="${it.getExplicitLocalRepository()!=null}" inline="true">
+        <f:dropdownDescriptorSelector title="${%Strategy}" field="explicitLocalRepository" />
+      </f:optionalBlock>
+      <f:optionalBlock name="maven.perModuleEmail" title="${%Send e-mail for each failed module}" help="/plugin/maven-plugin/per-module-email.html"
+        checked="${it.isPerModuleEmail()}" />
       <f:optionalBlock name="maven.resolveDependencies" title="${%Resolve Dependencies during Pom parsing}" 
         checked="${it.isResolveDependencies()}" /> 
-      <f:optionalBlock name="maven.processPlugins" title="${%Process Plugins during Pom parsing}" 
-        checked="${it.isProcessPlugins()}" />   
+      <f:optionalBlock name="maven.runHeadless" title="${%Run Headless}" help="/plugin/maven-plugin/run-headless.html"
+        checked="${it.runHeadless()}" />
+      <f:optionalBlock name="maven.processPlugins" title="${%Process Plugins during Pom parsing}"
+        checked="${it.isProcessPlugins()}" />
+      <p:config-customWorkspace />
         
       <j:set var="mavenValidationLevels" value="${it.descriptor.mavenValidationLevels}" />   
       <f:entry title="${%Maven Validation Level}">
@@ -100,8 +115,27 @@ THE SOFTWARE.
             <f:option selected="${it.mavenValidationLevel == level.value}" value="${level.value}">${level.key}</f:option>
           </j:forEach>
         </select>
-      </f:entry>                 
+      </f:entry>     
+      
+      <f:dropdownDescriptorSelector title="${%Settings file}" field="settings" descriptors="${descriptor.settingsProviders}"/>
+      <f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  descriptors="${descriptor.globalSettingsProviders}"/>
     </f:advanced>
+  </f:section>
+
+  <f:section title="${%Post Steps}">
+    <f:entry description="${%criteriaDescription}">
+      <f:radio name="post-steps.runIfResult" value="success" checked="${instance.runPostStepsIfResult.toString() =='SUCCESS'}" title="${%runIfStable}"/>
+      <st:nbsp />
+      <f:radio name="post-steps.runIfResult" value="unstable" checked="${instance.runPostStepsIfResult.toString() =='UNSTABLE'}" title="${%runIfSuccessful}"/>
+      <st:nbsp />
+      <f:radio name="post-steps.runIfResult" value="failure" checked="${instance==null || instance.runPostStepsIfResult.toString() =='FAILURE'}" title="${%runAlways}"/>
+    </f:entry>
+    <f:block>
+      <f:hetero-list name="postbuilder" hasHeader="true"
+                     descriptors="${h.getBuilderDescriptors(it)}"
+                     items="${it.postbuilders}"
+                     addCaption="${%Add post-build step}"/>
+    </f:block>
   </f:section>
 
   <j:invokeStatic var="reporters" className="hudson.maven.MavenReporters" method="getConfigurableList" />
@@ -111,6 +145,7 @@ THE SOFTWARE.
                       instances="${it.reporters.toMap()}" />
   </j:if>
 
+
   <p:config-buildWrappers />
-  <p:config-publishers />
+  <p:config-publishers2 />
 </j:jelly>

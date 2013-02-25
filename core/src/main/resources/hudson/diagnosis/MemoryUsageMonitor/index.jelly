@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Memory Usage">
     <!-- TODO: where in the tree structure should this really belong? -->
     <!-- TODO: st:include page="sidepanel.jelly" /-->
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/monitor.gif" alt=""/>
+        <img src="${imagesURL}/48x48/monitor.png" alt="" height="48" width="48"/>
         ${%JVM Memory Usage}
       </h1>
       <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />

@@ -10,13 +10,27 @@
 JENKINS_HOME="@@HOME@@"
 
 ## Type:        string
+## Default:     "/bin/bash"
+## ServiceRestart: jenkins
+#
+# Shell used to initialize the Jenkins server's environment.
+# Setting this option to the path of a shell executable allows 
+# initialization of the Jenkins server environment using
+# standard shell startup scripts.
+# Disabling this option causes the Jenkins server to be run
+# with a minimal environment.
+#
+JENKINS_INIT_SHELL="/bin/bash"
+
+## Type:        string
 ## Default:     ""
 ## ServiceRestart: jenkins
 #
-# Java executable to run Jenkins
-# When left empty, we'll try to find the suitable Java.
+# Java runtime to run Jenkins
+# When left empty, the current system default JRE, as defined
+# by update-alternatives(8), is used.
 #
-JENKINS_JAVA_CMD=""
+JENKINS_JAVA_HOME=""
 
 ## Type:        string
 ## Default:     "jenkins"
@@ -49,8 +63,18 @@ JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
 ## ServiceRestart: jenkins
 #
 # Port Jenkins is listening on.
+# Set to -1 to disable
 #
 JENKINS_PORT="8080"
+
+## Type:        integer(0:65535)
+## Default:     8009
+## ServiceRestart: jenkins
+#
+# Ajp13 Port Jenkins is listening on.
+# Set to -1 to disable
+#
+JENKINS_AJP_PORT="8009"
 
 ## Type:        integer(1:9)
 ## Default:     5
@@ -84,3 +108,12 @@ JENKINS_HANDLER_MAX="100"
 # Maximum number of idle HTTP worker threads.
 #
 JENKINS_HANDLER_IDLE="20"
+
+## Type: string
+## Default: ""
+## ServiceRestart: jenkins
+#
+# Pass arbitrary arguments to Jenkins.
+# Full option list: java -jar jenkins.war --help
+#
+JENKINS_ARGS=""

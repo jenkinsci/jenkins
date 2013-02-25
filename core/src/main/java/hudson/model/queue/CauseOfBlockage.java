@@ -1,9 +1,12 @@
 package hudson.model.queue;
 
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.Queue.Task;
 import hudson.model.Node;
 import hudson.model.Messages;
 import hudson.model.Label;
+import hudson.model.TaskListener;
+import hudson.slaves.Cloud;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -23,6 +26,13 @@ public abstract class CauseOfBlockage {
     public abstract String getShortDescription();
 
     /**
+     * Report a line to the listener about this cause.
+     */
+    public void print(TaskListener listener) {
+        listener.getLogger().println(getShortDescription());
+    }
+
+    /**
      * Obtains a simple implementation backed by {@link Localizable}.
      */
     public static CauseOfBlockage fromMessage(final Localizable l) {
@@ -34,9 +44,36 @@ public abstract class CauseOfBlockage {
     }
 
     /**
+     * Marker interface to indicates that we can reasonably expect
+     * that adding a suitable executor/node will resolve this blockage.
+     *
+     * Primarily this is used by {@link Cloud} to see if it should
+     * consider provisioning new node.
+     *
+     * @since 1.427
+     */
+    interface NeedsMoreExecutor {}
+
+    public static CauseOfBlockage createNeedsMoreExecutor(Localizable l) {
+        return new NeedsMoreExecutorImpl(l);
+    }
+
+    private static final class NeedsMoreExecutorImpl extends CauseOfBlockage implements NeedsMoreExecutor {
+        private final Localizable l;
+
+        private NeedsMoreExecutorImpl(Localizable l) {
+            this.l = l;
+        }
+
+        public String getShortDescription() {
+            return l.toString();
+        }
+    }
+
+    /**
      * Build is blocked because a node is offline.
      */
-    public static final class BecauseNodeIsOffline extends CauseOfBlockage {
+    public static final class BecauseNodeIsOffline extends CauseOfBlockage implements NeedsMoreExecutor {
         public final Node node;
 
         public BecauseNodeIsOffline(Node node) {
@@ -46,12 +83,18 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             return Messages.Queue_NodeOffline(node.getDisplayName());
         }
+        
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(
+                Messages.Queue_NodeOffline(ModelHyperlinkNote.encodeTo(node)));
+        }
     }
 
     /**
      * Build is blocked because all the nodes that match a given label is offline.
      */
-    public static final class BecauseLabelIsOffline extends CauseOfBlockage {
+    public static final class BecauseLabelIsOffline extends CauseOfBlockage implements NeedsMoreExecutor {
         public final Label label;
 
         public BecauseLabelIsOffline(Label l) {
@@ -66,7 +109,7 @@ public abstract class CauseOfBlockage {
     /**
      * Build is blocked because a node is fully busy
      */
-    public static final class BecauseNodeIsBusy extends CauseOfBlockage {
+    public static final class BecauseNodeIsBusy extends CauseOfBlockage implements NeedsMoreExecutor {
         public final Node node;
 
         public BecauseNodeIsBusy(Node node) {
@@ -76,12 +119,17 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
         }
+        
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo(node)));
+        }
     }
 
     /**
      * Build is blocked because everyone that matches the specified label is fully busy
      */
-    public static final class BecauseLabelIsBusy extends CauseOfBlockage {
+    public static final class BecauseLabelIsBusy extends CauseOfBlockage implements NeedsMoreExecutor {
         public final Label label;
 
         public BecauseLabelIsBusy(Label label) {

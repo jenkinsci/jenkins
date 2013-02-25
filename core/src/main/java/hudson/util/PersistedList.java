@@ -118,6 +118,21 @@ public class PersistedList<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * A convenience method to replace a single item.
+     *
+     * This method shouldn't be used when you are replacing a lot of stuff
+     * as copy-on-write semantics make this rather slow.
+     */
+    public void replace(T from, T to) throws IOException {
+        List<T> copy = new ArrayList<T>(data.getView());
+        for (int i=0; i<copy.size(); i++) {
+            if (copy.get(i).equals(from))
+                copy.set(i,to);
+        }
+        data.replaceBy(copy);
+    }
+
     public boolean remove(T o) throws IOException {
         boolean b = data.remove(o);
         if (b)  onModified();
@@ -172,6 +187,10 @@ public class PersistedList<T> implements Iterable<T> {
 
     public boolean isEmpty() {
         return data.isEmpty();
+    }
+
+    public boolean contains(Object item) {
+        return data.contains(item);
     }
 
     /**

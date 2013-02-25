@@ -36,7 +36,7 @@ import static hudson.init.InitMilestone.STARTED;
 import static hudson.init.InitMilestone.COMPLETED;
 
 /**
- * Placed on static methods to indicate that this method is to be run during the Hudson start up to perform
+ * Placed on static methods to indicate that this method is to be run during the Jenkins start up to perform
  * some sort of initialization tasks.
  *
  * <h3>Example</h3>

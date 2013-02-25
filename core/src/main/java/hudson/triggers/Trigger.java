@@ -23,23 +23,24 @@
  */
 package hudson.triggers;
 
-import antlr.ANTLRException;
+import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.DependencyRunner;
 import hudson.DependencyRunner.ProjectRunnable;
-import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.init.Initializer;
-import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.AperiodicWork;
 import hudson.model.Build;
 import hudson.model.ComputerSet;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import hudson.scheduler.Hash;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
-import hudson.model.Project;
 import hudson.model.PeriodicWork;
+import hudson.model.Project;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scheduler.CronTab;
@@ -48,17 +49,21 @@ import hudson.util.DoubleLaunchChecker;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.Timer;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Timer;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import antlr.ANTLRException;
+import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Triggers a {@link Build}.
@@ -77,11 +82,19 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @param project
      *      given so that the persisted form of this object won't have to have a back pointer.
      * @param newInstance
-     *      True if this is a newly created trigger first attached to the {@link Project}.
+     *      True if this may be a newly created trigger first attached to the {@link Project} (generally if the project is being created or configured).
      *      False if this is invoked for a {@link Project} loaded from disk.
      */
     public void start(J project, boolean newInstance) {
         this.job = project;
+
+        try {// reparse the tabs with the job as the hash
+            this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
+        } catch (ANTLRException e) {
+            // this shouldn't fail because we've already parsed stuff in the constructor,
+            // so if it fails, use whatever 'tabs' that we already have.
+            LOGGER.log(Level.FINE, "Failed to parse crontab spec: "+spec,e);
+        }
     }
 
     /**
@@ -129,7 +142,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     }
 
     public TriggerDescriptor getDescriptor() {
-        return (TriggerDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (TriggerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
 
@@ -208,7 +221,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     private static Future previousSynchronousPolling;
 
     public static void checkTriggers(final Calendar cal) {
-        Hudson inst = Hudson.getInstance();
+        Jenkins inst = Jenkins.getInstance();
 
         // Are we using synchronous polling?
         SCMTrigger.DescriptorImpl scmd = inst.getDescriptorByType(SCMTrigger.DescriptorImpl.class);
@@ -263,33 +276,43 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * This timer is available for all the components inside Hudson to schedule
      * some work.
      *
-     * Initialized and cleaned up by {@link Hudson}, but value kept here for compatibility.
+     * Initialized and cleaned up by {@link jenkins.model.Jenkins}, but value kept here for compatibility.
      *
      * If plugins want to run periodic jobs, they should implement {@link PeriodicWork}.
      */
-    public static Timer timer;
+    @SuppressWarnings("MS_SHOULD_BE_FINAL")
+    public static @CheckForNull Timer timer;
 
     @Initializer(after=JOB_LOADED)
     public static void init() {
         new DoubleLaunchChecker().schedule();
 
-        // start all PeridocWorks
-        for(PeriodicWork p : PeriodicWork.all())
-            timer.scheduleAtFixedRate(p,p.getInitialDelay(),p.getRecurrencePeriod());
-
-        // start monitoring nodes, although there's no hurry.
-        timer.schedule(new SafeTimerTask() {
-            public void doRun() {
-                ComputerSet.initialize();
+        Timer _timer = timer;
+        if (_timer != null) {
+            // start all PeridocWorks
+            for(PeriodicWork p : PeriodicWork.all()) {
+                _timer.scheduleAtFixedRate(p,p.getInitialDelay(),p.getRecurrencePeriod());
             }
-        }, 1000*10);
+
+            // start all AperidocWorks
+            for(AperiodicWork p : AperiodicWork.all()) {
+                _timer.schedule(p,p.getInitialDelay());
+            }
+
+            // start monitoring nodes, although there's no hurry.
+            _timer.schedule(new SafeTimerTask() {
+                public void doRun() {
+                    ComputerSet.initialize();
+                }
+            }, 1000*10);
+        }
     }
 
     /**
      * Returns all the registered {@link Trigger} descriptors.
      */
     public static DescriptorExtensionList<Trigger<?>,TriggerDescriptor> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(Trigger.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(Trigger.class);
     }
 
     /**

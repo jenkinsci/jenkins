@@ -26,10 +26,15 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
+import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
+import jenkins.model.Jenkins;
+import jenkins.util.JSONSignatureValidator;
+import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
@@ -39,6 +44,8 @@ import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import static hudson.util.TimeUnit2.DAYS;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -52,18 +59,15 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 @Extension
 public class DownloadService extends PageDecorator {
-    public DownloadService() {
-        super(DownloadService.class);
-    }
-
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      */
     public String generateFragment() {
     	if (neverUpdate) return "";
-    	
+        if (doesNotSupportPostMessage())  return "";
+
         StringBuilder buf = new StringBuilder();
-        if(Hudson.getInstance().hasPermission(Hudson.READ)) {
+        if(Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             long now = System.currentTimeMillis();
             for (Downloadable d : Downloadable.all()) {
                 if(d.getDue()<now && d.lastAttempt+10*1000<now) {
@@ -72,9 +76,9 @@ public class DownloadService extends PageDecorator {
                        .append("  downloadService.download(")
                        .append(QuotedStringTokenizer.quote(d.getId()))
                        .append(',')
-                       .append(QuotedStringTokenizer.quote(d.getUrl()))
+                       .append(QuotedStringTokenizer.quote(mapHttps(d.getUrl())))
                        .append(',')
-                       .append("{version:"+QuotedStringTokenizer.quote(Hudson.VERSION)+'}')
+                       .append("{version:"+QuotedStringTokenizer.quote(Jenkins.VERSION)+'}')
                        .append(',')
                        .append(QuotedStringTokenizer.quote(Stapler.getCurrentRequest().getContextPath()+'/'+getUrl()+"/byId/"+d.getId()+"/postBack"))
                        .append(',')
@@ -86,6 +90,39 @@ public class DownloadService extends PageDecorator {
             }
         }
         return buf.toString();
+    }
+
+    private boolean doesNotSupportPostMessage() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req==null)      return false;
+
+        String ua = req.getHeader("User-Agent");
+        if (ua==null)       return false;
+
+        // according to http://caniuse.com/#feat=x-doc-messaging, IE <=7 doesn't support pstMessage
+        // see http://www.useragentstring.com/pages/Internet%20Explorer/ for user agents
+
+        // we want to err on the cautious side here.
+        // Because of JENKINS-15105, we can't serve signed metadata from JSON, which means we need to be
+        // using a modern browser as a vehicle to request these data. This check is here to prevent Jenkins
+        // from using older browsers that are known not to support postMessage as the vehicle.
+        return ua.contains("Windows") && (ua.contains(" MSIE 5.") || ua.contains(" MSIE 6.") || ua.contains(" MSIE 7."));
+    }
+
+    private String mapHttps(String url) {
+        /*
+            HACKISH:
+
+            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
+            The elegant way to solve the problem is to always load update center from HTTPS,
+            but our backend mirroring scheme isn't ready for that. So this hack serves regular
+            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
+
+            We'll monitor the traffic to see if we can sustain this added traffic.
+         */
+        if (url.startsWith("http://updates.jenkins-ci.org/") && Jenkins.getInstance().isRootUrlSecure())
+            return "https"+url.substring(4);
+        return url;
     }
 
     /**
@@ -118,9 +155,9 @@ public class DownloadService extends PageDecorator {
         /**
          *
          * @param url
-         *      URL relative to {@link UpdateCenter#getUrl()}.
+         *      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
          *      So if this string is "foo.json", the ultimate URL will be
-         *      something like "https://hudson.dev.java.net/foo.json"
+         *      something like "http://updates.jenkins-ci.org/updates/foo.json"
          *
          *      For security and privacy reasons, we don't allow the retrieval
          *      from random locations.
@@ -129,6 +166,12 @@ public class DownloadService extends PageDecorator {
             this.id = id;
             this.url = url;
             this.interval = interval;
+        }
+
+        public Downloadable() {
+            this.id = getClass().getName().replace('$','.');
+            this.url = this.id+".json";
+            this.interval = DEFAULT_INTERVAL;
         }
 
         /**
@@ -143,7 +186,7 @@ public class DownloadService extends PageDecorator {
         }
 
         public Downloadable(String id, String url) {
-            this(id,url,TimeUnit2.DAYS.toMillis(1));
+            this(id,url, DEFAULT_INTERVAL);
         }
 
         public String getId() {
@@ -154,7 +197,7 @@ public class DownloadService extends PageDecorator {
          * URL to download.
          */
         public String getUrl() {
-            return Hudson.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
+            return Jenkins.getInstance().getUpdateCenter().getDefaultBaseUrl()+"updates/"+url;
         }
 
         /**
@@ -171,7 +214,7 @@ public class DownloadService extends PageDecorator {
          * This is where the retrieved file will be stored.
          */
         public TextFile getDataFile() {
-            return new TextFile(new File(Hudson.getInstance().getRootDir(),"updates/"+id));
+            return new TextFile(new File(Jenkins.getInstance().getRootDir(),"updates/"+id));
         }
 
         /**
@@ -193,7 +236,12 @@ public class DownloadService extends PageDecorator {
         public JSONObject getData() throws IOException {
             TextFile df = getDataFile();
             if(df.exists())
-                return JSONObject.fromObject(df.read());
+                try {
+                    return JSONObject.fromObject(df.read());
+                } catch (JSONException e) {
+                    df.delete(); // if we keep this file, it will cause repeated failures
+                    throw new IOException2("Failed to parse "+df+" into JSON",e);
+                }
             return null;
         }
 
@@ -202,11 +250,24 @@ public class DownloadService extends PageDecorator {
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             long dataTimestamp = System.currentTimeMillis();
+            due = dataTimestamp+getInterval();  // success or fail, don't try too often
+
+            String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+            JSONObject o = JSONObject.fromObject(json);
+
+            if (signatureCheck) {
+                FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
+                if (e.kind!= Kind.OK) {
+                    LOGGER.severe(e.renderHtml());
+                    throw e;
+                }
+            }
+
             TextFile df = getDataFile();
-            df.write(IOUtils.toString(req.getInputStream(),"UTF-8"));
+            df.write(json);
             df.file.setLastModified(dataTimestamp);
-            due = dataTimestamp+getInterval();
             LOGGER.info("Obtained the updated data file for "+id);
+
             rsp.setContentType("text/plain");  // So browser won't try to parse response
         }
 
@@ -214,7 +275,7 @@ public class DownloadService extends PageDecorator {
          * Returns all the registered {@link Downloadable}s.
          */
         public static ExtensionList<Downloadable> all() {
-            return Hudson.getInstance().getExtensionList(Downloadable.class);
+            return Jenkins.getInstance().getExtensionList(Downloadable.class);
         }
 
         /**
@@ -229,8 +290,15 @@ public class DownloadService extends PageDecorator {
         }
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
+        private static final long DEFAULT_INTERVAL =
+                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+
+    /**
+     * Off by default until we know this is reasonably working.
+     */
+    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

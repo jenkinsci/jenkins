@@ -33,7 +33,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.Builder;
 import static hudson.Util.fixEmpty;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -230,8 +230,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
             public String renderHtml() {
                 // 1x16 spacer needed for IE since it doesn't support min-height
                 return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
-                        Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
+            }
+            @Override public String toString() {
+                return kind + ": " + message;
             }
         };
     }
@@ -243,6 +246,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return new FormValidation(kind) {
             public String renderHtml() {
                 return html;
+            }
+            @Override public String toString() {
+                return kind + ": " + html;
             }
         };
     }
@@ -283,7 +289,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation validateExecutable(String exe, FileValidator exeValidator) {
         // insufficient permission to perform validation?
-        if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return ok();
+        if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return ok();
 
         exe = fixEmpty(exe);
         if(exe==null)

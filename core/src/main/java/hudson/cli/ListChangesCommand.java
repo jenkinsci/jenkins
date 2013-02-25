@@ -23,7 +23,7 @@ import java.util.List;
 public class ListChangesCommand extends AbstractBuildRangeCommand {
     @Override
     public String getShortDescription() {
-        return "Dumps the changelog for the specified build(s)";
+        return Messages.ListChangesCommand_ShortDescription();
     }
 
 //    @Override

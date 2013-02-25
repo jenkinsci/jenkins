@@ -28,6 +28,7 @@ THE SOFTWARE.
 <%@ attribute name="active" required="true" type="java.lang.Boolean" %>
 <%@ attribute name="title" required="false" type="java.lang.String" %>
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
   <j:choose>
     <j:when test="${tabPass=='pass1'}">

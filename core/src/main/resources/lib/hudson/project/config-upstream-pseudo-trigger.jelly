@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe, Andrew Bayer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ THE SOFTWARE.
 
   "it" is assumed to be a Project object.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <!-- pseudo-trigger to list upstream projects. -->
   <j:set var="up" value="${it.buildTriggerUpstreamProjects}" />
@@ -34,10 +35,11 @@ THE SOFTWARE.
                    help="/help/project-config/upstream.html"
                    title="${%Build after other projects are built}" 
                    checked="${!empty(up)}">
-    <f:entry title="${%Projects names}"
+    <f:entry title="${%Project names}"
              description="${%Multiple projects can be specified like 'abc, def'}">
       <f:textbox name="upstreamProjects" value="${h.getProjectListString(up)}"
-        checkUrl="'descriptorByName/BuildTrigger/check?value='+encodeURIComponent(this.value)"/>
+        checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?upstream=true&amp;value='+encodeURIComponent(this.value)"
+        autoCompleteField="upstreamProjects"/>
     </f:entry>
   </f:optionalBlock>
 </j:jelly>

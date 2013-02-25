@@ -24,10 +24,14 @@
 package hudson.maven;
 
 import hudson.Plugin;
+import hudson.PluginManager.PluginUpdateMonitor;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Items;
 
 /**
  * @author huybrechts
+ * @author Dominik Bartholdi (imod)
  */
 public class PluginImpl extends Plugin {
     @Override
@@ -38,6 +42,16 @@ public class PluginImpl extends Plugin {
         Items.XSTREAM.alias("dependency", ModuleDependency.class);
         Items.XSTREAM.alias("maven2-module-set", MavenModule.class);  // this was a bug, but now we need to keep it for compatibility
         Items.XSTREAM.alias("maven2-moduleset", MavenModuleSet.class);
+
+    }
+    
+    /**
+     * @since 1.491
+     */
+    @Initializer(after=InitMilestone.PLUGINS_STARTED)
+    public static void init(){
+        // inform the admin if there is a version of the config file provider installed which is not compatible 
+        PluginUpdateMonitor.getInstance().ifPluginOlderThenReport("config-file-provider", "2.3", Messages.PluginImpl_updateConfiProvider());        
     }
 
 }

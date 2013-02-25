@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import org.apache.commons.io.FileUtils;
@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
+import java.util.Timer;
 
 /**
  * Makes sure that no other Hudson uses our <tt>JENKINS_HOME</tt> directory,
@@ -86,7 +87,7 @@ public class DoubleLaunchChecker {
     private String collidingId;
 
     public DoubleLaunchChecker() {
-        home = Hudson.getInstance().getRootDir();
+        home = Jenkins.getInstance().getRootDir();
     }
 
     protected void execute() {
@@ -101,7 +102,7 @@ public class DoubleLaunchChecker {
             }
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
-            Hudson.getInstance().servletContext.setAttribute("app",this);
+            Jenkins.getInstance().servletContext.setAttribute("app",this);
             LOGGER.severe("Collision detected. timestamp="+t+", expected="+lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
         }
@@ -121,7 +122,7 @@ public class DoubleLaunchChecker {
      * Figures out a string that identifies this instance of Hudson.
      */
     public String getId() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
 
         // in servlet 2.5, we can get the context path
         String contextPath="";
@@ -145,11 +146,14 @@ public class DoubleLaunchChecker {
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
         long MINUTE = 1000*60;
-        Trigger.timer.schedule(new SafeTimerTask() {
-            protected void doRun() {
-                execute();
-            }
-        },(random.nextInt(30)+60)*MINUTE);
+        Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.schedule(new SafeTimerTask() {
+                protected void doRun() {
+                    execute();
+                }
+            },(random.nextInt(30)+60)*MINUTE);
+        }
     }
 
     /**
@@ -165,7 +169,7 @@ public class DoubleLaunchChecker {
      */
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
-        Hudson.getInstance().servletContext.setAttribute("app",Hudson.getInstance());
+        Jenkins.getInstance().servletContext.setAttribute("app", Jenkins.getInstance());
         rsp.sendRedirect2(req.getContextPath()+'/');
     }
 

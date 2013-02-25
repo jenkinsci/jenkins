@@ -30,6 +30,11 @@ public class MockBuilder extends Builder {
         build.setResult(result);
         return true;
     }
+    
+    @Override
+    public Descriptor<Builder> getDescriptor() {
+        return new DescriptorImpl();
+    }
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {

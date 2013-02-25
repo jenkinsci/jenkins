@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,7 +27,7 @@ public abstract class ComputerPinger implements ExtensionPoint {
      * Get all registered instances.
      */
     public static ExtensionList<ComputerPinger> all() {
-        return Hudson.getInstance().getExtensionList(ComputerPinger.class);
+        return Jenkins.getInstance().getExtensionList(ComputerPinger.class);
     }
 
     /**

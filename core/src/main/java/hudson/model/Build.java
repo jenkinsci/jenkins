@@ -23,18 +23,23 @@
  */
 package hudson.model;
 
+import hudson.Launcher;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
 import hudson.tasks.Notifier;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static hudson.model.Result.ABORTED;
 import static hudson.model.Result.FAILURE;
@@ -105,18 +110,36 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 //
     @Override
     public void run() {
-        run(createRunner());
+        execute(createRunner());
     }
 
+    /**
+     * @deprecated as of 1.467
+     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      proper execution object.
+     */
+    @Restricted(NoExternalUse.class)
     protected Runner createRunner() {
-        return new RunnerImpl();
+        return new BuildExecution();
     }
-    
-    protected class RunnerImpl extends AbstractRunner {
+
+    /**
+     * @deprecated as of 1.467
+     *      Please use {@link BuildExecution}
+     */
+    protected class RunnerImpl extends BuildExecution {
+    }
+
+    protected class BuildExecution extends AbstractRunner {
+        /*
+            Some plugins might depend on this instance castable to Runner, so we need to use
+            deprecated class here.
+         */
+
         protected Result doRun(BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
-            if(!preBuild(listener,project.getPublishers()))
+            if(!preBuild(listener,project.getPublishersList()))
                 return FAILURE;
 
             Result r = null;
@@ -137,7 +160,8 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 if(!build(listener,project.getBuilders()))
                     r = FAILURE;
             } catch (InterruptedException e) {
-                r = ABORTED;
+                r = Executor.currentExecutor().abortResult();
+                // not calling Executor.recordCauseOfInterruption here. We do that where this exception is consumed.
                 throw e;
             } finally {
                 if (r != null) setResult(r);
@@ -156,7 +180,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         public void post2(BuildListener listener) throws IOException, InterruptedException {
-            if (!performAllBuildSteps(listener, project.getPublishers(), true))
+            if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);
             if (!performAllBuildSteps(listener, project.getProperties(), true))
                 setResult(FAILURE);
@@ -165,16 +189,25 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, project.getPublishers(), false);
+            performAllBuildSteps(listener, project.getPublishersList(), false);
             performAllBuildSteps(listener, project.getProperties(), false);
             super.cleanUp(listener);
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
-            for( BuildStep bs : steps )
-                if(!perform(bs,listener))
+            for( BuildStep bs : steps ) {
+                if(!perform(bs,listener)) {
+                    LOGGER.fine(MessageFormat.format("{0} : {1} failed", Build.this.toString(), bs));
                     return false;
+                }
+                if (getExecutor().isInterrupted()) {
+                    // someone asked build interruption, let stop the build before trying to run another build step
+                    throw new InterruptedException();
+                }
+            }
             return true;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Build.class.getName());
 }

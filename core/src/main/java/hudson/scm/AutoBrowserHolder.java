@@ -24,7 +24,7 @@
 package hudson.scm;
 
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
  * Maintains the automatically inferred {@link RepositoryBrowser} instance.
@@ -64,7 +64,7 @@ final class AutoBrowserHolder {
      *      null if no applicable configuration was found.
      */
     private RepositoryBrowser infer() {
-        for( AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class) ) {
+        for( AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
             if (scm!=null && scm.getClass()==owner.getClass() && scm.getBrowser()!=null &&
                     ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner)) {

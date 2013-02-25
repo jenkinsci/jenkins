@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Extension;
@@ -32,7 +33,7 @@ import org.apache.maven.model.ReportPlugin;
 import java.io.Serializable;
 
 /**
- * Version independent name of a Maven project.
+ * Version independent name of a Maven project. GroupID+artifactId.
  * 
  * @author Kohsuke Kawaguchi
  * @see ModuleDependency
@@ -44,6 +45,10 @@ public class ModuleName implements Comparable<ModuleName>, Serializable {
     public ModuleName(String groupId, String artifactId) {
         this.groupId = groupId;
         this.artifactId = artifactId;
+    }
+
+    public ModuleName(ExecutionEvent event) {
+        this(event.getProject());
     }
 
     public ModuleName(MavenProject project) {

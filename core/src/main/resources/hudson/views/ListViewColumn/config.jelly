@@ -23,4 +23,5 @@ THE SOFTWARE.
 -->
 
 <!-- Columns normally have nothing to configure. -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core"/>

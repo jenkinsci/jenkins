@@ -16,8 +16,8 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
 
     @Override
     public String getShortDescription() {
-        return "Sets the description of a build";
-    }
+        return Messages.SetBuildDescriptionCommand_ShortDescription();
+     }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
     public transient AbstractProject<?,?> job;
@@ -33,11 +33,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {
-        	description = channel.call(new Callable<String,IOException>() {
-				public String call() throws IOException {
-					return IOUtils.toString(System.in);
-				}
-        	});
+        	description = IOUtils.toString(stdin);
         }
         
         run.setDescription(description);

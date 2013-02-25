@@ -1,7 +1,9 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman, Yahoo! Inc.
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
+Tom Huybrechts, id:cactusman, Yahoo! Inc., Manufacture Francaise des Pneumatiques
+Michelin, Romain seguy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +27,7 @@ THE SOFTWARE.
 <!--
   Side panel for the project view.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header title="${it.name}">
     <st:include page="rssHeader.jelly" />
@@ -34,16 +37,16 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-      <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="images/24x24/search.gif"  href="${url}/" title="${%Status}" />
-      <l:task icon="images/24x24/notepad.gif" href="${url}/changes" title="${%Changes}" />
-      <l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
-        <l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${it.BUILD}" />
+      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" contextMenu="false" />
+      <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" contextMenu="false"/>
+      <l:task icon="images/24x24/notepad.png" href="${url}/changes" title="${%Changes}" />
+      <l:task icon="images/24x24/folder.png"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
+        <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" />
       </l:task>
       <j:if test="${it.configurable}">
         <j:if test="${it.buildable}">
-          <l:task icon="images/24x24/clock.gif" href="${url}/build?delay=0sec" title="${%Build Now}"
-                  onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
+          <l:task icon="images/24x24/clock.png" href="${url}/build?delay=0sec" title="${it.buildNowText}"
+                  onclick="${it.parameterized?null:'return build(this)'}" post="true" permission="${it.BUILD}"/>
           <script>
             function build(a) {
               new Ajax.Request(a.href);
@@ -53,13 +56,13 @@ THE SOFTWARE.
             }
           </script>
         </j:if>
-        <l:task icon="images/24x24/edit-delete.gif" href="${url}/delete" title="${%delete(it.pronoun)}" permission="${it.DELETE}" />
+        <l:task icon="images/24x24/edit-delete.png" href="${url}/delete" title="${%delete(it.pronoun)}" permission="${it.DELETE}" />
         <j:choose>
             <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-                <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%Configure}" />
+                <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%Configure}" />
             </j:when>
             <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-                <l:task icon="images/24x24/setting.gif" href="${url}/configure" title="${%View Configuration}" />
+                <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%View Configuration}" />
             </j:when>
         </j:choose>
       </j:if>

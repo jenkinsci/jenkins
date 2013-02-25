@@ -44,6 +44,7 @@ import java.util.List;
  * @author Andrew Bayer
  */
 public class ExtractChangeLogParser extends ChangeLogParser {
+    @SuppressWarnings("rawtypes")
     @Override
     public ExtractChangeLogSet parse(AbstractBuild build, File changeLogFile) throws IOException, SAXException {
         if (changeLogFile.exists()) {
@@ -56,6 +57,7 @@ public class ExtractChangeLogParser extends ChangeLogParser {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public ExtractChangeLogSet parse(AbstractBuild build, InputStream changeLogStream) throws IOException, SAXException {
 
         ArrayList<ExtractChangeLogEntry> changeLog = new ArrayList<ExtractChangeLogEntry>();

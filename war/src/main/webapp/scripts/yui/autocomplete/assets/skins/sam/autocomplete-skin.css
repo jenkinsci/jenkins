@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /* styles for entire widget */
 .yui-skin-sam .yui-ac {
@@ -29,6 +29,12 @@ version: 2.5.1
     position:absolute;margin:.3em;width:100%;background:#000;-moz-opacity: 0.10;opacity:.10;filter:alpha(opacity=10);z-index:9049;
 }
 
+/* styles for container iframe */
+.yui-skin-sam .yui-ac iframe {
+    opacity:0;filter: alpha(opacity=0);
+    padding-right:.3em; padding-bottom:.3em; /* Bug 2026798: extend iframe to shim the shadow */
+}
+
 /* styles for results list */
 .yui-skin-sam .yui-ac-content ul{
     margin:0;padding:0;width:100%;
@@ -36,7 +42,8 @@ version: 2.5.1
 
 /* styles for result item */
 .yui-skin-sam .yui-ac-content li {
-    margin:0;padding:2px 5px;cursor:default;white-space:nowrap;
+    margin:0;padding:2px 5px;cursor:default;white-space:nowrap;list-style:none;
+    zoom:1; /* For IE to trigger mouse events on LI */
 }
 
 /* styles for prehighlighted result item */

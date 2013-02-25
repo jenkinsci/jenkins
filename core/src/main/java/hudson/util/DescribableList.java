@@ -31,11 +31,12 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.AbstractProject;
-import hudson.model.DependecyDeclarer;
+import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.ReconfigurableDescribable;
 import hudson.model.Saveable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -98,6 +99,25 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         onModified();
     }
 
+    /**
+     * Binds items in the collection to URL.
+     */
+    public T getDynamic(String id) {
+        // by ID
+        for (T t : data)
+            if(t.getDescriptor().getId().equals(id))
+                return t;
+
+        // by position
+        try {
+            return data.get(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            // fall through
+        }
+
+        return null;
+    }
+
     public T get(D descriptor) {
         for (T t : data)
             if(t.getDescriptor()==descriptor)
@@ -141,11 +161,23 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         List<T> newList = new ArrayList<T>();
 
         for (Descriptor<T> d : descriptors) {
+            T existing = get((D)d);
             String name = d.getJsonSafeClassName();
-            if (json.has(name)) {
-                T instance = d.newInstance(req, json.getJSONObject(name));
-                newList.add(instance);
+            JSONObject o = json.optJSONObject(name);
+
+            T instance = null;
+            if (o!=null) {
+                if (existing instanceof ReconfigurableDescribable)
+                    instance = (T)((ReconfigurableDescribable)existing).reconfigure(req,o);
+                else
+                    instance = d.newInstance(req, o);
+            } else {
+                if (existing instanceof ReconfigurableDescribable)
+                    instance = (T)((ReconfigurableDescribable)existing).reconfigure(req,null);
             }
+
+            if (instance!=null)
+                newList.add(instance);
         }
 
         replaceBy(newList);
@@ -172,12 +204,12 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     }
 
     /**
-     * Picks up {@link DependecyDeclarer}s and allow it to build dependencies.
+     * Picks up {@link DependencyDeclarer}s and allow it to build dependencies.
      */
     public void buildDependencyGraph(AbstractProject owner,DependencyGraph graph) {
         for (Object o : this) {
-            if (o instanceof DependecyDeclarer) {
-                DependecyDeclarer dd = (DependecyDeclarer) o;
+            if (o instanceof DependencyDeclarer) {
+                DependencyDeclarer dd = (DependencyDeclarer) o;
                 dd.buildDependencyGraph(owner,graph);
             }
         }

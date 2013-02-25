@@ -29,6 +29,7 @@ THE SOFTWARE.
 	<%@ attribute name="job" type="hudson.model.Job" required="true" %>
 -->
 <!-- it's hudson.model.Fingerprint.RangeSet but Tomcat can't seem to handler inner classes -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<j:forEach var="r" items="${range.ranges}">
 	  <j:choose>

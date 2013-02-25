@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.model.Queue.Executable;
 import hudson.Util;
 import hudson.FilePath;
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.CauseOfInterruption.UserInterruption;
 import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
@@ -33,21 +35,29 @@ import hudson.model.queue.WorkUnit;
 import hudson.util.TimeUnit2;
 import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
+import jenkins.model.InterruptedBuildAction;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.reflect.Method;
 
 import static hudson.model.queue.Executables.*;
+import static java.util.logging.Level.FINE;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 
 /**
@@ -81,23 +91,98 @@ public class Executor extends Thread implements ModelObject {
 
     private boolean induceDeath;
 
+    /**
+     * When the executor is interrupted, we allow the code that interrupted the thread to override the
+     * result code it prefers.
+     */
+    private Result interruptStatus;
+
+    /**
+     * Cause of interruption. Access needs to be synchronized.
+     */
+    private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
+
     public Executor(Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
-        this.queue = Hudson.getInstance().getQueue();
+        this.queue = Jenkins.getInstance().getQueue();
         this.number = n;
+    }
+
+    @Override
+    public void interrupt() {
+        interrupt(Result.ABORTED);
+    }
+
+    /**
+     * Interrupt the execution,
+     * but instead of marking the build as aborted, mark it as specified result.
+     *
+     * @since 1.417
+     */
+    public void interrupt(Result result) {
+        Authentication a = Jenkins.getAuthentication();
+        if(a instanceof AnonymousAuthenticationToken || a==ACL.SYSTEM)
+            interrupt(result, new CauseOfInterruption[0]);
+        else {
+            // worth recording who did it
+            // avoid using User.get() to avoid deadlock.
+            interrupt(result, new UserInterruption(a.getName()));
+        }
+    }
+
+    /**
+     * Interrupt the execution. Mark the cause and the status accordingly.
+     */
+    public void interrupt(Result result, CauseOfInterruption... causes) {
+        interruptStatus = result;
+        synchronized (this.causes) {
+            for (CauseOfInterruption c : causes) {
+                if (!this.causes.contains(c))
+                    this.causes.add(c);
+            }
+        }
+        super.interrupt();
+    }
+
+    public Result abortResult() {
+        Result r = interruptStatus;
+        if (r==null)    r = Result.ABORTED; // this is when we programmatically throw InterruptedException instead of calling the interrupt method.
+        return r;
+    }
+
+    /**
+     * report cause of interruption and record it to the build, if available.
+     *
+     * @since 1.425
+     */
+    public void recordCauseOfInterruption(Run<?,?> build, TaskListener listener) {
+        List<CauseOfInterruption> r;
+
+        // atomically get&clear causes, and minimize the lock.
+        synchronized (causes) {
+            if (causes.isEmpty())   return;
+            r = new ArrayList<CauseOfInterruption>(causes);
+            causes.clear();
+        }
+
+        build.addAction(new InterruptedBuildAction(r));
+        for (CauseOfInterruption c : r)
+            c.print(listener);
     }
 
     @Override
     public void run() {
         // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+        ACL.impersonate(ACL.SYSTEM);
 
         try {
             finishTime = System.currentTimeMillis();
             while(shouldRun()) {
                 executable = null;
                 workUnit = null;
+                interruptStatus = null;
+                causes.clear();
 
                 synchronized(owner) {
                     if(owner.getNumExecutors()<owner.getExecutors().size()) {
@@ -120,14 +205,19 @@ public class Executor extends Thread implements ModelObject {
                     synchronized (queue) {
                         workUnit = grabJob();
                         workUnit.setExecutor(this);
+                        if (LOGGER.isLoggable(FINE))
+                            LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                         task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
                     }
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" is going to execute "+executable);
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
                     continue;
                 } catch (InterruptedException e) {
+                    LOGGER.log(FINE, getName()+" interrupted",e);
                     continue;
                 }
 
@@ -142,6 +232,8 @@ public class Executor extends Thread implements ModelObject {
                         }
                     }
                     setName(threadName+" : executing "+executable.toString());
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" is now executing "+executable);
                     queue.execute(executable, task);
                 } catch (Throwable e) {
                     // for some reason the executor died. this is really
@@ -153,6 +245,8 @@ public class Executor extends Thread implements ModelObject {
                 } finally {
                     setName(threadName);
                     finishTime = System.currentTimeMillis();
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" completed "+executable+" in "+(finishTime-startTime)+"ms");
                     try {
                         workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
                     } catch (InterruptedException e) {
@@ -184,7 +278,7 @@ public class Executor extends Thread implements ModelObject {
      * Returns true if we should keep going.
      */
     protected boolean shouldRun() {
-        return Hudson.getInstance() != null && !Hudson.getInstance().isTerminating();
+        return Jenkins.getInstance() != null && !Jenkins.getInstance().isTerminating();
     }
 
     protected WorkUnit grabJob() throws InterruptedException {
@@ -319,6 +413,15 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * Returns the number of milli-seconds the currently executing job spent in the queue
+     * waiting for an available executor. This excludes the quiet period time of the job.
+     * @since 1.440
+     */
+    public long getTimeSpentInQueue() {
+        return startTime - workUnit.context.item.buildableStartMilliseconds;
+    }
+
+    /**
      * Gets the string that says how long since this build has started.
      *
      * @return
@@ -363,22 +466,33 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Stops the current build.
+     * @deprecated as of 1.489
+     *      Use {@link #doStop()}.
      */
+    @RequirePOST
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        doStop().generateResponse(req,rsp,this);
+    }
+
+    /**
+     * Stops the current build.
+     * 
+     * @since 1.489
+     */
+    public HttpResponse doStop() {
         Queue.Executable e = executable;
         if(e!=null) {
             Tasks.getOwnerTaskOf(getParentOf(e)).checkAbortPermission();
             interrupt();
         }
-        rsp.forwardToPreviousPage(req);
+        return HttpResponses.forwardToPreviousPage();
     }
 
     /**
      * Throws away this executor and get a new one.
      */
     public HttpResponse doYank() {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if (isAlive())
             throw new Failure("Can't yank a live executor");
         owner.removeExecutor(this);

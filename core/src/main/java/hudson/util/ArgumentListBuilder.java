@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.Launcher;
 import hudson.Util;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArgumentListBuilder implements Serializable {
+public class ArgumentListBuilder implements Serializable, Cloneable {
     private final List<String> args = new ArrayList<String>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
@@ -77,6 +78,12 @@ public class ArgumentListBuilder implements Serializable {
     }
 
     /**
+     * Optionally hide this part of the command line from being printed to the log.
+     * @param a a command argument
+     * @param mask true to suppress in output, false to print normally
+     * @return this
+     * @see hudson.Launcher.ProcStarter#masks(boolean[])
+     * @see Launcher#maskedPrintCommandLine(List, boolean[], FilePath)
      * @since 1.378
      */
     public ArgumentListBuilder add(String a, boolean mask) {
@@ -267,22 +274,25 @@ public class ArgumentListBuilder implements Serializable {
      * is needed since the command is now passed as a string to the CMD.EXE shell.
      * This is done as follows:
      * Wrap arguments in double quotes if they contain any of:
-     *   space *?,;^&<>|" or % followed by a letter.
+     *   space *?,;^&<>|"
+     *   and if escapeVars is true, % followed by a letter.
      * <br/> When testing from command prompt, these characters also need to be
      * prepended with a ^ character: ^&<>|  -- however, invoking cmd.exe from
-     * Hudson does not seem to require this extra escaping so it is not added by
+     * Jenkins does not seem to require this extra escaping so it is not added by
      * this method.
      * <br/> A " is prepended with another " character.  Note: Windows has issues
      * escaping some combinations of quotes and spaces.  Quotes should be avoided.
-     * <br/> A % followed by a letter has that letter wrapped in double quotes,
-     * to avoid possible variable expansion.  ie, %foo% becomes "%"f"oo%".
-     * The second % does not need special handling because it is not followed
-     * by a letter. <br/>
+     * <br/> If escapeVars is true, a % followed by a letter has that letter wrapped
+     * in double quotes, to avoid possible variable expansion.
+     * ie, %foo% becomes "%"f"oo%".  The second % does not need special handling
+     * because it is not followed by a letter. <br/>
      * Example: "-Dfoo=*abc?def;ghi^jkl&mno<pqr>stu|vwx""yz%"e"nd"
+     * @param escapeVars True to escape %VAR% references; false to leave these alone
+     *                   so they may be expanded when the command is run
      * @return new ArgumentListBuilder that runs given command through cmd.exe /C
      * @since 1.386
      */
-    public ArgumentListBuilder toWindowsCommand() {
+    public ArgumentListBuilder toWindowsCommand(boolean escapeVars) {
         StringBuilder quotedArgs = new StringBuilder();
         boolean quoted, percent;
         for (String arg : args) {
@@ -300,7 +310,8 @@ public class ArgumentListBuilder implements Serializable {
                     if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
                     quotedArgs.append('"');
                 }
-                else if (percent && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                else if (percent && escapeVars
+                         && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
                     if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
                     quotedArgs.append('"').append(c);
                     c = '"';
@@ -318,6 +329,14 @@ public class ArgumentListBuilder implements Serializable {
         // batch file executed, not before. This alone shows how broken Windows is...
         quotedArgs.append("&& exit %%ERRORLEVEL%%");
         return new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(quotedArgs.toString());
+    }
+
+    /**
+     * Calls toWindowsCommand(false)
+     * @see #toWindowsCommand(boolean)
+     */
+    public ArgumentListBuilder toWindowsCommand() {
+        return toWindowsCommand(false);
     }
 
     private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
@@ -350,6 +369,26 @@ public class ArgumentListBuilder implements Serializable {
      */
     public void addMasked(String string) {
         add(string, true);
+    }
+
+    /**
+     * Debug/error message friendly output.
+     */
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        for (int i=0; i<args.size(); i++) {
+            String arg = args.get(i);
+            if (mask.get(i))
+                arg = "******";
+
+            if(buf.length()>0)  buf.append(' ');
+
+            if(arg.indexOf(' ')>=0 || arg.length()==0)
+                buf.append('"').append(arg).append('"');
+            else
+                buf.append(arg);
+        }
+        return buf.toString();
     }
 
     private static final long serialVersionUID = 1L;

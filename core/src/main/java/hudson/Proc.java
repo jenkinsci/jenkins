@@ -26,6 +26,8 @@ package hudson;
 import hudson.Launcher.ProcStarter;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
@@ -130,7 +132,8 @@ public abstract class Proc {
      */
     public abstract OutputStream getStdin();
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    
     /**
      * Like {@link #join} but can be given a maximum time to wait.
      * @param timeout number of time units
@@ -154,11 +157,11 @@ public abstract class Proc {
                             kill();
                         }
                     } catch (InterruptedException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     } catch (IOException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     } catch (RuntimeException x) {
-                        listener.error(x.toString());
+                        x.printStackTrace(listener.error("Failed to join a process"));
                     }
                 }
             });
@@ -426,7 +429,7 @@ public abstract class Proc {
     /**
      * Remotely launched process via {@link Channel}.
      *
-     * @deprecated as of 1.399
+     * @deprecated as of 1.399. Replaced by {@link Launcher.RemoteLauncher.ProcImpl}
      */
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;

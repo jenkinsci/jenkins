@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   If JavaScript is off, this form is used to edit the description
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}" norefresh="true">
     <st:include page="sidepanel.jelly" />
@@ -32,7 +33,8 @@ THE SOFTWARE.
       <form action="submitDescription" method="post">
         <table>
           <f:entry help="${app.markupFormatter.helpUrl}">
-            <f:textarea name="description" value="${it.description}" />
+            <f:textarea name="description" value="${it.description}"
+                        codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </table>
         <f:submit value="${%Submit}" />

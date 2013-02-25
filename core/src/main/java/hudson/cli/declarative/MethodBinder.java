@@ -23,6 +23,7 @@
  */
 package hudson.cli.declarative;
 
+import hudson.cli.CLICommand;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import org.kohsuke.args4j.Argument;
@@ -45,15 +46,16 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 class MethodBinder {
-
+    private final CLICommand command;
     private final Method method;
     private final Object[] arguments;
 
     /**
      * @param method
      */
-    public MethodBinder(Method method, CmdLineParser parser) {
+    public MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
+        this.command = command;
 
         List<Parameter> params = ReflectionUtils.getParameters(method);
         arguments = new Object[params.size()];
@@ -87,6 +89,8 @@ class MethodBinder {
                 if (bias>0) arg = new ArgumentImpl(arg,bias);
                 parser.addArgument(setter,arg);
             }
+            if (p.type()==CLICommand.class)
+                arguments[index] = command;
 
             if (p.type().isPrimitive())
                 arguments[index] = ReflectionUtils.getVmDefaultValueForPrimitiveType(p.type());

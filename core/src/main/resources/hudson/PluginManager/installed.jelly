@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!--
   Config page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
@@ -41,9 +42,10 @@ THE SOFTWARE.
             <tr style="border-top: 0px;">
               <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
               <th initialSortDir="down">${%Name}</th>
-              <th width="32">${%Version}</th>
-              <th width="32">${%Previously installed version}</th>
-              <th width="32">${%Pinned}</th>
+              <th width="1">${%Version}</th>
+              <th width="1">${%Previously installed version}</th>
+              <th width="1">${%Pinned}</th>
+              <th width="1">${%Uninstall}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
               <tr>
@@ -66,10 +68,12 @@ THE SOFTWARE.
                     </j:if>
                   </div>
                 </td>
-                <td class="center pane" style="white-space:nowrap">
-                  ${p.version}
+                <td class="center pane" style="white-space:normal">
+                  <a href="plugin/${p.shortName}/thirdPartyLicenses">
+                    ${p.version}
+                  </a>
                 </td>
-                <td>
+                <td class="pane">
                   <j:if test="${p.downgradable}">
                     <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
                       <s:submit value="${%downgradeTo(p.backupVersion)}"/>
@@ -79,8 +83,20 @@ THE SOFTWARE.
                 <td class="center pane" id='unpin-${p.shortName}'>
                   <j:if test="${p.isPinned()}">
                     <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
-                    <a href="${%wiki.url}"><img style="vertical-align:top" src="${imagesURL}/16x16/help.gif"/></a>
+                    <a href="${%wiki.url}" target="_blank"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
                   </j:if>
+                </td>
+                <td class="center pane">
+                  <j:choose>
+                    <j:when test="${p.isDeleted()}">
+                      <p>${%Uninstallation pending}</p>
+                    </j:when>
+                    <j:when test="${!p.isBundled()}">
+                      <form method="post" action="plugin/${p.shortName}/uninstall">
+                        <input type="submit" value="${%Uninstall}"/>
+                      </form>
+                    </j:when>
+                  </j:choose>
                 </td>
               </tr>
             </j:forEach>
@@ -101,16 +117,6 @@ THE SOFTWARE.
         </j:choose>
       </table>
 
-      <j:if test="${it.isPluginUploaded()}">
-        <div style="margin: 1em; height: 1em">
-          <div class="error">
-            ${%New plugins will take effect once you restart Jenkins}
-            <j:if test="${app.lifecycle.canRestart()}">
-              <s:submit value="${%Restart Once No Jobs Are Running}" />
-            </j:if>
-          </div>
-        </div>
-      </j:if>
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
           ${%Changes will take effect when you restart Jenkins}
@@ -128,6 +134,7 @@ THE SOFTWARE.
 
           <!-- trigger -->
           new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+            method: "POST",
             onFailure : function(req,o) {
               $('needRestart').innerHTML = req.responseText;
             }
@@ -138,10 +145,13 @@ THE SOFTWARE.
 
         function updateMsg() {
           <!-- is anything changed since its original state? -->
-          var e = $A($('plugins').getElementsByTagName('input')).find(function(e) {
+          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
             return String(e.checked)!=e.getAttribute('original');
           });
 
+          <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
+            e = true;
+          </j:if>
           $('needRestart').style.display = (e!=null?"block":"none");
         }
 
@@ -149,6 +159,7 @@ THE SOFTWARE.
 
         function unpin(button,shortName) {
           new Ajax.Request("./plugin/"+shortName+"/unpin", {
+            method: "POST",
             onFailure : function(t) {
               alert('Failed to unpin:'+t.responseText);
             },

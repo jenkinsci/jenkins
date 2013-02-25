@@ -11,7 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import hudson.Util;
+import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
 
 import javax.servlet.ServletRequest;
@@ -64,12 +65,12 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
      * {@inheritDoc}
      */
     @Override
-    protected String issueCrumb(ServletRequest request, String salt) {
+    protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
             if (md != null) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 StringBuilder buffer = new StringBuilder();
-                Authentication a = Hudson.getAuthentication();
+                Authentication a = Jenkins.getAuthentication();
                 if (a != null) {
                     buffer.append(a.getName());
                 }
@@ -79,17 +80,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
                 }
 
                 md.update(buffer.toString().getBytes());
-                byte[] crumbBytes = md.digest(salt.getBytes());
-
-                StringBuilder hexString = new StringBuilder();
-                for (int i = 0; i < crumbBytes.length; i++) {
-                    String hex = Integer.toHexString(0xFF & crumbBytes[i]);
-                    if (hex.length() == 1) {
-                        hexString.append('0');
-                    }
-                    hexString.append(hex);
-                }
-                return hexString.toString();
+                return Util.toHexString(md.digest(salt.getBytes()));
             }
         }
         return null;
@@ -127,7 +118,8 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         public DescriptorImpl() {
-            super(Hudson.getInstance().getSecretKey(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            // salt just needs to be unique, and it doesn't have to be a secret
+            super(Jenkins.getInstance().getLegacyInstanceId(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
             load();
         }
 

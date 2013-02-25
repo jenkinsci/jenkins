@@ -25,14 +25,16 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.400-SNAPSHOT</version>
+    <version>1.504-SNAPSHOT</version>
   </parent>
 
   <artifactId>ui-samples-plugin</artifactId>
   <packaging>hpi</packaging>
+
   <name>Jenkins UI sample plugin</name>
 
   <dependencies>
@@ -42,20 +44,20 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-      <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-test-harness</artifactId>
-        <version>${project.version}</version>
-        <scope>test</scope>
-      </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-war</artifactId>
-            <type>war</type>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <!-- UI-samples plugin is also used as a test bed for automatic test injection -->
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <type>war</type>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
@@ -92,13 +94,13 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.15</version>
+        <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>maven-localizer-plugin</artifactId>
-        <version>1.8</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -113,4 +115,5 @@ THE SOFTWARE.
       </plugin>
     </plugins>
   </build>
+
 </project>

@@ -27,6 +27,7 @@ THE SOFTWARE.
 
   TODO: merge this with Hudson/threadDump.jelly
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />

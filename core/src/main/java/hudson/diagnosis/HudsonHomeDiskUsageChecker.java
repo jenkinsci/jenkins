@@ -24,9 +24,9 @@
 package hudson.diagnosis;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import java.util.logging.Logger;
 
@@ -45,8 +45,8 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     @IgnoreJRERequirement
     protected void doRun() {
         try {
-            long free = Hudson.getInstance().getRootDir().getUsableSpace();
-            long total = Hudson.getInstance().getRootDir().getTotalSpace();
+            long free = Jenkins.getInstance().getRootDir().getUsableSpace();
+            long total = Jenkins.getInstance().getRootDir().getTotalSpace();
             if(free<=0 || total<=0) {
                 // information unavailable. pointless to try.
                 LOGGER.info("JENKINS_HOME disk usage information isn't available. aborting to monitor");

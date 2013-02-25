@@ -23,7 +23,7 @@
  */
 
 if (typeof UTILITIES_VERSION == "undefined" || UTILITIES_VERSION < 0.1) {
-	alert("A suitable version of the Utilities class is not available");
+	console.log("A suitable version of the Utilities class is not available");
 }
 
 COMBOBOX_VERSION = 0.1;

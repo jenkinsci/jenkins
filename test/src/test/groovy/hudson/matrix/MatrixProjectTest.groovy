@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import org.jvnet.hudson.test.Email
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.SingleFileSCM
 import org.jvnet.hudson.test.UnstableBuilder
+import org.jvnet.hudson.test.recipes.LocalData;
 import com.gargoylesoftware.htmlunit.html.HtmlTable
 import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.TestBuilder
@@ -48,6 +49,20 @@ import java.util.concurrent.TimeoutException
 import hudson.model.JDK
 import hudson.model.Slave
 import hudson.Functions
+import hudson.model.ParametersDefinitionProperty
+import hudson.model.FileParameterDefinition
+import hudson.model.Cause.LegacyCodeCause
+import hudson.model.ParametersAction
+import hudson.model.FileParameterValue
+import hudson.model.StringParameterDefinition
+import hudson.model.StringParameterValue
+import hudson.scm.SubversionSCM.SvnInfo;
+import hudson.scm.RevisionParameterAction;
+import java.util.List;
+import java.util.ArrayList;
+import hudson.model.Action;
+
+import java.util.concurrent.CountDownLatch
 
 /**
  *
@@ -122,7 +137,7 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         p.getBuildersList().add(new UnstableBuilder());
         build = p.scheduleBuild2(0).get();
-        assertEquals(2, build.getRuns().size());
+        assertEquals(2, build.exactRuns.size());
     }
 
     @Override
@@ -201,7 +216,7 @@ public class MatrixProjectTest extends HudsonTestCase {
      * Makes sure that the configuration correctly roundtrips.
      */
     public void testConfigRoundtrip() {
-        hudson.getJDKs().addAll([
+        jenkins.getJDKs().addAll([
                 new JDK("jdk1.7","somewhere"),
                 new JDK("jdk1.6","here"),
                 new JDK("jdk1.5","there")]);
@@ -224,6 +239,17 @@ public class MatrixProjectTest extends HudsonTestCase {
             assertEquals(oi.name,ni.name);
             assertEquals(oi.values,ni.values);
         }
+
+
+        def before = new DefaultMatrixExecutionStrategyImpl(true, "foo", Result.UNSTABLE, null)
+        p.executionStrategy = before;
+        configRoundtrip(p);
+        assertEqualDataBoundBeans(p.executionStrategy,before);
+
+        before = new DefaultMatrixExecutionStrategyImpl(false, null, null, null)
+        p.executionStrategy = before;
+        configRoundtrip(p);
+        assertEqualDataBoundBeans(p.executionStrategy,before);
     }
 
     public void testLabelAxes() {
@@ -236,10 +262,10 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         System.out.println(p.labels);
         assertEquals(4,p.labels.size());
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave2")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave0&&slave3")));
-        assertTrue(p.labels.contains(hudson.getLabel("slave1&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave2")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave3")));
+        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave3")));
     }
 
     /**
@@ -264,7 +290,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         // have foo=1 block to make sure the 2nd configuration is in the queue
         firstStarted.block();
         // enter into the quiet down while foo=2 is still in the queue
-        hudson.doQuietDown();
+        jenkins.doQuietDown();
         buildCanProceed.signal();
 
         // make sure foo=2 still completes. use time out to avoid hang
@@ -279,4 +305,146 @@ public class MatrixProjectTest extends HudsonTestCase {
             // expected
         }        
     }
+
+    @Bug(9009)
+    void testTrickyNodeName() {
+        def names = [ createSlave("Sean's Workstation",null), createSlave("John\"s Workstation",null) ]*.nodeName;
+        def p = createMatrixProject();
+        p.setAxes(new AxisList([new LabelAxis("label",names)]));
+        configRoundtrip(p);
+
+        LabelAxis a = p.axes.find("label");
+        assertEquals(a.values as Set,names as Set);
+    }
+
+    @Bug(10108)
+    void testTwoFileParams() {
+        def p = createMatrixProject();
+        p.axes = new AxisList(new TextAxis("foo","1","2","3","4"));
+        p.addProperty(new ParametersDefinitionProperty(
+            new FileParameterDefinition("a.txt",""),
+            new FileParameterDefinition("b.txt",""),
+        ));
+
+        def dir = createTmpDir()
+        def f = p.scheduleBuild2(0,new LegacyCodeCause(),new ParametersAction(
+            ["aaa","bbb"].collect { it ->
+                def v = new FileParameterValue(it+".txt",File.createTempFile(it,"", dir),it)
+                v.setLocation(it)
+                return v;
+            }
+        ))
+        
+        assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+    }
+
+    /**
+     * Verifies that the concurrent build feature works, and makes sure
+     * that each gets its own unique workspace.
+     */
+    void testConcurrentBuild() {
+        jenkins.numExecutors = 10
+        jenkins.updateComputerList()
+
+        def p = createMatrixProject()
+        p.axes = new AxisList(new TextAxis("foo","1","2"))
+        p.concurrentBuild = true;
+        def latch = new CountDownLatch(4)
+        def dirs = Collections.synchronizedSet(new HashSet())
+        
+        p.buildersList.add(new TestBuilder() {
+            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+                dirs << build.workspace.getRemote()
+                def marker = build.workspace.child("file")
+                def name = build.fullDisplayName
+                marker.write(name,"UTF-8")
+                latch.countDown()
+                latch.await()
+                assertEquals(name,marker.readToString())
+                return true
+            }
+        })
+
+        // should have gotten all unique names
+        def f1 = p.scheduleBuild2(0)
+        // get one going
+        Thread.sleep(1000)
+        def f2 = p.scheduleBuild2(0)
+        [f1,f2]*.get().each{ assertBuildStatusSuccess(it)}
+
+        assertEquals 4, dirs.size()
+    }
+
+
+    /**
+     * Test that Actions are passed to configurations
+     */
+    public void testParameterActions() throws Exception {
+        MatrixProject p = createMatrixProject();
+
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+            new StringParameterDefinition("PARAM_A","default_a"),
+            new StringParameterDefinition("PARAM_B","default_b"),
+        );
+
+        p.addProperty(pdp);
+        ParametersAction pa = new ParametersAction( pdp.getParameterDefinitions().collect { return it.getDefaultParameterValue() } )
+
+        MatrixBuild build = p.scheduleBuild2(0,new LegacyCodeCause(), pa).get();
+
+        assertEquals(4, build.getRuns().size());
+
+        for(MatrixRun run : build.getRuns()) {
+            ParametersAction pa1 = run.getAction(ParametersAction.class);
+            assertNotNull(pa1);
+            ["PARAM_A","PARAM_B"].each{ assertNotNull(pa1.getParameter(it)) }
+        }
+    }
+
+    /**
+     * Test that other Actions are passed to configurations
+     * requires supported version of subversion plugin 1.43+
+     */
+
+    //~ public void testMatrixChildActions() throws Exception {
+        //~ MatrixProject p = createMatrixProject();
+
+        //~ ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+            //~ new StringParameterDefinition("PARAM_A","default_a"),
+            //~ new StringParameterDefinition("PARAM_B","default_b"),
+        //~ );
+
+        //~ p.addProperty(pdp);
+
+        //~ List<Action> actions = new ArrayList<Action>();
+        //~ actions.add(new RevisionParameterAction(new SvnInfo("http://example.com/svn/repo/",1234)));
+        //~ actions.add(new ParametersAction( pdp.getParameterDefinitions().collect { return it.getDefaultParameterValue() } ));
+
+        //~ MatrixBuild build = p.scheduleBuild2(0,new LegacyCodeCause(), actions).get();
+
+        //~ assertEquals(4, build.getRuns().size());
+
+        //~ for(MatrixRun run : build.getRuns()) {
+            //~ ParametersAction pa1 = run.getAction(ParametersAction.class);
+            //~ assertNotNull(pa1);
+            //~ ["PARAM_A","PARAM_B"].each{ assertNotNull(pa1.getParameter(it)) };
+
+            //~ assertNotNull(run.getAction(RevisionParameterAction.class));
+        //~ }
+    //~ }
+
+    @Bug(15271)
+    @LocalData
+    public void testUpgrade() throws Exception {
+        MatrixProject p = jenkins.getItemByFullName("x", MatrixProject.class);
+        assertNotNull(p);
+        MatrixExecutionStrategy executionStrategy = p.getExecutionStrategy();
+        assertEquals(DefaultMatrixExecutionStrategyImpl.class, executionStrategy.getClass());
+        DefaultMatrixExecutionStrategyImpl defaultExecutionStrategy = (DefaultMatrixExecutionStrategyImpl) executionStrategy;
+        assertFalse(defaultExecutionStrategy.isRunSequentially());
+        assertNull(defaultExecutionStrategy.getTouchStoneCombinationFilter());
+        assertNull(defaultExecutionStrategy.getTouchStoneResultCondition());
+        assertNull(defaultExecutionStrategy.getSorter());
+    }
+
 }

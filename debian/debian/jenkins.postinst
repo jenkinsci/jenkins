@@ -21,13 +21,16 @@ set -e
 case "$1" in
     configure)
     
+        [ -r /etc/default/jenkins ] && . /etc/default/jenkins
+        : ${JENKINS_USER:=jenkins}
+
         # Create jenkins user if it doesn't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
-        if ! id jenkins > /dev/null 2>&1 ; then
+        if ! id $JENKINS_USER > /dev/null 2>&1 ; then
             adduser --system --home /var/lib/jenkins --no-create-home \
                 --ingroup nogroup --disabled-password --shell /bin/bash \
-                jenkins
+                $JENKINS_USER
         fi
 	
         # If we have an old hudson install, rename it to jenkins
@@ -38,16 +41,20 @@ case "$1" in
             touch /var/lib/hudson/.from-hudson
             mv -f /var/lib/hudson/* /var/lib/hudson/.??* /var/lib/jenkins
             rmdir /var/lib/hudson
-            find /var/lib/jenkins -user hudson -exec chown jenkins {} + || true
+            find /var/lib/jenkins -user hudson -exec chown $JENKINS_USER {} + || true
         fi
       
         # directories needed for jenkins
-        chown jenkins:adm /var/lib/jenkins /var/log/jenkins
-        chmod 750         /var/lib/jenkins /var/log/jenkins
+        # we don't do -R because it can take a long time on big installation
+        chown $JENKINS_USER:adm /var/lib/jenkins /var/log/jenkins
+        # we don't do "chmod 750" so that the user can choose the pemission for g and o on their own
+        chmod u+rwx /var/lib/jenkins /var/log/jenkins
 
-        # make sure jenkins can delete everything in /var/run/jenkins to re-explode war
-        chown -R jenkins:adm /var/run/jenkins
-        chmod -R 750         /var/run/jenkins
+        # make sure jenkins can delete everything in /var/cache/jenkins to
+        # re-explode war. older installations may use /var/run/jenkins
+        # so make sure that they can delete too.
+        chown -R $JENKINS_USER:adm /var/cache/jenkins /var/run/jenkins
+        chmod -R 750               /var/cache/jenkins /var/run/jenkins
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

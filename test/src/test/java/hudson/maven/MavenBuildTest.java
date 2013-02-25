@@ -5,19 +5,15 @@ import hudson.model.BuildListener;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
-import hudson.scm.SubversionSCM;
 import hudson.tasks.Maven.MavenInstallation;
-import hudson.util.NullStream;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.tmatesoft.svn.core.SVNException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -135,10 +131,27 @@ public class MavenBuildTest extends HudsonTestCase {
         assertFalse( mmsb.getProject().getModules().isEmpty());
     }     
     
+    @Bug(8573)
+    public void testBuildTimeStampProperty() throws Exception {
+        MavenInstallation mavenInstallation = configureDefaultMaven();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-8573.zip")));
+        m.setGoals( "process-resources" );
+        buildAndAssertSuccess(m);
+        String content = m.getLastBuild().getWorkspace().child( "target/classes/test.txt" ).readToString();
+        assertFalse( content.contains( "${maven.build.timestamp}") );
+        assertFalse( content.contains( "${maven.build.timestamp}") );
+
+        System.out.println( "content " + content );
+    }    
+    
     private static class TestReporter extends MavenReporter {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            assertNotNull(build.getProject().getWorkspace());
             assertNotNull(build.getWorkspace());
             return true;
         }

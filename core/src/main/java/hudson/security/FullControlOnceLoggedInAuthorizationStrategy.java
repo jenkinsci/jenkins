@@ -24,7 +24,7 @@
 package hudson.security;
 
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 
 import java.util.Collections;
@@ -53,8 +53,8 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     private static final SparseACL THE_ACL = new SparseACL(null);
 
     static {
-        THE_ACL.add(ACL.EVERYONE,Hudson.ADMINISTER,true);
-        THE_ACL.add(ACL.ANONYMOUS,Hudson.ADMINISTER,false);
+        THE_ACL.add(ACL.EVERYONE, Jenkins.ADMINISTER,true);
+        THE_ACL.add(ACL.ANONYMOUS, Jenkins.ADMINISTER,false);
         THE_ACL.add(ACL.ANONYMOUS,Permission.READ,true);
     }
 

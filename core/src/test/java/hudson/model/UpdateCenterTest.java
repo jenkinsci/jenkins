@@ -23,12 +23,22 @@
  */
 package hudson.model;
 
+import com.trilead.ssh2.crypto.Base64;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
+import hudson.util.TimeUnit2;
 import junit.framework.TestCase;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
 
 /**
  * Quick test for {@link UpdateCenter}.
@@ -36,7 +46,7 @@ import java.net.URL;
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenterTest extends TestCase {
-    public void testData() throws IOException {
+    public void testData() throws Exception {
         // check if we have the internet connectivity. See HUDSON-2095
         try {
             new URL("http://updates.jenkins-ci.org/").openStream();
@@ -47,12 +57,20 @@ public class UpdateCenterTest extends TestCase {
 
         URL url = new URL("http://updates.jenkins-ci.org/update-center.json?version=build");
         String jsonp = IOUtils.toString(url.openStream());
-        String json = jsonp.substring(jsonp.indexOf('(')+1,jsonp.lastIndexOf(')'));
+        JSONObject json = JSONObject.fromObject(jsonp.substring(jsonp.indexOf('(') + 1, jsonp.lastIndexOf(')')));
 
         UpdateSite us = new UpdateSite("default", url.toExternalForm());
-        UpdateSite.Data data = us.new Data(JSONObject.fromObject(json));
+        UpdateSite.Data data = us.new Data(json);
         assertTrue(data.core.url.startsWith("http://updates.jenkins-ci.org/"));
         assertTrue(data.plugins.containsKey("rake"));
         System.out.println(data.core.url);
+
+        // make sure the certificate is valid for a while more
+        CertificateFactory cf = CertificateFactory.getInstance("X509");
+        JSONObject signature = json.getJSONObject("signature");
+        for (Object cert : signature.getJSONArray("certificates")) {
+            X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
+            c.checkValidity(new Date(System.currentTimeMillis() + TimeUnit2.DAYS.toMillis(30)));
+        }
     }
 }

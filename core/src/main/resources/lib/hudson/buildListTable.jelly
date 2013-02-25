@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:documentation>
     Creates a table of builds.
@@ -38,7 +39,7 @@ THE SOFTWARE.
     <tr>
       <th><st:nbsp/></th>
       <th>${%Build}</th>
-      <th initialSortDir="up">${%Date}</th>
+      <th initialSortDir="up">${%Time Since}</th>
       <th>${%Status}</th>
       <th><st:nbsp/></th>
     </tr>
@@ -46,17 +47,17 @@ THE SOFTWARE.
     <j:forEach var="b" items="${h.subList(attrs.builds,50)}">
       <tr>
         <td data="${b.iconColor.ordinal()}">
-          <a href="${jobBaseUrl}${b.url}">
+          <a href="${jobBaseUrl}${b.url}" class="model-link">
             <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
-                 alt="${b.iconColor.description}"/>
+                 alt="${b.iconColor.description}" class="icon${iconSize}"/>
           </a>
         </td>
         <td>
-          <a href="${jobBaseUrl}${b.parent.url}">${b.parent.fullDisplayName}</a>
+          <a href="${jobBaseUrl}${b.parent.url}" class="model-link">${b.parent.fullDisplayName}</a>
           <st:nbsp/>
-          <a href="${jobBaseUrl}${b.url}">${b.displayName}</a>
+          <a href="${jobBaseUrl}${b.url}" class="model-link">${b.displayName}</a>
         </td>
-        <td data="${b.timestampString2}">
+        <td data="${b.timestampString2}" tooltip="${%Click to center timeline on event}" onclick="javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime('${b.timestampString2}'))">
           ${b.timestampString}
         </td>
         <td>
@@ -64,7 +65,7 @@ THE SOFTWARE.
         </td>
         <td>
           <a href="${jobBaseUrl}${b.url}console">
-            <img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}" alt="${%Console output}" border="0" />
+            <img src="${imagesURL}/${subIconSize}/terminal.png" title="${%Console output}" alt="${%Console output}" border="0" />
           </a>
         </td>
       </tr>

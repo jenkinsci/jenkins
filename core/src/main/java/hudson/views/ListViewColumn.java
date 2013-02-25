@@ -29,7 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ListView;
@@ -86,7 +86,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all() {
-        return Hudson.getInstance().<ListViewColumn, Descriptor<ListViewColumn>>getDescriptorList(ListViewColumn.class);
+        return Jenkins.getInstance().<ListViewColumn, Descriptor<ListViewColumn>>getDescriptorList(ListViewColumn.class);
     }
 
     /**
@@ -113,7 +113,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
      * and instead return a plain {@link Descriptor} instance.
      */
     public Descriptor<ListViewColumn> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**

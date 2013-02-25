@@ -22,16 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <td data="${lsBuild.timestampString2 ?: '-'}">
-          <j:choose>
-              <j:when test="${lsBuild!=null}">
-                  ${lsBuild.timestampString}
-                  (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/">${lsBuild.displayName}</a>)
-              </j:when>
-              <j:otherwise>
-                  ${%N/A}
-              </j:otherwise>
-          </j:choose>
-      </td>
+  <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
+  <td data="${lsBuild.timestampString2 ?: '-'}">
+    <j:choose>
+      <j:when test="${lsBuild!=null}">
+        ${lsBuild.timestampString}
+        (<a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/" class="model-link">${lsBuild.displayName}</a>)
+      </j:when>
+      <j:otherwise>
+        ${%N/A}
+      </j:otherwise>
+    </j:choose>
+  </td>
 </j:jelly>

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,14 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
+import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Hudson;
+import hudson.model.Run;
+import hudson.util.LRUStringConverter;
+import jenkins.model.Jenkins;
 
-import org.apache.maven.RepositoryUtils;
+import hudson.util.HttpResponses;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -39,6 +42,10 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 
 import com.google.common.collect.Maps;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +56,7 @@ import java.util.logging.Logger;
 
 /**
  * Captures information about an artifact created by Maven and archived by
- * Hudson, so that we can later deploy it to repositories of our choice.
+ * Jenkins, so that we can later deploy it to repositories of our choice.
  *
  * <p>
  * This object is created within the Maven process and sent back to the master,
@@ -61,10 +68,17 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.189
  */
+@ExportedBean
 public final class MavenArtifact implements Serializable {
+
+    static {
+        Run.XSTREAM.registerLocalConverter(MavenArtifact.class, "md5sum", new LRUStringConverter(5000));
+    }
+
     /**
      * Basic parameters of a Maven artifact.
      */
+    @Exported
     public final String groupId, artifactId, version, classifier, type;
 
     /**
@@ -78,6 +92,7 @@ public final class MavenArtifact implements Serializable {
      * use their <tt>finalName</tt> if one is configured.) This is often
      * different from {@link #canonicalName}.
      */
+    @Exported
     public final String fileName;
 
     /**
@@ -88,20 +103,21 @@ public final class MavenArtifact implements Serializable {
      * The reason we persist this is that the extension is only available
      * through {@link ArtifactHandler}. 
      */
+    @Exported
     public final String canonicalName;
 
     /**
      * The md5sum for this artifact.
      */
+    @Exported
     public final String md5sum;
-    
+
     public MavenArtifact(Artifact a) throws IOException {
         this.groupId = a.getGroupId();
         this.artifactId = a.getArtifactId();
         this.version = a.getVersion();
         this.classifier = a.getClassifier();
         this.type = a.getType();
-        // TODO: on archive we need to follow the same format as Maven repository
         this.fileName = a.getFile().getName();
         this.md5sum = Util.getDigestOf(new FileInputStream(a.getFile()));
         String extension;
@@ -132,13 +148,13 @@ public final class MavenArtifact implements Serializable {
         File file = a.getFile();
         if(file==null)
             return null; // perhaps build failed and didn't leave an artifact
-        if(!file.exists() || file.isDirectory())
-            return null; // during a build maven sets a class folder instead of a jar file as artifact. ignore.
+        if(!file.isFile())
+            return null; // file doesn't exist or artifact points to a directory
         return new MavenArtifact(a);
     }
 
     public boolean isPOM() {
-        return fileName.endsWith(".pom");   // hack
+        return fileName.endsWith(".pom")||"pom.xml".equals(fileName);   // hack
     }
 
     /**
@@ -171,7 +187,7 @@ public final class MavenArtifact implements Serializable {
      */
     private String getSeed(String extension) {
         String name = artifactId+'-'+version;
-        if(classifier!=null)
+        if(Util.fixEmpty(classifier)!=null)
             name += '-'+classifier;
         name += '.'+extension;
         return name;
@@ -180,15 +196,24 @@ public final class MavenArtifact implements Serializable {
     /**
      * Obtains the {@link File} representing the archived artifact.
      */
-    protected File getFile(MavenBuild build) throws IOException {
-        File f = new File(new File(new File(new File(build.getArtifactsDir(), groupId), artifactId), version), fileName);
+    public File getFile(MavenBuild build) throws IOException {
+        File f = new File(new File(new File(new File(build.getArtifactsDir(), groupId), artifactId), version), canonicalName);
         if(!f.exists())
             throw new IOException("Archived artifact is missing: "+f);
         return f;
     }
 
+    /**
+     * Serve the file.
+     *
+     * TODO: figure out how to make this URL more discoverable to the remote API.
+     */
+    public HttpResponse doFile(@AncestorInPath MavenArtifactRecord parent) throws IOException {
+        return HttpResponses.staticResource(getFile(parent.parent));
+    }
+
     private FilePath getArtifactArchivePath(MavenBuildProxy build, String groupId, String artifactId, String version) {
-        return build.getArtifactsDir().child(groupId).child(artifactId).child(version).child(fileName);
+        return build.getArtifactsDir().child(groupId).child(artifactId).child(version).child(canonicalName);
     }
 
     /**
@@ -196,7 +221,7 @@ public final class MavenArtifact implements Serializable {
      */
     public void archive(MavenBuildProxy build, File file, BuildListener listener) throws IOException, InterruptedException {
         if (build.isArchivingDisabled()) {
-            listener.getLogger().println("[JENKINS] Archiving disabled - not archiving " + file);
+            LOGGER.fine("Archiving disabled - not archiving " + file);
         }
         else {
             FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
@@ -258,8 +283,12 @@ public final class MavenArtifact implements Serializable {
      * Called from within the master to record fingerprint.
      */
     public void recordFingerprint(MavenBuild build) throws IOException {
-        FingerprintMap map = Hudson.getInstance().getFingerprintMap();
+        FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
         map.getOrCreate(build,fileName,md5sum);
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     private static final Logger LOGGER = Logger.getLogger(MavenArtifact.class.getName());

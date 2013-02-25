@@ -29,18 +29,18 @@ THE SOFTWARE.
   <f:entry title="${%Node/Label}" field="labels">
     <div class="yahooTree labelAxis-tree" style="border: 1px solid gray; height: 10em; overflow:auto;" values="${instance.valueString}" />
     <script>
-      hudsonRules["DIV.labelAxis-tree"] = function(e) {
+      Behaviour.specify("DIV.labelAxis-tree", 'LabelAxis', 0, function(e) {
         var tree = new YAHOO.widget.TreeView(e);
 
         var labels = new YAHOO.widget.TextNode("${%Labels}", tree.getRoot(), false);
         var machines = new YAHOO.widget.TextNode("${%Individual nodes}", tree.getRoot(), false);
 
-        var values = (e.getAttribute("values") || "").split(/[ \n]/);
+        var values = (e.getAttribute("values") || "").split("/");
         function has(v) {
           return values.include(v) ? 'checked="checked" ' : "";
         }
         <j:forEach var="l" items="${app.labelAtoms}">
-          new YAHOO.widget.TextNode('&lt;input type="checkbox" name="values" json="${l.name}" '+has("${l.name}")+'/&gt;&lt;label class="attach-previous"&gt;${h.jsStringEscape(l.name)} (${h.jsStringEscape(l.description)})&lt;/label&gt;', ${l.isSelfLabel()?'machines':'labels'}, false);
+          new YAHOO.widget.HTMLNode(<j:out value="${descriptor.buildLabelCheckBox(l,instance)}"/>, ${l.isSelfLabel()?'machines':'labels'}, false);
         </j:forEach>
 
         tree.draw();
@@ -50,7 +50,17 @@ THE SOFTWARE.
          -->
         tree.expandAll();
         tree.collapseAll();
-      };
+
+        <!--
+          cancel the event.
+
+          from http://yuilibrary.com/forum/viewtopic.php?f=89&t=8209&p=26239&hilit=HTMLNode#p26239
+          "To prevent toggling and allow the link to work, add a listener to the clickEvent on that tree and simply return false"
+        -->
+        tree.subscribe("clickEvent", function(node) {
+            return false;
+        });
+      });
     </script>
   </f:entry>
 </j:jelly>

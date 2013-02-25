@@ -25,7 +25,10 @@
 package hudson;
 
 import hudson.PluginManager.PluginInstanceStore;
-import hudson.model.Hudson;
+import hudson.model.Api;
+import hudson.model.ModelObject;
+import jenkins.YesNoMaybe;
+import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
@@ -45,6 +48,9 @@ import static java.util.logging.Level.WARNING;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.util.Enumeration;
 import java.util.jar.JarFile;
@@ -54,7 +60,7 @@ import java.util.jar.JarFile;
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".hpi"</tt>,
+ * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatability),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
@@ -71,7 +77,8 @@ import java.util.jar.JarFile;
  *
  * @author Kohsuke Kawaguchi
  */
-public class PluginWrapper implements Comparable<PluginWrapper> {
+@ExportedBean
+public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * {@link PluginManager} to which this belongs to.
      */
@@ -92,7 +99,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Base URL for loading static resources from this plugin.
      * Null if disabled. The static resources are mapped under
-     * <tt>hudson/plugin/SHORTNAME/</tt>.
+     * <tt>CONTEXTPATH/plugin/SHORTNAME/</tt>.
      */
     public final URL baseResourceURL;
 
@@ -112,9 +119,14 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     private final File pinFile;
 
     /**
+     * A .jpi file, an exploded plugin directory, or a .jpl file.
+     */
+    private final File archive;
+
+    /**
      * Short name of the plugin. The artifact Id of the plugin.
      * This is also used in the URL within Jenkins, so it needs
-     * to remain stable even when the *.hpi file name is changed
+     * to remain stable even when the *.jpi file name is changed
      * (like Maven does.)
      */
     private final String shortName;
@@ -124,6 +136,8 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * The snapshot of <tt>disableFile.exists()</tt> as of the start up.
      */
     private final boolean active;
+    
+    private boolean hasCycleDependency = false;
 
     private final List<Dependency> dependencies;
     private final List<Dependency> optionalDependencies;
@@ -133,9 +147,13 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      */
     /*package*/ boolean isBundled;
 
-    static final class Dependency {
+    @ExportedBean
+    public static final class Dependency {
+        @Exported
         public final String shortName;
+        @Exported
         public final String version;
+        @Exported
         public final boolean optional;
 
         public Dependency(String s) {
@@ -164,7 +182,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
     /**
      * @param archive
-     *      A .hpi archive file jar file, or a .hpl linked plugin.
+     *      A .jpi archive file jar file, or a .jpl linked plugin.
      *  @param manifest
      *  	The manifest for the plugin
      *  @param baseResourceURL
@@ -189,6 +207,15 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
+        this.archive = archive;
+    }
+
+    public String getDisplayName() {
+        return getLongName();
+    }
+
+    public Api getApi() {
+        return new Api(this);
     }
 
     /**
@@ -235,6 +262,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
         return n;
     }
 
+    @Exported
     public List<Dependency> getDependencies() {
         return dependencies;
     }
@@ -247,6 +275,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns the short name suitable for URL.
      */
+    @Exported
     public String getShortName() {
         return shortName;
     }
@@ -255,7 +284,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
     public Plugin getPlugin() {
-        return Hudson.lookup(PluginInstanceStore.class).store.get(this);
+        return Jenkins.lookup(PluginInstanceStore.class).store.get(this);
     }
 
     /**
@@ -264,6 +293,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      *      null if this information is unavailable.
      * @since 1.283
      */
+    @Exported
     public String getUrl() {
         // first look for the manifest entry. This is new in maven-hpi-plugin 1.30
         String url = manifest.getMainAttributes().getValue("Url");
@@ -275,6 +305,8 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 
         return null;
     }
+    
+    
 
     @Override
     public String toString() {
@@ -284,6 +316,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns a one-line descriptive name of this plugin.
      */
+    @Exported
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
@@ -291,8 +324,19 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     /**
+     * Does this plugin supports dynamic loading?
+     */
+    @Exported
+    public YesNoMaybe supportsDynamicLoad() {
+        String v = manifest.getMainAttributes().getValue("Support-Dynamic-Loading");
+        if (v==null) return YesNoMaybe.MAYBE;
+        return Boolean.parseBoolean(v) ? YesNoMaybe.YES : YesNoMaybe.NO;
+    }
+
+    /**
      * Returns the version number of this plugin
      */
+    @Exported
     public String getVersion() {
         String v = manifest.getMainAttributes().getValue("Plugin-Version");
         if(v!=null)      return v;
@@ -368,10 +412,20 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * Returns true if this plugin is enabled for this session.
      */
+    @Exported
     public boolean isActive() {
-        return active;
+        return active && !hasCycleDependency();
+    }
+    
+    public boolean hasCycleDependency(){
+        return hasCycleDependency;
     }
 
+    public void setHasCycleDependency(boolean hasCycle){
+        hasCycleDependency = hasCycle;
+    }
+    
+    @Exported
     public boolean isBundled() {
         return isBundled;
     }
@@ -380,6 +434,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * If true, the plugin is going to be activated next time
      * Jenkins runs.
      */
+    @Exported
     public boolean isEnabled() {
         return !disableFile.exists();
     }
@@ -389,12 +444,21 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     }
 
     public void setPlugin(Plugin plugin) {
-        Hudson.lookup(PluginInstanceStore.class).store.put(this,plugin);
+        Jenkins.lookup(PluginInstanceStore.class).store.put(this,plugin);
         plugin.wrapper = this;
     }
 
     public String getPluginClass() {
         return manifest.getMainAttributes().getValue("Plugin-Class");
+    }
+
+    public boolean hasLicensesXml() {
+        try {
+            new URL(baseResourceURL,"WEB-INF/licenses.xml").openStream().close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**
@@ -430,7 +494,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      *      the user may have installed a plugin locally developed.
      */
     public UpdateSite.Plugin getUpdateInfo() {
-        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
         UpdateSite.Plugin p = uc.getPlugin(getShortName());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
@@ -440,7 +504,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * returns the {@link UpdateSite.Plugin} object, or null.
      */
     public UpdateSite.Plugin getInfo() {
-        UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
         return uc.getPlugin(getShortName());
     }
 
@@ -451,12 +515,24 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * This method is conservative in the sense that if the version number is incomprehensible,
      * it always returns false.
      */
+    @Exported
     public boolean hasUpdate() {
         return getUpdateInfo()!=null;
     }
     
+    @Exported
     public boolean isPinned() {
         return pinFile.exists();
+    }
+
+    /**
+     * Returns true if this plugin is deleted.
+     *
+     * The plugin continues to function in this session, but in the next session it'll disappear.
+     */
+    @Exported
+    public boolean isDeleted() {
+        return !archive.exists();
     }
 
     /**
@@ -469,6 +545,7 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
     /**
      * returns true if backup of previous version of plugin exists
      */
+    @Exported
     public boolean isDowngradable() {
         return getBackupFile().exists();
     }
@@ -477,13 +554,14 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
      * Where is the backup file?
      */
     public File getBackupFile() {
-        return new File(Hudson.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
+        return new File(Jenkins.getInstance().getRootDir(),"plugins/"+getShortName() + ".bak");
     }
 
     /**
      * returns the version of the backed up plugin,
      * or null if there's no back up.
      */
+    @Exported
     public String getBackupVersion() {
         File backup = getBackupFile();
         if (backup.exists()) {
@@ -503,28 +581,39 @@ public class PluginWrapper implements Comparable<PluginWrapper> {
 // Action methods
 //
 //
+    @RequirePOST
     public HttpResponse doMakeEnabled() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         enable();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doMakeDisabled() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         disable();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doPin() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         new FileOutputStream(pinFile).close();
         return HttpResponses.ok();
     }
 
+    @RequirePOST
     public HttpResponse doUnpin() throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         pinFile.delete();
         return HttpResponses.ok();
+    }
+
+    @RequirePOST
+    public HttpResponse doDoUninstall() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        archive.delete();
+        return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
 
 

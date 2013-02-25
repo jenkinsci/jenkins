@@ -25,14 +25,15 @@ THE SOFTWARE.
 <!--
   "New Project" page.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-  <l:layout norefresh="true" permission="${permission}" title="${%New Job}">
+  <l:layout norefresh="true" permission="${permission}" title="${%NewJob(it.newPronoun)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
-      <n:form nameTitle="${%Job name}" copyTitle="${%Copy existing job}" copyNames="${app.topLevelItemNames}"
-              descriptors="${jobs}" checkUrl="checkJobName" xmlns:n="/lib/hudson/newFromList" />
+      <n:form nameTitle="${%JobName(it.newPronoun)}" copyTitle="${%CopyExisting(it.newPronoun)}" showCopyOption="${!empty(app.itemMap)}"
+              descriptors="${jobs}" checkUrl="${rootURL}/checkJobName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

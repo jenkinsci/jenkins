@@ -23,10 +23,11 @@
  */
 package hudson.console;
 
+import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
@@ -44,7 +45,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +121,7 @@ import java.util.zip.GZIPOutputStream;
  * @see Functions#generateConsoleAnnotationScriptAndStylesheet()
  * @since 1.349
  */
-public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>> {
+public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>>, ExtensionPoint {
     /**
      * When the line of a console output that this annotation is attached is read by someone,
      * a new {@link ConsoleNote} is de-serialized and this method is invoked to annotate that line.
@@ -140,7 +140,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
     public ConsoleAnnotationDescriptor getDescriptor() {
-        return (ConsoleAnnotationDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ConsoleAnnotationDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -190,9 +190,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Works like {@link #encodeTo(Writer)} but obtain the result as a string.
      */
     public String encode() throws IOException {
-        StringWriter sw = new StringWriter();
-        encodeTo(sw);
-        return sw.toString();
+        return encodeToBytes().toString();
     }
 
     /**
@@ -221,8 +219,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid postamble
 
             ObjectInputStream ois = new ObjectInputStreamEx(
-                    new GZIPInputStream(new ByteArrayInputStream(buf)), Hudson.getInstance().pluginManager.uberClassLoader);
-            return (ConsoleNote) ois.readObject();
+                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
+            try {
+                return (ConsoleNote) ois.readObject();
+            } finally {
+                ois.close();
+            }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
             // package that up as IOException so that the caller won't fatally die.

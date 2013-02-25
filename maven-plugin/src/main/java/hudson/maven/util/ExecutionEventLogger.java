@@ -19,10 +19,10 @@ package hudson.maven.util;
  * under the License.
  */
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import hudson.tasks._maven.Maven3MojoNote;
+
+import java.io.IOException;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.BuildFailure;
@@ -40,6 +40,7 @@ import org.codehaus.plexus.logging.Logger;
  *
  * @author Benjamin Bentmann
  */
+// Note: copied from package org.apache.maven.cli with just one minor adaption for Maven3MojoNote
 public class ExecutionEventLogger
     extends AbstractExecutionListener
 {
@@ -71,22 +72,28 @@ public class ExecutionEventLogger
 
     private static String getFormattedTime( long time )
     {
-        String pattern = "s.SSS's'";
+        // NOTE: DateFormat is not suitable to format timespans of 24h+
 
-        if ( time / 60000L > 0 )
+        long h = time / ( 60 * 60 * 1000 );
+        long m = ( time - h * 60 * 60 * 1000 ) / ( 60 * 1000 );
+        long s = ( time - h * 60 * 60 * 1000 - m * 60 * 1000 ) / 1000;
+        long ms = time % 1000;
+
+        String format;
+        if ( h > 0 )
         {
-            pattern = "m:s" + pattern;
-
-            if ( time / 3600000L > 0 )
-            {
-                pattern = "H:m" + pattern;
-            }
+            format = "%1$d:%2$02d:%3$02d.%4$03ds";
+        }
+        else if ( m > 0 )
+        {
+            format = "%2$d:%3$02d.%4$03ds";
+        }
+        else
+        {
+            format = "%3$d.%4$03ds";
         }
 
-        DateFormat fmt = new SimpleDateFormat( pattern );
-        fmt.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
-
-        return fmt.format( new Date( time ) );
+        return String.format( format, h, m, s, ms );
     }
 
     @Override
@@ -256,13 +263,22 @@ public class ExecutionEventLogger
         }
     }
 
+    /**
+     * <pre>--- mojo-artifactId:version:goal (mojo-executionId) @ project-artifactId ---</pre>
+     */
     @Override
     public void mojoStarted( ExecutionEvent event )
     {
         if ( logger.isInfoEnabled() )
         {
-            StringBuilder buffer = new StringBuilder( 128 );
-
+            final Maven3MojoNote note = new Maven3MojoNote();
+            final StringBuilder buffer = new StringBuilder( 128 );
+            try {
+                buffer.append( note.encode() );
+            } catch ( IOException e ) {
+                // As we use only memory buffers this should not happen, ever.
+                throw new RuntimeException( "Could not encode note?", e );
+            }
             buffer.append( "--- " );
             append( buffer, event.getMojoExecution() );
             append( buffer, event.getProject() );
@@ -273,6 +289,9 @@ public class ExecutionEventLogger
         }
     }
 
+    /**
+     * <pre>>>> mojo-artifactId:version:goal (mojo-executionId) @ project-artifactId >>></pre>
+     */
     @Override
     public void forkStarted( ExecutionEvent event )
     {
@@ -290,6 +309,9 @@ public class ExecutionEventLogger
         }
     }
 
+    /**
+     * <pre>&lt;&lt;&lt; mojo-artifactId:version:goal (mojo-executionId) @ project-artifactId &lt;&lt;&lt;</pre>
+     */
     @Override
     public void forkSucceeded( ExecutionEvent event )
     {

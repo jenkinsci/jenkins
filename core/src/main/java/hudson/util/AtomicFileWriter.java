@@ -117,6 +117,7 @@ public class AtomicFileWriter extends Writer {
     @Override
     protected void finalize() throws Throwable {
         // one way or the other, temporary file should be deleted.
+        close();
         tmpFile.delete();
     }
 

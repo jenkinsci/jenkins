@@ -1,0 +1,25 @@
+<div>
+  Ist diese Option angewählt, so warten geplante Builds die angegebene Anzahl an
+  Sekunden, bevor der eigentliche Build-Prozess startet. Dies ist nützlich wenn:
+  <ul>
+    <li>
+      Mehrere E-Mails zur Benachrichtigung über Änderungen im CVS zusammengefasst
+      werden sollen. Manche Skripte zur automatischen Erstellung von Änderungsprotokollen
+      erzeugen mehrere E-Mails in schneller Folge, wenn sich Änderungen über 
+      mehrere Verzeichnisse erstrecken.
+    </li>
+    <li>
+      Ihr Programmierstil es erfordert, eine logische Änderung in mehreren
+      CVS/SVN-Operationen durchzuführen. Eine verlängerte Ruheperiode verhindert
+      in diesem Falle, daß Jenkins einen Build verfrüht startet und einen Fehlschlag
+      meldet. 
+    </li>
+    <li>
+      Builds begrenzt werden sollen. Wenn Ihre Jenkins-Installation mit zu vielen
+      Builds überlastet wird, kann eine verlängerte Ruheperiode die Anzahl der
+      Builds verringern. 
+    </li>
+  </ul>
+  Ein systemweiter Vorgabewert wird verwendet, wenn nicht auf Projektebene ein
+  expliziter Wert angegeben wird.
+</div>

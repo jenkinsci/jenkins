@@ -27,7 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 
@@ -44,12 +44,12 @@ public abstract class ViewJobFilter implements ExtensionPoint, Describable<ViewJ
      * Returns all the registered {@link ViewJobFilter} descriptors.
      */
     public static DescriptorExtensionList<ViewJobFilter, Descriptor<ViewJobFilter>> all() {
-        return Hudson.getInstance().<ViewJobFilter, Descriptor<ViewJobFilter>>getDescriptorList(ViewJobFilter.class);
+        return Jenkins.getInstance().<ViewJobFilter, Descriptor<ViewJobFilter>>getDescriptorList(ViewJobFilter.class);
     }
 
     @SuppressWarnings("unchecked")
 	public Descriptor<ViewJobFilter> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
     
     /**

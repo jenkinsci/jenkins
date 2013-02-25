@@ -35,6 +35,6 @@ import org.jvnet.hudson.test.JellyTestSuiteBuilder;
  */
 public class MavenJellyTest extends TestCase {
     public static Test suite() throws Exception {
-        return JellyTestSuiteBuilder.build(Which.jarFile(MavenModuleSet.class));
+        return JellyTestSuiteBuilder.build(Which.jarFile(MavenModuleSet.class),true);
     }
 }

@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Build wrapper config pane
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
   <j:if test="${!empty(wrappers)}">

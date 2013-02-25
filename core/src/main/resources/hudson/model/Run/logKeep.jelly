@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Displays the toggle button to keep/don't-keep the log file.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${it.parent.logRotator!=null}">
     <form method="get" action="toggleLogKeep" style="margin-top:1em">

@@ -24,7 +24,10 @@
 package hudson.matrix;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import hudson.Functions;
+import hudson.Util;
+import jenkins.model.Jenkins;
+import hudson.model.labels.LabelAtom;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
@@ -45,6 +48,11 @@ public class LabelAxis extends Axis {
         return true;
     }
 
+    @Override
+    public String getValueString() {
+        return Util.join(getValues(),"/");
+    }
+
     @Extension
     public static class DescriptorImpl extends AxisDescriptor {
         @Override
@@ -57,8 +65,21 @@ public class LabelAxis extends Axis {
          */
         @Override
         public boolean isInstantiable() {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             return !h.getNodes().isEmpty() || !h.clouds.isEmpty();
+        }
+
+        private String jsstr(String body, Object... args) {
+            return '\"'+Functions.jsStringEscape(String.format(body,args))+'\"';
+        }
+
+        public String buildLabelCheckBox(LabelAtom la, LabelAxis instance) {
+            return jsstr("<input type='checkbox' name='values' json='%s' ",
+                        Functions.htmlAttributeEscape(la.getName()))
+                   +String.format("+has(%s)+",jsstr(la.getName()))
+                   +jsstr("/><label class='attach-previous'>%s (%s)</label>",
+                        la.getName(),la.getDescription());
+            // '${h.jsStringEscape('<input type="checkbox" name="values" json="'+h.htmlAttributeEscape(l.name)+'" ')}'+has("${h.jsStringEscape(l.name)}")+'${h.jsStringEscape('/><label class="attach-previous">'+l.name+' ('+l.description+')</label>')}'
         }
     }
 }

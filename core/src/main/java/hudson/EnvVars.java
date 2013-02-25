@@ -52,7 +52,7 @@ import java.util.UUID;
  * case insensitive but case preserving.
  *
  * <p>
- * In Hudson, often we need to build up "environment variable overrides"
+ * In Jenkins, often we need to build up "environment variable overrides"
  * on master, then to execute the process on slaves. This causes a problem
  * when working with variables like <tt>PATH</tt>. So to make this work,
  * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
@@ -81,7 +81,7 @@ public class EnvVars extends TreeMap<String,String> {
         this();
         putAll(m);
 
-        // because of the backward compatibility, some parts of Hudson passes
+        // because of the backward compatibility, some parts of Jenkins passes
         // EnvVars as Map<String,String> so downcasting is safer.
         if (m instanceof EnvVars) {
             EnvVars lhs = (EnvVars) m;
@@ -157,6 +157,16 @@ public class EnvVars extends TreeMap<String,String> {
 		}
 	}
 
+    /**
+     * Convenience message
+     * @since 1.485
+     **/
+    public String get(String key, String defaultValue) {
+        String v = get(key);
+        if (v==null)    v=defaultValue;
+        return v;
+    }
+
     @Override
     public String put(String key, String value) {
         if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
@@ -214,7 +224,7 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * Despite what the name might imply, this is the environment variable
-     * of the current JVM process. And therefore, it is Hudson master's environment
+     * of the current JVM process. And therefore, it is Jenkins master's environment
      * variables only when you access this from the master.
      *
      * <p>

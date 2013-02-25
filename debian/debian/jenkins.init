@@ -28,10 +28,10 @@ DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$J
 SU=/bin/su
 
 # Exit if the package is not installed
-[ -x "$DAEMON" ] || exit 0
+[ -x "$DAEMON" ] || (echo "daemon package not installed" && exit 0)
 
 # Exit if not supposed to run standalone
-[ "$RUN_STANDALONE" = "false" ] && exit 0
+[ "$RUN_STANDALONE" = "false" ] && echo "Not configured to run standalone" && exit 0
 
 # load environments
 if [ -r /etc/default/locale ]; then
@@ -68,7 +68,7 @@ check_tcp_port() {
         port=$default
     fi
     
-    count=`netstat --listen --numeric-ports | grep \:$port | grep -c . `
+    count=`netstat --listen --numeric-ports | grep \:$port[[:space:]] | grep -c . `
     
     if [ $count -ne 0 ]; then
         echo "The selected $service port ($port) seems to be in use by another program "
@@ -147,7 +147,7 @@ do_stop()
 	0) 
 	    $DAEMON $DAEMON_ARGS --stop || return 2
         # wait for the process to really terminate
-        for n in 1 2 3 4 5; do
+        for n in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
             sleep 1
             $DAEMON $DAEMON_ARGS --running || break
         done
@@ -205,27 +205,35 @@ case "$1" in
     esac
     ;;
   status)
-      get_daemon_status
-      case "$?" in 
-	 0) echo "$DESC is running with the pid `cat $PIDFILE`";;
-         *) 
-	      get_running
-	      procs=$?
-	      if [ $procs -eq 0 ]; then 
-		  echo -n "$DESC is not running"
-		  if [ -f $PIDFILE ]; then 
-		      echo ", but the pidfile ($PIDFILE) still exists"
-		  else 
-		      echo
-		  fi
-
-	      else 
-		  echo "$procs instances of jenkins are running at the moment"
-		  echo "but the pidfile $PIDFILE is missing"
-	      fi
-	      ;;
-      esac
-    ;;
+	get_daemon_status
+	case "$?" in 
+	 0) 
+		echo "$DESC is running with the pid `cat $PIDFILE`"
+		rc=0
+		;;
+	*) 
+		get_running
+		procs=$?
+		if [ $procs -eq 0 ]; then 
+			echo -n "$DESC is not running"
+			if [ -f $PIDFILE ]; then 
+				echo ", but the pidfile ($PIDFILE) still exists"
+				rc=1
+			else 
+				echo
+				rc=3
+			fi
+		
+		else 
+			echo "$procs instances of jenkins are running at the moment"
+			echo "but the pidfile $PIDFILE is missing"
+			rc=0
+		fi
+		
+		exit $rc
+		;;
+	esac
+	;;
   *)
     echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
     exit 3

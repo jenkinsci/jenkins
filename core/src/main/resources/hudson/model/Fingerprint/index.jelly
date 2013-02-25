@@ -22,19 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout>
-    <l:header title="${it.fileName}">
+  <l:layout title="${it.fileName}">
+    <l:header>
       <!-- RSS? -->
     </l:header>
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Dashboard}" />
+        <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
+        <t:actions/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.gif" alt=""/>
+        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
         ${it.fileName}
       </h1>
       <div class="md5sum">
@@ -71,7 +73,7 @@ THE SOFTWARE.
                 <td class="fingerprint-summary-header">
                   <j:choose>
                     <j:when test="${job!=null}">
-                      <a href="${rootURL}/${job.url}">${j}</a>
+                      <a href="${rootURL}/${job.url}" class="model-link">${j}</a>
                     </j:when>
                     <j:otherwise>
                       ${j}
@@ -86,6 +88,9 @@ THE SOFTWARE.
           </table>
         </j:otherwise>
       </j:choose>
+      <j:forEach var="ff" items="${it.sortedFacets}">
+        <st:include page="main.jelly" optional="true" it="${ff}"/>
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>

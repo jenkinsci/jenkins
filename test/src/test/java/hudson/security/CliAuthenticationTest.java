@@ -5,7 +5,7 @@ import hudson.cli.CLICommand;
 import hudson.cli.ClientAuthenticationCache;
 import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -18,7 +18,7 @@ import junit.framework.Assert;
 public class CliAuthenticationTest extends HudsonTestCase {
     public void test1() throws Exception {
         // dummy security realm that authenticates when username==password
-        hudson.setSecurityRealm(createDummySecurityRealm());
+        jenkins.setSecurityRealm(createDummySecurityRealm());
 
         successfulCommand("test","--username","abc","--password","abc");
     }
@@ -28,7 +28,12 @@ public class CliAuthenticationTest extends HudsonTestCase {
     }
 
     private int command(String... args) throws Exception {
-        return new CLI(getURL()).execute(args);
+        CLI cli = new CLI(getURL());
+        try {
+            return cli.execute(args);
+        } finally {
+            cli.close();
+        }
     }
 
     @TestExtension
@@ -40,8 +45,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertNotSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertNotSame(Jenkins.ANONYMOUS,auth);
             Assert.assertEquals("abc", auth.getName());
             return 0;
         }
@@ -56,15 +61,15 @@ public class CliAuthenticationTest extends HudsonTestCase {
 
         @Override
         protected int run() throws Exception {
-            Authentication auth = Hudson.getAuthentication();
-            Assert.assertSame(Hudson.ANONYMOUS,auth);
+            Authentication auth = Jenkins.getAuthentication();
+            Assert.assertSame(Jenkins.ANONYMOUS,auth);
             return 0;
         }
     }
 
     @For({LoginCommand.class, LogoutCommand.class, ClientAuthenticationCache.class})
     public void testLogin() throws Exception {
-        hudson.setSecurityRealm(createDummySecurityRealm());
+        jenkins.setSecurityRealm(createDummySecurityRealm());
 
         successfulCommand("login","--username","abc","--password","abc");
         successfulCommand("test"); // now we can run without an explicit credential

@@ -28,16 +28,14 @@ THE SOFTWARE.
     @job : job to draw
     @indenter
 -->
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
-  <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
-  <tr class="${job.disabled?'disabledJob':null}">
-      <j:forEach var="col" items="${columnExtensions}">
-          <st:include page="column.jelly" it="${col}" />
-      </j:forEach>
-      <td>
-          <st:nbsp/>
-      </td>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <tr id="job_${job.name}" class="${job.disabled?'disabledJob':null}">
+    <j:forEach var="col" items="${columnExtensions}">
+      <st:include page="column.jelly" it="${col}"/>
+    </j:forEach>
+    <td>
+      <st:nbsp/>
+    </td>
   </tr>
 </j:jelly>

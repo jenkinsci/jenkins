@@ -12,12 +12,12 @@ import hudson.Extension;
 public class LogoutCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Deletes the credential stored with the login command";
+        return Messages.LogoutCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
-        ClientAuthenticationCache store = new ClientAuthenticationCache(channel);
+        ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
         store.remove();
         return 0;
     }

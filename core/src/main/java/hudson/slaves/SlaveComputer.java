@@ -24,7 +24,10 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.model.Hudson.MasterComputer;
+import hudson.util.IOException2;
+import hudson.util.IOUtils;
+import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Callable;
@@ -33,18 +36,19 @@ import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.Futures;
 import hudson.FilePath;
-import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.Util;
 import hudson.AbortException;
 import hudson.remoting.Launcher;
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
+import hudson.util.Secret;
 
 import java.io.File;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -57,6 +61,16 @@ import java.util.concurrent.Future;
 import java.security.Security;
 
 import hudson.util.io.ReopenableFileOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.security.GeneralSecurityException;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.RequestDispatcher;
+import jenkins.model.Jenkins;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -64,7 +78,11 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponseWrapper;
+import org.kohsuke.stapler.ResponseImpl;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.compression.FilterServletOutputStream;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -114,7 +132,7 @@ public class SlaveComputer extends Computer {
 
     public SlaveComputer(Slave slave) {
         super(slave);
-        this.log = new ReopenableFileOutputStream(getLogFile());
+        this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
         this.taskListener = new StreamTaskListener(log);
     }
 
@@ -124,6 +142,13 @@ public class SlaveComputer extends Computer {
     @Override
     public boolean isAcceptingTasks() {
         return acceptingTasks;
+    }
+
+    /**
+     * @since 1.498
+     */
+    public String getJnlpMac() {
+        return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
     }
 
     /**
@@ -191,8 +216,10 @@ public class SlaveComputer extends Computer {
                 try {
                     log.rewind();
                     try {
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.preLaunch(SlaveComputer.this, taskListener);
+
                         launcher.launch(SlaveComputer.this, taskListener);
-                        return null;
                     } catch (AbortException e) {
                         taskListener.error(e.getMessage());
                         throw e;
@@ -205,9 +232,16 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null)
+                    if (channel==null) {
                         offlineCause = new OfflineCause.LaunchFailed();
+                        for (ComputerListener cl : ComputerListener.all())
+                            cl.onLaunchFailure(SlaveComputer.this, taskListener);
+                    }
                 }
+
+                if (channel==null)
+                    throw new IOException("Slave failed to connect, even though the launcher didn't report it. See the log output for details.");
+                return null;
             }
         });
     }
@@ -221,8 +255,11 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskAccepted(executor, task);
         }
-        if (getNode().getRetentionStrategy() instanceof ExecutorListener) {
-            ((ExecutorListener)getNode().getRetentionStrategy()).taskAccepted(executor, task);
+        
+        //getNode() can return null at indeterminate times when nodes go offline
+        Slave node = getNode();
+        if (node != null && node.getRetentionStrategy() instanceof ExecutorListener) {
+            ((ExecutorListener)node.getRetentionStrategy()).taskAccepted(executor, task);
         }
     }
 
@@ -298,25 +335,87 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
+        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, in,out, launchLog);
+        setChannel(channel,launchLog,listener);
+    }
+
+    /**
+     * Shows {@link Channel#classLoadingCount}.
+     * @since 1.495
+     */
+    public int getClassLoadingCount() throws IOException, InterruptedException {
+        return channel.call(new LoadingCount(false));
+    }
+
+    /**
+     * Shows {@link Channel#resourceLoadingCount}.
+     * @since 1.495
+     */
+    public int getResourceLoadingCount() throws IOException, InterruptedException {
+        return channel.call(new LoadingCount(true));
+    }
+
+    /**
+     * Shows {@link Channel#classLoadingTime}.
+     * @since 1.495
+     */
+    public long getClassLoadingTime() throws IOException, InterruptedException {
+        return channel.call(new LoadingTime(false));
+    }
+
+    /**
+     * Shows {@link Channel#resourceLoadingTime}.
+     * @since 1.495
+     */
+    public long getResourceLoadingTime() throws IOException, InterruptedException {
+        return channel.call(new LoadingTime(true));
+    }
+
+    static class LoadingCount implements Callable<Integer,RuntimeException> {
+        private final boolean resource;
+        LoadingCount(boolean resource) {
+            this.resource = resource;
+        }
+        @Override public Integer call() {
+            Channel c = Channel.current();
+            return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
+        }
+    }
+
+    static class LoadingTime implements Callable<Long,RuntimeException> {
+        private final boolean resource;
+        LoadingTime(boolean resource) {
+            this.resource = resource;
+        }
+        @Override public Long call() {
+            Channel c = Channel.current();
+            return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
+        }
+    }
+
+    /**
+     * Sets up the connection through an exsting channel.
+     *
+     * @since 1.444
+     */
+    public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
         final TaskListener taskListener = new StreamTaskListener(launchLog);
         PrintStream log = taskListener.getLogger();
 
-        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE,
-            in,out, launchLog);
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel c, IOException cause) {
-                SlaveComputer.this.channel = null;
                 // Orderly shutdown will have null exception
                 if (cause!=null) {
                     offlineCause = new ChannelTermination(cause);
-                     cause.printStackTrace(taskListener.error("Connection terminated"));
+                    cause.printStackTrace(taskListener.error("Connection terminated"));
                 } else {
                     taskListener.getLogger().println("Connection terminated");
                 }
+                closeChannel();
                 launcher.afterDisconnect(SlaveComputer.this, taskListener);
             }
         });
@@ -336,8 +435,12 @@ public class SlaveComputer extends Computer {
             log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
         FilePath root = new FilePath(channel,getNode().getRemoteFS());
 
+        // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
+        // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
+        // it'll have a catastrophic impact on the communication.
+        channel.pinClassLoader(getClass().getClassLoader());
+
         channel.call(new SlaveInitializer());
-        channel.call(new WindowsSlaveInstaller(remoteFs));
         for (ComputerListener cl : ComputerListener.all())
             cl.preOnline(this,channel,root,taskListener);
 
@@ -359,11 +462,15 @@ public class SlaveComputer extends Computer {
             numRetryAttempt = 0;
             this.channel = channel;
             defaultCharset = Charset.forName(defaultCharsetName);
+
+            synchronized (statusChangeLock) {
+                statusChangeLock.notifyAll();
+            }
         }
         for (ComputerListener cl : ComputerListener.all())
             cl.onOnline(this,taskListener);
         log.println("Slave successfully connected and online");
-        Hudson.getInstance().getQueue().scheduleMaintenance();
+        Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
 
     @Override
@@ -389,10 +496,10 @@ public class SlaveComputer extends Computer {
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
-            checkPermission(Hudson.ADMINISTER);
+            checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
-                    Hudson.getAuthentication().getName(),
+                    Jenkins.getAuthentication().getName(),
                     offlineMessage!=null ? " : " + offlineMessage : "")
             ));
         }
@@ -415,7 +522,7 @@ public class SlaveComputer extends Computer {
 
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(channel!=null) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            req.getView(this,"already-launched.jelly").forward(req, rsp);
             return;
         }
 
@@ -439,17 +546,55 @@ public class SlaveComputer extends Computer {
      * Serves jar files for JNLP slave agents.
      *
      * @deprecated since 2008-08-18.
-     *      This URL binding is no longer used and moved up directly under to {@link Hudson},
+     *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
     }
 
+    @WebMethod(name="slave-agent.jnlp")
+    public void doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
+        RequestDispatcher view = req.getView(this, "slave-agent.jnlp.jelly");
+        if ("true".equals(req.getParameter("encrypt"))) {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
+                @Override public ServletOutputStream getOutputStream() throws IOException {
+                    return new FilterServletOutputStream(baos);
+                }
+                @Override public PrintWriter getWriter() throws IOException {
+                    throw new IllegalStateException();
+                }
+            });
+            view.forward(req, temp);
+
+            byte[] iv = new byte[128/8];
+            new SecureRandom().nextBytes(iv);
+
+            byte[] jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName().getBytes("UTF-8"));
+            SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
+            byte[] encrypted;
+            try {
+                Cipher c = Secret.getCipher("AES/CFB8/NoPadding");
+                c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+                encrypted = c.doFinal(baos.toByteArray());
+            } catch (GeneralSecurityException x) {
+                throw new IOException2(x);
+            }
+            res.setContentType("application/octet-stream");
+            res.getOutputStream().write(iv);
+            res.getOutputStream().write(encrypted);
+        } else {
+            checkPermission(CONNECT);
+            view.forward(req, res);
+        }
+    }
+
     @Override
     protected void kill() {
         super.kill();
         closeChannel();
+        IOUtils.closeQuietly(log);
     }
 
     public RetentionStrategy getRetentionStrategy() {
@@ -471,9 +616,9 @@ public class SlaveComputer extends Computer {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
+            for (ComputerListener cl : ComputerListener.all())
+                cl.onOffline(this);
         }
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onOffline(this);
     }
 
     @Override
@@ -506,6 +651,20 @@ public class SlaveComputer extends Computer {
      */
     protected ComputerLauncher grabLauncher(Node node) {
         return ((Slave)node).getLauncher();
+    }
+
+    /**
+     * Get the slave version
+     */
+    public String getSlaveVersion() throws IOException, InterruptedException {
+        return channel.call(new SlaveVersion());
+    }
+
+    /**
+     * Get the OS description.
+     */
+    public String getOSDescription() throws IOException, InterruptedException {
+        return channel.call(new DetectOS()) ? "Unix" : "Windows";
     }
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
@@ -544,12 +703,11 @@ public class SlaveComputer extends Computer {
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
-            Logger logger = Logger.getLogger("hudson");
-            for (Handler h : logger.getHandlers()) {
+            for (Handler h : LOGGER.getHandlers()) {
                 if (h.getClass().getName().equals(SLAVE_LOG_HANDLER.getClass().getName()))
-                    logger.removeHandler(h);
+                    LOGGER.removeHandler(h);
             }
-            logger.addHandler(SLAVE_LOG_HANDLER);
+            LOGGER.addHandler(SLAVE_LOG_HANDLER);
 
             // remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
             try {
@@ -563,6 +721,7 @@ public class SlaveComputer extends Computer {
             return null;
         }
         private static final long serialVersionUID = 1L;
+        private static final Logger LOGGER = Logger.getLogger("hudson");
     }
 
     /**
@@ -575,7 +734,7 @@ public class SlaveComputer extends Computer {
      * @since 1.362
      */
     public static VirtualChannel getChannelToMaster() {
-        if (Hudson.getInstance()!=null)
+        if (Jenkins.getInstance()!=null)
             return MasterComputer.localChannel;
 
         // if this method is called from within the slave computation thread, this should work

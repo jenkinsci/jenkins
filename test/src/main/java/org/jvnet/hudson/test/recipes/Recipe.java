@@ -34,13 +34,15 @@ import java.lang.annotation.Annotation;
 import java.io.File;
 
 import junit.framework.TestCase;
-import hudson.model.Hudson;
+import org.jvnet.hudson.test.JenkinsRecipe;
 
 
 /**
  * Meta-annotation for recipe annotations, which controls
  * the test environment set up.
  *
+ * This is JUnit3 version of {@link JenkinsRecipe}
+ * 
  * @author Kohsuke Kawaguchi
  */
 @Retention(RUNTIME)
@@ -61,14 +63,14 @@ public @interface Recipe {
      * @param <T>
      *      The recipe annotation associated with this runner.
      */
-    public abstract class Runner<T extends Annotation> {
+    abstract class Runner<T extends Annotation> {
         /**
          * Called during {@link TestCase#setUp()} to prepare the test environment.
          */
         public void setup(HudsonTestCase testCase, T recipe) throws Exception {}
 
         /**
-         * Called right before {@link Hudson#Hudson(File, ServletContext)} is invoked
+         * Called right before {@link jenkins.model.Jenkins#Hudson(File, ServletContext)} is invoked
          * to decorate the hudson home directory.
          */
         public void decorateHome(HudsonTestCase testCase, File home) throws Exception {}

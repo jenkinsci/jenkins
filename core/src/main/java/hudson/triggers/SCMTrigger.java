@@ -31,7 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
@@ -73,9 +73,28 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class SCMTrigger extends Trigger<SCMedItem> {
-    @DataBoundConstructor
+    
+    private boolean ignorePostCommitHooks;
+    
     public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+        this(scmpoll_spec, false);
+    }
+    
+    @DataBoundConstructor
+    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ANTLRException {
         super(scmpoll_spec);
+        this.ignorePostCommitHooks = ignorePostCommitHooks;
+    }
+    
+    /**
+     * This trigger wants to ignore post-commit hooks.
+     * <p>
+     * SCM plugins must respect this and not run this trigger for post-commit notifications.
+     * 
+     * @since 1.493
+     */
+    public boolean isIgnorePostCommitHooks() {
+        return this.ignorePostCommitHooks;
     }
 
     @Override
@@ -91,7 +110,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
-        if(Hudson.getInstance().isQuietingDown())
+        if(Jenkins.getInstance().isQuietingDown())
             return; // noop
 
         DescriptorImpl d = getDescriptor();
@@ -285,7 +304,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {
@@ -329,7 +348,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getIconFileName() {
-            return "clipboard.gif";
+            return "clipboard.png";
         }
 
         public String getDisplayName() {
@@ -425,18 +444,18 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                         logger.println("No changes");
                     return result;
                 } catch (Error e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling"));
-                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } catch (RuntimeException e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling"));
-                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {
                     listener.close();
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,"Failed to record SCM polling",e);
+                LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                 return false;
             }
         }

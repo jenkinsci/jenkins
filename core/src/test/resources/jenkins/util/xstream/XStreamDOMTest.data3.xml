@@ -1,0 +1,8 @@
+<foo abc="def">
+  <bar>
+    <body>
+      <bar_-bar></bar_-bar><!-- unescaped form is bar$bar -->
+      <zot__bar>abc</zot__bar><!-- unescaped form is zot_bar -->
+    </body>
+  </bar>
+</foo>

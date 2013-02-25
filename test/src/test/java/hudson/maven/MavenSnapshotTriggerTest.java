@@ -4,6 +4,8 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
+ * Tests that Maven jobs are triggered, when snapshot dependencies of them were build.
+ *
  * @author Andrew Bayer
  */
 public class MavenSnapshotTriggerTest extends HudsonTestCase {
@@ -30,7 +32,7 @@ public class MavenSnapshotTriggerTest extends HudsonTestCase {
         buildAndAssertSuccess(projA);
 
         // at this point runB2 should be in the queue, so wait until that completes.
-        waitUntilNoActivity();
+        waitUntilNoActivityUpTo(90*1000);
         assertEquals("Expected most recent build of second project to be #2", 2, projB.getLastBuild().getNumber());
     }
 
@@ -66,7 +68,7 @@ public class MavenSnapshotTriggerTest extends HudsonTestCase {
 
         buildAndAssertSuccess(projA);
 
-        waitUntilNoActivity();  // wait until dependency build trickles down
+        waitUntilNoActivityUpTo(90*1000);  // wait until dependency build trickles down
         assertEquals("Expected most recent build of second project to be #2", 2, projB.getLastBuild().getNumber());
         assertEquals("Expected most recent build of third project to be #2", 2, projC.getLastBuild().getNumber());
     }

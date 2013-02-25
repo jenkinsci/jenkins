@@ -30,7 +30,7 @@ import com.sun.jna.win32.StdCallLibrary;
  * @author Kohsuke Kawaguchi
  */
 public interface Shell32 extends StdCallLibrary {
-    public static final Shell32 INSTANCE = (Shell32) Native.loadLibrary("shell32", Shell32.class);
+    Shell32 INSTANCE = (Shell32) Native.loadLibrary("shell32", Shell32.class);
 
     /**
      * @return true if successful. Otherwise false.

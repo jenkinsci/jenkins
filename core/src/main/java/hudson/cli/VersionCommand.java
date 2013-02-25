@@ -24,10 +24,10 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
- * Shows the version.
+ * Retrieves the current version.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -35,12 +35,12 @@ import hudson.model.Hudson;
 public class VersionCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Shows the Hudson version";
+        return Messages.VersionCommand_ShortDescription();
     }
 
     protected int run() {
         // CLICommand.main checks Hudson.READ permission.. no other check needed.
-        stdout.println(Hudson.VERSION);
+        stdout.println(Jenkins.VERSION);
         return 0;
     }
 }

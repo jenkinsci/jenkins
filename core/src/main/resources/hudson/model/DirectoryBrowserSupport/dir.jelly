@@ -23,6 +23,7 @@ THE SOFTWARE.
 -->
 
 <!-- Show files in the workspace -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
@@ -31,14 +32,14 @@ THE SOFTWARE.
       <!-- parent path -->
         <div class="parentPath">
           <form action="${backPath}" method="get">
-            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt=""/></a>
+            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt="" height="48" width="48"/></a>
             <j:forEach var="p" items="${parentPath}">
-              <a href="${p.href}">${h.xmlEscape(p.title)}</a>
+              <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <img src="${imagesURL}/16x16/go-next.gif" style="vertical-align:middle; cursor:pointer" alt="[submit]"
-                onclick="this.parentNode.submit()"/>
+            <img src="${imagesURL}/16x16/go-next.png" style="vertical-align:middle; cursor:pointer" alt="[submit]"
+                onclick="this.parentNode.submit()" height="16" width="16"/>
           </form>
         </div>
         <j:choose>
@@ -51,17 +52,17 @@ THE SOFTWARE.
                 <j:set var="x" value="${f.get(f.size()-1)}"/>
                 <tr>
                   <td>
-                    <img src="${imagesURL}/16x16/${x.iconName}" alt=""/>
+                    <img src="${imagesURL}/16x16/${x.iconName}" alt="" height="16" width="16"/>
                   </td>
                   <td>
                     <j:forEach var="t" items="${f}" varStatus="st">
                     
                       <j:choose>
                         <j:when test="${x.readable}">
-                          <a href="${t.href}">${h.xmlEscape(t.title)}</a>
+                          <a href="${t.href}">${t.title}</a>
                         </j:when>
                         <j:otherwise>
-                          ${h.xmlEscape(t.title)}
+                          ${t.title}
                         </j:otherwise>
                       </j:choose>
                       
@@ -70,12 +71,12 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
-                      ${x.getSize()}
+                      ${h.humanReadableByteSize(x.getSize())}
                     </td>
                     <td>
                       <j:if test="${x.readable}">
                         <a href="${x.href}/*fingerprint*/">
-                          <img src="${imagesURL}/16x16/fingerprint.gif" alt="fingerprint" />
+                          <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
                         </a>
                         <st:nbsp/>
                         <a href="${x.href}/*view*/">${%view}</a>
@@ -88,7 +89,7 @@ THE SOFTWARE.
                 <td style="text-align:right;" colspan="3">
                   <div style="margin-top: 1em;">
                     <a href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                      <img src="${imagesURL}/16x16/package.gif"/>
+                      <img src="${imagesURL}/16x16/package.png" height="16" width="16"/>
                       (${%all files in zip})
                     </a>
                   </div>

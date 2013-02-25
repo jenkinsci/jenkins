@@ -2,8 +2,8 @@ package hudson.cli;
 
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
-import hudson.model.Hudson;
-import hudson.model.Hudson.MasterComputer;
+import jenkins.model.Jenkins;
+import jenkins.model.Jenkins.MasterComputer;
 import hudson.os.PosixAPI;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -56,21 +56,21 @@ public class ClientAuthenticationCache implements Serializable {
     }
 
     /**
-     * Gets the persisted authentication for this Hudson.
+     * Gets the persisted authentication for this Jenkins.
      *
-     * @return {@link Hudson#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
+     * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
     public Authentication get() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         Secret userName = Secret.decrypt(props.getProperty(getPropertyKey()));
-        if (userName==null) return Hudson.ANONYMOUS; // failed to decrypt
+        if (userName==null) return Jenkins.ANONYMOUS; // failed to decrypt
         try {
-            UserDetails u = h.getSecurityRealm().loadUserByUsername(userName.toString());
-            return new UsernamePasswordAuthenticationToken(u.getUsername(), u.getPassword(), u.getAuthorities());
+            UserDetails u = h.getSecurityRealm().loadUserByUsername(userName.getPlainText());
+            return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (AuthenticationException e) {
-            return Hudson.ANONYMOUS;
+            return Jenkins.ANONYMOUS;
         } catch (DataAccessException e) {
-            return Hudson.ANONYMOUS;
+            return Jenkins.ANONYMOUS;
         }
     }
 
@@ -78,7 +78,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Computes the key that identifies this Hudson among other Hudsons that the user has a credential for.
      */
     private String getPropertyKey() {
-        String url = Hudson.getInstance().getRootUrl();
+        String url = Jenkins.getInstance().getRootUrl();
         if (url!=null)  return url;
         return Secret.fromString("key").toString();
     }
@@ -87,7 +87,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Persists the specified authentication.
      */
     public void set(Authentication a) throws IOException, InterruptedException {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
 
         // make sure that this security realm is capable of retrieving the authentication by name,
         // as it's not required.

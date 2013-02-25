@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[]
+  <st:documentation> <![CDATA[
     Repeatable blocks used to present UI where the user can configure multiple entries
     of the same kind (see the Java installations configuration in the system config.)
 
@@ -80,6 +81,9 @@ THE SOFTWARE.
     <st:attribute name="items">
       The item collection to loop over. Required unless @field is given. 
     </st:attribute>
+    <st:attribute name="default">
+      Use this collection for items if items or @field is null 
+    </st:attribute>
     <st:attribute name="noAddButton">
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
       When you use this attribute,
@@ -99,6 +103,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <!--
     If bi-directional binding, fill in the rest of attributes automatically
   -->
@@ -106,14 +111,14 @@ THE SOFTWARE.
     <j:when test="${attrs.field!=null}">
       <j:set var="name" value="${field}"/>
       <j:set var="var" value="instance"/>
-      <j:set var="items" value="${instance[name]}"/>
+      <j:set var="items" value="${instance[name] ?: attrs.default}"/>
 
       <!-- and expose update descriptor to the body of this tag -->
-      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptor}" />
+      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptorOrDie}" />
     </j:when>
     <j:otherwise>
       <j:set var="name" value="${attrs.name?:attrs.var}"/>
-      <j:set var="items" value="${attrs.items}"/>
+      <j:set var="items" value="${attrs.items ?: attrs.default}"/>
     </j:otherwise>
   </j:choose>
 

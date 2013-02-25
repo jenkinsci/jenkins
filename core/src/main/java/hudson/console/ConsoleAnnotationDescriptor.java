@@ -26,7 +26,7 @@ package hudson.console;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -89,6 +89,6 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      * Returns all the registered {@link ConsoleAnnotationDescriptor} descriptors.
      */
     public static DescriptorExtensionList<ConsoleNote<?>,ConsoleAnnotationDescriptor> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(ConsoleNote.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(ConsoleNote.class);
     }
 }

@@ -23,6 +23,7 @@
  */
 package org.jvnet.hudson.test;
 
+import hudson.cli.CLICommand;
 import junit.framework.TestSuite;
 
 import java.io.File;
@@ -51,10 +52,18 @@ public class PluginAutomaticTestBuilder {
         if (params.containsKey("outputDirectory") // shouldn't happen, but be defensive
         ||  notSkipTests("JellyTest")) {
             File outputDirectory = new File((String)params.get("outputDirectory"));
-            suite.addTest(JellyTestSuiteBuilder.build(outputDirectory));
+            suite.addTest(JellyTestSuiteBuilder.build(outputDirectory,toBoolean(params.get("requirePI"))));
         }
-        
+
+        suite.addTestSuite(CliSanityTest.class);
+
         return suite;
+    }
+
+    private static boolean toBoolean(Object requirePI) {
+        if (requirePI==null)    return false;
+        if (requirePI instanceof Boolean)   return (Boolean)requirePI;
+        return Boolean.parseBoolean(requirePI.toString());
     }
 
     /**
@@ -62,5 +71,11 @@ public class PluginAutomaticTestBuilder {
      */
     private static boolean notSkipTests(String propertyName) {
         return !Boolean.getBoolean("hpiTest.skip"+propertyName);
+    }
+
+    public static class CliSanityTest extends HudsonTestCase {
+        public void testCliSanity() {
+            CLICommand.clone("help");
+        }
     }
 }

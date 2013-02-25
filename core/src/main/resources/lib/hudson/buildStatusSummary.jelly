@@ -22,14 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
     <j:set var="summary" value="${build.buildStatusSummary}"/>
     <j:choose>
         <j:when test="${summary.isWorse}">
-          <font color='red'>${summary.message}</font>
+          <font color='red'><j:out value="${summary.message}"/></font>
         </j:when>
         <j:otherwise>
-          ${summary.message}
+          <j:out value="${summary.message}"/>
         </j:otherwise>
     </j:choose>
 </j:jelly>

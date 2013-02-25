@@ -27,6 +27,8 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 
 import java.util.List;
 
@@ -36,7 +38,7 @@ import java.util.List;
  * <p>
  * This is a place for exposing features that are only meant for system admins
  * (whereas features that are meant for Hudson users at large should probably
- * be added to {@link Hudson#getActions()}.) 
+ * be added to {@link Jenkins#getActions()}.)
  *
  * <p>
  * To register a new instance, put {@link Extension} on your implementation class.
@@ -74,7 +76,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      *
      * <p>
      * In case of {@link ManagementLink}, this value is put straight into the href attribute,
-     * so relative paths are interpreted against the root {@link Hudson} object.
+     * so relative paths are interpreted against the root {@link Jenkins} object.
      */
     public abstract String getUrlName();
 
@@ -89,6 +91,13 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * All regsitered instances.
      */
     public static ExtensionList<ManagementLink> all() {
-        return Hudson.getInstance().getExtensionList(ManagementLink.class);
+        return Jenkins.getInstance().getExtensionList(ManagementLink.class);
+    }
+
+    /**
+     * @return permission required for user to access this management link, in addition to {@link Jenkins.ADMINISTER}
+     */
+    public Permission getRequiredPermission() {
+        return null;
     }
 }

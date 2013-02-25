@@ -42,7 +42,7 @@ public class SetBuildResultCommand extends CommandDuringBuild {
 
     @Override
     public String getShortDescription() {
-        return "Sets the result of the current build. Works only if invoked from within a build.";
+        return Messages.SetBuildResultCommand_ShortDescription();
     }
 
     @Override

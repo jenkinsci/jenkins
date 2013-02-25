@@ -25,29 +25,31 @@ package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
-import hudson.util.ColorPalette;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * {@link LoadStatistics} for the entire system (the master and all the slaves combined.)
- *
- * <p>
- * {@link #computeQueueLength()} and {@link #queueLength} counts those tasks
- * that are unassigned to any node, whereas {@link #totalQueueLength}
- * tracks the queue length including tasks that are assigned to a specific node.
+ * {@link LoadStatistics} for the entire system (the master and all the slaves combined),
+ * and all the jobs that are running on it.
  *
  * @author Kohsuke Kawaguchi
- * @see Hudson#overallLoad
+ * @see Jenkins#overallLoad
+ * @see UnlabeldLoadStatistics
  */
 public class OverallLoadStatistics extends LoadStatistics {
     /**
      * Number of total {@link Queue.BuildableItem}s that represents blocked builds.
+     *
+     * @deprecated as of 1.467
+     *      Use {@link #queueLength}. Left as an alias here for backward compatibility.
      */
     @Exported
-    public final MultiStageTimeSeries totalQueueLength = new MultiStageTimeSeries(
-            Messages._LoadStatistics_Legends_QueueLength(), ColorPalette.GREY, 0,DECAY);
+    @Restricted(NoExternalUse.class)
+    public final MultiStageTimeSeries totalQueueLength = queueLength;
 
-    /*package*/ OverallLoadStatistics() {
+    public OverallLoadStatistics() {
         super(0,0);
     }
 
@@ -63,7 +65,7 @@ public class OverallLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Hudson.getInstance().getQueue().countBuildableItemsFor(null);
+        return Jenkins.getInstance().getQueue().countBuildableItems();
     }
 
     /**
@@ -71,6 +73,6 @@ public class OverallLoadStatistics extends LoadStatistics {
      * not {@link #queueLength}, which just shows jobs that are to be run on the master. 
      */
     protected TrendChart createOverallTrendChart(TimeScale timeScale) {
-        return MultiStageTimeSeries.createTrendChart(timeScale,busyExecutors,totalExecutors,totalQueueLength);
+        return MultiStageTimeSeries.createTrendChart(timeScale,busyExecutors,totalExecutors,queueLength);
     }
 }

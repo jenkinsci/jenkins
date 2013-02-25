@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Used by buildHistory.jelly to lazily fetch the complete build records.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <l:ajax>
     <j:set var="all" value="${true}"/>

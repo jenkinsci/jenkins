@@ -32,7 +32,7 @@ import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import java.io.IOException;
 
 /**
- * Model object used to display "Hudson is loading data".
+ * Model object used to display "Jenkins is loading data".
  *
  * Set this object to {@link ServletContext#setAttribute(String, Object)} "app" while
  * the loading activity is taking place.

@@ -3,6 +3,8 @@ The MIT License
 
 Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
+Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -25,6 +27,7 @@ THE SOFTWARE.
 <!--
   Displays the console output
 -->
+<?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName} Console" norefresh="true">
     <st:include page="sidepanel.jelly" />
@@ -32,14 +35,9 @@ THE SOFTWARE.
       <t:buildCaption>
         ${%Console Output}
       </t:buildCaption>
-      <l:rightspace>
-        <a href="consoleText">
-          <img src="${imagesURL}/24x24/document.gif" alt="" />${%View as plain text}
-        </a>
-      </l:rightspace>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
-      <j:set var="offset" value="${empty(consoleFull) ? it.logFile.length()-threshold*1024 : 0}" />
+      <j:set var="offset" value="${empty(consoleFull) ? it.logText.length()-threshold*1024 : 0}" />
       <j:choose>
         <j:when test="${offset > 0}">
           ${%skipSome(offset/1024,"consoleFull")}

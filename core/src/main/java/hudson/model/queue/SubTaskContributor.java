@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +50,6 @@ public abstract class SubTaskContributor implements ExtensionPoint {
      * All registered {@link MemberExecutionUnitContributor} instances.
      */
     public static ExtensionList<SubTaskContributor> all() {
-        return Hudson.getInstance().getExtensionList(SubTaskContributor.class);
+        return Jenkins.getInstance().getExtensionList(SubTaskContributor.class);
     }
 }

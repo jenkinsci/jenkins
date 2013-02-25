@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2010, Alan Harder
+ * Copyright (c) 2010-2011, Alan Harder
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,14 @@
  */
 package hudson.matrix;
 
+import hudson.model.Item;
+import hudson.security.AuthorizationMatrixProperty;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
+import java.util.Collections;
+import org.acegisecurity.context.SecurityContextHolder;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * @author Alan Harder
@@ -40,5 +47,32 @@ public class MatrixTest extends HudsonTestCase {
         assertTrue("Invalid: " + mc.getUrl(),
                    "job/matrix%20test/foo%20bar=baz%20bat/".equals(mc.getUrl())
                    || "job/matrix%20test/./foo%20bar=baz%20bat/".equals(mc.getUrl()));
+    }
+    
+    /**
+     * Test that project level permissions apply to child configurations as well.
+     */
+    @Bug(9293)
+    public void testConfigurationACL() throws Exception {
+        jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy());
+        MatrixProject mp = createMatrixProject();
+        mp.setAxes(new AxisList(new Axis("foo", "a", "b")));
+        MatrixConfiguration mc = mp.getItem("foo=a");
+        assertNotNull(mc);
+        SecurityContextHolder.clearContext();
+        assertFalse(mc.getACL().hasPermission(Item.READ));
+        mp.addProperty(new AuthorizationMatrixProperty(
+                Collections.singletonMap(Item.READ, Collections.singleton("anonymous"))));
+        // Project-level permission should apply to single configuration too:
+        assertTrue(mc.getACL().hasPermission(Item.READ));
+    }
+
+    public void testApi() throws Exception {
+        MatrixProject project = createMatrixProject();
+        project.setAxes(new AxisList(
+                new Axis("FOO", "abc", "def"),
+                new Axis("BAR", "uvw", "xyz")));
+        XmlPage xml = new WebClient().goToXml(project.getUrl() + "api/xml");
+        assertEquals(4, xml.getByXPath("//matrixProject/activeConfiguration").size());
     }
 }

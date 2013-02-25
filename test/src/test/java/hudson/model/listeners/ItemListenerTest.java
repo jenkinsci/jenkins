@@ -56,12 +56,17 @@ public class ItemListenerTest extends HudsonTestCase {
     public void testOnCreatedViaCLI() throws Exception {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buf);
-        new CLI(getURL()).execute(Arrays.asList("create-job","testJob"),
-                 new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
-                    + "<buildWrappers/></project>").getBytes()),
-                out, out);
-        out.flush();
-        assertNotNull("job should be created: " + buf, hudson.getItem("testJob"));
-        assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
+        CLI cli = new CLI(getURL());
+        try {
+            cli.execute(Arrays.asList("create-job", "testJob"),
+                    new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
+                            + "<buildWrappers/></project>").getBytes()),
+                    out, out);
+            out.flush();
+            assertNotNull("job should be created: " + buf, jenkins.getItem("testJob"));
+            assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
+        } finally {
+            cli.close();
+        }
     }
 }

@@ -24,7 +24,6 @@
 package hudson.widgets;
 
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
 
 /**
  * Box to be rendered in the side panel.
@@ -36,7 +35,7 @@ import hudson.model.Hudson;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.146
- * @see Hudson#getWidgets() 
+ * @see jenkins.model.Jenkins#getWidgets()
  */
 public abstract class Widget implements ExtensionPoint {
     /**

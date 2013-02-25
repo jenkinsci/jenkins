@@ -45,6 +45,16 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         this(name, defaultValue, null);
     }
 
+    @Override
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        if (defaultValue instanceof StringParameterValue) {
+            StringParameterValue value = (StringParameterValue) defaultValue;
+            return new StringParameterDefinition(getName(), value.value, getDescription());
+        } else {
+            return this;
+        }
+    }
+
     public String getDefaultValue() {
         return defaultValue;
     }

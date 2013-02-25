@@ -28,6 +28,7 @@ import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
 import hudson.views.ViewsTabBar;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -50,6 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <p>
  * Until this class is sufficiently stable, there's no need for l10n.
+ * TODO: use ViewGroupMixIn
  *
  * @author Kohsuke Kawaguchi
  */
@@ -89,7 +91,7 @@ public class TreeView extends View implements ViewGroup {
      * concurrent modification issue.
      */
     public synchronized List<TopLevelItem> getItems() {
-        return Hudson.getInstance().getItems();
+        return Jenkins.getInstance().getItems();
 //        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
 //        for (String name : jobNames) {
 //            TopLevelItem item = Hudson.getInstance().getItem(name);
@@ -104,13 +106,17 @@ public class TreeView extends View implements ViewGroup {
 //        return jobNames.contains(item.getName());
     }
 
-    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = Hudson.getInstance().doCreateItem(req, rsp);
-        if(item!=null) {
-            jobNames.add(item.getName());
-            owner.save();
+    public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup) {
+            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            if(item!=null) {
+                jobNames.add(item.getName());
+                owner.save();
+            }
+            return item;
         }
-        return item;
+        return null;
     }
 
     @Override
@@ -144,12 +150,12 @@ public class TreeView extends View implements ViewGroup {
         return null;
     }
 
-    public void onViewRenamed(View view, String oldName, String newName) {
-        // noop
+    public View getPrimaryView() {
+        return null;
     }
 
-    public void save() throws IOException {
-        owner.save();
+    public void onViewRenamed(View view, String oldName, String newName) {
+        // noop
     }
 
     public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
@@ -174,6 +180,15 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Hudson.getInstance().getViewsTabBar();
+        return Jenkins.getInstance().getViewsTabBar();
     }
+
+    public ItemGroup<? extends TopLevelItem> getItemGroup() {
+        return getOwnerItemGroup();
+    }
+
+    public List<Action> getViewActions() {
+        return owner.getViewActions();
+    }
+
 }

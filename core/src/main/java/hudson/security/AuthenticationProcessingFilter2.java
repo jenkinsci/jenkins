@@ -31,11 +31,13 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import hudson.Util;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
- * {@link AuthenticationProcessingFilter} with a change for Hudson so that
+ * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
  * we can pick up the hidden "from" form field defined in <tt>login.jelly</tt>
  * to send the user back to where he came from, after a successful authentication.
  * 
@@ -49,6 +51,9 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 
         if (targetUrl == null)
             return getDefaultTargetUrl();
+
+        if (Util.isAbsoluteUri(targetUrl))
+            return "."; // avoid open redirect
 
         // URL returned from determineTargetUrl() is resolved against the context path,
         // whereas the "from" URL is resolved against the top of the website, so adjust this.
@@ -70,6 +75,17 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 		String whereFrom = request.getParameter("from");
 		request.getSession().setAttribute("from", whereFrom);
 		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
+    }
+
+    @Override
+    protected void onSuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
+        super.onSuccessfulAuthentication(request,response,authResult);
+        // make sure we have a session to store this successful authentication, given that we no longer
+        // let HttpSessionContextIntegrationFilter2 to create sessions.
+        // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
+        // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
+        // doFilter method.
+        request.getSession();
     }
 
     /**

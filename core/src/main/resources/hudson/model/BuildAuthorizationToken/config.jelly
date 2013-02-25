@@ -27,6 +27,7 @@ THE SOFTWARE.
   Pseudo trigger configuration.
   Note that it is the object that owns BuildAuthorizationToken
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${app.useSecurity}">
     <f:optionalBlock name="pseudoRemoteTrigger"

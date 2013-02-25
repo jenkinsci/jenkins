@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <st:documentation>
     Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
     arbitrary items from the given list of descriptors, and configure them independently.
 
     The submission can be data-bound into List&lt;T> where T is the common base type for the describable instances.
+
+    For databinding use, please use &lt;f:repeatableHeteroProperty />
     
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
@@ -51,6 +54,21 @@ THE SOFTWARE.
       For each item, add a caption from descriptor.getDisplayName().
       This also activates drag&amp;drop (where the header is a grip), and help text support.
     </st:attribute>
+    <st:attribute name="oneEach">
+      If true, only allow up to one instance per descriptor.
+    </st:attribute>
+    <st:attribute name="menuAlign">
+      Menu alignment against the button. Defaults to tl-bl
+    </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
+    <st:attribute name="capture">
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -65,7 +83,7 @@ THE SOFTWARE.
             </td>
             <j:if test="${help!=null}">
               <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
+                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
               </td>
             </j:if>
           </tr>
@@ -74,10 +92,9 @@ THE SOFTWARE.
             <f:helpArea />
           </j:if>
         </j:if>
-        <!-- optional added to keep from breaking page rendering when
-        a descriptor doesn't have a config.jelly. -->
-        <st:include from="${descriptor}"
-                    page="${descriptor.configPage}" optional="true" />
+
+        <d:invokeBody/>
+
         <f:block>
           <div align="right">
             <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
@@ -85,34 +102,46 @@ THE SOFTWARE.
           </div>
         </f:block>
       </table>
-      <input type="hidden" name="kind" value="${descriptor.class.name}" />
+      <input type="hidden" name="kind" value="${descriptor.id}" />
     </d:tag>
   </d:taglib>
 
+  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
+
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container${hasHeader?' with-drag-drop':''}">
+  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" class="repeated-chunk">
-        <local:body deleteCaption="${attrs.deleteCaption}" />
+      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
+        <local:body deleteCaption="${attrs.deleteCaption}">
+          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+        </local:body>
       </div>
     </j:forEach>
 
     <div class="repeatable-insertion-point" />
+
     <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->
       <j:set var="instance" value="${null}" />
       <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
-        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}">
-          <local:body deleteCaption="${attrs.deleteCaption}" />
+        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
+          <j:set var="capture" value="${attrs.capture?:''}" />
+          <local:body deleteCaption="${attrs.deleteCaption}">
+            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
+              <l:ajax>
+                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+              </l:ajax>
+            </l:renderOnDemand>
+          </local:body>
         </div>
       </j:forEach>
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" />
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
   </div>
 </j:jelly>

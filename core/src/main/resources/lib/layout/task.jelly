@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
@@ -42,12 +43,23 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       Human readable text that follows the icon.
     </st:attribute>
+    <st:attribute name="enabled">
+      If specified, then this controls whether the task is enabled or not.
+    </st:attribute>
+    <st:attribute name="contextMenu" type="boolean">
+      If "false", remove this item from the context menu.
+    </st:attribute>
     <st:attribute name="permission">
       If specified, the link will be only displayed when the current user
       has the specified permission against the "it" object.
 
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
+    </st:attribute>
+    <st:attribute name="post" type="boolean">
+      If true, send a POST rather than a GET request.
+      (onclick supersedes this except in the context menu.)
+      (since 1.504)
     </st:attribute>
   </st:documentation>
 
@@ -69,14 +81,46 @@ THE SOFTWARE.
           <j:set target="${taskMatching.variables}" property="match" value="true"/>
         </j:if>
       </j:when>
+      <j:when test="${enabled==false}">
+        <div class="task disabled">
+          <span>
+            <img width="24" height="24" style="margin: 2px;" alt="" src="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
+          </span>
+          <st:nbsp />
+
+          <span>
+            <j:choose>
+              <j:when test="${match}">
+                <b>${title}</b>
+              </j:when>
+              <j:otherwise>
+                ${title}
+              </j:otherwise>
+            </j:choose>
+          </span>
+        </div>
+      </j:when>
       <j:otherwise>
         <div class="task">
-          <a href="${href}" onclick="${attrs.onclick}">
-            <img width="24" height="24" style="margin: 2px;" alt="" src="${rootURL}${icon.startsWith('images/') ? h.resourcePath : ''}/${icon}"/>
+          <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
+          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true') : null}
+
+          <j:if test="${attrs.onclick == null &amp;&amp; post}">
+              <script>
+                  function postRequest(a) {
+                      new Ajax.Request(a.href);
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
+                  }
+              </script>
+          </j:if>
+
+          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
+            <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
           </a>
           <st:nbsp />
 
-          <a href="${href}" onclick="${attrs.onclick}">
+          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
             <j:choose>
               <j:when test="${match}">
                 <b>${title}</b>

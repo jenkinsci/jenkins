@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
   <script type="text/javascript">
@@ -62,7 +63,7 @@ THE SOFTWARE.
             <a id="test-${f.fullName}-hidelink" style="display:none"
                href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
             <st:nbsp/>
-            <a href="${f.getRelativePathFrom(it)}"><st:out value="${f.fullName}"/></a>
+            <a href="${f.getRelativePathFrom(it)}" class="model-link"><st:out value="${f.fullName}"/></a>
             <st:nbsp/>
             <j:forEach var="badge" items="${f.testActions}">
               <st:include it="${badge}" page="badge.jelly" optional="true"/>
@@ -72,11 +73,11 @@ THE SOFTWARE.
             </div>
           </td>
           
-          <td class="pane" style="text-align:right;">
-            ${f.duration}
+          <td class="pane" style="text-align:right;" data="${f.duration}">
+            ${f.durationString}
           </td>
           <td class="pane" style="text-align:right;">
-            <a href="${rootURL}/${f.failedSinceRun.url}">${f.age}</a>
+            <a href="${rootURL}/${f.failedSinceRun.url}" class="model-link">${f.age}</a>
           </td>
         </tr>
       </j:forEach>
@@ -97,11 +98,12 @@ THE SOFTWARE.
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
       </tr>
       <tbody>
+        <j:set var="prevAll" value="${it.previousResult}" />
         <j:forEach var="p" items="${it.children}">
-          <j:set var="prev" value="${p.previousResult}" />
+          <j:set var="prev" value="${prevAll.findCorrespondingResult(p.id)}" />
           <tr>
             <td class="pane">
-              <a href="${p.safeName}/"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
+              <a href="${p.safeName}/" class="model-link"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
                 <st:nbsp/>
                 <j:forEach var="badge" items="${p.testActions}">
                   <st:include it="${badge}" page="badge.jelly" optional="true"/>
@@ -109,15 +111,15 @@ THE SOFTWARE.
             </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.failCount-prev.failCount}">
               ${h.getDiffString2(p.failCount-prev.failCount)}
             </td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.skipCount-prev.skipCount}">
               ${h.getDiffString2(p.skipCount-prev.skipCount)}
             </td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
-            <td class="pane" style="text-align:right">
+            <td class="pane" style="text-align:right" data="${p.totalCount-prev.totalCount}">
               ${h.getDiffString2(p.totalCount-prev.totalCount)}
             </td>
           </tr>

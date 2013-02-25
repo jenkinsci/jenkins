@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <table class="pane sortable" id="testresult">
@@ -39,13 +40,13 @@ THE SOFTWARE.
 	          <j:if test="${p != null}">
           <tr>
             <td class="pane">
-            	<a href="${app.rootUrl}${b.url}testReport${p.url}">${b.fullDisplayName}</a>
+            	<a href="${app.rootUrl}${b.url}testReport${p.url}" class="model-link">${b.fullDisplayName}</a>
 	          	<st:nbsp/>
 		        <j:forEach var="badge" items="${p.testActions}">
 		          <st:include it="${badge}" page="badge.jelly" optional="true"/>
 		        </j:forEach>
             </td>
-            <td class="pane" style="text-align:right">${p.description}</td>
+            <td class="pane" style="text-align:right"><j:out value="${p.description}"/></td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>

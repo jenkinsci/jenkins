@@ -42,6 +42,16 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = defaultValue;
     }
 
+    @Override
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        if (defaultValue instanceof BooleanParameterValue) {
+            BooleanParameterValue value = (BooleanParameterValue) defaultValue;
+            return new BooleanParameterDefinition(getName(), value.value, getDescription());
+        } else {
+            return this;
+        }
+    }
+
     public boolean isDefaultValue() {
         return defaultValue;
     }

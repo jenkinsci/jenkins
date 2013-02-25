@@ -71,7 +71,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("http://wiki.jenkins-ci.org/display/JENKINS/Running+Hudson+behind+Apache#RunningHudsonbehindApache-modproxywithHTTPS");
+            return new HttpRedirect("https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+setup+is+broken");
         }
     }
 }

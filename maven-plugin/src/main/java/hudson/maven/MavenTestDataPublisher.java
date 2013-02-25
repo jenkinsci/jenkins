@@ -65,7 +65,7 @@ public class MavenTestDataPublisher extends Recorder {
 		return BuildStepMonitor.STEP;
 	}
 
-	public boolean perform(AbstractBuild build, Launcher launcher,
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 
 		SurefireReport report = build.getAction(SurefireReport.class);

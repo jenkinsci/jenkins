@@ -24,8 +24,8 @@
 package hudson.slaves;
 
 
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;
@@ -39,6 +39,7 @@ import hudson.util.DescribableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -48,8 +49,9 @@ import org.apache.commons.io.FileUtils;
  */
 public class NodeListTest extends TestCase {
     static class DummyNode extends Node {
+        String nodeName = Long.toString(new Random().nextLong());
         public String getNodeName() {
-            throw new UnsupportedOperationException();
+            return nodeName;
         }
 
         public void setNodeName(String name) {
@@ -84,6 +86,10 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        public void setLabelString(String labelString) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
         public FilePath getWorkspaceFor(TopLevelItem item) {
             throw new UnsupportedOperationException();
         }
@@ -112,18 +118,16 @@ public class NodeListTest extends TestCase {
     }
 
     public void testSerialization() throws Exception {
-        NodeList nl = new NodeList();
-        nl.add(new DummyNode());
-        nl.add(new EphemeralNode());
+        NodeList nl = new NodeList(new DummyNode(), new EphemeralNode());
 
         File tmp = File.createTempFile("test","test");
         try {
-            XmlFile x = new XmlFile(Hudson.XSTREAM, tmp);
+            XmlFile x = new XmlFile(Jenkins.XSTREAM, tmp);
             x.write(nl);
 
             String xml = FileUtils.readFileToString(tmp);
             System.out.println(xml);
-            assertEquals(4,xml.split("\n").length);
+            assertEquals(6,xml.split("\n").length);
 
             NodeList back = (NodeList)x.read();
 

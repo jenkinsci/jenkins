@@ -23,14 +23,19 @@
  */
 package hudson.util;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
+import hudson.remoting.AsyncFutureImpl;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
+import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
@@ -78,6 +83,12 @@ public final class RemotingDiagnostics {
         return channel.call(new GetThreadDump());
     }
 
+    public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
+        if(channel==null)
+            return new AsyncFutureImpl<Map<String, String>>(Collections.singletonMap("N/A","offline"));
+        return channel.callAsync(new GetThreadDump());
+    }
+
     private static final class GetThreadDump implements Callable<Map<String,String>,RuntimeException> {
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<String,String>();
@@ -118,13 +129,19 @@ public final class RemotingDiagnostics {
         }
 
         public ClassLoader getClassLoader() {
-            return Hudson.getInstance().getPluginManager().uberClassLoader;
+            return Jenkins.getInstance().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl==null)       cl = Thread.currentThread().getContextClassLoader();
-            GroovyShell shell = new GroovyShell(cl);
+            CompilerConfiguration cc = new CompilerConfiguration();
+            cc.addCompilationCustomizers(new ImportCustomizer().addStarImports(
+                    "jenkins",
+                    "jenkins.model",
+                    "hudson",
+                    "hudson.model"));
+            GroovyShell shell = new GroovyShell(cl,new Binding(),cc);
 
             StringWriter out = new StringWriter();
             PrintWriter pw = new PrintWriter(out);
@@ -185,7 +202,7 @@ public final class RemotingDiagnostics {
 
         @WebMethod(name="heapdump.hprof")
         public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
-            owner.checkPermission(Hudson.ADMINISTER);
+            owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();

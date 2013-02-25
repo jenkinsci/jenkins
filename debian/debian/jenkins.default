@@ -8,6 +8,7 @@ JAVA=/usr/bin/java
 
 # arguments to pass to java
 #JAVA_ARGS="-Xmx256m"
+#JAVA_ARGS="-Djava.net.preferIPv4Stack=true" # make jenkins listen on IPv4 address
 
 PIDFILE=/var/run/jenkins/jenkins.pid
 
@@ -31,7 +32,7 @@ JENKINS_LOG=/var/log/jenkins/$NAME.log
 
 # OS LIMITS SETUP
 #   comment this out to observe /etc/security/limits.conf
-#   this is on by default because http://github.com/feniix/hudson/commit/d13c08ea8f5a3fa730ba174305e6429b74853927
+#   this is on by default because http://github.com/jenkinsci/jenkins/commit/2fb288474e980d0e7ff9c4a3b768874835a3e92e
 #   reported that Ubuntu's PAM configuration doesn't include pam_limits.so, and as a result the # of file
 #   descriptors are forced to 1024 regardless of /etc/security/limits.conf
 MAXOPENFILES=8192
@@ -42,12 +43,17 @@ HTTP_PORT=8080
 # port for AJP connector (disabled by default)
 AJP_PORT=-1
 
+# servlet context, important if you want to use apache proxying  
+PREFIX=/jenkins
+
 # arguments to pass to jenkins.
 # --javahome=$JAVA_HOME
 # --httpPort=$HTTP_PORT (default 8080; disable with -1)
 # --httpsPort=$HTTP_PORT
 # --ajp13Port=$AJP_PORT
 # --argumentsRealm.passwd.$ADMIN_USER=[password]
-# --argumentsRealm.$ADMIN_USER=admin
+# --argumentsRealm.roles.$ADMIN_USER=admin
 # --webroot=~/.jenkins/war
-JENKINS_ARGS="--webroot=/var/run/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT"
+# --prefix=$PREFIX
+
+JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --ajp13Port=$AJP_PORT"

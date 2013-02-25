@@ -22,27 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
+
       <!-- temporarily offline switch -->
-      <l:isAdmin>
       <div style="float:right">
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
-            <form method="post" action="toggleOffline">
-              <f:submit value="${%submit.temporarilyOffline}"  />
-            </form>
+            <l:hasPermission permission="${it.CONNECT}">
+              <form method="post" action="toggleOffline">
+                <f:submit value="${%submit.temporarilyOffline}"  />
+              </form>
+              <form method="post" action="setOfflineCause">
+              <f:submit value="${%submit.updateOfflineCause}"  />
+              </form>
+            </l:hasPermission>
           </j:when>
           <j:otherwise>
-            <form method="post" action="markOffline">
-              <f:submit value="${%submit.not.temporarilyOffline}"  />
-            </form>
+            <l:hasPermission permission="${it.DISCONNECT}">
+              <form method="post" action="markOffline">
+                <f:submit value="${%submit.not.temporarilyOffline}"  />
+              </form>
+            </l:hasPermission>
           </j:otherwise>
         </j:choose>
       </div>
-      </l:isAdmin>
 
       <h1>
         <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
@@ -64,6 +71,21 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
+     <!-- Display user which created this node -->
+     <j:set var="user" value="${app.getUser(it.node.userId)}"/>
+     <j:if test="${it.node.userId !=null and user!=null}">
+       <p>
+          ${%Created by} 
+         <j:choose>
+            <j:when test="${it.node.userId.equals('anonymous')}">
+             ${%anonymous user}
+            </j:when>
+           <j:otherwise>
+             <a href="${app.rootUrl}${user.url}">${user.displayName}</a>
+            </j:otherwise>
+         </j:choose>
+       </p>
+      </j:if>
 
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
@@ -71,7 +93,7 @@ THE SOFTWARE.
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className}" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+              <a class="${entry.className} model-link" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
               <st:nbsp/>
             </j:if>
           </j:forEach>
@@ -89,7 +111,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" />
+          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
         </j:otherwise>
       </j:choose>
 

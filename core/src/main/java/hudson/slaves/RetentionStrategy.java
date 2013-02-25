@@ -28,7 +28,11 @@ import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
+import hudson.model.Queue.*;
 import hudson.util.DescriptorList;
+import java.util.Collections;
+import java.util.HashMap;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.logging.Level;
@@ -81,7 +85,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Returns all the registered {@link RetentionStrategy} descriptors.
      */
     public static DescriptorExtensionList<RetentionStrategy<?>,Descriptor<RetentionStrategy<?>>> all() {
-        return (DescriptorExtensionList)Hudson.getInstance().getDescriptorList(RetentionStrategy.class);
+        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(RetentionStrategy.class);
     }
 
     /**
@@ -190,9 +194,44 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         public synchronized long check(SlaveComputer c) {
-            if (c.isOffline()) {
-                final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported()) {
+            if (c.isOffline() && c.isLaunchSupported()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
+                for (Computer o : Jenkins.getInstance().getComputers()) {
+                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle()) {
+                        final int idleExecutors = o.countIdle();
+                        if (idleExecutors>0)
+                            availableComputers.put(o, idleExecutors);
+                    }
+                }
+
+                boolean needComputer = false;
+                long demandMilliseconds = 0;
+                for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                    // can any of the currently idle executors take this task?
+                    // assume the answer is no until we can find such an executor
+                    boolean needExecutor = true;
+                    for (Computer o : Collections.unmodifiableSet(availableComputers.keySet())) {
+                        if (o.getNode().canTake(item) == null) {
+                            needExecutor = false;
+                            final int availableExecutors = availableComputers.remove(o);
+                            if (availableExecutors > 1) {
+                                availableComputers.put(o, availableExecutors - 1);
+                            } else {
+                                availableComputers.remove(o);
+                            }
+                            break;
+                        }
+                    }
+
+                    // this 'item' cannot be built by any of the existing idle nodes, but it can be built by 'c'
+                    if (needExecutor && c.getNode().canTake(item) == null) {
+                        demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
+                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        break;
+                    }
+                }
+
+                if (needComputer) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});

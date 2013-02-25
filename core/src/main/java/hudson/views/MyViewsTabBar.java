@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2010, Winston.Prakash@oracle.com
+ * Copyright (c) 2010, Winston.Prakash@oracle.com, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,15 @@
 package hudson.views;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import hudson.model.MyViewsProperty;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
@@ -51,10 +55,36 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      * Returns all the registered {@link ListViewColumn} descriptors.
      */
     public static DescriptorExtensionList<MyViewsTabBar, Descriptor<MyViewsTabBar>> all() {
-        return Hudson.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
+        return Jenkins.getInstance().<MyViewsTabBar, Descriptor<MyViewsTabBar>>getDescriptorList(MyViewsTabBar.class);
     }
 
     public MyViewsTabBarDescriptor getDescriptor() {
         return (MyViewsTabBarDescriptor)super.getDescriptor();
+    }
+
+    /**
+     * Configures {@link ViewsTabBar} in the system configuration.
+     *
+     * @author Kohsuke Kawaguchi
+     */
+    @Extension(ordinal=305)
+    public static class GlobalConfigurationImpl extends GlobalConfiguration {
+        public MyViewsTabBar getMyViewsTabBar() {
+            return Jenkins.getInstance().getMyViewsTabBar();
+        }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            // for compatibility reasons, the actual value is stored in Jenkins
+            Jenkins j = Jenkins.getInstance();
+
+            if (json.has("myViewsTabBar")) {
+                j.setMyViewsTabBar(req.bindJSON(MyViewsTabBar.class,json.getJSONObject("myViewsTabBar")));
+            } else {
+                j.setMyViewsTabBar(new DefaultMyViewsTabBar());
+            }
+
+            return true;
+        }
     }
 }

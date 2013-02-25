@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.ui.AccessDeniedHandler;
 import org.kohsuke.stapler.Stapler;
@@ -59,7 +59,7 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
             }
 
             public ServletContext getServletContext() {
-                return Hudson.getInstance().servletContext;
+                return Jenkins.getInstance().servletContext;
             }
 
             public String getInitParameter(String name) {
@@ -71,6 +71,6 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
             }
         });
 
-        stapler.invoke(req,rsp, Hudson.getInstance(),"/accessDenied");
+        stapler.invoke(req,rsp, Jenkins.getInstance(),"/accessDenied");
     }
 }

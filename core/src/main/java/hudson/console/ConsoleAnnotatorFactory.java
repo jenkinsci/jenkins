@@ -26,7 +26,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.util.TimeUnit2;
 import org.jvnet.tiger_types.Types;
@@ -127,6 +127,6 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * All the registered instances.
      */
     public static ExtensionList<ConsoleAnnotatorFactory> all() {
-        return Hudson.getInstance().getExtensionList(ConsoleAnnotatorFactory.class);
+        return Jenkins.getInstance().getExtensionList(ConsoleAnnotatorFactory.class);
     }
 }

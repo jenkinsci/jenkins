@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     Used in the &lt;l:side-panel> to draw a box with a title.
@@ -43,7 +44,7 @@ THE SOFTWARE.
   </st:documentation>
   <table class="pane" id="${attrs.id}">
     <tr><td class="pane-header" colspan="${width}">
-      ${title}
+      <j:out value="${title}"/>
     </td></tr>
     <d:invokeBody />
   </table>

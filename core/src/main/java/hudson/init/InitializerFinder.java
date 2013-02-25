@@ -23,6 +23,8 @@
  */
 package hudson.init;
 
+import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Task;
@@ -39,10 +41,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import hudson.model.Hudson;
 
 import static java.util.logging.Level.WARNING;
 
@@ -67,8 +68,7 @@ public class InitializerFinder extends TaskBuilder {
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
         List<Task> result = new ArrayList<Task>();
         for (Method e : Index.list(Initializer.class,cl,Method.class)) {
-            if (!discovered.add(e))
-                continue;   // already reported once
+            if (filter(e)) continue;   // already reported once
 
             if (!Modifier.isStatic(e.getModifiers()))
                 throw new IOException(e+" is not a static method");
@@ -82,19 +82,29 @@ public class InitializerFinder extends TaskBuilder {
     }
 
     /**
+     * Return true to ignore this method.
+     */
+    protected boolean filter(Method e) {
+        return !discovered.add(e);
+    }
+
+    /**
      * Obtains the display name of the given initialization task
      */
     protected String getDisplayNameOf(Method e, Initializer i) {
+        Class<?> c = e.getDeclaringClass();
+        String key = i.displayName();
+        if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
         try {
-            Class<?> c = e.getDeclaringClass();
-            ResourceBundleHolder rb = ResourceBundleHolder.get(c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
-
-            String key = i.displayName();
-            if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
+            ResourceBundleHolder rb = ResourceBundleHolder.get(
+                    c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
             return rb.format(key);
         } catch (ClassNotFoundException x) {
             LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+e.toString(),x);
-            return "";
+            return key;
+        } catch (MissingResourceException x) {
+            LOGGER.log(WARNING, "Could not find key '" + key + "' in " + c.getPackage().getName() + ".Messages", x);
+            return key;
         }
     }
 
@@ -119,8 +129,8 @@ public class InitializerFinder extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        if (type== Hudson.class)
-            return Hudson.getInstance();
+        if (type==Jenkins.class || type==Hudson.class)
+            return Jenkins.getInstance();
         throw new IllegalArgumentException("Unable to inject "+type);
     }
 

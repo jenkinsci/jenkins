@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc.
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jene Jasper, Yahoo! Inc., Seiji Sogabe
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,10 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.remoting.Callable;
+import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -37,6 +40,7 @@ import org.kohsuke.stapler.QueryParameter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * Executes a series of commands by using a shell.
@@ -96,8 +100,8 @@ public class Shell extends CommandInterpreter {
             args.add(script.getRemote());
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[args.size()]);
-        } else
-            return new String[] { getDescriptor().getShellOrDefault(),"-xe",script.getRemote()};
+        } else 
+            return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
     }
 
     protected String getContents() {
@@ -114,7 +118,7 @@ public class Shell extends CommandInterpreter {
     }
 
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * Shell executable, or null to default.
          */
@@ -132,12 +136,35 @@ public class Shell extends CommandInterpreter {
             return shell;
         }
 
+        /**
+         *  @deprecated 1.403
+         *      Use {@link #getShellOrDefault(hudson.remoting.VirtualChannel) }.
+         */
         public String getShellOrDefault() {
             if(shell==null)
                 return Functions.isWindows() ?"sh":"/bin/sh";
             return shell;
         }
 
+        public String getShellOrDefault(VirtualChannel channel) {
+            if (shell != null) 
+                return shell;
+
+            String interpreter = null;
+            try {
+                interpreter = channel.call(new Shellinterpreter());
+            } catch (IOException e) {
+                LOGGER.warning(e.getMessage());
+            } catch (InterruptedException e) {
+                LOGGER.warning(e.getMessage());
+            }
+            if (interpreter == null) {
+                interpreter = getShellOrDefault();
+            }
+
+            return interpreter;
+        }
+        
         public void setShell(String shell) {
             this.shell = Util.fixEmptyAndTrim(shell);
             save();
@@ -165,5 +192,17 @@ public class Shell extends CommandInterpreter {
             // Executable requires admin permission
             return FormValidation.validateExecutable(value); 
         }
+        
+        private static final class Shellinterpreter implements Callable<String, IOException> {
+
+            private static final long serialVersionUID = 1L;
+
+            public String call() throws IOException {
+                return Functions.isWindows() ? "sh" : "/bin/sh";
+            }
+        }
+        
     }
+    
+    private static final Logger LOGGER = Logger.getLogger(Shell.class.getName());
 }

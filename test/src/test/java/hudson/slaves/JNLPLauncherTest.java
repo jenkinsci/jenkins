@@ -28,13 +28,17 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
 import hudson.model.Computer;
+import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
-import org.jvnet.hudson.test.HudsonTestCase;
 
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
+
+import javax.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -67,8 +71,25 @@ public class JNLPLauncherTest extends HudsonTestCase {
     public void testHeadlessLaunch() throws Exception {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
+        // make sure that onOffline gets called just the right number of times
+        assertEquals(1, listener.offlined);
     }
 
+    @Inject
+    ListenerImpl listener;
+
+    @TestExtension
+    public static class ListenerImpl extends ComputerListener {
+        int offlined = 0;
+
+        @Override
+        public void onOffline(Computer c) {
+            offlined++;
+            assertTrue(c.isOffline());
+        }
+    }
+    
+    
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
@@ -86,8 +107,8 @@ public class JNLPLauncherTest extends HudsonTestCase {
         Proc proc = createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
 
         try {
-            // verify that the connection is established, up to 10 secs
-            for( int i=0; i<100; i++ ) {
+            // verify that the connection is established, up to 20 secs
+            for( int i=0; i<200; i++ ) {
                 Thread.sleep(100);
                 if(!c.isOffline())
                     break;
@@ -123,12 +144,12 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Adds a JNLP {@link Slave} to the system and returns it.
      */
     private Computer addTestSlave() throws Exception {
-        List<Slave> slaves = new ArrayList<Slave>(hudson.getSlaves());
+        List<Node> slaves = new ArrayList<Node>(jenkins.getNodes());
         File dir = Util.createTempDir();
         slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
-                new JNLPLauncher(), RetentionStrategy.INSTANCE));
-        hudson.setSlaves(slaves);
-        Computer c = hudson.getComputer("test");
+                new JNLPLauncher(), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
+        jenkins.setNodes(slaves);
+        Computer c = jenkins.getComputer("test");
         assertNotNull(c);
         return c;
     }

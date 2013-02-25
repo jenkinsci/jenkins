@@ -26,7 +26,7 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 
 /**
@@ -37,7 +37,7 @@ import hudson.model.Item;
  */
 public class ItemListener implements ExtensionPoint {
     /**
-     * Called after a new job is created and added to {@link Hudson},
+     * Called after a new job is created and added to {@link jenkins.model.Jenkins},
      * before the initial configuration page is provided.
      * <p>
      * This is useful for changing the default initial configuration of newly created jobs.
@@ -66,7 +66,7 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
-     * Called after all the jobs are loaded from disk into {@link Hudson}
+     * Called after all the jobs are loaded from disk into {@link jenkins.model.Jenkins}
      * object.
      */
     public void onLoaded() {
@@ -95,6 +95,22 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
+     * Called after a job has its configuration updated.
+     *
+     * @since 1.460
+     */
+    public void onUpdated(Item item) {
+    }
+
+    /**
+     * @since 1.446
+     *      Called at the begenning of the orderly shutdown sequence to
+     *      allow plugins to clean up stuff
+     */
+    public void onBeforeShutdown() {
+    }
+
+    /**
      * Registers this instance to Hudson and start getting notifications.
      *
      * @deprecated as of 1.286
@@ -108,7 +124,7 @@ public class ItemListener implements ExtensionPoint {
      * All the registered {@link ItemListener}s.
      */
     public static ExtensionList<ItemListener> all() {
-        return Hudson.getInstance().getExtensionList(ItemListener.class);
+        return Jenkins.getInstance().getExtensionList(ItemListener.class);
     }
 
     public static void fireOnCopied(Item src, Item result) {
@@ -119,5 +135,10 @@ public class ItemListener implements ExtensionPoint {
     public static void fireOnCreated(Item item) {
         for (ItemListener l : all())
             l.onCreated(item);
+    }
+
+    public static void fireOnUpdated(Item item) {
+        for (ItemListener l : all())
+            l.onUpdated(item);
     }
 }

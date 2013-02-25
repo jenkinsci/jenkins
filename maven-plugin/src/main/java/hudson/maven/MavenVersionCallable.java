@@ -24,6 +24,7 @@ package hudson.maven;
  * THE SOFTWARE.
  */
 
+import hudson.AbortException;
 import hudson.remoting.Callable;
 
 import java.io.File;
@@ -40,6 +41,7 @@ import org.kohsuke.stapler.framework.io.IOException2;
 public class MavenVersionCallable
     implements Callable<MavenInformation, IOException>
 {
+    private static final long serialVersionUID = -2644951622080930034L;
     
     private final String mavenHome;
     
@@ -53,7 +55,15 @@ public class MavenVersionCallable
     {
         try
         {
-            return MavenEmbedderUtils.getMavenVersion( new File(mavenHome) );
+            File home = new File(mavenHome);
+            if(!home.isDirectory())
+            {
+                if (home.exists())
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeIsNotDirectory(home));
+                else
+                    throw new AbortException(Messages.MavenVersionCallable_MavenHomeDoesntExist(home));
+            }
+            return MavenEmbedderUtils.getMavenVersion(home);
         }
         catch ( MavenEmbedderException e )
         {

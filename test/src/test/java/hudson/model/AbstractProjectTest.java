@@ -24,7 +24,6 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -41,12 +40,15 @@ import hudson.util.OneShotEvent;
 import java.io.IOException;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
+import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -54,7 +56,7 @@ import org.apache.commons.io.FileUtils;
 public class AbstractProjectTest extends HudsonTestCase {
     public void testConfigRoundtrip() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
-        Label l = hudson.getLabel("foo && bar");
+        Label l = jenkins.getLabel("foo && bar");
         project.setAssignedLabel(l);
         configRoundtrip((Item)project);
 
@@ -98,12 +100,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue("Workspace should exist by now",b.getWorkspace().exists());
 
         // make sure that the action link is protected
-        try {
-            new WebClient().getPage(project,"doWipeOutWorkspace");
-            fail("Should have failed");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(e.getStatusCode(),403);
-        }
+        new WebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     /**
@@ -112,14 +109,14 @@ public class AbstractProjectTest extends HudsonTestCase {
      */
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void testWipeWorkspaceProtected2() throws Exception {
-        ((GlobalMatrixAuthorizationStrategy)hudson.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
+        ((GlobalMatrixAuthorizationStrategy) jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
 
         // make sure that the deletion is protected in the same way
         testWipeWorkspaceProtected();
 
         // there shouldn't be any "wipe out workspace" link for anonymous user
         WebClient webClient = new WebClient();
-        HtmlPage page = webClient.getPage(hudson.getItem("test0"));
+        HtmlPage page = webClient.getPage(jenkins.getItem("test0"));
 
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
         try {
@@ -279,5 +276,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         // Links should not be updated since build failed
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
+    }
+
+    @Bug(15156)
+    public void testGetBuildAfterGC() throws Exception {
+        FreeStyleProject job = createFreeStyleProject();
+        job.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
+        assertTrue(job.getLastBuild() != null);
     }
 }

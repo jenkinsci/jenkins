@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -55,6 +56,6 @@ public class JobParameterDefinition extends SimpleParameterDefinition {
     }
 
     public ParameterValue createValue(String value) {
-        return new JobParameterValue(getName(),Hudson.getInstance().getItemByFullName(value,Job.class));
+        return new JobParameterValue(getName(), Jenkins.getInstance().getItemByFullName(value,Job.class));
     }
 }

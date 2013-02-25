@@ -23,6 +23,7 @@
  */
 package hudson.scm;
 
+import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -31,6 +32,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.security.PermissionGroup;
 import hudson.security.Permission;
+import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -39,7 +41,7 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Api;
 import hudson.model.Action;
@@ -153,7 +155,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag also affects the mutual exclusion control between builds and polling.
-     * If this methods returns false, polling will continu asynchronously even
+     * If this methods returns false, polling will continue asynchronously even
      * when a build is in progress, but otherwise the polling activity is blocked
      * if a build is currently using a workspace.
      *
@@ -173,7 +175,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
      *
      * <p>
-     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecesasry.
+     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecessary.
      * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
      * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
      * for all the projects, which will be prohibitive in big Hudson.
@@ -297,7 +299,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
@@ -347,7 +349,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See HUDSON-5756 and bug 6933067
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
     private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
@@ -407,10 +409,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @return
      *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
+     *      <p>
+     *      Using the return value to indicate success/failure should
+     *      be considered deprecated, and implementations are encouraged
+     *      to throw {@link AbortException} to indicate a failure.
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the build.
-     *      this exception will cause the build to fail.
+     *      this exception will cause the build to be aborted.
      */
     public abstract boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
 
@@ -453,7 +459,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * Collaboration between {@link Builder} and {@link SCM} allows
-     * Hudson to find build.xml wihout asking the user to enter "xyz" again.
+     * Hudson to find build.xml without asking the user to enter "xyz" again.
      *
      * <p>
      * This method is for this purpose. It takes the workspace
@@ -556,7 +562,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract ChangeLogParser createChangeLogParser();
 
     public SCMDescriptor<?> getDescriptor() {
-        return (SCMDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (SCMDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
 //
@@ -586,13 +592,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Permission to create new tags.
      * @since 1.171
      */
-    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE);
+    public static final Permission TAG = new Permission(PERMISSIONS,"Tag",Messages._SCM_TagPermission_Description(),Permission.CREATE, PermissionScope.ITEM);
 
     /**
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Hudson.getInstance().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
+        return Jenkins.getInstance().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
     }
 
     /**
@@ -601,7 +607,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
         if(project==null)   return all();
         
-        final Descriptor pd = Hudson.getInstance().getDescriptor((Class) project.getClass());
+        final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
         List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;

@@ -3,9 +3,8 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
-import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -16,7 +15,7 @@ import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
@@ -44,7 +43,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         binding.setVariable("authenticator", new Authenticator());
 
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(Hudson.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
+        builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
                 findBean(AuthenticationManager.class, context),this);
@@ -53,7 +52,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
     @Override
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
-            @Option(name="--username",usage="User name to authenticate yourself to Hudson")
+            @Option(name="--username",usage="User name to authenticate yourself to Jenkins")
             public String userName;
 
             @Option(name="--password",usage="Password for authentication. Note that passing a password in arguments is insecure.")
@@ -64,7 +63,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
 
             public Authentication authenticate() throws AuthenticationException, IOException, InterruptedException {
                 if (userName==null)
-                    return Hudson.ANONYMOUS;    // no authentication parameter. run as anonymous
+                    return command.getTransportAuthentication();    // no authentication parameter. fallback to the transport
 
                 if (passwordFile!=null)
                     try {
@@ -93,7 +92,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * return it as a {@link UserDetails} object. {@link org.acegisecurity.userdetails.User} is a convenient
      * implementation to use, but if your backend offers additional data, you may want to use your own subtype
      * so that the rest of Hudson can use those additional information (such as e-mail address --- see
-     * {@link MailAddressResolver}.)
+     * MailAddressResolver.)
      *
      * <p>
      * Properties like {@link UserDetails#getPassword()} make no sense, so just return an empty value from it.

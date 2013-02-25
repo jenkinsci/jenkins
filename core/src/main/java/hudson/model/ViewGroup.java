@@ -29,6 +29,7 @@ import hudson.views.ViewsTabBar;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Container of {@link View}s.
@@ -64,6 +65,20 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
     View getView(String name);
 
     /**
+     * If the view group renders one view in {@linkplain #getUrl() its own URL} (like Jenkins top page does),
+     * then that view is called the primary view. In this case, the hyperlink to the primary view points to
+     * the view group itself.
+     * <p>
+     * If the view group doesn't do such rendering, this method can always return null.
+     * <p>
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerPrimaryView()}.
+     *
+     * @since 1.417
+     */
+    View getPrimaryView();
+
+    /**
      * Returns the path of this group, relative to the context root,
      * like "foo/bar/zot/". Note no leading slash but trailing slash.
      */
@@ -76,7 +91,7 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *
      * <p>
      * It is the caller's responsibility to ensure that the new name is a
-     * {@linkplain Hudson#checkGoodName(String) legal view name}.
+     * {@linkplain jenkins.model.Jenkins#checkGoodName(String) legal view name}.
      */
     void onViewRenamed(View view, String oldName, String newName);
 
@@ -89,4 +104,37 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @since 1.381
      */
     ViewsTabBar getViewsTabBar();
+
+    /**
+     * Returns the {@link ItemGroup} from which the views in this group should render items.
+     *
+     * <p>
+     * Generally speaking, Views render a subset of {@link TopLevelItem}s that belong to this item group.
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerItemGroup()}.
+     *
+     * @return
+     *      Never null. Sometimes this is {@link ModifiableItemGroup} (if the container allows arbitrary addition)
+     * @since 1.417
+     */
+    ItemGroup<? extends TopLevelItem> getItemGroup();
+
+    /**
+     * Returns actions that should be displayed in views.
+     *
+     * <p>
+     * In this interface, the return value is used read-only. This doesn't prevent subtypes
+     * from returning modifiable actions, however.
+     *
+     * <p>
+     * This method was added later to {@link ViewGroup}, so old plugins might not be implementing this.
+     * To work around this, {@link View}s can use {@link View#getOwnerViewActions()}.
+     *
+     * @return
+     *      may be empty but never null.
+     * @see Actionable#getActions()
+     * @since 1.417
+     */
+    List<Action> getViewActions();
+    
 }

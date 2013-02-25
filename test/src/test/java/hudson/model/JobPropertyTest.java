@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, CloudBees, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,20 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
+import hudson.model.Descriptor.FormException;
+import net.sf.json.JSONObject;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class JobPropertyTest extends HudsonTestCase {
 
     /**
      * Asserts that rfe#2398 is fixed.
      */
+    @Bug(2398)
     public void testJobPropertySummaryIsShownInMavenModuleSetIndexPage() throws Exception {
         assertJobPropertySummaryIsShownInIndexPage(MavenModuleSet.DESCRIPTOR);
     }
@@ -46,7 +53,7 @@ public class JobPropertyTest extends HudsonTestCase {
 
     private void assertJobPropertySummaryIsShownInIndexPage(TopLevelItemDescriptor type) throws Exception {
         JobPropertyImpl jp = new JobPropertyImpl("NeedleInPage");
-        Job<?,?> project = (Job<?, ?>) hudson.createProject(type, "job-test-case");
+        Job<?,?> project = (Job<?, ?>) jenkins.createProject(type, "job-test-case");
         project.addProperty(jp);
         
         HtmlPage page = new WebClient().goTo("job/job-test-case");
@@ -54,7 +61,6 @@ public class JobPropertyTest extends HudsonTestCase {
     }
     
     public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
-        public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String propertyString;
         public JobPropertyImpl(String propertyString) {
             this.propertyString = propertyString;
@@ -64,13 +70,9 @@ public class JobPropertyTest extends HudsonTestCase {
             return propertyString;
         }
 
-        @Override
-        public JobPropertyDescriptor getDescriptor() {
-            return DESCRIPTOR;
-        }
-
-        @SuppressWarnings("unchecked")        
-        private static class DescriptorImpl extends JobPropertyDescriptor {
+        @TestExtension
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            @SuppressWarnings("rawtypes")
             @Override
             public boolean isApplicable(Class<? extends Job> jobType) {
                 return false;
@@ -80,6 +82,62 @@ public class JobPropertyTest extends HudsonTestCase {
             public String getDisplayName() {
                 return "Fake job property";
             }
+        }
+    }
+
+    /**
+     * Make sure that the UI rendering works as designed.
+     */
+    public void testConfigRoundtrip() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
+        p.addProperty(before);
+        configRoundtrip((Item)p);
+        JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
+        assertNotSame(after,before);
+        assertEqualDataBoundBeans(before, after);
+    }
+
+    public static class JobPropertyWithConfigImpl extends JobProperty<Job<?,?>> {
+        public String name;
+
+        @DataBoundConstructor
+        public JobPropertyWithConfigImpl(String name) {
+            this.name = name;
+        }
+
+        @TestExtension("testConfigRoundtrip")
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
+            public String getDisplayName() { return null; }
+        }
+    }
+
+
+
+    public void testInvisibleProperty() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        InvisibleImpl before = new InvisibleImpl();
+        p.addProperty(before);
+        configRoundtrip((Item)p);
+        InvisibleImpl after = p.getProperty(InvisibleImpl.class);
+        assertSame(after,before);
+    }
+
+    public static class InvisibleImpl extends JobProperty<Job<?,?>> {
+        public String name;
+
+        InvisibleImpl() {}
+
+        @Override
+        public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+            return this;
+        }
+
+        @TestExtension("testInvisibleProperty")
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
+            public String getDisplayName() { return null; }
         }
     }
 }

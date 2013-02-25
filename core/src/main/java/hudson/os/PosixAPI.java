@@ -9,6 +9,7 @@ import org.jruby.ext.posix.POSIX.ERRORS;
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -22,13 +23,21 @@ public class PosixAPI {
     }
 
     /**
+     * @deprecated as of 1.448
+     *      Use {@link #supportsNative()}.
+     */
+    public boolean isNative() {
+        return supportsNative();
+    }
+
+    /**
      * Determine if the jna-posix library could not provide native support, and
      * used a fallback java implementation which does not support many operations.
      */
-    public boolean isNative() {
+    public static boolean supportsNative() {
         return !(posix instanceof JavaPOSIX);
     }
-
+    
     private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {
         public void error(ERRORS errors, String s) {
             throw new PosixException(s,errors);
@@ -43,37 +52,39 @@ public class PosixAPI {
         }
 
         public boolean isVerbose() {
-            return false;
+            return true;
         }
 
         public File getCurrentWorkingDirectory() {
-            // TODO
-            throw new UnsupportedOperationException();
+            return new File(".").getAbsoluteFile();
         }
 
         public String[] getEnv() {
-            // TODO
-            throw new UnsupportedOperationException();
+            Map<String,String> envs = System.getenv();
+            String[] envp = new String[envs.size()];
+            
+            int i = 0;
+            for (Map.Entry<String,String> e : envs.entrySet()) {
+                envp[i++] = e.getKey()+'+'+e.getValue();
+            }
+            return envp;
         }
 
         public InputStream getInputStream() {
-            // TODO
-            throw new UnsupportedOperationException();
+            return System.in;
         }
 
         public PrintStream getOutputStream() {
-            // TODO
-            throw new UnsupportedOperationException();
+            return System.out;
         }
 
         public int getPID() {
             // TODO
-            throw new UnsupportedOperationException();
+            return 0;
         }
 
         public PrintStream getErrorStream() {
-            // TODO
-            throw new UnsupportedOperationException();
+            return System.err;
         }
     }, true);
 

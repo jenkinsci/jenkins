@@ -25,7 +25,8 @@ package hudson;
 
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
-import hudson.model.Hudson;
+import hudson.util.QuotedStringTokenizer;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.remoting.Callable;
@@ -130,7 +131,7 @@ public abstract class Launcher {
      *      {@link Computer#currentComputer()}  
      */
     public Computer getComputer() {
-        for( Computer c : Hudson.getInstance().getComputers() )
+        for( Computer c : Jenkins.getInstance().getComputers() )
             if(c.getChannel()==channel)
                 return c;
         return null;
@@ -159,6 +160,14 @@ public abstract class Launcher {
          */
         protected boolean reverseStdin, reverseStdout, reverseStderr;
 
+        /**
+         * Passes a white-space separated single-string command (like "cat abc def") and parse them
+         * as a command argument. This method also handles quotes.
+         */
+        public ProcStarter cmdAsSingleString(String s) {
+            return cmds(QuotedStringTokenizer.tokenize(s));
+        }
+
         public ProcStarter cmds(String... args) {
             return cmds(Arrays.asList(args));
         }
@@ -185,6 +194,13 @@ public abstract class Launcher {
             return commands;
         }
 
+        /**
+         * Hide parts of the command line from being printed to the log.
+         * @param masks true for each position in {@link #cmds(String[])} which should be masked, false to print
+         * @return this
+         * @see ArgumentListBuilder#add(String, boolean)
+         * @see #maskedPrintCommandLine(List, boolean[], FilePath)
+         */
         public ProcStarter masks(boolean... masks) {
             this.masks = masks;
             return this;
@@ -262,7 +278,8 @@ public abstract class Launcher {
          * becomes the "current" process), these variables will be also set.
          */
         public ProcStarter envs(Map<String, String> overrides) {
-            return envs(Util.mapToEnv(overrides));
+            this.envs = Util.mapToEnv(overrides);
+            return this;
         }
 
         /**
@@ -270,12 +287,19 @@ public abstract class Launcher {
          *      List of "VAR=VALUE". See {@link #envs(Map)} for the semantics.
          */
         public ProcStarter envs(String... overrides) {
+            if (overrides != null) {
+                for (String override : overrides) {
+                    if (override.indexOf('=') == -1) {
+                        throw new IllegalArgumentException(override);
+                    }
+                }
+            }
             this.envs = overrides;
             return this;
         }
 
         public String[] envs() {
-            return envs;
+            return envs.clone();
         }
 
         /**
@@ -310,9 +334,9 @@ public abstract class Launcher {
         }
 
         /**
-         * Indicates that the caller will directly write to the child process {@code stin} }via
-         * {@link Proc#getStdin()} (whereas by default you call {@link #stdin(InputStream)}
-         * and let Jenkins pump your {@link InputStream} of choosing to stdin.
+         * Indicates that the caller will directly write to the child process {@link #stdin()} via {@link Proc#getStdin()}.
+         * (Whereas by default you call {@link #stdin(InputStream)}
+         * and let Jenkins pump your {@link InputStream} of choosing to stdin.)
          * @since 1.399
          */
         public ProcStarter writeStdin() {
@@ -643,7 +667,9 @@ public abstract class Launcher {
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
-                starter.masks = prefix(starter.masks);
+                if (starter.masks != null) {
+                    starter.masks = prefix(starter.masks);
+                }
                 return outer.launch(starter);
             }
 
@@ -673,11 +699,50 @@ public abstract class Launcher {
     }
 
     /**
+     * Returns a decorated {@link Launcher} that automatically adds the specified environment
+     * variables.
+     *
+     * Those that are specified in {@link ProcStarter#envs(String...)} will take precedence over
+     * what's specified here.
+     *
+     * @since 1.489
+     */
+    public final Launcher decorateByEnv(EnvVars _env) {
+        final EnvVars env = new EnvVars(_env);
+        final Launcher outer = this;
+        return new Launcher(outer) {
+            @Override
+            public Proc launch(ProcStarter starter) throws IOException {
+                EnvVars e = new EnvVars(env);
+                if (starter.envs!=null) {
+                    for (String env : starter.envs) {
+                        e.addLine(env);
+                    }
+                }
+                starter.envs = Util.mapToEnv(e);
+                return outer.launch(starter);
+            }
+
+            @Override
+            public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+                EnvVars e = new EnvVars(env);
+                e.putAll(envVars);
+                return outer.launchChannel(cmd,out,workDir,e);
+            }
+
+            @Override
+            public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+                outer.kill(modelEnvVars);
+            }
+        };
+    }
+
+    /**
      * {@link Launcher} that launches process locally.
      */
     public static class LocalLauncher extends Launcher {
         public LocalLauncher(TaskListener listener) {
-            this(listener,Hudson.MasterComputer.localChannel);
+            this(listener, Jenkins.MasterComputer.localChannel);
         }
 
         public LocalLauncher(TaskListener listener, VirtualChannel channel) {
@@ -880,7 +945,7 @@ public abstract class Launcher {
     /**
      * Remoting interface of a remote process
      */
-    public static interface RemoteProcess {
+    public interface RemoteProcess {
         int join() throws InterruptedException, IOException;
         void kill() throws IOException, InterruptedException;
         boolean isAlive() throws IOException, InterruptedException;
@@ -1016,7 +1081,7 @@ public abstract class Launcher {
             m.override(o.getKey(),m.expand(o.getValue()));
         return m;
     }
-
+    
     /**
      * Debug option to display full current path instead of just the last token.
      */

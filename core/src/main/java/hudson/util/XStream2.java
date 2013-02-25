@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
@@ -40,39 +41,62 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.PluginManager;
+import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Hudson;
+import hudson.util.xstream.ImmutableSetConverter;
+import hudson.util.xstream.ImmutableSortedSetConverter;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Saveable;
+import hudson.util.xstream.ImmutableListConverter;
 import hudson.util.xstream.ImmutableMapConverter;
+import hudson.util.xstream.MapperDelegate;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.CheckForNull;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
-    private Converter reflectionConverter;
-    private ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private RobustReflectionConverter reflectionConverter;
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final @CheckForNull ClassOwnership classOwnership;
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
+
+    /**
+     * Hook to insert {@link Mapper}s after they are created.
+     */
+    private MapperInjectionPoint mapperInjectionPoint;
 
     public XStream2() {
         init();
+        classOwnership = null;
     }
 
     public XStream2(HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(hierarchicalStreamDriver);
         init();
+        classOwnership = null;
+    }
+
+    XStream2(ClassOwnership classOwnership) {
+        init();
+        this.classOwnership = classOwnership;
     }
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
@@ -88,16 +112,24 @@ public class XStream2 extends XStream {
     @Override
     protected Converter createDefaultConverter() {
         // replace default reflection converter
-        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider());
+        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new PluginClassOwnership());
         return reflectionConverter;
     }
 
+    static String trimVersion(String version) {
+        // XXX seems like there should be some trick with VersionNumber to do this
+        return version.replaceFirst(" .+$", "");
+    }
+
     private void init() {
-        // list up types that should be marshalled out like a value, without referencial integrity tracking.
+        // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
@@ -105,7 +137,7 @@ public class XStream2 extends XStream {
 
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
-        registerConverter(new AssociatedConverterImpl(this),-10);
+        registerConverter(new AssociatedConverterImpl(this), -10);
     }
 
     @Override
@@ -115,13 +147,67 @@ public class XStream2 extends XStream {
             public String serializedClass(Class type) {
                 if (type != null && ImmutableMap.class.isAssignableFrom(type))
                     return super.serializedClass(ImmutableMap.class);
+                else if (type != null && ImmutableList.class.isAssignableFrom(type))
+                    return super.serializedClass(ImmutableList.class);
                 else
                     return super.serializedClass(type);
             }
         });
         AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getClassLoader(), getReflectionProvider(), getJvm());
         a.autodetectAnnotations(true);
-        return a;
+
+        mapperInjectionPoint = new MapperInjectionPoint(a);
+
+        return mapperInjectionPoint;
+    }
+
+    public Mapper getMapperInjectionPoint() {
+        return mapperInjectionPoint.getDelegate();
+    }
+
+    /**
+     * This method allows one to insert additional mappers after {@link XStream2} was created,
+     * but because of the way XStream works internally, this needs to be done carefully.
+     * Namely,
+     *
+     * <ol>
+     * <li>You need to {@link #getMapperInjectionPoint()} wrap it, then put that back into {@link #setMapper(Mapper)}.
+     * <li>The whole sequence needs to be synchronized against this object to avoid a concurrency issue.
+     * </ol>
+     */
+    public void setMapper(Mapper m) {
+        mapperInjectionPoint.setDelegate(m);
+    }
+
+    final class MapperInjectionPoint extends MapperDelegate {
+        public MapperInjectionPoint(Mapper wrapped) {
+            super(wrapped);
+        }
+
+        public Mapper getDelegate() {
+            return delegate;
+        }
+
+        public void setDelegate(Mapper m) {
+            delegate = m;
+        }
+    }
+
+    /**
+     * Adds an alias in case class names change.
+     *
+     * Unlike {@link #alias(String, Class)}, which uses the registered alias name for writing XML,
+     * this method registers an alias to be used only for the sake of reading from XML. This makes
+     * this method usable for the situation when class names change.
+     *
+     * @param oldClassName
+     *      Fully qualified name of the old class name.
+     * @param newClass
+     *      New class that's field-compatible with the given old class name.
+     * @since 1.416
+     */
+    public void addCompatibilityAlias(String oldClassName, Class newClass) {
+        compatibilityAliases.put(oldClassName,newClass);
     }
 
     /**
@@ -138,6 +224,9 @@ public class XStream2 extends XStream {
 
         @Override
         public Class realClass(String elementName) {
+            Class s = compatibilityAliases.get(elementName);
+            if (s!=null)    return s;
+
             try {
                 return super.realClass(elementName);
             } catch (CannotResolveClassException e) {
@@ -159,14 +248,14 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class,Converter> cache =
-                new ConcurrentHashMap<Class,Converter>();
+        private final ConcurrentHashMap<Class<?>,Converter> cache =
+                new ConcurrentHashMap<Class<?>,Converter>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class t) {
+        private Converter findConverter(Class<?> t) {
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
@@ -258,4 +347,42 @@ public class XStream2 extends XStream {
 
         protected abstract void callback(T obj, UnmarshallingContext context);
     }
+
+    /**
+     * Marks serialized classes as being owned by particular components.
+     */
+    interface ClassOwnership {
+        /**
+         * Looks up the owner of a class, if any.
+         * @param clazz a class which might be from a plugin
+         * @return an identifier such as plugin name, or null
+         */
+        @CheckForNull String ownerOf(Class<?> clazz);
+    }
+    
+    class PluginClassOwnership implements ClassOwnership {
+
+        private PluginManager pm;
+
+        @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
+        @Override public String ownerOf(Class<?> clazz) {
+            if (classOwnership != null) {
+                return classOwnership.ownerOf(clazz);
+            }
+            if (pm == null) {
+                Jenkins j = Jenkins.getInstance();
+                if (j != null) {
+                    pm = j.getPluginManager();
+                }
+            }
+            if (pm == null) {
+                return null;
+            }
+            // TODO: possibly recursively scan super class to discover dependencies
+            PluginWrapper p = pm.whichPlugin(clazz);
+            return p != null ? p.getShortName() + '@' + trimVersion(p.getVersion()) : null;
+        }
+
+    }
+
 }

@@ -1,10 +1,10 @@
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Item;
+import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -42,7 +42,7 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
     public void testReadOnlyConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertTrue("Charlie should have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
@@ -58,42 +58,26 @@ public class ExtendedReadPermissionTest extends HudsonTestCase {
     public void testReadOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
         
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Charlie should not have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
         WebClient wc = new WebClient().login("charlie","charlie");
-        try {
-            HtmlPage page = wc.goTo("job/a/configure");
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(403,e.getStatusCode());
-            return;
-        }
-
-        fail("Charlie should not have been able to access the configuration page");
+        wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @LocalData
     public void testNoConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
 
-        AuthorizationStrategy as = hudson.getAuthorizationStrategy();
+        AuthorizationStrategy as = jenkins.getAuthorizationStrategy();
         assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
         GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
         assertFalse("Bob should not have extended read for this test", gas.hasExplicitPermission("bob",Item.EXTENDED_READ));
 
         WebClient wc = new WebClient().login("bob","bob");
-        try {
-            HtmlPage page = wc.goTo("job/a/configure");
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(403,e.getStatusCode());
-            return;
-        }
-
-        fail("Bob should not have been able to access the configuration page");
+        wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
 /*

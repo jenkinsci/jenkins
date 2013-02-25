@@ -24,11 +24,13 @@
 package hudson.maven;
 
 import hudson.AbortException;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
+import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
@@ -44,7 +46,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
@@ -53,7 +54,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
-import static java.util.logging.Level.FINE;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -76,7 +77,7 @@ public class MavenUtil {
     public static MavenEmbedder createEmbedder(TaskListener listener, AbstractProject<?,?> project, String profiles) throws MavenEmbedderException, IOException, InterruptedException {
         MavenInstallation m=null;
         if (project instanceof ProjectWithMaven)
-            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
 
         return createEmbedder(listener,m!=null?m.getHomeDir():null,profiles);
     }
@@ -93,18 +94,20 @@ public class MavenUtil {
         Properties systemProperties = null;
         String privateRepository = null;
         
-        AbstractProject project = build.getProject();
+        AbstractProject<?,?> project = build.getProject();
         
         if (project instanceof ProjectWithMaven) {
-            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Hudson.getInstance(),listener);
+            m = ((ProjectWithMaven) project).inferMavenInstallation().forNode(Jenkins.getInstance(),listener);
         }
         if (project instanceof MavenModuleSet) {
-            String altSet = ((MavenModuleSet) project).getAlternateSettings();
+            String altSet = SettingsProvider.getSettingsRemotePath(((MavenModuleSet) project).getSettings(), build, listener);
+            
             settingsLoc = (altSet == null) ? null 
                 : new File(build.getWorkspace().child(altSet).getRemote());
 
-            if (((MavenModuleSet) project).usesPrivateRepository()) {
-                privateRepository = build.getWorkspace().child(".repository").getRemote();
+            FilePath localRepo = ((MavenModuleSet) project).getLocalRepository().locate((MavenModuleSetBuild) build);
+            if (localRepo!=null) {
+                privateRepository = localRepo.getRemote();
             }
 
             profiles = ((MavenModuleSet) project).getProfiles();
@@ -139,6 +142,7 @@ public class MavenUtil {
      * Creates a fresh {@link MavenEmbedder} instance.
      *
      */
+    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public static MavenEmbedder createEmbedder(MavenEmbedderRequest mavenEmbedderRequest) throws MavenEmbedderException, IOException {
         
         
@@ -148,8 +152,7 @@ public class MavenUtil {
         File m2Home = new File(MavenEmbedder.userHome, ".m2");
         m2Home.mkdirs();
         if(!m2Home.exists())
-            throw new AbortException("Failed to create "+m2Home+
-                "\nSee https://hudson.dev.java.net/cannot-create-.m2.html");
+            throw new AbortException("Failed to create "+m2Home);
 
         if (mavenEmbedderRequest.getPrivateRepository()!=null)
             mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );
@@ -164,22 +167,26 @@ public class MavenUtil {
         } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
-        
 
-        // FIXME configure those !!
-        mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+        if ( mavenEmbedderRequest.getGlobalSettings() != null) {
+            mavenRequest.setGlobalSettingsFile( mavenEmbedderRequest.getGlobalSettings().getAbsolutePath() );
+        } else {
+            mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+        }
         
         if (mavenEmbedderRequest.getWorkspaceReader() != null ) {
             mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );
         }
         
+        mavenRequest.setUpdateSnapshots(mavenEmbedderRequest.isUpdateSnapshots());
+
         // TODO olamy check this sould be userProperties 
         mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
 
         if (mavenEmbedderRequest.getTransferListener() != null) {
             if (debugMavenEmbedder) {
-            mavenEmbedderRequest.getListener().getLogger()
-                .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
+                mavenEmbedderRequest.getListener().getLogger()
+                    .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
             }
             mavenRequest.setTransferListener( mavenEmbedderRequest.getTransferListener() );
         }

@@ -32,8 +32,10 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Represents SCM change list.
@@ -110,6 +112,39 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         }
 
         /**
+         * Returns a human readable display name of the commit number, revision number, and such thing
+         * that identifies this entry.
+         *
+         * <p>
+         * This method is primarily intended for visualization of the data.
+         *
+         * @return
+         *      null if such a concept doesn't make sense for the implementation. For example,
+         *      in CVS there's no single identifier for commits. Each file gets a different revision number.
+         * @since 1.405
+         */
+        @Exported
+        public String getCommitId() {
+            return null;
+        }
+
+        /**
+         * Returns the timestamp of this commit in the {@link Date#getTime()} format.
+         *
+         * <p>
+         * This method is primarily intended for visualization of the data.
+         *
+         * @return
+         *      -1 if the implementation doesn't support it (for example, in CVS a commit
+         *      spreads over time between multiple changes on multiple files, so there's no single timestamp.)
+         * @since 1.405
+         */
+        @Exported
+        public long getTimestamp() {
+            return -1;
+        }
+
+        /**
          * Gets the "commit message".
          *
          * <p>
@@ -118,6 +153,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return
          *      Can be empty but never null.
          */
+        @Exported
         public abstract String getMsg();
 
         /**
@@ -126,6 +162,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          * @return
          *      never null.
          */
+        @Exported
         public abstract User getAuthor();
 
         /**
@@ -138,6 +175,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
          *
          * @return never null.
          */
+        @Exported
         public abstract Collection<String> getAffectedPaths();
         
         /**
@@ -170,7 +208,11 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgAnnotated() {
             MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
-                a.annotate(parent.build,this,markup);
+                try {
+                    a.annotate(parent.build,this,markup);
+                } catch(Exception e) {
+                    LOGGER.fine("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                }
 
             return markup.toString(false);
         }
@@ -181,6 +223,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         public String getMsgEscaped() {
             return Util.escape(getMsg());
         }
+        
+        static final Logger LOGGER = Logger.getLogger(ChangeLogSet.Entry.class.getName());
     }
     
     /**

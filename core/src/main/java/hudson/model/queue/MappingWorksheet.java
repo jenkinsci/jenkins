@@ -34,6 +34,7 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
+import hudson.model.labels.LabelAssignmentAction;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -181,7 +182,7 @@ public class MappingWorksheet {
             super(base);
             assert !base.isEmpty();
             this.index = index;
-            this.assignedLabel = base.get(0).getAssignedLabel();
+            this.assignedLabel = getAssignedLabel(base.get(0));
 
             Node lbo = base.get(0).getLastBuiltOn();
             for (ExecutorChunk ec : executors) {
@@ -191,6 +192,14 @@ public class MappingWorksheet {
                 }
             }
             lastBuiltOn = null;
+        }
+
+        private Label getAssignedLabel(SubTask task) {
+            for (LabelAssignmentAction laa : item.getActions(LabelAssignmentAction.class)) {
+                Label l = laa.getAssignedLabel(task);
+                if (l!=null)    return l;
+            }
+            return task.getAssignedLabel();
         }
 
         public List<ExecutorChunk> applicableExecutorChunks() {
@@ -327,6 +336,11 @@ public class MappingWorksheet {
                     }
 
                     int minIdle = max-peak; // minimum number of idle nodes during this time period
+                    // total predicted load could exceed available executors [JENKINS-8882]
+                    if (minIdle<0) {
+                        // Should we toss a warning/info message?
+                        minIdle = 0;
+                    }
                     if (minIdle<list.size())
                         e.setValue(list.subList(0,minIdle));
                 }

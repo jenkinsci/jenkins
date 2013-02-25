@@ -28,6 +28,7 @@ import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
+import org.dom4j.ProcessingInstruction;
 import org.dom4j.io.SAXReader;
 import org.jvnet.hudson.test.junit.GroupedTest;
 import org.kohsuke.stapler.MetaClassLoader;
@@ -51,14 +52,14 @@ public class JellyTestSuiteBuilder {
      * Given a jar file or a class file directory, recursively search all the Jelly files and build a {@link TestSuite}
      * that performs static syntax checks.
      */
-    public static TestSuite build(File res) throws Exception {
+    public static TestSuite build(File res, boolean requirePI) throws Exception {
         TestSuite ts = new JellyTestSuite();
 
         final JellyClassLoaderTearOff jct = new MetaClassLoader(JellyTestSuiteBuilder.class.getClassLoader()).loadTearOff(JellyClassLoaderTearOff.class);
 
         if (res.isDirectory()) {
             for (final File jelly : (Collection <File>)FileUtils.listFiles(res,new String[]{"jelly"},true))
-                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jct));
+                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jelly.getAbsolutePath().substring((res.getAbsolutePath() + File.separator).length()), jct, requirePI));
         }
         if (res.getName().endsWith(".jar")) {
             String jarUrl = res.toURI().toURL().toExternalForm();
@@ -67,7 +68,7 @@ public class JellyTestSuiteBuilder {
             while (e.hasMoreElements()) {
                 JarEntry ent =  e.nextElement();
                 if (ent.getName().endsWith(".jelly"))
-                    ts.addTest(new JellyCheck(new URL("jar:"+jarUrl+"!/"+ent.getName()), jct));
+                    ts.addTest(new JellyCheck(new URL("jar:"+jarUrl+"!/"+ent.getName()), ent.getName(), jct, requirePI));
             }
             jf.close();
         }
@@ -77,11 +78,13 @@ public class JellyTestSuiteBuilder {
     private static class JellyCheck extends TestCase {
         private final URL jelly;
         private final JellyClassLoaderTearOff jct;
+        private final boolean requirePI;
 
-        public JellyCheck(URL jelly, JellyClassLoaderTearOff jct) {
-            super(jelly.getPath());
+        JellyCheck(URL jelly, String name, JellyClassLoaderTearOff jct, boolean requirePI) {
+            super(name);
             this.jelly = jelly;
             this.jct = jct;
+            this.requirePI = requirePI;
         }
 
         @Override
@@ -89,6 +92,12 @@ public class JellyTestSuiteBuilder {
             jct.createContext().compileScript(jelly);
             Document dom = new SAXReader().read(jelly);
             checkLabelFor(dom);
+            if (requirePI) {
+                ProcessingInstruction pi = dom.processingInstruction("jelly");
+                if (pi==null || !pi.getText().contains("escape-by-default"))
+                    throw new AssertionError("<?jelly escape-by-default='true'?> is missing");
+
+            }
             // TODO: what else can we check statically? use of taglibs?
         }
 

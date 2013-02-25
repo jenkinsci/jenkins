@@ -28,6 +28,7 @@ THE SOFTWARE.
 
   Used by Matrix* classes
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <st:documentation>
     Generate configuration matrix and invoke body with 'p' as the instance of T
@@ -52,18 +53,17 @@ THE SOFTWARE.
         </j:forEach>
       </j:when>
       <j:otherwise>
-        <h2>${%Configuration Matrix}</h2>
-        <table border="1" class="middle-align center-align">
+        <table id="configuration-matrix">
           <!-- X-axis -->
           <j:forEach var="x" items="${o.x}" varStatus="loop">
-            <tr>
+            <tr class="matrix-row">
               <!-- space for Y-axis -->
               <j:if test="${!empty(o.y)}">
-                <td colspan="${size(o.y)}" />
+                <td id="matrix-title" colspan="${size(o.y)}">${%Configuration Matrix}</td>
               </j:if>
               <j:forEach begin="1" end="${o.repeatX(loop.index)}">
                 <j:forEach var="v" items="${x.values}">
-                  <td colspan="${o.width(loop.index)}">${v}</td>
+                  <td class="matrix-header" colspan="${o.width(loop.index)}">${v}</td>
                 </j:forEach>
               </j:forEach>
             </tr>
@@ -74,12 +74,12 @@ THE SOFTWARE.
             <tr>
               <j:forEach var="y" items="${o.y}" varStatus="loop">
                 <j:if test="${r.drawYHeader(loop.index)!=null}">
-                  <td rowspan="${o.height(loop.index)}">${r.drawYHeader(loop.index)}</td>
+                  <td class="matrix-leftcolumn" rowspan="${o.height(loop.index)}">${r.drawYHeader(loop.index)}</td>
                 </j:if>
               </j:forEach>
 
               <j:forEach var="c" items="${r}">
-                <td>
+                <td class="matrix-cell">
                   <j:choose>
                     <j:forEach var="p" items="${c}">
                       <div>

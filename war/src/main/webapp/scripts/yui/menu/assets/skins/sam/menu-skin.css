@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /* MenuBar style rules */
 
@@ -36,6 +36,12 @@ version: 2.5.1
     border-width: 1px 0;
     *position: relative; /*  Necessary to get negative margins in IE. */
     margin: -1px 0;
+
+}
+
+.yui-skin-sam .yuimenubaritemlabel:visited {
+
+	color: #000;
 
 }
 
@@ -88,7 +94,8 @@ version: 2.5.1
 
 /* Disabled  MenuBarItem */
 
-.yui-skin-sam .yuimenubaritemlabel-disabled {
+.yui-skin-sam .yuimenubaritemlabel-disabled,
+.yui-skin-sam .yuimenubaritemlabel-disabled:visited {
 
     cursor: default;
     color: #A6A6A6;
@@ -122,9 +129,22 @@ version: 2.5.1
 
 .yui-skin-sam .yuimenu .bd {
 
+	/*
+		The following application of zoom:1 prevents first tier submenus of a MenuBar from hiding 
+		when the mouse is moving from an item in a MenuBar to a submenu in IE 7.
+	*/
+
+	*zoom: 1;
+	_zoom: normal;	/* Remove this rule for IE 6. */
     border: solid 1px #808080;
     background-color: #fff;
     
+}
+
+.yui-skin-sam .yuimenu .yuimenu .bd {
+
+	*zoom: normal;
+
 }
 
 .yui-skin-sam .yuimenu ul {
@@ -233,6 +253,12 @@ version: 2.5.1
 
 }
 
+.yui-skin-sam .yuimenuitemlabel:visited {
+
+    color: #000;
+	
+}
+
 .yui-skin-sam .yuimenuitemlabel .helptext {
 
     margin-top: -1.5em;
@@ -272,7 +298,7 @@ version: 2.5.1
     */
 
     opacity: .12;
-    *filter: alpha(opacity=12);  /* For IE */
+    filter: alpha(opacity=12);  /* For IE */
 
 }
 
@@ -292,7 +318,8 @@ version: 2.5.1
 
 /* Disabled MenuItem */
 
-.yui-skin-sam .yuimenuitemlabel-disabled {
+.yui-skin-sam .yuimenuitemlabel-disabled,
+.yui-skin-sam .yuimenuitemlabel-disabled:visited {
 
     cursor: default;
     color: #A6A6A6;

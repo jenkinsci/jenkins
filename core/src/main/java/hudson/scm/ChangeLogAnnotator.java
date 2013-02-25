@@ -31,7 +31,7 @@ import hudson.ExtensionList;
 import hudson.util.CopyOnWriteList;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.logging.Logger;
 
@@ -108,6 +108,6 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * Returns all the registered {@link ChangeLogAnnotator} descriptors.
      */
     public static ExtensionList<ChangeLogAnnotator> all() {
-        return Hudson.getInstance().getExtensionList(ChangeLogAnnotator.class);
+        return Jenkins.getInstance().getExtensionList(ChangeLogAnnotator.class);
     }
 }

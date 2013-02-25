@@ -79,24 +79,9 @@ dt {
   text-decoration: none;
 }
 
-#left-top-nav {
-  text-align: left;
-  border-left: 10px solid #fff;
-  padding: 4px;
-  color: #222;
-}
-
-#left-top-nav a, #right-top-nav a {
-  color: black;
-}
-
-#right-top-nav {
-  text-align: right;
-  padding: 4px;
-}
-
 #main-panel {
   padding: 10px;
+    padding-top: 0px;
 }
 
 #side-panel {
@@ -185,13 +170,15 @@ a.tip:hover span {
   text-align: left
 }
 
-#top-nav .a {
-  color: white;
-}
-
 img {
   vertical-align: middle;
   border: 0;
+}
+
+div.disabled {
+    opacity : 0.4;
+    filter: alpha(opacity=40); /* msie */
+    background-color: #000;
 }
 
 table.tab {
@@ -317,6 +304,9 @@ table.pane {
   width: 100%;
   border-collapse: collapse;
   border: 1px #bbb solid;
+}
+table.pane > tbody > tr > td:last-child {
+  border-right: 1px #bbb solid;
 }
 
 td.pane {
@@ -456,6 +446,45 @@ div.behavior-loading {
     filter: alpha(opacity=50);
 }
 
+LABEL.attach-previous {
+    margin-left: 0.5em;
+}
+
+.bottom-sticker, #bottom-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+}
+.bottom-sticker-inner {
+    background:white;
+    padding:1em;
+}
+.bottom-sticker-edge {
+    height:16px;
+    background-image: url("../images/bottom-sticker-top-edge.png");
+    background-repeat: repeat-x;
+}
+
+.top-sticker, #top-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    z-index: 999;
+}
+.top-sticker-inner {
+    background:white;
+    padding:1em;
+}
+.top-sticker-edge {
+    height:16px;
+    background-image: url("../images/top-sticker-bottom-edge.png");
+    background-repeat: repeat-x;
+}
+.top-sticker.noedge > .top-sticker-edge {
+    display: none;
+}
+
+.top-sticker.noedge > .top-sticker-inner {
+    padding:0;
+}
+
+
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
     color: #CC0000;
@@ -492,7 +521,7 @@ div.behavior-loading {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.gif" ); /* TODO: get a better icon */
+    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -520,6 +549,11 @@ div.behavior-loading {
   background-color: #f0f0f0;
   padding: 1em;
   margin-bottom: 1em;
+}
+
+.help .from-plugin {
+    text-align: right;
+    color: #666;
 }
 
 .help-area {
@@ -577,6 +611,12 @@ div.behavior-loading {
 
 #projectstatus th {
   text-align: left;
+}
+
+/* ============================ list view entries ======================== */
+div.listview-jobs {
+  max-height:300px;
+  overflow:auto;
 }
 
 /* ============================ parameters form ========================== */
@@ -827,6 +867,17 @@ DIV.yahooTree td {
   border: none !important;
   background-color: #FFF !important;
 }
+
+.yuimenu LI .yui-menu-tooltip {
+  color: #A6A6A6;
+}
+
+.yuimenu LI.yui-menuitem-tooltip {
+  border-bottom: 1px solid #808080;
+  padding-bottom: 3px;
+  margin-bottom: 1em;
+}
+
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.gif) no-repeat 2px center;
@@ -843,7 +894,7 @@ DIV.yahooTree td {
   text-align: left;
   width:25em;
   position: absolute;
-  z-index: 999;
+  z-index: 1000;
 }
 
 #search-box-completion .yui-ac-content {
@@ -913,6 +964,18 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
+.hetero-list-container.with-drag-drop .repeated-chunk.hover {
+    border: 2px dashed #CCC;
+}
+
+.hetero-list-container.with-drag-drop .repeated-chunk {
+    border: 2px dashed transparent;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+
 /* ========================= plugin update center ========================= */
 
 #plugins .excerpt {
@@ -962,6 +1025,17 @@ table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
 }
 
+/* ========================= notification bar ========================= */
+#notification-bar {
+    width:100%;
+    position:fixed;
+    text-align:center;
+    left:0px;
+    font-size: 2em;
+    z-index:1000;
+    border-bottom: 1px solid black;
+}
+
 /* ========================= YUI dialog ========================= */
 
 .dialog .hd {
@@ -993,3 +1067,40 @@ table.progress-bar.red td.progress-bar-done {
 .tag7 { font-size: 1.70em; }
 .tag8 { font-size: 1.80em; }
 .tag9 { font-size: 1.90em; }
+
+/* ========================= textarea.jelly ================== */
+
+.textarea-preview-container {
+    text-align:left;
+}
+.textarea-preview {
+    background-color: #F0F0F0;
+    padding: 0.5em;
+}
+
+/* ========================= matrix configuration table ================== */
+table#configuration-matrix {
+	border: 1px #BBBBBB solid;
+	border-collapse: collapse;
+}
+tr.matrix-row {
+	background: #f0f0f0;
+	font-weight: bold;
+}
+td.matrix-header {
+	border: 1px #BBBBBB solid;
+	padding: 3px;
+}
+td#matrix-title {
+	padding: 3px;
+}
+td.matrix-leftcolumn {
+	border: 1px #BBBBBB solid;
+	font-weight: bold;
+	background: #f0f0f0;
+	padding: 3px;
+}
+td.matrix-cell {
+	border: 1px #BBBBBB solid;
+	text-align: center;
+}

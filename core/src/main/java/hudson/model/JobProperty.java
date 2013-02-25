@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.Plugin;
+import hudson.model.Descriptor.FormException;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
@@ -36,6 +37,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -69,7 +73,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.72
  */
 @ExportedBean
-public abstract class JobProperty<J extends Job<?,?>> implements Describable<JobProperty<?>>, BuildStep, ExtensionPoint {
+public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableDescribable<JobProperty<?>>, BuildStep, ExtensionPoint {
     /**
      * The {@link Job} object that owns this property.
      * This value will be set by the Hudson code.
@@ -93,7 +97,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
      * {@inheritDoc}
      */
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -165,8 +169,13 @@ public abstract class JobProperty<J extends Job<?,?>> implements Describable<Job
         return getJobActions((J)project);
     }
 
+    /** @see Job#getOverrides */
     public Collection<?> getJobOverrides() {
         return Collections.emptyList();
+    }
+
+    public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return form==null ? null : getDescriptor().newInstance(req,form);
     }
 
     /**

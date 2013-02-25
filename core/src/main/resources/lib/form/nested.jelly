@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Used to display indented nested portion of the form
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<tr>
     <td colspan="2"/>

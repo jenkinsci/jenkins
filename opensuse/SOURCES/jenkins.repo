@@ -1,7 +1,0 @@
-[jenkins]
-name=jenkins
-enabled=1
-autorefresh=0
-baseurl=http://pkg.jenkins-ci.org/opensuse/
-type=rpm-md
-keeppackages=0

@@ -23,8 +23,12 @@
  */
 package hudson;
 
+import hudson.model.Hudson;
+import jenkins.model.Jenkins;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.
@@ -41,9 +45,9 @@ public interface PluginStrategy extends ExtensionPoint {
 	/**
 	 * Creates a plugin wrapper, which provides a management interface for the plugin
 	 * @param archive
-     *      Either a directory that points to a pre-exploded plugin, or an hpi file, or an hpl file.
+     *      Either a directory that points to a pre-exploded plugin, or an jpi file, or an jpl file.
 	 */
-	public abstract PluginWrapper createPluginWrapper(File archive)
+	PluginWrapper createPluginWrapper(File archive)
 			throws IOException;
 
 	/**
@@ -53,7 +57,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * This should be done after all the classloaders are constructed for all
 	 * the plugins, so that dependencies can be properly loaded by plugins.
 	 */
-	public abstract void load(PluginWrapper wrapper) throws IOException;
+	void load(PluginWrapper wrapper) throws IOException;
 
 	/**
 	 * Optionally start services provided by the plugin. Should be called
@@ -61,6 +65,16 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * 
 	 * @param plugin
 	 */
-	public abstract void initializeComponents(PluginWrapper plugin);
+	void initializeComponents(PluginWrapper plugin);
 
+	/**
+	 * Find components of the given type using the assigned strategy.
+	 *
+	 *
+     * @param type The component type
+     * @param hudson The Hudson scope
+     * @return Sequence of components
+	 * @since 1.400
+	 */
+	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
 }

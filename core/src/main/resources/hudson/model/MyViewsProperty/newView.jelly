@@ -25,60 +25,16 @@ THE SOFTWARE.
 
 <!--
   New View page
-  
-  TODO remove duplication with Hudson/newView.jelly
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout norefresh="true" permission="${app.primaryView.CREATE}">
     <st:include page="sidepanel.jelly" it="${it.user}"/>
 
     <l:main-panel>
-      <f:form method="post" action="createView" name="createView">
-        <f:entry title="${%View name}">
-          <f:textbox id="name" name="name" checkUrl="'${rootURL}/${h.jsStringEscape(it.url)}viewExistsCheck?value='+encodeURIComponent(this.value)+'&amp;exists=false'"
-                     onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
-          <script>
-            $('name').focus();
-          </script>
-        </f:entry>
-
-        <j:invokeStatic var="views" className="hudson.model.View" method="all" />
-        <j:forEach var="d" items="${views}">
-          <j:if test="${d.isInstantiable()}">
-            <f:block>
-              <j:set var="id" value="${h.generateId()}"/>
-              <input type="radio" name="mode" value="${d.clazz.name}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" id="${id}" />
-              <st:nbsp/>
-              <label for="${id}"><b>${d.displayName}</b></label>
-            </f:block>
-            <f:entry>
-              <st:include page="${d.newViewDetailPage}" from="${d}" optional="true"/>
-            </f:entry>
-          </j:if>
-        </j:forEach>
-
-        <f:block>
-          <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-        </f:block>
-      </f:form>
-      <script><![CDATA[
-        var okButton = makeButton($('ok'),null);
-
-        function updateOk(form) {
-          function state() {
-            if($('name').value.length==0)   return true;
-            var radio = form.elements['mode'];
-            if(radio.checked) return false;  // if there's only one radiobutton
-            for(i=0;i<radio.length;i++)
-              if(radio[i].checked)
-                return false;
-            return true;
-          }
-
-          okButton.set('disabled',state(),false);
-        }
-        updateOk(okButton.getForm());
-      ]]></script>
+      <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
+      <n:form nameTitle="${%View name}" action="createView"
+              descriptors="${views}" checkUrl="${rootURL}/${it.url}viewExistsCheck" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

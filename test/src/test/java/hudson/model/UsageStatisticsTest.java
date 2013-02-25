@@ -30,11 +30,10 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import javax.crypto.Cipher;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.security.KeyFactory;
-import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.zip.GZIPInputStream;
 
@@ -54,14 +53,11 @@ public class UsageStatisticsTest extends HudsonTestCase {
         System.out.println(data);
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PrivateKey priv = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
-
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, priv);
+        RSAPrivateKey priv = (RSAPrivateKey)keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
 
         byte[] cipherText = Base64.decode(data.toCharArray());
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),cipher,"AES",1024)), "UTF-8");
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         System.out.println(o);
         assertEquals(1,o.getInt("stat"));

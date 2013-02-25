@@ -1,7 +1,6 @@
 package hudson.util;
 
 import hudson.Util;
-import hudson.model.TaskListener;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 
@@ -35,7 +34,12 @@ public abstract class DirScanner implements Serializable {
             if (f.canRead()) {
                 if (visitor.understandsSymlink()) {
                     try {
-                        String target = Util.resolveSymlink(f, TaskListener.NULL);
+                        String target;
+                        try {
+                            target = Util.resolveSymlink(f);
+                        } catch (IOException x) { // JENKINS-13202
+                            target = null;
+                        }
                         if (target!=null) {
                             visitor.visitSymlink(f,target,path+f.getName());
                             return;
@@ -83,9 +87,16 @@ public abstract class DirScanner implements Serializable {
     public static class Glob extends DirScanner {
         private final String includes, excludes;
 
+        private boolean useDefaultExcludes = true;
+
         public Glob(String includes, String excludes) {
             this.includes = includes;
             this.excludes = excludes;
+        }
+
+        public Glob(String includes, String excludes, boolean useDefaultExcludes) {
+            this(includes, excludes);
+            this.useDefaultExcludes = useDefaultExcludes;
         }
 
         public void scan(File dir, FileVisitor visitor) throws IOException {
@@ -96,11 +107,29 @@ public abstract class DirScanner implements Serializable {
             }
 
             FileSet fs = Util.createFileSet(dir,includes,excludes);
+            fs.setDefaultexcludes(useDefaultExcludes);
 
             if(dir.exists()) {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
+
+                    if (visitor.understandsSymlink()) {
+                        try {
+                            String target;
+                            try {
+                                target = Util.resolveSymlink(file);
+                            } catch (IOException x) { // JENKINS-13202
+                                target = null;
+                            }
+                            if (target!=null) {
+                                visitor.visitSymlink(file,target,f);
+                                continue;
+                            }
+                        } catch (InterruptedException e) {
+                            throw (IOException)new InterruptedIOException().initCause(e);
+                        }
+                    }
                     visitor.visit(file,f);
                 }
             }

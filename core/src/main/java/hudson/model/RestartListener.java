@@ -3,6 +3,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
@@ -29,7 +30,7 @@ public abstract class RestartListener implements ExtensionPoint {
      * Returns all the registered {@link LabelFinder}s.
      */
     public static ExtensionList<RestartListener> all() {
-        return Hudson.getInstance().getExtensionList(RestartListener.class);
+        return Jenkins.getInstance().getExtensionList(RestartListener.class);
     }
 
     /**
@@ -50,7 +51,7 @@ public abstract class RestartListener implements ExtensionPoint {
     public static class Default extends RestartListener {
         @Override
         public boolean isReadyToRestart() throws IOException, InterruptedException {
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             return h.overallLoad.computeTotalExecutors() <= h.overallLoad.computeIdleExecutors();
         }
     }

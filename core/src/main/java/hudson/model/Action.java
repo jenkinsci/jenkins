@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.tasks.test.TestResultProjectAction;
 
 /**
@@ -39,12 +40,26 @@ import hudson.tasks.test.TestResultProjectAction;
  * while others do the former without the latter (for example, to just draw some graphs in <tt>floatingBox.jelly</tt>),
  * and still some others do both.
  *
+ * <h2>Views</h2>
  * <p>
  * If an action has a view named <tt>floatingBox.jelly</tt>,
  * it will be displayed as a floating box on the top page of
  * the target {@link ModelObject}. (For example, this is how
  * the JUnit test result trend shows up in the project top page.
  * See {@link TestResultProjectAction}.
+ *
+ * <p>
+ * On the target {@link ModelObject} page, actions are rendered as an item in the side panel
+ * by the "/lib/hudson:actions" jelly tag, but you can override this for your action by
+ * writing {@code action.jelly}. See the "actions" tag for what the default handling is and
+ * tweak from there. One of the use cases of this is to show nested actions, like where
+ * Jenkins show the option to wipe out the workspace inside the workspace link:
+ *
+ * <pre>
+ * &lt;l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}">
+ *   &lt;l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
+ * &lt;/l:task>
+ * </pre>
  *
  * <h2>Persistence</h2>
  * <p>
@@ -66,14 +81,15 @@ public interface Action extends ModelObject {
      *      <p>
      *      If an absolute file name that starts from '/' is returned (like
      *      "/plugin/foo/abc.gif'), then it will be interpreted as a path
-     *      from the context root of Hudson. This is useful to pick up
+     *      from the context root of Jenkins. This is useful to pick up
      *      image files from a plugin.
      *      <p>
      *      Finally, return null to hide it from the task list. This is normally not very useful,
      *      but this can be used for actions that only contribute <tt>floatBox.jelly</tt>
      *      and no task list item. The other case where this is useful is
      *      to avoid showing links that require a privilege when the user is anonymous.
-     * @see Hudson#isAdmin()
+     * @see Functions#isAnonymous()
+     * @see Functions#getIconFilePath(Action)
      */
     String getIconFileName();
 
@@ -88,7 +104,7 @@ public interface Action extends ModelObject {
     /**
      * Gets the URL path name.
      *
-     * <p>
+     * <p>tions
      * For example, if this method returns "xyz", and if the parent object
      * (that this action is associated with) is bound to /foo/bar/zot,
      * then this action object will be exposed to /foo/bar/zot/xyz.
@@ -102,11 +118,12 @@ public interface Action extends ModelObject {
      *
      * <p>
      * If the returned string starts with '/', like '/foo', then it's assumed to be
-     * relative to the context path of the Hudson webapp. 
+     * relative to the context path of the Jenkins webapp.
      *
      * @return
      *      null if this action object doesn't need to be bound to web
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
+     * @see Functions#getActionUrl(String, Action)
      */
     String getUrlName();
 }

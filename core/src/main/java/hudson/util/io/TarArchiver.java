@@ -26,8 +26,10 @@ package hudson.util.io;
 
 import hudson.Functions;
 import hudson.org.apache.tools.tar.TarOutputStream;
+import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import org.apache.tools.tar.TarEntry;
 
 import java.io.BufferedOutputStream;
@@ -64,6 +66,14 @@ final class TarArchiver extends Archiver {
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
         TarEntry e = new TarEntry(relativePath, LF_SYMLINK);
+        try {
+            int mode = IOUtils.mode(link);
+            if (mode != -1) {
+                e.setMode(mode);
+            }
+        } catch (PosixException x) {
+            // ignore
+        }
 
         try {
             StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
@@ -89,6 +99,8 @@ final class TarArchiver extends Archiver {
         if(file.isDirectory())
             relativePath+='/';
         TarEntry te = new TarEntry(relativePath);
+        int mode = IOUtils.mode(file);
+        if (mode!=-1)   te.setMode(mode);
         te.setModTime(file.lastModified());
         if(!file.isDirectory())
             te.setSize(file.length());

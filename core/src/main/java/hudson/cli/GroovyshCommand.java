@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.ChannelClosedException;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -52,13 +52,13 @@ import jline.Terminal;
 public class GroovyshCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Runs an interactive groovy shell";
+        return Messages.GroovyshCommand_ShortDescription();
     }
 
     @Override
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
         // TODO: ^as this class overrides main() (which has authentication stuff),
         // how to get ADMIN permission for this command?
 
@@ -70,19 +70,24 @@ public class GroovyshCommand extends CLICommand {
         return shell.run(args.toArray(new String[args.size()]));
     }
 
+    @SuppressWarnings({"unchecked","rawtypes"})
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", hudson.model.Hudson.getInstance()); // backward compatibility
-        binding.setProperty("jenkins", hudson.model.Hudson.getInstance());
+        binding.setProperty("hudson", Jenkins.getInstance()); // backward compatibility
+        binding.setProperty("jenkins", Jenkins.getInstance());
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        final ClassLoader cl = Jenkins.getInstance().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
+            private static final long serialVersionUID = 1L;
+
+            @SuppressWarnings("unused")
+            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert(args.length == 1);
                 assert(args[0] instanceof Shell);
@@ -102,6 +107,10 @@ public class GroovyshCommand extends CLICommand {
         // channel is closed
         final Closure originalErrorHook = shell.getErrorHook();
         shell.setErrorHook(new Closure(shell, shell) {
+            private static final long serialVersionUID = 1L;
+
+            @SuppressWarnings("unused")
+            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) throws ChannelClosedException {
                 if (args.length == 1 && args[0] instanceof ChannelClosedException) {
                     throw (ChannelClosedException)args[0];

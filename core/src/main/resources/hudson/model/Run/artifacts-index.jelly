@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it.ARTIFACTS)}">
     <l:layout title="${it.fullDisplayName} Artifacts">
@@ -30,11 +31,21 @@ THE SOFTWARE.
         <t:buildCaption>
           ${%Build Artifacts}
         </t:buildCaption>
-        <ul>
+        <table class="fileList">
           <j:forEach var="f" items="${it.artifacts}">
-            <li><a href="artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a></li>
+            <tr>
+              <td>
+                <img src="${imagesURL}/16x16/text.png" alt="" height="16" width="16"/>
+              </td>
+              <td>
+                <a href="artifact/${f.href}">${f.displayPath}</a>
+              </td>
+              <td class="fileSize">
+                ${f.length}
+              </td>
+            </tr>
           </j:forEach>
-        </ul>
+        </table>
       </l:main-panel>
     </l:layout>
   </j:if>

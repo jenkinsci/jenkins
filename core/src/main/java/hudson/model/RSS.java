@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FeedAdapter;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -76,12 +77,12 @@ public final class RSS {
         req.setAttribute("title",title);
         req.setAttribute("url",url);
         req.setAttribute("entries",entries);
-        req.setAttribute("rootURL", Hudson.getInstance().getRootUrl());
+        req.setAttribute("rootURL", Jenkins.getInstance().getRootUrl());
 
         String flavor = req.getParameter("flavor");
         if(flavor==null)    flavor="atom";
         flavor = flavor.replace('/', '_'); // Don't allow path to any jelly
 
-        req.getView(Hudson.getInstance(),"/hudson/"+flavor+".jelly").forward(req,rsp);
+        req.getView(Jenkins.getInstance(),"/hudson/"+flavor+".jelly").forward(req,rsp);
     }
 }

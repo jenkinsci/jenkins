@@ -34,7 +34,14 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class NullChangeLogParser extends ChangeLogParser {
+    
+    public static final NullChangeLogParser INSTANCE = new NullChangeLogParser();
+    
     public ChangeLogSet<? extends ChangeLogSet.Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
         return ChangeLogSet.createEmpty(build);
+    }
+    
+    public Object readResolve() {
+        return INSTANCE;
     }
 }

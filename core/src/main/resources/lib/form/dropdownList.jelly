@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
@@ -45,15 +46,16 @@ THE SOFTWARE.
         </td>
         <td class="setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList" onchange="updateDropDownList(this)">
+            <select class="setting-input dropdownList">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>
         </td>
         <j:if test="${attrs.help!=null}">
             <td class="setting-help">
-                <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.gif"
-                                                                                       alt="Help for feature: ${title}"/></a>
+                <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png"
+                                                                                       alt="Help for feature: ${title}"
+                                                                                       height="16" width="16"/></a>
             </td>
         </j:if>
     </tr>
@@ -71,7 +73,7 @@ THE SOFTWARE.
 
     <j:if test="${!empty(attrs.description)}">
         <f:description>
-            ${description}
+            <j:out value="${description}"/>
         </f:description>
     </j:if>
     <j:if test="${attrs.help!=null}">

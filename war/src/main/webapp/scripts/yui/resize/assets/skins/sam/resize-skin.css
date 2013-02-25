@@ -1,12 +1,13 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /* Give the handle a background color */
 .yui-skin-sam .yui-resize .yui-resize-handle {
     background-color: #F2F2F2;
+    zoom: 1;
 }
 /* Give the active handle a different color */
 .yui-skin-sam .yui-resize .yui-resize-handle-active {
@@ -18,6 +19,7 @@ version: 2.5.1
 .yui-skin-sam .yui-resize .yui-resize-handle-l-active,
 .yui-skin-sam .yui-resize .yui-resize-handle-r-active {
     height: 100%;
+    zoom: 1;
 }
 /* Give a border to the 8-way knob style handles */
 .yui-skin-sam .yui-resize-knob .yui-resize-handle {
@@ -38,7 +40,8 @@ version: 2.5.1
 .yui-skin-sam .yui-resize-status {
     border: 1px solid #A6982B;
     border-top: 1px solid #D4C237;
-    background-color: #FFEE69
+    background-color: #FFEE69;
+    color: #000;
 }
 
 
@@ -125,4 +128,15 @@ version: 2.5.1
 .yui-skin-sam .yui-resize-knob .yui-resize-handle-r-active {
     height: 6px;
     width: 6px;
+}
+
+.yui-skin-sam .yui-resize-textarea .yui-resize-handle-r {
+    right: -8px;
+}
+.yui-skin-sam .yui-resize-textarea .yui-resize-handle-b {
+    bottom: -8px;
+}
+.yui-skin-sam .yui-resize-textarea .yui-resize-handle-br {
+    right: -8px;
+    bottom: -8px;
 }

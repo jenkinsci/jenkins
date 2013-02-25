@@ -27,14 +27,27 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Environment;
+import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
+import hudson.scm.SCM;
+import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
 import org.jvnet.tiger_types.Types;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Receives notifications about builds.
@@ -74,7 +87,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      which becomes a part of the "console output" of this build. But when this method runs,
      *      the build is considered completed, so its status cannot be changed anymore.
      */
-    public void onCompleted(R r, TaskListener listener) {}
+    public void onCompleted(R r, @Nonnull TaskListener listener) {}
 
     /**
      * Called after a build is moved to the {@link Run.State#COMPLETED} state.
@@ -96,6 +109,36 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      which becomes a part of the "console output" of this build.
      */
     public void onStarted(R r, TaskListener listener) {}
+
+    /**
+     * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
+     * Can contribute additional properties/env vars to the environment.
+     *
+     * <p>
+     * A typical strategy is for implementations to check {@link JobProperty}s and other configuration
+     * of the project to determine the environment to inject, which allows you to achieve the equivalent of
+     * {@link BuildWrapper}, but without UI.
+     *
+     * @param build
+     *      The build in progress for which an {@link Environment} object is created.
+     *      Never null.
+     * @param launcher
+     *      This launcher can be used to launch processes for this build.
+     *      If the build runs remotely, launcher will also run a job on that remote machine.
+     *      Never null.
+     * @param listener
+     *      Can be used to send any message.
+     * @return
+     *      non-null if the build can continue, null if there was an error
+     *      and the build needs to be aborted.
+     * @throws IOException
+     *      terminates the build abnormally. Hudson will handle the exception
+     *      and reports a nice error message.
+     * @since 1.410
+     */
+    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    	return new Environment() {};
+    }
 
     /**
      * Called right before a build is going to be deleted.
@@ -130,22 +173,30 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static final CopyOnWriteList<RunListener> LISTENERS = ExtensionListView.createCopyOnWriteList(RunListener.class);
 
     /**
-     * Fires the {@link #onCompleted} event.
+     * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
-    public static void fireCompleted(Run r, TaskListener listener) {
+    public static void fireCompleted(Run r, @Nonnull TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onCompleted(r,listener);
+                try {
+                    l.onCompleted(r,listener);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
     /**
-     * Fires the {@link #onStarted} event.
+     * Fires the {@link #onStarted(Run, TaskListener)} event.
      */
     public static void fireStarted(Run r, TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onStarted(r,listener);
+                try {
+                    l.onStarted(r,listener);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -153,9 +204,16 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
+        if (Jenkins.getInstance() == null) {
+            return;
+        }
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onFinalized(r);
+                try {
+                    l.onFinalized(r);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -165,7 +223,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireDeleted(Run r) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onDeleted(r);
+                try {
+                    l.onDeleted(r);
+                } catch (Exception e) {
+                    report(e);
+                }
         }
     }
 
@@ -173,6 +235,12 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Returns all the registered {@link RunListener} descriptors.
      */
     public static ExtensionList<RunListener> all() {
-        return Hudson.getInstance().getExtensionList(RunListener.class);
+        return Jenkins.getInstance().getExtensionList(RunListener.class);
     }
+
+    private static void report(Throwable e) {
+        LOGGER.log(Level.WARNING, "RunListener failed",e);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
 }

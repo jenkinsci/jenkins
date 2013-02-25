@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2009, Sun Microsystems, Inc.
+Copyright (c) 2009, Sun Microsystems, Inc., CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <!-- XXX t:label? -->
   <f:entry title="${%Version}" field="id">
@@ -34,8 +35,8 @@ THE SOFTWARE.
         <select name="_.id">
           <j:forEach var="family" items="${jdks}">
             <optgroup label="${family.name}">
-              <j:forEach var="jdk" items="${family.list}">
-                <f:option value="${jdk.id}" selected="${jdk.id==instance.id}">${jdk.name}</f:option>
+              <j:forEach var="jdk" items="${family.releases}">
+                <f:option value="${jdk.name}" selected="${jdk.matchesId(instance.id)}">${jdk.title}</f:option>
               </j:forEach>
             </optgroup>
           </j:forEach>

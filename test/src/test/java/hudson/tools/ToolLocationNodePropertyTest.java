@@ -39,6 +39,7 @@ import hudson.maven.MavenModuleSet;
 
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import junit.framework.Assert;
 
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -60,11 +61,11 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
 
     public void testFormRoundTrip() throws Exception {
 
-        MavenInstallation.DescriptorImpl mavenDescriptor = hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
+        MavenInstallation.DescriptorImpl mavenDescriptor = jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
         mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", NO_PROPERTIES));
-        AntInstallation.DescriptorImpl antDescriptor = hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class);
+        AntInstallation.DescriptorImpl antDescriptor = jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class);
         antDescriptor.setInstallations(new AntInstallation("ant", "XXX", NO_PROPERTIES));
-        JDK.DescriptorImpl jdkDescriptor = hudson.getDescriptorByType(JDK.DescriptorImpl.class);
+        JDK.DescriptorImpl jdkDescriptor = jenkins.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
@@ -102,7 +103,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
@@ -111,7 +112,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
+                new ToolLocationNodeProperty.ToolLocation(jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();
@@ -128,7 +129,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testAnt() throws Exception {
         Ant.AntInstallation ant = configureDefaultAnt();
         String antPath = ant.getHome();
-        Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
+        Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
 
         project.setScm(new SingleFileSCM("build.xml", "<project name='foo'/>"));
         project.getBuildersList().add(new Ant("-version", "ant", null,null,null));
@@ -138,7 +139,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
+                new ToolLocationNodeProperty.ToolLocation(jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();
@@ -149,13 +150,13 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
     public void testNativeMaven() throws Exception {
         MavenInstallation maven = configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Hudson.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
 
         MavenModuleSet project = createMavenProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
         project.setAssignedLabel(slave.getSelfLabel());
-        project.setJDK(hudson.getJDK("default"));
+        project.setJDK(jenkins.getJDK("default"));
 
         project.setMaven("maven");
         project.setGoals("clean");
@@ -164,7 +165,7 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
+                new ToolLocationNodeProperty.ToolLocation(jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();

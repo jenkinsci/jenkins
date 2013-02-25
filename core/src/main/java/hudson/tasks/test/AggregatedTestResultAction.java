@@ -126,7 +126,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
 
         public ChildReport(AbstractBuild<?, ?> child, AbstractTestResultAction result) {
             this.child = child;
-            this.result = result.getResult();
+            this.result = result!=null ? result.getResult() : null;
         }
     }
 

@@ -1,14 +1,20 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /* Menu & MenuBar styles */
 
+.yuimenu {
+
+    top: -999em;
+    left: -999em;
+
+}
+
 .yuimenubar {
 
-    visibility: visible;
     position: static;
 
 }
@@ -16,10 +22,7 @@ version: 2.5.1
 .yuimenu .yuimenu,
 .yuimenubar .yuimenu {
 
-    visibility: hidden;
     position: absolute;
-    top: -10000px;
-    left: -10000px;
 
 }
 
@@ -186,7 +189,7 @@ PLEASE NOTE:
 ** For more information on this issue, see:
 
    + https://bugzilla.mozilla.org/show_bug.cgi?id=187435
-   + SourceForge bug #1723530
+   + YUILibrary bug #1723530
 
 */
 
@@ -370,7 +373,9 @@ when one of its submenus is visible.
 }
 
 .yuimenuitemlabel,
-.yuimenubaritemlabel {
+.yuimenuitemlabel:visited,
+.yuimenubaritemlabel,
+.yuimenubaritemlabel:visited {
 
     font-size: 85%;
     color: #000;
@@ -439,7 +444,9 @@ when one of its submenus is visible.
 }
 
 .yuimenubaritemlabel-selected,
-.yuimenuitemlabel-selected {
+.yuimenubaritemlabel-selected:visited,
+.yuimenuitemlabel-selected,
+.yuimenuitemlabel-selected:visited {
 
     text-decoration: underline;
     color: #fff;
@@ -468,7 +475,9 @@ when one of its submenus is visible.
 /* Disabled MenuItem */
 
 .yuimenubaritemlabel-disabled,
-.yuimenuitemlabel-disabled {
+.yuimenubaritemlabel-disabled:visited,
+.yuimenuitemlabel-disabled,
+.yuimenuitemlabel-disabled:visited {
 
     cursor: default;
     color: #b9b9b9;

@@ -36,10 +36,14 @@ public class EnableJobCommandTest extends HudsonTestCase {
 
         def cli = new CLI(getURL())
 
-        cli.execute(["disable-job",p.name])
-        assertTrue(p.disabled)
-        cli.execute(["enable-job",p.name])
-        assertFalse(p.disabled)
+        try {
+            cli.execute(["disable-job",p.name])
+            assertTrue(p.disabled)
+            cli.execute(["enable-job",p.name])
+            assertFalse(p.disabled)
+        } finally {
+            cli.close();
+        }
     }
 
 }

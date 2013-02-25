@@ -82,4 +82,12 @@ public final class WorkUnit {
     public boolean isMainWork() {
         return context.task==work;
     }
+
+    @Override
+    public String toString() {
+        if (work==context.task)
+            return super.toString()+"[work="+context.task.getFullDisplayName()+"]";
+        else
+            return super.toString()+"[work="+work+",context.task="+context.task.getFullDisplayName()+"]";
+    }
 }

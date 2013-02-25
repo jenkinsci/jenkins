@@ -23,16 +23,28 @@
  */
 package hudson.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import junit.framework.TestCase;
+import hudson.XmlFile;
+import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
-
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.InterruptedBuildAction;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Bug;
 
 /**
  * Tests for XML serialization of java objects.
- * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder
+ * @author Kohsuke Kawaguchi, Mike Dillon, Alan Harder, Richard Mortimer
  */
 public class XStream2Test extends TestCase {
 
@@ -97,6 +109,8 @@ public class XStream2Test extends TestCase {
      * (HUDSON-5769)
      */
     public void testUnmarshalThrowableMissingField() {
+        Level oldLevel = disableLogging();
+        
         Baz baz = new Baz();
         baz.myFailure = new Exception("foo");
 
@@ -114,16 +128,27 @@ public class XStream2Test extends TestCase {
                 + "</myFailure></hudson.util.XStream2Test_-Baz>");
         // Object should load, despite "missingField" in XML above
         assertEquals("hoho", baz.myFailure.getMessage());
+        
+        enableLogging(oldLevel);
+    }
+
+    private Level disableLogging() {
+        Level oldLevel = Logger.getLogger(RobustReflectionConverter.class.getName()).getLevel();
+        Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
+        return oldLevel;
+    }
+    
+    private void enableLogging(Level oldLevel) {
+        Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(oldLevel);
     }
 
     private static class ImmutableMapHolder {
-        ImmutableMap m;
+        ImmutableMap<?,?> m;
     }
 
     private static class MapHolder {
-        Map m;
+        Map<?,?> m;
     }
-
 
     public void testImmutableMap() {
         XStream2 xs = new XStream2();
@@ -144,7 +169,7 @@ public class XStream2Test extends TestCase {
         ImmutableMapHolder a = new ImmutableMapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        System.out.println(xml);
+        //System.out.println(xml);
         assertFalse("shouldn't contain the class name",xml.contains("google"));
         assertFalse("shouldn't contain the class name",xml.contains("class"));
         a = (ImmutableMapHolder)xs.fromXML(xml);
@@ -157,7 +182,7 @@ public class XStream2Test extends TestCase {
         MapHolder a = new MapHolder();
         a.m = m;
         String xml = xs.toXML(a);
-        System.out.println(xml);
+        //System.out.println(xml);
         assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableMap.class.getName()+'\"'));
         a = (MapHolder)xs.fromXML(xml);
 
@@ -165,9 +190,132 @@ public class XStream2Test extends TestCase {
         assertEquals(m,a.m);
     }
 
-    // @Bug(8006) -- Previously a null entry in an array caused NPE
+    private static class ImmutableListHolder {
+        ImmutableList<?> l;
+    }
+
+    private static class ListHolder {
+        List<?> l;
+    }
+
+    public void testImmutableList() {
+        XStream2 xs = new XStream2();
+
+        roundtripImmutableList(xs, ImmutableList.of());
+        roundtripImmutableList(xs, ImmutableList.of("abc"));
+        roundtripImmutableList(xs, ImmutableList.of("abc", "def"));
+
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of());
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc"));
+        roundtripImmutableListAsPlainList(xs, ImmutableList.of("abc", "def"));
+    }
+
+    /**
+     * Since the field type is {@link ImmutableList}, XML shouldn't contain a reference to the type name.
+     */
+    private void roundtripImmutableList(XStream2 xs, ImmutableList<?> l) {
+        ImmutableListHolder a = new ImmutableListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertFalse("shouldn't contain the class name",xml.contains("google"));
+        assertFalse("shouldn't contain the class name",xml.contains("class"));
+        a = (ImmutableListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
+    }
+
+    private void roundtripImmutableListAsPlainList(XStream2 xs, ImmutableList<?> l) {
+        ListHolder a = new ListHolder();
+        a.l = l;
+        String xml = xs.toXML(a);
+        //System.out.println(xml);
+        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableList.class.getName()+'\"'));
+        a = (ListHolder)xs.fromXML(xml);
+
+        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l,a.l);
+    }
+
+    @Bug(8006) // Previously a null entry in an array caused NPE
     public void testEmptyStack() {
         assertEquals("<object-array><null/><null/></object-array>",
                      Run.XSTREAM.toXML(new Object[2]).replaceAll("[ \n\r\t]+", ""));
     }
+
+    @Bug(9843)
+    public void testCompatibilityAlias() {
+        XStream2 xs = new XStream2();
+        xs.addCompatibilityAlias("legacy.Point",Point.class);
+        Point pt = (Point)xs.fromXML("<legacy.Point><x>1</x><y>2</y></legacy.Point>");
+        assertEquals(1,pt.x);
+        assertEquals(2,pt.y);
+        String xml = xs.toXML(pt);
+        //System.out.println(xml);
+        assertFalse("Shouldn't use the alias when writing back",xml.contains("legacy"));
+    }
+
+    public static class Point {
+        public int x,y;
+    }
+
+    /**
+     * Unmarshall a matrix build.xml result.
+     */
+    @Bug(10903)
+    public void testUnMarshalRunMatrix() {
+        InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
+        MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
+        assertNotNull(result);
+        assertNotNull(result.getPersistentActions());
+        assertEquals(2, result.getPersistentActions().size());
+        InterruptedBuildAction action = (InterruptedBuildAction) result.getPersistentActions().get(1);
+        assertNotNull(action.getCauses());
+        assertEquals(1, action.getCauses().size());
+        CauseOfInterruption.UserInterruption cause =
+            (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
+        assertNotNull(cause);
+    }
+
+    public static class Foo2 {
+        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
+    }
+
+    /**
+     * Tests that ConcurrentHashMap is serialized into a more compact format,
+     * but still can deserialize to older, verbose format.
+     */
+    public void testConcurrentHashMapSerialization() throws Exception {
+        Foo2 foo = new Foo2();
+        foo.m.put("abc","def");
+        foo.m.put("ghi","jkl");
+        File v = File.createTempFile("hashmap", "xml");
+        try {
+            new XmlFile(v).write(foo);
+
+            // should serialize like map
+            String xml = FileUtils.readFileToString(v);
+            assertFalse(xml.contains("java.util.concurrent"));
+            //System.out.println(xml);
+            Foo2 deserialized = (Foo2) new XStream2().fromXML(xml);
+            assertEquals(2,deserialized.m.size());
+            assertEquals("def", deserialized.m.get("abc"));
+            assertEquals("jkl", deserialized.m.get("ghi"));
+        } finally {
+            v.delete();
+        }
+
+        // should be able to read in old data just fine
+        Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
+        assertEquals(1,map.m.size());
+        assertEquals("def",map.m.get("abc"));
+    }
+
+    public void testTrimVersion() throws Exception {
+        assertEquals("3.2", XStream2.trimVersion("3.2"));
+        assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
+        assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
+    }
+
 }

@@ -62,6 +62,7 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");
         
         // copy classworlds 1.1 for maven2 builds
+        // if this line fails during the unit test from IDE, it means you need to "mvn compile" maven-plugin
         root.child( "classworlds.jar" ).copyFrom(getClass().getClassLoader().getResource("classworlds.jar"));
         logger.println("Copied classworlds.jar");
     }

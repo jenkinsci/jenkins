@@ -28,7 +28,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -142,9 +142,10 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
 		 * @return
 		 *      True if any upstream projects are building or in queue, false otherwise.
 		 */
-		private boolean areUpstreamsBuilding(AbstractProject<?,?> downstreamProject,
+		@SuppressWarnings("rawtypes")
+        private boolean areUpstreamsBuilding(AbstractProject<?,?> downstreamProject,
 				AbstractProject<?,?> excludeProject) {
-			DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+			DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
 			Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
 			for (AbstractProject tup : tups) {
 				if(tup!=excludeProject && (tup.isBuilding() || tup.isInQueue()))
@@ -154,7 +155,7 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
 		}
 
 		private boolean inDownstreamProjects(AbstractProject<?,?> downstreamProject) {
-			DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+			DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
 			Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
 		
 			for (AbstractProject tup : tups) {

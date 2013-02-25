@@ -25,7 +25,7 @@ package hudson.init.impl;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Messages;
 import org.apache.commons.io.FileUtils;
 
@@ -38,7 +38,7 @@ import java.io.IOException;
  */
 public class InitialUserContent {
     @Initializer(after=JOB_LOADED)
-    public static void init(Hudson h) throws IOException {
+    public static void init(Jenkins h) throws IOException {
         File userContentDir = new File(h.getRootDir(), "userContent");
         if(!userContentDir.exists()) {
             userContentDir.mkdirs();

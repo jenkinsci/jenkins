@@ -57,13 +57,13 @@ public class CharacterEncodingFilter implements Filter {
             = Boolean.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        LOGGER.log(Level.INFO,
+        LOGGER.log(Level.FINE,
                 "CharacterEncodingFilter initialized. DISABLE_FILTER: {0} FORCE_ENCODING: {1}",
                 new Object[]{DISABLE_FILTER, FORCE_ENCODING});
     }
 
     public void destroy() {
-        LOGGER.info("CharacterEncodingFilter destroyed.");
+        LOGGER.fine("CharacterEncodingFilter destroyed.");
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

@@ -26,11 +26,12 @@ package hudson.lifecycle;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.Kernel32;
 import static hudson.util.jna.Kernel32.MOVEFILE_DELAY_UNTIL_REBOOT;
 import static hudson.util.jna.Kernel32.MOVEFILE_REPLACE_EXISTING;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -59,7 +60,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
      */
     private void updateHudsonExeIfNeeded() {
         try {
-            File rootDir = Hudson.getInstance().getRootDir();
+            File rootDir = Jenkins.getInstance().getRootDir();
 
             URL exe = getClass().getResource("/windows-service/jenkins.exe");
             String ourCopy = Util.getDigestOf(exe.openStream());
@@ -106,7 +107,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         String baseName = dest.getName();
         baseName = baseName.substring(0,baseName.indexOf('.'));
 
-        File rootDir = Hudson.getInstance().getRootDir();
+        File rootDir = Jenkins.getInstance().getRootDir();
         File copyFiles = new File(rootDir,baseName+".copies");
 
         FileWriter w = new FileWriter(copyFiles, true);

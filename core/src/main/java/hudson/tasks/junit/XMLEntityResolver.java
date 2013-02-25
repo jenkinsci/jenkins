@@ -23,12 +23,17 @@
  */
 package hudson.tasks.junit;
 
+import hudson.Extension;
+import hudson.tasks.junit.SuiteResult.SuiteResultParserConfigurationContext;
+import hudson.util.io.ParserConfigurator;
+import org.dom4j.io.SAXReader;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -43,7 +48,8 @@ import java.util.logging.Logger;
  *
  * @author Mikael Carneholm
  */
-class XMLEntityResolver implements EntityResolver {
+@Extension
+public class XMLEntityResolver extends ParserConfigurator implements EntityResolver {
 
     private static final String TESTNG_NAMESPACE = "http://testng.org/";
 
@@ -52,7 +58,9 @@ class XMLEntityResolver implements EntityResolver {
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         if (systemId != null) {
-            LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Will try to resolve systemId [" + systemId + "]");
+            }
             // TestNG system-ids
             if (systemId.startsWith(TESTNG_NAMESPACE)) {
                 LOGGER.fine("It's a TestNG document, will try to lookup DTD in classpath");
@@ -65,6 +73,16 @@ class XMLEntityResolver implements EntityResolver {
         }
         // Default fallback
         return null;
+    }
+
+    /**
+     * Install EntityResolver for resolving DTDs, which are in files created by TestNG.
+     */
+    @Override
+    public void configure(SAXReader reader, Object context) {
+        if (context instanceof SuiteResultParserConfigurationContext) {
+            reader.setEntityResolver(this);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(XMLEntityResolver.class.getName());

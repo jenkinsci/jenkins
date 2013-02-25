@@ -41,9 +41,10 @@ returns [Label l]
 term1
 returns [Label l]
 { Label r; }
-  : l=term2( IFF r=term2 {l=l.iff(r);} )?
+  : l=term2( IFF r=term2 {l=l.iff(r);} )*
   ;
 
+// (a->b)->c != a->(b->c) (for example in case of a=F,b=T,c=F) so don't allow chaining
 term2
 returns [Label l]
 { Label r; }
@@ -53,13 +54,13 @@ returns [Label l]
 term3
 returns [Label l]
 { Label r; }
-  : l=term4 ( OR r=term4 {l=l.or(r);} )?
+  : l=term4 ( OR r=term4 {l=l.or(r);} )*
   ;
 
 term4
 returns [Label l]
 { Label r; }
-  : l=term5 ( AND r=term5 {l=l.and(r);} )?
+  : l=term5 ( AND r=term5 {l=l.and(r);} )*
   ;
 
 term5

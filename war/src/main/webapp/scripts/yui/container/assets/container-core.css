@@ -1,14 +1,18 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 .yui-overlay,
 .yui-panel-container {
     visibility: hidden;
     position: absolute;
     z-index: 2;
+}
+
+.yui-panel {
+    position:relative;
 }
 
 .yui-panel-container form {
@@ -99,7 +103,7 @@ PLEASE NOTE:
 ** For more information on this issue, see:
 
    + https://bugzilla.mozilla.org/show_bug.cgi?id=187435
-   + SourceForge bug #1723530
+   + YUILibrary bug #1723530
 
 */
 
@@ -140,7 +144,7 @@ PLEASE NOTE:
     padding-bottom: 1px;
 }
 
-.yui-effect-fade .underlay {
+.yui-effect-fade .underlay, .yui-effect-fade .yui-tt-shadow {
     display:none;
 }
 
@@ -154,7 +158,19 @@ PLEASE NOTE:
 */
 
 .yui-tt-shadow {
-
     position: absolute;
+}
 
+.yui-override-padding {
+    padding:0 !important;
+}
+
+.yui-panel-container .container-close {
+    overflow:hidden;
+    text-indent:-10000em;
+    text-decoration:none;
+}
+
+.yui-overlay.yui-force-redraw, .yui-panel-container.yui-force-redraw {
+    margin-bottom:1px;
 }

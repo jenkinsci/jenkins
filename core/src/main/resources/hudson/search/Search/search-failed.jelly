@@ -25,12 +25,13 @@ THE SOFTWARE.
 <!--
   Used when the search didn't have the exact hit.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="q" value="${request.getParameter('q')}"/>
   <j:new var="h" className="hudson.Functions" /><!-- needed for printing title. -->
-  <l:layout title="${%Search for} '${h.escape(q)}'">
+  <l:layout title="${%Search for} '${q}'">
     <l:main-panel>
-      <h1>${%Search for} '${h.escape(q)}'</h1>
+      <h1>${%Search for} '${q}'</h1>
       <j:set var="items" value="${it.getSuggestions(request,q)}"/>
       <j:choose>
         <j:when test="${items.size()==0}">
@@ -41,11 +42,15 @@ THE SOFTWARE.
         <j:otherwise>
           <ol>
             <j:forEach var="i" items="${items}">
-              <li>
+              <li id="item_${i.path}">
                 <a href="?q=${i.path}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>
+            <j:if test="${items.hasMoreResults()}">
+                <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):20}"/>
+                <em>result has been truncated, <a href="?q=${q}&amp;max=${max+20}">see 20 more</a></em>
+            </j:if>
         </j:otherwise>
       </j:choose>
     </l:main-panel>

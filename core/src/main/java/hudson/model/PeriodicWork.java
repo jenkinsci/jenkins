@@ -28,6 +28,7 @@ import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 
 import java.util.logging.Logger;
 import java.util.Random;
@@ -74,18 +75,24 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
     public long getInitialDelay() {
-        return Math.abs(new Random().nextLong())%getRecurrencePeriod();
+        long l = RANDOM.nextLong();
+        // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
+        if (l==Long.MIN_VALUE)
+            l++;
+        return Math.abs(l)%getRecurrencePeriod();
     }
 
     /**
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Hudson.getInstance().getExtensionList(PeriodicWork.class);
+        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
     }
 
     // time constants
     protected static final long MIN = 1000*60;
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;
+
+    private static final Random RANDOM = new Random();
 }

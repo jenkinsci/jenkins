@@ -57,7 +57,7 @@ public interface PermalinkProjectAction extends Action {
     /**
      * Permalink as a strategy pattern.
      */
-    public static abstract class Permalink {
+    abstract class Permalink {
         /**
          * String to be displayed in the UI, such as "Last successful build".
          * The convention is to upper case the first letter.

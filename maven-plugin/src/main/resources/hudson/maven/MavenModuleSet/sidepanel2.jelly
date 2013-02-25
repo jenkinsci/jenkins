@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!it.isAggregatorStyleBuild()}">
     <!--
@@ -30,6 +31,6 @@ THE SOFTWARE.
       sense when modules are built in parallel.
       See related HUDSON-1892 for how this confuses users.
     -->
-    <t:queue items="${it.queueItems}"/>
+    <t:queue items="${it.approximateQueueItemsQuickly}"/>
   </j:if>
 </j:jelly>

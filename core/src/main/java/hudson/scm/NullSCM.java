@@ -55,7 +55,7 @@ public class NullSCM extends SCM {
     }
 
     public ChangeLogParser createChangeLogParser() {
-        return new NullChangeLogParser();
+        return NullChangeLogParser.INSTANCE;
     }
 
     @Extension

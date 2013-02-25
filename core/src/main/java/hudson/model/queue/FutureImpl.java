@@ -24,7 +24,7 @@
 package hudson.model.queue;
 
 import hudson.model.Executor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
@@ -32,13 +32,15 @@ import hudson.remoting.AsyncFutureImpl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created when {@link Queue.Item} is created so that the caller can track the progress of the task.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class FutureImpl extends AsyncFutureImpl<Executable> {
+public final class FutureImpl extends AsyncFutureImpl<Executable> implements QueueTaskFuture<Executable> {
     private final Task task;
 
     /**
@@ -46,13 +48,28 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> {
      */
     private final Set<Executor> executors = new HashSet<Executor>();
 
+    /**
+     * {@link Future} that completes when the task started running.
+     *
+     * In contrast, {@link FutureImpl} will complete when the task finishes.
+     */
+    /*package*/ final AsyncFutureImpl<Executable> start = new AsyncFutureImpl<Executable>();
+
     public FutureImpl(Task task) {
         this.task = task;
     }
 
+    public Future<Executable> getStartCondition() {
+        return start;
+    }
+
+    public final Executable waitForStart() throws InterruptedException, ExecutionException {
+        return getStartCondition().get();
+    }
+
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        Queue q = Hudson.getInstance().getQueue();
+        Queue q = Jenkins.getInstance().getQueue();
         synchronized (q) {
             synchronized (this) {
                 if(!executors.isEmpty()) {

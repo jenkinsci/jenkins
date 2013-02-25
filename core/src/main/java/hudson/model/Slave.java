@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
-import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -57,6 +57,7 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -118,12 +119,17 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
     
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
+    
+    /**
+     * Id of user which creates this slave {@link User}.
+     */
+    private String userId;
 
     @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -153,7 +159,15 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
         
         this.nodeProperties.replaceBy(nodeProperties);
+         Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
+       if(node!=null){
+            this.userId= node.getUserId(); //slave has already existed
+        }
+       else{
+            User user = User.current();
+            userId = user!=null ? user.getId() : "anonymous";     
+        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -163,7 +177,20 @@ public abstract class Slave extends Node implements Serializable {
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
+    
+    /**
+     * Return id of user which created this slave
+     * 
+     * @return id of user
+     */
+    public String getUserId() {
+        return userId;
+    }
 
+    public void setUserId(String userId){
+        this.userId = userId;
+    }
+    
     public ComputerLauncher getLauncher() {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
@@ -216,6 +243,13 @@ public abstract class Slave extends Node implements Serializable {
         return Util.fixNull(label).trim();
     }
 
+    @Override
+    public void setLabelString(String labelString) throws IOException {
+        this.label = Util.fixNull(labelString).trim();
+        // Compute labels now.
+        getAssignedLabels();
+    }
+
     public ClockDifference getClockDifference() throws IOException, InterruptedException {
         VirtualChannel channel = getChannel();
         if(channel==null)
@@ -235,7 +269,7 @@ public abstract class Slave extends Node implements Serializable {
     public FilePath getWorkspaceFor(TopLevelItem item) {
         FilePath r = getWorkspaceRoot();
         if(r==null)     return null;    // offline
-        return r.child(item.getName());
+        return r.child(item.getFullName());
     }
 
     public FilePath getRootPath() {
@@ -286,10 +320,10 @@ public abstract class Slave extends Node implements Serializable {
         public URL getURL() throws MalformedURLException {
             String name = fileName;
             if (name.equals("hudson-cli.jar"))  name="jenkins-cli.jar";
-            URL res = Hudson.getInstance().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
-                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/generated-resources/WEB-INF/"+name);
+                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/jenkins/WEB-INF/"+name);
             }
             return res;
         }
@@ -335,26 +369,20 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Invoked by XStream when this object is read into memory.
      */
-    private Object readResolve() {
+    protected Object readResolve() {
         // convert the old format to the new one
-        if(command!=null && agentCommand==null) {
-            if(command.length()>0)  command += ' ';
-            agentCommand = command+"java -jar ~/bin/slave.jar";
-        }
-        if (command!=null || localFS!=null)
-            OldDataMonitor.report(Hudson.getInstance(), "1.69");
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
                     ? new JNLPLauncher()
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Hudson.getInstance());
+            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
         return this;
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Hudson.getInstance().getDescriptorOrDie(getClass());
+        Descriptor d = Jenkins.getInstance().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
@@ -384,25 +412,9 @@ public abstract class Slave extends Node implements Serializable {
 // backward compatibility
 //
     /**
-     * In Hudson < 1.69 this was used to store the local file path
-     * to the remote workspace. No longer in use.
-     *
-     * @deprecated
-     *      ... but still in use during the transition.
-     */
-    private File localFS;
-
-    /**
-     * In Hudson < 1.69 this was used to store the command
-     * to connect to the remote machine, like "ssh myslave".
-     *
-     * @deprecated
-     */
-    private transient String command;
-
-    /**
      * Command line to launch the agent, like
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * @deprecated in 1.216
      */
     private transient String agentCommand;
 

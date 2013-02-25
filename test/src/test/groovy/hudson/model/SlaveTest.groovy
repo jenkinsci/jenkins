@@ -25,6 +25,8 @@ package hudson.model
 
 import hudson.slaves.DumbSlave
 import org.jvnet.hudson.test.GroovyHudsonTestCase
+import org.apache.commons.io.IOUtils
+import hudson.slaves.JNLPLauncher
 
 /**
  *
@@ -37,7 +39,43 @@ public class SlaveTest extends GroovyHudsonTestCase {
      */
     void testFormValidation() {
         executeOnServer {
-            assertNotNull(hudson.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"))
+            assertNotNull(jenkins.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"))
         }
+    }
+
+    /**
+     * Programmatica config.xml submission.
+     */
+    void testSlaveConfigDotXml() {
+        DumbSlave s = createSlave();
+        def wc = createWebClient()
+        def p = wc.goTo("/computer/${s.name}/config.xml","application/xml");
+        def xml = p.webResponse.contentAsString
+        new XmlSlurper().parseText(xml)   // verify that it is XML
+
+        // make sure it survives the roundtrip
+        post("/computer/${s.name}/config.xml",xml);
+
+        assertNotNull(jenkins.getNode(s.name))
+
+        xml = IOUtils.toString(getClass().getResource("SlaveTest/slave.xml").openStream());
+        xml = xml.replace("NAME",s.name)
+        post("/computer/${s.name}/config.xml",xml);
+
+        s = jenkins.getNode(s.name)
+        assertNotNull(s)
+        assertEquals("some text",s.nodeDescription)
+        assertEquals(JNLPLauncher.class,s.launcher.class)
+    }
+    
+    def post(url,String xml) {
+        HttpURLConnection con = new URL(this.getURL(),url).openConnection();
+        con.requestMethod = "POST"
+        con.setRequestProperty("Content-Type","application/xml;charset=UTF-8")
+        con.setRequestProperty(".crumb","test")
+        con.doOutput = true;
+        con.outputStream.write(xml.getBytes("UTF-8"))
+        con.outputStream.close();
+        IOUtils.copy(con.inputStream,System.out)
     }
 }

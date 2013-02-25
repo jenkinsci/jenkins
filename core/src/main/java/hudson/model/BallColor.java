@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.util.ColorPalette;
+import jenkins.model.Jenkins;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;
@@ -66,6 +67,8 @@ public enum BallColor implements StatusIcon {
     DISABLED_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
     ABORTED("grey",Messages._BallColor_Aborted(), ColorPalette.GREY),
     ABORTED_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
+    NOTBUILT("grey",Messages._BallColor_NotBuilt(), ColorPalette.GREY),
+    NOTBUILT_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
     ;
 
     private final Localizable description;
@@ -81,14 +84,14 @@ public enum BallColor implements StatusIcon {
     }
 
     /**
-     * String like "red.gif" that represents the file name of the image.
+     * String like "red.png" that represents the file name of the image.
      */
     public String getImage() {
         return image;
     }
 
     public String getImageOf(String size) {
-        return Stapler.getCurrentRequest().getContextPath()+Hudson.RESOURCE_PATH+"/images/"+size+'/'+image;
+        return Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/"+size+'/'+image;
     }
 
     /**

@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/computer.gif" width="48" height="48" alt=""/>
+        <img src="${imagesURL}/48x48/computer.png" width="48" height="48" alt=""/>
         ${it.name}
       </h1>
 
@@ -35,7 +36,7 @@ THE SOFTWARE.
         ${%Nodes:}
         <j:forEach var="n" items="${it.nodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <a href="${rootURL}/computer/${n.nodeName}">
+          <a href="${rootURL}/computer/${n.nodeName}" class="model-link">
             <img src="${imagesURL}/16x16/${c.icon}" width="16" height="16" alt=""/>
             ${c.displayName}
           </a>
@@ -52,7 +53,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" />
+          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
         </j:otherwise>
       </j:choose>
 

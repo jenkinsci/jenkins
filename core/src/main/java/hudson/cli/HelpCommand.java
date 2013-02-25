@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -38,12 +38,12 @@ import java.util.TreeMap;
 public class HelpCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Lists all the available commands";
+        return Messages.HelpCommand_ShortDescription();
     }
 
     protected int run() {
-        if (!Hudson.getInstance().hasPermission(Hudson.READ)) {
-            stderr.println("You must authenticate to access this Hudson.\n"
+        if (!Jenkins.getInstance().hasPermission(Jenkins.READ)) {
+            stderr.println("You must authenticate to access this Jenkins.\n"
                     + "Use --username/--password/--password-file parameters or login command.");
             return 0;
         }

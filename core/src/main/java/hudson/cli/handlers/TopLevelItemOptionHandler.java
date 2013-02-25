@@ -1,7 +1,7 @@
 package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
@@ -23,13 +23,20 @@ public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public int parseArguments(Parameters params) throws CmdLineException {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         String src = params.getParameter(0);
 
-        TopLevelItem s = h.getItem(src);
-        if (s==null)
-            throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
+        TopLevelItem s = h.getItemByFullName(src, TopLevelItem.class);
+        if (s==null) {
+            AbstractProject nearest = AbstractProject.findNearest(src);
+            if (nearest!=null)
+                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant '"+ nearest.getFullName() +"'?");
+            else
+                throw new CmdLineException(owner, "No such job '"+src+"'");
+        }
+            
         setter.addValue(s);
         return 1;
     }

@@ -28,13 +28,11 @@ import org.mortbay.jetty.webapp.WebAppContext;
 
 import javax.servlet.ServletContextListener;
 
-import hudson.model.Hudson;
-
 /**
  * Kills off {@link ServletContextListener}s loaded from web.xml.
  *
  * <p>
- * This is so that the harness can create the {@link Hudson} object.
+ * This is so that the harness can create the {@link jenkins.model.Jenkins} object.
  * with the home directory of our choice.
  *
  * @author Kohsuke Kawaguchi

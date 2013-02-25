@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <tr id="row${it.id}">
     <td style="vertical-align: top; padding-right:1em">${it.name}</td>
     <j:set var="status" value="${it.status}" /><!-- so that two reference to this variable resolve to the same value. -->
-    <td id="status${status.id}">
+    <td id="status${status.id}" style="vertical-align:middle">
       <st:include it="${status}" page="status.jelly" />
     </td>
   </tr>

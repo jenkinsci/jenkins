@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
@@ -32,23 +33,29 @@ import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
 import hudson.util.DescribableList;
+import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -58,7 +65,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class ComputerSet extends AbstractModelObject {
+public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet> {
     /**
      * This is the owner that persists {@link #monitors}.
      */
@@ -87,7 +94,7 @@ public final class ComputerSet extends AbstractModelObject {
 
     @Exported(name="computer",inline=true)
     public Computer[] get_all() {
-        return Hudson.getInstance().getComputers();
+        return Jenkins.getInstance().getComputers();
     }
 
     /**
@@ -118,7 +125,7 @@ public final class ComputerSet extends AbstractModelObject {
      */
     public List<String> get_slaveNames() {
         return new AbstractList<String>() {
-            final List<Node> nodes = Hudson.getInstance().getNodes();
+            final List<Node> nodes = Jenkins.getInstance().getNodes();
 
             public String get(int index) {
                 return nodes.get(index).getNodeName();
@@ -164,7 +171,7 @@ public final class ComputerSet extends AbstractModelObject {
     public int getIdleExecutors() {
         int r=0;
         for (Computer c : get_all())
-            if(c.isOnline() || c.isConnecting())
+            if((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
     }
@@ -174,11 +181,11 @@ public final class ComputerSet extends AbstractModelObject {
     }
 
     public Computer getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        return Hudson.getInstance().getComputer(token);
+        return Jenkins.getInstance().getComputer(token);
     }
 
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         for(Computer c : get_all()) {
             if(c.isLaunchSupported())
@@ -193,7 +200,7 @@ public final class ComputerSet extends AbstractModelObject {
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
@@ -208,8 +215,8 @@ public final class ComputerSet extends AbstractModelObject {
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from ) throws IOException, ServletException {
-        final Hudson app = Hudson.getInstance();
-        app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
+        final Jenkins app = Jenkins.getInstance();
+        app.checkPermission(Computer.CREATE);
 
         if(mode!=null && mode.equals("copy")) {
             name = checkName(name);
@@ -225,9 +232,13 @@ public final class ComputerSet extends AbstractModelObject {
             }
 
             // copy through XStream
-            String xml = Hudson.XSTREAM.toXML(src);
-            Node result = (Node)Hudson.XSTREAM.fromXML(xml);
+            String xml = Jenkins.XSTREAM.toXML(src);
+            Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
+            if(result instanceof Slave){ //change userId too
+                User user = User.current();
+                ((Slave)result).setUserId(user==null ? "anonymous" : user.getId());
+             }
             result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
@@ -241,7 +252,7 @@ public final class ComputerSet extends AbstractModelObject {
                 return;
             }
 
-            NodeDescriptor d = NodeDescriptor.all().find(mode);
+            NodeDescriptor d = NodeDescriptor.all().findByName(mode);
             d.handleNewNodePage(this,name,req,rsp);
         }
     }
@@ -252,11 +263,15 @@ public final class ComputerSet extends AbstractModelObject {
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
-        final Hudson app = Hudson.getInstance();
-        app.checkPermission(Hudson.ADMINISTER);  // TODO: new permission?
-        checkName(name);
+        final Jenkins app = Jenkins.getInstance();
+        app.checkPermission(Computer.CREATE);
+        String fixedName = Util.fixEmptyAndTrim(name);
+        checkName(fixedName);
 
-        Node result = NodeDescriptor.all().find(type).newInstance(req, req.getSubmittedForm());
+        JSONObject formData = req.getSubmittedForm();
+        formData.put("name", fixedName);
+        
+        Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
         app.addNode(result);
 
         // take the user back to the slave list top page
@@ -272,9 +287,9 @@ public final class ComputerSet extends AbstractModelObject {
             throw new Failure("Query parameter 'name' is required");
 
         name = name.trim();
-        Hudson.checkGoodName(name);
+        Jenkins.checkGoodName(name);
 
-        if(Hudson.getInstance().getNode(name)!=null)
+        if(Jenkins.getInstance().getNode(name)!=null)
             throw new Failure(Messages.ComputerSet_SlaveAlreadyExists(name));
 
         // looks good
@@ -285,7 +300,7 @@ public final class ComputerSet extends AbstractModelObject {
      * Makes sure that the given name is good as a slave name.
      */
     public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Computer.CREATE);
 
         if(Util.fixEmpty(value)==null)
             return FormValidation.ok();
@@ -297,14 +312,15 @@ public final class ComputerSet extends AbstractModelObject {
             return FormValidation.error(e.getMessage());
         }
     }
-
+    
     /**
      * Accepts submission from the configuration page.
      */
-    public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+    @RequirePOST
+    public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
@@ -314,7 +330,13 @@ public final class ComputerSet extends AbstractModelObject {
                     if(i!=null)
                         monitors.add(i);
                 }
-            rsp.sendRedirect2(".");
+
+            // recompute the data
+            for (NodeMonitor nm : monitors) {
+                nm.triggerUpdate();
+            }
+
+            return FormApply.success(".");
         } finally {
             bc.commit();
         }
@@ -324,11 +346,37 @@ public final class ComputerSet extends AbstractModelObject {
      * {@link NodeMonitor}s are persisted in this file.
      */
     private static XmlFile getConfigFile() {
-        return new XmlFile(new File(Hudson.getInstance().getRootDir(),"nodeMonitors.xml"));
+        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),"nodeMonitors.xml"));
     }
 
     public Api getApi() {
         return new Api(this);
+    }
+
+    public Descriptor<ComputerSet> getDescriptor() {
+        return Jenkins.getInstance().getDescriptorOrDie(ComputerSet.class);
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<ComputerSet> {
+        @Override
+        public String getDisplayName() {
+            return "";
+        }
+
+        /**
+         * Auto-completion for the "copy from" field in the new job page.
+         */
+        public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
+            final AutoCompletionCandidates r = new AutoCompletionCandidates();
+
+            for (Node n : Jenkins.getInstance().getNodes()) {
+                if (n.getNodeName().startsWith(value))
+                    r.add(n.getNodeName());
+            }
+
+            return r;
+        }
     }
 
     /**
@@ -348,7 +396,16 @@ public final class ComputerSet extends AbstractModelObject {
             if(xf.exists()) {
                 DescribableList<NodeMonitor,Descriptor<NodeMonitor>> persisted =
                         (DescribableList<NodeMonitor,Descriptor<NodeMonitor>>) xf.read();
-                r.replaceBy(persisted.toList());
+                List<NodeMonitor> sanitized = new ArrayList<NodeMonitor>();
+                for (NodeMonitor nm : persisted) {
+                    try {
+                        nm.getDescriptor();
+                        sanitized.add(nm);
+                    } catch (Throwable e) {
+                        // the descriptor didn't load? see JENKINS-15869
+                    }
+                }
+                r.replaceBy(sanitized);
             }
 
             // if we have any new monitors, let's add them

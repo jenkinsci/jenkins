@@ -23,37 +23,37 @@
  */
 package hudson.model;
 
-import hudson.model.Run.Runner;
+import hudson.model.Run.RunExecution;
 
 import java.util.Stack;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Keeps track of {@link Runner}s that are currently executing on the given thread
+ * Keeps track of {@link RunExecution}s that are currently executing on the given thread
  * (that can be either an {@link Executor} or threads that are impersonating one.)
  *
  * @author Kohsuke Kawaguchi
  * @since 1.319
  */
 final class RunnerStack {
-    private final Map<Executor,Stack<Runner>> stack = new WeakHashMap<Executor,Stack<Runner>>();
+    private final Map<Executor,Stack<RunExecution>> stack = new WeakHashMap<Executor,Stack<RunExecution>>();
 
-    synchronized void push(Runner r) {
+    synchronized void push(RunExecution r) {
         Executor e = Executor.currentExecutor();
-        Stack<Runner> s = stack.get(e);
-        if(s==null) stack.put(e,s=new Stack<Runner>());
+        Stack<RunExecution> s = stack.get(e);
+        if(s==null) stack.put(e,s=new Stack<RunExecution>());
         s.push(r);
     }
 
     synchronized void pop() {
         Executor e = Executor.currentExecutor();
-        Stack<Runner> s = stack.get(e);
+        Stack<RunExecution> s = stack.get(e);
         s.pop();
         if(s.isEmpty()) stack.remove(e);
     }
 
-    synchronized Runner peek() {
+    synchronized RunExecution peek() {
         return stack.get(Executor.currentExecutor()).peek();
     }
 

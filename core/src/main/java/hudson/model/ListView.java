@@ -30,13 +30,17 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
 import hudson.views.ViewJobFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,6 +61,7 @@ public class ListView extends View implements Saveable {
     /**
      * List of job names. This is what gets serialized.
      */
+    @GuardedBy("this")
     /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
@@ -91,13 +96,6 @@ public class ListView extends View implements Saveable {
         this.owner = owner;
     }
 
-    public void save() throws IOException {
-        // persistence is a part of the owner.
-        // due to the initialization timing issue, it can be null when this method is called.
-        if (owner!=null)
-            owner.save();
-    }
-
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
@@ -126,8 +124,8 @@ public class ListView extends View implements Saveable {
     public DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> getJobFilters() {
     	return jobFilters;
     }
-    
-    public Iterable<ListViewColumn> getColumns() {
+
+    public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
     
@@ -138,11 +136,15 @@ public class ListView extends View implements Saveable {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
-    public synchronized List<TopLevelItem> getItems() {
-        SortedSet<String> names = new TreeSet<String>(jobNames);
+    public List<TopLevelItem> getItems() {
+        SortedSet<String> names;
+
+        synchronized (this) {
+            names = new TreeSet<String>(jobNames);
+        }
 
         if (includePattern != null) {
-            for (TopLevelItem item : Hudson.getInstance().getItems()) {
+            for (Item item : getOwnerItemGroup().getItems()) {
                 String itemName = item.getName();
                 if (includePattern.matcher(itemName).matches()) {
                     names.add(itemName);
@@ -150,18 +152,19 @@ public class ListView extends View implements Saveable {
             }
         }
 
+        Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
-        for (String n : names) {
-            TopLevelItem item = Hudson.getInstance().getItem(n);
+        for (TopLevelItem item : getOwnerItemGroup().getItems()) {
+            if (!names.contains(item.getName())) continue;
             // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter))
+            if(statusFilter == null || !(item instanceof AbstractProject)
+                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
                 items.add(item);
         }
 
         // check the filters
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = Hudson.getInstance().getItems();
+        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(getOwnerItemGroup().getItems());
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
@@ -171,7 +174,7 @@ public class ListView extends View implements Saveable {
         return items;
     }
 
-    public boolean contains(TopLevelItem item) {
+    public synchronized boolean contains(TopLevelItem item) {
         return jobNames.contains(item.getName());
     }
 
@@ -181,7 +184,9 @@ public class ListView extends View implements Saveable {
      * @since 1.389
      */
     public void add(TopLevelItem item) throws IOException {
-        jobNames.add(item.getName());
+        synchronized (this) {
+            jobNames.add(item.getName());
+        }
         save();
     }
 
@@ -197,13 +202,46 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
-    public synchronized Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Item item = Hudson.getInstance().doCreateItem(req, rsp);
-        if(item!=null) {
-            jobNames.add(item.getName());
-            owner.save();
+    public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        if (ig instanceof ModifiableItemGroup) {
+            TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
+            if(item!=null) {
+                synchronized (this) {
+                    jobNames.add(item.getName());
+                }
+                owner.save();
+            }
+            return item;
         }
-        return item;
+        return null;
+    }
+
+    @RequirePOST
+    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (getOwnerItemGroup().getItem(name) == null)
+            throw new Failure("Query parameter 'name' does not correspond to a known item");
+
+        if (jobNames.add(name))
+            owner.save();
+
+        return HttpResponses.ok();
+    }
+
+    @RequirePOST
+    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        if (jobNames.remove(name))
+            owner.save();
+
+        return HttpResponses.ok();
     }
 
     @Override
@@ -219,10 +257,12 @@ public class ListView extends View implements Saveable {
      */
     @Override
     protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
-        jobNames.clear();
-        for (TopLevelItem item : Hudson.getInstance().getItems()) {
-            if(req.getParameter(item.getName())!=null)
-                jobNames.add(item.getName());
+        synchronized (this) {
+            jobNames.clear();
+            for (TopLevelItem item : getOwnerItemGroup().getItems()) {
+                if(req.getParameter(item.getName())!=null)
+                    jobNames.add(item.getName());
+            }
         }
 
         if (req.getParameter("useincluderegex") != null) {
@@ -251,7 +291,7 @@ public class ListView extends View implements Saveable {
     }
 
     @Extension
-    public static final class DescriptorImpl extends ViewDescriptor {
+    public static class DescriptorImpl extends ViewDescriptor {
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
         }

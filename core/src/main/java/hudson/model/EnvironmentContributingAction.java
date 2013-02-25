@@ -52,5 +52,5 @@ public interface EnvironmentContributingAction extends Action {
      * @param env
      *      Environment variables should be added to this map.
      */
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env);
+    void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env);
 }

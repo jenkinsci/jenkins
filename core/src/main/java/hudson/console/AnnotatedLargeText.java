@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc.
  *
+ * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,11 +26,12 @@
 package hudson.console;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
 import hudson.util.Secret;
 import hudson.util.TimeUnit2;
+import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -77,7 +80,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     private T context;
 
     public AnnotatedLargeText(File file, Charset charset, boolean completed, T context) {
-        super(file, charset, completed);
+        super(file, charset, completed, true);
         this.context = context;
     }
 
@@ -103,7 +106,8 @@ public class AnnotatedLargeText<T> extends LargeText {
      * and use this request attribute to differentiate. 
      */
     private boolean isHtml() {
-        return Stapler.getCurrentRequest().getAttribute("html")!=null;
+        StaplerRequest req = Stapler.getCurrentRequest();
+        return req!=null && req.getAttribute("html")!=null;
     }
 
     @Override
@@ -115,19 +119,20 @@ public class AnnotatedLargeText<T> extends LargeText {
         try {
             String base64 = req!=null ? req.getHeader("X-ConsoleAnnotator") : null;
             if (base64!=null) {
-                Cipher sym = Secret.getCipher("AES");
-                sym.init(Cipher.DECRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
+                Cipher sym = PASSING_ANNOTATOR.decrypt();
 
                 ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
                         new CipherInputStream(new ByteArrayInputStream(Base64.decode(base64.toCharArray())),sym)),
-                        Hudson.getInstance().pluginManager.uberClassLoader);
-                long timestamp = ois.readLong();
-                if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
-                    // don't deserialize something too old to prevent a replay attack
-                    return (ConsoleAnnotator)ois.readObject();
+                        Jenkins.getInstance().pluginManager.uberClassLoader);
+                try {
+                    long timestamp = ois.readLong();
+                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                        // don't deserialize something too old to prevent a replay attack
+                        return (ConsoleAnnotator)ois.readObject();
+                } finally {
+                    ois.close();
+                }
             }
-        } catch (GeneralSecurityException e) {
-            throw new IOException2(e);
         } catch (ClassNotFoundException e) {
             throw new IOException2(e);
         }
@@ -153,21 +158,20 @@ public class AnnotatedLargeText<T> extends LargeText {
                 w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
         long r = super.writeLogTo(start,caw);
 
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Cipher sym = Secret.getCipher("AES");
-            sym.init(Cipher.ENCRYPT_MODE, Hudson.getInstance().getSecretKeyAsAES128());
-            ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
-            oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
-            oos.writeObject(caw.getConsoleAnnotator());
-            oos.close();
-            StaplerResponse rsp = Stapler.getCurrentResponse();
-            if (rsp!=null)
-                rsp.setHeader("X-ConsoleAnnotator", new String(Base64.encode(baos.toByteArray())));
-        } catch (GeneralSecurityException e) {
-            throw new IOException2(e);
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Cipher sym = PASSING_ANNOTATOR.encrypt();
+        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
+        oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
+        oos.writeObject(caw.getConsoleAnnotator());
+        oos.close();
+        StaplerResponse rsp = Stapler.getCurrentResponse();
+        if (rsp!=null)
+            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.encode(baos.toByteArray())));
         return r;
     }
 
+    /**
+     * Used for sending the state of ConsoleAnnotator to the client, because we are deserializing this object later.
+     */
+    private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class,"consoleAnnotator");
 }

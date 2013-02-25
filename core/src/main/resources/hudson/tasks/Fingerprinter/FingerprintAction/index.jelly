@@ -27,15 +27,16 @@ THE SOFTWARE.
 
   This belongs to a build view.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
     <st:include it="${it.build}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.gif" alt=""/>
+        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
         ${%Recorded Fingerprints}
       </h1>
-      <table class="fingerprint-in-build sortable">
+      <table class="fingerprint-in-build sortable bigtable">
         <tr>
           <th initialSortDir="down">${%File}</th>
           <th>${%Original owner}</th>
@@ -61,12 +62,12 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
             </td>
-            <td>
+            <td data="${-f.timestamp.time}">
               ${f.timestampString} old
             </td>
             <td>
               <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <img src="${imagesURL}/16x16/fingerprint.gif" alt=""/> ${%more details}
+                <img src="${imagesURL}/16x16/fingerprint.png" alt="" height="16" width="16"/> ${%more details}
               </a>
             </td>
           </tr>

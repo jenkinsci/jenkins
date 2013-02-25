@@ -77,16 +77,22 @@ fi
 export JAVA_HOME
 
 JAVA_CMD="$JAVA_HOME/bin/java $JENKINS_JAVA_OPTIONS -DJENKINS_HOME=$JENKINS_HOME -jar $JENKINS_WAR"
-PARAMS="--javaHome=$JAVA_HOME --logfile=/var/log/jenkins/jenkins.log"
+PARAMS="--javaHome=$JAVA_HOME --logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war"
 [ -n "$JENKINS_PORT" ] && PARAMS="$PARAMS --httpPort=$JENKINS_PORT"
+[ -n "$JENKINS_AJP_PORT" ] && PARAMS="$PARAMS --ajp13Port=$JENKINS_AJP_PORT"
 [ -n "$JENKINS_DEBUG_LEVEL" ] && PARAMS="$PARAMS --debug=$JENKINS_DEBUG_LEVEL"
 [ -n "$JENKINS_HANDLER_STARTUP" ] && PARAMS="$PARAMS --handlerCountStartup=$JENKINS_HANDLER_STARTUP"
 [ -n "$JENKINS_HANDLER_MAX" ] && PARAMS="$PARAMS --handlerCountMax=$JENKINS_HANDLER_MAX"
 [ -n "$JENKINS_HANDLER_IDLE" ] && PARAMS="$PARAMS --handlerCountMaxIdle=$JENKINS_HANDLER_IDLE"
+[ -n "$JENKINS_ARGS" ] && PARAMS="$PARAMS $JENKINS_ARGS"
 
 if [ "$JENKINS_ENABLE_ACCESS_LOG" = "yes" ]; then
     PARAMS="$PARAMS --accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/var/log/jenkins/access_log"
 fi
+
+[ -z "$JENKINS_INIT_SHELL" -o -x "$JENKINS_INIT_SHELL" ] || { echo "JENKINS_INIT_SHELL does not refer to a shell: $JENKINS_INIT_SHELL";
+        if [ "$1" = "stop" ]; then exit 0;
+        else exit 6; fi; }
 
 case "$1" in
     start)
@@ -95,7 +101,11 @@ case "$1" in
         CHECK=$?
         if [ $CHECK -eq 7 ]; then
                 rm -f "$JENKINS_PID_FILE"
-                startproc -n $JENKINS_NICE -s -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS
+                if [ -x "$JENKINS_INIT_SHELL" ]; then
+                       startproc -n $JENKINS_NICE -s -e -l /var/log/jenkins.rc -p "$JENKINS_PID_FILE" -t 1 /bin/su -l -s "$JENKINS_INIT_SHELL" -c "$JAVA_CMD $PARAMS &" "$JENKINS_USER"
+                else
+                       HOME=$JENKINS_HOME startproc -n $JENKINS_NICE -s -e -l /var/log/jenkins.rc -u "$JENKINS_USER" -p "$JENKINS_PID_FILE" $JAVA_CMD $PARAMS 
+                fi
                 JPROC=$( find /proc -maxdepth 2 -user $JENKINS_USER -name exe -lname "*/bin/java" )
                 if [ -n "$JPROC" ]; then
                         basename `dirname $JPROC` >"$JENKINS_PID_FILE"

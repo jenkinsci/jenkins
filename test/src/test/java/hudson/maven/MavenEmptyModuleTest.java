@@ -27,9 +27,10 @@ public class MavenEmptyModuleTest extends HudsonTestCase {
     }
     
     private static class TestReporter extends MavenReporter {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            assertNotNull(build.getProject().getWorkspace());
             assertNotNull(build.getWorkspace());
             return true;
         }

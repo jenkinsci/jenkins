@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -43,7 +44,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class FullDuplexHttpChannel {
+abstract public class FullDuplexHttpChannel {
     private Channel channel;
 
     private InputStream upload;
@@ -88,8 +89,8 @@ abstract class FullDuplexHttpChannel {
             // so that we can detect dead clients, periodically send something
             PingThread ping = new PingThread(channel) {
                 @Override
-                protected void onDead() {
-                    LOGGER.info("Duplex-HTTP session " + uuid + " is terminated");
+                protected void onDead(Throwable diagnosis) {
+                    LOGGER.log(Level.INFO,"Duplex-HTTP session " + uuid + " is terminated",diagnosis);
                     // this will cause the channel to abort and subsequently clean up
                     try {
                         upload.close();
@@ -97,6 +98,11 @@ abstract class FullDuplexHttpChannel {
                         // this can never happen
                         throw new AssertionError(e);
                     }
+                }
+
+                @Override
+                protected void onDead() {
+                    onDead(null);
                 }
             };
             ping.start();

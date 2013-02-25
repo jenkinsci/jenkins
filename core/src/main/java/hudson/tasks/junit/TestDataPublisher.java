@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.model.*;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
@@ -45,7 +46,7 @@ import java.io.IOException;
 public abstract class TestDataPublisher extends AbstractDescribableImpl<TestDataPublisher> implements ExtensionPoint {
 
     /**
-     * Called after test results are collected by Hudson, to create a resolver for {@link TestAction}s.
+     * Called after test results are collected by Jenkins, to create a resolver for {@link TestAction}s.
      *
      * @return
      *      can be null to indicate that there's nothing to contribute for this test result.
@@ -55,7 +56,7 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
 			BuildListener listener, TestResult testResult) throws IOException, InterruptedException;
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {
-		return Hudson.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);
+		return Jenkins.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);
 	}
 
 }

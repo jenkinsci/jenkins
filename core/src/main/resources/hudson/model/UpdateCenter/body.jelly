@@ -26,12 +26,36 @@ THE SOFTWARE.
   Requested by the browser separately to partially update the page.
   Also used as a part of index.jelly rendering.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:ajax>
+    
     <table id="log">
       <j:forEach var="i" items="${it.jobs}">
         <st:include it="${i}" page="row.jelly" />
       </j:forEach>
     </table>
+    
+    <div id="scheduleRestartBlock" style="padding-top:2em">
+      <form method="post" id="scheduleRestart" action="">
+        <p class="info" style="font-weight: normal">
+          <a href="${rootURL}/">${%Go back to the top page}</a> <br/>
+          (${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
+        </p>
+        <p class="info" style="font-weight: normal">
+          <j:if test="${app.lifecycle.canRestart()}">
+            <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
+              <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
+            </j:if>
+            <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
+              <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" />
+            </j:if>
+          </j:if>
+          <label for="scheduleRestartCheckbox">
+            ${%warning}
+          </label>
+        </p>
+      </form>
+    </div>
   </l:ajax>
 </j:jelly>

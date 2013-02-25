@@ -24,34 +24,166 @@ THE SOFTWARE.
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.400-SNAPSHOT</version>
+    <version>1.504-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  
+
   <artifactId>jenkins-war</artifactId>
   <packaging>war</packaging>
+
   <name>Jenkins war</name>
   <description>
     Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and
     some HTML files.
   </description>
-  
+
+  <properties>
+    <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
+    <contextPath>/</contextPath><!-- context path during test -->
+    <port>8080</port><!-- HTTP listener port -->
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>executable-war</artifactId>
+      <version>1.26</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <!--
+          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
+        -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>jsp-api</artifactId>
+        </exclusion>
+        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
+        <exclusion>
+          <artifactId>metainf-services</artifactId>
+          <groupId>org.kohsuke.metainf-services</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
+    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remoting</artifactId>
+      <!-- specified in the parent -->
+    </dependency>    
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
+      <classifier>jar-with-dependencies</classifier>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!--
+        not actually used by test but used by dependency plugin to include it inside the war.
+      -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>winstone</artifactId>
+      <version>0.9.10-jenkins-42</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>ssh-cli-auth</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>slave-installer</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>windows-slave-installer</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>launchd-slave-installer</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>upstart-slave-installer</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>sshd</artifactId>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
+      <!--
+        We bundle slf4j binding since we got some components (sshd for example)
+        that uses slf4j.
+
+        The problem with not shipping any binding in the war is that if the
+        servlet container does use slf4j in itself, then we got a classloader
+        constraint violation (see JENKINS-12334) as we try to load StaticLoggerBinder
+        which resides in the binding jar (this jar would be from container implementation,
+        which relies on slf4j api in the container, when we have our own slf4j API jar
+        statically depending on the binding jar.)
+
+        We also get tickets like JENKINS-12650 for not reporting logs at all
+        (although this is a non-fatal problem.)
+
+        The downside of adding a jar is that we can potentially get "multiple binding jar"
+        warning like http://www.slf4j.org/codes.html, but that's at least non-fatal.
+      -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+    </dependency>
+
+
+    <!-- offline profiler API when we need it -->
+
+    <!--dependency
+      <groupId>com.yourkit.api</groupId>
+      <artifactId>yjp</artifactId>
+      <version>dontcare</version>
+      <scope>system</scope>
+      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
+    </dependency-->
+  </dependencies>
+
   <build>
     <finalName>jenkins</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.1-beta-1</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
-          <webResources>
-            <resource>
-              <directory>${project.build.directory}/generated-resources</directory>
-            </resource>
-          </webResources>
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
@@ -59,7 +191,7 @@ THE SOFTWARE.
             </manifest>
             <manifestEntries>
               <Implementation-Version>${project.version}</Implementation-Version>
-              <Hudson-Version>${project.version}</Hudson-Version>
+              <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
             </manifestEntries>
           </archive>
@@ -68,100 +200,218 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
+            <id>list-dependencies</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>list</goal>
             </goals>
             <configuration>
-              <outputFile>${basedir}/target/classes/dependencies.txt</outputFile>
+              <outputFile>${project.build.outputDirectory}/dependencies.txt</outputFile>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <executions>
           <execution>
-            <id>package</id>
-            <phase>package</phase>
+            <!-- put executable war header -->
+            <id>executable-war-header</id>
+            <phase>generate-resources</phase>
             <goals>
-              <goal>run</goal>
+              <goal>unpack-dependencies</goal>
             </goals>
             <configuration>
-              <tasks>
-                <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
-                <attachArtifact file="target/jenkins.war" classifier="war-for-test" type="jar" />
-              </tasks>
+              <includeGroupIds>org.jenkins-ci</includeGroupIds>
+              <includeArtifactIds>executable-war</includeArtifactIds>
+              <includeScope>provided</includeScope>
+              <includes>**/*.class</includes>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
             </configuration>
           </execution>
           <execution>
             <id>resgen</id>
             <phase>generate-resources</phase>
             <goals>
-              <goal>run</goal>
+              <goal>copy</goal>
             </goals>
             <configuration>
-              <verifyArtifact>false</verifyArtifact>
-              <tasks>
-                <mkdir dir="target/generated-resources" />
-
-                <!-- put executable war header -->
-                <resolveArtifact groupId="org.jenkins-ci" artifactId="executable-war" version="1.18" type="jar" property="executable-war.jar" />
-                <unjar src="${executable-war.jar}" dest="target/generated-resources">
-                  <patternset>
-                    <include name="**/*.class" />
-                  </patternset>
-                </unjar>
-
+              <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
-                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/remoting.jar" />
-                <resolveArtifact artifactId="remoting" tofile="${basedir}/target/generated-resources/WEB-INF/slave.jar" />
-                <resolveArtifact groupId="${project.groupId}" artifactId="cli" classifier="jar-with-dependencies" version="${project.version}" type="jar" tofile="${basedir}/target/generated-resources/WEB-INF/jenkins-cli.jar" />
-                <resolveArtifact groupId="org.jvnet.hudson.winstone" artifactId="winstone" version="0.9.10-hudson-24" type="jar" tofile="${basedir}/target/generated-resources/winstone.jar" />
-                
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remoting</artifactId>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
+                  <destFileName>remoting.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remoting</artifactId>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
+                  <destFileName>slave.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>cli</artifactId>
+                  <classifier>jar-with-dependencies</classifier>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
+                  <destFileName>jenkins-cli.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci</groupId>
+                  <artifactId>winstone</artifactId>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                  <destFileName>winstone.jar</destFileName>
+                </artifactItem>
                 <!-- bundled plugins -->
-                <resolveArtifact type="hpi" groupId="${project.groupId}" artifactId="maven-plugin" version="${project.version}" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/maven-plugin.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="ssh-slaves" version="0.14" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/ssh-slaves.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="subversion" version="1.20" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/subversion.hpi" />
-                <resolveArtifact type="hpi" groupId="org.jvnet.hudson.plugins" artifactId="cvs" version="1.2" tofile="${basedir}/target/generated-resources/WEB-INF/plugins/cvs.hpi" />
-              </tasks>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>maven-plugin</artifactId>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ssh-slaves</artifactId>
+                  <!-- when upgrading may need to add credentials and ssh-credentials too: https://github.com/jenkinsci/ssh-slaves-plugin/commit/7f7031bdaae528baf8e4a1cf29a95849ef268c5c -->
+                  <version>0.22</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>subversion</artifactId>
+                  <version>1.39</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>cvs</artifactId>
+                  <version>1.6</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ant</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>javadoc</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>translation</artifactId>
+                  <version>1.10</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>external-monitor-job</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ldap</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>pam-auth</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>mailer</artifactId>
+                  <version>1.4</version>
+                  <type>hpi</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- deploy the war as a jar, so that the tests can pull this into the classpath -->
+            <id>deploy-war-for-test</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.finalName}.war</file>
+                  <type>jar</type>
+                  <classifier>war-for-test</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin><!-- generate licenses.xml -->
+        <groupId>com.cloudbees</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
+          <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
+          <attach>true</attach>
+          <inlineScript>
+            filter {
+                // add Winstone since we are bundling it.
+                def d = project.dependencies.find { it.artifactId=="winstone" };
+                def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
+                def p = mojo.projectBuilder.buildFromRepository(a, project.getRemoteArtifactRepositories(), mojo.localRepository)
+                models.put(a,p);
+            }
+          </inlineScript>
+        </configuration>
+      </plugin>
+      <plugin>
         <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-hudson-dev-plugin</artifactId>
-        <version>6.1.7-hudson-1</version>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-jenkins-dev-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <contextPath>${contextPath}</contextPath>
-          <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                <port>${port}</port>
-            </connector>
-          </connectors>
-          <!--
-            read directly from core module's output directory,
-            so that changes are picked up right away without running mvn.
-          -->
-          <classesDirectory>../core/target/classes</classesDirectory>
-          <!-- use the test classpath for loading resources, since this takes priority -->
-          <testClassesDirectory>../core/src/main/resources</testClassesDirectory>
-          <useTestClasspath>true</useTestClasspath>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
-          <consoleForceReload>true</consoleForceReload>
-          <userRealms>
-            <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
+          <reload>manual</reload>
+          <connectors>
+            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+                <port>${port}</port>
+            </connector>
+          </connectors>
+          <additionalClassesDirectories>
+            <!-- load resoures straight from source -->
+            <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
+            
+            <!--
+              read directly from core module's output directory,
+              so that changes are picked up right away without running mvn.
+            -->
+            <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
+          </additionalClassesDirectories>
+          <loginServices>
+            <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
               <config>${basedir}/src/realm.properties</config>
-            </userRealm>
-          </userRealms>
+            </loginService>
+          </loginServices>
           <systemProperties>
             <systemProperty>
               <name>JENKINS_HOME</name>
@@ -194,9 +444,10 @@ THE SOFTWARE.
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value>
+              <value><!-- run "mvn install" once will generate the.hpl -->
                   ${basedir}/../maven-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
+                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>
             <systemProperty>
@@ -214,65 +465,13 @@ THE SOFTWARE.
               <value>true</value>
             </systemProperty>
           </systemProperties>
+          <webApp>
+            <configurationDiscovered>false</configurationDiscovered>
+          </webApp>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-core</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <!--
-          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
-        -->
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>jsp-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remoting</artifactId>
-      <version>${project.version}</version>
-    </dependency>    
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>cli</artifactId>
-      <classifier>jar-with-dependencies</classifier>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- offline profiler API when we need it -->
-    <!--dependency>
-      <groupId>com.yourkit.api</groupId>
-      <artifactId>yjp</artifactId>
-      <version>dontcare</version>
-      <scope>system</scope>
-      <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
-    </dependency-->
-  </dependencies>
-  
-  <properties>
-    <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/</contextPath><!-- context path during test -->
-    <port>8080</port><!-- HTTP listener port -->
-  </properties>
 
   <profiles>
     <profile>
@@ -283,7 +482,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jvnet.updatecenter2</groupId>
             <artifactId>maven-makepkgs-plugin</artifactId>
-            <version>0.3</version>
+            <!-- version specified in grandparent pom -->
             <executions>
               <execution>
                 <goals>
@@ -306,26 +505,16 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
+            <artifactId>maven-jarsigner-plugin</artifactId>
             <executions>
-              <!-- sign the war -->
               <execution>
                 <id>signWar</id>
                 <phase>verify</phase>
                 <goals>
-                  <goal>run</goal>
+                  <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <tasks>
-                    <!--
-                      during the development, debug profile defined in ../pom.xml will cause
-                      the jars to be signed by a self-certified dummy public key.
-
-                      For release, you should define the real values in ~/.m2/settings.xml
-                    -->
-                    <signjar jar="target/jenkins.war" alias="${hudson.sign.alias}" keystore="${hudson.sign.keystore}" storepass="${hudson.sign.storepass}" />
-                  </tasks>
+                  <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                 </configuration>
               </execution>
             </executions>

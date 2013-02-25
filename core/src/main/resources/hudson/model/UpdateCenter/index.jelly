@@ -26,21 +26,19 @@ THE SOFTWARE.
 <!--
   This page shows the status of the plugin installation
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Update Center}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>${%Installing Plugins/Upgrades}</h1>
-
-    <form method="post" action="${rootURL}/safeRestart">
-      <p class="warning">
-        ${%warning}
-        <j:if test="${app.lifecycle.canRestart()}">
-          <f:submit value="${%Restart When No Jobs Are Running}" />
-        </j:if>
-      </p>
-    </form>
-
+    <script><![CDATA[
+      function submitScheduleForm(el) {
+          var form = document.getElementById("scheduleRestart");
+          form.action = el.checked ? "safeRestart" : "cancelRestart";
+          form.submit();
+      }
+    ]]></script>
     <st:include page="body.jelly" />
 
     <script><![CDATA[
@@ -51,7 +49,7 @@ THE SOFTWARE.
                       var div = document.createElement('div');
                       div.innerHTML = rsp.responseText;
 
-                      var rows = div.firstChild.rows;
+                      var rows = div.children[0].rows;
                       for(var i=0; i<rows.length; i++ ) {
                         var row = rows[i];
                         var target = document.getElementById(row.id);
@@ -66,6 +64,8 @@ THE SOFTWARE.
                           }
                         }
                       }
+                      var scheduleDiv = document.getElementById('scheduleRestartBlock');
+                      scheduleDiv.innerHTML = div.lastChild.innerHTML;
                       refresh();
                   }
               });

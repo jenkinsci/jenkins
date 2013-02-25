@@ -26,7 +26,7 @@ package hudson.model.listeners;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.ExtensionPoint;
@@ -41,7 +41,7 @@ import hudson.ExtensionPoint;
  * Once instanciated, use the {@link #register()} method to start receiving events. 
  *
  * @author Kohsuke Kawaguchi
- * @see Hudson#getSCMListeners()
+ * @see jenkins.model.Jenkins#getSCMListeners()
  * @since 1.70
  */
 public abstract class SCMListener implements ExtensionPoint {
@@ -49,7 +49,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * Called once the changelog is determined.
      *
      * <p>
-     * During a build, Hudson fetches the update of the workspace from SCM,
+     * During a build, Jenkins fetches the update of the workspace from SCM,
      * and determines the changelog (see {@link SCM#checkout}). Immediately
      * after that, a build will invoke this method on all registered
      * {@link SCMListener}s.
@@ -92,7 +92,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * Registers this {@link SCMListener} so that it will start receiving events.
      */
     public final void register() {
-        Hudson.getInstance().getSCMListeners().add(this);
+        Jenkins.getInstance().getSCMListeners().add(this);
     }
 
     /**
@@ -102,6 +102,6 @@ public abstract class SCMListener implements ExtensionPoint {
      * Unless {@link SCMListener} is unregistered, it will never be a subject of GC.
      */
     public final boolean unregister() {
-        return Hudson.getInstance().getSCMListeners().remove(this);
+        return Jenkins.getInstance().getSCMListeners().remove(this);
     }
 }

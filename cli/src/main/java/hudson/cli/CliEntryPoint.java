@@ -23,6 +23,8 @@
  */
 package hudson.cli;
 
+import hudson.remoting.Pipe;
+
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -52,6 +54,20 @@ public interface CliEntryPoint {
      * gracefully.
      */
     int protocolVersion();
+
+    /**
+     * Initiates authentication out of band.
+     * <p>
+     * This method starts two-way byte channel that allows the client and the server to perform authentication.
+     * The current supported implementation is based on SSH public key authentication that mutually authenticates
+     * clients and servers.
+     *
+     * @param protocol
+     *      Currently only "ssh" is supported.
+     * @throws UnsupportedOperationException
+     *      If the specified protocol is not supported by the server.
+     */
+    void authenticate(String protocol, Pipe c2s, Pipe s2c);
 
     int VERSION = 1;
 }

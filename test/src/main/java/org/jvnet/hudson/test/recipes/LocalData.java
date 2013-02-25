@@ -23,8 +23,13 @@
  */
 package org.jvnet.hudson.test.recipes;
 
+import org.junit.runner.Description;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.HudsonHomeLoader.Local;
+import org.jvnet.hudson.test.JenkinsRecipe;
+
+import hudson.util.JenkinsReloadFailed;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
@@ -69,12 +74,19 @@ import static java.lang.annotation.ElementType.METHOD;
  */
 @Documented
 @Recipe(LocalData.RunnerImpl.class)
+@JenkinsRecipe(LocalData.RuleRunnerImpl.class)
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface LocalData {
-    public class RunnerImpl extends Recipe.Runner<LocalData> {
+    class RunnerImpl extends Recipe.Runner<LocalData> {
         public void setup(HudsonTestCase testCase, LocalData recipe) throws Exception {
             testCase.with(new Local(testCase.getClass().getMethod(testCase.getName())));
+        }
+    }
+    class RuleRunnerImpl extends JenkinsRecipe.Runner<LocalData> {
+        public void setup(JenkinsRule jenkinsRule, LocalData recipe) throws Exception {
+            Description desc = jenkinsRule.getTestDescription();
+            jenkinsRule.with(new Local(desc.getTestClass().getMethod(desc.getMethodName())));
         }
     }
 }

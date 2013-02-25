@@ -28,7 +28,7 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.CopyOnWriteList;
@@ -38,6 +38,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -57,7 +58,7 @@ import java.util.logging.Logger;
  *
  * <h3>Access Control</h3>
  * {@link LogRecorder} is only visible for administrators, and this access control happens at
- * {@link Hudson#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
+ * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *
  * @author Kohsuke Kawaguchi
  * @see LogRecorderManager
@@ -86,6 +87,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public static final class Target {
         public final String name;
         private final int level;
+        private transient /* almost final*/ Logger logger;
 
         public Target(String name, Level level) {
             this(name,level.intValue());
@@ -117,7 +119,10 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
         public Logger getLogger() {
-            return Logger.getLogger(name);
+            if (logger == null) {
+                logger = Logger.getLogger(name);
+            }
+            return logger;
         }
 
         /**
@@ -150,19 +155,20 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public LogRecorderManager getParent() {
-        return Hudson.getInstance().getLog();
+        return Jenkins.getInstance().getLog();
     }
 
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
         if(!name.equals(newName)) {
-            Hudson.checkGoodName(newName);
+            Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
@@ -202,8 +208,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Deletes this recorder, then go back to the parent.
      */
+    @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
         // Disable logging for all our targets,
@@ -227,7 +233,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * The file we save our configuration.
      */
     private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Hudson.getInstance().getRootDir(),"log/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(),"log/"+name+".xml"));
     }
 
     /**

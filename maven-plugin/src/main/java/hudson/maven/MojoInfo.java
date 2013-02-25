@@ -23,8 +23,13 @@
  */
 package hudson.maven;
 
+import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
@@ -40,8 +45,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 
+import javax.annotation.CheckForNull;
+
 import hudson.util.InvocationInterceptor;
 import hudson.util.ReflectionUtils;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 
 /**
  * Information about Mojo to be executed. This object provides
@@ -69,6 +77,12 @@ public class MojoInfo {
 
     /**
      * Mojo object that carries out the actual execution.
+     *
+     * @deprecated as of 1.427
+     *      Maven3 can no longer provide this information, so plugins cannot rely on this value being present.
+     *      For the time being we are setting a dummy value to avoid NPE. Use {@link #configuration} to access
+     *      configuration values, but otherwise the ability to inject values is lost and there's no viable
+     *      alternative.
      */
     public final Mojo mojo;
 
@@ -91,12 +105,25 @@ public class MojoInfo {
      */
     private final ConverterLookup converterLookup = new DefaultConverterLookup();
 
-    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator) {
+    private long startTime;
+
+    public MojoInfo(MojoExecution mojoExecution, Mojo mojo, PlexusConfiguration configuration, ExpressionEvaluator expressionEvaluator,
+            long startTime) {
+        // in Maven3 there's no easy way to get the Mojo instance that's being executed,
+        // so we just can't pass it in.
+        if (mojo==null) mojo = new Maven3ProvidesNoAccessToMojo();
         this.mojo = mojo;
         this.mojoExecution = mojoExecution;
         this.configuration = configuration;
         this.expressionEvaluator = expressionEvaluator;
         this.pluginName = new PluginName(mojoExecution.getMojoDescriptor().getPluginDescriptor());
+        this.startTime = startTime;
+    }
+
+    public MojoInfo(ExecutionEvent event, long startTime) {
+        this(event.getMojoExecution(), null,
+                new XmlPlexusConfiguration( event.getMojoExecution().getConfiguration() ),
+                new PluginParameterExpressionEvaluator( event.getSession(), event.getMojoExecution() ), startTime);
     }
 
     /**
@@ -117,28 +144,60 @@ public class MojoInfo {
      *      can be read as {@link String}, often different types have a different
      *      conversion rules associated with it (for example, {@link File} would
      *      resolve relative path against POM base directory.)
+     *  @param defaultValue
+     *     The default value to return in case the mojo doesn't have such
+     *     configuration value
      *
      * @return
      *      The configuration value either specified in POM, or inherited from
-     *      parent POM, or default value if one is specified in mojo.
+     *      parent POM, or default value if one is specified in mojo,
+     *      or the defaultValue parameter if no such configuration value exists.
      *
      * @throws ComponentConfigurationException
      *      Not sure when exactly this is thrown, but it's probably when
      *      the configuration in POM is syntactically incorrect. 
      */
-    public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
-        PlexusConfiguration child = configuration.getChild(configName);
+    public <T> T getConfigurationValue(String configName, Class<T> type, T defaultValue) throws ComponentConfigurationException {
+        T value = getConfigurationValue(configName, type);
+        return value != null ? value : defaultValue;
+    }
+    
+    /**
+     * Obtains the configuration value of the mojo.
+     *
+     * @param configName
+     *      The name of the child element in the &lt;configuration> of mojo.
+     * @param type
+     *      The Java class of the configuration value. While every element
+     *      can be read as {@link String}, often different types have a different
+     *      conversion rules associated with it (for example, {@link File} would
+     *      resolve relative path against POM base directory.)
+     *
+     * @return
+     *      The configuration value either specified in POM, or inherited from
+     *      parent POM, or default value if one is specified in mojo,
+     *      or null if no such configuration value exists.
+     *
+     * @throws ComponentConfigurationException
+     *      Not sure when exactly this is thrown, but it's probably when
+     *      the configuration in POM is syntactically incorrect. 
+     */
+    @CheckForNull public <T> T getConfigurationValue(String configName, Class<T> type) throws ComponentConfigurationException {
+        PlexusConfiguration child = configuration.getChild(configName,false);
         if(child==null) return null;    // no such config
        
-        ClassLoader cl = null;
+        final ClassLoader cl;
         PluginDescriptor pd = mojoExecution.getMojoDescriptor().getPluginDescriptor();
-        // for maven2 builds ClassRealm doesn't extends ClassLoader !
-        // so check stuff with reflection
+        
+        // For maven2 builds getClassRealm returns a org.codehaus.classworlds.ClassRealm (instead of
+        // org.codehaus.plexus.classworlds.realm.ClassRealm)
+        // which doesn't extends ClassLoader !
+        // So get this with reflection and access the nested classloader ("getClassLoader")
         Method method = ReflectionUtils.getPublicMethodNamed( pd.getClass(), "getClassRealm" );
        
-        if ( ReflectionUtils.invokeMethod( method, pd ) instanceof ClassRealm)
-        {
-            ClassRealm cr = (ClassRealm) ReflectionUtils.invokeMethod( method, pd );
+        Object classRealm = ReflectionUtils.invokeMethod( method, pd );
+        if ( classRealm instanceof ClassRealm) {
+            ClassRealm cr = (ClassRealm) classRealm;
             cl = cr.getClassLoader();
         } else {
             cl = mojoExecution.getMojoDescriptor().getPluginDescriptor().getClassRealm();
@@ -166,14 +225,18 @@ public class MojoInfo {
      * @throws NoSuchFieldException
      *      if the mojo doesn't have any field of the given name.
      * @since 1.232
+     * @deprecated as of 1.427
+     *      See the discussion in {@link #mojo}
      */
+    @SuppressWarnings("unchecked")
     public <T> T inject(String name, T value) throws NoSuchFieldException {
-        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+        for(Class<?> c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
             try {
                 Field f = c.getDeclaredField(name);
                 f.setAccessible(true);
                 Object oldValue = f.get(mojo);
                 f.set(mojo,value);
+                return (T)oldValue;
             } catch (NoSuchFieldException e) {
                 continue;
             } catch (IllegalAccessException e) {
@@ -203,9 +266,11 @@ public class MojoInfo {
      * @throws NoSuchFieldException
      *      if the specified field is not found on the mojo class, or it is found but the type is not an interface.
      * @since 1.232
+     * @deprecated as of 1.427
+     *      See the discussion in {@link #mojo}
      */
     public void intercept(String fieldName, final InvocationInterceptor interceptor) throws NoSuchFieldException {
-        for(Class c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
+        for(Class<?> c=mojo.getClass(); c!=Object.class; c=c.getSuperclass()) {
             Field f;
             try {
                 f = c.getDeclaredField(fieldName);
@@ -239,5 +304,18 @@ public class MojoInfo {
                 throw x;
             }
         }
+    }
+
+    /**
+     * Instance will be set to {@link MojoInfo#mojo} to avoid NPE in plugins.
+     */
+    public static class Maven3ProvidesNoAccessToMojo extends AbstractMojo {
+        public void execute() throws MojoExecutionException, MojoFailureException {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public long getStartTime() {
+        return this.startTime;
     }
 }

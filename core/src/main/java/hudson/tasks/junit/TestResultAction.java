@@ -193,7 +193,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     public Object readResolve() {
         super.readResolve(); // let it do the post-deserialization work
     	if (testData == null) {
-    		testData = new ArrayList<Data>();
+    		testData = new ArrayList<Data>(0);
     	}
     	
     	return this;

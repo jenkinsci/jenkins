@@ -56,22 +56,42 @@ public final class CronTab {
     private String spec;
 
     public CronTab(String format) throws ANTLRException {
-        this(format,1);
+        this(format,null);
     }
 
+    public CronTab(String format, Hash hash) throws ANTLRException {
+        this(format,1,hash);
+    }
+    
+    /**
+     * @deprecated as of 1.448
+     *      Use {@link #CronTab(String, int, Hash)}
+     */
     public CronTab(String format, int line) throws ANTLRException {
-        set(format, line);
+        set(format, line, null);
     }
 
-    private void set(String format, int line) throws ANTLRException {
+    /**
+     * @param hash
+     *      Used to spread out token like "@daily". Null to preserve the legacy behaviour
+     *      of not spreading it out at all.
+     */
+    public CronTab(String format, int line, Hash hash) throws ANTLRException {
+        set(format, line, hash);
+    }
+    
+    private void set(String format, int line, Hash hash) throws ANTLRException {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(lexer);
+        parser.setHash(hash);
         spec = format;
 
         parser.startRule(this);
-        if((dayOfWeek&(1<<7))!=0)
+        if((dayOfWeek&(1<<7))!=0) {
             dayOfWeek |= 1; // copy bit 7 over to bit 0
+            dayOfWeek &= ~(1<<7); // clear bit 7 or CalendarField#ceil will return an invalid value 7
+        }
     }
 
 
@@ -123,6 +143,7 @@ public final class CronTab {
         /**
          * What is this field? Useful for debugging
          */
+        @SuppressWarnings("unused")
         private final String displayName;
 
         private CalendarField(String displayName, int field, int min, int offset, boolean redoAdjustmentIfModified, CalendarField lowerField) {
@@ -358,8 +379,8 @@ public final class CronTab {
         }
     }
 
-    void set(String format) throws ANTLRException {
-        set(format,1);
+    void set(String format, Hash hash) throws ANTLRException {
+        set(format,1,hash);
     }
 
     /**
@@ -394,7 +415,7 @@ public final class CronTab {
     public String checkSanity() {
         for( int i=0; i<5; i++ ) {
             long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
-            for( int j=LOWER_BOUNDS[i]; j<=UPPER_BOUNDS[i]; j++ ) {
+            for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
                 if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
@@ -409,8 +430,4 @@ public final class CronTab {
 
         return null;
     }
-
-    // lower/uppser bounds of fields
-    private static final int[] LOWER_BOUNDS = new int[] {0,0,1,0,0};
-    private static final int[] UPPER_BOUNDS = new int[] {59,23,31,12,7};
 }

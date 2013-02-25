@@ -25,27 +25,24 @@ THE SOFTWARE.
 <!--
   Side panel for the build view.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
+      <j:set var="baseUrl" value="${request.findAncestor(it).relativePath}"/>
       <st:include it="${it.owner}" page="tasks.jelly" optional="true"/>
-      <l:task icon="images/24x24/graph.gif" href="history" title="${%History}"/>
+      <l:task icon="images/24x24/graph.png" href="${baseUrl}/history" title="${%History}"/>
       <st:include it="${it.owner}" page="actions.jelly" optional="true" />
-      
-	  <j:forEach var="action" items="${it.testActions}">
-	    <j:if test="${action.iconFileName!=null}">
-	      <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-	              href="${action.urlName}/" />
-	    </j:if>
-	  </j:forEach>
-      
+
+      <t:actions actions="${it.testActions}" />
+
       <j:if test="${it.owner.previousBuild!=null}">
-        <l:task icon="images/24x24/previous.gif" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" />
+        <l:task icon="images/24x24/previous.png" href="${buildUrl.previousBuildUrl}" title="${%Previous Build}" />
       </j:if>
       <j:if test="${it.owner.nextBuild!=null}">
-        <l:task icon="images/24x24/next.gif" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" />
+        <l:task icon="images/24x24/next.png" href="${buildUrl.nextBuildUrl}" title="${%Next Build}" />
       </j:if>
     </l:tasks>
   </l:side-panel>

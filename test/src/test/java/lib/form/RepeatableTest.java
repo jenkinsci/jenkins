@@ -39,7 +39,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -53,6 +53,7 @@ public class RepeatableTest extends HudsonTestCase {
     private Class<?> bindClass;
     private List<?> bindResult;
     public List<Object> list = new ArrayList<Object>();
+    public List<Object> defaults = null;
     public Integer minimum = null;
 
     public void doSubmitTest(StaplerRequest req) throws Exception {
@@ -135,6 +136,62 @@ public class RepeatableTest extends HudsonTestCase {
             + "{\"bool\":true,\"txt\":\"existing two\"},{\"bool\":false,\"txt\":\"new one\"}]",
             formData.get("foos").toString());
     }
+    
+    public void testNoData() throws Exception {
+        list = null;
+        defaults = null;
+        gotoAndSubmitConfig("defaultForField");
+        assertNull(formData.get("list"));
+
+        gotoAndSubmitConfig("defaultForItems");
+        assertNull(formData.get("list"));
+    }
+    
+    public void testItemsWithDefaults() throws Exception {
+        assertWithDefaults("defaultForItems");
+    }    
+
+    public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
+        assertDefaultsIgnoredIfHaveData("defaultForItems");
+    }    
+
+    public void testFieldWithDefaults() throws Exception {
+        assertWithDefaults("defaultForField");
+    }    
+
+    public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
+        assertDefaultsIgnoredIfHaveData("defaultForField");
+    }    
+
+    private void addDefaults() {
+        defaults = new ArrayList<Object>();
+        defaults.add(new Foo("default one", true));
+        defaults.add(new Foo("default two", false));
+    }
+    
+    private void assertWithDefaults(final String viewName) throws Exception {
+        list = null;
+        addDefaults();
+        gotoAndSubmitConfig(viewName);
+        assertNotNull(formData.get("list"));
+        assertEquals("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
+                formData.get("list").toString());
+    }    
+
+    private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
+        addData();
+        addDefaults();
+        gotoAndSubmitConfig(viewName);
+        assertNotNull(formData.get("list"));
+        assertEquals("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
+                formData.get("list").toString());
+    }
+    
+    private void gotoAndSubmitConfig(final String viewName) throws Exception {
+        HtmlPage p = createWebClient().goTo("self/" + viewName);
+        HtmlForm f = p.getFormByName("config");
+        submit(f);
+    }
 
     // ========================================================================
 
@@ -202,7 +259,7 @@ public class RepeatableTest extends HudsonTestCase {
         private Fruit(String name) { this.name = name; }
 
         public Descriptor<Fruit> getDescriptor() {
-            return Hudson.getInstance().getDescriptor(getClass());
+            return Jenkins.getInstance().getDescriptor(getClass());
         }
     }
 
@@ -239,7 +296,7 @@ public class RepeatableTest extends HudsonTestCase {
     }
 
     public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
-        return hudson.<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
+        return jenkins.<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
     }
 
     public void testDropdownList() throws Exception {

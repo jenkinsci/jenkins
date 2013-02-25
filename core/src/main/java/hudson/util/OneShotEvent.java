@@ -24,7 +24,7 @@
 package hudson.util;
 
 /**
- * OConcurrency primitive.
+ * Concurrency primitive.
  *
  * <p>
  * A {@link OneShotEvent} is like a pandora's box.

@@ -22,12 +22,16 @@ package hudson.maven;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+
 /**
  * @author Olivier Lamy
  * @since 1.392
  */
 public class MavenBuildInformation implements Serializable {
 
+    private static final long serialVersionUID = -3719709179508200057L;
     private String mavenVersion;
     
     public MavenBuildInformation(String mavenVersion) {
@@ -36,6 +40,31 @@ public class MavenBuildInformation implements Serializable {
 
     public String getMavenVersion()
     {
+        return mavenVersion;
+    }
+
+    /**
+     * @since 1.441
+     */
+    public boolean isMaven3OrLater() {
+        return MavenUtil.maven3orLater(mavenVersion);
+    }
+    
+    /**
+     * Returns if this maven version is at least 'version'.
+     * @param version the version to compare against
+     * 
+     * @since 1.441
+     */
+    public boolean isAtLeastMavenVersion(String version) {
+        if (StringUtils.isBlank(mavenVersion)) {
+            return false;
+        }
+        return new ComparableVersion(mavenVersion).compareTo(new ComparableVersion(version)) >= 0;
+    }
+
+    @Override
+    public String toString() {
         return mavenVersion;
     }
 }

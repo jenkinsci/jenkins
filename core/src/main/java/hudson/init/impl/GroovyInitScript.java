@@ -27,11 +27,14 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Logger;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
 
@@ -42,22 +45,41 @@ import hudson.init.Initializer;
  */
 public class GroovyInitScript {
     @Initializer(after=JOB_LOADED)
-    public static void init(Hudson h) throws IOException {
-        URL bundledInitScript = h.servletContext.getResource("/WEB-INF/init.groovy");
+    public static void init(Jenkins j) throws IOException {
+        URL bundledInitScript = j.servletContext.getResource("/WEB-INF/init.groovy");
         if (bundledInitScript!=null) {
             LOGGER.info("Executing bundled init script: "+bundledInitScript);
             execute(new GroovyCodeSource(bundledInitScript));
         }
 
-        File initScript = new File(h.getRootDir(),"init.groovy");
+        File initScript = new File(j.getRootDir(),"init.groovy");
         if(initScript.exists()) {
-            LOGGER.info("Executing "+initScript);
-            execute(new GroovyCodeSource(initScript));
+            execute(initScript);
+        }
+        
+        File initScriptD = new File(j.getRootDir(),"init.groovy.d");
+        if (initScriptD.isDirectory()) {
+            File[] scripts = initScriptD.listFiles(new FileFilter() {
+                public boolean accept(File f) {
+                    return f.getName().endsWith(".groovy");
+                }
+            });
+            if (scripts!=null) {
+                // sort to run them in a deterministic order
+                Arrays.sort(scripts);
+                for (File f : scripts)
+                    execute(f);
+            }
         }
     }
 
+    private static void execute(File initScript) throws IOException {
+        LOGGER.info("Executing "+initScript);
+        execute(new GroovyCodeSource(initScript));
+    }
+
     private static void execute(GroovyCodeSource initScript) throws IOException {
-        GroovyShell shell = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader);
+        GroovyShell shell = new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader);
         shell.evaluate(initScript);
     }
 

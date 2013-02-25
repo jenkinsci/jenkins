@@ -7,7 +7,11 @@ package hudson.security.csrf;
 
 import javax.servlet.ServletRequest;
 
+import hudson.init.Initializer;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -16,8 +20,14 @@ import hudson.ExtensionPoint;
 import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.util.MultipartFormDataParser;
+import java.io.IOException;
+import java.io.OutputStream;
+import javax.servlet.ServletException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * A CrumbIssuer represents an algorithm to generate a nonce value, known as a
@@ -139,17 +149,83 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * Access global configuration for the crumb issuer.
      */
     public CrumbIssuerDescriptor<CrumbIssuer> getDescriptor() {
-        return (CrumbIssuerDescriptor<CrumbIssuer>) Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (CrumbIssuerDescriptor<CrumbIssuer>) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link CrumbIssuer} descriptors.
      */
     public static DescriptorExtensionList<CrumbIssuer, Descriptor<CrumbIssuer>> all() {
-        return Hudson.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
+        return Jenkins.getInstance().<CrumbIssuer, Descriptor<CrumbIssuer>>getDescriptorList(CrumbIssuer.class);
     }
 
     public Api getApi() {
-        return new Api(this);
+        return new RestrictedApi(this);
     }
+
+    /**
+     * Sets up Stapler to use our crumb issuer.
+     */
+    @Initializer
+    public static void initStaplerCrumbIssuer() {
+        WebApp.get(Jenkins.getInstance().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
+            @Override
+            public String issueCrumb(StaplerRequest request) {
+                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
+                return ci!=null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
+            }
+
+            @Override
+            public void validateCrumb(StaplerRequest request, String submittedCrumb) {
+                CrumbIssuer ci = Jenkins.getInstance().getCrumbIssuer();
+                if (ci==null) {
+                    DEFAULT.validateCrumb(request,submittedCrumb);
+                } else {
+                    if (!ci.validateCrumb(request, ci.getDescriptor().getCrumbSalt(), submittedCrumb))
+                        throw new SecurityException("Crumb didn't match");
+                }
+            }
+        });
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static class RestrictedApi extends Api {
+
+        RestrictedApi(CrumbIssuer instance) {
+            super(instance);
+        }
+
+        @Override public void doXml(StaplerRequest req, StaplerResponse rsp, @QueryParameter String xpath, @QueryParameter String wrapper, @QueryParameter String tree, @QueryParameter int depth) throws IOException, ServletException {
+            String text;
+            CrumbIssuer ci = (CrumbIssuer) bean;
+            if ("/*/crumbRequestField/text()".equals(xpath)) { // old FullDuplexHttpStream
+                text = ci.getCrumbRequestField();
+            } else if ("/*/crumb/text()".equals(xpath)) { // ditto
+                text = ci.getCrumb();
+            } else if ("concat(//crumbRequestField,\":\",//crumb)".equals(xpath)) { // new FullDuplexHttpStream; Main
+                text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
+            } else if ("concat(//crumbRequestField,'=',//crumb)".equals(xpath)) { // NetBeans
+                if (ci.getCrumbRequestField().startsWith(".")) {
+                    text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
+                } else {
+                    text = null;
+                }
+            } else {
+                text = null;
+            }
+            if (text != null) {
+                OutputStream o = rsp.getCompressedOutputStream(req);
+                try {
+                    rsp.setContentType("text/plain;charset=UTF-8");
+                    o.write(text.getBytes("UTF-8"));
+                } finally {
+                    o.close();
+                }
+            } else {
+                super.doXml(req, rsp, xpath, wrapper, tree, depth);
+            }
+        }
+
+    }
+
 }

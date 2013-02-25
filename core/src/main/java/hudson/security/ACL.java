@@ -23,19 +23,20 @@
  */
 package hudson.security;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import hudson.model.Hudson;
 import hudson.model.Executor;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
  *
  * @author Kohsuke Kawaguchi
- * @see http://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Hudson
  */
 public abstract class ACL {
     /**
@@ -48,7 +49,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final void checkPermission(Permission p) {
-        Authentication a = Hudson.getAuthentication();
+        Authentication a = Jenkins.getAuthentication();
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
     }
@@ -60,7 +61,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(Permission p) {
-        return hasPermission(Hudson.getAuthentication(),p);
+        return hasPermission(Jenkins.getAuthentication(),p);
     }
 
     /**
@@ -106,11 +107,25 @@ public abstract class ACL {
      * <p>
      * This is used when Hudson is performing computation for itself, instead
      * of acting on behalf of an user, such as doing builds.
-     *
-     * <p>
-     * (Note that one of the features being considered is to keep track of who triggered
-     * a build &mdash; so in a future, perhaps {@link Executor} will run on behalf of
-     * the user who triggered a build.)
      */
     public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken("SYSTEM","SYSTEM");
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread
+     * to the specified one, and returns  the previous security context.
+     * 
+     * <p>
+     * When the impersonation is over, be sure to restore the previous authentication
+     * via {@code SecurityContextHolder.setContext(returnValueFromThisMethod)}.
+     * 
+     * <p>
+     * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
+     * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
+     * @since 1.462
+     */
+    public static SecurityContext impersonate(Authentication auth) {
+        SecurityContext old = SecurityContextHolder.getContext();
+        SecurityContextHolder.setContext(new NotSerilizableSecurityContext(auth));
+        return old;
+    }
 }

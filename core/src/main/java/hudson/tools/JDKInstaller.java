@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009-2010, Sun Microsystems, Inc.
+ * Copyright (c) 2009-2010, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,51 +26,55 @@ package hudson.tools;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Launcher.ProcStarter;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.Launcher;
-import hudson.model.Hudson;
-import hudson.util.FormValidation;
-import hudson.util.ArgumentListBuilder;
-import hudson.util.IOException2;
-import hudson.model.Node;
-import hudson.model.TaskListener;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
-import static hudson.tools.JDKInstaller.Preference.*;
+import hudson.model.Node;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import org.jvnet.robust_http_client.RetryableHttpStream;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
+import hudson.util.ArgumentListBuilder;
+import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
+import hudson.util.Secret;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullWriter;
-import org.w3c.tidy.Tidy;
-import org.dom4j.io.DOMReader;
-import org.dom4j.Document;
-import org.dom4j.Element;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 
+import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.json.JSONObject;
+import static hudson.tools.JDKInstaller.Preference.*;
 
 /**
  * Install JDKs from java.sun.com.
@@ -120,7 +124,7 @@ public class JDKInstaller extends ToolInstaller {
             Platform p = Platform.of(node);
             URL url = locate(log, p, CPU.of(node));
 
-            out.println("Downloading "+url);
+//            out.println("Downloading "+url);
             FilePath file = expectedLocation.child(p.bundleFileName);
             file.copyFrom(url);
 
@@ -161,8 +165,24 @@ public class JDKInstaller extends ToolInstaller {
         switch (p) {
         case LINUX:
         case SOLARIS:
-            fs.chmod(jdkBundle,0755);
-            int exit = launcher.launch().cmds(jdkBundle, "-noregister")
+            // JDK on Unix up to 6 was distributed as shell script installer, but in JDK7 it switched to a plain tgz.
+            // so check if the file is gzipped, and if so, treat it accordingly
+            byte[] header = new byte[2];
+            {
+                DataInputStream in = new DataInputStream(fs.read(jdkBundle));
+                in.readFully(header);
+                in.close();
+            }
+
+            ProcStarter starter;
+            if (header[0]==0x1F && header[1]==(byte)0x8B) {// gzip
+                starter = launcher.launch().cmds("tar", "xvzf", jdkBundle);
+            } else {
+                fs.chmod(jdkBundle,0755);
+                starter = launcher.launch().cmds(jdkBundle, "-noregister");
+            }
+
+            int exit = starter
                     .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (exit != 0)
@@ -206,11 +226,14 @@ public class JDKInstaller extends ToolInstaller {
 
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(jdkBundle);
-            args.add("/s");
+            if (isJava15() || isJava14()) {
+                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+            } else {
+                // modern version supports arguments in more sane format.
+                args.add("/s","/v","/qn","/L","\\\""+logFile+"\\\"","REBOOT=ReallySuppress","INSTALLDIR=\\\""+ expectedLocation+"\\\"");
+            }
             // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
             // Oh Windows, oh windows, why do you have to be so difficult?
-            args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
-
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (r != 0) {
@@ -229,6 +252,14 @@ public class JDKInstaller extends ToolInstaller {
 
             break;
         }
+    }
+
+    private boolean isJava15() {
+        return id.contains("-1.5");
+    }
+
+    private boolean isJava14() {
+        return id.contains("-1.4");
     }
 
     /**
@@ -285,7 +316,7 @@ public class JDKInstaller extends ToolInstaller {
      * This is where we locally cache this JDK.
      */
     private File getLocalCacheFile(Platform platform, CPU cpu) {
-        return new File(Hudson.getInstance().getRootDir(),"cache/jdks/"+platform+"/"+cpu+"/"+id);
+        return new File(Jenkins.getInstance().getRootDir(),"cache/jdks/"+platform+"/"+cpu+"/"+id);
     }
 
     /**
@@ -293,144 +324,143 @@ public class JDKInstaller extends ToolInstaller {
      */
     public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
         File cache = getLocalCacheFile(platform, cpu);
-        if (cache.exists()) return cache.toURL();
+        if (cache.exists() && cache.length()>1*1024*1024) return cache.toURL(); // if the file is too small, don't trust it. In the past, the download site served error message in 200 status code
 
-        HttpURLConnection con = locateStage1(platform, cpu);
-        String page = IOUtils.toString(con.getInputStream());
-        URL src = locateStage2(log, page);
+        log.getLogger().println("Installing JDK "+id);
+        JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
+        if (families.isEmpty())
+            throw new IOException("JDK data is empty.");
 
-        // download to a temporary file and rename it in to handle concurrency and failure correctly,
-        File tmp = new File(cache.getPath()+".tmp");
-        tmp.getParentFile().mkdirs();
-        try {
-            FileOutputStream out = new FileOutputStream(tmp);
-            try {
-                IOUtils.copy(new RetryableHttpStream(src) {
-                    @Override
-                    protected HttpURLConnection connect() throws IOException {
-                        return (HttpURLConnection) ProxyConfiguration.open(url);
-                    }
-                }, out);
-            } finally {
-                out.close();
+        JDKRelease release = families.getRelease(id);
+        if (release==null)
+            throw new IOException("Unable to find JDK with ID="+id);
+
+        JDKFile primary=null,secondary=null;
+        for (JDKFile f : release.files) {
+            String vcap = f.name.toUpperCase(Locale.ENGLISH);
+
+            // JDK files have either 'windows', 'linux', or 'solaris' in its name, so that allows us to throw
+            // away unapplicable stuff right away
+            if(!platform.is(vcap))
+                continue;
+
+            switch (cpu.accept(vcap)) {
+            case PRIMARY:   primary = f;break;
+            case SECONDARY: secondary=f;break;
+            case UNACCEPTABLE:  break;
             }
-
-            tmp.renameTo(cache);
-            return cache.toURL();
-        } finally {
-            tmp.delete();
-        }
-    }
-
-    @SuppressWarnings("unchecked") // dom4j doesn't do generics, apparently... should probably switch to XOM
-    private HttpURLConnection locateStage1(Platform platform, CPU cpu) throws IOException {
-        URL url = new URL("https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef="+id);
-        String cookie;
-        Element form;
-        try {
-            HttpURLConnection con = (HttpURLConnection) ProxyConfiguration.open(url);
-            cookie = con.getHeaderField("Set-Cookie");
-            LOGGER.fine("Cookie="+cookie);
-
-            Tidy tidy = new Tidy();
-            tidy.setErrout(new PrintWriter(new NullWriter()));
-            DOMReader domReader = new DOMReader();
-            Document dom = domReader.read(tidy.parseDOM(con.getInputStream(), null));
-
-            form = null;
-            for (Element e : (List<Element>)dom.selectNodes("//form")) {
-                String action = e.attributeValue("action");
-                LOGGER.fine("Found form:"+action);
-                if(action.contains("ViewFilteredProducts")) {
-                    form = e;
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            throw new IOException2("Failed to access "+url,e);
         }
 
-        url = new URL(form.attributeValue("action"));
-        try {
-            HttpURLConnection con = (HttpURLConnection) ProxyConfiguration.open(url);
-            con.setRequestMethod("POST");
-            con.setDoOutput(true);
-            con.setRequestProperty("Cookie",cookie);
-            con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-            PrintStream os = new PrintStream(con.getOutputStream());
-
-            // select platform
-            String primary=null,secondary=null;
-            Element p = (Element)form.selectSingleNode(".//select[@id='dnld_platform']");
-            for (Element opt : (List<Element>)p.elements("option")) {
-                String value = opt.attributeValue("value");
-                String vcap = value.toUpperCase(Locale.ENGLISH);
-                if(!platform.is(vcap))  continue;
-                switch (cpu.accept(vcap)) {
-                case PRIMARY:   primary = value;break;
-                case SECONDARY: secondary=value;break;
-                case UNACCEPTABLE:  break;
-                }
-            }
-            if(primary==null)   primary=secondary;
-            if(primary==null)
+        if(primary==null)   primary=secondary;
+        if(primary==null)
             throw new AbortException("Couldn't find the right download for "+platform+" and "+ cpu +" combination");
-            os.print(p.attributeValue("name")+'='+primary);
-            LOGGER.fine("Platform choice:"+primary);
+        LOGGER.fine("Platform choice:"+primary);
 
-            // select language
-            Element l = (Element)form.selectSingleNode(".//select[@id='dnld_language']");
-            if (l != null) {
-                os.print("&"+l.attributeValue("name")+"="+l.element("option").attributeValue("value"));
-            }
+        log.getLogger().println("Downloading JDK from "+primary.filepath);
 
-            // the rest
-            for (Element e : (List<Element>)form.selectNodes(".//input")) {
-                os.print('&');
-                os.print(e.attributeValue("name"));
-                os.print('=');
-                String value = e.attributeValue("value");
-                if(value==null)
-                    os.print("on"); // assume this is a checkbox
-                else
-                    os.print(URLEncoder.encode(value,"UTF-8"));
+        HttpClient hc = new HttpClient();
+        hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
+        Jenkins j = Jenkins.getInstance();
+        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        if(jpc != null) {
+            hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
+            if(jpc.getUserName() != null)
+                hc.getState().setProxyCredentials(AuthScope.ANY,new UsernamePasswordCredentials(jpc.getUserName(),jpc.getPassword()));
+        }
+
+        int authCount=0, totalPageCount=0;  // counters for avoiding infinite loop
+
+        HttpMethodBase m = new GetMethod(primary.filepath);
+        hc.getState().addCookie(new Cookie(".oracle.com","gpw_e24",".", "/", -1, false));
+        try {
+            while (true) {
+                if (totalPageCount++>16) // looping too much
+                    throw new IOException("Unable to find the login form");
+
+                LOGGER.fine("Requesting " + m.getURI());
+                int r = hc.executeMethod(m);
+                if (r/100==3) {
+                    // redirect?
+                    String loc = m.getResponseHeader("Location").getValue();
+                    m.releaseConnection();
+                    m = new GetMethod(loc);
+                    continue;
+                }
+                if (r!=200)
+                    throw new IOException("Failed to request " + m.getURI() +" exit code="+r);
+
+                if (m.getURI().getHost().equals("login.oracle.com")) {
+                    LOGGER.fine("Appears to be a login page");
+                    String resp = IOUtils.toString(m.getResponseBodyAsStream(), m.getResponseCharSet());
+                    m.releaseConnection();
+                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\" .*?</form>", Pattern.DOTALL).matcher(resp);
+                    if (!pm.find())
+                        throw new IllegalStateException("Unable to find a form in the response:\n"+resp);
+
+                    String form = pm.group();
+                    PostMethod post = new PostMethod(
+                            new URL(new URL(m.getURI().getURI()),pm.group(1)).toExternalForm());
+
+                    String u = getDescriptor().getUsername();
+                    Secret p = getDescriptor().getPassword();
+                    if (u==null || p==null) {
+                        log.hyperlink(getCredentialPageUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.\n");
+                        throw new AbortException("Unable to install JDK unless a valid Oracle account username/password is provided in the system configuration.");
+                    }
+
+                    for (String fragment : form.split("<input")) {
+                        String n = extractAttribute(fragment,"name");
+                        String v = extractAttribute(fragment,"value");
+                        if (n==null || v==null)     continue;
+                        if (n.equals("ssousername"))
+                            v = u;
+                        if (n.equals("password")) {
+                            v = p.getPlainText();
+                            if (authCount++ > 3) {
+                                log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
+                                throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
+                            }
+                        }
+                        post.addParameter(n, v);
+                    }
+
+                    m = post;
+                } else {
+                    log.getLogger().println("Downloading " + m.getResponseContentLength() + "bytes");
+
+                    // download to a temporary file and rename it in to handle concurrency and failure correctly,
+                    File tmp = new File(cache.getPath()+".tmp");
+                    try {
+                        tmp.getParentFile().mkdirs();
+                        FileOutputStream out = new FileOutputStream(tmp);
+                        try {
+                            IOUtils.copy(m.getResponseBodyAsStream(), out);
+                        } finally {
+                            out.close();
+                        }
+
+                        tmp.renameTo(cache);
+                        return cache.toURL();
+                    } finally {
+                        tmp.delete();
+                    }
+                }
             }
-            os.close();
-            return con;
-        } catch (IOException e) {
-            throw new IOException2("Failed to access "+url,e);
+        } finally {
+            m.releaseConnection();
         }
     }
 
-    private URL locateStage2(TaskListener log, String page) throws IOException {
-        Pattern HREF = Pattern.compile("<a href=\"(http://cds.sun.com/[^\"]+/VerifyItem-Start[^\"]+)\"");
-        Matcher m = HREF.matcher(page);
-        // this page contains a missing --> that confuses dom4j/jtidy
+    private static String extractAttribute(String s, String name) {
+        String h = name + "=\"";
+        int si = s.indexOf(h);
+        if (si<0)   return null;
+        int ei = s.indexOf('\"',si+h.length());
+        return s.substring(si+h.length(),ei);
+    }
 
-        log.getLogger().println("Choosing the download bundle");
-        List<String> urls = new ArrayList<String>();
-
-        while(m.find()) {
-            String url = m.group(1);
-            LOGGER.fine("Considering a download link:"+ url);
-
-            // still more options to choose from.
-            // avoid rpm bundles, and avoid tar.Z bundle
-            if(url.contains("rpm"))  continue;
-            if(url.contains("tar.Z"))  continue;
-            // sparcv9 bundle is add-on to the sparc bundle, so just download 32bit sparc bundle, even on 64bit system
-            if(url.contains("sparcv9"))  continue;
-
-            urls.add(url);
-            LOGGER.fine("Found a download candidate: "+ url);
-        }
-
-        if (urls.isEmpty()) {
-            throw new IOException("found no matches in: " + page);
-        }
-
-        // prefer the first match because sometimes "optional downloads" follow the main bundle
-        return new URL(urls.get(0));
+    private String getCredentialPageUrl() {
+        return "/"+getDescriptor().getDescriptorUrl()+"/enterCredential";
     }
 
     public enum Preference {
@@ -460,11 +490,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the platform of the given node.
          */
         public static Platform of(Node n) throws IOException,InterruptedException,DetectionFailedException {
-            return n.getChannel().call(new Callable<Platform,DetectionFailedException>() {
-                public Platform call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentPlatform());
         }
 
         public static Platform current() throws DetectionFailedException {
@@ -474,6 +500,14 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
+
+        static class GetCurrentPlatform implements Callable<Platform,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public Platform call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
@@ -490,15 +524,15 @@ public class JDKInstaller extends ToolInstaller {
             switch (this) {
             // these two guys are totally incompatible with everything else, so no fallback
             case Sparc:     return must(line.contains("SPARC"));
-            case Itanium:   return must(line.contains("ITANIUM"));
+            case Itanium:   return must(line.contains("IA64"));
 
             // 64bit Solaris, Linux, and Windows can all run 32bit executable, so fall back to 32bit if 64bit bundle is not found
             case amd64:
+                if(line.contains("SPARC") || line.contains("IA64"))  return UNACCEPTABLE;
                 if(line.contains("64"))     return PRIMARY;
-                if(line.contains("SPARC") || line.contains("ITANIUM"))  return UNACCEPTABLE;
                 return SECONDARY;
             case i386:
-                if(line.contains("64") || line.contains("SPARC") || line.contains("ITANIUM"))     return UNACCEPTABLE;
+                if(line.contains("64") || line.contains("SPARC") || line.contains("IA64"))     return UNACCEPTABLE;
                 return PRIMARY;
             }
             return UNACCEPTABLE;
@@ -512,11 +546,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the CPU of the given node.
          */
         public static CPU of(Node n) throws IOException,InterruptedException, DetectionFailedException {
-            return n.getChannel().call(new Callable<CPU,DetectionFailedException>() {
-                public CPU call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentCPU());
         }
 
         /**
@@ -532,6 +562,14 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("86"))    return i386;
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
+
+        static class GetCurrentCPU implements Callable<CPU,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public CPU call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
@@ -544,24 +582,73 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFamilyList {
-        public JDKFamily[] jdks = new JDKFamily[0];
+        public int version;
+        public JDKFamily[] data = new JDKFamily[0];
+
+        public boolean isEmpty() {
+            for (JDKFamily f : data) {
+                if (f.releases.length>0)
+                    return false;
+            }
+            return true;
+        }
+
+        public JDKRelease getRelease(String productCode) {
+            for (JDKFamily f : data) {
+                for (JDKRelease r : f.releases) {
+                    if (r.matchesId(productCode))
+                        return r;
+                }
+            }
+            return null;
+        }
     }
 
     public static final class JDKFamily {
         public String name;
-        public InstallableJDK[] list;
+        public JDKRelease[] releases;
     }
 
-    public static final class InstallableJDK {
+    public static final class JDKRelease {
+        /**
+         * This maps to the former product code, like "jdk-6u13-oth-JPR"
+         */
         public String name;
         /**
-         * Product code.
+         * This is human readable.
          */
-        public String id;
+        public String title;
+        public JDKFile[] files;
+
+        /**
+         * We used to use IDs like "jdk-6u13-oth-JPR@CDS-CDS_Developer", but Oracle switched to just "jdk-6u13-oth-JPR".
+         * This method matches if the specified string matches the name, and it accepts both the old and the new format.
+         */
+        public boolean matchesId(String rhs) {
+            return rhs!=null && (rhs.equals(name) || rhs.startsWith(name+"@"));
+        }
+    }
+
+    public static final class JDKFile {
+        public String name;
+        public String title;
+        public String filepath;
+    }
+
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
     }
 
     @Extension
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
+        private String username;
+        private Secret password;
+
+        public DescriptorImpl() {
+            load();
+        }
+
         public String getDisplayName() {
             return Messages.JDKInstaller_DescriptorImpl_displayName();
         }
@@ -571,13 +658,18 @@ public class JDKInstaller extends ToolInstaller {
             return toolType==JDK.class;
         }
 
+        public String getUsername() {
+            return username;
+        }
+
+        public Secret getPassword() {
+            return password;
+        }
+
         public FormValidation doCheckId(@QueryParameter String value) {
-            if (Util.fixEmpty(value) == null) {
+            if (Util.fixEmpty(value) == null)
                 return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckId()); // improve message
-            } else {
-                // XXX further checks? 
-                return FormValidation.ok();
-            }
+            return FormValidation.ok();
         }
 
         /**
@@ -585,15 +677,27 @@ public class JDKInstaller extends ToolInstaller {
          * @return never null.
          */
         public List<JDKFamily> getInstallableJDKs() throws IOException {
-            return Arrays.asList(JDKList.all().get(JDKList.class).toList().jdks);
+            return Arrays.asList(JDKList.all().get(JDKList.class).toList().data);
         }
 
         public FormValidation doCheckAcceptLicense(@QueryParameter boolean value) {
+            if (username==null || password==null)
+                return FormValidation.errorWithMarkup(Messages.JDKInstaller_RequireOracleAccount(Stapler.getCurrentRequest().getContextPath()+'/'+getDescriptorUrl()+"/enterCredential"));
             if (value) {
                 return FormValidation.ok();
             } else {
                 return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
             }
+        }
+
+        /**
+         * Submits the Oracle account username/password.
+         */
+        public HttpResponse doPostCredential(@QueryParameter String username, @QueryParameter String password) throws IOException, ServletException {
+            this.username = username;
+            this.password = Secret.fromString(password);
+            save();
+            return HttpResponses.redirectTo("credentialOK");
         }
     }
 

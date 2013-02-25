@@ -25,7 +25,7 @@
 package hudson;
 
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.security.ACL;
 
 import java.util.ArrayList;
@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
 /**
@@ -53,14 +55,12 @@ public class DependencyRunner implements Runnable {
     }
 
     public void run() {
-        Authentication saveAuth = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-
+        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
         try {
             Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");
-            for (AbstractProject p : Hudson.getInstance().getAllItems(AbstractProject.class))
+            for (AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class))
                 if (p.getUpstreamProjects().size() == 0) {
                     LOGGER.fine("adding top level project " + p.getName());
                     topLevelProjects.add(p);
@@ -73,7 +73,7 @@ public class DependencyRunner implements Runnable {
                 runnable.run(p);
             }
         } finally {
-            SecurityContextHolder.getContext().setAuthentication(saveAuth);
+            SecurityContextHolder.setContext(oldContext);
         }
     }
 

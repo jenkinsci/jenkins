@@ -45,4 +45,16 @@ public abstract class AbstractQueueTask implements Queue.Task {
     public final Task getOwnerTask() {
         return this;
     }
+
+    public boolean isConcurrentBuild() {
+        return false;
+    }
+
+    public CauseOfBlockage getCauseOfBlockage() {
+        return null;
+    }
+
+    public Object getSameNodeConstraint() {
+        return null;
+    }
 }

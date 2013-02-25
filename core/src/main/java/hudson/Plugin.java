@@ -23,12 +23,14 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import hudson.util.TimeUnit2;
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
+import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -54,7 +56,7 @@ import com.thoughtworks.xstream.XStream;
  *
  * <p>
  * A plugin is bound to URL space of Hudson as <tt>${rootURL}/plugin/foo/</tt>,
- * where "foo" is taken from your plugin name "foo.hpi". All your web resources
+ * where "foo" is taken from your plugin name "foo.jpi". All your web resources
  * in src/main/webapp are visible from this URL, and you can also define Jelly
  * views against your Plugin class, and those are visible in this URL, too.
  *
@@ -74,7 +76,7 @@ import com.thoughtworks.xstream.XStream;
 public abstract class Plugin implements Saveable {
 
     /**
-     * Set by the {@link PluginManager}.
+     * Set by the {@link PluginManager}, before the {@link #start()} method is called.
      * This points to the {@link PluginWrapper} that wraps
      * this {@link Plugin} object.
      */
@@ -96,11 +98,20 @@ public abstract class Plugin implements Saveable {
     }
 
     /**
+     * Gets the paired {@link PluginWrapper}.
+     *
+     * @since 1.426
+     */
+    public PluginWrapper getWrapper() {
+        return wrapper;
+    }
+
+    /**
      * Called to allow plugins to initialize themselves.
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link Hudson#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
      * although the plugin start up happens relatively early in the initialization
      * stage and not all the data are loaded in Hudson.
      *
@@ -199,8 +210,16 @@ public abstract class Plugin implements Saveable {
             return;
         }
 
+        // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
+        // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
+        // to create unique URLs. Recognize that and set a long expiration header.
+        String requestPath = req.getRequestURI().substring(req.getContextPath().length());
+        boolean staticLink = requestPath.startsWith("/static/");
+
+        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
+
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path));
+        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path),expires);
     }
 
 //
@@ -242,8 +261,8 @@ public abstract class Plugin implements Saveable {
      * @since 1.245
      */
     protected XmlFile getConfigXml() {
-        return new XmlFile(Hudson.XSTREAM,
-                new File(Hudson.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
+        return new XmlFile(Jenkins.XSTREAM,
+                new File(Jenkins.getInstance().getRootDir(),wrapper.getShortName()+".xml"));
     }
 
 

@@ -34,15 +34,19 @@ import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
+import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
+import org.kohsuke.stapler.export.Flavor;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -98,18 +102,19 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return (AbstractProject<?, ?>) owner;
     }
 
+    public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+    }
+
     /**
      * Interprets the form submission and schedules a build for a parameterized job.
      *
      * <p>
-     * This method is supposed to be invoked from {@link AbstractProject#doBuild(StaplerRequest, StaplerResponse)}.
+     * This method is supposed to be invoked from {@link AbstractProject#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
-    public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if(!req.getMethod().equals("POST")) {
-            // show the parameter entry form.
-            req.getView(this,"index.jelly").forward(req,rsp);
-            return;
-        }
+    public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
+        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
+
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         
@@ -127,29 +132,43 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Hudson.getInstance().getQueue().schedule(
-                owner, owner.getDelay(req), new ParametersAction(values), new CauseAction(new Cause.UserCause()));
+    	Jenkins.getInstance().getQueue().schedule(
+                owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
 
         // send the user back to the job top page.
         rsp.sendRedirect(".");
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+    }
+
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);
         	if (value != null) {
         		values.add(value);
-        	} else {
-        		throw new IllegalArgumentException("Parameter " + d.getName() + " was missing.");
         	}
         }
+        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
 
-    	Hudson.getInstance().getQueue().schedule(
-                owner, owner.getDelay(req), new ParametersAction(values), owner.getBuildCause(req));
+        Jenkins.getInstance().getQueue().schedule(
+                owner, delay.getTime(), new ParametersAction(values), owner.getBuildCause(req));
 
-        // send the user back to the job top page.
-        rsp.sendRedirect(".");
+        if (requestWantsJson(req)) {
+            rsp.setContentType("application/json");
+            rsp.serveExposedBean(req, owner, Flavor.JSON);
+        } else {
+            // send the user back to the job top page.
+            rsp.sendRedirect(".");
+        }
+    }
+
+    private boolean requestWantsJson(StaplerRequest req) {
+        String a = req.getHeader("Accept");
+        if (a==null)    return false;
+        return !a.contains("text/html") && a.contains("application/json");
     }
 
     /**

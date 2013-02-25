@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
@@ -64,7 +64,7 @@ public class MavenTest extends HudsonTestCase {
      * Tests the round-tripping of the configuration.
      */
     public void testConfigRoundtrip() throws Exception {
-        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
+        jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(); // reset
 
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new Maven("a", null, "b.pom", "c=d", "-e", true));
@@ -91,15 +91,15 @@ public class MavenTest extends HudsonTestCase {
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
         MavenInstallation varMaven = new MavenInstallation("varMaven", mavenHomeVar, NO_PROPERTIES);
-        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
+        jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
-        JDK jdk = hudson.getJDK("default");
+        JDK jdk = jenkins.getJDK("default");
         String javaHome = jdk.getHome();
         String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);
-        hudson.getJDKs().add(varJDK);
-        Hudson.getInstance().getNodeProperties().replaceBy(
+        jenkins.getJDKs().add(varJDK);
+        Jenkins.getInstance().getNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("VAR_MAVEN", mavenVar), new Entry("VAR_JAVA",
                                 javaVar))));
@@ -120,14 +120,14 @@ public class MavenTest extends HudsonTestCase {
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
         MavenInstallation varMaven = new MavenInstallation("varMaven",mavenHomeVar,NO_PROPERTIES);
-        hudson.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
+        jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven, varMaven);
 
-        JDK jdk = hudson.getJDK("default");
+        JDK jdk = jenkins.getJDK("default");
         String javaHome = jdk.getHome();
         String javaHomeVar = "${VAR_JAVA}" + javaHome.substring(3);
         String javaVar = javaHome.substring(0, 3);
         JDK varJDK = new JDK("varJDK", javaHomeVar);
-        hudson.getJDKs().add(varJDK);
+        jenkins.getJDKs().add(varJDK);
 
         FreeStyleProject project = createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(
@@ -136,7 +136,7 @@ public class MavenTest extends HudsonTestCase {
         project.getBuildersList().add(new Maven("--help", varMaven.getName()));
         project.setJDK(varJDK);
 
-        Build build = project.scheduleBuild2(0, new LegacyCodeCause(),
+        FreeStyleBuild build = project.scheduleBuild2(0, new LegacyCodeCause(),
                 new ParametersAction(
                         new StringParameterValue("VAR_MAVEN", mavenVar),
                         new StringParameterValue("VAR_JAVA", javaVar))).get();
@@ -190,6 +190,7 @@ public class MavenTest extends HudsonTestCase {
         project.getBuildersList().add(new Maven("clean package",null));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        @SuppressWarnings("deprecation")
         String buildLog = build.getLog();
         assertNotNull(buildLog);
 	System.out.println(buildLog);

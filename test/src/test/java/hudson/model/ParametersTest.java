@@ -63,14 +63,14 @@ public class ParametersTest extends HudsonTestCase {
         assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
 
         submit(form);
-        Queue.Item q = hudson.getQueue().getItem(project);
+        Queue.Item q = jenkins.getQueue().getItem(project);
         if (q != null) q.getFuture().get();
         else Thread.sleep(1000);
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
         assertEquals("Choice 1", builder.getEnvVars().get("CHOICE"));
-        assertEquals(hudson.getRootUrl() + otherProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        assertEquals(jenkins.getRootUrl() + otherProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
     }
 
     public void testChoiceWithLTGT() throws Exception {
@@ -96,7 +96,7 @@ public class ParametersTest extends HudsonTestCase {
         opt.setSelected(true);
 
         submit(form);
-        Queue.Item q = hudson.getQueue().getItem(project);
+        Queue.Item q = jenkins.getQueue().getItem(project);
         if (q != null) q.getFuture().get();
         else Thread.sleep(1000);
 

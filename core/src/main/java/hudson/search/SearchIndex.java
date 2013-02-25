@@ -26,7 +26,11 @@ package hudson.search;
 import java.util.List;
 
 /**
+ * Conceptually a set of {@link SearchItem}s that provide quick look-up
+ * from their {@linkplain SearchItem#getSearchName() names}.
+ *
  * @author Kohsuke Kawaguchi
+ * @see SearchIndexBuilder
  */
 public interface SearchIndex {
     void find(String token, List<SearchItem> result);
@@ -40,7 +44,7 @@ public interface SearchIndex {
     /**
      * Empty set.
      */
-    static final SearchIndex EMPTY = new SearchIndex() {
+    SearchIndex EMPTY = new SearchIndex() {
         public void find(String token, List<SearchItem> result) {
             // no item to contribute
         }

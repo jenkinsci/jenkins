@@ -26,7 +26,14 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
+import hudson.model.Queue.*;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.XStream2;
@@ -36,7 +43,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -49,6 +58,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -60,17 +70,17 @@ public class QueueTest extends HudsonTestCase {
      * Checks the persistence of queue.
      */
     public void testPersistence() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserCause());
+        testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -88,17 +98,17 @@ public class QueueTest extends HudsonTestCase {
      * Can {@link Queue} successfully recover removal?
      */
     public void testPersistence2() throws Exception {
-        Queue q = hudson.getQueue();
+        Queue q = jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        hudson.setNumExecutors(0);
-        hudson.setNodes(hudson.getNodes());
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(jenkins.getNodes());
 
         FreeStyleProject testProject = createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserCause());
+        testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(hudson.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -110,7 +120,40 @@ public class QueueTest extends HudsonTestCase {
         assertEquals(0,q.getItems().length);
     }
 
+    /**
+     * {@link Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
+     */
+    public void testPersistenceBlockedItem() throws Exception {
+        Queue q = jenkins.getQueue();
+        final SequenceLock seq = new SequenceLock();
+
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                seq.phase(0);   // first, we let one build going
+
+                seq.phase(2);
+                return true;
+            }
+        });
+
+        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        seq.phase(1);   // and make sure we have one build under way
+
+        // get another going
+        Future<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+
+        Thread.sleep(1000);
+        Queue.Item[] items = q.getItems();
+        assertEquals(1,items.length);
+        assertTrue(items[0] instanceof BlockedItem);
+
+        q.save();
+    }
+
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
+        private static final long serialVersionUID = 1L;
         @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             resp.setContentType("text/html");
             resp.getWriter().println(
@@ -123,7 +166,7 @@ public class QueueTest extends HudsonTestCase {
         @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             try {
                 ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
-                List v = f.parseRequest(req);
+                List<?> v = f.parseRequest(req);
                 assertEquals(1,v.size());
                 XStream2 xs = new XStream2();
                 System.out.println(xs.toXML(v.get(0)));
@@ -167,7 +210,7 @@ public class QueueTest extends HudsonTestCase {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
 
-        hudson.quietPeriod = 0;
+        setQuietPeriod(0);
         FreeStyleProject project = createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
@@ -179,21 +222,21 @@ public class QueueTest extends HudsonTestCase {
         });
 
         // Start one build to block others
-        assertTrue(project.scheduleBuild(new UserCause()));
+        assertTrue(project.scheduleBuild(new UserIdCause()));
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
-        Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserCause());
+        Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
         assertNotNull(fb);
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
-        assertFalse(project.scheduleBuild(new UserCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
+        assertFalse(project.scheduleBuild(new UserIdCause()));
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
         assertFalse(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
         assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause()));
+        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
         assertFalse(project.scheduleBuild(new TimerTriggerCause()));
 
         // Wait for 2nd build to finish
@@ -226,5 +269,45 @@ public class QueueTest extends HudsonTestCase {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+    }
+
+    @Bug(8790)
+    public void testFlyweightTasks() throws Exception {
+        MatrixProject m = createMatrixProject();
+        m.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("FOO","value")
+        ));
+        m.getBuildersList().add(new Shell("sleep 3"));
+        m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
+
+        List<Future<MatrixBuild>> r = new ArrayList<Future<MatrixBuild>>();
+
+        for (int i=0; i<3; i++)
+            r.add(m.scheduleBuild2(0,new UserIdCause(),new ParametersAction(new StringParameterValue("FOO","value"+i))));
+
+        for (Future<MatrixBuild> f : r)
+            assertBuildStatusSuccess(f);
+    }
+
+    public void testWaitForStart() throws Exception {
+        final OneShotEvent ev = new OneShotEvent();
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                ev.block();
+                return true;
+            }
+        });
+
+        QueueTaskFuture<FreeStyleBuild> v = p.scheduleBuild2(0);
+        FreeStyleBuild b = v.waitForStart();
+        assertEquals(1,b.getNumber());
+        assertTrue(b.isBuilding());
+        assertSame(p,b.getProject());
+
+        ev.signal();    // let the build complete
+        FreeStyleBuild b2 = assertBuildStatusSuccess(v);
+        assertSame(b,b2);
     }
 }

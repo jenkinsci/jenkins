@@ -23,8 +23,10 @@
  */
 package hudson.security;
 
-import hudson.model.Hudson;
+import hudson.model.User;
+import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
+import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -46,9 +48,9 @@ import java.net.URLEncoder;
  * Implements the dual authentcation mechanism.
  *
  * <p>
- * Hudson supports both the HTTP basic authentication and the form-based authentication.
+ * Jenkins supports both the HTTP basic authentication and the form-based authentication.
  * The former is for scripted clients, and the latter is for humans. Unfortunately,
- * becase the servlet spec does not allow us to programatically authenticate users,
+ * because the servlet spec does not allow us to programatically authenticate users,
  * we need to rely on some hack to make it work, and this is the class that implements
  * that hack.
  *
@@ -61,7 +63,7 @@ import java.net.URLEncoder;
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link Hudson#doSecured(StaplerRequest, StaplerResponse) <tt>/secured/...</tt> page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) <tt>/secured/...</tt> page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,
@@ -98,7 +100,7 @@ public class BasicAuthenticationFilter implements Filter {
 
         String path = req.getServletPath();
         if(authorization==null || req.getUserPrincipal() !=null || path.startsWith("/secured/")
-        || !Hudson.getInstance().isUseSecurity()) {
+        || !Jenkins.getInstance().isUseSecurity()) {
             // normal requests, or security not enabled
             if(req.getUserPrincipal()!=null) {
                 // before we route this request, integrate the container authentication
@@ -127,9 +129,24 @@ public class BasicAuthenticationFilter implements Filter {
 
         if(username==null) {
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            rsp.setHeader("WWW-Authenticate","Basic realm=\"Hudson administrator\"");
+            rsp.setHeader("WWW-Authenticate","Basic realm=\"Jenkins user\"");
             return;
         }
+
+        {// attempt to authenticate as API token
+            User u = User.get(username);
+            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+            if (t!=null && t.matchesPassword(password)) {
+                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                try {
+                    chain.doFilter(request,response);
+                } finally {
+                    SecurityContextHolder.clearContext();
+                }
+                return;
+            }
+        }
+
 
         path = req.getContextPath()+"/secured"+path;
         String q = req.getQueryString();

@@ -34,9 +34,11 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.acegisecurity.acls.sid.Sid;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -44,7 +46,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * <h2>Persistence</h2>
  * <p>
- * This object will be persisted along with {@link Hudson} object.
+ * This object will be persisted along with {@link jenkins.model.Jenkins} object.
  * Hudson by itself won't put the ACL returned from {@link #getRootACL()} into the serialized object graph,
  * so if that object contains state and needs to be persisted, it's the responsibility of
  * {@link AuthorizationStrategy} to do so (by keeping them in an instance field.)
@@ -53,7 +55,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>
  * The corresponding {@link Describable} instance will be asked to create a new {@link AuthorizationStrategy}
  * every time the system configuration is updated. Implementations that keep more state in ACL beyond
- * the system configuration should use {@link Hudson#getAuthorizationStrategy()} to talk to the current
+ * the system configuration should use {@link jenkins.model.Jenkins#getAuthorizationStrategy()} to talk to the current
  * instance to carry over the state. 
  *
  * @author Kohsuke Kawaguchi
@@ -86,12 +88,25 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns the ACL of the ViewGroup.
+     * The default implementation makes the view visible if any of the items are visible
+     * or the view is configurable.
      *
      * @since 1.220
      */
-    public ACL getACL(View item) {
-    	return item.getOwner().getACL();
+    public ACL getACL(final View item) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission permission) {
+                ACL base = item.getOwner().getACL();
+
+                boolean hasPermission = base.hasPermission(a, permission);
+                if (!hasPermission && permission == View.READ) {
+                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                }
+
+                return hasPermission;
+            }
+        };
     }
     
     /**
@@ -170,7 +185,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
     public static DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
-        return Hudson.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
+        return Jenkins.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
     }
 
     /**

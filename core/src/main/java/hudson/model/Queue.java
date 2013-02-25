@@ -24,8 +24,10 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import hudson.AbortException;
 import hudson.BulkChange;
+import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -36,6 +38,7 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
@@ -76,21 +79,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.timer.Timer;
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -99,6 +105,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Build queue.
@@ -138,8 +146,9 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * {@link Task}s that can be built immediately
      * but blocked because another build is in progress,
-     * required {@link Resource}s are not available, or otherwise blocked
-     * by {@link Task#isBuildBlocked()}.
+     * required {@link Resource}s are not available,
+     * blocked via {@link QueueTaskDispatcher#canRun(Item)},
+     * or otherwise blocked by {@link Task#isBuildBlocked()}.
      */
     private final ItemList<BlockedItem> blockedProjects = new ItemList<BlockedItem>();
 
@@ -155,6 +164,41 @@ public class Queue extends ResourceController implements Saveable {
      * has not started yet.
      */
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
+
+    private final CachedItemList itemsView = new CachedItemList();
+
+    /**
+     * Maintains a copy of {@link Queue#getItems()}
+     *
+     * @see Queue#getApproximateItemsQuickly()
+     */
+    private class CachedItemList {
+        /**
+         * The current cached value.
+         */
+        @CopyOnWrite
+        private volatile List<Item> itemsView = Collections.emptyList();
+        /**
+         * When does the cache info expire?
+         */
+        private final AtomicLong expires = new AtomicLong();
+
+        List<Item> get() {
+            long t = System.currentTimeMillis();
+            long d = expires.get();
+            if (t>d) {// need to refresh the cache
+                long next = t+1000;
+                if (expires.compareAndSet(d,next)) {
+                    // avoid concurrent cache update via CAS.
+                    // if the getItems() lock is contended,
+                    // some threads will end up serving stale data,
+                    // but that's OK.
+                    itemsView = ImmutableList.copyOf(getItems());
+                }
+            }
+            return itemsView;
+        }
+    }
 
     /**
      * Data structure created for each idle {@link Executor}.
@@ -199,15 +243,15 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
          */
-        public boolean canTake(Task task) {
+        public boolean canTake(BuildableItem item) {
             Node node = getNode();
             if (node==null)     return false;   // this executor is about to die
 
-            if(node.canTake(task)!=null)
+            if(node.canTake(item)!=null)
                 return false;   // this node is not able to take the task
 
             for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
-                if (d.canTake(node,task)!=null)
+                if (d.canTake(node,item)!=null)
                     return false;
 
             return isAvailable();
@@ -251,7 +295,7 @@ public class Queue extends ResourceController implements Saveable {
 
     public void setLoadBalancer(LoadBalancer loadBalancer) {
         if(loadBalancer==null)  throw new IllegalArgumentException();
-        this.loadBalancer = loadBalancer;
+        this.loadBalancer = loadBalancer.sanitize();
     }
 
     public QueueSorter getSorter() {
@@ -271,13 +315,16 @@ public class Queue extends ResourceController implements Saveable {
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    AbstractProject j = Hudson.getInstance().getItemByFullName(line, AbstractProject.class);
-                    if (j != null)
-                        j.scheduleBuild();
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
+                        if (j != null)
+                            j.scheduleBuild();
+                    }
+                } finally {
+                    in.close();
                 }
-                in.close();
                 // discard the queue file now that we are done
                 queueFile.delete();
             } else {
@@ -351,7 +398,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     @CLIMethod(name="clear-queue")
     public synchronized void clear() {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (WaitingItem i : waitingList)
             i.onCancelled();
         waitingList.clear();
@@ -361,11 +408,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private File getQueueFile() {
-        return new File(Hudson.getInstance().getRootDir(), "queue.txt");
+        return new File(Jenkins.getInstance().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
-        return new File(Hudson.getInstance().getRootDir(), "queue.xml");
+        return new File(Jenkins.getInstance().getRootDir(), "queue.xml");
     }
 
     /**
@@ -563,6 +610,18 @@ public class Queue extends ResourceController implements Saveable {
         return r;
     }
 
+    /**
+     * Called from {@code queue.jelly} and {@code entries.jelly}.
+     */
+    @RequirePOST
+    public HttpResponse doCancelItem(@QueryParameter int id) throws IOException, ServletException {
+        Item item = getItem(id);
+        if (item != null) {
+            cancel(item);
+        } // else too late, ignore (JENKINS-14813)
+        return HttpResponses.forwardToPreviousPage();
+    }
+
     public synchronized boolean isEmpty() {
         return waitingList.isEmpty() && blockedProjects.isEmpty() && buildables.isEmpty() && pendings.isEmpty();
     }
@@ -590,6 +649,27 @@ public class Queue extends ResourceController implements Saveable {
             r[idx++] = p;
         return r;
     }
+
+    /**
+     * Like {@link #getItems()}, but returns an approximation that might not be completely up-to-date.
+     *
+     * <p>
+     * At the expense of accuracy, this method does not usually lock {@link Queue} and therefore is faster
+     * in a highly concurrent situation.
+     *
+     * <p>
+     * The list obtained is an accurate snapshot of the queue at some point in the past. The snapshot
+     * is updated and normally no more than one second old, but this is a soft commitment that might
+     * get violated when the lock on {@link Queue} is highly contended.
+     *
+     * <p>
+     * This method is primarily added to make UI threads run faster.
+     *
+     * @since 1.483
+     */
+    public List<Item> getApproximateItemsQuickly() {
+        return itemsView.get();
+    }
     
     public synchronized Item getItem(int id) {
     	for (Item item: waitingList) if (item.id == id) return item;
@@ -612,7 +692,7 @@ public class Queue extends ResourceController implements Saveable {
     private void _getBuildableItems(Computer c, ItemList<BuildableItem> col, List<BuildableItem> result) {
         Node node = c.getNode();
         for (BuildableItem p : col.values()) {
-            if (node.canTake(p.task) == null)
+            if (node.canTake(p) == null)
                 result.add(p);
         }
     }
@@ -634,6 +714,33 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Gets all items that are in the queue but not blocked
+     *
+     * @since 1.402
+     */
+    public synchronized List<Item> getUnblockedItems() {
+    	List<Item> queuedNotBlocked = new ArrayList<Item>();
+        queuedNotBlocked.addAll(waitingList);
+        queuedNotBlocked.addAll(buildables);
+        queuedNotBlocked.addAll(pendings);
+        // but not 'blockedProjects'
+        return queuedNotBlocked;
+    }
+
+    /**
+     * Works just like {@link #getUnblockedItems()} but return tasks.
+     *
+     * @since 1.402
+     */
+    public synchronized Set<Task> getUnblockedTasks() {
+        List<Item> items = getUnblockedItems();
+        Set<Task> unblockedTasks = new HashSet<Task>(items.size());
+        for (Queue.Item t : items)
+            unblockedTasks.add(t.task);
+        return unblockedTasks;
+    }
+
+    /**
      * Is the given task currently pending execution?
      */
     public synchronized boolean isPending(Task t) {
@@ -649,12 +756,19 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized int countBuildableItemsFor(Label l) {
         int r = 0;
         for (BuildableItem bi : buildables.values())
-            if(bi.task.getAssignedLabel()==l)
+            if(bi.getAssignedLabel()==l)
                 r++;
         for (BuildableItem bi : pendings.values())
-            if(bi.task.getAssignedLabel()==l)
+            if(bi.getAssignedLabel()==l)
                 r++;
         return r;
+    }
+
+    /**
+     * Counts all the {@link BuildableItem}s currently in the queue.
+     */
+    public synchronized int countBuildableItems() {
+        return buildables.size()+pendings.size();
     }
 
     /**
@@ -727,6 +841,13 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized WorkUnit pop() throws InterruptedException {
         final Executor exec = Executor.currentExecutor();
 
+        if (exec instanceof OneOffExecutor) {
+            OneOffExecutor ooe = (OneOffExecutor) exec;
+            final WorkUnit wu = ooe.getAssignedWorkUnit();
+            pendings.remove(wu.context.item);
+            return wu;
+        }
+
         try {
             while (true) {
                 final JobOffer offer = new JobOffer(exec);
@@ -740,40 +861,6 @@ public class Queue extends ResourceController implements Saveable {
                 // at the end of this we get all the buildable jobs
                 // in the buildables field.
                 maintain();
-
-                // allocate buildable jobs to executors
-                Iterator<BuildableItem> itr = buildables.iterator();
-                while (itr.hasNext()) {
-                    BuildableItem p = itr.next();
-
-                    // one last check to make sure this build is not blocked.
-                    if (isBuildBlocked(p.task)) {
-                        itr.remove();
-                        blockedProjects.put(p.task,new BlockedItem(p));
-                        continue;
-                    }
-
-                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                    for (JobOffer j : parked.values())
-                        if(j.canTake(p.task))
-                            candidates.add(j);
-
-                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                    Mapping m = loadBalancer.map(p.task, ws);
-                    if (m == null)
-                        // if we couldn't find the executor that fits,
-                        // just leave it in the buildables list and
-                        // check if we can execute other projects
-                        continue;
-
-                    // found a matching executor. use it.
-                    WorkUnitContext wuc = new WorkUnitContext(p);
-                    m.execute(wuc);
-
-                    itr.remove();
-                    if (!wuc.getWorkUnits().isEmpty())
-                        pendings.add(p);
-                }
 
                 // we went over all the buildable projects and awaken
                 // all the executors that got work to do. now, go to sleep
@@ -845,10 +932,19 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Checks if the given task is blocked.
+     * Checks if the given item should be prevented from entering into the {@link #buildables} state
+     * and instead stay in the {@link #blockedProjects} state.
      */
-    private boolean isBuildBlocked(Task t) {
-        return t.isBuildBlocked() || !canRun(t.getResourceList());
+    private boolean isBuildBlocked(Item i) {
+        if (i.task.isBuildBlocked() || !canRun(i.task.getResourceList()))
+            return true;
+
+        for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+            if (d.canRun(i)!=null)
+                return true;
+        }
+
+        return false;
     }
 
     /**
@@ -867,42 +963,46 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Queue maintenance.
+     *
      * <p>
-     * Move projects between {@link #waitingList}, {@link #blockedProjects}, and {@link #buildables}
+     * Move projects between {@link #waitingList}, {@link #blockedProjects}, {@link #buildables}, and {@link #pendings}
      * appropriately.
+     *
+     * <p>
+     * Jenkins internally invokes this method by itself whenever there's a change that can affect
+     * the scheduling (such as new node becoming online, # of executors change, a task completes execution, etc.),
+     * and it also gets invoked periodically (see {@link MaintainTask}.)
      */
     public synchronized void maintain() {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Queue maintenance started " + this);
 
-        // blocked -> buildable
-        Iterator<BlockedItem> itr = blockedProjects.values().iterator();
-        while (itr.hasNext()) {
-            BlockedItem p = itr.next();
-            if (!isBuildBlocked(p.task) && allowNewBuildableTask(p.task)) {
-                // ready to be executed
-                if (makeBuildable(new BuildableItem(p))) {
-                LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
-                itr.remove();
+        {// blocked -> buildable
+            Iterator<BlockedItem> itr = blockedProjects.values().iterator();
+            while (itr.hasNext()) {
+                BlockedItem p = itr.next();
+                if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
+                    // ready to be executed
+                    LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
+                    itr.remove();
+                    makeBuildable(new BuildableItem(p));
                 }
             }
         }
 
+        // waitingList -> buildable/blocked
         while (!waitingList.isEmpty()) {
             WaitingItem top = peek();
 
             if (!top.timestamp.before(new GregorianCalendar()))
-                return; // finished moving all ready items from queue
+                break; // finished moving all ready items from queue
 
             waitingList.remove(top);
             Task p = top.task;
-            boolean isReady = false;
-            if (!isBuildBlocked(p) && allowNewBuildableTask(p)) {
-                // maybe ready to be executed immediately
-                isReady = makeBuildable(new BuildableItem(top));
-            }
-            if (isReady) {
+            if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
+                // ready to be executed immediately
                 LOGGER.fine(p.getFullDisplayName() + " ready to build");
+                makeBuildable(new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
@@ -914,58 +1014,73 @@ public class Queue extends ResourceController implements Saveable {
         final QueueSorter s = sorter;
         if (s != null)
         	s.sortBuildableItems(buildables);
+
+        // allocate buildable jobs to executors
+        Iterator<BuildableItem> itr = buildables.iterator();
+        while (itr.hasNext()) {
+            BuildableItem p = itr.next();
+
+            // one last check to make sure this build is not blocked.
+            if (isBuildBlocked(p)) {
+                itr.remove();
+                blockedProjects.put(p.task,new BlockedItem(p));
+                continue;
+            }
+
+            List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+            for (JobOffer j : parked.values())
+                if(j.canTake(p))
+                    candidates.add(j);
+
+            MappingWorksheet ws = new MappingWorksheet(p, candidates);
+            Mapping m = loadBalancer.map(p.task, ws);
+            if (m == null)
+                // if we couldn't find the executor that fits,
+                // just leave it in the buildables list and
+                // check if we can execute other projects
+                continue;
+
+            // found a matching executor. use it.
+            WorkUnitContext wuc = new WorkUnitContext(p);
+            m.execute(wuc);
+
+            itr.remove();
+            if (!wuc.getWorkUnits().isEmpty())
+                pendings.add(p);
+        }
     }
 
-    private boolean makeBuildable(BuildableItem p) {
-        if(Hudson.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
+    private void makeBuildable(BuildableItem p) {
+        if(Jenkins.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(new Hash<Node>() {
                 public String hash(Node node) {
                     return node.getNodeName();
                 }
             });
-            Hudson h = Hudson.getInstance();
+            Jenkins h = Jenkins.getInstance();
             hash.add(h, h.getNumExecutors()*100);
             for (Node n : h.getNodes())
                 hash.add(n,n.getNumExecutors()*100);
 
-            Label lbl = p.task.getAssignedLabel();
+            Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
-
-                // Prevent multiple instances of a project's FlyWeightTask
-                // from all executing on the same computer at the same time.
-                // Without this logic, queuing-up several builds for a
-                // parameterized matrix project didn't work:  parent builds
-                // weren't waiting their turn in the queue.
-
-                List<OneOffExecutor> oneOffExecutors = c.getOneOffExecutors();
-                for (OneOffExecutor ooe : oneOffExecutors) {
-                    Queue.Executable exe = ooe.getCurrentExecutable();
-                    if (exe == null)
-                        return false;
-                    if (exe instanceof AbstractBuild) {
-                        AbstractBuild b = (AbstractBuild) exe;
-                        String running = b.getProject().getName();
-                        String toRun = p.task.getName();
-                        if (toRun.equals(running))
-                            return false;
-                    }
-                }
+                if (n.canTake(p) != null) continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                return true;
+                pendings.add(p);
+                return;
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
             // so do the scheduling like other normal jobs.
         }
         
         buildables.put(p.task,p);
-        return true;
     }
 
     public static boolean ifBlockedByHudsonShutdown(Task task) {
-        return Hudson.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
+        return Jenkins.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
     }
 
     public Api getApi() {
@@ -986,7 +1101,7 @@ public class Queue extends ResourceController implements Saveable {
     public interface FlyweightTask extends Task {}
 
     /**
-     * Marks {@link Task}s that are not affected by the {@linkplain Hudson#isQuietingDown()}  quieting down},
+     * Marks {@link Task}s that are not affected by the {@linkplain Jenkins#isQuietingDown()}  quieting down},
      * because these tasks keep other tasks executing.
      *
      * @since 1.336 
@@ -1086,7 +1201,8 @@ public class Queue extends ResourceController implements Saveable {
         String getUrl();
         
         /**
-         * True if the task allows concurrent builds
+         * True if the task allows concurrent builds, where the same {@link Task} is executed
+         * by multiple executors concurrently on the same or different nodes.
          *
          * @since 1.338
          */
@@ -1164,6 +1280,7 @@ public class Queue extends ResourceController implements Saveable {
          * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item}.
          */
+        @Exported
     	public final int id;
     	
 		/**
@@ -1173,6 +1290,8 @@ public class Queue extends ResourceController implements Saveable {
         public final Task task;
 
         private /*almost final*/ transient FutureImpl future;
+        
+        private final long inQueueSince;
 
         /**
          * Build is blocked because another build is in progress,
@@ -1195,6 +1314,24 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public boolean isStuck() { return false; }
+        
+        /**
+         * Since when is this item in the queue.
+         * @return Unix timestamp
+         */
+        @Exported
+        public long getInQueueSince() {
+            return this.inQueueSince;
+        }
+        
+        /**
+         * Returns a human readable presentation of how long this item is already in the queue.
+         * E.g. something like '3 minutes 40 seconds'
+         */
+        public String getInQueueForString() {
+            long duration = System.currentTimeMillis() - this.inQueueSince;
+            return Util.getTimeSpanString(duration);
+        }
 
         /**
          * Can be used to wait for the completion (either normal, abnormal, or cancellation) of the {@link Task}.
@@ -1202,6 +1339,22 @@ public class Queue extends ResourceController implements Saveable {
          * Just like {@link #id}, the same object tracks various stages of the queue.
          */
         public Future<Executable> getFuture() { return future; }
+
+        /**
+         * If this task needs to be run on a node with a particular label,
+         * return that {@link Label}. Otherwise null, indicating
+         * it can run on anywhere.
+         * 
+         * <p>
+         * This code takes {@link LabelAssignmentAction} into account, then fall back to {@link SubTask#getAssignedLabel()}
+         */
+        public Label getAssignedLabel() {
+            for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
+                Label l = laa.getAssignedLabel(task);
+                if (l!=null)    return l;
+            }
+            return task.getAssignedLabel();
+        }
 
         /**
          * Convenience method that returns a read only view of the {@link Cause}s associated with this item in the queue.
@@ -1220,11 +1373,20 @@ public class Queue extends ResourceController implements Saveable {
             this.task = task;
             this.id = id;
             this.future = future;
+            this.inQueueSince = System.currentTimeMillis();
+            for (Action action: actions) addAction(action);
+        }
+        
+        protected Item(Task task, List<Action> actions, int id, FutureImpl future, long inQueueSince) {
+            this.task = task;
+            this.id = id;
+            this.future = future;
+            this.inQueueSince = inQueueSince;
             for (Action action: actions) addAction(action);
         }
         
         protected Item(Item item) {
-        	this(item.task, item.getActions(), item.id, item.future);
+        	this(item.task, item.getActions(), item.id, item.future, item.inQueueSince);
         }
 
         /**
@@ -1273,11 +1435,11 @@ public class Queue extends ResourceController implements Saveable {
 			return null;
 		}
 
-        /**
-         * Called from queue.jelly.
-         */
+        /** @deprecated Use {@link #doCancelItem} instead. */
+        @Deprecated
+        @RequirePOST
         public HttpResponse doCancelQueue() throws IOException, ServletException {
-        	Hudson.getInstance().getQueue().cancel(this);
+        	Jenkins.getInstance().getQueue().cancel(this);
             return HttpResponses.forwardToPreviousPage();
         }
 
@@ -1310,7 +1472,7 @@ public class Queue extends ResourceController implements Saveable {
     	 * Returns whether the new item should be scheduled. 
     	 * An action should return true if the associated task is 'different enough' to warrant a separate execution.
     	 */
-    	public boolean shouldSchedule(List<Action> actions);
+	    boolean shouldSchedule(List<Action> actions);
     }
 
     /**
@@ -1322,14 +1484,18 @@ public class Queue extends ResourceController implements Saveable {
      * to the queue, and the task will never get executed. 
      *
      * <p>
-     * This extension point is still a subject to change, as we are seeking more
-     * comprehensive Queue pluggability. See HUDSON-2072.
+     * The other use case is to add additional {@link Action}s to the task
+     * (for example {@link LabelAssignmentAction}) to tasks that are submitted to the queue.
      *
      * @since 1.316
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
     	/**
     	 * Returns whether the new item should be scheduled.
+         *
+         * @param actions
+         *      List of actions that are to be made available as {@link AbstractBuild#getActions()}
+         *      upon the start of the build. This list is live, and can be mutated.
     	 */
     	public abstract boolean shouldSchedule(Task p, List<Action> actions);
     	    	
@@ -1338,7 +1504,7 @@ public class Queue extends ResourceController implements Saveable {
     	 * @return
     	 */
     	public static ExtensionList<QueueDecisionHandler> all() {
-    		return Hudson.getInstance().getExtensionList(QueueDecisionHandler.class);
+    		return Jenkins.getInstance().getExtensionList(QueueDecisionHandler.class);
     	}
     }
     
@@ -1415,6 +1581,13 @@ public class Queue extends ResourceController implements Saveable {
                     return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
                 return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
             }
+            
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+                CauseOfBlockage cause = d.canRun(this);
+                if (cause != null)
+                    return cause;
+            }
+            
             return task.getCauseOfBlockage();
         }
     }
@@ -1432,33 +1605,48 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public CauseOfBlockage getCauseOfBlockage() {
-            Hudson hudson = Hudson.getInstance();
+            Jenkins jenkins = Jenkins.getInstance();
             if(ifBlockedByHudsonShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
-            Label label = task.getAssignedLabel();
-            if (hudson.getNodes().isEmpty())
+            Label label = getAssignedLabel();
+            List<Node> allNodes = jenkins.getNodes();
+            if (allNodes.isEmpty())
                 label = null;    // no master/slave. pointless to talk about nodes
 
             if (label != null) {
+                Set<Node> nodes = label.getNodes();
                 if (label.isOffline()) {
-                    Set<Node> nodes = label.getNodes();
                     if (nodes.size() != 1)      return new BecauseLabelIsOffline(label);
                     else                        return new BecauseNodeIsOffline(nodes.iterator().next());
+                } else {
+                    if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
+                    else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
+            } else {
+                CauseOfBlockage c = null;
+                for (Node node : allNodes) {
+                    if (node.toComputer().isPartiallyIdle()) {
+                        c = canTake(node);
+                        if (c==null)    break;
+                    }
+                }
+
+                return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
+        }
 
-            if(label==null)
-                return CauseOfBlockage.fromMessage(Messages._Queue_WaitingForNextAvailableExecutor());
-
-            Set<Node> nodes = label.getNodes();
-            if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
-            else                        return new BecauseNodeIsBusy(nodes.iterator().next());
+        private CauseOfBlockage canTake(Node node) {
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+                CauseOfBlockage cause = d.canTake(node, this);
+                if (cause!=null)    return cause;
+            }
+            return null;
         }
 
         @Override
         public boolean isStuck() {
-            Label label = task.getAssignedLabel();
+            Label label = getAssignedLabel();
             if(label!=null && label.isOffline())
                 // no executor online to process this job. definitely stuck.
                 return true;
@@ -1493,7 +1681,7 @@ public class Queue extends ResourceController implements Saveable {
 
 			@Override
 			public Object fromString(String string) {
-                Object item = Hudson.getInstance().getItemByFullName(string);
+                Object item = Jenkins.getInstance().getItemByFullName(string);
                 if(item==null)  throw new NoSuchElementException("No such job exists: "+string);
                 return item;
 			}
@@ -1516,7 +1704,7 @@ public class Queue extends ResourceController implements Saveable {
 				String[] split = string.split("#");
 				String projectName = split[0];
 				int buildNumber = Integer.parseInt(split[1]);
-				Job<?,?> job = (Job<?,?>) Hudson.getInstance().getItemByFullName(projectName);
+				Job<?,?> job = (Job<?,?>) Jenkins.getInstance().getItemByFullName(projectName);
                 if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
 				Run<?,?> run = job.getBuildByNumber(buildNumber);
                 if(run==null)  throw new NoSuchElementException("No such build: "+string);
@@ -1527,6 +1715,26 @@ public class Queue extends ResourceController implements Saveable {
 			public String toString(Object object) {
 				Run<?,?> run = (Run<?,?>) object;
 				return run.getParent().getFullName() + "#" + run.getNumber();
+			}
+        });
+
+        /**
+         * Reconnect every reference to {@link Queue} by the singleton.
+         */
+        XSTREAM.registerConverter(new AbstractSingleValueConverter() {
+			@Override
+			public boolean canConvert(Class klazz) {
+				return Queue.class.isAssignableFrom(klazz);
+			}
+
+			@Override
+			public Object fromString(String string) {
+                return Jenkins.getInstance().getQueue();
+			}
+
+			@Override
+			public String toString(Object item) {
+                return "queue";
 			}
         });
     }
@@ -1541,8 +1749,11 @@ public class Queue extends ResourceController implements Saveable {
         MaintainTask(Queue queue) {
             this.queue = new WeakReference<Queue>(queue);
 
-            long interval = 5 * Timer.ONE_SECOND;
-            Trigger.timer.schedule(this, interval, interval);
+            long interval = 5000;
+            Timer timer = Trigger.timer;
+            if (timer != null) {
+                timer.schedule(this, interval, interval);
+            }
         }
 
         protected void doRun() {
@@ -1629,14 +1840,14 @@ public class Queue extends ResourceController implements Saveable {
 
     @CLIResolver
     public static Queue getInstance() {
-        return Hudson.getInstance().getQueue();
+        return Jenkins.getInstance().getQueue();
     }
 
     /**
      * Restores the queue content during the start up.
      */
     @Initializer(after=JOB_LOADED)
-    public static void init(Hudson h) {
+    public static void init(Jenkins h) {
         h.getQueue().load();
     }
 }

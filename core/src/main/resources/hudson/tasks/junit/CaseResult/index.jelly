@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${it.owner} test - ${it.displayName}">
@@ -62,29 +63,29 @@ THE SOFTWARE.
       <t:editableDescription permission="${it.owner.UPDATE}"/>
 
       <table style="margin-top: 1em; margin-left:0em;">
-		  <j:forEach var="action" items="${it.testActions}">
-	          <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
-		  </j:forEach>
+		    <j:forEach var="action" items="${it.testActions}">
+          <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
+		    </j:forEach>
       </table>
 
       <j:if test="${!empty(it.errorDetails)}">
-    <h3>${%Error Message}</h3>
-      <pre>${it.annotate(it.errorDetails)}</pre>
+        <h3>${%Error Message}</h3>
+        <pre><j:out value="${it.annotate(it.errorDetails)}"/></pre>
       </j:if>
 
       <j:if test="${!empty(it.errorStackTrace)}">
-    <h3>${%Stacktrace}</h3>
-      <pre>${it.annotate(it.errorStackTrace)}</pre>
+        <h3>${%Stacktrace}</h3>
+        <pre><j:out value="${it.annotate(it.errorStackTrace)}"/></pre>
       </j:if>
 
       <j:if test="${!empty(it.stdout)}">
         <h3>${%Standard Output}</h3>
-        <pre>${it.annotate(it.stdout)}</pre>
+        <pre><j:out value="${it.annotate(it.stdout)}"/></pre>
       </j:if>
 
       <j:if test="${!empty(it.stderr)}">
         <h3>${%Standard Error}</h3>
-        <pre>${it.annotate(it.stderr)}</pre>
+        <pre><j:out value="${it.annotate(it.stderr)}"/></pre>
       </j:if>
     </l:main-panel>
   </l:layout>

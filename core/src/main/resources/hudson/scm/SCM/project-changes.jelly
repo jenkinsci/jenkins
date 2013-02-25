@@ -32,6 +32,7 @@ THE SOFTWARE.
   The 'builds' variable contains the collection of AbstractBuild objects
   for which the change should be displayed.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${empty(builds)}">
@@ -47,12 +48,12 @@ THE SOFTWARE.
 
           <ol>
             <j:forEach var="c" items="${b.changeSet.iterator()}" varStatus="loop">
-              <li value="${c.revision}">
-                ${c.msgAnnotated}
+              <li value="${c.revision.class.name == 'java.lang.Integer' ? c.revision : null}">
+                <j:out value="${c.msgAnnotated}"/>
 
                 &#8212;
 
-                <a href="${rootURL}/${c.author.url}/">${c.author}</a> /
+                <a href="${rootURL}/${c.author.url}/" class="model-link">${c.author}</a> /
 
                 <j:set var="cslink" value="${browser.getChangeSetLink(c)}"/>
                 <j:choose>

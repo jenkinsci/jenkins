@@ -1,10 +1,12 @@
 package hudson.maven;
 
 import static hudson.Util.fixNull;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Platform;
 import hudson.Proc;
 import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
@@ -13,6 +15,7 @@ import hudson.model.Executor;
 import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
@@ -24,7 +27,6 @@ import hudson.slaves.Channels;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -37,6 +39,8 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+
+import jenkins.model.Jenkins;
 
 import org.kohsuke.stapler.framework.io.IOException2;
 
@@ -88,11 +92,14 @@ public abstract class AbstractMavenProcessFactory
      */
     private final FilePath workDir;
 
-    AbstractMavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, FilePath workDir) {
+    private final String mavenOpts;
+
+    AbstractMavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
         this.workDir = workDir;
+        this.mavenOpts = mavenOpts;
     }
 
     /**
@@ -147,6 +154,7 @@ public abstract class AbstractMavenProcessFactory
         private static final long serialVersionUID = 1L;
 
         static final class AcceptorImpl implements Acceptor, Serializable {
+            private static final long serialVersionUID = -2226788819948521018L;
             private transient final ServerSocket serverSocket;
             private transient Socket socket;
 
@@ -181,6 +189,8 @@ public abstract class AbstractMavenProcessFactory
     }
     
     private static final class GetCharset implements Callable<String,IOException> {
+        private static final long serialVersionUID = 3459269768733083577L;
+
         public String call() throws IOException {
             return System.getProperty("file.encoding");
         }
@@ -205,6 +215,9 @@ public abstract class AbstractMavenProcessFactory
 
             MavenConsoleAnnotator mca = new MavenConsoleAnnotator(out,charset);
 
+            if ( mavenRemoteUseInet ) {
+                envVars.put(MAVEN_REMOTE_USEINET_ENV_VAR_NAME , "true" );
+            }
             final ArgumentListBuilder cmdLine = buildMavenAgentCmdLine( listener,acceptor.getPort());
             String[] cmds = cmdLine.toCommandArray();
             final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
@@ -239,12 +252,91 @@ public abstract class AbstractMavenProcessFactory
 
     /**
      * Builds the command line argument list to launch the maven process.
-     *
      */
-    protected abstract ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) 
-        throws IOException, InterruptedException;
+    protected ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
+        MavenInstallation mvn = getMavenInstallation(listener);
+        if(mvn==null) {
+            listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
+            throw new RunnerAbortedException();
+        }
+        if(mvn.getHome()==null) {
+            listener.error("Maven '%s' doesn't have its home set",mvn.getName());
+            throw new RunnerAbortedException();
+        }
+
+        boolean isMaster = getCurrentNode()== Jenkins.getInstance();
+        FilePath slaveRoot=null;
+        if(!isMaster)
+            slaveRoot = getCurrentNode().getRootPath();
+
+        ArgumentListBuilder args = new ArgumentListBuilder();
+        JDK jdk = getJava(listener);
+        if(jdk==null) {
+            args.add("java");
+        } else {
+            args.add(jdk.getHome()+"/bin/java"); // use JDK.getExecutable() here ?
+        }
+
+        if(debugPort!=0)
+            args.add("-Xrunjdwp:transport=dt_socket,server=y,address="+debugPort);
+        if(yjp)
+            args.add("-agentlib:yjpagent=tracing");
+
+        args.addTokenized(getMavenOpts());
+        
+        args.add( "-cp" );
+        args.add(getMavenAgentClassPath(mvn,isMaster,slaveRoot,listener));
+        args.add(getMainClassName());
+
+        // M2_HOME
+        args.add(mvn.getHome());
+
+        // remoting.jar
+        String remotingJar = getLauncher().getChannel().call(new GetRemotingJar());
+        if(remotingJar==null) {// this shouldn't be possible, but there are still reports indicating this, so adding a probe here.
+            listener.error("Failed to determine the location of slave.jar");
+            throw new RunnerAbortedException();
+        }
+        args.add(remotingJar);
+
+        // interceptor.jar
+        args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
+
+        // TCP/IP port to establish the remoting infrastructure
+        args.add(tcpPort);
+        
+        String interceptorOverride = getMavenInterceptorOverride(mvn,isMaster,slaveRoot);
+        if (interceptorOverride!=null) {
+            args.add(interceptorOverride);
+        }
+
+        return args;
+    }
     
+    /**
+     * Returns the classpath string for the maven-agent jar including classworlds
+     */
+    protected abstract String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException;
+    
+    /**
+     * Returns the classpath string for the maven-interceptor jar
+     */
+    protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    
+    /**
+     * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 
+     */
+    protected abstract String getMavenInterceptorOverride(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    
+    /**
+     * Returns the name of the Maven main class.
+     */
+    protected abstract String getMainClassName();
+
     public String getMavenOpts() {
+        if( this.mavenOpts != null )
+            return addRunHeadLessOption(this.mavenOpts);
+
         String mavenOpts = mms.getMavenOpts();
 
         if ((mavenOpts==null) || (mavenOpts.trim().length()==0)) {
@@ -264,9 +356,32 @@ public abstract class AbstractMavenProcessFactory
 
             }
         }
-        
+
+        mavenOpts = addRunHeadLessOption(mavenOpts);
+
         return envVars.expand(mavenOpts);
     }
+
+    protected String addRunHeadLessOption(String mavenOpts) {
+
+        if (mms.runHeadless()) {
+            // Configure headless process
+            if (mavenOpts == null) {
+                mavenOpts = "-Djava.awt.headless=true";
+            } else {
+                mavenOpts += " -Djava.awt.headless=true";
+            }
+        } else {
+            if (Platform.isDarwin()) {
+                // Would be cool to replace the generic Java icon with jenkins logo, but requires
+                // the file absolute path to be available on slave *before* the process run on it :-/
+                // Maybe we could enforce this from the DMG installer on OSX
+                // TODO mavenOpts += " -Xdock:name=Jenkins -Xdock:icon=jenkins.png";
+            }
+        }
+        return mavenOpts;
+    }
+
 
     public MavenInstallation getMavenInstallation(TaskListener log) throws IOException, InterruptedException {
         MavenInstallation mi = mms.getMaven();
@@ -283,6 +398,8 @@ public abstract class AbstractMavenProcessFactory
 
     
     protected static final class GetRemotingJar implements Callable<String,IOException> {
+        private static final long serialVersionUID = 6022357183425911351L;
+
         public String call() throws IOException {
             return Which.jarFile(hudson.remoting.Launcher.class).getPath();
         }
@@ -307,6 +424,24 @@ public abstract class AbstractMavenProcessFactory
     protected EnvVars getEnvVars() {
         return envVars;
     }
+
+    public static boolean mavenRemoteUseInet = Boolean.getBoolean("maven.remote.useinet");
+
+    public static final String MAVEN_REMOTE_USEINET_ENV_VAR_NAME = "MAVEN_REMOTE_USEINET";
     
+    /**
+     * If true, launch Maven with YJP offline profiler agent.
+     */
+    public static boolean yjp = Boolean.getBoolean("hudson.maven.yjp");
     
+    /**
+     * If not 0, launch Maven with a debugger port.
+     */
+    public static int debugPort;
+    
+    static {
+        String port = System.getProperty("hudson.maven.debugPort");
+        if(port!=null)
+            debugPort = Integer.parseInt(port);
+    }
 }

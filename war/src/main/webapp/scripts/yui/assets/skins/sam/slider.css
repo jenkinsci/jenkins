@@ -1,0 +1,7 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+.yui-h-slider,.yui-v-slider,.yui-region-slider{position:relative;}.yui-h-slider .yui-slider-thumb,.yui-v-slider .yui-slider-thumb,.yui-region-slider .yui-slider-thumb{position:absolute;cursor:default;}.yui-skin-sam .yui-h-slider{background:url(bg-h.gif) no-repeat 5px 0;height:28px;width:228px;}.yui-skin-sam .yui-h-slider .yui-slider-thumb{top:4px;}.yui-skin-sam .yui-v-slider{background:url(bg-v.gif) no-repeat 12px 0;height:228px;width:48px;}.yui-skin-sam .yui-region-slider{height:228px;width:228px;}

@@ -33,6 +33,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -110,6 +111,17 @@ public abstract class ParameterDefinition implements
         this.description = description;
     }
 
+    /**
+     * Create a new instance of this parameter definition and use the passed
+     * parameter value as the default value.
+     *
+     * @since 1.405
+     */
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        // By default, just return this again
+        return this;
+    }
+
     @Exported
     public String getType() {
     	return this.getClass().getSimpleName();
@@ -129,7 +141,7 @@ public abstract class ParameterDefinition implements
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -153,6 +165,9 @@ public abstract class ParameterDefinition implements
      * <p>
      * If a {@link ParameterDefinition} can't really support this mode of creating a value,
      * you may just always return null.
+     *
+     * @throws IllegalStateException
+     *      If the parameter is deemed required but was missing in the submission.
      */
     public abstract ParameterValue createValue(StaplerRequest req);
 
@@ -161,7 +176,7 @@ public abstract class ParameterDefinition implements
      * Create a parameter value from the string given in the CLI.
      *
      * @param command
-     *      This is the command that got the parameter. You can use its {@link CLICommand#channel}
+     *      This is the command that got the parameter. You can use its {@link CLICommand#checkChannel()}
      *      for interacting with the CLI JVM.
      * @throws AbortException
      *      If the CLI processing should be aborted. Hudson will report the error message
@@ -190,7 +205,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Hudson.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
+        return Jenkins.getInstance().<ParameterDefinition,ParameterDescriptor>getDescriptorList(ParameterDefinition.class);
     }
 
     /**

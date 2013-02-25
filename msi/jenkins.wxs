@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='Jenkins $(var.VERSION)' Id='*' UpgradeCode='ca304bcd-a9a4-4178-8fac-e0505b1e05f3'
+  <Product Name='Jenkins $(var.VERSION)' Id='*' UpgradeCode='415933d8-4104-47c3-aee9-66b31de07a57'
     Language='1033' Codepage='1252' Version='0.$(var.VERSION).0' Manufacturer='Jenkins project'>
 
     <Package Id='*' Keywords='Installer' Description="Jenkins"
@@ -11,7 +11,7 @@
         <Directory Id='ProgramFilesFolder' Name='PFiles'>
           <Directory Id='JenkinsDir' Name='Jenkins' FileSource=".">
               <Directory Id='JreDir' Name='jre'/>
-              <Component Id='Main' Guid='8fd00c9c-e018-46d6-9135-67696ea0bcbf'>
+              <Component Id='Main' Guid='e4a652bf-c210-4a45-95c4-5dc875b4880b'>
                 <File Name="jenkins.exe" Source='tmp/jenkins.exe' KeyPath='yes'/>
                 <File Name="jenkins.xml" Source='tmp/jenkins.xml' DiskId='1' />
                 <File Name="jenkins.war" Source='$(var.WAR)' DiskId='1' />
@@ -30,7 +30,7 @@
         </Directory>
       </Directory>
     
-    <Upgrade Id="ca304bcd-a9a4-4178-8fac-e0505b1e05f3">
+    <Upgrade Id="415933d8-4104-47c3-aee9-66b31de07a57">
       <UpgradeVersion Minimum="0.0.0" Maximum="99.99.99" Property="PREVIOUSVERSIONINSTALLED" />
     </Upgrade>
     <InstallExecuteSequence>

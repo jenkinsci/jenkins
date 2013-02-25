@@ -24,16 +24,14 @@
 package hudson.maven;
 
 import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Channel;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -101,7 +99,7 @@ public final class MavenProbeAction implements Action {
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous,
         // so tie it to the admin access
-        owner.checkPermission(Hudson.ADMINISTER);
+        owner.checkPermission(Jenkins.RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if(text!=null) {

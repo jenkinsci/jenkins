@@ -28,11 +28,14 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+
+import java.io.File;
 import java.io.IOException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -78,7 +81,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * (By default, just checks the label.)
      */
     public boolean appliesTo(Node node) {
-        Label l = Hudson.getInstance().getLabel(label);
+        Label l = Jenkins.getInstance().getLabel(label);
         return l == null || l.contains(node);
     }
 
@@ -101,7 +104,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @param tool the tool being installed
      * @param node the computer on which to install the tool
      * @return {@link ToolInstallation#getHome} if specified, else a path within the local
-     *         Hudson work area named according to {@link ToolInstallation#getName}
+     *         Jenkins work area named according to {@link ToolInstallation#getName}
      * @since 1.310
      */
     protected final FilePath preferredLocation(ToolInstallation tool, Node node) {
@@ -110,8 +113,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         }
         String home = Util.fixEmptyAndTrim(tool.getHome());
         if (home == null) {
-            // XXX should this somehow uniquify paths among ToolInstallation.all()?
-            home = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
+            home = sanitize(tool.getDescriptor().getId()) + File.separatorChar + sanitize(tool.getName());
         }
         FilePath root = node.getRootPath();
         if (root == null) {
@@ -120,7 +122,11 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         return root.child("tools").child(home);
     }
 
+    private String sanitize(String s) {
+        return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
+    }
+
     public ToolInstallerDescriptor<?> getDescriptor() {
-        return (ToolInstallerDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (ToolInstallerDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

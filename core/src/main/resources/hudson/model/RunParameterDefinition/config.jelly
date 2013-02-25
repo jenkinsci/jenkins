@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
@@ -29,11 +30,7 @@ THE SOFTWARE.
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
 	<f:entry title="${%Project}" help="/help/parameter/run-project.html">
-        <select name="parameter.projectName">
-          <j:forEach var="project" items="${app.items}">
-            <f:option selected="${instance.project==project}">${project.displayName}</f:option>
-          </j:forEach>
-        </select>
+            <f:textbox name="parameter.projectName" value="${instance.projectName}" autoCompleteField="projectName"/>
 	</f:entry>
     <f:entry title="${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" />

@@ -23,12 +23,9 @@
  */
 package hudson.slaves;
 
-import hudson.model.LoadStatistics;
-import hudson.model.Node;
-import hudson.model.Hudson;
-import hudson.model.MultiStageTimeSeries;
-import hudson.model.Label;
-import hudson.model.PeriodicWork;
+import hudson.model.*;
+import jenkins.model.Jenkins;
+
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
@@ -40,6 +37,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
@@ -54,21 +52,55 @@ public class NodeProvisioner {
     /**
      * The node addition activity in progress.
      */
-    public static final class PlannedNode {
+    public static class PlannedNode {
         /**
          * Used to display this planned node to UI. Should ideally include the identifier unique to the node
          * being provisioned (like the instance ID), but if such an identifier doesn't readily exist, this
          * can be just a name of the template being provisioned (like the machine image ID.)
          */
         public final String displayName;
+
+        /**
+         * Used to launch and return a {@link Node} object. {@link NodeProvisioner} will check
+         * this {@link Future}'s isDone() method to determine when to finalize this object.
+         */
         public final Future<Node> future;
+
+        /**
+         * The number of executors that will be provided by the {@link Node} launched by
+         * this object. This is used for capacity planning in {@link NodeProvisioner#update}.
+         */
         public final int numExecutors;
 
+        /**
+         * Construct a PlannedNode instance without {@link Cloud} callback for finalization.
+         *
+         * @param displayName Used to display this object in the UI.
+         * @param future Used to launch a @{link Node} object.
+         * @param numExecutors The number of executors that will be provided by the launched {@link Node}.
+         */
         public PlannedNode(String displayName, Future<Node> future, int numExecutors) {
             if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
             this.displayName = displayName;
             this.future = future;
             this.numExecutors = numExecutors;
+        }
+
+        /**
+         * Indicate that this {@link PlannedNode} is being finalized.
+         *
+         * <p>
+         * {@link NodeProvisioner} will call this method when it's done with {@link PlannedNode}.
+         * This indicates that the {@link PlannedNode}'s work has been completed
+         * (successfully or otherwise) and it is about to be removed from the list of pending
+         * {@link Node}s to be launched.
+         *
+         * <p>
+         * Create a subtype of this class and override this method to add any necessary behaviour.
+         *
+         * @since 1.503
+         */
+        public void spent() {
         }
     }
 
@@ -86,6 +118,8 @@ public class NodeProvisioner {
 
     private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
+    private transient volatile long lastSuggestedReview;
+
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
      * additional executors being brought up.
@@ -102,14 +136,43 @@ public class NodeProvisioner {
     }
 
     /**
+     * Nodes that are being launched.
+     *
+     * @return
+     *      Can be empty but never null
+     * @since 1.401
+     */
+    public synchronized List<PlannedNode> getPendingLaunches() {
+        return new ArrayList<PlannedNode>(pendingLaunches);
+    }
+
+    /**
+     * Give the {@link NodeProvisioner} a hint that now would be a good time to think about provisioning some nodes.
+     * The hint will be ignored if subjected to excessive pestering by callers.
+     *
+     * @since 1.415
+     */
+    public void suggestReviewNow() {
+        if (System.currentTimeMillis() > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
+            lastSuggestedReview = System.currentTimeMillis();
+            Computer.threadPoolForRemoting.submit(new Runnable() {
+                public void run() {
+                    update();
+                }
+            });
+        }
+    }
+
+    /**
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      */
-    private void update() {
-        Hudson hudson = Hudson.getInstance();
+    private synchronized void update() {
+        Jenkins hudson = Jenkins.getInstance();
+        lastSuggestedReview = System.currentTimeMillis();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
-        float plannedCapacity = 0;
+        int plannedCapacitySnapshot = 0;
         for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext();) {
             PlannedNode f = itr.next();
             if(f.future.isDone()) {
@@ -123,10 +186,14 @@ public class NodeProvisioner {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
                 }
+
+                f.spent();
+
                 itr.remove();
             } else
-                plannedCapacity += f.numExecutors;
+                plannedCapacitySnapshot += f.numExecutors;
         }
+        float plannedCapacity = plannedCapacitySnapshot;
         plannedCapacitiesEMA.update(plannedCapacity);
 
         /*
@@ -163,8 +230,9 @@ public class NodeProvisioner {
 
         int idleSnapshot = stat.computeIdleExecutors();
         int totalSnapshot = stat.computeTotalExecutors();
+        boolean needSomeWhenNoneAtAll = (idleSnapshot==0) && (totalSnapshot + plannedCapacitySnapshot == 0) && (stat.computeQueueLength() > 0);
         float idle = Math.max(stat.getLatestIdleExecutors(TIME_SCALE), idleSnapshot);
-        if(idle<MARGIN) {
+        if(idle<MARGIN || needSomeWhenNoneAtAll) {
             // make sure the system is fully utilized before attempting any new launch.
 
             // this is the amount of work left to be done
@@ -174,24 +242,32 @@ public class NodeProvisioner {
             plannedCapacity = Math.max(plannedCapacitiesEMA.getLatest(TIME_SCALE),plannedCapacity);
 
             float excessWorkload = qlen - plannedCapacity;
+            if (needSomeWhenNoneAtAll && excessWorkload < 1) {
+                // in this specific exceptional case we should just provision right now
+                // the exponential smoothing will delay the build unnecessarily
+                excessWorkload = 1;
+            }
             float m = calcThresholdMargin(totalSnapshot);
             if(excessWorkload>1-m) {// and there's more work to do...
                 LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+"m,="+m+")");
                 for( Cloud c : hudson.clouds ) {
                     if(excessWorkload<0)    break;  // enough slaves allocated
 
-                    // provisioning a new node should be conservative --- for example if exceeWorkload is 1.4,
-                    // we don't want to allocate two nodes but just one.
-                    // OTOH, because of the exponential decay, even when we need one slave, excess workload is always
-                    // something like 0.95, in which case we want to allocate one node.
-                    // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to handle this.
-
-                    Collection<PlannedNode> additionalCapacities = c.provision(label, (int)Math.round(Math.floor(excessWorkload+m)));
-                    for (PlannedNode ac : additionalCapacities) {
-                        excessWorkload -= ac.numExecutors;
-                        LOGGER.info("Started provisioning "+ac.displayName+" from "+c.name+" with "+ac.numExecutors+" executors. Remaining excess workload:"+excessWorkload);
+                    // Make sure this cloud actually can provision for this label.
+                    if (c.canProvision(label)) {
+                        // provisioning a new node should be conservative --- for example if exceeWorkload is 1.4,
+                        // we don't want to allocate two nodes but just one.
+                        // OTOH, because of the exponential decay, even when we need one slave, excess workload is always
+                        // something like 0.95, in which case we want to allocate one node.
+                        // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to handle this.
+                        
+                        Collection<PlannedNode> additionalCapacities = c.provision(label, (int)Math.round(Math.floor(excessWorkload+m)));
+                        for (PlannedNode ac : additionalCapacities) {
+                            excessWorkload -= ac.numExecutors;
+                            LOGGER.info("Started provisioning "+ac.displayName+" from "+c.name+" with "+ac.numExecutors+" executors. Remaining excess workload:"+excessWorkload);
+                        }
+                        pendingLaunches.addAll(additionalCapacities);
                     }
-                    pendingLaunches.addAll(additionalCapacities);
                 }
             }
         }
@@ -265,8 +341,8 @@ public class NodeProvisioner {
 
         @Override
         protected void doRun() {
-            Hudson h = Hudson.getInstance();
-            h.overallNodeProvisioner.update();
+            Jenkins h = Jenkins.getInstance();
+            h.unlabeledNodeProvisioner.update();
             for( Label l : h.getLabels() )
                 l.nodeProvisioner.update();
         }

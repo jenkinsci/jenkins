@@ -37,12 +37,12 @@ import java.io.Writer;
  */
 public class MarkupFormatterTest extends HudsonTestCase {
     public void testConfigRoundtrip() throws Exception {
-        hudson.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
-        hudson.setAuthorizationStrategy(new Unsecured());
-        hudson.setMarkupFormatter(new DummyMarkupImpl("hello"));
+        jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
+        jenkins.setAuthorizationStrategy(new Unsecured());
+        jenkins.setMarkupFormatter(new DummyMarkupImpl("hello"));
         configRoundtrip();
 
-        assertEquals("hello", ((DummyMarkupImpl)hudson.getMarkupFormatter()).prefix);
+        assertEquals("hello", ((DummyMarkupImpl) jenkins.getMarkupFormatter()).prefix);
     }
 
     public static class DummyMarkupImpl extends MarkupFormatter {

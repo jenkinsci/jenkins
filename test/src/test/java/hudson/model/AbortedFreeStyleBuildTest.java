@@ -25,4 +25,21 @@ public class AbortedFreeStyleBuildTest extends HudsonTestCase {
             throw new InterruptedException();
         }
     }
+
+    @Bug(9203)
+    public void testInterruptAsFailure() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        TestBuildWrapper wrapper = new TestBuildWrapper();
+        project.getBuildWrappersList().add(wrapper);
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                Executor.currentExecutor().interrupt(Result.FAILURE);
+                throw new InterruptedException();
+            }
+        });
+        Run build = project.scheduleBuild2(0).get();
+        assertEquals(Result.FAILURE, build.getResult());
+        assertEquals(Result.FAILURE, wrapper.buildResultInTearDown);
+    }
 }

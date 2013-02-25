@@ -22,10 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-	<input type="radio"> tag that takes true/false for @checked.
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+ <st:documentation>
+    &lt;input type="radio"> tag that takes true/false for @checked, which is more Jelly friendly.
+    
+    Note that safari doesn't support onchange.
 
-	Note that safari doesn't support onchange.
--->
-<input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
+    <st:attribute name="name" />
+    <st:attribute name="checked" />
+    <st:attribute name="value" />
+    <st:attribute name="id" />
+    <st:attribute name="onclick" />
+    <st:attribute name="title">
+      If specified, this human readable text will follow the radio, and clicking this text also
+      toggles the radio.
+    </st:attribute>
+  </st:documentation>
+  <input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
         checked="${attrs.checked?'true':null}"/>
+  <j:if test="${attrs.title!=null}">
+    <label class="attach-previous">${attrs.title}</label>
+  </j:if>
+</j:jelly>

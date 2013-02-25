@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., Andrew Bayer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
     Generates an input field <tt>&lt;input type="text" ... /></tt> to be
@@ -29,6 +30,10 @@ THE SOFTWARE.
 
     <st:attribute name="field">
       Used for databinding. TBD.
+    </st:attribute>
+    <st:attribute name="autoCompleteField">
+      Used for determining the autocomplete URL.
+      If @field is specified, that will be used for this.
     </st:attribute>
     <st:attribute name="name">
       This becomes @name of the &lt;input> tag.
@@ -67,7 +72,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  ${descriptor.calcAutoCompleteSettings(field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
+  ${descriptor.calcAutoCompleteSettings(autoCompleteField?:field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
 
   <!-- mostly pass-through all the attributes -->
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"

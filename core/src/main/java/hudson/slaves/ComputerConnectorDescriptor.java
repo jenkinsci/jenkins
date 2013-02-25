@@ -2,7 +2,7 @@ package hudson.slaves;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Descriptor} for {@link ComputerConnector}.
@@ -12,6 +12,7 @@ import hudson.model.Hudson;
  */
 public abstract class ComputerConnectorDescriptor extends Descriptor<ComputerConnector> {
     public static DescriptorExtensionList<ComputerConnector,ComputerConnectorDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(ComputerConnector.class);
+        return Jenkins.getInstance().<ComputerConnector,ComputerConnectorDescriptor>
+                                    getDescriptorList(ComputerConnector.class);
     }
 }

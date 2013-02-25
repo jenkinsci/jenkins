@@ -31,11 +31,11 @@ THE SOFTWARE.
     <p:matrix autoRefresh="true">
       <j:choose>
         <j:when test="${p==null}">
-          <img src="${imagesURL}/24x24/grey.gif" tooltip="${%Not configured}" alt="${%Not configured}"/>
+          <img src="${imagesURL}/24x24/grey.png" tooltip="${%Not configured}" alt="${%Not configured}" height="24" width="24"/>
         </j:when>
         <j:otherwise>
-          <a href="${p.shortUrl}">
-            <img src="${imagesURL}/24x24/${p.buildStatusUrl}" tooltip="${p.iconColor.description}" alt="${p.iconColor.description}"/>
+          <a href="${p.shortUrl}" class="model-link">
+            <img src="${imagesURL}/24x24/${p.buildStatusUrl}" tooltip="${p.iconColor.description}" alt="${p.iconColor.description}" height="24" width="24"/>
             <j:if test="${empty(o.x) and empty(o.y)}">
               ${p.combination.toString(o.z)}
             </j:if>

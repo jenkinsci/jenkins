@@ -24,7 +24,7 @@
  */
 //
 //
-// JavaScript for Hudson
+// JavaScript for Jenkins
 //     See http://www.ibm.com/developerworks/web/library/wa-memleak/?ca=dgr-lnxw97JavascriptLeaks
 //     for memory leak patterns and how to prevent them.
 //
@@ -35,6 +35,50 @@ function object(o) {
     F.prototype = o;
     return new F();
 }
+
+/**
+ * A function that returns false if the page is known to be invisible.
+ */
+var isPageVisible = (function(){
+    // @see https://developer.mozilla.org/en/DOM/Using_the_Page_Visibility_API
+    // Set the name of the hidden property and the change event for visibility
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") {
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.mozHidden !== "undefined") {
+        hidden = "mozHidden";
+        visibilityChange = "mozvisibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
+
+    // By default, visibility set to true
+    var pageIsVisible = true;
+
+    // If the page is hidden, prevent any polling
+    // if the page is shown, restore pollings
+    function onVisibilityChange() {
+        pageIsVisible = !document[hidden];
+    }
+
+    // Warn if the browser doesn't support addEventListener or the Page Visibility API
+    if (typeof document.addEventListener !== "undefined" && typeof hidden !== "undefined") {
+        // Init the value to the real state of the page
+        pageIsVisible = !document[hidden];
+
+        // Handle page visibility change
+        document.addEventListener(visibilityChange, onVisibilityChange, false);
+    }
+
+    return function() {
+        return pageIsVisible;
+    }
+})();
 
 // id generator
 var iota = 0;
@@ -129,6 +173,7 @@ var FormChecker = {
                 Behaviour.applySubtree(next.target);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
+                layoutUpdateCallback.call();
             }
         });
         this.inProgress++;
@@ -143,6 +188,9 @@ var FormChecker = {
  * @param {string} name
  *      Name of the control to find. Can include "../../" etc in the prefix.
  *      See @RelativePath.
+ *
+ *      We assume that the name is normalized and doesn't contain any redundant component.
+ *      That is, ".." can only appear as prefix, and "foo/../bar" is not OK (because it can be reduced to "bar")
  */
 function findNearBy(e,name) {
     while (name.startsWith("../")) {
@@ -150,25 +198,38 @@ function findNearBy(e,name) {
         e = findFormParent(e,null,true);
     }
 
+    // name="foo/bar/zot"  -> prefixes=["bar","foo"] & name="zot"
+    var prefixes = name.split("/");
+    name = prefixes.pop();
+    prefixes = prefixes.reverse();
+
     // does 'e' itself match the criteria?
     // as some plugins use the field name as a parameter value, instead of 'value'
     var p = findFormItem(e,name,function(e,filter) {
-        if (filter(e))    return e;
-        return null;
+        return filter(e) ? e : null;
     });
-    if (p!=null)    return p;
+    if (p!=null && prefixes.length==0)    return p;
 
     var owner = findFormParent(e,null,true);
 
-    p = findPreviousFormItem(e,name);
-    if (p!=null && findFormParent(p,null,true)==owner)
-        return p;
+    function locate(iterator,e) {// keep finding elements until we find the good match
+        while (true) {
+            e = iterator(e,name);
+            if (e==null)    return null;
 
-    var n = findNextFormItem(e,name);
-    if (n!=null && findFormParent(n,null,true)==owner)
-        return n;
+            // make sure this candidate element 'e' is in the right point in the hierarchy
+            var p = e;
+            for (var i=0; i<prefixes.length; i++) {
+                p = findFormParent(p,null,true);
+                if (p.getAttribute("name")!=prefixes[i])
+                    return null;
+            }
+            if (findFormParent(p,null,true)==owner)
+                return e;
+        }
+    }
 
-    return null; // not found
+    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
 }
 
 function controlValue(e) {
@@ -239,8 +300,8 @@ function findFollowingTR(input, className) {
 
     // then next TR that matches the CSS
     do {
-        tr = tr.nextSibling;
-    } while (tr != null && (tr.tagName != "TR" || tr.className != className));
+        tr = $(tr).next();
+    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
 
     return tr;
 }
@@ -304,6 +365,17 @@ function parseHtml(html) {
 }
 
 /**
+ * Evaluates the script in global context.
+ */
+function geval(script) {
+    // execScript chokes on "" but eval doesn't, so we need to reject it first.
+    if (script==null || script=="") return;
+    // see http://perfectionkills.com/global-eval-what-are-the-options/
+    // note that execScript cannot return value
+    (this.execScript || eval)(script);
+}
+
+/**
  * Emulate the firing of an event.
  *
  * @param {HTMLElement} element
@@ -335,7 +407,7 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl"));
+        return eval(this.getAttribute("checkUrl")); // need access to 'this'
     };
     var method = e.getAttribute("checkMethod");
     if (!method) method = "get";
@@ -421,83 +493,97 @@ function isInsideRemovable(e) {
     return Element.ancestors(e).find(function(f){return f.hasClassName("to-be-removed");});
 }
 
-var hudsonRules = {
+/**
+ * Render the template captured by &lt;l:renderOnDemand> at the element 'e' and replace 'e' by the content.
+ *
+ * @param {HTMLElement} e
+ *      The place holder element to be lazy-rendered.
+ * @param {boolean} noBehaviour
+ *      if specified, skip the application of behaviour rule.
+ */
+function renderOnDemand(e,callback,noBehaviour) {
+    if (!e || !Element.hasClassName(e,"render-on-demand")) return;
+    var proxy = eval(e.getAttribute("proxy"));
+    proxy.render(function (t) {
+        var contextTagName = e.parentNode.tagName;
+        var c;
+        if (contextTagName=="TBODY") {
+            c = document.createElement("DIV");
+            c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
+            c = c./*JENKINS-15494*/lastChild.firstChild;
+        } else {
+            c = document.createElement(contextTagName);
+            c.innerHTML = t.responseText;
+        }
+
+        var elements = [];
+        while (c.firstChild!=null) {
+            var n = c.firstChild;
+            e.parentNode.insertBefore(n,e);
+            if (n.nodeType==1 && !noBehaviour)
+                elements.push(n);
+        }
+        Element.remove(e);
+
+        evalInnerHtmlScripts(t.responseText,function() {
+            Behaviour.applySubtree(elements,true);
+            if (callback)   callback(t);
+        });
+    });
+}
+
+/**
+ * Finds all the script tags 
+ */
+function evalInnerHtmlScripts(text,callback) {
+    var q = [];
+    var matchAll = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'img');
+    var matchOne = new RegExp('<script([^>]*)>([\\S\\s]*?)<\/script>', 'im');
+    var srcAttr  = new RegExp('src=[\'\"]([^\'\"]+)[\'\"]','i');
+    (text.match(matchAll)||[]).map(function(s) {
+        var m = s.match(srcAttr);
+        if (m) {
+            q.push(function(cont) {
+                loadScript(m[1],cont);
+            });
+        } else {
+            q.push(function(cont) {
+                geval(s.match(matchOne)[2]);
+                cont();
+            });
+        }
+    });
+    q.push(callback);
+    sequencer(q);
+}
+
+/**
+ * Take an array of (typically async) functions and run them in a sequence.
+ * Each of the function in the array takes one 'continuation' parameter, and upon the completion
+ * of the function it needs to invoke "continuation()" to signal the execution of the next function.
+ */
+function sequencer(fs) {
+    var nullFunction = function() {}
+    function next() {
+        if (fs.length>0) {
+            (fs.shift()||nullFunction)(next);
+        }
+    }
+    return next();
+}
+
+/** @deprecated Use {@link Behaviour.specify} instead. */
+var jenkinsRules = {
+// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
-
-// do the ones that extract innerHTML so that they can get their original HTML before
-// other behavior rules change them (like YUI buttons.)
-
-    "DIV.hetero-list-container" : function(e) {
-        if(isInsideRemovable(e))    return;
-
-        // components for the add button
-        var menu = document.createElement("SELECT");
-        var btns = findElementsBySelector(e,"INPUT.hetero-list-add"),
-            btn = btns[btns.length-1]; // In case nested content also uses hetero-list
-        YAHOO.util.Dom.insertAfter(menu,btn);
-
-        var prototypes = e.lastChild;
-        while(!Element.hasClassName(prototypes,"prototypes"))
-            prototypes = prototypes.previousSibling;
-        var insertionPoint = prototypes.previousSibling;    // this is where the new item is inserted.
-
-        // extract templates
-        var templates = []; var i=0;
-        for(var n=prototypes.firstChild;n!=null;n=n.nextSibling,i++) {
-            var name = n.getAttribute("name");
-            var tooltip = n.getAttribute("tooltip");
-            menu.options[i] = new Option(n.getAttribute("title"),""+i);
-            templates.push({html:n.innerHTML, name:name, tooltip:tooltip});
-        }
-        Element.remove(prototypes);
-
-        var withDragDrop = initContainerDD(e);
-
-        var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu });
-        menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
-            var t = templates[parseInt(args[1].value)]; // where this args[1] comes is a real mystery
-
-            var nc = document.createElement("div");
-            nc.className = "repeated-chunk";
-            nc.setAttribute("name",t.name);
-            nc.innerHTML = t.html;
-            insertionPoint.parentNode.insertBefore(nc, insertionPoint);
-            if(withDragDrop)    prepareDD(nc);
-
-            hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-            Behaviour.applySubtree(nc);
-        });
-
-        menuButton.getMenu().renderEvent.subscribe(function(type,args,value) {
-            // hook up tooltip for menu items
-            var items = menuButton.getMenu().getItems();
-            for(i=0; i<items.length; i++) {
-                var t = templates[i].tooltip;
-                if(t!=null)
-                    applyTooltip(items[i].element,t);
-            }
-        });
-    },
-
-    "DIV.repeated-container" : function(e) {
-        if(isInsideRemovable(e))    return;
-
-        // compute the insertion point
-        var ip = e.lastChild;
-        while (!Element.hasClassName(ip, "repeatable-insertion-point"))
-            ip = ip.previousSibling;
-        // set up the logic
-        object(repeatableSupport).init(e, e.firstChild, ip);
-    },
-
 
     "TABLE.sortable" : function(e) {// sortable table
         ts_makeSortable(e);
     },
 
-    "TABLE.progress-bar" : function(e) {// sortable table
+    "TABLE.progress-bar" : function(e) { // progressBar.jelly
         e.onclick = function() {
             var href = this.getAttribute("href");
             if(href!=null)      window.location = href;
@@ -505,38 +591,14 @@ var hudsonRules = {
         e = null; // avoid memory leak
     },
 
-    "INPUT.advancedButton" : function(e) {
-        makeButton(e,function(e) {
-            var link = e.target;
-            while(!Element.hasClassName(link,"advancedLink"))
-                link = link.parentNode;
-            link.style.display = "none"; // hide the button
-
-            var container = link.nextSibling.firstChild; // TABLE -> TBODY
-
-            var tr = link;
-            while (tr.tagName != "TR")
-                tr = tr.parentNode;
-
-            // move the contents of the advanced portion into the main table
-            var nameRef = tr.getAttribute("nameref");
-            while (container.lastChild != null) {
-                var row = container.lastChild;
-                if(nameRef!=null && row.getAttribute("nameref")==null)
-                    row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
-                tr.parentNode.insertBefore(row, tr.nextSibling);
-            }
-        });
-        e = null; // avoid memory leak
-    },
-
-    "INPUT.expandButton" : function(e) {
+    "INPUT.expand-button" : function(e) {
         makeButton(e,function(e) {
             var link = e.target;
             while(!Element.hasClassName(link,"advancedLink"))
                 link = link.parentNode;
             link.style.display = "none";
-            link.nextSibling.style.display="block";
+            $(link).next().style.display="block";
+            layoutUpdateCallback.call();
         });
         e = null; // avoid memory leak
     },
@@ -563,13 +625,13 @@ var hudsonRules = {
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
-            var e = this.previousSibling;
+            var e = $(this).previous();
             while (e!=null) {
                 if (e.tagName=="INPUT") {
                     e.click();
                     break;
                 }
-                e = e.previousSibling;
+                e = e.previous();
             }
         }
         e = null;
@@ -584,23 +646,30 @@ var hudsonRules = {
 // validate required form values
     "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
-// validate form values to be a number
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not a number"); },
+// validate form values to be an integer
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
     "INPUT.positive-number" : function(e) {
-        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive number");
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     },
 
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
-        e.parentNode.insertBefore(div,e.nextSibling);
+        e.parentNode.insertBefore(div,$(e).next()||null);
         e.style.position = "relative"; // or else by default it's absolutely positioned, making "width:100%" break
 
-        var ds = new YAHOO.widget.DS_XHR(e.getAttribute("autoCompleteUrl"),["suggestions","name"]);
-        ds.scriptQueryParam = "value";
+        var ds = new YAHOO.util.XHRDataSource(e.getAttribute("autoCompleteUrl"));
+        ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+        ds.responseSchema = {
+            resultsList: "suggestions",
+            fields: ["name"]
+        };
         
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
+        ac.generateRequest = function(query) {
+            return "?value=" + query;
+        };
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
         ac.useShadow = true;
@@ -617,7 +686,7 @@ var hudsonRules = {
     "A.help-button" : function(e) {
         e.onclick = function() {
             var tr = findFollowingTR(this, "help-area");
-            var div = tr.firstChild.nextSibling.firstChild;
+            var div = $(tr).down().next().down();
 
             if (div.style.display != "block") {
                 div.style.display = "block";
@@ -625,14 +694,18 @@ var hudsonRules = {
                 new Ajax.Request(this.getAttribute("helpURL"), {
                     method : 'get',
                     onSuccess : function(x) {
-                        div.innerHTML = x.responseText;
+                        var from = x.getResponseHeader("X-Plugin-From");
+                        div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+                        layoutUpdateCallback.call();
                     },
                     onFailure : function(x) {
                         div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+                        layoutUpdateCallback.call();
                     }
                 });
             } else {
                 div.style.display = "none";
+                layoutUpdateCallback.call();
             }
 
             return false;
@@ -640,6 +713,72 @@ var hudsonRules = {
         e.tabIndex = 9999; // make help link unnavigable from keyboard
         e = null; // avoid memory leak
     },
+
+    // Script Console : settings and shortcut key
+    "TEXTAREA.script" : function(e) {
+        (function() {
+            var cmdKeyDown = false;
+            var mode = e.getAttribute("script-mode") || "text/x-groovy";
+            var readOnly = eval(e.getAttribute("script-readOnly")) || false;
+            
+            var w = CodeMirror.fromTextArea(e,{
+              mode: mode,
+              lineNumbers: true,
+              matchBrackets: true,
+              readOnly: readOnly,
+              onKeyEvent: function(editor, event){
+                function isGeckoCommandKey() {
+                    return Prototype.Browser.Gecko && event.keyCode == 224
+                }
+                function isOperaCommandKey() {
+                    return Prototype.Browser.Opera && event.keyCode == 17
+                }
+                function isWebKitCommandKey() {
+                    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+                }
+                function isCommandKey() {
+                    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+                }
+                function isReturnKeyDown() {
+                    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
+                }
+                function getParentForm(element) {
+                    if (element == null) throw 'not found a parent form';
+                    if (element instanceof HTMLFormElement) return element;
+                    
+                    return getParentForm(element.parentNode);
+                }
+                function saveAndSubmit() {
+                    editor.save();
+                    getParentForm(e).submit();
+                    event.stop();
+                }
+                
+                // Mac (Command + Enter)
+                if (navigator.userAgent.indexOf('Mac') > -1) {
+                    if (event.type == 'keydown' && isCommandKey()) {
+                        cmdKeyDown = true;
+                    }
+                    if (event.type == 'keyup' && isCommandKey()) {
+                        cmdKeyDown = false;
+                    }
+                    if (cmdKeyDown && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                  
+                // Windows, Linux (Ctrl + Enter)
+                } else {
+                    if (event.ctrlKey && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                }
+              }
+            }).getWrapperElement();
+            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
+        })();
+	},
 
 // deferred client-side clickable map.
 // this is useful where the generation of <map> element is time consuming
@@ -657,21 +796,6 @@ var hudsonRules = {
                     e.setAttribute("usemap", "#" + id);
                 }
             });
-    },
-
-    // button to add a new repeatable block
-    "INPUT.repeatable-add" : function(e) {
-        makeButton(e,function(e) {
-            repeatableSupport.onAdd(e.target);
-        });
-        e = null; // avoid memory leak
-    },
-
-    "INPUT.repeatable-delete" : function(e) {
-        makeButton(e,function(e) {
-            repeatableSupport.onDelete(e.target);
-        });
-        e = null; // avoid memory leak
     },
 
     // resizable text area
@@ -695,30 +819,39 @@ var hudsonRules = {
             return;
         }
 
-        var handle = textarea.nextSibling;
-        if(handle==null || handle.className!="textarea-handle") return;
+        // CodeMirror inserts a wrapper element next to the textarea.
+        // textarea.nextSibling may not be the handle.
+        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
+        if(handles.length != 1) return;
+        var handle = handles[0];
 
         var Event = YAHOO.util.Event;
 
+        function getCodemirrorScrollerOrTextarea(){
+            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
+        }
         handle.onmousedown = function(ev) {
             ev = Event.getEvent(ev);
-            var offset = textarea.offsetHeight-Event.getPageY(ev);
-            textarea.style.opacity = 0.5;
+            var s = getCodemirrorScrollerOrTextarea();
+            var offset = s.offsetHeight-Event.getPageY(ev);
+            s.style.opacity = 0.5;
             document.onmousemove = function(ev) {
                 ev = Event.getEvent(ev);
                 function max(a,b) { if(a<b) return b; else return a; }
-                textarea.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
+                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
                 return false;
             };
             document.onmouseup = function() {
                 document.onmousemove = null;
                 document.onmouseup = null;
-                textarea.style.opacity = 1;
+                var s = getCodemirrorScrollerOrTextarea();
+                s.style.opacity = 1;
             }
         };
         handle.ondblclick = function() {
-            textarea.style.height = "";
-            textarea.rows = textarea.value.split("\n").length;
+            var s = getCodemirrorScrollerOrTextarea();
+            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
+            s.style.height = s.scrollHeight + 'px';
         }
     },
 
@@ -762,17 +895,97 @@ var hudsonRules = {
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // see RowVisibilityGroupTest
+    "TR.rowvg-start" : function(e) {
+        // figure out the corresponding end marker
+        function findEnd(e) {
+            for( var depth=0; ; e=$(e).next()) {
+                if(Element.hasClassName(e,"rowvg-start"))    depth++;
+                if(Element.hasClassName(e,"rowvg-end"))      depth--;
+                if(depth==0)    return e;
+            }
+        }
+
+        e.rowVisibilityGroup = {
+            outerVisible: true,
+            innerVisible: true,
+            /**
+             * TR that marks the beginning of this visibility group.
+             */
+            start: e,
+            /**
+             * TR that marks the end of this visibility group.
+             */
+            end: findEnd(e),
+
+            /**
+             * Considers the visibility of the row group from the point of view of outside.
+             * If you think of a row group like a logical DOM node, this is akin to its .style.display.
+             */
+            makeOuterVisisble : function(b) {
+                this.outerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
+             * shares the single visibility, this just needs to be one boolean, as opposed to many.
+             *
+             * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
+             */
+            makeInnerVisisble : function(b) {
+                this.innerVisible = b;
+                this.updateVisibility();
+            },
+
+            /**
+             * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
+             */
+            updateVisibility : function() {
+                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+                for (var e=this.start; e!=this.end; e=$(e).next()) {
+                    if (e.rowVisibilityGroup && e!=this.start) {
+                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+                    } else {
+                        e.style.display = display;
+                    }
+                }
+                layoutUpdateCallback.call();
+            },
+
+            /**
+             * Enumerate each row and pass that to the given function.
+             *
+             * @param {boolean} recursive
+             *      If true, this visits all the rows from nested visibility groups.
+             */
+            eachRow : function(recursive,f) {
+                if (recursive) {
+                    for (var e=this.start; e!=this.end; e=$(e).next())
+                        f(e);
+                } else {
+                    throw "not implemented yet";
+                }
+            }
+        };
+    },
+
     "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
+        e = $(e);
         var end = e;
 
-        for( var depth=0; ; e=e.previousSibling) {
-            if(Element.hasClassName(e,"row-set-end"))        depth++;
-            if(Element.hasClassName(e,"row-set-start"))      depth--;
+        for( var depth=0; ; e=e.previous()) {
+            if(e.hasClassName("row-set-end"))        depth++;
+            if(e.hasClassName("row-set-start"))      depth--;
             if(depth==0)    break;
         }
         var start = e;
 
+        // @ref on start refers to the ID of the element that controls the JSON object created from these rows
+        // if we don't find it, turn the start node into the governing node (thus the end result is that you
+        // created an intermediate JSON object that's always on.)
         var ref = start.getAttribute("ref");
         if(ref==null)
             start.id = ref = "rowSetStart"+(iota++);
@@ -818,83 +1031,15 @@ var hudsonRules = {
         e = null; // memory leak prevention
     },
 
-    // radio buttons in repeatable content
-    "DIV.repeated-chunk" : function(d) {
-        var inputs = d.getElementsByTagName('INPUT');
-        for (var i = 0; i < inputs.length; i++) {
-            if (inputs[i].type == 'radio') {
-                // Need to uniquify each set of radio buttons in repeatable content.
-                // buildFormTree will remove the prefix before form submission.
-                var prefix = d.getAttribute('radioPrefix');
-                if (!prefix) {
-                    prefix = 'removeme' + (iota++) + '_';
-                    d.setAttribute('radioPrefix', prefix);
-                }
-                inputs[i].name = prefix + inputs[i].name;
-                // Reselect anything unselected by browser before names uniquified:
-                if (inputs[i].defaultChecked) inputs[i].checked = true;
-            }
-        }
-    },
-
-    // radioBlock.jelly
-    "INPUT.radio-block-control" : function(r) {
-        r.id = "radio-block-"+(iota++);
-
-        // when one radio button is clicked, we need to update foldable block for
-        // other radio buttons with the same name. To do this, group all the
-        // radio buttons with the same name together and hang it under the form object
-        var f = r.form;
-        var radios = f.radios;
-        if (radios == null)
-            f.radios = radios = {};
-
-        var g = radios[r.name];
-        if (g == null) {
-            radios[r.name] = g = object(radioBlockSupport);
-            g.buttons = [];
-        }
-
-        var s = findAncestorClass(r,"radio-block-start");
-
-        // find the end node
-        var e = (function() {
-            var e = s;
-            var cnt=1;
-            while(cnt>0) {
-                e = e.nextSibling;
-                if (Element.hasClassName(e,"radio-block-start"))
-                    cnt++;
-                if (Element.hasClassName(e,"radio-block-end"))
-                    cnt--;
-            }
-            return e;
-        })();
-
-        var u = function() {
-            g.updateSingleButton(r,s,e);
-        };
-        applyNameRef(s,e,r.id);
-        g.buttons.push(u);
-
-        // apply the initial visibility
-        u();
-
-        // install event handlers to update visibility.
-        // needs to use onclick and onchange for Safari compatibility
-        r.onclick = r.onchange = function() { g.updateButtons(); };
-    },
-
     // editableComboBox.jelly
     "INPUT.combobox" : function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
-        var vdiv = c.nextSibling;
-        if (Element.hasClassName(vdiv, "combobox-values")) {
+        var vdiv = $(c).next();
+        if (vdiv.hasClassName("combobox-values")) {
             createComboBox(c, function() {
-                var values = [];
-                for (var value = vdiv.firstChild; value; value = value.nextSibling)
-                    values.push(value.getAttribute('value'));
-                return values;
+                return vdiv.childElements().collect(function(value) {
+                    return value.getAttribute('value');
+                });
             });
         }
     },
@@ -903,74 +1048,46 @@ var hudsonRules = {
     "SELECT.dropdownList" : function(e) {
         if(isInsideRemovable(e))    return;
 
-        e.subForms = [];
-        var start = findFollowingTR(e, 'dropdownList-container').firstChild.nextSibling, end;
+        var subForms = [];
+        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
         do { start = start.firstChild; } while (start && start.tagName != 'TR');
-        if (start && start.className != 'dropdownList-start')
+
+        if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
         while (start != null) {
-            end = findFollowingTR(start, 'dropdownList-end');
-            e.subForms.push({ 'start': start, 'end': end });
-            start = findFollowingTR(end, 'dropdownList-start');
+            subForms.push(start);
+            start = findFollowingTR(start, 'dropdownList-start');
         }
 
-        updateDropDownList(e);
-    },
+        // control visibility
+        function updateDropDownList() {
+            for (var i = 0; i < subForms.length; i++) {
+                var show = e.selectedIndex == i;
+                var f = $(subForms[i]);
 
-    // select.jelly
-    "SELECT.select" : function(e) {
-        // controls that this SELECT box depends on
-        refillOnChange(e,function(params) {
-            var value = e.value;
-            updateListBox(e,e.getAttribute("fillUrl"),{
-                parameters: params,
-                onSuccess: function() {
-                    if (value=="") {
-                        // reflect the initial value. if the control depends on several other SELECT.select,
-                        // it may take several updates before we get the right items, which is why all these precautions.
-                        var v = e.getAttribute("value");
-                        if (v) {
-                            e.value = v;
-                            if (e.value==v) e.removeAttribute("value"); // we were able to apply our initial value
-                        }
-                    }
+                if (show)   renderOnDemand(f.next());
+                f.rowVisibilityGroup.makeInnerVisisble(show);
 
-                    // if the update changed the current selection, others listening to this control needs to be notified.
-                    if (e.value!=value) fireEvent(e,"change");
-                }
-            });
-        });
-    },
+                // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
+                // so far dropdownList doesn't create such a situation.
+                f.rowVisibilityGroup.eachRow(true, show?function(e) {
+                    e.removeAttribute("field-disabled");
+                } : function(e) {
+                    e.setAttribute("field-disabled","true");
+                });
+            }
+        }
 
-    // combobox.jelly
-    "INPUT.combobox2" : function(e) {
-        var items = [];
+        e.onchange = updateDropDownList;
 
-        var c = new ComboBox(e,function(value) {
-            var candidates = [];
-            for (var i=0; i<items.length; i++) {
-                if (items[i].indexOf(value)==0) {
-                    candidates.push(items[i]);
-                    if (candidates.length>20)   break;
-                }
-            } 
-            return candidates;
-        }, {});
-
-        refillOnChange(e,function(params) {
-            new Ajax.Request(e.getAttribute("fillUrl"),{
-                parameters: params,
-                onSuccess : function(rsp) {
-                    items = eval('('+rsp.responseText+')');
-                }
-            });
-        });
+        updateDropDownList();
     },
 
     "A.showDetails" : function(e) {
         e.onclick = function() {
             this.style.display = 'none';
-            this.nextSibling.style.display = 'block';
+            $(this).next().style.display = 'block';
+            layoutUpdateCallback.call();
             return false;
         };
         e = null; // avoid memory leak
@@ -981,11 +1098,95 @@ var hudsonRules = {
     },
 
     ".button-with-dropdown" : function (e) {
-        new YAHOO.widget.Button(e, { type: "menu", menu: e.nextSibling });
+        new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
+    },
+
+    /*
+        Use on div tag to make it sticky visible on the bottom of the page.
+        When page scrolls it remains in the bottom of the page
+        Convenient on "OK" button and etc for a long form page
+     */
+    "#bottom-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var edge = document.createElement("div");
+        edge.className = "bottom-sticker-edge";
+        sticker.insertBefore(edge,sticker.firstChild);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
+        layoutUpdateCallback.add(adjustSticker);
+    },
+
+    "#top-sticker" : function(sticker) {// legacy
+        this[".top-sticker"](sticker);
+    },
+
+    /**
+     * @param {HTMLElement} sticker
+     */
+    ".top-sticker" : function(sticker) {
+        var DOM = YAHOO.util.Dom;
+
+        var shadow = document.createElement("div");
+        sticker.parentNode.insertBefore(shadow,sticker);
+
+        var edge = document.createElement("div");
+        edge.className = "top-sticker-edge";
+        sticker.insertBefore(edge,sticker.firstChild);
+
+        function adjustSticker() {
+            shadow.style.height = sticker.offsetHeight + "px";
+
+            var viewport = DOM.getClientRegion();
+            var pos = DOM.getRegion(shadow);
+
+            sticker.style.position = "fixed";
+            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+        }
+
+        // react to layout change
+        Element.observe(window,"scroll",adjustSticker);
+        Element.observe(window,"resize",adjustSticker);
+        // initial positioning
+        Element.observe(window,"load",adjustSticker);
+        adjustSticker();
     }
 };
+/** @deprecated Use {@link Behaviour.specify} instead. */
+var hudsonRules = jenkinsRules; // legacy name
+(function() {
+    var p = 20;
+    for (var selector in jenkinsRules) {
+        Behaviour.specify(selector, 'hudson-behavior', p++, jenkinsRules[selector]);
+        delete jenkinsRules[selector];
+    }
+})();
+// now empty, but plugins can stuff things in here later:
+Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
+        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
+
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -1029,16 +1230,12 @@ function refillOnChange(e,onChange) {
                 if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
                 return;
             }
-            try { c.addEventListener("change",h,false); } catch (ex) { c.attachEvent("change",h); }
+            $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
         });
     }
     h();   // initial fill
 }
-
-Behaviour.register(hudsonRules);
-
-
 
 function xor(a,b) {
     // convert both values to boolean by '!' and then do a!=b
@@ -1048,70 +1245,60 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    d.firstChild.nextSibling.innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
     new Ajax.Request(
         "./descriptionForm",
         {
           onComplete : function(x) {
             d.innerHTML = x.responseText;
-            Behaviour.applySubtree(d);
-            d.getElementsByTagName("TEXTAREA")[0].focus();
+            evalInnerHtmlScripts(x.responseText,function() {
+                Behaviour.applySubtree(d);
+                d.getElementsByTagName("TEXTAREA")[0].focus();
+            });
+            layoutUpdateCallback.call();
           }
         }
     );
     return false;
 }
 
+/**
+ * Indicates that form fields from rows [s,e) should be grouped into a JSON object,
+ * and attached under the element identified by the specified id.
+ */
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
-    for(var x=s.nextSibling; x!=e; x=x.nextSibling) {
+    for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
         if(x.getAttribute("nameRef")==null)
             x.setAttribute("nameRef",id);
     }
 }
 
+
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
     // find the start TR
-    var s = c;
-    while(!Element.hasClassName(s, "optional-block-start"))
-        s = s.parentNode;
-    var tbl = s.parentNode;
-    var i = false;
-    var o = false;
+    var s = $(c);
+    while(!s.hasClassName("optional-block-start"))
+        s = s.up();
+
+    // find the beginning of the rowvg
+    var vg =s;
+    while (!vg.hasClassName("rowvg-start"))
+        vg = vg.next();
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
-    var lastRow = null;
 
-    for (var j = 0; tbl.rows[j]; j++) {
-        var n = tbl.rows[j];
-
-        if (i && Element.hasClassName(n, "optional-block-end"))
-            o = true;
-
-        if (i && !o) {
-            if (checked) {
-                n.style.display = "";
-                lastRow = n;
-            } else
-                n.style.display = "none";
-        }
-
-        if (n==s) {
-            if (n.getAttribute('hasHelp') == 'true')
-                j++;
-            i = true;
-        }
-    }
+    vg.rowVisibilityGroup.makeInnerVisisble(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
 
         var r = D.getRegion(s);
-        if(lastRow!=null)   r = r.union(D.getRegion(lastRow));
+        r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
         scrollIntoView(r);
     }
 
@@ -1122,6 +1309,7 @@ function updateOptionalBlock(c,scroll) {
             var tr = findAncestor(homeField, 'TR');
             if (tr != null) {
                 tr.style.display = c.checked ? 'none' : '';
+                layoutUpdateCallback.call();
             }
         }
     }
@@ -1159,7 +1347,7 @@ function AutoScroller(scrollContainer) {
             if (scrollDiv.scrollHeight > 0)
                 return scrollDiv.scrollHeight;
             else
-                if (objDiv.offsetHeight > 0)
+                if (scrollDiv.offsetHeight > 0)
                     return scrollDiv.offsetHeight;
 
             return null; // huh?
@@ -1174,7 +1362,8 @@ function AutoScroller(scrollContainer) {
             // the element height.
             //var height = ((scrollDiv.style.pixelHeight) ? scrollDiv.style.pixelHeight : scrollDiv.offsetHeight);
             var height = getViewportHeight();
-            var diff = currentHeight - scrollDiv.scrollTop - height;
+            var scrollPos = Math.max(scrollDiv.scrollTop, document.documentElement.scrollTop);
+            var diff = currentHeight - scrollPos - height;
             // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
 
             return diff < this.bottomThreshold;
@@ -1182,7 +1371,9 @@ function AutoScroller(scrollContainer) {
 
         scrollToBottom : function() {
             var scrollDiv = $(this.scrollContainer);
-            scrollDiv.scrollTop = this.getCurrentHeight();
+            var currentHeight = this.getCurrentHeight();
+            if(document.documentElement) document.documentElement.scrollTop = currentHeight
+            scrollDiv.scrollTop = currentHeight;
         }
     };
 }
@@ -1213,39 +1404,52 @@ function scrollIntoView(e) {
 // used in expandableTextbox.jelly to change a input field into a text area
 function expandTextArea(button,id) {
     button.style.display="none";
-    var field = document.getElementById(id);
+    var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    var n = field;
-    while(n.tagName!="TABLE")
+    
+    var n = button; 
+    while (n.tagName != "TABLE")
+    {
         n = n.parentNode;
-    n.parentNode.innerHTML =
-        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
-}
+    }
 
+    n.parentNode.innerHTML = 
+        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    layoutUpdateCallback.call();
+}
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
     var f = function() {
-        new Ajax.Request(url, {
-            onSuccess: function(rsp) {
-                var hist = $(id);
-                var p = hist.parentNode;
-                var next = hist.nextSibling;
-                p.removeChild(hist);
+        if(isPageVisible()) {
+            new Ajax.Request(url, {
+                onSuccess: function(rsp) {
+                    var hist = $(id);
+                    if (hist==null) console.log("There's no element that has ID of "+id)
+                    var p = hist.up();
+                    var next = hist.next();
+                    p.removeChild(hist);
 
-                var div = document.createElement('div');
-                div.innerHTML = rsp.responseText;
+                    var div = document.createElement('div');
+                    div.innerHTML = rsp.responseText;
 
-                var node = div.firstChild;
-                p.insertBefore(node, next);
+                    var node = $(div).firstDescendant();
+                    p.insertBefore(node, next);
 
-                Behaviour.applySubtree(node);
+                    Behaviour.applySubtree(node);
+                    layoutUpdateCallback.call();
 
-                if(isRunAsTest) return;
-                refreshPart(id,url);
-            }
-        });
+                    if(isRunAsTest) return;
+                    refreshPart(id,url);
+                }
+            });    
+        } else {
+            // Reschedule
+            if(isRunAsTest) return;
+            refreshPart(id,url);
+        }
+        
     };
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
@@ -1316,234 +1520,47 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-// used witih <dropdownList> and <dropdownListBlock> to control visibility
-function updateDropDownList(sel) {
-    for (var i = 0; i < sel.subForms.length; i++) {
-        var show = sel.selectedIndex == i;
-        var f = sel.subForms[i];
-        var tr = f.start;
-        while (true) {
-            tr.style.display = (show ? "" : "none");
-            if(show)
-                tr.removeAttribute("field-disabled");
-            else    // buildFormData uses this attribute and ignores the contents
-                tr.setAttribute("field-disabled","true");
-            if (tr == f.end) break;
-            tr = tr.nextSibling;
-        }
-    }
-}
-
-
-// code for supporting repeatable.jelly
-var repeatableSupport = {
-    // set by the inherited instance to the insertion point DIV
-    insertionPoint: null,
-
-    // HTML text of the repeated chunk
-    blockHTML: null,
-
-    // containing <div>.
-    container: null,
-
-    // block name for structured HTML
-    name : null,
-
-    withDragDrop: false,
-
-    // do the initialization
-    init : function(container,master,insertionPoint) {
-        this.container = $(container);
-        this.container.tag = this;
-        master = $(master);
-        this.blockHTML = master.innerHTML;
-        master.parentNode.removeChild(master);
-        this.insertionPoint = $(insertionPoint);
-        this.name = master.getAttribute("name");
-        this.update();
-        this.withDragDrop = initContainerDD(container);
-    },
-
-    // insert one more block at the insertion position
-    expand : function() {
-        // importNode isn't supported in IE.
-        // nc = document.importNode(node,true);
-        var nc = document.createElement("div");
-        nc.className = "repeated-chunk";
-        nc.setAttribute("name",this.name);
-        nc.innerHTML = this.blockHTML;
-        this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
-        if (this.withDragDrop) prepareDD(nc);
-
-        hudsonRules['DIV.repeated-chunk'](nc);  // applySubtree doesn't get nc itself
-        Behaviour.applySubtree(nc);
-        this.update();
-    },
-
-    // update CSS classes associated with repeated items.
-    update : function() {
-        var children = [];
-        for( var n=this.container.firstChild; n!=null; n=n.nextSibling )
-            if(Element.hasClassName(n,"repeated-chunk"))
-                children.push(n);
-
-        if(children.length==0) {
-            // noop
-        } else
-        if(children.length==1) {
-            children[0].className = "repeated-chunk first last only";
-        } else {
-            children[0].className = "repeated-chunk first";
-            for(var i=1; i<children.length-1; i++)
-                children[i].className = "repeated-chunk middle";
-            children[children.length-1].className = "repeated-chunk last";
-        }
-    },
-
-    // these are static methods that don't rely on 'this'
-
-    // called when 'delete' button is clicked
-    onDelete : function(n) {
-        while (!Element.hasClassName(n,"repeated-chunk"))
-            n = n.parentNode;
-
-        var p = n.parentNode;
-        p.removeChild(n);
-        p.tag.update();
-    },
-
-    // called when 'add' button is clicked
-    onAdd : function(n) {
-        while(n.tag==null)
-            n = n.parentNode;
-        n.tag.expand();
-        // Hack to hide tool home when a new tool has some installers.
-        var inputs = n.getElementsByTagName('INPUT');
-        for (var i = 0; i < inputs.length; i++) {
-            var input = inputs[i];
-            if (input.name == 'hudson-tools-InstallSourceProperty') {
-                updateOptionalBlock(input, false);
-            }
-        }
-    }
-};
-
-// prototype object to be duplicated for each radio button group
-var radioBlockSupport = {
-    buttons : null,
-
-    updateButtons : function() {
-        for( var i=0; i<this.buttons.length; i++ )
-            this.buttons[i]();
-    },
-
-    // update one block based on the status of the given radio button
-    updateSingleButton : function(radio, blockStart, blockEnd) {
-        var tbl = blockStart.parentNode;
-        var i = false;
-        var o = false;
-        var show = radio.checked;
-
-        for (var j = 0; tbl.rows[j]; j++) {
-            var n = tbl.rows[j];
-
-            if (n == blockEnd)
-                o = true;
-
-            if (i && !o) {
-                if (show)
-                    n.style.display = "";
-                else
-                    n.style.display = "none";
-            }
-
-            if (n == blockStart) {
-                i = true;
-                if (n.getAttribute('hasHelp') == 'true')
-                    j++;
-            }
-        }
-    }
-};
-
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     $('buildHistory').headers = ["n",nBuild];
 
     function updateBuilds() {
-        var bh = $('buildHistory');
-        if (bh.headers == null) {
-            // Yahoo.log("Missing headers in buildHistory element");
-        }
-        new Ajax.Request(ajaxUrl, {
-            requestHeaders: bh.headers,
-            onSuccess: function(rsp) {
-                var rows = bh.rows;
-
-                //delete rows with transitive data
-                while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
-                    Element.remove(rows[1]);
-
-                // insert new rows
-                var div = document.createElement('div');
-                div.innerHTML = rsp.responseText;
-                Behaviour.applySubtree(div);
-
-                var pivot = rows[0];
-                var newRows = div.firstChild.rows;
-                for (var i = newRows.length - 1; i >= 0; i--) {
-                    pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
-                }
-
-                // next update
-                bh.headers = ["n",rsp.getResponseHeader("n")];
-                window.setTimeout(updateBuilds, 5000);
+        if(isPageVisible()){
+            var bh = $('buildHistory');
+            if (bh.headers == null) {
+                // Yahoo.log("Missing headers in buildHistory element");
             }
-        });
+            new Ajax.Request(ajaxUrl, {
+                requestHeaders: bh.headers,
+                onSuccess: function(rsp) {
+                    var rows = bh.rows;
+
+                    //delete rows with transitive data
+                    while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
+                        Element.remove(rows[1]);
+
+                    // insert new rows
+                    var div = document.createElement('div');
+                    div.innerHTML = rsp.responseText;
+                    Behaviour.applySubtree(div);
+
+                    var pivot = rows[0];
+                    var newRows = $(div).firstDescendant().rows;
+                    for (var i = newRows.length - 1; i >= 0; i--) {
+                        pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
+                    }
+
+                    // next update
+                    bh.headers = ["n",rsp.getResponseHeader("n")];
+                    window.setTimeout(updateBuilds, 5000);
+                }
+            });
+        } else {
+            // Reschedule again
+            window.setTimeout(updateBuilds, 5000);
+        }
     }
     window.setTimeout(updateBuilds, 5000);
-}
-
-// send async request to the given URL (which will send back serialized ListBoxModel object),
-// then use the result to fill the list box.
-function updateListBox(listBox,url,config) {
-    config = config || {};
-    config = object(config);
-    var originalOnSuccess = config.onSuccess;
-    config.onSuccess = function(rsp) {
-        var l = $(listBox);
-        var currentSelection = l.value;
-
-        // clear the contents
-        while(l.length>0)   l.options[0] = null;
-
-        var selectionSet = false; // is the selection forced by the server?
-        var possibleIndex = null; // if there's a new option that matches the current value, remember its index
-        var opts = eval('('+rsp.responseText+')').values;
-        for( var i=0; i<opts.length; i++ ) {
-            l.options[i] = new Option(opts[i].name,opts[i].value);
-            if(opts[i].selected) {
-                l.selectedIndex = i;
-                selectionSet = true;
-            }
-            if (opts[i].value==currentSelection)
-                possibleIndex = i;
-        }
-
-        // if no value is explicitly selected by the server, try to select the same value
-        if (!selectionSet && possibleIndex!=null)
-            l.selectedIndex = possibleIndex;
-
-        if (originalOnSuccess!=undefined)
-            originalOnSuccess(rsp);
-    },
-    config.onFailure = function(rsp) {
-        // deleting values can result in the data loss, so let's not do that
-//        var l = $(listBox);
-//        l.options[0] = null;
-    }
-
-    new Ajax.Request(url, config);
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
@@ -1553,14 +1570,61 @@ function getStyle(e,a){
   if(e.currentStyle)
     return e.currentStyle[a];
   return null;
-};
+}
+
+/**
+ * Makes sure the given element is within the viewport.
+ *
+ * @param {HTMLElement} e
+ *      The element to bring into the viewport.
+ */
+function ensureVisible(e) {
+    var viewport = YAHOO.util.Dom.getClientRegion();
+    var pos      = YAHOO.util.Dom.getRegion(e);
+
+    var Y = viewport.top;
+    var H = viewport.height;
+
+    function handleStickers(name,f) {
+        var e = $(name);
+        if (e) f(e);
+        document.getElementsBySelector("."+name).each(f);
+    }
+
+    // if there are any stickers around, subtract them from the viewport
+    handleStickers("top-sticker",function (t) {
+        t = t.clientHeight;
+        Y+=t; H-=t;
+    });
+
+    handleStickers("bottom-sticker",function (b) {
+        b = b.clientHeight;
+        H-=b;
+    });
+
+    var y = pos.top;
+    var h = pos.height;
+
+    var d = (y+h)-(Y+H);
+    if (d>0) {
+        document.body.scrollTop += d;
+    } else {
+        var d = Y-y;
+        if (d>0)    document.body.scrollTop -= d;
+    }
+}
 
 // set up logic behind the search box
 function createSearchBox(searchURL) {
-    var ds = new YAHOO.widget.DS_XHR(searchURL+"suggest",["suggestions","name"]);
-    ds.queryMatchCase = false;
+    var ds = new YAHOO.util.XHRDataSource(searchURL+"suggest");
+    ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
+    ds.responseSchema = {
+        resultsList: "suggestions",
+        fields: ["name"]
+    };
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
+    ac.autoHighlight = false;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
@@ -1585,7 +1649,7 @@ function createSearchBox(searchURL) {
     function updatePos() {
         function max(a,b) { if(a>b) return a; else return b; }
 
-        sizer.innerHTML = box.value;
+        sizer.innerHTML = box.value.escapeHTML();
         var w = max(sizer.offsetWidth,minW.offsetWidth);
         box.style.width =
         comp.style.width = 
@@ -1630,7 +1694,7 @@ function findFormParent(e,form,static) {
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
-        if(name!=null) {
+        if(name!=null && name.length>0) {
             if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
@@ -1793,6 +1857,19 @@ function buildFormTree(form) {
     }
 }
 
+/**
+ * @param {boolean} toggle
+ *      When true, will check all checkboxes in the page. When false, unchecks them all.
+ */
+var toggleCheckboxes = function(toggle) {
+    var inputs = document.getElementsByTagName("input");
+    for(var i=0; i<inputs.length; i++) {
+        if(inputs[i].type === "checkbox") {
+            inputs[i].checked = toggle;
+        }
+    }
+};
+
 // this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
 String.prototype.trim = function() {
     var temp = this;
@@ -1842,139 +1919,122 @@ var hoverNotification = (function() {
         msgBox.render();
     }
 
-    return function(title,anchor) {
+    return function(title, anchor, offset) {
+        if (typeof offset === 'undefined') {
+            offset = 48;
+        }
         init();
         body.innerHTML = title;
         var xy = YAHOO.util.Dom.getXY(anchor);
-        xy[0] += 48;
+        xy[0] += offset;
         xy[1] += anchor.offsetHeight;
         msgBox.cfg.setProperty("xy",xy);
         msgBox.show();
     };
 })();
 
-/*
-    Drag&Drop implementation for heterogeneous/repeatable lists.
+/**
+ * Loads the script specified by the URL.
+ *
+ * @param href
+ *      The URL of the script to load.
+ * @param callback
+ *      If specified, this function will be invoked after the script is loaded.
+ * @see http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-internet-explorer
  */
-function initContainerDD(e) {
-    if (!Element.hasClassName(e,"with-drag-drop")) return false;
+function loadScript(href,callback) {
+    var head = document.getElementsByTagName("head")[0] || document.documentElement;
+    var script = document.createElement("script");
+    script.src = href;
 
-    for (e=e.firstChild; e!=null; e=e.nextSibling) {
-        if (Element.hasClassName(e,"repeated-chunk"))
-            prepareDD(e);
-    }
-    return true;
-}
-function prepareDD(e) {
-    var h = e;
-    // locate a handle
-    while (h!=null && !Element.hasClassName(h,"dd-handle"))
-        h = h.firstChild ? h.firstChild : h.nextSibling;
-    if (h!=null) {
-        var dd = new DragDrop(e);
-        dd.setHandleElId(h);
-    }
-}
+    if (callback) {
+        // Handle Script loading
+        var done = false;
 
-var DragDrop = function(id, sGroup, config) {
-    DragDrop.superclass.constructor.apply(this, arguments);
-};
+        // Attach handlers for all browsers
+        script.onload = script.onreadystatechange = function() {
+            if ( !done && (!this.readyState ||
+                    this.readyState === "loaded" || this.readyState === "complete") ) {
+                done = true;
+                callback();
 
-(function() {
-    var Dom = YAHOO.util.Dom;
-    var Event = YAHOO.util.Event;
-    var DDM = YAHOO.util.DragDropMgr;
-
-    YAHOO.extend(DragDrop, YAHOO.util.DDProxy, {
-        startDrag: function(x, y) {
-            var el = this.getEl();
-
-            this.resetConstraints();
-            this.setXConstraint(0,0);    // D&D is for Y-axis only
-
-            // set Y constraint to be within the container
-            var totalHeight = el.parentNode.offsetHeight;
-            var blockHeight = el.offsetHeight;
-            this.setYConstraint(el.offsetTop, totalHeight-blockHeight-el.offsetTop);
-
-            el.style.visibility = "hidden";
-
-            this.goingUp = false;
-            this.lastY = 0;
-        },
-
-        endDrag: function(e) {
-            var srcEl = this.getEl();
-            var proxy = this.getDragEl();
-
-            // Show the proxy element and animate it to the src element's location
-            Dom.setStyle(proxy, "visibility", "");
-            var a = new YAHOO.util.Motion(
-                proxy, {
-                    points: {
-                        to: Dom.getXY(srcEl)
-                    }
-                },
-                0.2,
-                YAHOO.util.Easing.easeOut
-            )
-            var proxyid = proxy.id;
-            var thisid = this.id;
-
-            // Hide the proxy and show the source element when finished with the animation
-            a.onComplete.subscribe(function() {
-                    Dom.setStyle(proxyid, "visibility", "hidden");
-                    Dom.setStyle(thisid, "visibility", "");
-                });
-            a.animate();
-        },
-
-        onDrag: function(e) {
-
-            // Keep track of the direction of the drag for use during onDragOver
-            var y = Event.getPageY(e);
-
-            if (y < this.lastY) {
-                this.goingUp = true;
-            } else if (y > this.lastY) {
-                this.goingUp = false;
+                // Handle memory leak in IE
+                script.onload = script.onreadystatechange = null;
+                if ( head && script.parentNode ) {
+                    head.removeChild( script );
+                }
             }
+        };
+    }
 
-            this.lastY = y;
-        },
+    // Use insertBefore instead of appendChild  to circumvent an IE6 bug.
+    // This arises when a base node is used (#2709 and #4378).
+    head.insertBefore( script, head.firstChild );
+}
 
-        onDragOver: function(e, id) {
-            var srcEl = this.getEl();
-            var destEl = Dom.get(id);
+/**
+ * Loads a dynamically created invisible IFRAME.
+ */
+function createIframe(src,callback) {
+    var iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.style.display = "none";
 
-            // We are only concerned with list items, we ignore the dragover
-            // notifications for the list.
-            if (destEl.nodeName == "DIV" && Dom.hasClass(destEl,"repeated-chunk")
-                    // Nested lists.. ensure we don't drag out of this list or into a nested one:
-                    && destEl.parentNode==srcEl.parentNode) {
-                var p = destEl.parentNode;
-
-                // if going up, insert above the target element
-                p.insertBefore(srcEl, this.goingUp?destEl:destEl.nextSibling);
-
-                DDM.refreshCache();
-            }
+    var done = false;
+    iframe.onload = iframe.onreadystatechange = function() {
+        if ( !done && (!this.readyState ||
+                this.readyState === "loaded" || this.readyState === "complete") ) {
+            done = true;
+            callback();
         }
-    });
-})();
+    };
 
-function loadScript(href) {
-    var s = document.createElement("script");
-    s.setAttribute("src",href);
-    document.getElementsByTagName("HEAD")[0].appendChild(s);
+    document.body.appendChild(iframe);
+    return iframe;
 }
 
 var downloadService = {
     continuations: {},
 
     download : function(id,url,info, postBack,completionHandler) {
-        this.continuations[id] = {postBack:postBack,completionHandler:completionHandler};
-        loadScript(url+"?"+Hash.toQueryString(info));
+        var tag = {id:id,postBack:postBack,completionHandler:completionHandler,received:false};
+        this.continuations[id] = tag;
+
+        // use JSONP to download the data
+        function fallback() {
+            loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
+        }
+
+        if (window.postMessage) {
+            // try downloading the postMessage version of the data,
+            // if we don't receive postMessage (which probably means the server isn't ready with these new datasets),
+            // fallback to JSONP
+            tag.iframe = createIframe(url+".html?id="+id+'&'+Hash.toQueryString(info),function() {
+                window.setTimeout(function() {
+                    if (!tag.received)
+                        fallback();
+                },100); // bit of delay in case onload on our side fires first
+            });
+        } else {
+            // this browser doesn't support postMessage
+            fallback();
+        }
+
+        // NOTE:
+        //   the only reason we even try fallback() is in case our server accepts the submission without a signature
+        //   (which it really shouldn't)
+    },
+
+    /**
+     * Call back to postMessage
+     */
+    receiveMessage : function(ev) {
+        var self = this;
+        Object.values(this.continuations).each(function(tag) {
+            if (tag.iframe.contentWindow==ev.source) {
+                self.post(tag.id,JSON.parse(ev.data));
+            }
+        })
     },
 
     post : function(id,data) {
@@ -1983,15 +2043,22 @@ var downloadService = {
             data = id;
             id = data.id;
         }
-        var o = this.continuations[id];
+        var tag = this.continuations[id];
+        if (tag==undefined) {
+            console.log("Submission from update center that we don't know: "+id);
+            console.log("Likely mismatch between the registered ID vs ID in JSON");
+            return;
+        }
+        tag.received = true;
+
         // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
-        new Ajax.Request(o.postBack, {
+        new Ajax.Request(tag.postBack, {
             contentType:"application/json",
             encoding:"UTF-8",
             postBody:Object.toJSON(data),
             onSuccess: function() {
-                if(o.completionHandler!=null)
-                    o.completionHandler();
+                if(tag.completionHandler!=null)
+                    tag.completionHandler();
                 else if(downloadService.completionHandler!=null)
                     downloadService.completionHandler();
             }
@@ -1999,8 +2066,10 @@ var downloadService = {
     }
 };
 
-// update center service. to remain compatible with earlier version of Hudson, aliased.
+// update center service. to remain compatible with earlier version of Jenkins, aliased.
 var updateCenter = downloadService;
+
+YAHOO.util.Event.addListener(window, "message", function(ev) { downloadService.receiveMessage(ev); })
 
 /*
 redirects to a page once the page is ready.
@@ -2063,8 +2132,8 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = Element.up(button,"DIV").nextSibling;
-  var target = spinner.nextSibling;
+  var spinner = $(button).up("DIV").next();
+  var target = spinner.next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
@@ -2077,13 +2146,13 @@ function validateButton(checkUrl,paramList,button) {
                 + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
                 + i + '" style="display:none">' + rsp.responseText + '</div>';
           Behaviour.applySubtree(target);
+          layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
-          if(s!=null)
-            try {
-              eval(s);
-            } catch(e) {
+          try {
+              geval(s);
+          } catch(e) {
               window.alert("failed to evaluate "+s+"\n"+e.message);
-            }
+          }
       }
   });
 }
@@ -2120,9 +2189,101 @@ function createComboBox(idOrField,valueFunction) {
 }
 
 
-if (isRunAsTest) {
-    // during the unit test, make Ajax errors fatal
-    Ajax.Request.prototype.dispatchException = function(e) {
-        throw e;
+// Exception in code during the AJAX processing should be reported,
+// so that our users can find them more easily.
+Ajax.Request.prototype.dispatchException = function(e) {
+    throw e;
+}
+
+// event callback when layouts/visibility are updated and elements might have moved around
+var layoutUpdateCallback = {
+    callbacks : [],
+    add : function (f) {
+        this.callbacks.push(f);
+    },
+    call : function() {
+        for (var i = 0, length = this.callbacks.length; i < length; i++)
+            this.callbacks[i]();
     }
 }
+
+// Notification bar
+// ==============================
+// this control displays a single line message at the top of the page, like StackOverflow does
+// see ui-samples for more details
+var notificationBar = {
+    OPACITY : 0.8,
+    DELAY : 3000,   // milliseconds to auto-close the notification
+    div : null,     // the main 'notification-bar' DIV
+    token : null,   // timer for cancelling auto-close
+
+    OK : {// standard option values for typical OK notification
+        icon: "accept.png",
+        backgroundColor: "#8ae234"
+    },
+    WARNING : {// likewise, for warning
+        icon: "yellow.png",
+        backgroundColor: "#fce94f"
+    },
+    ERROR : {// likewise, for error
+        icon: "red.png",
+        backgroundColor: "#ef2929",
+        sticky: true
+    },
+
+    init : function() {
+        if (this.div==null) {
+            this.div = document.createElement("div");
+            YAHOO.util.Dom.setStyle(this.div,"opacity",0);
+            this.div.id="notification-bar";
+            this.div.style.backgroundColor="#fff";
+            document.body.insertBefore(this.div, document.body.firstChild);
+
+            var self = this;
+            this.div.onclick = function() {
+                self.hide();
+            };
+        }
+    },
+    // cancel pending auto-hide timeout
+    clearTimeout : function() {
+        if (this.token)
+            window.clearTimeout(this.token);
+        this.token = null;
+    },
+    // hide the current notification bar, if it's displayed
+    hide : function () {
+        this.clearTimeout();
+        var self = this;
+        var out = new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:0 },
+            backgroundColor: {to:"#fff"}
+        }, 0.3, YAHOO.util.Easing.easeIn);
+        out.onComplete.subscribe(function() {
+            self.div.style.display = "none";
+        })
+        out.animate();
+    },
+    // show a notification bar
+    show : function (text,options) {
+        options = options || {}
+
+        this.init();
+        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
+        this.div.style.display = "block";
+
+        if (options.icon)
+            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
+        this.div.innerHTML = text;
+
+        new YAHOO.util.ColorAnim(this.div, {
+            opacity: { to:this.OPACITY },
+            backgroundColor : { to: options.backgroundColor || "#fff" }
+        }, 1, YAHOO.util.Easing.easeOut).animate();
+
+        this.clearTimeout();
+        var self = this;
+        if (!options.sticky)
+            this.token = window.setTimeout(function(){self.hide();},this.DELAY);
+    }
+};

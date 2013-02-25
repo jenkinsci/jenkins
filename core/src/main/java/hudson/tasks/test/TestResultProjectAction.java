@@ -77,7 +77,7 @@ public class TestResultProjectAction implements Action {
         AbstractBuild<?,?> b=project.getLastBuild();
         while(b!=null) {
             AbstractTestResultAction a = b.getTestResultAction();
-            if(a!=null) return a;
+            if(a!=null && (!b.isBuilding())) return a;
             if(b==tb)
                 // if even the last successful build didn't produce the test result,
                 // that means we just don't have any tests configured.

@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%title(it.displayName)}">
+  <l:layout title="${%title(it.displayName)}" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:isAdmin>
+      <l:hasPermission permission="${it.DISCONNECT}">
         <h2>${%title(it.displayName)}</h2>
         <p>
           ${%blurb}
@@ -37,7 +38,7 @@ THE SOFTWARE.
             <f:submit value="${%submit}"  />
           </p>
         </form>
-      </l:isAdmin>
+      </l:hasPermission>
     </l:main-panel>
   </l:layout>
 </j:jelly>

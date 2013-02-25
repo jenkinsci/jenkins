@@ -25,8 +25,9 @@ package hudson.cli;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
+import hudson.cli.util.ScriptLoader;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.remoting.Callable;
@@ -53,10 +54,10 @@ import java.net.MalformedURLException;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class GroovyCommand extends CLICommand implements Serializable {
+public class GroovyCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Executes the specified Groovy script";
+        return Messages.GroovyCommand_ShortDescription();
     }
 
     @Argument(metaVar="SCRIPT",usage="Script to be executed. File, URL or '=' to represent stdin.")
@@ -69,8 +70,8 @@ public class GroovyCommand extends CLICommand implements Serializable {
     public List<String> remaining = new ArrayList<String>();
 
     protected int run() throws Exception {
-        // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        // this allows the caller to manipulate the JVM state, so require the execute script privilege.
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));
@@ -80,7 +81,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
         binding.setProperty("channel",channel);
         String j = getClientEnvironmentVariable("JOB_NAME");
         if (j!=null) {
-            Item job = Hudson.getInstance().getItemByFullName(j);
+            Item job = Jenkins.getInstance().getItemByFullName(j);
             binding.setProperty("currentJob", job);
             String b = getClientEnvironmentVariable("BUILD_NUMBER");
             if (b!=null && job instanceof AbstractProject) {
@@ -89,7 +90,7 @@ public class GroovyCommand extends CLICommand implements Serializable {
             }
         }
 
-        GroovyShell groovy = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader, binding);
+        GroovyShell groovy = new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader, binding);
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
         return 0;
     }
@@ -100,29 +101,10 @@ public class GroovyCommand extends CLICommand implements Serializable {
     private String loadScript() throws CmdLineException, IOException, InterruptedException {
         if(script==null)
             throw new CmdLineException(null, "No script is specified");
-        return channel.call(new Callable<String,IOException>() {
-            public String call() throws IOException {
-                if(script.equals("="))
-                    return IOUtils.toString(System.in);
+        if (script.equals("="))
+            return IOUtils.toString(stdin);
 
-                File f = new File(script);
-                if(f.exists())
-                    return FileUtils.readFileToString(f);
-
-                URL url;
-                try {
-                    url = new URL(script);
-                } catch (MalformedURLException e) {
-                    throw new AbortException("Unable to find a script "+script);
-                }
-                InputStream s = url.openStream();
-                try {
-                    return IOUtils.toString(s);
-                } finally {
-                    s.close();
-                }
-            }
-        });
+        return checkChannel().call(new ScriptLoader(script));
     }
 }
 

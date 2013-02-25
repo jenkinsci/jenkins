@@ -24,7 +24,7 @@
 package hudson.diagnosis;
 
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -42,7 +42,7 @@ import java.io.IOException;
 @Extension
 public class TooManyJobsButNoView extends AdministrativeMonitor {
     public boolean isActivated() {
-        Hudson h = Hudson.getInstance();
+        Jenkins h = Jenkins.getInstance();
         return h.getViews().size()==1 && h.getItemMap().size()> THRESHOLD;
     }
 

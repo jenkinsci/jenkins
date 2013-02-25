@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:choose>
     <j:when test="${data==null}">
       <td align="right" data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${data}">${data.toHtml()}</td>
+      <td align="right" data="${data}"><j:out value="${data.toHtml()}"/></td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

@@ -24,7 +24,7 @@
 
 package hudson.cli;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.remoting.Callable;
@@ -46,12 +46,12 @@ public abstract class CommandDuringBuild extends CLICommand {
         try {
             CLICommand c = CLICommand.getCurrent();
             if (c==null)    throw new IllegalStateException("Not executing a CLI command");
-            String[] envs = c.channel.call(new GetCharacteristicEnvironmentVariables());
+            String[] envs = c.checkChannel().call(new GetCharacteristicEnvironmentVariables());
 
             if (envs[0]==null || envs[1]==null)
                 throw new CmdLineException("This CLI command works only when invoked from inside a build");
 
-            Job j = Hudson.getInstance().getItemByFullName(envs[0],Job.class);
+            Job j = Jenkins.getInstance().getItemByFullName(envs[0],Job.class);
             if (j==null)    throw new CmdLineException("No such job: "+envs[0]);
 
             try {

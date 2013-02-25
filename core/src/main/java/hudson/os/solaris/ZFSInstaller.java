@@ -30,13 +30,14 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
 import static hudson.util.jna.GNUCLibrary.*;
+
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 import org.jvnet.solaris.libzfs.ACLBuilder;
@@ -51,6 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -68,6 +70,8 @@ import java.util.logging.Logger;
  * @since 1.283
  */
 public class ZFSInstaller extends AdministrativeMonitor implements Serializable {
+    private static final long serialVersionUID = 1018007614648118323L;
+
     /**
      * True if $JENKINS_HOME is a ZFS file system by itself.
      */
@@ -102,7 +106,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 return false;       // no active ZFS pool
 
             // if we don't run on a ZFS file system, activate
-            ZFSFileSystem hudsonZfs = zfs.getFileSystemByMountPoint(Hudson.getInstance().getRootDir());
+            ZFSFileSystem hudsonZfs = zfs.getFileSystemByMountPoint(Jenkins.getInstance().getRootDir());
             if(hudsonZfs!=null)
                 return false;       // already on ZFS
 
@@ -124,9 +128,9 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the management screen.
      */
+    @RequirePOST
     public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
-        requirePOST();
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         if(req.hasParameter("n")) {
             // we'll shut up
@@ -159,11 +163,13 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
             throw new IOException("Failed to obtain the current user information for "+uid);
         final String userName = pwd.pw_name;
 
-        final File home = Hudson.getInstance().getRootDir();
+        final File home = Jenkins.getInstance().getRootDir();
 
         // this is the actual creation of the file system.
         // return true indicating a success
         return SU.execute(listener, rootUsername, rootPassword, new Callable<String,IOException>() {
+            private static final long serialVersionUID = 7731167233498214301L;
+
             public String call() throws IOException {
                 PrintStream out = listener.getLogger();
 
@@ -210,10 +216,10 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the confirmation screen to actually initiate the migration.
      */
+    @RequirePOST
     public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
-        requirePOST(); 
-        Hudson hudson = Hudson.getInstance();
-        hudson.checkPermission(Hudson.ADMINISTER);
+        Jenkins hudson = Jenkins.getInstance();
+        hudson.checkPermission(Jenkins.ADMINISTER);
 
         final String datasetName;
         ByteArrayOutputStream log = new ByteArrayOutputStream();
@@ -316,7 +322,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     private static boolean migrate(TaskListener listener, String target) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
 
-        File home = Hudson.getInstance().getRootDir();
+        File home = Jenkins.getInstance().getRootDir();
         // do the migration
         LibZFS zfs = new LibZFS();
         ZFSFileSystem existing = zfs.getFileSystemByMountPoint(home);

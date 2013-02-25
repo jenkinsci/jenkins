@@ -4,7 +4,11 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-sudo apt-get install -y rpm expect || true
+which rpm > /dev/null 2>&1 
+if [ $? != 0 ]; then
+  sudo apt-get install -y rpm expect || true
+fi
+
 
 # figure out the version to package
 cp "$1" $(dirname $0)/SOURCES/jenkins.war
@@ -19,6 +23,8 @@ echo Version is $version
 # prepare fresh directories
 rm -rf BUILD RPMS SRPMS tmp || true
 mkdir -p BUILD RPMS SRPMS
+
+cat SOURCES/jenkins.repo.in | sed -e "s#@URL@#${RPM_URL}/#g" > SOURCES/jenkins.repo
 
 # real action happens here
 rpmbuild -ba --define="_topdir $PWD" --define="_tmppath $PWD/tmp" --define="ver $version" SPECS/jenkins.spec

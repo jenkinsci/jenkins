@@ -28,9 +28,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.security.AccessControlled;
@@ -63,7 +62,7 @@ import org.kohsuke.stapler.Stapler;
  *      Use {@link FormValidation} as a return value in your check method.
  */
 public abstract class FormFieldValidator {
-    public static final Permission CHECK = Hudson.ADMINISTER;
+    public static final Permission CHECK = Jenkins.ADMINISTER;
 
     protected final StaplerRequest request;
     protected final StaplerResponse response;
@@ -85,7 +84,7 @@ public abstract class FormFieldValidator {
      *      information or run a process that may have side-effect.
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, boolean adminOnly) {
-        this(request, response, adminOnly?Hudson.getInstance():null, adminOnly?CHECK:null);
+        this(request, response, adminOnly? Jenkins.getInstance():null, adminOnly?CHECK:null);
     }
 
     /**
@@ -94,7 +93,7 @@ public abstract class FormFieldValidator {
      *      from your "doCheck..." method parameter
      */
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
-        this(request,response,Hudson.getInstance(),permission);
+        this(request,response, Jenkins.getInstance(),permission);
     }
 
     /**
@@ -133,7 +132,7 @@ public abstract class FormFieldValidator {
             } catch (AccessDeniedException e) {
                 // if the user has hudson-wisde admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
-                if(!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+                if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                     throw e;
             }
 
@@ -229,7 +228,7 @@ public abstract class FormFieldValidator {
             response.setContentType("text/html;charset=UTF-8");
             // 1x16 spacer needed for IE since it doesn't support min-height
             response.getWriter().print("<div class="+ cssClass +"><img src='"+
-                    request.getContextPath()+Hudson.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                    request.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                     message+"</div>");
         }
     }
@@ -379,11 +378,11 @@ public abstract class FormFieldValidator {
                     return;
                 }
 
-                String msg = ws.validateAntFileMask(value);
+                String msg = ws.validateAntFileMask(value, 10000);
                 if(errorIfNotExist)     error(msg);
                 else                    warning(msg);
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(Messages.FormFieldValidator_did_not_manage_to_validate_may_be_too_sl(value));
             }
         }
 
@@ -400,7 +399,7 @@ public abstract class FormFieldValidator {
      * the current workspace.
      * @since 1.116
      * @deprecated as of 1.294. Use {@link FilePath#validateRelativeDirectory(String, boolean)}
-     *      (see {@link JavadocArchiver.DescriptorImpl#doCheck(AbstractProject, String)}
+     *      (see javadoc plugin for the example)
      */
     public static class WorkspaceDirectory extends WorkspaceFilePath {
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${it.totalCount!=0}">
     <h2>${%All Tests}</h2>
@@ -35,7 +36,7 @@ THE SOFTWARE.
         <j:forEach var="p" items="${it.children}" varStatus="status">
           <tr>
             <td class="pane">
-              <a href="${p.safeName}"><span style="${p.previousResult==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
+              <a href="${p.safeName}" class="model-link"><span style="${p.previousResult==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
               <st:nbsp/>
               <j:forEach var="badge" items="${p.testActions}">
                 <st:include it="${badge}" page="badge.jelly" optional="true"/>

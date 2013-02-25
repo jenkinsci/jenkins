@@ -25,10 +25,14 @@ package hudson.matrix;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.RestrictedSince;
 import hudson.Util;
+import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.QuotedStringTokenizer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -67,6 +71,8 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * @deprecated as of 1.373
      *      Use {@link #getValues()}
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("1.463")
     public final List<String> values;
 
     public Axis(String name, List<String> values) {
@@ -144,6 +150,37 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
         return Collections.unmodifiableList(values);
     }
 
+    /**
+     * Called right at the beginning of {@link MatrixBuild} execution to allow {@link Axis} to update {@link #values}
+     * based on the current build.
+     *
+     * <p>
+     * Historically, axes values are considered static. They were assumed to reflect what the user has typed in,
+     * and their values are changed only when the project is reconfigured. So abstractions are built around this
+     * notion, and so for example {@link MatrixProject} has the current axes and their values, which it uses
+     * to render its UI.
+     *
+     * <p>
+     * So when the need was identified to change the values of axes per build, we decided that this be represented
+     * as a kind of project configuration update (where a project gets reconfigured every time a build runs), and
+     * this call back was added to allow {@link Axis} to update the next return value from the {@link #getValues()}
+     * (which is typically done by updating {@link #values}.)
+     *
+     * <p>
+     * While it is not strictly required, because of these historical reasons, UI will look better if
+     * Future calls to {@link Axis#getValues()} return the same values as what this method returns (until
+     * the next rebuild call).
+     *
+     * @param context
+     *      The ongoing build. Never null.
+     * @return
+     *      Never null. Returns the updated set of values.
+     * @since 1.471
+     */
+    public List<String> rebuild(MatrixBuildExecution context) {
+        return getValues();
+    }
+
     @Override
     public AxisDescriptor getDescriptor() {
         return (AxisDescriptor)super.getDescriptor();
@@ -197,6 +234,12 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
     public Object readResolve() {
         if (getClass()!=Axis.class) return this;
 
+        /*
+            This method is necessary only because earlier versions of Jenkins treated
+            axis names "label" and "jdk" differently,
+            plus Axis was a concrete class, and we need to be able to read that back.
+            So this measure is not needed for newly added Axes.
+         */
         if (getName().equals("jdk"))
             return new JDKAxis(getValues());
         if (getName().equals("label"))
@@ -208,7 +251,7 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
      * Returns all the registered {@link AxisDescriptor}s.
      */
     public static DescriptorExtensionList<Axis,AxisDescriptor> all() {
-        return Hudson.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
+        return Jenkins.getInstance().<Axis,AxisDescriptor>getDescriptorList(Axis.class);
     }
 
     /**

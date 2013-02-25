@@ -75,7 +75,7 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
         DumbSlave s = createOnlineSlave();
         project.setAssignedLabel(s.getSelfLabel());
 
-        FilePath src = new FilePath(hudson.getRootPath(), "jobs/junit/workspace/");
+        FilePath src = new FilePath(jenkins.getRootPath(), "jobs/junit/workspace/");
         assertNotNull(src);
         FilePath dest = s.getWorkspaceFor(project);
         assertNotNull(dest);
@@ -102,16 +102,16 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	public void testPersistence() throws Exception {
         project.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
 		
-		reloadHudson();
+		reloadJenkins();
 		
 		FreeStyleBuild build = project.getBuildByNumber(1);
 		
 		assertTestResults(build);
 	}
 
-	private void reloadHudson() throws Exception {
-        hudson.reload();
-		project = (FreeStyleProject) hudson.getItem("junit");
+	private void reloadJenkins() throws Exception {
+        jenkins.reload();
+		project = (FreeStyleProject) jenkins.getItem("junit");
 	}
 	
 	@LocalData
@@ -134,11 +134,12 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	}
 
 	private void testSetDescription(String url, TestObject object) throws Exception {
-		HtmlPage page = new WebClient().goTo(url);
-		
+        object.doSubmitDescription("description");
+
+        // test the roundtrip
+        HtmlPage page = new WebClient().goTo(url);
 		page.getAnchorByHref("editDescription").click();
 		HtmlForm form = findForm(page, "submitDescription");
-		form.getTextAreaByName("description").setText("description");
 		submit(form);
 		
 		assertEquals("description", object.getDescription());

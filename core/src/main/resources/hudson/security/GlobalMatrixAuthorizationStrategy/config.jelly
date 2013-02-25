@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:block xmlns:local="local">
     <j:set var="groups" value="${descriptor.allGroups}"/>
@@ -38,10 +38,13 @@ THE SOFTWARE.
             </j:if>
           </j:forEach>
         </j:forEach>
-        <td class="stop">
+        <td class="stop" style="text-align:left;">
+          <a href="#" class="toggleall">
+            <img alt="${%Toggle all}" src="${imagesURL}/16x16/edit-select-all.png" height="16" width="16"/>
+          </a>
           <j:if test="${attrs.sid!='anonymous'}">
-            <a href="#">
-              <img alt="remove" src="${imagesURL}/16x16/stop.gif"/>
+            <a href="#" class="remove">
+              <img alt="${%Remove user/group}" src="${imagesURL}/16x16/stop.png" height="16" width="16"/>
             </a>
           </j:if>
         </td>
@@ -105,7 +108,7 @@ THE SOFTWARE.
       <input type="text" id="${id}text" />
       <input type="button" value="${%Add}" id="${id}button"/>
      </td><td align="right">
-      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.gif" alt="[help]"/></a>
+      <a href="#" class="help-button" helpURL="${rootURL}${descriptor.find('hudson.security.GlobalMatrixAuthorizationStrategy$DescriptorImpl').getHelpFile('user-group')}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
      </td></tr>
      <f:helpArea />
     </table>
@@ -137,27 +140,36 @@ THE SOFTWARE.
           copy.firstChild.innerHTML = name;
           copy.setAttribute("name",'['+name+']');
           table.appendChild(copy);
-          Behaviour.applySubtree(findAncestor(table,"TABLE"));
+          Behaviour.applySubtree(findAncestor(table,"TABLE"),true);
         });
       })();
 
-      Behaviour.register({
-        "#${strategyid} TD.stop A" : function(e) {
+      Behaviour.specify("#${strategyid} TD.stop A.remove", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           e.onclick = function() {
             var tr = findAncestor(this,"TR");
             tr.parentNode.removeChild(tr);
             return false;
           }
           e = null; <!-- avoid memory leak -->
-        },
+        });
+      Behaviour.specify("#${strategyid} TD.stop A.toggleall", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
+          e.onclick = function() {
+            var tr = findAncestor(this,"TR");
+            var inputs = tr.getElementsByTagName("INPUT");
+            for(var i=0; i&lt;inputs.length; i++){
+                if(inputs[i].type == "checkbox") inputs[i].checked = !inputs[i].checked;
+            }
+            return false;
+          };
+          e = null; <!-- avoid memory leak -->
+        });
         <j:if test="${empty(descriptorPath)}">
-          <j:set var="descriptorPath" value="${rootURL}/descriptor/${descriptor.clazz.name}"/>
+          <j:set var="descriptorPath" value="${descriptor.descriptorFullUrl}"/>
         </j:if>
         <!-- validates the name -->
-        "#${strategyid} TR.permission-row" : function(e) {
+        Behaviour.specify("#${strategyid} TR.permission-row", 'GlobalMatrixAuthorizationStrategy', 0, function(e) {
           FormChecker.delayedCheck("${descriptorPath}/checkName?value="+encodeURIComponent(e.getAttribute("name")),"GET",e.firstChild);
-        }
-      });
+        });
     </script>
   </f:block>
 </j:jelly>

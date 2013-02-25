@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     Creates a space for the right-hand side of the page.
     This sticks to the right of the page even when the content overflows.
   </st:documentation>
-  <div style="position:absolute; top:2em; right:0px; padding-top:2em; padding-right:1em">
+  <div style="position:absolute; top:4em; right:0px; padding-top:2em; padding-right:1em">
     <d:invokeBody/>
   </div>
 </j:jelly>

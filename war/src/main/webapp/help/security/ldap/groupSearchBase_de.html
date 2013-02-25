@@ -1,5 +1,5 @@
 <div>
-    Hudson ermittelt per LDAP die Liste der Gruppen, denen ein Benutzer angehört.
+    Jenkins ermittelt per LDAP die Liste der Gruppen, denen ein Benutzer angehört.
     
     <p>
     Dieses Feld enthält die Abfrage zur Identifikation der Organisationseinheit,
@@ -14,10 +14,10 @@
     möglich für Ihre LDAP-Struktur zu machen, um so den Umfang der Suche zu verringern.
     Wenn der Fehler weiterhin besteht, müssen Sie gegebenfalls die Datei
     <tt>WEB-INF/security/LDAPBindSecurityRealm.groovy</tt> ändern, die sich in 
-    <tt>hudson.war</tt> befindet. Ändern Sie die Zeile<br/>
+    <tt>jenkins.war</tt> befindet. Ändern Sie die Zeile<br/>
     <tt>groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";</tt><br/>
     so ab, daß nur das Feld für Gruppenzugehörigkeit in der Stuktur Ihres LDAP-Systems verwendet wird, z.B.: <br/> 
     <tt>groupSearchFilter = "(member={0})";</tt><br/>
-    Dann starten Sie Hudson neu und versuchen, sich anzumelden.
+    Dann starten Sie Jenkins neu und versuchen, sich anzumelden.
     </p>
 </div>

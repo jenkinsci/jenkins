@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   TODO: support @checkUrl
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
   <st:documentation>
     single-line textbox that can be expanded into a multi-line textarea.

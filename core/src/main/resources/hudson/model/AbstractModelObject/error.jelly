@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:statusCode value="400" /><!-- clearly indicate that this page is an error page --> 
-  <l:layout title="Jenkins">
+  <l:layout title="Jenkins" norefresh="true">
     <l:header />
     <l:side-panel />
     <l:main-panel>

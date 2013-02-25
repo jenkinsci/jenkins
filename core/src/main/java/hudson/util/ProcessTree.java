@@ -28,7 +28,7 @@ import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -277,7 +277,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Executes a chunk of code at the same machine where this process resides.
          */
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
-            return callable.invoke(this,Hudson.MasterComputer.localChannel);
+            return callable.invoke(this, Jenkins.MasterComputer.localChannel);
         }
 
         Object writeReplace() {
@@ -307,7 +307,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *
      * @see OSProcess#act(ProcessCallable)
      */
-    public static interface ProcessCallable<T> extends Serializable {
+    public interface ProcessCallable<T> extends Serializable {
         /**
          * Performs the computational task on the node where the data is located.
          *
@@ -395,6 +395,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         Windows() {
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
+                if(pid == 0 || pid == 4) continue; // skip the System Idle and System processes
                 super.processes.put(pid,new OSProcess(pid) {
                     private EnvVars env;
                     private List<String> args;
@@ -580,6 +581,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         /**
          * Method to destroy a process, given pid.
+         *
+         * Looking at the JavaSE source code, this is using SIGTERM (15)
          */
         private static final Method DESTROY_PROCESS;
 
@@ -1001,7 +1004,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         }
 
                         void skip0() {
-                            // skip trailing '\0's
+                            // skip padding '\0's
                             while(getByte(offset)=='\0')
                                 offset++;
                         }
@@ -1052,16 +1055,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         * \---------------/ 0xffffffff
                         */
 
-                    int nargs = m.readInt();
-                    m.readString(); // exec path
-                    for( int i=0; i<nargs; i++) {
-                        m.skip0();
-                        arguments.add(m.readString());
+                    // I find the Darwin source code of the 'ps' command helpful in understanding how it does this:
+                    // see http://www.opensource.apple.com/source/adv_cmds/adv_cmds-147/ps/print.c
+                    int argc = m.readInt();
+                    String args0 = m.readString(); // exec path
+                    m.skip0();
+                    try {
+                        for( int i=0; i<argc; i++) {
+                            arguments.add(m.readString());
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please run 'ps e "+pid+"' and report this to https://issues.jenkins-ci.org/browse/JENKINS-9634",e);
                     }
 
-                    // this is how you can read environment variables
+                    // read env vars that follow
                     while(m.peek()!=0)
-                    envVars.addLine(m.readString());
+                        envVars.addLine(m.readString());
                 } catch (IOException e) {
                     // this happens with insufficient permissions, so just ignore the problem.
                 }

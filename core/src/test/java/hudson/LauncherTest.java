@@ -24,9 +24,12 @@
 
 package hudson;
 
+import hudson.model.StreamBuildListener;
+import hudson.model.TaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import hudson.remoting.Callable;
+import java.io.ByteArrayOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 
@@ -70,9 +73,23 @@ public class LauncherTest extends ChannelTestCase {
         }
     }
 
-    private static final Callable<Object,RuntimeException> NOOP = new Callable() {
-        public Object call() throws Exception {
+    private static final Callable<Object,RuntimeException> NOOP = new Callable<Object,RuntimeException>() {
+        public Object call() throws RuntimeException {
             return null;
         }
     };
+
+    @Bug(15733)
+    public void testDecorateByEnv() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TaskListener l = new StreamBuildListener(baos);
+        Launcher base = new Launcher.LocalLauncher(l);
+        EnvVars env = new EnvVars("key1", "val1");
+        Launcher decorated = base.decorateByEnv(env);
+        int res = decorated.launch().envs("key2=val2").cmds(Functions.isWindows() ? new String[] {"cmd", "/q", "/c", "echo %key1% %key2%"} : new String[] {"sh", "-c", "echo $key1 $key2"}).stdout(l).join();
+        String log = baos.toString();
+        assertEquals(log, 0, res);
+        assertTrue(log, log.contains("val1 val2"));
+    }
+
 }

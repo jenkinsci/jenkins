@@ -24,7 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.tasks.test.TestObject;
 import hudson.tasks.test.TestResult;
 import hudson.util.ChartUtil;
@@ -256,7 +256,7 @@ public class History {
             AbstractBuild<?,?> build = o.getOwner();
             String buildLink = build.getUrl();
             String actionUrl = o.getTestResultAction().getUrlName();
-            this.url = Hudson.getInstance().getRootUrl() + buildLink + actionUrl + o.getUrl();             
+            this.url = Jenkins.getInstance().getRootUrl() + buildLink + actionUrl + o.getUrl();
         }
 
         public int compareTo(ChartLabel that) {
@@ -293,4 +293,12 @@ public class History {
 
     }
 
+    public static int asInt(String s, int defalutValue) {
+        if (s==null)    return defalutValue;
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return defalutValue;
+        }
+    }
 }

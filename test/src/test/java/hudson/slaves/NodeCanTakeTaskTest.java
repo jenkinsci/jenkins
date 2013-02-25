@@ -49,7 +49,7 @@ public class NodeCanTakeTaskTest extends HudsonTestCase {
         super.setUp();
 
         // Set master executor count to zero to force all jobs to slaves
-        hudson.setNumExecutors(0);
+        jenkins.setNumExecutors(0);
     }
 
     public void testTakeBlockedByProperty() throws Exception {
@@ -58,7 +58,7 @@ public class NodeCanTakeTaskTest extends HudsonTestCase {
 
         // First, attempt to run our project before adding the property
         Future<FreeStyleBuild> build = project.scheduleBuild2(0);
-        assertBuildStatus(Result.SUCCESS, build.get(10, TimeUnit.SECONDS));
+        assertBuildStatus(Result.SUCCESS, build.get(20, TimeUnit.SECONDS));
 
         // Add the build-blocker property and try again
         slave.getNodeProperties().add(new RejectAllTasksProperty());
@@ -68,7 +68,7 @@ public class NodeCanTakeTaskTest extends HudsonTestCase {
             build.get(10, TimeUnit.SECONDS);
             fail("Expected timeout exception");
         } catch (TimeoutException e) {
-            List<BuildableItem> buildables = hudson.getQueue().getBuildableItems();
+            List<BuildableItem> buildables = jenkins.getQueue().getBuildableItems();
             Assert.assertNotNull(buildables);
             Assert.assertEquals(1, buildables.size());
 

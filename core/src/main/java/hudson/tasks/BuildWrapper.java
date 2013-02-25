@@ -27,8 +27,11 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
+import hudson.util.ArgumentListBuilder;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,7 +54,17 @@ import java.util.Set;
  * along with {@link Project}.
  *
  * <p>
+ * {@link BuildWrapper}s are instantiated when the user saves the job configuration, and sticks
+ * around in memory until the job configuration is overwritten.
+ *
+ *
+ * <p>
  * The {@link #setUp(Build,Launcher,BuildListener)} method is invoked for each build.
+ *
+ * <p>
+ * {@link BuildWrapper} requires an user consent (in terms of a checkbox) to work.
+ * If this is not desirable, see {@link hudson.model.Environment} for other ways
+ * to inject Environments to builds.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -183,7 +196,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * 
      * <p>
      * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
-     *
+     * <p>({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param logger
@@ -196,6 +209,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      If a fatal error is detected but the implementation handled it gracefully, throw this exception
      *      to suppress stack trace.
      * @since 1.374
+     * @see ConsoleLogFilter
      */
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
         return logger;
@@ -296,6 +310,6 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     // for compatibility we can't use BuildWrapperDescriptor
     public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
+        return Jenkins.getInstance().<BuildWrapper,Descriptor<BuildWrapper>>getDescriptorList(BuildWrapper.class);
     }
 }

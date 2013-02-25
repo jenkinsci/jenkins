@@ -22,11 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry>${%blurb}</f:entry>
   <f:entry title="${%Administrator user name}" field="userName">
     <f:textbox />
   </f:entry>
   <f:entry title="${%Password}" field="password">
     <f:password />
   </f:entry>
+  <f:entry title="${%Host}" field="host">
+    <f:textbox/>
+  </f:entry>
+  <f:dropdownDescriptorSelector field="account" title="${%Run service as}"/>
+  <f:advanced>
+    <f:entry title="${%Path to java executable}" field="javaPath">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%JVM options}" field="vmargs">
+      <f:textbox />
+    </f:entry>
+  </f:advanced>
 </j:jelly>

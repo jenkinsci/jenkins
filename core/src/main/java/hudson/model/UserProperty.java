@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Plugin;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,13 +45,13 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Configuration screen should be defined in <tt>config.jelly</tt>.
  * Within this page, the {@link UserProperty} instance is available
  * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
- * See {@link Mailer.UserProperty}'s <tt>config.jelly</tt> for an example.
+ * See {@link UserSearchProperty.UserProperty}'s <tt>config.jelly</tt> for an example.
  *
  *
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class UserProperty implements Describable<UserProperty>, ExtensionPoint {
+public abstract class UserProperty implements ReconfigurableDescribable<UserProperty>, ExtensionPoint {
     /**
      * The user object that owns this property.
      * This value will be set by the Hudson code.
@@ -64,17 +65,17 @@ public abstract class UserProperty implements Describable<UserProperty>, Extensi
 
     // descriptor must be of the UserPropertyDescriptor type
     public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (UserPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
      * Returns all the registered {@link UserPropertyDescriptor}s.
      */
     public static DescriptorExtensionList<UserProperty,UserPropertyDescriptor> all() {
-        return Hudson.getInstance().<UserProperty,UserPropertyDescriptor>getDescriptorList(UserProperty.class);
+        return Jenkins.getInstance().<UserProperty,UserPropertyDescriptor>getDescriptorList(UserProperty.class);
     }
 
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-    	return getDescriptor().newInstance(req, form);
+        return form==null ? null : getDescriptor().newInstance(req, form);
     }
 }

@@ -23,9 +23,6 @@
  */
 package hudson.security;
 
-import com.octo.captcha.service.CaptchaServiceException;
-import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
-import com.octo.captcha.service.image.ImageCaptchaService;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
@@ -33,8 +30,9 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
+import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
@@ -57,13 +55,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.dao.DataAccessException;
 
-import javax.imageio.ImageIO;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +72,7 @@ import java.util.logging.Logger;
  * <p>
  * If additional views/URLs need to be exposed,
  * an active {@link SecurityRealm} is bound to <tt>CONTEXT_ROOT/securityRealm/</tt>
- * through {@link Hudson#getSecurityRealm()}, so you can define additional pages and
+ * through {@link jenkins.model.Jenkins#getSecurityRealm()}, so you can define additional pages and
  * operations on your {@link SecurityRealm}.
  *
  * <h2>How do I implement this class?</h2>
@@ -128,6 +126,11 @@ import java.util.logging.Logger;
  */
 public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityRealm> implements ExtensionPoint {
     /**
+     * Captcha Support to be used with this SecurityRealm for User Signup
+     */
+    private CaptchaSupport captchaSupport;
+
+    /**
      * Creates fully-configured {@link AuthenticationManager} that performs authentication
      * against the user realm. The implementation hides how such authentication manager
      * is configured.
@@ -153,7 +156,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      The command about to be executed.
      * @return
      *      never null. By default, this method returns a no-op authenticator that always authenticates
-     *      the session as authenticated by the transport (which is often just {@link Hudson#ANONYMOUS}.)
+     *      the session as authenticated by the transport (which is often just {@link jenkins.model.Jenkins#ANONYMOUS}.)
      */
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
@@ -234,6 +237,18 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     protected String getPostLogOutUrl(StaplerRequest req, Authentication auth) {
         return req.getContextPath()+"/";
+    }
+
+    public CaptchaSupport getCaptchaSupport() {
+        return captchaSupport;
+    }
+
+    public void setCaptchaSupport(CaptchaSupport captchaSupport) {
+        this.captchaSupport = captchaSupport;
+    }
+
+    public List<Descriptor<CaptchaSupport>> getCaptchaSupportDescriptors() {
+        return CaptchaSupport.all();
     }
 
     /**
@@ -325,34 +340,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * {@link DefaultManageableImageCaptchaService} holder to defer initialization.
-     */
-    public static final class CaptchaService {
-        public static ImageCaptchaService INSTANCE = new DefaultManageableImageCaptchaService();
-    }
-
-    /**
      * Generates a captcha image.
      */
     public final void doCaptcha(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        String id = req.getSession().getId();
-        rsp.setContentType("image/png");
-        rsp.addHeader("Cache-Control","no-cache");
-        ImageIO.write( CaptchaService.INSTANCE.getImageChallengeForID(id), "PNG", rsp.getOutputStream() );
+        if (captchaSupport != null) {
+            String id = req.getSession().getId();
+            rsp.setContentType("image/png");
+            rsp.addHeader("Cache-Control", "no-cache");
+            captchaSupport.generateImage(id, rsp.getOutputStream());
+        }
     }
 
     /**
      * Validates the captcha.
      */
     protected final boolean validateCaptcha(String text) {
-        try {
+        if (captchaSupport != null) {
             String id = Stapler.getCurrentRequest().getSession().getId();
-            Boolean b = CaptchaService.INSTANCE.validateResponseForID(id, text);
-            return b!=null && b;
-        } catch (CaptchaServiceException e) {
-            LOGGER.log(Level.INFO, "Captcha validation had a problem",e);
-            return false;
+            return captchaSupport.validateCaptcha(id, text);
         }
+
+        // If no Captcha Support then bogus validation always returns true
+        return true;
     }
 
     /**
@@ -363,7 +372,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * This method is intended to be used to pick up a Acegi object from
      * spring once the bean definition file is parsed.
      */
-    protected static <T> T findBean(Class<T> type, ApplicationContext context) {
+    public static <T> T findBean(Class<T> type, ApplicationContext context) {
         Map m = context.getBeansOfType(type);
         switch(m.size()) {
         case 0:
@@ -507,11 +516,22 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             this.rememberMe = rememberMe;
         }
 
+        @SuppressWarnings("deprecation")
         private static RememberMeServices createRememberMeService(UserDetailsService uds) {
             // create our default TokenBasedRememberMeServices, which depends on the availability of the secret key
             TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2();
             rms.setUserDetailsService(uds);
-            rms.setKey(Hudson.getInstance().getSecretKey());
+            /*
+                TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
+                and both needs to use the same key (this is a reflection of a poor design in AcgeiSecurity, if you ask me)
+                and various security plugins have its own groovy script that configures them.
+
+                So if we change this, it creates a painful situation for those plugins by forcing them to choose
+                to work with earlier version of Jenkins or newer version of Jenkins, and not both.
+
+                So we keep this here.
+             */
+            rms.setKey(Jenkins.getInstance().getSecretKey());
             rms.setParameter("remember_me"); // this is the form field name in login.jelly
             return rms;
         }
@@ -529,7 +549,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
     public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
-        return Hudson.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
+        return Jenkins.getInstance().<SecurityRealm,Descriptor<SecurityRealm>>getDescriptorList(SecurityRealm.class);
     }
 
 

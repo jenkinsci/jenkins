@@ -28,7 +28,7 @@ import hudson.Extension;
 import hudson.DescriptorExtensionList;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.AbstractModelObject;
 import hudson.model.Label;
@@ -54,7 +54,7 @@ import java.util.Collection;
 public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
-     * Uniquely identifies this {@link Cloud} instance among other instances in {@link Hudson#clouds}.
+     * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
      */
     public final String name;
 
@@ -71,7 +71,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     }
 
     public ACL getACL() {
-        return Hudson.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
     public final void checkPermission(Permission permission) {
@@ -106,13 +106,14 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      Always >= 1. For example, if this is 3, the implementation
      *      should launch 3 slaves with 1 executor each, or 1 slave with
      *      3 executors, etc.
-     *
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
      *      provisioning operations. Can be empty but must not be null.
-     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}
-     *      into Hudson via {@link Hudson#addNode(Node)}, so a {@link Cloud} implementation
-     *      just needs to create a new node object.
+     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}s
+     *      into Hudson via {@link jenkins.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
+     *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
+     *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
+     *      provisioned {@link Node} object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
 
@@ -122,7 +123,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     public abstract boolean canProvision(Label label);
 
     public Descriptor<Cloud> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -137,7 +138,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      * Returns all the registered {@link Cloud} descriptors.
      */
     public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
-        return Hudson.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
+        return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
     }
 
     /**
@@ -145,5 +146,5 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *
      * This includes provisioning a new node, as well as removing it.
      */
-    public static final Permission PROVISION = Hudson.ADMINISTER;
+    public static final Permission PROVISION = Jenkins.ADMINISTER;
 }

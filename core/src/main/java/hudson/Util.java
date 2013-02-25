@@ -23,81 +23,58 @@
  */
 package hudson;
 
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLong;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
-import hudson.model.Hudson;
-import static hudson.util.jna.GNUCLibrary.LIBC;
-
+import hudson.os.PosixAPI;
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.Proc.LocalProc;
-import hudson.os.PosixAPI;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.io.IOUtils;
+import org.apache.tools.ant.types.FileSet;
 import org.jruby.ext.posix.FileStat;
 import org.jruby.ext.posix.POSIX;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.Stapler;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.io.PrintStream;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.SimpleTimeZone;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
 
-import com.sun.jna.Native;
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
+import hudson.util.jna.Kernel32Utils;
+
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -200,11 +177,14 @@ public class Util {
         StringBuilder str = new StringBuilder((int)logfile.length());
 
         BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile),charset));
-        char[] buf = new char[1024];
-        int len;
-        while((len=r.read(buf,0,buf.length))>0)
-           str.append(buf,0,len);
-        r.close();
+        try {
+            char[] buf = new char[1024];
+            int len;
+            while((len=r.read(buf,0,buf.length))>0)
+               str.append(buf,0,len);
+        } finally {
+            r.close();
+        }
 
         return str.toString();
     }
@@ -302,7 +282,16 @@ public class Util {
     public static void deleteRecursive(File dir) throws IOException {
         if(!isSymlink(dir))
             deleteContentsRecursive(dir);
-        deleteFile(dir);
+        try {
+            deleteFile(dir);
+        } catch (IOException e) {
+            // if some of the child directories are big, it might take long enough to delete that
+            // it allows others to create new files, causing problemsl ike JENKINS-10113
+            // so give it one more attempt before we give up.
+            if(!isSymlink(dir))
+                deleteContentsRecursive(dir);
+            deleteFile(dir);
+        }
     }
 
     /*
@@ -325,6 +314,13 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(File file) throws IOException {
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
+        }
+        if (Functions.isWindows()) {
+          return Kernel32Utils.isJunctionOrSymlink(file);
+        }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
             return false;
@@ -337,6 +333,18 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
+    }
+
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean isSymlinkJava7(File file) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(file);
+            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
+        } catch (NoSuchMethodException x) {
+            return null; // fine, Java 5/6
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
     }
 
     /**
@@ -491,19 +499,13 @@ public class Util {
     }
 
     public static String nullify(String v) {
-        if(v!=null && v.length()==0)    v=null;
-        return v;
+        return fixEmpty(v);
     }
 
     public static String removeTrailingSlash(String s) {
         if(s.endsWith("/")) return s.substring(0,s.length()-1);
         else                return s;
     }
-
-    /**
-     * Write-only buffer.
-     */
-    private static final byte[] garbage = new byte[8192];
 
     /**
      * Computes MD5 digest of the given input stream.
@@ -517,9 +519,10 @@ public class Util {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
 
+            byte[] buffer = new byte[1024];
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(garbage)>0)
+                while(in.read(buffer)>0)
                     ; // simply discard the input
             } finally {
                 in.close();
@@ -699,8 +702,8 @@ public class Util {
             OutputStreamWriter w = new OutputStreamWriter(buf,"UTF-8");
 
             for (int i = 0; i < s.length(); i++) {
-                int c = (int) s.charAt(i);
-                if (c<128 && c!=' ') {
+                int c = s.charAt(i);
+                if (c<128 && (c!=' ' && c!='&')) {
                     out.append((char) c);
                 } else {
                     // 1 char -> UTF8
@@ -725,8 +728,8 @@ public class Util {
     private static final boolean[] uriMap = new boolean[123];
     static {
         String raw =
-    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %         /          :;< >?                           [\]^ `                          {|}~
+    "!  $  '()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %&        /          :;< >?                           [\]^ `                          {|}~
   //  ^--so these are encoded
         int i;
         // Encode control chars and space
@@ -741,9 +744,11 @@ public class Util {
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
      * and HTTP special characters (/;:?) as specified in RFC1738.
-     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
+     * Also escapes & for convenience.
+     * (so alphanumeric and !@$*()-_=+',. are not encoded)
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
+     * Do not use this method for encoding query parameters.
      * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {
@@ -1000,9 +1005,13 @@ public class Util {
      *      Where to create a symlink in.
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(Functions.isWindows() || NO_SYMLINK)   return;
-
         try {
+            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
+                return;
+            }
+            if (Functions.isWindows() || NO_SYMLINK) {
+                return;
+            }
             String errmsg = "";
             // if a file or a directory exists here, delete it first.
             // try simple delete first (whether exists() or not, as it may be symlink pointing
@@ -1012,7 +1021,7 @@ public class Util {
                 // ignore a failure.
                 new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
 
-            int r;
+            Integer r=null;
             if (!SYMLINK_ESCAPEHATCH) {
                 try {
                     r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
@@ -1023,13 +1032,18 @@ public class Util {
                 } catch (LinkageError e) {
                     // if JNA is unavailable, fall back.
                     // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                    if (PosixAPI.supportsNative()) {
+                        r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                    }
                 }
-            } else // escape hatch, until we know that the above works well.
+            }
+            if (r==null) {
+                // if all else fail, fall back to the most expensive approach of forking a process
                 r = new LocalProc(new String[]{
                     "ln","-s", targetPath, symlinkPath},
                     new String[0],listener.getLogger(), baseDir).join();
-            if(r!=0)
+            }
+            if (r!=0)
                 listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
@@ -1039,16 +1053,78 @@ public class Util {
         }
     }
 
+    private static final AtomicBoolean warnedSymlinks = new AtomicBoolean();
+    private static boolean createSymlinkJava7(File baseDir, String targetPath, String symlinkPath) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
+            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
+            Class<?> filesC = Class.forName("java.nio.file.Files");
+            Class<?> pathC = Class.forName("java.nio.file.Path");
+            filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
+            filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+            return true;
+        } catch (NoSuchMethodException x) {
+            return false; // fine, Java 5/6
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return true; // no symlinks on this platform
+            }
+            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
+                if (warnedSymlinks.compareAndSet(false, true)) {
+                    LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
+                }
+                return true;
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+    }
+
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link #resolveSymlink(File)}
+     */
+    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+        return resolveSymlink(link);
+    }
+
     /**
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
-     *
-     * @param listener
-     *      If we rely on an external command to resolve symlink, this is it.
-     *      (TODO: try readlink(1) available on some platforms)
      */
-    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+    public static String resolveSymlink(File link) throws InterruptedException, IOException {
+        try { // Java 7
+            Object path = File.class.getMethod("toPath").invoke(link);
+            return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
+        } catch (NoSuchMethodException x) {
+            // fine, Java 5/6; fall through
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return null; // no symlinks on this platform
+            }
+            try {
+                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
+                    return null;
+                }
+            } catch (ClassNotFoundException x3) {
+                assert false : x3; // should be Java 7+ here
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+
         if(Functions.isWindows())     return null;
 
         String filename = link.getAbsolutePath();
@@ -1106,7 +1182,7 @@ public class Util {
      */
     public static String wrapToErrorSpan(String s) {
         s = "<span class=error><img src='"+
-            Stapler.getCurrentRequest().getContextPath()+ Hudson.RESOURCE_PATH+
+            Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+
             "/images/none.gif' height=16 width=1>"+s+"</span>";
         return s;
     }
@@ -1162,6 +1238,31 @@ public class Util {
      */
     public static String intern(String s) {
         return s==null ? s : s.intern();
+    }
+
+    /**
+     * Return true if the systemId denotes an absolute URI .
+     *
+     * The same algorithm can be seen in {@link URI}, but
+     * implementing this by ourselves allow it to be more lenient about
+     * escaping of URI.
+     */
+    public static boolean isAbsoluteUri(String uri) {
+        int idx = uri.indexOf(':');
+        if (idx<0)  return false;   // no ':'. can't be absolute
+
+        // #, ?, and / must not be before ':'
+        return idx<_indexOf(uri, '#') && idx<_indexOf(uri,'?') && idx<_indexOf(uri,'/');
+    }
+
+    /**
+     * Works like {@link String#indexOf(int)} but 'not found' is returned as s.length(), not -1.
+     * This enables more straight-forward comparison.
+     */
+    private static int _indexOf(String s, char ch) {
+        int idx = s.indexOf(ch);
+        if (idx<0)  return s.length();
+        return idx;
     }
 
     /**

@@ -1,12 +1,9 @@
 #!/bin/bash -ex
-if [ ! -e "$1" ]; then
-  echo "Usage: build-on-jenkins path/to/war"
+if [ "$2" == "" ]; then
+  echo "Usage: build-on-jenkins path/to/war path/to/output/msi"
   exit 1
 fi
 tar cvzf bundle.tgz FindJava.java build.sh jenkins.wxs
-java -jar jenkins-cli.jar dist-fork -z bundle.tgz -f jenkins.war="$1" -l windows -Z result.tgz bash -ex build.sh jenkins.war
+v=$(unzip -p "$1" META-INF/MANIFEST.MF | grep Implementation-Version | cut -d ' ' -f2 | tr -d '\r')
+java -jar jenkins-cli.jar dist-fork -z bundle.tgz -f jenkins.war="$1" -l windows -F "jenkins-$v.msi=$2" bash -ex build.sh jenkins.war
 
-# hack until we fix distfork to avoid pointless intermediate directory
-rm -rf distfork*
-tar xvzf result.tgz
-mv distfork*/jenkins-*.msi .

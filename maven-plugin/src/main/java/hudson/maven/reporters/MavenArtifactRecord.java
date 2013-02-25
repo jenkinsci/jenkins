@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -23,15 +23,9 @@
  */
 package hudson.maven.reporters;
 
-import hudson.maven.AggregatableAction;
-import hudson.maven.MavenAggregatedReport;
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenEmbedder;
-import hudson.maven.MavenEmbedderException;
-import hudson.maven.MavenModule;
-import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.MavenUtil;
+import hudson.maven.*;
 import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
+import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 
@@ -48,8 +42,12 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.installer.ArtifactInstallationException;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.metadata.GroupRepositoryMetadata;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * {@link Action} that remembers {@link MavenArtifact artifact}s that are built.
@@ -59,15 +57,18 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
  * @author Kohsuke Kawaguchi
  * @see MavenArtifactArchiver
  */
+@ExportedBean
 public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild> implements AggregatableAction {
     /**
      * The build to which this record belongs.
      */
+    @Exported
     public final MavenBuild parent;
 
     /**
      * POM artifact.
      */
+    @Exported(inline=true)
     public final MavenArtifact pomArtifact;
 
     /**
@@ -75,76 +76,125 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
      *
      * If this is a POM module, the main artifact contains the same value as {@link #pomArtifact}.
      */
+    @Exported(inline=true)
     public final MavenArtifact mainArtifact;
 
     /**
      * Attached artifacts. Can be empty but never null.
      */
+    @Exported(inline=true)
     public final List<MavenArtifact> attachedArtifacts;
 
+    /**
+     * The repository identifier (matching maven settings) used for credentials to deploy artifacts
+     */
+    public final String repositoryId;
+
+  /**
+   * The repository URL used for credentials to deploy artifacts
+   */
+    public final String repositoryUrl;
+
+    @Deprecated
     public MavenArtifactRecord(MavenBuild parent, MavenArtifact pomArtifact, MavenArtifact mainArtifact, List<MavenArtifact> attachedArtifacts) {
-        assert parent!=null;
-        assert pomArtifact!=null;
-        assert attachedArtifacts!=null;
-        if(mainArtifact==null)  mainArtifact=pomArtifact;
+        this(parent, pomArtifact, mainArtifact, attachedArtifacts, null, null);
+    }
+
+    public MavenArtifactRecord(MavenBuild parent, MavenArtifact pomArtifact, MavenArtifact mainArtifact,
+                               List<MavenArtifact> attachedArtifacts, String repositoryUrl, String repositoryId) {
+        assert parent != null;
+        assert pomArtifact != null;
+        assert attachedArtifacts != null;
+        if (mainArtifact == null) mainArtifact = pomArtifact;
 
         this.parent = parent;
         this.pomArtifact = pomArtifact;
         this.mainArtifact = mainArtifact;
         this.attachedArtifacts = attachedArtifacts;
+        this.repositoryUrl = repositoryUrl;
+        this.repositoryId = repositoryId;
     }
 
     public MavenBuild getBuild() {
         return parent;
     }
 
+    /**
+     * Returns the URL of this record relative to the context root of the application.
+     *
+     * @see AbstractItem#getUrl() for how to implement this.
+     *
+     * @return
+     *      URL that ends with '/'.
+     */
+    public String getUrl() {
+        return parent.getUrl()+"mavenArtifacts/";
+    }
+
+    /**
+     * Obtains the absolute URL to this build.
+     *
+     * @deprecated
+     *      This method shall <b>NEVER</b> be used during HTML page rendering, as it's too easy for
+     *      misconfiguration to break this value, with network set up like Apache reverse proxy.
+     *      This method is only intended for the remote API clients who cannot resolve relative references.
+     */
+    @Exported(visibility=2,name="url")
+    public String getAbsoluteUrl() {
+        return parent.getAbsoluteUrl()+"mavenArtifacts/";
+    }
+
     public boolean isPOM() {
         return mainArtifact.isPOM();
     }
 
-    public MavenAggregatedReport createAggregatedAction(MavenModuleSetBuild build, Map<MavenModule, List<MavenBuild>> moduleBuilds) {
+    public MavenAggregatedArtifactRecord createAggregatedAction(MavenModuleSetBuild build, Map<MavenModule, List<MavenBuild>> moduleBuilds) {
         return new MavenAggregatedArtifactRecord(build);
     }
 
     @Override
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
         ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
-        
-        ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
+
+        ArtifactFactory artifactFactory = embedder.lookup(ArtifactFactory.class);
         PrintStream logger = listener.getLogger();
         boolean maven3orLater = MavenUtil.maven3orLater(parent.getModuleSetBuild().getMavenVersionUsed());
         boolean uniqueVersion = true;
         if (!deploymentRepository.isUniqueVersion()) {
             if (maven3orLater) {
-                logger.println("uniqueVersion == false is not anymore supported in maven 3");
+                logger.println("[ERROR] uniqueVersion == false is not anymore supported in maven 3");
             } else {
-                ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( false );
+                ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion(false);
                 uniqueVersion = false;
             }
         } else {
-            ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion( true );
+            ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion(true);
         }
-        Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
-        if(!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));
+        Artifact main = mainArtifact.toArtifact(handlerManager, artifactFactory, parent);
+        if (!isPOM())
+            main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent)));
+
+        if (main.getType().equals("maven-plugin")) {
+            GroupRepositoryMetadata metadata = new GroupRepositoryMetadata(main.getGroupId());
+            String goalPrefix = PluginDescriptor.getGoalPrefixFromArtifactId(main.getArtifactId());
+            metadata.addPluginMapping(goalPrefix, main.getArtifactId(), null);
+            main.addMetadata(metadata);
+        }
+
+        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class, uniqueVersion ? "default" : "maven2");
+        logger.println(
+                "[INFO] Deployment in " + deploymentRepository.getUrl() + " (id=" + deploymentRepository.getId() + ",uniqueVersion=" + deploymentRepository.isUniqueVersion()+")");
 
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
-        
-        ArtifactDeployer deployer = embedder.lookup(ArtifactDeployer.class,uniqueVersion ? "default":"maven2");
-        
-        deployer.deploy( main.getFile(), main, deploymentRepository, embedder.getLocalRepository() );
-        
-        //deployMavenArtifact( main, deploymentRepository, embedder, uniqueVersion );
+        deployer.deploy(main.getFile(), main, deploymentRepository, embedder.getLocalRepository());
 
         for (MavenArtifact aa : attachedArtifacts) {
-            Artifact a = aa.toArtifact(handlerManager,factory, parent);
-            logger.println(Messages.MavenArtifact_DeployingAttachedArtifact(a.getFile().getName()));
-            deployer.deploy( a.getFile(), a, deploymentRepository, embedder.getLocalRepository() );
+            Artifact a = aa.toArtifact(handlerManager, artifactFactory, parent);
+            logger.println(Messages.MavenArtifact_DeployingMainArtifact(a.getFile().getName()));
+            deployer.deploy(a.getFile(), a, deploymentRepository, embedder.getLocalRepository());
         }
     }
-    
-    
     
     /**
      * Installs the artifact to the local Maven repository.
@@ -160,7 +210,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository());
 
         for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent),aa.toArtifact(handlerManager,factory,parent),embedder.getLocalRepository());
+            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository());
     }
 
     public void recordFingerprints() throws IOException {

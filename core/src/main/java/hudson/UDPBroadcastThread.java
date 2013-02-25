@@ -24,6 +24,7 @@
 package hudson;
 
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
 
 import java.io.IOException;
@@ -46,15 +47,23 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class UDPBroadcastThread extends Thread {
-    private final Hudson hudson;
+    private final Jenkins jenkins;
 
     public final OneShotEvent ready = new OneShotEvent();
     private MulticastSocket mcs;
     private boolean shutdown;
 
-    public UDPBroadcastThread(Hudson hudson) throws IOException {
-        super("Hudson UDP "+PORT+" monitoring thread");
-        this.hudson = hudson;
+    /**
+     * @deprecated as of 1.416
+     *      Use {@link #UDPBroadcastThread(Jenkins)}
+     */
+    public UDPBroadcastThread(Hudson jenkins) throws IOException {
+        this((Jenkins)jenkins);
+    }
+
+    public UDPBroadcastThread(Jenkins jenkins) throws IOException {
+        super("Jenkins UDP "+PORT+" monitoring thread");
+        this.jenkins = jenkins;
         mcs = new MulticastSocket(PORT);
     }
 
@@ -72,11 +81,12 @@ public class UDPBroadcastThread extends Thread {
                 SocketAddress sender = p.getSocketAddress();
 
                 // prepare a response
-                TcpSlaveAgentListener tal = hudson.getTcpSlaveAgentListener();
+                TcpSlaveAgentListener tal = jenkins.getTcpSlaveAgentListener();
 
                 StringBuilder rsp = new StringBuilder("<hudson>");
-                tag(rsp,"version",Hudson.VERSION);
-                tag(rsp,"url",hudson.getRootUrl());
+                tag(rsp,"version", Jenkins.VERSION);
+                tag(rsp,"url", jenkins.getRootUrl());
+                tag(rsp,"server-id", jenkins.getLegacyInstanceId());
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());
 
                 for (UDPBroadcastFragment f : UDPBroadcastFragment.all())

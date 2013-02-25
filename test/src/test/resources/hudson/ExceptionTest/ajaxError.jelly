@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Entrance to the configuration page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="Nodes">
   <l:main-panel>

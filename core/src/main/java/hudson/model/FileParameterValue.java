@@ -23,27 +23,29 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.tasks.BuildWrapper;
+import hudson.util.VariableResolver;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import javax.servlet.ServletException;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-
-import hudson.tasks.BuildWrapper;
-import hudson.Launcher;
-import hudson.FilePath;
-
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.io.OutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import javax.servlet.ServletException;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
@@ -57,7 +59,7 @@ import javax.servlet.ServletException;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterValue extends ParameterValue {
-    private FileItem file;
+    private transient final FileItem file;
 
     /**
      * The name of the originally uploaded file.
@@ -75,15 +77,36 @@ public class FileParameterValue extends ParameterValue {
         this(name, new FileItemImpl(file), originalFileName);
     }
 
-    private FileParameterValue(String name, FileItem file, String originalFileName) {
+    protected FileParameterValue(String name, FileItem file, String originalFileName) {
         super(name);
         this.file = file;
         this.originalFileName = originalFileName;
     }
 
     // post initialization hook
-    /*package*/ void setLocation(String location) {
+    protected void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Exposes the originalFileName as an environment variable.
+     */
+    @Override
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        env.put(name,originalFileName);
+    }
+
+    @Override
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
+        return new VariableResolver<String>() {
+            public String resolve(String name) {
+                return FileParameterValue.this.name.equals(name) ? originalFileName : null;
+            }
+        };
     }
 
     /**
@@ -97,6 +120,10 @@ public class FileParameterValue extends ParameterValue {
         return originalFileName;
     }
 
+    public FileItem getFile() {
+        return file;
+    }
+
     @Override
     public BuildWrapper createBuildWrapper(AbstractBuild<?,?> build) {
         return new BuildWrapper() {
@@ -107,7 +134,6 @@ public class FileParameterValue extends ParameterValue {
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
             	    locationFilePath.copyFrom(file);
-            	    file = null;
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
             	}
                 return new Environment() {};
@@ -162,7 +188,14 @@ public class FileParameterValue extends ParameterValue {
             AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
             File fileParameter = getLocationUnderBuild(build);
             if (fileParameter.isFile()) {
-                response.serveFile(request, fileParameter.toURI().toURL());
+                InputStream data = new FileInputStream(fileParameter);
+                long lastModified = fileParameter.lastModified();
+                long contentLength = fileParameter.length();
+                if (request.hasParameter("view")) {
+                    response.serveFile(request, data, lastModified, contentLength, "plain.txt");
+                } else {
+                    response.serveFile(request, data, lastModified, contentLength, originalFileName);
+                }
             }
         }
     }

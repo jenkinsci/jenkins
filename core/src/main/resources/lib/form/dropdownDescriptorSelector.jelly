@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Renders a single &lt;select> control for choosing a Describable.
@@ -41,7 +42,7 @@ THE SOFTWARE.
       If specified, this will be chosen as the default value in case the current selection is null.
     </st:attribute>
   </st:documentation>
-
+  <f:prepareDatabinding /> 
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
 
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">
@@ -50,9 +51,12 @@ THE SOFTWARE.
     <j:set var="current" value="${instance[attrs.field]}"/>
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
-        selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}">
-        <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-        <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
+        lazy="descriptor">
+        <l:ajax>
+          <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
+          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+        </l:ajax>
       </f:dropdownListBlock>
     </j:forEach>
   </f:dropdownList>

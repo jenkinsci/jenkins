@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 .yui-skin-sam .yui-button  {
 
@@ -20,13 +20,19 @@ version: 2.5.1
     border-style: solid;
     border-color: #808080;
     margin: 0 -1px;
-    *position: relative;    /* Necessary to get negative margins working in IE */
-    *left: -1px;
+
+	/*
+		Using negative margins for rounded corners won't work in IE 6 and IE 7 
+		(Quirks Mode Only), so set the "margin" property to "0" for those 
+		browsers.
+	*/
+ 	_margin: 0;
 
 }
 
 .yui-skin-sam .yui-button button,
-.yui-skin-sam .yui-button a {
+.yui-skin-sam .yui-button a,
+.yui-skin-sam .yui-button a:visited {
 
     padding: 0 10px;
     font-size: 93%;  /* 12px */
@@ -41,10 +47,11 @@ version: 2.5.1
 .yui-skin-sam .yui-button a {
 
     /*
-        Necessary to get Button's of type "link" to be the correct 
+        Necessary to get Buttons of type "link" to be the correct 
         height in IE.
     */
-    *line-height: 2;
+    *line-height: 1.875;
+	*padding-bottom: 1px;
 
 }
 
@@ -86,13 +93,6 @@ version: 2.5.1
 
 }
 
-.yui-skin-sam .yui-button-focus button, 
-.yui-skin-sam .yui-button-focus a {
-
-    color: #000;
-
-}
-
 .yui-skin-sam .yui-split-button-focus button {
 
     background-image: url(split-button-arrow-focus.png);
@@ -115,13 +115,6 @@ version: 2.5.1
 
 }
 
-.yui-skin-sam .yui-button-hover button, 
-.yui-skin-sam .yui-button-hover a {
-
-    color: #000;
-
-}
-
 .yui-skin-sam .yui-split-button-hover button {
 
     background-image: url(split-button-arrow-hover.png);
@@ -141,13 +134,6 @@ version: 2.5.1
 .yui-skin-sam .yui-button-active .first-child {
 
     border-color: #7D98B8;
-
-}
-
-.yui-skin-sam .yui-button-active button, 
-.yui-skin-sam .yui-button-active a {
-
-    color: #000;
 
 }
 
@@ -212,7 +198,8 @@ version: 2.5.1
 }
 
 .yui-skin-sam .yui-button-disabled button, 
-.yui-skin-sam .yui-button-disabled a {
+.yui-skin-sam .yui-button-disabled a,
+.yui-skin-sam .yui-button-disabled a:visited {
 
     color: #A6A6A6;
     cursor: default;

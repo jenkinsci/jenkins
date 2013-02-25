@@ -24,20 +24,25 @@
  */
 package hudson;
 
-import junit.framework.TestCase;
-
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+
+import static org.junit.Assert.*;
+import org.junit.Assume;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 
 import hudson.util.StreamTaskListener;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UtilTest extends TestCase {
+public class UtilTest {
+    @Test
     public void testReplaceMacro() {
         Map<String,String> m = new HashMap<String,String>();
         m.put("A","a");
@@ -67,7 +72,7 @@ public class UtilTest extends TestCase {
         assertEquals("$$aa$Ba${A}$it", Util.replaceMacro("$$$DOLLAR${AA}$$B${ENCLOSED}$it",m));
     }
 
-
+    @Test
     public void testTimeSpanString() {
         // Check that amounts less than 365 days are not rounded up to a whole year.
         // In the previous implementation there were 360 days in a year.
@@ -111,6 +116,7 @@ public class UtilTest extends TestCase {
     /**
      * Test that Strings that contain spaces are correctly URL encoded.
      */
+    @Test
     public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
@@ -118,13 +124,24 @@ public class UtilTest extends TestCase {
     }
     
     /**
+     * Test that Strings that contain ampersand are correctly URL encoded.
+     */
+    @Test
+    public void testEncodeAmpersand() {
+        final String urlWithAmpersand = "http://hudson/job/Hudson-job/label1&&label2";
+        String encoded = Util.encode(urlWithAmpersand);
+        assertEquals(encoded, "http://hudson/job/Hudson-job/label1%26%26label2");
+    }
+    
+    /**
      * Test the rawEncode() method.
      */
+    @Test
     public void testRawEncode() {
         String[] data = {  // Alternating raw,encoded
             "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz",
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "01234567890!@$&*()-_=+',.", "01234567890!@$&*()-_=+',.",
+            "01234567890!@$*()-_=+',.", "01234567890!@$*()-_=+',.",
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
             "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
@@ -137,6 +154,7 @@ public class UtilTest extends TestCase {
     /**
      * Test the tryParseNumber() method.
      */
+    @Test
     public void testTryParseNumber() {
         assertEquals("Successful parse did not return the parsed value", 20, Util.tryParseNumber("20", 10).intValue());
         assertEquals("Failed parse did not return the default value", 10, Util.tryParseNumber("ss", 10).intValue());
@@ -144,16 +162,18 @@ public class UtilTest extends TestCase {
         assertEquals("Parsing null string did not return the default value", 10, Util.tryParseNumber(null, 10).intValue());
     }
 
+    @Test
     public void testSymlink() throws Exception {
-        if (Functions.isWindows())     return;
+        Assume.assumeTrue(!Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
         File d = Util.createTempDir();
         try {
             new FilePath(new File(d, "a")).touch(0);
+            assertNull(Util.resolveSymlink(new File(d, "a")));
             Util.createSymlink(d,"a","x", l);
-            assertEquals("a",Util.resolveSymlink(new File(d,"x"),l));
+            assertEquals("a",Util.resolveSymlink(new File(d,"x")));
 
             // test a long name
             StringBuilder buf = new StringBuilder(768);
@@ -165,16 +185,120 @@ public class UtilTest extends TestCase {
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
-            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x"),l));
+            assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x")));
+            
+            
+            // test linking from another directory
+            File anotherDir = new File(d,"anotherDir");
+            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            
+            Util.createSymlink(d,"a","anotherDir/link",l);
+            assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link")));
+            
+            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work: 
+            //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
+        } finally {
+            Util.deleteRecursive(d);
+        }
+    }
+    
+    @Test
+    public void testIsSymlink() throws IOException, InterruptedException {
+        Assume.assumeTrue(!Functions.isWindows());
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StreamTaskListener l = new StreamTaskListener(baos);
+        File d = Util.createTempDir();
+        try {
+            new FilePath(new File(d, "original")).touch(0);
+            assertFalse(Util.isSymlink(new File(d, "original")));
+            Util.createSymlink(d,"original","link", l);
+            
+            assertTrue(Util.isSymlink(new File(d, "link")));
+            
+            // test linking to another directory
+            File dir = new File(d,"dir");
+            assertTrue("Couldn't create "+dir,dir.mkdir());
+            assertFalse(Util.isSymlink(new File(d,"dir")));
+            
+            File anotherDir = new File(d,"anotherDir");
+            assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
+            
+            Util.createSymlink(d,"dir","anotherDir/symlinkDir",l);
+            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
+            // assertTrue(Util.isSymlink(new File(d,"anotherDir/symlinkDir")));
         } finally {
             Util.deleteRecursive(d);
         }
     }
 
-    public void TestEscape() {
+    @Test
+    public void testHtmlEscape() {
         assertEquals("<br>", Util.escape("\n"));
         assertEquals("&lt;a>", Util.escape("<a>"));
-        assertEquals("&quot;&#039;", Util.escape("'\""));
+        assertEquals("&#039;&quot;", Util.escape("'\""));
         assertEquals("&nbsp; ", Util.escape("  "));
+    }
+    
+    /**
+     * Compute 'known-correct' digests and see if I still get them when computed concurrently
+     * to another digest.
+     */
+    @Bug(10346)
+    @Test
+    public void testDigestThreadSafety() throws InterruptedException {
+    	String a = "abcdefgh";
+    	String b = "123456789";
+    	
+    	String digestA = Util.getDigestOf(a);
+    	String digestB = Util.getDigestOf(b);
+    	
+    	DigesterThread t1 = new DigesterThread(a, digestA);
+    	DigesterThread t2 = new DigesterThread(b, digestB);
+    	
+    	t1.start();
+    	t2.start();
+    	
+    	t1.join();
+    	t2.join();
+    	
+    	if (t1.error != null) {
+    		fail(t1.error);
+    	}
+    	if (t2.error != null) {
+    		fail(t2.error);
+    	}
+    }
+    
+    private static class DigesterThread extends Thread {
+    	private String string;
+		private String expectedDigest;
+		
+		private String error;
+
+		public DigesterThread(String string, String expectedDigest) {
+    		this.string = string;
+    		this.expectedDigest = expectedDigest;
+    	}
+		
+		public void run() {
+			for (int i=0; i < 1000; i++) {
+				String digest = Util.getDigestOf(this.string);
+				if (!this.expectedDigest.equals(digest)) {
+					this.error = "Expected " + this.expectedDigest + ", but got " + digest;
+					break;
+				}
+			}
+		}
+    }
+
+    public void testIsAbsoluteUri() {
+        assertTrue(Util.isAbsoluteUri("http://foobar/"));
+        assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
+        assertTrue(Util.isAbsoluteUri("d123://test/"));
+        assertFalse(Util.isAbsoluteUri("foo/bar/abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo?abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo#abc:def"));
+        assertFalse(Util.isAbsoluteUri("foo/bar"));
     }
 }

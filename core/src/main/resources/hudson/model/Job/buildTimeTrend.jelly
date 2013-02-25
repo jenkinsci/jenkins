@@ -24,6 +24,7 @@ THE SOFTWARE.
 -->
 
 <!-- Displays the chart that show how long builds are taking -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%title(it.displayName)}">
 		<st:include page="sidepanel.jelly" />
@@ -52,11 +53,11 @@ THE SOFTWARE.
               </tr>
               <j:forEach var="r" items="${it.builds}">
                 <tr>
-                  <td>
+                  <td data="${r.iconColor.ordinal()}">
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
                   </td>
                   <td data="${r.number}">
-                    <a href="${r.number}">
+                    <a href="${r.number}/" class="model-link">
                     ${r.displayName}
                     </a>
                   </td>
@@ -65,7 +66,7 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${isMasterSlaveEnabled}">
                     <td>
-                      <t:node value="${r.builtOn}"/>
+                      <t:node value="${r.builtOn}" valueStr="${r.builtOnStr}"/>
                     </td>
                   </j:if>
                 </tr>

@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
@@ -32,12 +32,12 @@ import java.lang.annotation.Target;
 
 /**
  * Marker interface that designates extensible components
- * in Hudson that can be implemented by plugins.
+ * in Jenkins that can be implemented by plugins.
  *
  * <p>
  * See respective interfaces/classes for more about how to register custom
- * implementations to Hudson. See {@link Extension} for how to have
- * Hudson auto-discover your implementations.
+ * implementations to Jenkins. See {@link Extension} for how to have
+ * Jenkins auto-discover your implementations.
  *
  * <p>
  * This interface is used for auto-generating
@@ -50,10 +50,10 @@ import java.lang.annotation.Target;
 public interface ExtensionPoint {
     /**
      * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
-     * the legacy instances are scoped to {@link Hudson} instance. By default, legacy instances are
+     * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
      * static scope.  
      */
     @Target(TYPE)
     @Retention(RUNTIME)
-    public @interface LegacyInstancesAreScopedToHudson {}
+    @interface LegacyInstancesAreScopedToHudson {}
 }

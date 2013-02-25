@@ -28,7 +28,7 @@ import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.model.Node;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.util.DescriptorList;
 import hudson.util.FormValidation;
 import hudson.DescriptorExtensionList;
@@ -101,7 +101,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
         if(name==null)
             return FormValidation.error(Messages.NodeDescripter_CheckName_Mandatory());
         try {
-            Hudson.checkGoodName(name);
+            Jenkins.checkGoodName(name);
         } catch (Failure f) {
             return FormValidation.error(f.getMessage());
         }
@@ -112,7 +112,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
     public static DescriptorExtensionList<Node,NodeDescriptor> all() {
-        return Hudson.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
+        return Jenkins.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
     }
 
     /**

@@ -23,12 +23,15 @@
  */
 package hudson.security;
 
-import hudson.model.*;
+import com.google.common.collect.ImmutableSet;
+import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jvnet.localizer.Localizable;
@@ -40,7 +43,7 @@ import org.jvnet.localizer.Localizable;
  * Each permission is represented by a specific instance of {@link Permission}.
  *
  * @author Kohsuke Kawaguchi
- * @see http://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Hudson
+ * @see https://wiki.jenkins-ci.org/display/JENKINS/Making+your+plugin+behave+in+secured+Jenkins
  */
 public final class Permission {
 
@@ -110,7 +113,12 @@ public final class Permission {
      * @since 1.325
      */
     public boolean enabled;
-    
+
+    /**
+     * Scopes that this permission is directly contained by.
+     */
+    private final Set<PermissionScope> scopes;
+
     /**
      * Defines a new permission.
      *
@@ -121,7 +129,7 @@ public final class Permission {
      * <pre>
      * class Foo {
      *     private static final PermissionGroup PERMISSIONS = new PermissionGroup(Foo.class,...);
-     *     public static final Permission ABC = new Permisison(PERMISSION,...) ;
+     *     public static final Permission ABC = new Permission(PERMISSION,...) ;
      * }
      * </pre>
      *
@@ -135,7 +143,7 @@ public final class Permission {
      * @param impliedBy
      *      See {@link #impliedBy}.
      */
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable, PermissionScope[] scopes) {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -144,18 +152,36 @@ public final class Permission {
         this.description = description;
         this.impliedBy = impliedBy;
         this.enabled = enable;
+        this.scopes = ImmutableSet.copyOf(scopes);
 
         group.add(this);
         ALL.add(this);
     }
 
-    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
-        this(group, name, description, impliedBy, true);
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, PermissionScope scope) {
+        this(group,name,description,impliedBy,true,new PermissionScope[]{scope});
+        assert scope!=null;
     }
-    
+
+    /**
+     * @deprecated as of 1.421
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
+     */
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy, boolean enable) {
+        this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
+    }
+
+    /**
+     * @deprecated as of 1.421
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
+     */
+    public Permission(PermissionGroup group, String name, Localizable description, Permission impliedBy) {
+        this(group, name, description, impliedBy, PermissionScope.JENKINS);
+    }
+
     /**
      * @deprecated since 1.257.
-     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)} 
+     *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
     public Permission(PermissionGroup group, String name, Permission impliedBy) {
         this(group,name,null,impliedBy);
@@ -163,6 +189,17 @@ public final class Permission {
 
     private Permission(PermissionGroup group, String name) {
         this(group,name,null,null);
+    }
+
+    /**
+     * Checks if this permission is contained in the specified scope, (either directly or indirectly.)
+     */
+    public boolean isContainedBy(PermissionScope s) {
+        for (PermissionScope c : scopes) {
+            if (c.isContainedBy(s))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -192,7 +229,7 @@ public final class Permission {
 
         try {
             // force the initialization so that it will put all its permissions into the list.
-            Class cl = Class.forName(id.substring(0,idx),true,Hudson.getInstance().getPluginManager().uberClassLoader);
+            Class cl = Class.forName(id.substring(0,idx),true, Jenkins.getInstance().getPluginManager().uberClassLoader);
             PermissionGroup g = PermissionGroup.get(cl);
             if(g ==null)  return null;
             return g.find(id.substring(idx+1));
@@ -233,14 +270,14 @@ public final class Permission {
 //
 //
 // Because of the initialization order issue, these two fields need to be defined here,
-// even though they logically belong to Hudson.
+// even though they logically belong to Jenkins.
 //
 
     /**
-     * {@link PermissionGroup} for {@link Hudson}.
+     * {@link PermissionGroup} for {@link jenkins.model.Jenkins}.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link Hudson#PERMISSIONS} instead.
+     *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
@@ -250,7 +287,7 @@ public final class Permission {
      * All permissions are eventually {@linkplain Permission#impliedBy implied by} this permission.
      *
      * @deprecated since 2009-01-23.
-     *      Access {@link Hudson#ADMINISTER} instead.
+     *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
@@ -269,9 +306,9 @@ public final class Permission {
      * any more, so deprecated.
      *
      * @deprecated since 2009-01-23.
-     *      Use {@link Hudson#ADMINISTER}.
+     *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
-    public static final Permission FULL_CONTROL = new Permission(GROUP,"FullControl",HUDSON_ADMINISTER);
+    public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**
      * Generic read access.

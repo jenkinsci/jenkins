@@ -24,9 +24,11 @@
 package org.jvnet.hudson.test;
 
 import hudson.model.Computer;
-import hudson.model.Hudson;
 
 import java.io.IOException;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.junit.runner.Description;
 
 /**
  * TODO: deprecate this, and just consolidate this to {@link HudsonTestCase}.
@@ -36,14 +38,36 @@ import java.io.IOException;
  */
 public class TestEnvironment {
     /**
-     * Current test case being run.
+     * Current test case being run (null for a JUnit 4 test).
      */
-    public final HudsonTestCase testCase;
+    public final @CheckForNull HudsonTestCase testCase;
+
+    private final @CheckForNull Description description;
 
     public final TemporaryDirectoryAllocator temporaryDirectoryAllocator = new TemporaryDirectoryAllocator();
 
-    public TestEnvironment(HudsonTestCase testCase) {
+    public TestEnvironment(@Nonnull HudsonTestCase testCase) {
         this.testCase = testCase;
+        this.description = null;
+    }
+
+    public TestEnvironment(@Nonnull Description description) {
+        this.testCase = null;
+        this.description = description;
+    }
+
+    /**
+     * Current test case being run (works for JUnit 3 or 4).
+     * Warning: {@link Description#getTestClass} is currently broken in some environments (claimed fixed in JUnit 4.11). Use {@link Description#getClassName} instead.
+     */
+    public @Nonnull Description description() {
+        if (description != null) {
+            return description;
+        } else {
+            assert testCase != null;
+            // Initialize lazily; testCase.getName() may be null in the TestEnvironment constructor.
+            return Description.createTestDescription(testCase.getClass(), testCase.getName());
+        }
     }
 
     public void pin() {
@@ -61,7 +85,7 @@ public class TestEnvironment {
      * the wrong test environment depending on when it's created.
      *
      * <p>
-     * Since the rest of Hudson still relies on static {@link Hudson#theInstance}, changing this
+     * Since the rest of Hudson still relies on static {@link jenkins.model.Jenkins#theInstance}, changing this
      * to a static field for now shouldn't cause any problem. 
      */
     private static TestEnvironment CURRENT;

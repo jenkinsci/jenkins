@@ -27,12 +27,14 @@ THE SOFTWARE.
 
   TODO: merge this with Hudson/systemInfo.jelly
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${it.displayName} ${%System Information}">
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <l:isAdmin>
+      <l:hasPermission permission="${it.CONNECT}">
+        <h1>${it.oSDescription} slave, version ${it.slaveVersion}</h1>
         <h1>${%System Properties}</h1>
         <t:propertyTable items="${it.systemProperties}" />
         <h1>${%Environment Variables}</h1>
@@ -42,7 +44,10 @@ THE SOFTWARE.
           <h2>${t.key}</h2>
           <pre>${t.value}</pre>
         </j:forEach>
-      </l:isAdmin>
+        <j:if test="${it.channel != null}">
+          <st:include page="statistics.groovy"/>
+        </j:if>
+      </l:hasPermission>
     </l:main-panel>
   </l:layout>
 </j:jelly>

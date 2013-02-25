@@ -65,12 +65,16 @@ public interface GNUCLibrary extends Library {
     int fcntl(int fd, int command, int flags);
 
     // obtained from Linux. Needs to be checked if these values are portable.
-    static final int F_GETFD = 1;
-    static final int F_SETFD = 2;
-    static final int FD_CLOEXEC = 1;
+    int F_GETFD = 1;
+    int F_SETFD = 2;
+    int FD_CLOEXEC = 1;
 
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
+
+    int dup(int old);
+    int dup2(int old, int _new);
+    int close(int fd);
 
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
     int rename(String oldname, String newname);
@@ -102,5 +106,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    public static final GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
 }

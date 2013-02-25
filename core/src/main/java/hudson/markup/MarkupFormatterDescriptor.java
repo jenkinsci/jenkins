@@ -25,7 +25,7 @@ package hudson.markup;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 /**
  * {@link Descriptor} for {@link MarkupFormatter}.
@@ -38,6 +38,7 @@ public abstract class MarkupFormatterDescriptor extends Descriptor<MarkupFormatt
      * Returns all the registered {@link MarkupFormatterDescriptor}s.
      */
     public static DescriptorExtensionList<MarkupFormatter,MarkupFormatterDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(MarkupFormatter.class);
+        return Jenkins.getInstance().<MarkupFormatter,MarkupFormatterDescriptor>
+                                    getDescriptorList(MarkupFormatter.class);
     }
 }

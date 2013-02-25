@@ -25,11 +25,12 @@ THE SOFTWARE.
 <!--
   Show all hudson.* logs
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="Log">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
-    <h1><img src="${rootURL}/images/48x48/clipboard.gif" alt=""/>${%Jenkins Log}</h1>
+    <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${%Jenkins Log}</h1>
     <j:forEach var="log" items="${h.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>

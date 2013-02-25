@@ -23,9 +23,9 @@
  */
 package hudson.security;
 
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
-import hudson.model.Hudson;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -36,6 +36,6 @@ public class PermissionGroupTest extends HudsonTestCase {
      */
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void testOrder() {
-        assertSame(PermissionGroup.getAll().get(0),Hudson.PERMISSIONS);
+        assertSame(PermissionGroup.getAll().get(0), Jenkins.PERMISSIONS);
     }
 }

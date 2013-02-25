@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
- <j:jelly xmlns:j="jelly:core">
-    <th tooltip="${%Weather report showing aggregated status of recent builds}">${h.nbspIndent(iconSize)}W</th>
+ <?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <th tooltip="${%Weather report showing aggregated status of recent builds}"><j:out value="${h.nbspIndent(iconSize)}"/>W</th>
  </j:jelly>

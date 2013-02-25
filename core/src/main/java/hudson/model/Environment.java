@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import hudson.Launcher;
+import hudson.model.listeners.RunListener;
+import hudson.slaves.NodeProperty;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.EnvVars;
 
@@ -44,6 +48,9 @@ import java.util.Map;
  * you guaranteed "tear down" phase, so that such resource won't keep running forever.
  *
  * @since 1.286
+ * @see BuildWrapper
+ * @see NodeProperty
+ * @see RunListener#setUpEnvironment(AbstractBuild, Launcher, BuildListener)
  */
 public abstract class Environment {
 	/**
@@ -80,9 +87,9 @@ public abstract class Environment {
 	 *            The same {@link BuildListener} object given to the set up
 	 *            method.
 	 * @return true if the build can continue, false if there was an error and
-	 *         the build needs to be aborted.
+	 *         the build needs to be failed.
 	 * @throws IOException
-	 *             terminates the build abnormally. Hudson will handle the
+	 *             terminates the build abnormally. Jenkins will handle the
 	 *             exception and reports a nice error message.
 	 */
 	public boolean tearDown(AbstractBuild build, BuildListener listener)

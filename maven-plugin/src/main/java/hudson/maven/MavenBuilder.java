@@ -33,7 +33,6 @@ import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
-import hudson.remoting.Future;
 import hudson.util.IOException2;
 
 import java.io.IOException;
@@ -41,10 +40,11 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.maven.BuildFailureException;
 import org.apache.maven.execution.MavenSession;
@@ -73,6 +73,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
  * @author Kohsuke Kawaguchi
  * @since 1.133
  */
+@SuppressWarnings("deprecation") // as we're restricted to Maven 2.x API here, but compile against Maven 3.x we cannot avoid deprecations
 public abstract class MavenBuilder extends AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
 
 
@@ -82,14 +83,8 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
      */
     private final boolean profile = MavenProcessFactory.profile;
 
-    /**
-     * Record all asynchronous executions as they are scheduled,
-     * to make sure they are all completed before we finish.
-     */
-    protected transient /*final*/ List<Future<?>> futures;
-
-    protected MavenBuilder(BuildListener listener, List<String> goals, Map<String, String> systemProps) {
-        super( listener, goals, systemProps );
+    protected MavenBuilder(BuildListener listener, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps) {
+        super( listener, modules, goals, systemProps );
     }
 
     /**
@@ -142,7 +137,7 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         
         try {
 
-            futures = new ArrayList<Future<?>>();
+            initializeAsynchronousExecutions();
             Adapter a = new Adapter(this);
             callSetListenerWithReflectOnInterceptors( a, mavenJailProcessClassLoader );
             
@@ -153,38 +148,20 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
             
             markAsSuccess = false;
 
-            // working around NPE when someone puts a null value into systemProps.
-            for (Map.Entry<String,String> e : systemProps.entrySet()) {
-                if (e.getValue()==null)
-                    throw new IllegalArgumentException("System property "+e.getKey()+" has a null value");
-                System.getProperties().put(e.getKey(), e.getValue());
-            }
+            registerSystemProperties();
 
             listener.getLogger().println(formatArgs(goals));
             int r = Main.launch(goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
-            boolean messageReported = false;
             long startTime = System.nanoTime();
-            for (Future<?> f : futures) {
-                try {
-                    if(!f.isDone() && !messageReported) {
-                        messageReported = true;
-                        listener.getLogger().println(Messages.MavenBuilder_Waiting());
-                    }
-                    f.get();
-                } catch (InterruptedException e) {
-                    // attempt to cancel all asynchronous tasks
-                    for (Future<?> g : futures)
-                        g.cancel(true);
-                    listener.getLogger().println(Messages.MavenBuilder_Aborted());
-                    return Result.ABORTED;
-                } catch (ExecutionException e) {
-                    e.printStackTrace(listener.error(Messages.MavenBuilder_AsyncFailed()));
-                }
+            
+            Result waitForAsyncExecutionsResult = waitForAsynchronousExecutions();
+            if (waitForAsyncExecutionsResult != null) {
+                return waitForAsyncExecutionsResult;
             }
+            
             a.overheadTime += System.nanoTime()-startTime;
-            futures.clear();
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();
@@ -195,10 +172,18 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                 logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
             }
 
-            if(r==0)    return Result.SUCCESS;
+            if(r==0){
+                if(a.hasBuildFailures()){
+                    return Result.UNSTABLE;
+                }
+                return Result.SUCCESS;
+            }
 
             if(markAsSuccess) {
                 listener.getLogger().println(Messages.MavenBuilder_Failed());
+                if(a.hasBuildFailures()){
+                    return Result.UNSTABLE;
+                }
                 return Result.SUCCESS;
             }
             return Result.FAILURE;
@@ -290,6 +275,8 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
         private MavenProject lastModule;
 
         private final MavenBuilder listener;
+        private final AtomicBoolean hasTestFailures = new AtomicBoolean();
+        private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
 
         /**
          * Number of total nanoseconds {@link MavenBuilder} spent.
@@ -298,6 +285,16 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
 
         public Adapter(MavenBuilder listener) {
             this.listener = listener;
+        }
+        
+        private long initMojoStartTime( MavenProject mavenProject) {
+            long mojoStartTime = System.currentTimeMillis();
+            this.currentMojoStartPerModuleName.put( new ModuleName( mavenProject), mojoStartTime);
+            return mojoStartTime;
+        }
+        
+        private Long getMojoStartTime(MavenProject mavenProject) {
+            return currentMojoStartPerModuleName.get( new ModuleName(mavenProject) );
         }
 
         public void preBuild(MavenSession session, ReactorManager rm, EventDispatcher dispatcher) throws BuildFailureException, LifecycleExecutionException, IOException, InterruptedException {
@@ -327,19 +324,23 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                 fireEnterModule(project);
             }
 
-            listener.preExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval));
+            long mojoStartTime = initMojoStartTime(project);
+            listener.preExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval, mojoStartTime));
             overheadTime += System.nanoTime()-startTime;
         }
 
         public void postExecute(MavenProject project, MojoExecution exec, Mojo mojo, PlexusConfiguration mergedConfig, ExpressionEvaluator eval, Exception exception) throws IOException, InterruptedException {
             long startTime = System.nanoTime();
-            listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval),exception);
+            listener.postExecute(project, new MojoInfo(exec, mojo, mergedConfig, eval, getMojoStartTime(project)),exception);
+            if(listener.hasBuildFailures())
+                hasTestFailures.compareAndSet(false, true);
             overheadTime += System.nanoTime()-startTime;
         }
 
         public void onReportGenerated(MavenReport report, MojoExecution mojoExecution, PlexusConfiguration mergedConfig, ExpressionEvaluator eval) throws IOException, InterruptedException {
             long startTime = System.nanoTime();
-            listener.onReportGenerated(lastModule,new MavenReportInfo(mojoExecution,report,mergedConfig,eval));
+            listener.onReportGenerated(lastModule,new MavenReportInfo(mojoExecution,report,mergedConfig,eval,
+                    getMojoStartTime(lastModule)));
             overheadTime += System.nanoTime()-startTime;
         }
 
@@ -353,6 +354,10 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
                 listener.postModule(lastModule);
                 lastModule = null;
             }
+        }
+        
+        public boolean hasBuildFailures() {
+            return hasTestFailures.get();
         }
     }
 
@@ -377,4 +382,10 @@ public abstract class MavenBuilder extends AbstractMavenBuilder implements Deleg
     public static boolean markAsSuccess;
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Whether there where test failures detected during the build.
+     * @since 1.496
+     */
+    public abstract boolean hasBuildFailures();
 }

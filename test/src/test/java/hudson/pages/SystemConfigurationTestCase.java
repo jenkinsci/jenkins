@@ -65,10 +65,6 @@ public class SystemConfigurationTestCase extends HudsonTestCase {
     private static class PageDecoratorImpl extends PageDecorator {
         private String decoratorId;
 
-        protected PageDecoratorImpl() {
-            super(PageDecoratorImpl.class);
-        }
-
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             decoratorId = json.getString("decoratorId");

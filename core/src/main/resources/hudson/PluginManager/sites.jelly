@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!--
   Add/remove update center sites
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Update Center" permission="${app.ADMINISTER}" norefresh="true">
+<l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
   <st:include page="sidepanel.jelly"/>
   <l:main-panel>
     <form method="post" action="updateSources">
@@ -37,7 +38,7 @@ THE SOFTWARE.
         <tr style="border-bottom:none">
           <td colspan="2">
             <p>
-              This Jenkins is configured to receive updates from the following sourcse:
+              This Jenkins is configured to receive updates from the following sources:
             </p>
           </td>
         </tr>

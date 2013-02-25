@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName} Execution Record">
     <st:include page="sidepanel.jelly" />
@@ -42,7 +43,7 @@ THE SOFTWARE.
         <j:otherwise>
           <j:set var="cache" value="${it.createExecutedMojoCache()}"/>
           
-          <table class="middle-align">
+          <table class="middle-align sortable pane bigtable">
             <tr>
               <th>${%Plugin}</th>
               <th>${%Version}</th>
@@ -56,7 +57,7 @@ THE SOFTWARE.
               <tr>
                 <td>
                   <a href="${m.getPluginLink(cache)}">
-                    <img src="${imagesURL}/24x24/gear.gif" alt=""/>
+                    <img src="${imagesURL}/24x24/gear.gif" alt="" height="24" width="24"/>
                     ${m.groupId}:${m.artifactId}
                   </a>
                 </td>
@@ -67,9 +68,9 @@ THE SOFTWARE.
                   </a>
                 </td>
                 <td align="center">${m.readableExecutionId}</td>
-                <td>${m.durationString}</td>
+                <td data="${m.duration}">${m.durationString}</td>
                 <td align="center">
-                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="${%fingerprint}" /></a>
+                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="${%fingerprint}" height="16" width="16" /></a>
                 </td>
               </tr>
             </j:forEach>

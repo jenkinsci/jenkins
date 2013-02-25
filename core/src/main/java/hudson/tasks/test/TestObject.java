@@ -30,6 +30,8 @@ import hudson.model.*;
 import hudson.tasks.junit.History;
 import hudson.tasks.junit.TestAction;
 import hudson.tasks.junit.TestResultAction;
+import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -177,7 +179,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
             } else {
                 // We're not in a stapler request. Okay, give up.
                 LOGGER.info("trying to get relative path, but it is not my ancestor, and we're not in a stapler request. Trying absolute hudson url...");
-                String hudsonRootUrl = Hudson.getInstance().getRootUrl();
+                String hudsonRootUrl = Jenkins.getInstance().getRootUrl();
                 if (hudsonRootUrl==null||hudsonRootUrl.length()==0) {
                     LOGGER.warning("Can't find anything like a decent hudson url. Punting, returning empty string."); 
                     return "";
@@ -329,26 +331,35 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     /**
      * #2988: uniquifies a {@link #getSafeName} amongst children of the parent.
      */
-    protected final synchronized String uniquifyName(
-            Collection<? extends TestObject> siblings, String base) {
-        String uniquified = base;
-        int sequence = 1;
-        for (TestObject sibling : siblings) {
-            if (sibling != this && uniquified.equals(UNIQUIFIED_NAMES.get(sibling))) {
-                uniquified = base + '_' + ++sequence;
+    protected final String uniquifyName(Collection<? extends TestObject> siblings, String base) {
+        synchronized (UNIQUIFIED_NAMES) {
+            String uniquified = base;
+            Map<TestObject,Void> taken = UNIQUIFIED_NAMES.get(base);
+            if (taken == null) {
+                taken = new WeakHashMap<TestObject,Void>();
+                UNIQUIFIED_NAMES.put(base, taken);
+            } else {
+                Set<TestObject> similars = new HashSet<TestObject>(taken.keySet());
+                similars.retainAll(new HashSet<TestObject>(siblings));
+                if (!similars.isEmpty()) {
+                    uniquified = base + '_' + (similars.size() + 1);
+                }
             }
+            taken.put(this, null);
+            return uniquified;
         }
-        UNIQUIFIED_NAMES.put(this, uniquified);
-        return uniquified;
     }
-    private static final Map<TestObject, String> UNIQUIFIED_NAMES = new MapMaker().weakKeys().makeMap();
+    private static final Map<String,Map<TestObject,Void>> UNIQUIFIED_NAMES = new MapMaker().makeMap();
 
     /**
      * Replaces URL-unsafe characters.
      */
     public static String safe(String s) {
-        // 3 replace calls is still 2-3x faster than a regex replaceAll
-        return s.replace('/', '_').replace('\\', '_').replace(':', '_');
+        // this still seems to be a bit faster than a single replace with regexp
+        return s.replace('/', '_').replace('\\', '_').replace(':', '_').replace('?', '_').replace('#', '_');
+        
+        // Note: we probably should some helpers like Commons URIEscapeUtils here to escape all invalid URL chars, but then we
+        // still would have to escape /, ? and so on
     }
 
     /**

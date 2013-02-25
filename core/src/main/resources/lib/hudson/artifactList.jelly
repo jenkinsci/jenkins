@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Generates a listing of the build artifacts.
@@ -40,20 +42,31 @@ THE SOFTWARE.
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
     <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
     <j:if test="${!build.building and !empty(artifacts)}">
-      <t:summary icon="package.gif">
+      <t:summary icon="package.png">
         <a href="${baseURL}artifact/">${caption}</a>
         <j:choose>
           <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
             <!-- if not too many, just list them -->
-            <ul>
+            <table class="fileList">
               <j:forEach var="f" items="${artifacts}">
-                <li>
-                  <a href="${baseURL}artifact/${f.href}">${h.xmlEscape(f.displayPath)}</a>
-                  <st:nbsp/>
-                  <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="[fingerprint]" /></a>
-                </li>
+                <tr>
+                  <td>
+                    <img src="${imagesURL}/16x16/text.png" alt="" height="16" width="16"/>
+                  </td>
+                  <td>
+                    <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
+                  </td>
+                  <td class="fileSize">
+                    ${h.humanReadableByteSize(f.getFileSize())}
+                  </td>
+                  <td>
+                    <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
+                      <img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16"/>
+                    </a>
+                  </td>
+                </tr>
               </j:forEach>
-            </ul>
+            </table>
           </j:when>
           <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
               <!-- otherwise (unless way too many) use a tree view -->

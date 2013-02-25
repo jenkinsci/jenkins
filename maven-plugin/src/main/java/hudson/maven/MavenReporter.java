@@ -28,7 +28,7 @@ import hudson.Launcher;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -96,6 +96,9 @@ import java.util.Collections;
  * @see MavenReporters
  */
 public abstract class MavenReporter implements Describable<MavenReporter>, ExtensionPoint, Serializable, MavenProjectActionBuilder {
+
+    private static final long serialVersionUID = 7987776766278437534L;
+
     /**
      * Called before the actual maven2 execution begins.
      *
@@ -311,6 +314,6 @@ public abstract class MavenReporter implements Describable<MavenReporter>, Exten
     }
 
     public MavenReporterDescriptor getDescriptor() {
-        return (MavenReporterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (MavenReporterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

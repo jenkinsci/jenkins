@@ -23,21 +23,21 @@
  */
 package hudson.security;
 
+import jenkins.model.Jenkins;
+import jenkins.security.ConfidentialStore;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import hudson.model.Hudson;
-
 /**
  * {@link RememberMeServices} proxy.
  *
  * <p>
- * In Hudson, we need {@link Hudson} instance to perform remember-me service,
- * because it relies on {@link Hudson#getSecretKey()}. However, security
- * filters can be initialized before Hudson is initialized.
+ * In Jenkins, we need {@link Jenkins} instance to perform remember-me service,
+ * because it relies on {@link ConfidentialStore}. However, security
+ * filters can be initialized before Jenkins is initialized.
  * (See #1210 for example.)
  *
  * <p>

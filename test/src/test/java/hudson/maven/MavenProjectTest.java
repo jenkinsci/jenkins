@@ -23,24 +23,45 @@
  */
 package hudson.maven;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import hudson.model.AbstractProject;
+import hudson.model.Item;
+import hudson.model.Result;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Shell;
+
+import java.io.File;
+
+import jenkins.model.Jenkins;
+
+import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import java.io.File;
+import java.net.HttpURLConnection;
 
 /**
  * @author huybrechts
  */
 public class MavenProjectTest extends HudsonTestCase {
+    
 
     public void testOnMaster() throws Exception {
         MavenModuleSet project = createSimpleProject();
         project.setGoals("validate");
 
         buildAndAssertSuccess(project);
+    }
+    
+    @Bug(16499)
+    public void testCopyFromExistingMavenProject() throws Exception {
+        MavenModuleSet project = createSimpleProject();
+        project.setGoals("abcdefg");
+        project.save();
+        
+        MavenModuleSet copy = (MavenModuleSet) Jenkins.getInstance().copy((AbstractProject<?, ?>)project, "copy" + System.currentTimeMillis());
+        assertNotNull("Copied project must not be null", copy);
+        assertEquals(project.getGoals(), copy.getGoals());
     }
 
     private MavenModuleSet createSimpleProject() throws Exception {
@@ -77,12 +98,7 @@ public class MavenProjectTest extends HudsonTestCase {
         // this should succeed
         HudsonTestCase.WebClient wc = new WebClient();
         wc.getPage(project,"site");
-        try {
-            wc.getPage(project,"site/no-such-file");
-            fail("should have resulted in 404");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(404,e.getStatusCode());
-        }
+        wc.assertFails(project.getUrl() + "site/no-such-file", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     /**
@@ -99,8 +115,14 @@ public class MavenProjectTest extends HudsonTestCase {
         wc.getPage(project, "site");
         wc.getPage(project, "site/core");
         wc.getPage(project, "site/client");
+        
+        //@Bug(7577): check that site generation succeeds also if only a single module is build
+        MavenModule coreModule = project.getModule("mmtest:core");
+        Assert.assertEquals("site", coreModule.getGoals());
+        buildAndAssertSuccess(coreModule);
+        wc.getPage(project, "site/core");
     }
-
+    
     /**
      * Check if the the site goal will work when run from a slave.
      */
@@ -141,5 +163,31 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setRootPOM(pom.getAbsolutePath());
         project.setGoals("install");
         buildAndAssertSuccess(project);
+    }
+
+    /**
+     * Config roundtrip test around pre/post build step
+     */
+    public void testConfigRoundtrip() throws Exception {
+        MavenModuleSet m = createMavenProject();
+        Shell b1 = new Shell("1");
+        Shell b2 = new Shell("2");
+        m.getPrebuilders().add(b1);
+        m.getPostbuilders().add(b2);
+        configRoundtrip((Item)m);
+
+        assertEquals(1,  m.getPrebuilders().size());
+        assertNotSame(b1,m.getPrebuilders().get(Shell.class));
+        assertEquals("1",m.getPrebuilders().get(Shell.class).getCommand());
+
+        assertEquals(1,  m.getPostbuilders().size());
+        assertNotSame(b2,m.getPostbuilders().get(Shell.class));
+        assertEquals("2",m.getPostbuilders().get(Shell.class).getCommand());
+
+        for (Result r : new Result[]{Result.SUCCESS, Result.UNSTABLE, Result.FAILURE}) {
+            m.setRunPostStepsIfResult(r);
+            configRoundtrip((Item)m);
+            assertEquals(r,m.getRunPostStepsIfResult());
+        }
     }
 }

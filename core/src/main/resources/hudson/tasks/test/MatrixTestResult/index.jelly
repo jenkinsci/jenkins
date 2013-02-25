@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:local="local" xmlns:test="/lib/test">
   <l:layout title="Test">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
@@ -41,7 +42,7 @@ THE SOFTWARE.
         <j:forEach var="report" items="${it.childReports}">
           <tr>
             <td class="pane">
-              <a href="../${report.child.project.shortUrl}testReport">${report.child.project.name}</a>
+              <a href="../${report.child.project.shortUrl}testReport" class="model-link">${report.child.project.name}</a>
             </td>
             <td data="${report.result.duration}" class="pane" style="text-align:right">
               ${report.result.durationString}
@@ -73,7 +74,7 @@ THE SOFTWARE.
 
           <h3>
             <a name="${report.child.project.name}"/>
-            <a href="../${report.child.project.shortUrl}testReport">${report.child.project.name}</a>
+            <a href="../${report.child.project.shortUrl}testReport" class="model-link">${report.child.project.name}</a>
           </h3>
 
           <table class="pane sortable">
@@ -85,7 +86,7 @@ THE SOFTWARE.
             <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
               <tr>
                 <td class="pane">
-                  <a href="../${report.child.project.shortUrl}testReport/${f.getRelativePathFrom(report.result)}">
+                  <a href="../${report.child.project.shortUrl}testReport/${f.getRelativePathFrom(report.result)}" class="model-link">
                     <st:out value="${f.fullName}"/>
 		          	<st:nbsp/>
 			        <j:forEach var="badge" items="${f.testActions}">

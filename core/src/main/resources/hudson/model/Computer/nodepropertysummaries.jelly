@@ -23,6 +23,7 @@ THE SOFTWARE.
 -->
 
 <!-- display permalinks of the page -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
 	<!-- give properties a chance to contribute summary item -->
 	<j:forEach var="p" items="${app.globalNodeProperties}">

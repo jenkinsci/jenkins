@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -61,6 +62,19 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * Tests if the given instance belongs to this descriptor, in the sense
+     * that this descriptor can produce items like the given one.
+     *
+     * <p>
+     * {@link TopLevelItemDescriptor}s that act like a wizard and produces different
+     * object types than {@link #clazz} can override this method to augment
+     * instance-descriptor relationship.
+     */
+    public boolean testInstance(TopLevelItem i) {
+        return clazz.isInstance(i);
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <p>
@@ -87,7 +101,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *      Use {@link #newInstance(ItemGroup, String)}
      */
     public TopLevelItem newInstance(String name) {
-        return newInstance(Hudson.getInstance(), name);
+        return newInstance(Jenkins.getInstance(), name);
     }
 
     /**

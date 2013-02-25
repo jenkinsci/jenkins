@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSession;
  * in Hudson.
  *
  * <p>
- * Hudson doesn't work with a clustering anyway, and so it's better to just not persist
+ * Jenkins doesn't work with a clustering anyway, and so it's better to just not persist
  * Authentication at all.
  *
  * See http://www.nabble.com/ActiveDirectory-Plugin%3A-ClassNotFoundException-while-loading--persisted-sessions%3A-td22085140.html
@@ -43,10 +43,17 @@ import javax.servlet.http.HttpSession;
 public class NotSerilizableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 
+    public NotSerilizableSecurityContext() {
+    }
+
+    public NotSerilizableSecurityContext(Authentication authentication) {
+        this.authentication = authentication;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof SecurityContextImpl) {
-            SecurityContextImpl test = (SecurityContextImpl) obj;
+        if (obj instanceof SecurityContext) {
+            SecurityContext test = (SecurityContext) obj;
 
             if ((this.getAuthentication() == null) && (test.getAuthentication() == null)) {
                 return true;

@@ -25,10 +25,11 @@ package hudson.maven;
 
 import static hudson.Util.intern;
 import hudson.Util;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.remoting.Which;
 import hudson.util.ReflectionUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,6 +41,7 @@ import java.util.logging.Logger;
 
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.kohsuke.stapler.Stapler;
 
 /**
@@ -52,6 +54,7 @@ import org.kohsuke.stapler.Stapler;
  * @author Kohsuke Kawaguchi
  */
 public final class ExecutedMojo implements Serializable {
+    private static final long serialVersionUID = -3048316415397586490L;
     /**
      * Plugin group ID.
      */
@@ -82,7 +85,7 @@ public final class ExecutedMojo implements Serializable {
      */
     public final String digest;
 
-    public ExecutedMojo(MojoInfo mojo, long duration) throws IOException, InterruptedException {
+    public ExecutedMojo(MojoInfo mojo, long duration) {
         this.groupId = mojo.pluginName.groupId;
         this.artifactId = mojo.pluginName.artifactId;
         this.version = mojo.pluginName.version;
@@ -94,19 +97,34 @@ public final class ExecutedMojo implements Serializable {
         MojoDescriptor md = mojo.mojoExecution.getMojoDescriptor();
         PluginDescriptor pd = md.getPluginDescriptor();
         try {
-            Class clazz = getMojoClass( md, pd );// pd.getClassRealm().loadClass(md.getImplementation());
-            digest = Util.getDigestOf(new FileInputStream(Which.jarFile(clazz)));
+            Class<?> clazz = getMojoClass( md, pd );
+            if (clazz!=null) {
+                File jarFile = Which.jarFile(clazz);
+                if (jarFile.isFile()) {
+                    digest = Util.getDigestOf(new FileInputStream(jarFile));
+                } else {
+                    // Maybe mojo was loaded from a classes dir instead of from a jar (JENKINS-5044)
+                    LOGGER.log(Level.WARNING, "Cannot calculate digest of mojo class, because mojo wasn't loaded from a jar, but from: "
+                            + jarFile);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Failed to getClass for "+md.getImplementation());    
+            }
+            
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Failed to locate jar for "+md.getImplementation(),e);
         } catch (ClassNotFoundException e) {
             // perhaps the plugin has failed to load.
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to calculate digest for "+md.getImplementation(),e);
         }
         this.digest = digest;
     }
     
     private Class<?> getMojoClass(MojoDescriptor md, PluginDescriptor pd) throws ClassNotFoundException {
         try {
-            return pd.getClassRealm().loadClass( md.getImplementation() );
+            ClassRealm classRealm = pd.getClassRealm();
+            return classRealm == null ? null : classRealm.loadClass( md.getImplementation() );
         } catch (NoSuchMethodError e) {
             // maybe we are in maven2 build ClassRealm package has changed
             return getMojoClassForMaven2( md, pd );
@@ -120,6 +138,10 @@ public final class ExecutedMojo implements Serializable {
         org.codehaus.classworlds.ClassRealm cl = 
             (org.codehaus.classworlds.ClassRealm) ReflectionUtils.invokeMethod( method, pd );
         
+        if (cl==null)
+        {
+            return null;
+        }
         Class<?> clazz = cl.loadClass( md.getImplementation() );
         return clazz;
        
@@ -145,7 +167,7 @@ public final class ExecutedMojo implements Serializable {
      *
      * TODO: better if XStream has a declarative way of marking fields as "target for intern".
      */
-    ExecutedMojo readResolve() {
+    protected Object readResolve() {
         return new ExecutedMojo(intern(groupId),intern(artifactId),intern(version),intern(goal),intern(executionId),duration,intern(digest));
     }
 
@@ -171,12 +193,16 @@ public final class ExecutedMojo implements Serializable {
             return Stapler.getCurrentRequest().getContextPath()+m.getUrl();
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/';
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/';
         return null;
     }
 
     public String getGoalLink(Cache c) {
         if(groupId.equals("org.apache.maven.plugins"))
             return "http://maven.apache.org/plugins/"+artifactId+'/'+goal+"-mojo.html";
+        if (groupId.equals("org.codehaus.mojo"))
+            return "http://mojo.codehaus.org/"+artifactId+'/'+goal+"-mojo.html";
         return null;
     }
 
@@ -190,7 +216,7 @@ public final class ExecutedMojo implements Serializable {
         public final Map<ModuleName,MavenModule> modules = new HashMap<ModuleName,MavenModule>();
 
         public Cache() {
-            for( MavenModule m : Hudson.getInstance().getAllItems(MavenModule.class))
+            for( MavenModule m : Jenkins.getInstance().getAllItems(MavenModule.class))
                 modules.put(m.getModuleName(),m);
         }
 

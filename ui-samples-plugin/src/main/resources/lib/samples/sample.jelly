@@ -32,6 +32,7 @@ THE SOFTWARE.
   <j:set var="instance" value="${it}" />
   <j:set var="descriptor" value="${it.descriptor}" />
   <l:layout title="${title}">
+    <st:include page="header" optional="true" />
     <l:main-panel>
       <h1>${title}</h1>
       <p>

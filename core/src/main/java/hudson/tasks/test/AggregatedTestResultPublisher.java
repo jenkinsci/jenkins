@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue, Yahoo!, Inc.
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Michael B. Donohue, Yahoo!, Inc., Andrew Bayer
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,17 @@ package hudson.tasks.test;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.AutoCompletionCandidates;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import static hudson.Util.fixNull;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.Hudson;
+import hudson.model.ItemGroup;
+import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -68,13 +71,23 @@ public class AggregatedTestResultPublisher extends Recorder {
      */
     public final String jobs;
 
+    /**
+     * Should failed builds be included?
+     */
+    public final boolean includeFailedBuilds;
+
     public AggregatedTestResultPublisher(String jobs) {
+        this(jobs, false);
+    }
+    
+    public AggregatedTestResultPublisher(String jobs, boolean includeFailedBuilds) {
         this.jobs = Util.fixEmptyAndTrim(jobs);
+        this.includeFailedBuilds = includeFailedBuilds;
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         // add a TestResult just so that it can show up later.
-        build.addAction(new TestResultAction(jobs,build));
+        build.addAction(new TestResultAction(jobs,includeFailedBuilds,build));
         return true;
     }
 
@@ -96,6 +109,11 @@ public class AggregatedTestResultPublisher extends Recorder {
         private final String jobs;
 
         /**
+         * Should failed builds be included?
+         */
+        private final boolean includeFailedBuilds;
+        
+        /**
          * The last time the fields of this object is computed from the rest.
          */
         private transient long lastUpdated = 0;
@@ -113,8 +131,10 @@ public class AggregatedTestResultPublisher extends Recorder {
         private transient List<AbstractProject> didntRun;
         private transient List<AbstractProject> noFingerprints;
 
-        public TestResultAction(String jobs, AbstractBuild<?,?> owner) {
+        public TestResultAction(String jobs, boolean includeFailedBuilds, AbstractBuild<?,?> owner) {
             super(owner);
+            this.includeFailedBuilds = includeFailedBuilds;
+            
             if(jobs==null) {
                 // resolve null as the transitive downstream jobs
                 StringBuilder buf = new StringBuilder();
@@ -133,13 +153,17 @@ public class AggregatedTestResultPublisher extends Recorder {
         public Collection<AbstractProject> getJobs() {
             List<AbstractProject> r = new ArrayList<AbstractProject>();
             for (String job : Util.tokenize(jobs,",")) {
-                AbstractProject j = Hudson.getInstance().getItemByFullName(job.trim(), AbstractProject.class);
+                AbstractProject j = Jenkins.getInstance().getItemByFullName(job.trim(), AbstractProject.class);
                 if(j!=null)
                     r.add(j);
             }
             return r;
         }
 
+        public boolean getIncludeFailedBuilds() {
+            return includeFailedBuilds;
+        }
+        
         private AbstractProject<?,?> getProject() {
             return owner.getProject();
         }
@@ -224,7 +248,12 @@ public class AggregatedTestResultPublisher extends Recorder {
                 RangeSet rs = owner.getDownstreamRelationship(job);
                 if(rs.isEmpty()) {
                     // is this job expected to produce a test result?
-                    Run b = job.getLastSuccessfulBuild();
+                    Run b;
+                    if (includeFailedBuilds) {
+                        b = job.getLastBuild();
+                    } else {
+                        b = job.getLastSuccessfulBuild();
+                    }
                     if(b!=null && b.getAction(AbstractTestResultAction.class)!=null) {
                         if(b.getAction(FingerprintAction.class)!=null) {
                             didntRun.add(job);
@@ -236,7 +265,14 @@ public class AggregatedTestResultPublisher extends Recorder {
                     for (int n : rs.listNumbersReverse()) {
                         Run b = job.getBuildByNumber(n);
                         if(b==null) continue;
-                        if(b.isBuilding() || b.getResult().isWorseThan(Result.UNSTABLE))
+                        Result targetResult;
+                        if (includeFailedBuilds) {
+                            targetResult = Result.FAILURE;
+                        } else {
+                            targetResult = Result.UNSTABLE;
+                        }
+                        
+                        if(b.isBuilding() || b.getResult().isWorseThan(targetResult))
                             continue;   // don't count them
 
                         for( AbstractTestResultAction ta : b.getActions(AbstractTestResultAction.class)) {
@@ -300,7 +336,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
             for (String name : Util.tokenize(fixNull(value), ",")) {
                 name = name.trim();
-                if(Hudson.getInstance().getItemByFullName(name)==null)
+                if(Jenkins.getInstance().getItem(name,project)==null)
                     return FormValidation.error(hudson.tasks.Messages.BuildTrigger_NoSuchProject(name,AbstractProject.findNearest(name).getName()));
             }
             
@@ -311,9 +347,13 @@ public class AggregatedTestResultPublisher extends Recorder {
         public AggregatedTestResultPublisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             JSONObject s = formData.getJSONObject("specify");
             if(s.isNullObject())
-                return new AggregatedTestResultPublisher(null);
+                return new AggregatedTestResultPublisher(null, req.getParameter("includeFailedBuilds") != null);
             else
-                return new AggregatedTestResultPublisher(s.getString("jobs"));
+                return new AggregatedTestResultPublisher(s.getString("jobs"), req.getParameter("includeFailedBuilds") != null);
+        }
+
+        public AutoCompletionCandidates doAutoCompleteJobs(@QueryParameter String value, @AncestorInPath Item self, @AncestorInPath ItemGroup container) {
+            return AutoCompletionCandidates.ofJobNames(Job.class,value,self,container);
         }
     }
 

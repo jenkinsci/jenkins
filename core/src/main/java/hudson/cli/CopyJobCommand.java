@@ -23,10 +23,11 @@
  */
 package hudson.cli;
 
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import hudson.Extension;
 import hudson.model.Item;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.args4j.Argument;
 
 
@@ -39,7 +40,7 @@ import org.kohsuke.args4j.Argument;
 public class CopyJobCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Copies a job";
+        return Messages.CopyJobCommand_ShortDescription();
     }
 
     @Argument(metaVar="SRC",usage="Name of the job to copy",required=true)
@@ -49,15 +50,32 @@ public class CopyJobCommand extends CLICommand {
     public String dst;
 
     protected int run() throws Exception {
-        Hudson h = Hudson.getInstance();
-        h.checkPermission(Item.CREATE);
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(Item.CREATE);
 
-        if (h.getItem(dst)!=null) {
+        if (jenkins.getItemByFullName(dst)!=null) {
             stderr.println("Job '"+dst+"' already exists");
             return -1;
         }
-        
-        h.copy(src,dst);
+
+        ModifiableTopLevelItemGroup ig = jenkins;
+        int i = dst.lastIndexOf('/');
+        if (i > 0) {
+            String group = dst.substring(0, i);
+            Item item = jenkins.getItemByFullName(group);
+            if (item == null) {
+                throw new IllegalArgumentException("Unknown ItemGroup " + group);
+            }
+
+            if (item instanceof ModifiableTopLevelItemGroup) {
+                ig = (ModifiableTopLevelItemGroup) item;
+            } else {
+                throw new IllegalArgumentException("Can't create job from CLI in " + group);
+            }
+            dst = dst.substring(i + 1);
+        }
+
+        ig.copy(src,dst);
         return 0;
     }
 }

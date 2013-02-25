@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans
- * 
+ *
+ * Copyright 2012 Jesse Glick.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,44 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import junit.framework.TestCase;
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 
-import java.util.GregorianCalendar;
-import java.util.List;
+public class RunTest {
 
-/**
- * @author Kohsuke Kawaguchi
- */
-public class RunTest extends TestCase {
-    private List<? extends Run<?,?>.Artifact> createArtifactList(String... paths) {
-        Run<FreeStyleProject,FreeStyleBuild> r = new Run<FreeStyleProject,FreeStyleBuild>(null,new GregorianCalendar()) {};
-        Run<FreeStyleProject,FreeStyleBuild>.ArtifactList list = r.new ArtifactList();
-        for (String p : paths) {
-            list.add(r.new Artifact(p,p,p,"n"+list.size()));  // Assuming all test inputs don't need urlencoding
+    @Bug(15816)
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test public void timezoneOfID() throws Exception {
+        TimeZone origTZ = TimeZone.getDefault();
+        try {
+            final Run r;
+            String id;
+            TimeZone.setDefault(TimeZone.getTimeZone("America/Chicago"));
+            ExecutorService svc = Executors.newSingleThreadExecutor();
+            try {
+                r = svc.submit(new Callable<Run>() {
+                    @Override public Run call() throws Exception {
+                        return new Run(new StubJob(), 1234567890) {};
+                    }
+                }).get();
+                TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
+                id = r.getId();
+                assertEquals(id, svc.submit(new Callable<String>() {
+                    @Override public String call() throws Exception {
+                        return r.getId();
+                    }
+                }).get());
+            } finally {
+                svc.shutdown();
+            }
+            TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+            svc = Executors.newSingleThreadExecutor();
+            try {
+                assertEquals(id, r.getId());
+                assertEquals(id, svc.submit(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return r.getId();
+                    }
+                }).get());
+            } finally {
+                svc.shutdown();
+            }
+        } finally {
+            TimeZone.setDefault(origTZ);
         }
-        list.computeDisplayName();
-        return list;
-    }
-    
-    public void testArtifactListDisambiguation1() {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"j.xml");
     }
 
-    public void testArtifactListDisambiguation2() {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"i/g.xml");
-    }
-
-    public void testArtifactListDisambiguation3() {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml","a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(),"a.xml");
-        assertEquals(a.get(1).getDisplayPath(),"a/a.xml");
-    }
 }

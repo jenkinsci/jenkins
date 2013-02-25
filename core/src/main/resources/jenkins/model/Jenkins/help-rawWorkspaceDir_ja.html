@@ -1,0 +1,14 @@
+<div>
+    マスターノード上のジョブのワークスペースを配置する場所を指定します。
+    次の変数を使用して場所を指定することができます。
+
+    <ul>
+        <li><tt>${JENKINS_HOME}</tt> &mdash; Jenkinsのホームディレクトリ
+        <li><tt>${ITEM_ROOTDIR}</tt> &mdash; ワークスペースを配置するジョブのルートディレクトリ
+        <li><tt>${ITEM_FULL_NAME}</tt> &mdash; "foo/bar"のように、'/'区切りのジョブ名
+    </ul>
+
+    <p>
+    この値を変更することで、ワークスペースをSSD、SCSIあるいはRAMディスク上にワークスペースを配置することができます。
+    デフォルト値は、<tt>${ITEM_ROOTDIR}/workspace</tt>です。
+</div>

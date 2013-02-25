@@ -48,9 +48,14 @@ public class OneOffExecutor extends Executor {
         return super.shouldRun() && work !=null;
     }
 
+    public WorkUnit getAssignedWorkUnit() {
+        return work;
+    }
+
     @Override
     protected WorkUnit grabJob() throws InterruptedException {
-        WorkUnit r = work;
+        WorkUnit r = super.grabJob();
+        assert r==work;
         work = null;
         return r;
     }

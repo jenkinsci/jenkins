@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -44,11 +45,8 @@ import java.util.regex.Pattern;
 @Extension
 public final class FingerprintCleanupThread extends AsyncPeriodicWork {
 
-    private static FingerprintCleanupThread theInstance;
-
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
-        theInstance = this;
     }
 
     public long getRecurrencePeriod() {
@@ -56,13 +54,17 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public static void invoke() {
-        theInstance.run();
+        getInstance().run();
+    }
+
+    private static FingerprintCleanupThread getInstance() {
+        return Jenkins.getInstance().getExtensionList(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
     }
 
     protected void execute(TaskListener listener) {
         int numFiles = 0;
 
-        File root = new File(Hudson.getInstance().getRootDir(),"fingerprints");
+        File root = new File(Jenkins.getInstance().getRootDir(),"fingerprints");
         File[] files1 = root.listFiles(LENGTH2DIR_FILTER);
         if(files1!=null) {
             for (File file1 : files1) {

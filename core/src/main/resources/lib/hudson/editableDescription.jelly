@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Renders ${it.description} and then allow it to be editable in place,
@@ -40,7 +41,7 @@ THE SOFTWARE.
 
     <l:hasPermission permission="${permission}">
       <div align="right"><a href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
-        <img src="${imagesURL}/16x16/notepad.gif" alt="" />
+        <img src="${imagesURL}/16x16/notepad.png" alt="" height="16" width="16" />
         <j:choose>
           <j:when test="${empty(it.description)}">
             ${%add description}

@@ -34,18 +34,22 @@ import hudson.model.Action;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Redeploy action for the entire {@link MavenModuleSetBuild}.
  * 
  * @author Kohsuke Kawaguchi
  */
+@ExportedBean
 public class MavenAggregatedArtifactRecord extends MavenAbstractArtifactRecord<MavenModuleSetBuild> implements MavenAggregatedReport {
     public final MavenModuleSetBuild parent;
 
@@ -68,17 +72,27 @@ public class MavenAggregatedArtifactRecord extends MavenAbstractArtifactRecord<M
         return null;
     }
 
+    /**
+     * {@link MavenArtifactRecord}s of every module build contributed to {@link #parent}.
+     */
+    @Exported(inline=true)
+    public List<MavenArtifactRecord> getModuleRecords() {
+        List<MavenArtifactRecord> r = new ArrayList<MavenArtifactRecord>();
+        for (MavenBuild build : parent.getModuleLastBuilds().values()) {
+            MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
+            if(mar!=null)   r.add(mar);
+        }
+        return r;
+    }
+
     public void deploy(MavenEmbedder embedder, ArtifactRepository deploymentRepository, TaskListener listener) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactDeploymentException {
         if(debug)
             listener.getLogger().println("Redeploying artifacts of "+parent+" timestamp="+parent.getTimestamp());
 
-        for (MavenBuild build : parent.getModuleLastBuilds().values()) {
-            MavenArtifactRecord mar = build.getAction(MavenArtifactRecord.class);
-            if(mar!=null) {
-                if(debug)
-                    listener.getLogger().println("Deploying module: "+build+" timestamp="+build.getTimestamp());
-                mar.deploy(embedder,deploymentRepository,listener);
-            }
+        for (MavenArtifactRecord mar : getModuleRecords()) {
+            if(debug)
+                listener.getLogger().println("Deploying module: "+mar.parent+" timestamp="+mar.parent.getTimestamp());
+            mar.deploy(embedder,deploymentRepository,listener);
         }
     }
 }

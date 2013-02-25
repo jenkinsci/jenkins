@@ -48,6 +48,7 @@ public class JUnitParserTest extends HudsonTestCase {
     static hudson.tasks.junit.TestResult theResult = null;
 
     public static final class JUnitParserTestBuilder extends Builder implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String testResultLocation;
         public JUnitParserTestBuilder(String testResultLocation) {
             this.testResultLocation = testResultLocation;
@@ -121,6 +122,10 @@ public class JUnitParserTest extends HudsonTestCase {
         assertTrue("we've got the expected failed test", failedTestsByName.containsKey(EXPECTED_FAILING_TEST_NAME));
         TestResult firstFailedTest = failedTestsByName.get(EXPECTED_FAILING_TEST_NAME);
         assertFalse("should not have passed this test", firstFailedTest.isPassed());
+        
+        assertTrue(firstFailedTest instanceof CaseResult);
+        CaseResult firstFailedTestJunit = (CaseResult)firstFailedTest;
+        assertEquals(EXPECTED_FAILING_TEST_CLASSNAME, firstFailedTestJunit.getClassName());
 
         // TODO: Dig in to the passed tests, too
 

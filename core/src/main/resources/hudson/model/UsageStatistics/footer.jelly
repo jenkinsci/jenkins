@@ -29,11 +29,12 @@ THE SOFTWARE.
 
   This file is pulled into the layout.jelly
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${it.due}">
     <script>
       Behaviour.addLoadEvent(function() {
-        loadScript("http://usage.jenkins-ci.org/usage-stats.js?${it.statData}");
+        loadScript("${app.isRootUrlSecure()?'https':'http'}://usage.jenkins-ci.org/usage-stats.js?${it.statData}");
       });
     </script>
   </j:if>

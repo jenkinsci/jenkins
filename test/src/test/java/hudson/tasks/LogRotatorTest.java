@@ -27,7 +27,6 @@ package hudson.tasks;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -128,7 +127,7 @@ public class LogRotatorTest extends HudsonTestCase {
 
 
     static Result build(FreeStyleProject project) throws Exception {
-        return project.scheduleBuild2(0, new LegacyCodeCause()).get(10, TimeUnit.SECONDS).getResult();
+        return project.scheduleBuild2(0).get(10, TimeUnit.SECONDS).getResult();
     }
 
     private static int numberOf(Run<?,?> run) {

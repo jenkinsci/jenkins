@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Automated Tests" tests="186" errors="0" failures="0" ignored="0">
+  <testsuite name="test.AutomatedTests" time="4.486">
+    <testsuite name="test.fs.FileSystemTest" time="0.014">
+      <testcase name="testPrefix" classname="test.fs.FileSystemTest" time="0.003"/>
+    </testsuite>
+    <testsuite name="test.db.DatabaseTest" time="0.014">
+       <testsuite errors="1" failures="0" hostname="whatever" name="test.3rdlevel" tests="1" time="0.0" timestamp="2011-07-22T13:12:19">
+         <error message="bla bla" type="java.lang.IllegalStateException">java.lang.IllegalStateException: bla bla
+            at test.Test(Test:35)
+        </error>
+       </testsuite>
+      <testcase name="testTable" classname="test.db.DatabaseTest" time="0.003"/>
+    </testsuite>
+  </testsuite>
+</testsuites>

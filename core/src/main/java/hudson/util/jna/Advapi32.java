@@ -48,7 +48,7 @@ BOOL WINAPI LookupAccountName(
   LPDWORD cchReferencedDomainName,
   PSID_NAME_USE peUse
 );*/
-  public boolean LookupAccountName(String lpSystemName, String lpAccountName,
+  boolean LookupAccountName(String lpSystemName, String lpAccountName,
           byte[] Sid, IntByReference cbSid, char[] ReferencedDomainName,
           IntByReference cchReferencedDomainName, PointerByReference peUse);
 
@@ -62,7 +62,7 @@ BOOL WINAPI LookupAccountSid(
   LPDWORD cchReferencedDomainName,
   PSID_NAME_USE peUse
 );*/
-  public boolean LookupAccountSid(String lpSystemName, byte[] Sid,
+  boolean LookupAccountSid(String lpSystemName, byte[] Sid,
           char[] lpName, IntByReference cchName,  char[] ReferencedDomainName,
           IntByReference cchReferencedDomainName, PointerByReference peUse);
 
@@ -71,14 +71,14 @@ BOOL ConvertSidToStringSid(
   PSID Sid,
   LPTSTR* StringSid
 );*/
-  public boolean ConvertSidToStringSid(byte[] Sid, PointerByReference StringSid);
+  boolean ConvertSidToStringSid(byte[] Sid, PointerByReference StringSid);
 
 /*
 BOOL WINAPI ConvertStringSidToSid(
   LPCTSTR StringSid,
   PSID* Sid
 );*/
-  public boolean ConvertStringSidToSid(String StringSid, PointerByReference Sid);
+  boolean ConvertStringSidToSid(String StringSid, PointerByReference Sid);
 
 /*
 SC_HANDLE WINAPI OpenSCManager(
@@ -86,13 +86,13 @@ SC_HANDLE WINAPI OpenSCManager(
   LPCTSTR lpDatabaseName,
   DWORD dwDesiredAccess
 );*/
-  public Pointer OpenSCManager(String lpMachineName, WString lpDatabaseName, int dwDesiredAccess);
+  Pointer OpenSCManager(String lpMachineName, WString lpDatabaseName, int dwDesiredAccess);
 
 /*
 BOOL WINAPI CloseServiceHandle(
   SC_HANDLE hSCObject
 );*/
-  public boolean CloseServiceHandle(Pointer hSCObject);
+  boolean CloseServiceHandle(Pointer hSCObject);
 
 /*
 SC_HANDLE WINAPI OpenService(
@@ -100,7 +100,7 @@ SC_HANDLE WINAPI OpenService(
   LPCTSTR lpServiceName,
   DWORD dwDesiredAccess
 );*/
-  public Pointer OpenService(Pointer hSCManager, String lpServiceName, int dwDesiredAccess);
+  Pointer OpenService(Pointer hSCManager, String lpServiceName, int dwDesiredAccess);
 
 /*
 BOOL WINAPI StartService(
@@ -108,7 +108,7 @@ BOOL WINAPI StartService(
   DWORD dwNumServiceArgs,
   LPCTSTR* lpServiceArgVectors
 );*/
-  public boolean StartService(Pointer hService, int dwNumServiceArgs, char[] lpServiceArgVectors);
+  boolean StartService(Pointer hService, int dwNumServiceArgs, char[] lpServiceArgVectors);
 
 /*
 BOOL WINAPI ControlService(
@@ -116,20 +116,20 @@ BOOL WINAPI ControlService(
   DWORD dwControl,
   LPSERVICE_STATUS lpServiceStatus
 );*/
-  public boolean ControlService(Pointer hService, int dwControl, SERVICE_STATUS lpServiceStatus);
+  boolean ControlService(Pointer hService, int dwControl, SERVICE_STATUS lpServiceStatus);
 
 /*
 BOOL WINAPI StartServiceCtrlDispatcher(
   const SERVICE_TABLE_ENTRY* lpServiceTable
 );*/
-  public boolean StartServiceCtrlDispatcher(Structure[] lpServiceTable);
+  boolean StartServiceCtrlDispatcher(Structure[] lpServiceTable);
 
 /*
 SERVICE_STATUS_HANDLE WINAPI RegisterServiceCtrlHandler(
   LPCTSTR lpServiceName,
   LPHANDLER_FUNCTION lpHandlerProc
 );*/
-  public Pointer RegisterServiceCtrlHandler(String lpServiceName, Handler lpHandlerProc);
+  Pointer RegisterServiceCtrlHandler(String lpServiceName, Handler lpHandlerProc);
 
 /*
 SERVICE_STATUS_HANDLE WINAPI RegisterServiceCtrlHandlerEx(
@@ -137,14 +137,14 @@ SERVICE_STATUS_HANDLE WINAPI RegisterServiceCtrlHandlerEx(
   LPHANDLER_FUNCTION_EX lpHandlerProc,
   LPVOID lpContext
 );*/
-  public Pointer RegisterServiceCtrlHandlerEx(String lpServiceName, HandlerEx lpHandlerProc, Pointer lpContext);
+  Pointer RegisterServiceCtrlHandlerEx(String lpServiceName, HandlerEx lpHandlerProc, Pointer lpContext);
 
 /*
 BOOL WINAPI SetServiceStatus(
   SERVICE_STATUS_HANDLE hServiceStatus,
   LPSERVICE_STATUS lpServiceStatus
 );*/
-  public boolean SetServiceStatus(Pointer hServiceStatus, SERVICE_STATUS lpServiceStatus);
+  boolean SetServiceStatus(Pointer hServiceStatus, SERVICE_STATUS lpServiceStatus);
 
 /*
 SC_HANDLE WINAPI CreateService(
@@ -162,7 +162,7 @@ SC_HANDLE WINAPI CreateService(
   LPCTSTR lpServiceStartName,
   LPCTSTR lpPassword
 );*/
-  public Pointer CreateService(Pointer hSCManager, String lpServiceName, String lpDisplayName,
+  Pointer CreateService(Pointer hSCManager, String lpServiceName, String lpDisplayName,
           int dwDesiredAccess, int dwServiceType, int dwStartType, int dwErrorControl,
           String lpBinaryPathName, String lpLoadOrderGroup, IntByReference lpdwTagId,
           String lpDependencies, String lpServiceStartName, String lpPassword);
@@ -171,7 +171,7 @@ SC_HANDLE WINAPI CreateService(
 BOOL WINAPI DeleteService(
   SC_HANDLE hService
 );*/
-  public boolean DeleteService(Pointer hService);
+  boolean DeleteService(Pointer hService);
 
 /*
 BOOL WINAPI ChangeServiceConfig2(
@@ -179,7 +179,7 @@ BOOL WINAPI ChangeServiceConfig2(
   DWORD dwInfoLevel,
   LPVOID lpInfo
 );*/
-  public boolean ChangeServiceConfig2(Pointer hService, int dwInfoLevel, ChangeServiceConfig2Info lpInfo);
+  boolean ChangeServiceConfig2(Pointer hService, int dwInfoLevel, ChangeServiceConfig2Info lpInfo);
 
 /*
 LONG WINAPI RegOpenKeyEx(
@@ -189,7 +189,7 @@ LONG WINAPI RegOpenKeyEx(
   REGSAM samDesired,
   PHKEY phkResult
 );*/
-  public int RegOpenKeyEx(int hKey, String lpSubKey, int ulOptions, int samDesired, IntByReference phkResult);
+  int RegOpenKeyEx(int hKey, String lpSubKey, int ulOptions, int samDesired, IntByReference phkResult);
 
 /*
 LONG WINAPI RegQueryValueEx(
@@ -200,20 +200,20 @@ LONG WINAPI RegQueryValueEx(
   LPBYTE lpData,
   LPDWORD lpcbData
 );*/
-  public int RegQueryValueEx(int hKey, String lpValueName, IntByReference lpReserved, IntByReference lpType, byte[] lpData, IntByReference lpcbData);
+  int RegQueryValueEx(int hKey, String lpValueName, IntByReference lpReserved, IntByReference lpType, byte[] lpData, IntByReference lpcbData);
 
 /*
 LONG WINAPI RegCloseKey(
   HKEY hKey
 );*/
-  public int RegCloseKey(int hKey);
+  int RegCloseKey(int hKey);
 
 /*
 LONG WINAPI RegDeleteValue(
   HKEY hKey,
   LPCTSTR lpValueName
 );*/
-  public int RegDeleteValue(int hKey, String lpValueName);
+  int RegDeleteValue(int hKey, String lpValueName);
 
 /*
 LONG WINAPI RegSetValueEx(
@@ -224,7 +224,7 @@ LONG WINAPI RegSetValueEx(
   const BYTE* lpData,
   DWORD cbData
 );*/
-  public int RegSetValueEx(int hKey, String lpValueName, int Reserved, int dwType, byte[] lpData, int cbData);
+  int RegSetValueEx(int hKey, String lpValueName, int Reserved, int dwType, byte[] lpData, int cbData);
 
 /*
 LONG WINAPI RegCreateKeyEx(
@@ -238,7 +238,7 @@ LONG WINAPI RegCreateKeyEx(
   PHKEY phkResult,
   LPDWORD lpdwDisposition
 );*/
-  public int RegCreateKeyEx(int hKey, String lpSubKey, int Reserved, String lpClass, int dwOptions,
+  int RegCreateKeyEx(int hKey, String lpSubKey, int Reserved, String lpClass, int dwOptions,
           int samDesired, WINBASE.SECURITY_ATTRIBUTES lpSecurityAttributes, IntByReference phkResult,
           IntByReference lpdwDisposition);
 
@@ -247,7 +247,7 @@ LONG WINAPI RegDeleteKey(
   HKEY hKey,
   LPCTSTR lpSubKey
 );*/
-  public int RegDeleteKey(int hKey, String name);
+  int RegDeleteKey(int hKey, String name);
 
 /*
 LONG WINAPI RegEnumKeyEx(
@@ -260,7 +260,7 @@ LONG WINAPI RegEnumKeyEx(
   LPDWORD lpcClass,
   PFILETIME lpftLastWriteTime
 );*/
-  public int RegEnumKeyEx(int hKey, int dwIndex, char[] lpName, IntByReference lpcName, IntByReference reserved,
+  int RegEnumKeyEx(int hKey, int dwIndex, char[] lpName, IntByReference lpcName, IntByReference reserved,
           char[] lpClass, IntByReference lpcClass, WINBASE.FILETIME lpftLastWriteTime);
 
 /*
@@ -274,7 +274,7 @@ LONG WINAPI RegEnumValue(
   LPBYTE lpData,
   LPDWORD lpcbData
 );*/
-  public int RegEnumValue(int hKey, int dwIndex, char[] lpValueName, IntByReference lpcchValueName, IntByReference reserved,
+  int RegEnumValue(int hKey, int dwIndex, char[] lpValueName, IntByReference lpcchValueName, IntByReference reserved,
           IntByReference lpType, byte[] lpData, IntByReference lpcbData);
 
   interface SERVICE_MAIN_FUNCTION extends StdCallCallback {
@@ -283,7 +283,7 @@ LONG WINAPI RegEnumValue(
     DWORD dwArgc,
     LPTSTR* lpszArgv
     );*/
-    public void callback(int dwArgc, Pointer lpszArgv);
+    void callback(int dwArgc, Pointer lpszArgv);
   }
 
   interface Handler extends StdCallCallback {
@@ -291,7 +291,7 @@ LONG WINAPI RegEnumValue(
     VOID WINAPI Handler(
       DWORD fdwControl
     );*/
-    public void callback(int fdwControl);
+    void callback(int fdwControl);
   }
 
   interface HandlerEx extends StdCallCallback {
@@ -302,7 +302,7 @@ LONG WINAPI RegEnumValue(
       LPVOID lpEventData,
       LPVOID lpContext
     );*/
-    public int callback(int dwControl, int dwEventType, Pointer lpEventData, Pointer lpContext);
+    int callback(int dwControl, int dwEventType, Pointer lpEventData, Pointer lpContext);
   }
 
 /*
@@ -316,7 +316,7 @@ typedef struct _SERVICE_STATUS {
   DWORD dwWaitHint;
 } SERVICE_STATUS,
  *LPSERVICE_STATUS;*/
-  public static class SERVICE_STATUS extends Structure {
+  class SERVICE_STATUS extends Structure {
     public int dwServiceType;
     public int dwCurrentState;
     public int dwControlsAccepted;
@@ -332,12 +332,12 @@ typedef struct _SERVICE_TABLE_ENTRY {
   LPSERVICE_MAIN_FUNCTION lpServiceProc;
 } SERVICE_TABLE_ENTRY,
  *LPSERVICE_TABLE_ENTRY;*/
-  public static class SERVICE_TABLE_ENTRY extends Structure {
+  class SERVICE_TABLE_ENTRY extends Structure {
     public String lpServiceName;
     public SERVICE_MAIN_FUNCTION lpServiceProc;
   }
 
-  public static class ChangeServiceConfig2Info extends Structure {
+  class ChangeServiceConfig2Info extends Structure {
   }
 
 /*
@@ -345,7 +345,7 @@ typedef struct _SERVICE_TABLE_ENTRY {
   LPTSTR lpDescription;
 } SERVICE_DESCRIPTION,
  *LPSERVICE_DESCRIPTION;*/
-  public static class SERVICE_DESCRIPTION extends ChangeServiceConfig2Info {
+  class SERVICE_DESCRIPTION extends ChangeServiceConfig2Info {
     public String lpDescription;
   }
 }

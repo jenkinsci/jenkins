@@ -1,16 +1,35 @@
 package hudson.maven;
 
+/*
+ * Olivier Lamy
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
-import hudson.model.StringParameterDefinition;
+import hudson.model.*;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.TestResultProjectAction;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
@@ -145,6 +164,87 @@ public class Maven3BuildTest extends HudsonTestCase {
         buildAndAssertSuccess(m);
         assertEquals("not only one module", 1, m.getModules().size());
     }    
+    
+    @Bug(8573)
+    public void testBuildTimeStampProperty() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-8573.zip")));
+        m.setGoals( "process-resources" );
+        buildAndAssertSuccess(m);
+        String content = m.getLastBuild().getWorkspace().child( "target/classes/test.txt" ).readToString();
+        assertFalse( content.contains( "${maven.build.timestamp}") );
+        assertFalse( content.contains( "${maven.build.timestamp}") );
+    }
+
+    @Bug(1557)
+    public void testDuplicateTestResults() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-1557.zip")));
+        m.setGoals("verify");
+        buildAndAssertSuccess(m);
+
+        int totalCount = m.getModules().iterator().next()
+                .getAction(TestResultProjectAction.class).getLastTestResultAction().getTotalCount();
+        assertEquals(4, totalCount);
+    }
+
+    @Bug(9326)
+    public void testTychoTestResults() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setRootPOM( "org.foobar.build/pom.xml" );
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-9326.zip"),"foobar"));
+        m.setGoals("verify");
+        buildAndAssertSuccess(m);
+
+        System.out.println("modules size " + m.getModules());
+
+
+        MavenModule testModule = null;
+        for (MavenModule mavenModule : m.getModules()) {
+            System.out.println("module " + mavenModule.getName() + "/" + mavenModule.getDisplayName());
+            if ("org.foobar:org.foobar.test".equals( mavenModule.getName() )) testModule = mavenModule;
+        }
+
+        AbstractTestResultAction trpa = testModule.getLastBuild().getTestResultAction();
+
+        int totalCount = trpa.getTotalCount();
+        assertEquals(1, totalCount);
+    }
+
+    @Bug(9326)
+    public void testTychoEclipseTestResults() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setRootPOM( "org.foobar.build/pom.xml" );
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("foobar_eclipse_with_fix.zip"),"foobar_eclipse"));
+        m.setGoals("verify");
+        buildAndAssertSuccess(m);
+
+        System.out.println("modules size " + m.getModules());
+
+
+        MavenModule testModule = null;
+        for (MavenModule mavenModule : m.getModules()) {
+            System.out.println("module " + mavenModule.getName() + "/" + mavenModule.getDisplayName());
+            if ("org.foobar:org.foobar.test".equals( mavenModule.getName() )) testModule = mavenModule;
+        }
+
+        AbstractTestResultAction trpa = testModule.getLastBuild().getTestResultAction();
+
+        int totalCount = trpa.getTotalCount();
+        assertEquals(1, totalCount);
+    }
     
     private static class TestReporter extends MavenReporter {
         @Override

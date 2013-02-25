@@ -6,12 +6,16 @@ work
 *.iws
 *.ipr
 .idea
+out
 
 # eclipse project file
 .settings
 .classpath
 .project
 build
+
+# vim
+*~
 
 war/images/16x16
 war/images/24x24

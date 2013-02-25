@@ -23,21 +23,41 @@
  */
 package hudson.model;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import hudson.Extension;
+import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
     private final String projectName;
+    private final String runId;
 
     @DataBoundConstructor
     public RunParameterDefinition(String name, String projectName, String description) {
         super(name, description);
         this.projectName = projectName;
+        this.runId = null;
+    }
+
+    private RunParameterDefinition(String name, String projectName, String runId, String description) {
+        super(name, description);
+        this.projectName = projectName;
+        this.runId = runId;
+    }
+
+    @Override
+    public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
+        if (defaultValue instanceof RunParameterValue) {
+            RunParameterValue value = (RunParameterValue) defaultValue;
+            return new RunParameterDefinition(getName(), value.getRunId(), getDescription());
+        } else {
+            return this;
+        }
     }
 
     @Exported
@@ -46,7 +66,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     public Job getProject() {
-        return (Job) Hudson.getInstance().getItem(projectName);
+        return Jenkins.getInstance().getItemByFullName(projectName, Job.class);
     }
 
     @Extension
@@ -65,10 +85,19 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
+        
+        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
+            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.getInstance());
+        }
+
     }
 
     @Override
     public ParameterValue getDefaultParameterValue() {
+        if (runId != null) {
+            return createValue(runId);
+        }
+
         Run<?,?> lastBuild = getProject().getLastBuild();
         if (lastBuild != null) {
         	return createValue(lastBuild.getExternalizableId());

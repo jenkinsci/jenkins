@@ -30,7 +30,7 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 
 
 /**
@@ -64,7 +64,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
     }
 
     public Descriptor<Builder> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -72,6 +72,6 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Bui
      */
     // for backward compatibility, the signature is not BuildStepDescriptor
     public static DescriptorExtensionList<Builder,Descriptor<Builder>> all() {
-        return Hudson.getInstance().<Builder,Descriptor<Builder>>getDescriptorList(Builder.class);
+        return Jenkins.getInstance().<Builder,Descriptor<Builder>>getDescriptorList(Builder.class);
     }
 }

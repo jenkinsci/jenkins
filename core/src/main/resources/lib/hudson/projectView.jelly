@@ -22,13 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Renders a list of jobs and their key information.
 
     <st:attribute name="jobs" use="required" trim="Collection">
-      Items to disable.
+      Items to show.
+    </st:attribute>
+    <st:attribute name="useFullName" use="optional" type="boolean">
+      May be interpreted by columns to display the full name of a job.
+      Will also append a parent URL to jobBaseUrl if needed.
     </st:attribute>
     <st:attribute name="jobBaseUrl" type="String">
       The base URL of all job links. Normally ${rootURL}/
@@ -53,7 +58,7 @@ THE SOFTWARE.
     <j:if test="${columnExtensions==null}">
         <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
     </j:if>
-    
+
     <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
       <d:invokeBody/>
@@ -74,7 +79,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <j:forEach var="job" items="${jobs}">
-          <t:projectViewRow />
+          <t:projectViewRow jobBaseUrl="${useFullName ? jobBaseUrl + job.parent.url : jobBaseUrl}"/>
         </j:forEach>
       </table>
       <t:iconSize><t:rssBar/></t:iconSize>

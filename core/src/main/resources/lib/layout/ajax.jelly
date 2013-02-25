@@ -32,6 +32,7 @@ THE SOFTWARE.
 
   See MatrixProject/index.jelly and ajaxMatrix.jelly for how to use this tag.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
   <j:choose>
     <j:when test="${rootURL!=null}">
@@ -42,10 +43,8 @@ THE SOFTWARE.
       <!-- called to generate partial HTML. set up HTML headers and etc -->
       <!-- copied from layout.jelly -->
       <st:contentType value="text/html;charset=UTF-8" />
-      <j:set var="rootURL" value="${request.contextPath}" />
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-      <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
-      <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
+      ${h.initPageVariables(context)}
       <j:set var="ajax" value="true"/>
       
       <d:invokeBody/>

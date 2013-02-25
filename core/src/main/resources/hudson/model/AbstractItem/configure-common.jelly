@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
 Eric Lefevre-Ardant, id:cactusman, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,11 +26,10 @@ THE SOFTWARE.
 <!--
   Parts of the configuration that applies to Project and MavenModuleSet.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
   <p:config-disableBuild/>
-  <j:if test="${app.CONCURRENT_BUILD}">
-    <f:optionalBlock field="concurrentBuild" title="${%title.concurrentbuilds}" />
-  </j:if>
+  <p:config-concurrentBuild />
 
   <j:set var="jdks" value="${app.JDKs}" />
   <j:if test="${jdks.size() gt 1}">
@@ -56,13 +55,17 @@ THE SOFTWARE.
     </f:optionalBlock>
   </j:if>
 
-  <f:section title="${%Advanced Project Options configure-common}">
+  <f:section title="${%Advanced Project Options}">
     <f:advanced>
       <p:config-quietPeriod />
       <p:config-retryCount />
       <p:config-blockWhenUpstreamBuilding />
       <p:config-blockWhenDownstreamBuilding />
       <st:include page="configure-advanced.jelly" optional="true" />
+      <f:entry title="${%Display Name}" field="displayNameOrNull">
+         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
+      </f:entry>
+      
     </f:advanced>
   </f:section>
 

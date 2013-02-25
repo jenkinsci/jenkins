@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Used by editableDescription.jelly for loading the edit form.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <j:if test="${it.class.name=='hudson.model.Hudson'}">
     <j:set var="it" value="${it.primaryView}"/>
@@ -33,7 +34,8 @@ THE SOFTWARE.
     <form action="submitDescription" method="post">
       <table>
         <f:entry help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}" />
+          <f:textarea name="description" value="${it.description}"
+                      codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
       </table>
       <div align="right">

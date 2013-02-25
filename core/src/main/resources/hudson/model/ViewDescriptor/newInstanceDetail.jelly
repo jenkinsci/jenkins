@@ -1,0 +1,6 @@
+<!--
+  Historically ViewDescriptors have put the instance details to newViewDetail.jelly, so
+  load it from there
+-->
+<?jelly escape-by-default='true'?>
+<st:include page="newViewDetail.jelly" class="${it.clazz}" xmlns:st="jelly:stapler"/>

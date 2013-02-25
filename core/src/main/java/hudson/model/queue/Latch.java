@@ -26,9 +26,11 @@ package hudson.model.queue;
 import hudson.AbortException;
 
 /**
- * A concurrency primitive that waits for N number of threads to synchronize.
- * If any of the threads are interrupted while waiting for the completion of the condition,
- * then all the involved threads get interrupted.
+ * A concurrency primitive that waits for N number of threads to synchronize,
+ * then have them all execute a certain task, then synchronize for the completion of all N tasks.
+ *
+ * If any of the threads are interrupted while waiting for the completion of the condition or
+ * fails to complete the task, then all the involved threads get interrupted and receive a failure.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -42,6 +44,11 @@ class Latch {
      */
     private Exception interrupted;
 
+    /**
+     * @param n
+     *      Number of threads that need to enter the {@link #synchronize()} method
+     *      before all of them get released.
+     */
     public Latch(int n) {
         this.n = n;
     }
@@ -53,7 +60,16 @@ class Latch {
         notifyAll();
     }
 
-
+    /**
+     * Waits for N threads to enter the {@link #synchronize()} method, then
+     * returns.
+     *
+     * @return
+     *      returns normally if N threads successfully synchronized.
+     * @throws InterruptedException
+     *      if any of the threads that were synchronizing get interrupted,
+     *      or if the {@link #abort(Throwable)} is called.
+     */
     public synchronized void synchronize() throws InterruptedException {
         check(n);
 
@@ -91,5 +107,8 @@ class Latch {
             throw (InterruptedException)new InterruptedException().initCause(interrupted);
     }
 
+    /**
+     * Once N threads gather, this method is called to execute to carry out some task.
+     */
     protected void onCriteriaMet() throws InterruptedException {}
 }

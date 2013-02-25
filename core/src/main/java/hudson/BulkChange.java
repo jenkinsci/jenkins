@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.model.Saveable;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 
@@ -78,7 +77,7 @@ import java.io.IOException;
  * </ol>
  *
  * <p>
- * See {@link Hudson#save()} as an example if you are not sure how to implement {@link Saveable}.
+ * See {@link jenkins.model.Jenkins#save()} as an example if you are not sure how to implement {@link Saveable}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.249

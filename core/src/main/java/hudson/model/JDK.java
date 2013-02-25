@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.infradna.tool.bridge_method_injector.BridgeMethodsAdded;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.FormValidation;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -99,12 +102,20 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     }
 
     /**
-     * Sets PATH and JAVA_HOME from this JDK.
+     * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
     public void buildEnvVars(Map<String,String> env) {
-        // see EnvVars javadoc for why this adss PATH.
+        // see EnvVars javadoc for why this adds PATH.
         env.put("PATH+JDK",getHome()+"/bin");
         env.put("JAVA_HOME",getHome());
+    }
+
+    /**
+     * Sets PATH and JAVA_HOME from this JDK.
+     */
+    @Override
+    public void buildEnvVars(EnvVars env) {
+        buildEnvVars((Map)env);
     }
 
     public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
@@ -142,12 +153,12 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
 
         public @Override JDK[] getInstallations() {
-            return Hudson.getInstance().getJDKs().toArray(new JDK[0]);
+            return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
         // this isn't really synchronized well since the list is Hudson.jdks :(
         public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Hudson.getInstance().getJDKs();
+            List<JDK> list = Jenkins.getInstance().getJDKs();
             list.clear();
             list.addAll(Arrays.asList(jdks));
         }
@@ -162,7 +173,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
          */
         public FormValidation doCheckHome(@QueryParameter File value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             if(value.getPath().equals(""))
                 return FormValidation.ok();
