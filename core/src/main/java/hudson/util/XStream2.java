@@ -158,7 +158,7 @@ public class XStream2 extends XStream {
                     return super.serializedClass(type);
             }
         });
-        AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getClassLoader(), getReflectionProvider(), getJvm());
+        AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getConverterLookup(), getClassLoader(), getReflectionProvider(), getJvm());
         a.autodetectAnnotations(true);
 
         mapperInjectionPoint = new MapperInjectionPoint(a);

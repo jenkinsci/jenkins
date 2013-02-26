@@ -88,7 +88,7 @@ public class CopyOnWriteMapTest extends TestCase {
 
         String out = xs.toXML(td);
         assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-TreeData>"
-                + "<map1><no-comparator/></map1><map2><no-comparator/></map2>"
+                + "<map1/><map2/>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
                 out.replaceAll("\\s+", ""));
         TreeData td2 = (TreeData)xs.fromXML(out);
