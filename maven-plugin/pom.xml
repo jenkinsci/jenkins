@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
-    <mavenVersion>3.0.4</mavenVersion>
+    <mavenVersion>3.0.5</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.13.1</aetherVersion>
     <sisuInjectVersion>2.3.0</sisuInjectVersion>
