@@ -50,10 +50,6 @@ complete {
         rewriteLicense([],apacheLicense)
     }
 
-    match("*:stapler-adjunct-timeline") {
-        rewriteLicense([],license("BSD License","http://simile.mit.edu/license.html"))
-    }
-
     match("relaxngDatatype:relaxngDatatype") {
         // see http://sourceforge.net/projects/relaxng/
         rewriteLicense([],bsdLicense);
