@@ -83,7 +83,6 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        // Use setContext (NOT getContext().setAuthentication()) so we don't affect concurrent threads for same HttpSession.
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
             this.computationalData = new HashMap<Class<?>, Object>();
