@@ -40,6 +40,7 @@ THE SOFTWARE.
   </description>
 
   <properties>
+    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
   </properties>
 
@@ -177,7 +178,8 @@ THE SOFTWARE.
           </systemPropertyVariables>
           <forkMode>perthread</forkMode> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-946 so use kill -9 to stop -->
           <reuseForks>true</reuseForks> <!-- https://jira.codehaus.org/browse/SUREFIRE-751 -->
-          <threadCount>4</threadCount> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-947 -->
+          <threadCount>${concurrency}</threadCount> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-947 -->
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
