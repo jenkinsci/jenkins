@@ -1,0 +1,15 @@
+<div>
+  執行 Shell Script (預設使用 <code>sh</code>，不過可以設定) 建置專案，該 Script 會在工作區目錄中執行。
+  輸入您 Shell Script 的內容，如果您的 Shell Script 沒有 <tt>#!/bin/sh</tt> 這類標頭，就會使用系統設定的 Shell 執行。
+  您也可以使用標頭指定撰寫別種語言的 Script (例如 <code>#!/bin/perl</code>) 或是控制 Shell 使用的選項。
+
+  <p>
+  預設會以 "-ex" 選項執行 Shell，所以每個指令都會先印出來再執行。
+  如果任何指令結束時傳出 0 以外的結束代碼，我們就認定建置失敗。
+  重覆一次，加入 <code>#!/bin/...</code> 改變這項行為模式。
+
+  <p>
+  前人血淚的教訓指出: 千萬不要把複雜的 Shell Script 放在這裡。
+  應該把 Shell Script 放到 SCM 裡，再由 Jenkins 單純的呼叫它 (透過 <tt>bash -ex myscript.sh</tt> 之類的)。
+  這樣您也可以追溯 Shell Script 的版本異動。
+</div>

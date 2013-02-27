@@ -55,18 +55,94 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class='major bug'>
+    JNA-related linkage errors on Windows not handled gracefully.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15466">issue 15466</a>)
+  <li class=rfe>
+    Added run display name as an environment variable when RunParameter is used
+    (<a href="https://github.com/jenkinsci/jenkins/pull/720">pull 720</a>)
+  <li class=bug>
+    Fixed "Manage" sub-contextmenu for non-standalone deployments
+    (<a href="https://github.com/jenkinsci/jenkins/pull/721">pull 721</a>)
+  <li class=bug>
+    Revert ampersand encoding which can cause backwad incompatibility issue
+    (<a href="https://github.com/jenkinsci/jenkins/pull/683">pull 683</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.504>What's new in 1.504</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Maven 3.0.5 upgrade.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16965">issue 16965</a>)
+  <li class=bug>
+    Not all log messages were being captured at <code>/log/all</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16952">issue 16952</a>)
+  <li class=bug>
+    Incorrect or missing XML encoding declaration on some REST API pages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16881">issue 16881</a>)
   <li class=bug>
    Fixed: Human readable file size method returns ",00" for files with byte length 0
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16630">issue 16630</a>)
   <li class=bug>
     “Build” from job context menu produced a confusing warning page.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16844">issue 16844</a>)
+  <li class=bug>
+    Maven2 builds with non-standard test plugins failed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16928">issue 16928</a>)
+  <li class=rfe>
+    Started bundling XStream 1.4.4
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12542">issue 12542</a>)
+  <li class=rfe>
+    Significant improvement in Traditional Chinese localizations.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/716">pull 716</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.502>What's new in 1.502</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.503>What's new in 1.503</a> (2013/02/26)</h3>
+<ul class=image>
+  <li class=bug>
+    ${ITEM_FULLNAME} variable was not working for Maven projects on Windows,
+    so introduced ${ITEM_FULL_NAME} instead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12251">issue 12251</a>)
+  <li class=bug>
+    Lock contention issue in build history view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16831">issue 16831</a>)
+  <li class=bug>
+    Fixed the HTTP request thread saturation problem with Winstone.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16474">issue 16474</a>)
+  <li class=bug>
+    Script evaluation script error on IE.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16561">issue 16561</a>)
+  <li class=bug>
+    surefire-reports not detected for android-maven-plugin
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16776">issue 16776</a>)
+  <li class=bug>
+    maven-failsafe-plugin tests not recognized anymore
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16696">issue 16696</a>)
+  <li class=bug>
+    UI waiting on a queue lock to display cause of queue blockage.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16833">issue 16833</a>)
+  <li class=bug>
+    UpdateCenter REST API chokes if there was a plugin installation failure.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16836">issue 16836</a>)
+  <li class=bug>
+    Missing build title in /rssAll when build has no test result.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16770">issue 16770</a>)
+  <li class=bug>
+    Changed the way matrix axis values are exposed as env variables
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11577">issue 11577</a>)
+  <li class=bug>
+    Maven 3 builds ignored quiet (-q) and debug (-X) options
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16843">issue 16843</a>)
+  <li class=rfe>
+    JNLP slave installers can now work transparently with secured Jenkins.
+    (SECURITY-54 / despite the ticket marker, this is not a security vulnerability)
+  <li class=rfe>
+    "Discard old build records" behavior is now pluggable, allowing plugins to define custom logic.
+</ul>
+<h3><a name=v1.502>What's new in 1.502</a> (2013/02/16)</h3>
 <ul class=image>
   <li class='major bug'>
     Miscellaneous security vulnerability fixes. See the advisory for more details.
@@ -85,9 +161,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16454">issue 16454</a>)
   <li class=rfe>
     Extension point to listen BuildStep execution
-
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.501>What's new in 1.501</a> (2013/02/10)</h3>
 <ul class=image>
   <li class='major bug'>

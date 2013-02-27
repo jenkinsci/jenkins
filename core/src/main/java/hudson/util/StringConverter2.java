@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.StringConverter;
 
 /**
@@ -40,13 +40,13 @@ import com.thoughtworks.xstream.converters.basic.StringConverter;
  *     Use {@link HeapSpaceStringConverter} instead.
  */
 @Deprecated
-public class StringConverter2 extends AbstractBasicConverter {
+public class StringConverter2 extends AbstractSingleValueConverter {
 
     public boolean canConvert(Class type) {
         return type.equals(String.class);
     }
 
-    protected Object fromString(String str) {
+    public Object fromString(String str) {
         return str;
     }
 }

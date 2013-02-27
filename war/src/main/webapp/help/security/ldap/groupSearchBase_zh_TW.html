@@ -1,0 +1,15 @@
+<div>
+  Jenkins 對 LDAP 的查詢之一，用來找出使用者的群組清單。
+  <p>
+    這個欄位設定用來找出包含群組的單位組織 (Organizational Unit; OU) 的查詢字串。
+    大概都是 <code>"ou=groups"</code>，所以就算欄位不填也會先從根 DN 開始用這個查詢字串搜尋。
+  </p><p>
+    如果登入嘗試結果是 "Administrative Limit Exceeded" 或類似錯誤，請盡可能依據您的 LDAP
+    結構將欄位設得越明確越好，縮小查詢查詢的範圍。如果還是一直有錯，說不定您要編輯
+    <code>jenkins.war</code> 裡的 <code>WEB-INF/security/LDAPBindSecurityRealm.groovy</code>。將這一行:<br/>
+    <code>groupSearchFilter = "(| (member={0}) (uniqueMember={0}) (memberUid={1}))";</code><br/>
+    改成只查詢您 LDAP 群組成員的欄位，例如: <br/>
+    <code>groupSearchFilter = "(member={0})";</code><br/>
+    之後重新啟動 Jenkins 再登入看看。
+  </p>
+</div>

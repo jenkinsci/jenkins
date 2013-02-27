@@ -1,0 +1,13 @@
+<div>
+  如果您的 Jenkins 在防火牆後面、不能直接連到 Internet，而且伺服器 JVM 也沒有特別設定
+  (<a href="http://download.oracle.com/javase/6/docs/technotes/guides/net/properties.html">參考 JDK 的 《Networking Properties》了解詳情</a>)。
+  可以在這裡指定 HTTP 代理伺服器名稱，讓 Jenkins 能幫您安裝外掛程式。
+  請注意，Jenkins 使用 HTTPS 協定由更新中心下載外掛程式。
+
+  <p>
+  您在這裡送出的值會被設為 <code>http.proxyHost</code> 系統屬性。
+  不填任何值代表不要設定這項屬性，Jenkins 會試著直接連線到主機。
+
+  <p>
+  如果您不確定該怎麼填，可以參考瀏覽器的代理伺服器設定。
+</div>

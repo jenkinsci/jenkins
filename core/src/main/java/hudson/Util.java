@@ -319,7 +319,13 @@ public class Util {
             return r;
         }
         if (Functions.isWindows()) {
-          return Kernel32Utils.isJunctionOrSymlink(file);
+            try {
+                return Kernel32Utils.isJunctionOrSymlink(file);
+            } catch (UnsupportedOperationException e) {
+                // fall through
+            } catch (LinkageError e) {
+                // fall through
+            }
         }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
@@ -703,7 +709,7 @@ public class Util {
 
             for (int i = 0; i < s.length(); i++) {
                 int c = s.charAt(i);
-                if (c<128 && (c!=' ' && c!='&')) {
+                if (c<128 && c!=' ') {
                     out.append((char) c);
                 } else {
                     // 1 char -> UTF8
@@ -728,8 +734,8 @@ public class Util {
     private static final boolean[] uriMap = new boolean[123];
     static {
         String raw =
-    "!  $  '()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %&        /          :;< >?                           [\]^ `                          {|}~
+    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+  //  "# %         /          :;< >?                           [\]^ `                          {|}~
   //  ^--so these are encoded
         int i;
         // Encode control chars and space
@@ -744,11 +750,9 @@ public class Util {
      * Encode a single path component for use in an HTTP URL.
      * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
      * and HTTP special characters (/;:?) as specified in RFC1738.
-     * Also escapes & for convenience.
-     * (so alphanumeric and !@$*()-_=+',. are not encoded)
+     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
      * Note that slash(/) is encoded, so the given string should be a
      * single path component used in constructing a URL.
-     * Do not use this method for encoding query parameters.
      * Method name inspired by PHP's rawurlencode.
      */
     public static String rawEncode(String s) {

@@ -1,0 +1,16 @@
+<div>
+    <p>
+        啟用後，Jenkins 就會刪掉先前建置出來的成品。
+        只保留最近幾次穩定的建置成品，以及最新建置不穩定或失敗的成品。
+    </p>
+    <p>
+        這個選項可以節省空間，也還能讓您放心的建立
+        <code>.../lastStableBuild/artifact/...</code> 或
+        <code>.../lastSuccessfulBuild/artifact/...</code> 或是
+        <code>.../lastCompletedBuild/artifact/...</code> 這類永久連結。
+    </p>
+    <p>
+        (因為建置當下還沒真的完成，Jenkins 保守假設發佈程式執行時可能會失敗，
+        所以可能會多保留幾版舊的建置成品。)
+    </p>
+</div>

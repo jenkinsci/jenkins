@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.504-SNAPSHOT</version>
+    <version>1.505-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -233,7 +233,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.3.1-jenkins-11</version>
+      <version>1.4.4-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>

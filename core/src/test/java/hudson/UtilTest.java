@@ -122,17 +122,7 @@ public class UtilTest {
         String encoded = Util.encode(urlWithSpaces);
         assertEquals(encoded, "http://hudson/job/Hudson%20Job");
     }
-    
-    /**
-     * Test that Strings that contain ampersand are correctly URL encoded.
-     */
-    @Test
-    public void testEncodeAmpersand() {
-        final String urlWithAmpersand = "http://hudson/job/Hudson-job/label1&&label2";
-        String encoded = Util.encode(urlWithAmpersand);
-        assertEquals(encoded, "http://hudson/job/Hudson-job/label1%26%26label2");
-    }
-    
+        
     /**
      * Test the rawEncode() method.
      */
@@ -141,7 +131,7 @@ public class UtilTest {
         String[] data = {  // Alternating raw,encoded
             "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz",
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "01234567890!@$*()-_=+',.", "01234567890!@$*()-_=+',.",
+            "01234567890!@$&*()-_=+',.", "01234567890!@$&*()-_=+',.",
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
             "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",

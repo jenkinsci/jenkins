@@ -1,0 +1,24 @@
+<div>
+    重新指定每組設定的建置工作區目錄。
+
+    <p>
+    Jenkins 預設會給各種不同設定獨立的目錄 (在矩陣執行時將座標值加到工作區目錄中，例如
+    <tt>/path/to/slaveroot/job/someMatrixJob/axis1/value1/axis2/value2/</tt>)。
+    Specifying this value allows you to override this behaviour.
+
+    <p>
+    很多人會設定為 "."，讓矩陣裡的每一項設定都在同一個目錄裡建置。
+
+    <p>
+    可以使用相對路徑或是絕對路徑。相對路徑是由整個矩陣的工作區起算。
+    環境變數包含所有軸線的值，假設您設定 FOO=[a,b] 跟 BAR=[x,y] 兩個軸，指定 <tt>$FOO</tt> 時，
+    FOO=a,BAR=x 及 FOO=a,BAR=y 會在 <tt>/slaveroot/job/someMatrixJob/a/</tt> 這類的目錄中建置;
+    而 FOO=b,BAR=x 及 FOO=b,BAR=y 則是在 <tt>/slaveroot/job/someMatrixJob/b/</tt> 建置。
+    透過這個方式，您可以決定哪些設定要共用工作區，哪些設定又必需獨立開來。
+
+    <p>
+    還有一些特殊環境變數可用，例如:
+    <tt>${COMBINATION}</tt> 會被展開成 <tt>axis1/value1/axis2/value2/...</tt>，
+    還有 <tt>${SHORT_COMBINATION}</tt>，會被展開成每組設定都不同的 8 字元字串。
+
+</div>
