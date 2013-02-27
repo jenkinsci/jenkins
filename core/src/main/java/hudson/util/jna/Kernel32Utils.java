@@ -77,13 +77,7 @@ public class Kernel32Utils {
     }
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-        try {
-            return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
-        } catch (UnsupportedOperationException e) {
-            return false;
-        } catch (LinkageError e) {
-            return false;
-        }
+        return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
     }
 
     /*package*/ static Kernel32 load() {

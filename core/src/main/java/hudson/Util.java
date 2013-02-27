@@ -319,7 +319,13 @@ public class Util {
             return r;
         }
         if (Functions.isWindows()) {
-          return Kernel32Utils.isJunctionOrSymlink(file);
+            try {
+                return Kernel32Utils.isJunctionOrSymlink(file);
+            } catch (UnsupportedOperationException e) {
+                // fall through
+            } catch (LinkageError e) {
+                // fall through
+            }
         }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
