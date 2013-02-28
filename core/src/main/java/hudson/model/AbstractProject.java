@@ -763,7 +763,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Reflect the submission of the pseudo 'upstream build trigger'.
      */
-    protected void convertUpstreamBuildTrigger(Set<AbstractProject> upstream) throws IOException {
+    /* package */ void convertUpstreamBuildTrigger(Set<AbstractProject> upstream) throws IOException {
 
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
