@@ -43,7 +43,7 @@ THE SOFTWARE.
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/</contextPath><!-- context path during test -->
+    <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
   </properties>
 
@@ -386,7 +386,6 @@ THE SOFTWARE.
         <artifactId>maven-jenkins-dev-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <contextPath>${contextPath}</contextPath>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
@@ -466,6 +465,7 @@ THE SOFTWARE.
             </systemProperty>
           </systemProperties>
           <webApp>
+            <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
           </webApp>
         </configuration>
