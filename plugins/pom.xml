@@ -112,6 +112,7 @@
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
+          <contextPath>/jenkins</contextPath>
         </configuration>
       </plugin>
       <plugin>
