@@ -200,7 +200,9 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                     LOGGER.fine(MessageFormat.format("{0} : {1} failed", Build.this.toString(), bs));
                     return false;
                 }
-                if (getExecutor().isInterrupted()) {
+                
+                Executor executor = getExecutor();
+                if (executor != null && executor.isInterrupted()) {
                     // someone asked build interruption, let stop the build before trying to run another build step
                     throw new InterruptedException();
                 }
