@@ -513,6 +513,25 @@ public class Util {
         else                return s;
     }
 
+
+    /**
+     * Ensure string ends with suffix
+     *
+     * @param subject Examined string
+     * @param suffix  Desired suffix
+     * @return Original subject in case it already ends with suffix, null in
+     *         case subject was null and subject + suffix otherwise.
+     * @since 1.505
+     */
+    public static String ensureEndsWith(String subject, String suffix) {
+
+        if (subject == null) return null;
+
+        if (subject.endsWith(suffix)) return subject;
+
+        return subject + suffix;
+    }
+
     /**
      * Computes MD5 digest of the given input stream.
      *
