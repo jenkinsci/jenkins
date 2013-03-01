@@ -264,4 +264,11 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    public void testBreakableString() {
+
+        assertEquals("Hello world!", Functions.breakableString("Hello world!"));
+        assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
+        assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
+    }
 }
