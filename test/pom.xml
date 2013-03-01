@@ -155,6 +155,11 @@ THE SOFTWARE.
       <artifactId>findbugs-annotations</artifactId>
       <version>1.3.9-1</version>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.geb</groupId>
+      <artifactId>geb-implicit-assertions</artifactId>
+      <version>0.7.2</version>
+    </dependency>
   </dependencies>
 
   <build>
