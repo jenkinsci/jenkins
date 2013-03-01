@@ -53,7 +53,7 @@ THE SOFTWARE.
           </a>
         </td>
         <td>
-          <a href="${jobBaseUrl}${b.parent.url}" class="model-link">${b.parent.fullDisplayName}</a>
+          <a href="${jobBaseUrl}${b.parent.url}" class="model-link"><l:breakable value="${b.parent.fullDisplayName}"/></a>
           <st:nbsp/>
           <a href="${jobBaseUrl}${b.url}" class="model-link">${b.displayName}</a>
         </td>
