@@ -27,7 +27,8 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.*;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
 import hudson.Launcher;
@@ -38,6 +39,10 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
+
+import jenkins.model.Jenkins;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.MemoryAssert;
@@ -45,6 +50,10 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
@@ -284,5 +293,40 @@ public class AbstractProjectTest extends HudsonTestCase {
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assertTrue(job.getLastBuild() != null);
+    }
+
+    @Bug(13502)
+    public void testHandleBuildTrigger() throws Exception {
+        Project u = createFreeStyleProject("u"),
+                d = createFreeStyleProject("d"),
+                e = createFreeStyleProject("e");
+
+        u.addPublisher(new BuildTrigger("d", Result.SUCCESS));
+
+        jenkins.setSecurityRealm(createDummySecurityRealm());
+        ProjectMatrixAuthorizationStrategy authorizations = new ProjectMatrixAuthorizationStrategy();
+        jenkins.setAuthorizationStrategy(authorizations);
+
+        authorizations.add(Jenkins.ADMINISTER, "admin");
+        authorizations.add(Jenkins.READ, "user");
+
+        // user can READ u and CONFIGURE e
+        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Job.READ, Collections.singleton("user"));
+        u.addProperty(new AuthorizationMatrixProperty(permissions));
+
+        permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Job.CONFIGURE, Collections.singleton("user"));
+        e.addProperty(new AuthorizationMatrixProperty(permissions));
+
+        User user = User.get("user");
+        SecurityContext sc = ACL.impersonate(user.impersonate());
+        try {
+            e.convertUpstreamBuildTrigger(Collections.<AbstractProject>emptySet());
+        } finally {
+            SecurityContextHolder.setContext(sc);
+        }
+
+        assertEquals(1, u.getPublishersList().size());
     }
 }
