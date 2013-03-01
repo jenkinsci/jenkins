@@ -1864,6 +1864,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @since 1.66
      * @see Descriptor#getCheckUrl(String)
      * @see #getRootUrlFromRequest()
+     * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
     public String getRootUrl() {
         String url = JenkinsLocationConfiguration.get().getUrl();

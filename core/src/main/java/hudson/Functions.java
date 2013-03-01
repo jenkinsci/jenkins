@@ -183,6 +183,8 @@ public class Functions {
             the same thing as "/abc/def.ghi", but this avoids the stale cache
             problem when the user upgrades to new Jenkins. Stapler also sets a long
             future expiration dates for such static resources.
+
+            see https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML
          */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
