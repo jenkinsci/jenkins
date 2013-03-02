@@ -299,6 +299,8 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
                 logger.println(Messages.ManagedWindowsServiceLauncher_CopyingSlaveExe());
                 copyStreamAndClose(getClass().getResource("/windows-service/jenkins.exe").openStream(), new SmbFile(remoteRoot,"jenkins-slave.exe").getOutputStream());
 
+                copyStreamAndClose(getClass().getResource("/windows-service/jenkins.exe.config").openStream(), new SmbFile(remoteRoot,"jenkins-slave.exe.config").getOutputStream());
+
                 copySlaveJar(logger, remoteRoot);
 
                 // copy jenkins-slave.xml
