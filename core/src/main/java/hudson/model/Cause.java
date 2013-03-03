@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
@@ -37,6 +36,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -190,8 +190,11 @@ public abstract class Cause {
             return upstreamBuild;
         }
 
-        public @CheckForNull Run getUpstreamRun() {
-            Job job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
+        /**
+         * @since 1.505
+         */
+        public @CheckForNull Run<?,?> getUpstreamRun() {
+            Job<?,?> job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
             return job.getBuildByNumber(upstreamBuild);
         }
 
