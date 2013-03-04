@@ -27,7 +27,6 @@ import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.util.EditDistance;
-import hudson.util.EnumConverter;
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
