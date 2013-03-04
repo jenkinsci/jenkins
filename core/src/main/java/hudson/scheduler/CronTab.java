@@ -413,6 +413,12 @@ public final class CronTab {
      * "* 0 * * *"
      */
     public String checkSanity() {
+	// "* * * * *" will hammer the CI server, but isn't as suspicious as "* 0 * * *",
+	// so we exclude it from the warning heuristic below:
+        if ("* * * * *".equals(spec)) {
+	    return null;
+	}
+
         for( int i=0; i<5; i++ ) {
             long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
             for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
@@ -421,7 +427,8 @@ public final class CronTab {
                     // if we have a sparse rank, one of them better be the left-most.
                     if(i>0)
                         return "Do you really mean \"every minute\" when you say \""+spec+"\"? "+
-                                "Perhaps you meant \"0 "+spec.substring(spec.indexOf(' ')+1)+"\"";
+                                "Perhaps you meant \"0 "+spec.substring(spec.indexOf(' ')+1)+"\", for "+
+			        "\"once per hour\"?";
                     // once we find a sparse rank, upper ranks don't matter
                     return null;
                 }
