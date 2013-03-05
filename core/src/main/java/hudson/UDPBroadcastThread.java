@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
@@ -52,6 +53,7 @@ public class UDPBroadcastThread extends Thread {
     public final OneShotEvent ready = new OneShotEvent();
     private MulticastSocket mcs;
     private boolean shutdown;
+    static boolean udpHandlingProblem; // for tests
 
     /**
      * @deprecated as of 1.416
@@ -67,6 +69,7 @@ public class UDPBroadcastThread extends Thread {
         mcs = new MulticastSocket(PORT);
     }
 
+    @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     @Override
     public void run() {
         try {
@@ -106,6 +109,7 @@ public class UDPBroadcastThread extends Thread {
         } catch (IOException e) {
             if (shutdown)   return; // forcibly closed
             LOGGER.log(Level.WARNING, "UDP handling problem",e);
+            udpHandlingProblem = true;
         }
     }
 
