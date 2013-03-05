@@ -195,7 +195,7 @@ public abstract class Cause {
          */
         public @CheckForNull Run<?,?> getUpstreamRun() {
             Job<?,?> job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
-            return job.getBuildByNumber(upstreamBuild);
+            return job != null ? job.getBuildByNumber(upstreamBuild) : null;
         }
 
         @Exported(visibility=3)
