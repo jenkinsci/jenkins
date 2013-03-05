@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,31 +30,63 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import hudson.Extension;
+import hudson.util.EnumConverter;
+import hudson.util.RunList;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
+    /**
+     * Constants that control how Run Parameter is filtered
+     */
+    public enum RunParameterFilter {
+        ALL,
+        STABLE,
+        SUCCESSFUL,
+        COMPLETED;
+
+        public String getName() {
+            return name();
+        }
+
+        static {
+            Stapler.CONVERT_UTILS.register(new EnumConverter(), RunParameterFilter.class);
+        }
+    }
+    
     private final String projectName;
     private final String runId;
+    private final RunParameterFilter filter;
 
     @DataBoundConstructor
-    public RunParameterDefinition(String name, String projectName, String description) {
+    public RunParameterDefinition(String name, String projectName, String description, RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = null;
+        this.filter = filter;
     }
 
-    private RunParameterDefinition(String name, String projectName, String runId, String description) {
+    /**
+     * @deprecated as of 1.517
+     */ 
+    public RunParameterDefinition(String name, String projectName, String description) {
+    	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
+    	this(name, projectName, description, RunParameterFilter.ALL);
+    }
+
+    private RunParameterDefinition(String name, String projectName, String runId, String description, RunParameterFilter filter) {
         super(name, description);
         this.projectName = projectName;
         this.runId = runId;
+        this.filter = filter;
     }
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
         if (defaultValue instanceof RunParameterValue) {
             RunParameterValue value = (RunParameterValue) defaultValue;
-            return new RunParameterDefinition(getName(), value.getRunId(), getDescription());
+            return new RunParameterDefinition(getName(), value.getRunId(), getDescription(), getFilter());
         } else {
             return this;
         }
@@ -67,6 +99,32 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     public Job getProject() {
         return Jenkins.getInstance().getItemByFullName(projectName, Job.class);
+    }
+
+    /**
+     * @return The current filter value, if filter is null, returns ALL
+     */
+    public RunParameterFilter getFilter() {
+    	// if filter is null, default to RunParameterFilter.ALL
+        return (null == filter) ? RunParameterFilter.ALL : filter;
+    }
+
+    /**
+     * @since 1.517
+     * @return Returns a list of builds, filtered based on the filter value.
+     */
+    public RunList getBuilds() {
+        // use getFilter() method so we dont have to worry about null filter value.
+        switch (getFilter()) {
+            case COMPLETED:
+                return getProject().getBuilds().overThresholdOnly(Result.ABORTED);
+            case SUCCESSFUL:
+                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE);
+            case STABLE	:
+                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS);
+            default:
+                return getProject().getBuilds();
+        }
     }
 
     @Extension
@@ -98,7 +156,24 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return createValue(runId);
         }
 
-        Run<?,?> lastBuild = getProject().getLastBuild();
+        Run<?,?> lastBuild = null;
+
+        // use getFilter() so we dont have to worry about null filter value.
+        switch (getFilter()) {
+        case COMPLETED:
+            lastBuild = getProject().getLastCompletedBuild();
+            break;
+        case SUCCESSFUL:
+            lastBuild = getProject().getLastSuccessfulBuild();
+            break;
+        case STABLE	:
+            lastBuild = getProject().getLastStableBuild();
+            break;
+        default:
+            lastBuild = getProject().getLastBuild();
+            break;
+        }
+
         if (lastBuild != null) {
         	return createValue(lastBuild.getExternalizableId());
         } else {

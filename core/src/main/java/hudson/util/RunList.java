@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -236,6 +236,19 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return filter(new Predicate<R>() {
             public boolean apply(R r) {
                 return r.getResult()!=Result.SUCCESS;
+            }
+        });
+    }
+
+    /**
+     * Filter the list to builds >= threshold.
+     * 
+     * @since 1.516
+     */
+    public RunList<R> overThresholdOnly(final Result threshold) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
             }
         });
     }
