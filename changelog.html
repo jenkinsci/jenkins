@@ -55,7 +55,9 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Preview function for textareas using Jenkins markup did not work when CSRF protection was enabled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17085">issue 17085</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -79,7 +81,7 @@ Upcoming changes</a>
     Absolute URLs in console output
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16368">issue 16368</a>)
   <li class=bug>
-    Revert ampersand encoding which can cause backwad incompatibility issue
+    Revert ampersand encoding which can cause backward incompatibility issue
     (<a href="https://github.com/jenkinsci/jenkins/pull/683">pull 683</a>)
   <li class=bug>
     Fix dependency graph computation when upstream build trigger is involved
