@@ -29,10 +29,19 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 
-public class RunParameterDefinitionTest {
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+
+public class RunParameterDefinitionTest extends HudsonTestCase {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
@@ -47,7 +56,7 @@ public class RunParameterDefinitionTest {
         String id = build2.getExternalizableId();
         assertEquals("dir/sub dir/some project#2", id);
         assertEquals(build2, Run.fromExternalizableId(id));
-        RunParameterDefinition def = new RunParameterDefinition("build", "dir/sub dir/some project", "my build");
+        RunParameterDefinition def = new RunParameterDefinition("build", "dir/sub dir/some project", "my build", null);
         assertEquals("dir/sub dir/some project", def.getProjectName());
         assertEquals(p, def.getProject());
         EnvVars env = new EnvVars();
@@ -65,4 +74,224 @@ public class RunParameterDefinitionTest {
         assertEquals("2", env.get("build_NUMBER"));
     }
 
+    @Test
+    public void testNullThreshold() throws Exception {
+        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
+        successfulBuild.setResult(Result.SUCCESS);
+
+        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
+        unstableBuild.setResult(Result.UNSTABLE);
+
+        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
+        failedBuild.setResult(Result.FAILURE);
+
+        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
+        abortedBuild.setResult(Result.ABORTED);
+
+        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
+        notBuiltBuild.setResult(Result.NOT_BUILT);
+
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new RunParameterDefinition("run", childProject.getName(), "run description", null));
+        project.addProperty(pdp);
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+
+        HtmlForm form = page.getFormByName("parameters");
+
+        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        assertNotNull(element);
+        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertEquals(jenkins.getRootUrl() + childProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+    }
+
+    @Test
+    public void testALLThreshold() throws Exception {
+        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
+        successfulBuild.setResult(Result.SUCCESS);
+
+        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
+        unstableBuild.setResult(Result.UNSTABLE);
+
+        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
+        failedBuild.setResult(Result.FAILURE);
+
+        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
+        abortedBuild.setResult(Result.ABORTED);
+
+        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
+        notBuiltBuild.setResult(Result.NOT_BUILT);
+
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new RunParameterDefinition("run", childProject.getName(), "run description", "ALL"));
+        project.addProperty(pdp);
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+
+        HtmlForm form = page.getFormByName("parameters");
+
+        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        assertNotNull(element);
+        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertEquals(jenkins.getRootUrl() + childProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+    }
+
+    @Test
+    public void testSUCCESSThreshold() throws Exception {
+        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+
+        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
+        successfulBuild.setResult(Result.SUCCESS);
+
+        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
+        unstableBuild.setResult(Result.UNSTABLE);
+
+        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
+        failedBuild.setResult(Result.FAILURE);
+
+        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
+        abortedBuild.setResult(Result.ABORTED);
+
+        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
+        notBuiltBuild.setResult(Result.NOT_BUILT);
+
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new RunParameterDefinition("run", childProject.getName(), "run description", "SUCCESS"));
+        project.addProperty(pdp);
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+
+        HtmlForm form = page.getFormByName("parameters");
+
+        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        assertNotNull(element);
+        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertEquals(jenkins.getRootUrl() + childProject.getLastStableBuild().getUrl(), builder.getEnvVars().get("RUN"));
+    }
+
+    @Test
+    public void testUNSTABLEThreshold() throws Exception {
+        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
+        successfulBuild.setResult(Result.SUCCESS);
+
+        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
+        unstableBuild.setResult(Result.UNSTABLE);
+
+        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
+        failedBuild.setResult(Result.FAILURE);
+
+        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
+        abortedBuild.setResult(Result.ABORTED);
+
+        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
+        notBuiltBuild.setResult(Result.NOT_BUILT);
+
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new RunParameterDefinition("run", childProject.getName(), "run description", "UNSTABLE"));
+        project.addProperty(pdp);
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+
+        HtmlForm form = page.getFormByName("parameters");
+
+        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        assertNotNull(element);
+        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertEquals(jenkins.getRootUrl() + childProject.getLastUnstableBuild().getUrl(), builder.getEnvVars().get("RUN"));
+    }
+
+    @Test
+    public void testFAILUREThreshold() throws Exception {
+        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
+        successfulBuild.setResult(Result.SUCCESS);
+
+        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
+        unstableBuild.setResult(Result.UNSTABLE);
+
+        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
+        failedBuild.setResult(Result.FAILURE);
+
+        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
+        abortedBuild.setResult(Result.ABORTED);
+
+        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
+        notBuiltBuild.setResult(Result.NOT_BUILT);
+
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new RunParameterDefinition("run", childProject.getName(), "run description", "FAILURE"));
+        project.addProperty(pdp);
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(builder);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+
+        HtmlForm form = page.getFormByName("parameters");
+
+        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        assertNotNull(element);
+        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertEquals(jenkins.getRootUrl() + childProject.getLastFailedBuild().getUrl(), builder.getEnvVars().get("RUN"));
+    }
 }

@@ -241,6 +241,29 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * Filter the list to successful builds only.
+     */
+    public RunList<R> successfulOnly() {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return r.getResult()==Result.SUCCESS;
+            }
+        });
+    }
+
+    /**
+     * Filter the list to builds >= threshold.
+     * If null threshold is passed, it will not filter the list.
+     */
+    public RunList<R> overThresholdOnly(final Result threshold) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
+            }
+        });
+    }
+
+    /**
      * Filter the list to builds on a single node only
      */
     public RunList<R> node(final Node node) {
