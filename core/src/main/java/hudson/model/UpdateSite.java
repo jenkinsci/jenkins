@@ -85,18 +85,20 @@ import static hudson.util.TimeUnit2.*;
 public class UpdateSite {
     /**
      * What's the time stamp of data file?
+     * 0 means never.
      */
-    private transient long dataTimestamp = -1;
+    private transient volatile long dataTimestamp;
 
     /**
      * When was the last time we asked a browser to check the data for us?
+     * 0 means never.
      *
      * <p>
      * There's normally some delay between when we send HTML that includes the check code,
      * until we get the data back, so this variable is used to avoid asking too many browseres
      * all at once.
      */
-    private transient volatile long lastAttempt = -1;
+    private transient volatile long lastAttempt;
 
     /**
      * If the attempt to fetch data fails, we progressively use longer time out before retrying,
@@ -130,14 +132,6 @@ public class UpdateSite {
     }
 
     /**
-     * When read back from XML, initialize them back to -1.
-     */
-    private Object readResolve() {
-        dataTimestamp = lastAttempt = -1;
-        return this;
-    }
-
-    /**
      * Get ID string.
      */
     @Exported
@@ -147,6 +141,7 @@ public class UpdateSite {
 
     @Exported
     public long getDataTimestamp() {
+        assert dataTimestamp >= 0;
         return dataTimestamp;
     }
 
@@ -171,7 +166,11 @@ public class UpdateSite {
                         String uncleanJson = IOUtils.toString(is,"UTF-8");
                         int jsonStart = uncleanJson.indexOf("{\"");
                         if (jsonStart >= 0) {
-                            return updateData(uncleanJson.substring(jsonStart), signatureCheck);
+                            uncleanJson = uncleanJson.substring(jsonStart);
+                            int end = uncleanJson.lastIndexOf('}');
+                            if (end>0)
+                                uncleanJson = uncleanJson.substring(0,end+1);
+                            return updateData(uncleanJson, signatureCheck);
                         } else {
                             throw new IOException("Could not find json in content of " +
                             		"update center from url: "+src.toExternalForm());
@@ -239,7 +238,7 @@ public class UpdateSite {
      */
     public boolean isDue() {
         if(neverUpdate)     return false;
-        if(dataTimestamp==-1)
+        if(dataTimestamp == 0)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
         

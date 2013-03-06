@@ -94,6 +94,7 @@ import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -110,6 +111,7 @@ import hudson.UDPBroadcastThread;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
+import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.cli.CLICommand;
 import hudson.cli.CliEntryPoint;
@@ -195,6 +197,7 @@ import jenkins.InitReactorRunner;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
+import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -247,6 +250,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static hudson.init.InitMilestone.*;
+import hudson.security.BasicAuthenticationFilter;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -790,7 +794,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH);
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
             // initialization consists of ...
             executeReactor( is,
@@ -1922,6 +1926,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
+        for (WorkspaceLocator l : WorkspaceLocator.all()) {
+            FilePath workspace = l.locate(item, this);
+            if (workspace != null) {
+                return workspace;
+            }
+        }
+ 
         return new FilePath(expandVariablesForDirectory(workspaceDir, item));
     }
 
@@ -2702,7 +2713,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
-            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
+            for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
 
             version = VERSION;
@@ -2886,7 +2897,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Check if the given name is suitable as a name
      * for job, view, etc.
      *
-     * @throws ParseException
+     * @throws Failure
      *      if the given name is not good
      */
     public static void checkGoodName(String name) throws Failure {
@@ -2907,7 +2918,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Makes sure that the given name is good as a job name.
-     * @return trimmed name if valid; throws ParseException if not
+     * @return trimmed name if valid; throws Failure if not
      */
     private String checkJobName(String name) throws Failure {
         checkGoodName(name);

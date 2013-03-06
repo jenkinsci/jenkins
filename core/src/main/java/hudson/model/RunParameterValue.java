@@ -87,7 +87,7 @@ public class RunParameterValue extends ParameterValue {
     }
     
     @Override
-    public String getShortDescription() {
+    public String toString() {
     	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
     }
 

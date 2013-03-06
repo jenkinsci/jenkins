@@ -782,6 +782,7 @@ public class Functions {
      *
      * @param predicate
      *      Filter the descriptors based on {@link GlobalConfigurationCategory}
+     * @since 1.494
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
@@ -807,12 +808,31 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but with a constant truth predicate, to include all descriptors.
+     */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
         return getSortedDescriptorsForGlobalConfig(Predicates.<GlobalConfigurationCategory>alwaysTrue());
     }
 
+    /**
+     * @deprecated This is rather meaningless.
+     */
+    @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
         return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
+    }
+
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but for unclassified descriptors only.
+     * @since 1.506
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassified() {
+        return getSortedDescriptorsForGlobalConfig(new Predicate<GlobalConfigurationCategory>() {
+            public boolean apply(GlobalConfigurationCategory cat) {
+                return cat instanceof GlobalConfigurationCategory.Unclassified;
+            }
+        });
     }
     
     private static class Tag implements Comparable<Tag> {

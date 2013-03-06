@@ -171,7 +171,7 @@ public class FileParameterValue extends ParameterValue {
 	}
 
     @Override
-    public String getShortDescription() {
+    public String toString() {
     	return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
     }
 

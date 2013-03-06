@@ -53,7 +53,7 @@ THE SOFTWARE.
       </f:entry>
 
       <!-- global configuration from everyone -->
-      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigNoSecurity()}">
+      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigUnclassified()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
         <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
