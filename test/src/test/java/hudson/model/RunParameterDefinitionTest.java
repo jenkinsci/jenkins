@@ -24,30 +24,22 @@
 
 package hudson.model;
 
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import static org.junit.Assert.assertEquals;
 import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.LogTaskListener;
-import static org.junit.Assert.*;
+
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
-
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
 public class RunParameterDefinitionTest {
 
