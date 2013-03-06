@@ -24,7 +24,15 @@
 
 package hudson.model;
 
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import hudson.EnvVars;
+import hudson.Launcher;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import hudson.util.LogTaskListener;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,12 +49,16 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
-public class RunParameterDefinitionTest extends HudsonTestCase {
+public class RunParameterDefinitionTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    private static final Logger LOGGER = Logger.getLogger(Run.class.getName());
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @Bug(16462)
-    @Test public void inFolders() throws Exception {
+    @Test
+    public void inFolders() throws Exception {
         MockFolder dir = j.createFolder("dir");
         MockFolder subdir = dir.createProject(MockFolder.class, "sub dir");
         FreeStyleProject p = subdir.createProject(FreeStyleProject.class, "some project");
@@ -75,223 +87,248 @@ public class RunParameterDefinitionTest extends HudsonTestCase {
     }
 
     @Test
-    public void testNullThreshold() throws Exception {
-        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
-        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
-        successfulBuild.setResult(Result.SUCCESS);
+    public void testNULLThreshold() throws Exception {
 
-        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
-        unstableBuild.setResult(Result.UNSTABLE);
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
-        failedBuild.setResult(Result.FAILURE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
-        abortedBuild.setResult(Result.ABORTED);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
-        notBuiltBuild.setResult(Result.NOT_BUILT);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleProject project = createFreeStyleProject();
-        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
-                new RunParameterDefinition("run", childProject.getName(), "run description", null));
-        project.addProperty(pdp);
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             null));
+        paramProject.addProperty(pdp);
 
-        WebClient wc = new WebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
-
-        HtmlForm form = page.getFormByName("parameters");
-
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
-        assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
-
-        submit(form);
-        Queue.Item q = jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
-
-        assertEquals(jenkins.getRootUrl() + childProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(project.getLastBuild().getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
 
+    
     @Test
     public void testALLThreshold() throws Exception {
-        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
-        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
-        successfulBuild.setResult(Result.SUCCESS);
 
-        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
-        unstableBuild.setResult(Result.UNSTABLE);
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
-        failedBuild.setResult(Result.FAILURE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
-        abortedBuild.setResult(Result.ABORTED);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
-        notBuiltBuild.setResult(Result.NOT_BUILT);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleProject project = createFreeStyleProject();
-        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
-                new RunParameterDefinition("run", childProject.getName(), "run description", "ALL"));
-        project.addProperty(pdp);
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "ALL"));
+        paramProject.addProperty(pdp);
 
-        WebClient wc = new WebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
-
-        HtmlForm form = page.getFormByName("parameters");
-
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
-        assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
-
-        submit(form);
-        Queue.Item q = jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
-
-        assertEquals(jenkins.getRootUrl() + childProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(project.getLastBuild().getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
 
     @Test
-    public void testSUCCESSThreshold() throws Exception {
-        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
+    public void testABORTEDThreshold() throws Exception {
 
-        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
-        successfulBuild.setResult(Result.SUCCESS);
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
-        unstableBuild.setResult(Result.UNSTABLE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
-        failedBuild.setResult(Result.FAILURE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
-        abortedBuild.setResult(Result.ABORTED);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
-        notBuiltBuild.setResult(Result.NOT_BUILT);
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "ABORTED"));
+        paramProject.addProperty(pdp);
 
-        FreeStyleProject project = createFreeStyleProject();
-        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
-                new RunParameterDefinition("run", childProject.getName(), "run description", "SUCCESS"));
-        project.addProperty(pdp);
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
-
-        WebClient wc = new WebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
-
-        HtmlForm form = page.getFormByName("parameters");
-
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
-        assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
-
-        submit(form);
-        Queue.Item q = jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
-
-        assertEquals(jenkins.getRootUrl() + childProject.getLastStableBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(abortedBuild.getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
-
+    
     @Test
-    public void testUNSTABLEThreshold() throws Exception {
-        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
-        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
-        successfulBuild.setResult(Result.SUCCESS);
+    public void testNOT_BUILTThreshold() throws Exception {
 
-        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
-        unstableBuild.setResult(Result.UNSTABLE);
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
-        failedBuild.setResult(Result.FAILURE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
-        abortedBuild.setResult(Result.ABORTED);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
-        notBuiltBuild.setResult(Result.NOT_BUILT);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleProject project = createFreeStyleProject();
-        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
-                new RunParameterDefinition("run", childProject.getName(), "run description", "UNSTABLE"));
-        project.addProperty(pdp);
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "NOT_BUILT"));
+        paramProject.addProperty(pdp);
 
-        WebClient wc = new WebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
-
-        HtmlForm form = page.getFormByName("parameters");
-
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
-        assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
-
-        submit(form);
-        Queue.Item q = jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
-
-        assertEquals(jenkins.getRootUrl() + childProject.getLastUnstableBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(notBuiltBuild.getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
     }
-
+    
     @Test
     public void testFAILUREThreshold() throws Exception {
-        FreeStyleProject childProject = jenkins.createProject(FreeStyleProject.class, "childProject");
-        FreeStyleBuild successfulBuild = childProject.scheduleBuild2(0).get();
-        successfulBuild.setResult(Result.SUCCESS);
 
-        FreeStyleBuild unstableBuild = childProject.scheduleBuild2(0).get();
-        unstableBuild.setResult(Result.UNSTABLE);
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild failedBuild = childProject.scheduleBuild2(0).get();
-        failedBuild.setResult(Result.FAILURE);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild abortedBuild = childProject.scheduleBuild2(0).get();
-        abortedBuild.setResult(Result.ABORTED);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleBuild notBuiltBuild = childProject.scheduleBuild2(0).get();
-        notBuiltBuild.setResult(Result.NOT_BUILT);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
 
-        FreeStyleProject project = createFreeStyleProject();
-        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
-                new RunParameterDefinition("run", childProject.getName(), "run description", "FAILURE"));
-        project.addProperty(pdp);
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "FAILURE"));
+        paramProject.addProperty(pdp);
 
-        WebClient wc = new WebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(failedBuild.getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+    }
+    
+    @Test
+    public void testUNSTABLEThreshold() throws Exception {
 
-        HtmlForm form = page.getFormByName("parameters");
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
 
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
-        assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
 
-        submit(form);
-        Queue.Item q = jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
 
-        assertEquals(jenkins.getRootUrl() + childProject.getLastFailedBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
+
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "UNSTABLE"));
+        paramProject.addProperty(pdp);
+
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(unstableBuild.getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+    }
+    
+    @Test
+    public void testSUCCESSThreshold() throws Exception {
+
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
+
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.UNSTABLE)));
+        FreeStyleBuild unstableBuild = project.scheduleBuild2(0).get();
+
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.FAILURE)));
+        FreeStyleBuild failedBuild = project.scheduleBuild2(0).get();
+
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.NOT_BUILT)));
+        FreeStyleBuild notBuiltBuild = project.scheduleBuild2(0).get();
+        
+        project.getPublishersList().replaceBy(Collections.singleton(new ResultPublisher(Result.ABORTED)));
+        FreeStyleBuild abortedBuild = project.scheduleBuild2(0).get();
+
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp = 
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN", 
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             "SUCCESS"));
+        paramProject.addProperty(pdp);
+
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(successfulBuild.getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+    }
+    
+    
+    static class ResultPublisher extends Publisher {
+
+        private Result result = Result.FAILURE;
+
+        public ResultPublisher(Result result) {
+            this.result = result;
+        }
+
+        public @Override
+        boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+            build.setResult(result);
+            return true;
+        }
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.NONE;
+        }
+
+        public Descriptor<Publisher> getDescriptor() {
+            return new Descriptor<Publisher>(ResultPublisher.class) {
+                public String getDisplayName() {
+                    return "ResultPublisher";
+                }
+            };
+        }
     }
 }
