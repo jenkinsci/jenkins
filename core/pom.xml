@@ -199,7 +199,7 @@ THE SOFTWARE.
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.1-rev7</version>
+      <version>2.4-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
