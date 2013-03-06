@@ -284,7 +284,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 newestTs = s.getDataTimestamp();
             }
         }
-        if(newestTs<0)     return "N/A";
+        if (newestTs < 0) {
+            return Messages.UpdateCenter_n_a();
+        }
         return Util.getPastTimeString(System.currentTimeMillis()-newestTs);
     }
 
