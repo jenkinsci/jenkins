@@ -100,10 +100,12 @@ var crumb = {
     wrap: function(headers) {
         if (this.fieldName!=null) {
             if (headers instanceof Array)
+                // XXX prototype.js only seems to interpret object
                 headers.push(this.fieldName, this.value);
             else
                 headers[this.fieldName]=this.value;
         }
+        // XXX return value unused
         return headers;
     },
 
