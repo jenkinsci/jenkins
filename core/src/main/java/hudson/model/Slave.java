@@ -58,6 +58,8 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.slaves.WorkspaceLocator;
+
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -267,6 +269,13 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
+        for (WorkspaceLocator l : WorkspaceLocator.all()) {
+            FilePath workspace = l.locate(item, this);
+            if (workspace != null) {
+                return workspace;
+            }
+        }
+        
         FilePath r = getWorkspaceRoot();
         if(r==null)     return null;    // offline
         return r.child(item.getFullName());
