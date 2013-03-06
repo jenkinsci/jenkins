@@ -24,35 +24,31 @@
 package hudson.model;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.util.FormValidation;
-import hudson.util.FormValidation.Kind;
 import hudson.util.TimeUnit2;
-import junit.framework.TestCase;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import org.junit.Test;
 
 /**
  * Quick test for {@link UpdateCenter}.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class UpdateCenterTest extends TestCase {
-    public void testData() throws Exception {
-        // check if we have the internet connectivity. See HUDSON-2095
+public class UpdateCenterTest {
+    @Test public void data() throws Exception {
         try {
             new URL("http://updates.jenkins-ci.org/").openStream();
         } catch (IOException e) {
-            System.out.println("Skipping this test. No internet connectivity");
-            return;
+            assumeNoException("No internet connectivity", e); // JENKINS-2095
         }
 
         URL url = new URL("http://updates.jenkins-ci.org/update-center.json?version=build");
