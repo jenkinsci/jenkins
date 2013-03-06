@@ -278,13 +278,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Will be the newest of all {@link UpdateSite}s.
      */
     public String getLastUpdatedString() {
-        long newestTs = -1;
+        long newestTs = 0;
         for (UpdateSite s : sites) {
             if (s.getDataTimestamp()>newestTs) {
                 newestTs = s.getDataTimestamp();
             }
         }
-        if (newestTs < 0) {
+        if (newestTs == 0) {
             return Messages.UpdateCenter_n_a();
         }
         return Util.getPastTimeString(System.currentTimeMillis()-newestTs);

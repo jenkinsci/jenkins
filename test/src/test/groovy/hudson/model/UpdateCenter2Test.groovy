@@ -25,6 +25,7 @@ package hudson.model
 
 import org.jvnet.hudson.test.HudsonTestCase
 import hudson.model.UpdateCenter.DownloadJob.Success
+import hudson.model.UpdateSite
 
 /**
  *
@@ -42,4 +43,11 @@ public class UpdateCenter2Test extends HudsonTestCase {
         println job.status;
         assertTrue(job.status instanceof Success)
     }
+
+    void testGetLastUpdatedString() {
+        UpdateSite.neverUpdate = false
+        assertTrue(jenkins.updateCenter.getById("default").due)
+        assertEquals(hudson.model.Messages.UpdateCenter_n_a(), jenkins.updateCenter.lastUpdatedString)
+    }
+
 }
