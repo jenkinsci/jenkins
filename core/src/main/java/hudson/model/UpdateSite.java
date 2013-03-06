@@ -166,7 +166,11 @@ public class UpdateSite {
                         String uncleanJson = IOUtils.toString(is,"UTF-8");
                         int jsonStart = uncleanJson.indexOf("{\"");
                         if (jsonStart >= 0) {
-                            return updateData(uncleanJson.substring(jsonStart), signatureCheck);
+                            uncleanJson = uncleanJson.substring(jsonStart);
+                            int end = uncleanJson.lastIndexOf('}');
+                            if (end>0)
+                                uncleanJson = uncleanJson.substring(0,end+1);
+                            return updateData(uncleanJson, signatureCheck);
                         } else {
                             throw new IOException("Could not find json in content of " +
                             		"update center from url: "+src.toExternalForm());
