@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -49,9 +50,7 @@ THE SOFTWARE.
           <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
           <j:choose>
             <j:when test="${cause!=null}">
-              (${%pending} -
-                <st:include it="${cause}" page="summary.jelly" />
-              )
+              (${%pending}—<st:include it="${cause}" page="summary.jelly"/>)
             </j:when>
             <j:otherwise>
               (${%pending})
