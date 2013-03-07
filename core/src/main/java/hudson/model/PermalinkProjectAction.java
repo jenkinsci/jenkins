@@ -86,7 +86,7 @@ public interface PermalinkProjectAction extends Action {
         public abstract Run<?,?> resolve(Job<?,?> job);
 
         /**
-         * List of {@link Permalink}s that are built into Hudson.
+         * List of {@link Permalink}s that are built into Jenkins.
          */
         public static final List<Permalink> BUILTIN = new CopyOnWriteArrayList<Permalink>();
 

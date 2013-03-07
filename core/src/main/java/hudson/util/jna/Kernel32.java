@@ -54,5 +54,23 @@ public interface Kernel32 extends StdCallLibrary {
     int GetFileAttributesW(WString lpFileName);
     boolean GetExitCodeProcess(Pointer handle, IntByReference r);
 
+    /**
+     * Creates a symbolic link.
+     *
+     * Windows Vista+, Windows Server 2008+
+     *
+     * @param lpSymlinkFileName
+     *      Symbolic link to be created
+     * @param lpTargetFileName
+     *      Target of the link.
+     * @param dwFlags
+     *      0 or {@link #SYMBOLIC_LINK_FLAG_DIRECTORY}
+     * @see <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx">MSDN</a>
+     */
+    boolean CreateSymbolicLinkW(WString lpSymlinkFileName, WString lpTargetFileName, int dwFlags);
+    int SYMBOLIC_LINK_FLAG_DIRECTORY = 1;
+
     int STILL_ACTIVE = 259;
+
+    // DWORD == int
 }
