@@ -29,6 +29,10 @@
     <url>http://issues.jenkins-ci.org/</url>
   </issueManagement>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
@@ -104,7 +108,6 @@
       <extensions>true</extensions> is apparently needed to have Maven read
       the plugin's Plexus component file.
     -->
-    <defaultGoal>package</defaultGoal>
     <plugins>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
