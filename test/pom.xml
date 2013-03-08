@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -40,7 +40,7 @@ THE SOFTWARE.
   </description>
 
   <properties>
-    <concurrency>2</concurrency>
+    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
   </properties>
 
@@ -182,9 +182,8 @@ THE SOFTWARE.
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
-          <forkMode>perthread</forkMode> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-946 so use kill -9 to stop -->
-          <reuseForks>true</reuseForks> <!-- https://jira.codehaus.org/browse/SUREFIRE-751 -->
-          <threadCount>${concurrency}</threadCount> <!-- XXX https://jira.codehaus.org/browse/SUREFIRE-947 -->
+          <reuseForks>true</reuseForks>
+          <forkCount>${concurrency}</forkCount>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
