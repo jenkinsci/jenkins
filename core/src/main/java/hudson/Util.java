@@ -1025,7 +1025,7 @@ public class Util {
      * @param targetPath
      *      The file that the symlink should point to.
      * @param symlinkPath
-     *      Where to create a symlink in.
+     *      Where to create a symlink in (relative to {@code baseDir})
      */
     public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
         try {
