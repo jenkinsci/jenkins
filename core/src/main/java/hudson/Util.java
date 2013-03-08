@@ -1023,7 +1023,7 @@ public class Util {
      * @param baseDir
      *      Base directory to resolve the 'symlinkPath' parameter.
      * @param targetPath
-     *      The file that the symlink should point to.
+     *      The file that the symlink should point to. Usually relative to {@code baseDir} but may instead be an absolute path.
      * @param symlinkPath
      *      Where to create a symlink in (relative to {@code baseDir})
      */
