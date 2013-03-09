@@ -1016,14 +1016,14 @@ public class Util {
     }
 
     /**
-     * Creates a symlink to baseDir+targetPath at baseDir+symlinkPath.
+     * Creates a symlink to targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
      *
      * @param baseDir
      *      Base directory to resolve the 'symlinkPath' parameter.
      * @param targetPath
-     *      The file that the symlink should point to. Usually relative to {@code baseDir} but may instead be an absolute path.
+     *      The file that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
      * @param symlinkPath
      *      Where to create a symlink in (relative to {@code baseDir})
      */
