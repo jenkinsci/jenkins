@@ -573,7 +573,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public void renameTo(String newName) throws IOException {
+        File oldBuildDir = getBuildDir();
         super.renameTo(newName);
+        File newBuildDir = getBuildDir();
+        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
+            if (!oldBuildDir.renameTo(newBuildDir)) {
+                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
+            }
+        }
+    }
+
+    @Override public synchronized void delete() throws IOException, InterruptedException {
+        super.delete();
+        Util.deleteRecursive(getBuildDir());
     }
 
     /**

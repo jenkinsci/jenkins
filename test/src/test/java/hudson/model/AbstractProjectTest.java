@@ -354,4 +354,24 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertFalse(link.exists());
     }
 
+    @Bug(17138)
+    public void testExternalBuildDirectoryRenameDelete() throws Exception {
+        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
+        File builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        submit(form);
+        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
+        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        File oldBuildDir = new File(builds, "d/prj");
+        assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
+        assertTrue(b.getRootDir().isDirectory());
+        p.renameTo("proj");
+        File newBuildDir = new File(builds, "d/proj");
+        assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
+        assertTrue(b.getRootDir().isDirectory());
+        p.delete();
+        assertFalse(b.getRootDir().isDirectory());
+    }
+
 }
