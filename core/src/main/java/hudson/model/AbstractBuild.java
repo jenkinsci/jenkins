@@ -494,11 +494,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if (newTarget != null)
             newTarget.createSymlink(new LogTaskListener(LOGGER, Level.WARNING), name);
         else
-            new File(getProject().getBuildDir(), "../"+name).delete();
+            new File(getProject().getRootDir(), name).delete();
     }
 
     private void createSymlink(TaskListener listener, String name) throws InterruptedException {
-        Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
+        String target;
+        if (getProject().getBuildDir().equals(new File(getProject().getRootDir(), "builds"))) {
+            target = "builds/" + getId();
+        } else {
+            target = getRootDir().getAbsolutePath();
+        }
+        Util.createSymlink(getProject().getRootDir(), target, name, listener);
     }
 
     /**

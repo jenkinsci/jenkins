@@ -58,6 +58,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
+import org.jvnet.hudson.test.MockFolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -329,4 +330,28 @@ public class AbstractProjectTest extends HudsonTestCase {
 
         assertEquals(1, u.getPublishersList().size());
     }
+
+    @Bug(17137)
+    public void testExternalBuildDirectorySymlinks() throws Exception {
+        // XXX when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
+        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
+        File builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        submit(form);
+        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
+        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
+        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
+        File link = new File(p.getRootDir(), "lastStable");
+        assertTrue(link.exists());
+        assertEquals(b1.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        FreeStyleBuild b2 = p.scheduleBuild2(0).get();
+        assertTrue(link.exists());
+        assertEquals(b2.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        b2.delete();
+        assertTrue(link.exists());
+        assertEquals(b1.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        b1.delete();
+        assertFalse(link.exists());
+    }
+
 }
