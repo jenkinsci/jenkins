@@ -280,7 +280,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
         // Archive artifacts that don't exist to create failure in post-build action
-        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false));
+        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false, false));
         build = job.scheduleBuild2(0, new Cause.UserCause()).get();
         assertEquals(Result.FAILURE, build.getResult());
         // Links should not be updated since build failed
