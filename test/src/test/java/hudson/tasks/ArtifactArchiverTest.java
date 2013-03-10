@@ -48,7 +48,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
 
     public void testSuccessVsFailure() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
-        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true)));
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
         assertEquals("(no artifacts)", Result.FAILURE, build(project)); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
         project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
@@ -86,7 +86,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
     @Bug(2417)
     public void testStableVsUnstable() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
-        Publisher artifactArchiver = new ArtifactArchiver("f", "", true);
+        Publisher artifactArchiver = new ArtifactArchiver("f", "", true, false);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
         assertEquals(Result.SUCCESS, build(project)); // #1
@@ -123,7 +123,7 @@ public class ArtifactArchiverTest extends HudsonTestCase {
     @Bug(3227)
     public void testEmptyDirectories() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
-        Publisher artifactArchiver = new ArtifactArchiver("dir/", "", false);
+        Publisher artifactArchiver = new ArtifactArchiver("dir/", "", false, false);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
