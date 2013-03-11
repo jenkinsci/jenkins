@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -123,7 +125,12 @@ public class JSONSignatureValidator {
                 return FormValidation.error("No correct_digest parameter in "+name+". This metadata appears to be old.");
             }
             if (!computedDigest.equalsIgnoreCase(providedDigest)) {
-                return FormValidation.error("Digest mismatch: "+computedDigest+" vs "+providedDigest+" in "+name);
+                String msg = "Digest mismatch: computed=" + computedDigest + " vs expected=" + providedDigest + " in " + name;
+                if (LOGGER.isLoggable(Level.SEVERE)) {
+                    LOGGER.severe(msg);
+                    LOGGER.severe(o.toString(2));
+                }
+                return FormValidation.error(msg);
             }
 
             String providedSignature = signature.getString("correct_signature");
@@ -137,4 +144,6 @@ public class JSONSignatureValidator {
             return FormValidation.error(e,"Signature verification failed in "+name);
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(JSONSignatureValidator.class.getName());
 }
