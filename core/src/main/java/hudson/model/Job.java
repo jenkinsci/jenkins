@@ -845,7 +845,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the last build where build result >= threshold. Otherwise null.
+     * Returns the last build where build result >= threshold. Otherwise null.getLastBuildOfThreshold 
+     * If thresehold is null, returns the last build
      * @see #getLastSuccessfulBuild
      */
     public RunT getLastBuildOfThreshold(Result threshold) {
