@@ -84,6 +84,7 @@ public final class Result implements Serializable, CustomExportedBean {
      * Default ball color for this status.
      */
     public final BallColor color;
+    private boolean stable;
 
     private Result(String name, BallColor color, int ordinal) {
         this.name = name;

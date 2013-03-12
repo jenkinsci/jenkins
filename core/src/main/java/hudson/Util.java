@@ -1144,6 +1144,12 @@ public class Util {
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
+     *
+     * @return
+     *      null if the given file is not a symlink.
+     *      If the symlink is absolute, the returned string is an absolute path.
+     *      If the symlink is relative, the returned string is that relative representation.
+     *      The relative path is meant to be resolved from the location of the symlink.
      */
     public static String resolveSymlink(File link) throws InterruptedException, IOException {
         try { // Java 7
