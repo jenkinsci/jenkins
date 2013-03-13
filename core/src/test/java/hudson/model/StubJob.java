@@ -57,7 +57,7 @@ class StubJob extends Job {
         
     }
 
-    @Override protected File getBuildDir() {
+    @Override public File getBuildDir() {
         return new File(System.getProperty("java.io.tmpdir"));
     }
     

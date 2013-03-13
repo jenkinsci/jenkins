@@ -744,7 +744,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @see RunMap
      */
-    protected File getBuildDir() {
+    public File getBuildDir() {
         return Jenkins.getInstance().getBuildDirFor(this);
     }
 

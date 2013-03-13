@@ -1,15 +1,19 @@
 package jenkins.model;
 
 import com.google.common.base.Predicate;
-import hudson.Functions;
+import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
 import org.apache.commons.io.FileUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -48,14 +52,14 @@ import java.util.logging.Logger;
  * (it simply scans the history till find the new matching build.) To tolerate G(B)
  * that goes from false to true, you need to be able to intercept whenever G(B) changes
  * from false to true, then call {@link #resolve(Job)} to check the current permalink target
- * is up to date, then call {@link #updateCache(Job, int)} if it needs updating.
+ * is up to date, then call {@link #updateCache(Job, Run)} if it needs updating.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.507
  */
 public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
     /**
-     * Checks if the given build satifies the peep-hole criteria.
+     * Checks if the given build satisfies the peep-hole criteria.
      *
      * This is the "G(B)" as described in the class javadoc.
      */
@@ -65,7 +69,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      * The file in which the permalink target gets recorded.
      */
     protected File getPermalinkFile(Job<?,?> job) {
-        return new File(job.getRootDir(),"permalinks/"+getId());
+        return new File(job.getBuildDir(),getId());
     }
 
     /**
@@ -77,18 +81,10 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         Run<?,?> b=null;
 
         try {
-            String target = null;
-            if (USE_SYMLINK) { // f.exists() return false if symlink exists but point to a non-existent directory
-                target = Util.resolveSymlink(f);
-                if (target==null && f.exists()) {
-                    // if this file isn't a symlink, it must be a regular file
-                    target = FileUtils.readFileToString(f,"UTF-8").trim();
-                }
-            } else {
-                if (f.exists()) {
-                    // if this file isn't a symlink, it must be a regular file
-                    target = FileUtils.readFileToString(f,"UTF-8").trim();
-                }
+            String target = Util.resolveSymlink(f);
+            if (target==null && f.exists()) {
+                // if this file isn't a symlink, it must be a regular file
+                target = FileUtils.readFileToString(f,"UTF-8").trim();
             }
 
             if (target!=null) {
@@ -107,8 +103,8 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             LOGGER.log(Level.WARNING, "Failed to read permalink cache:" + f, e);
             // if we fail to read the cache, fall back to the re-computation
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to read permalink cache:" + f, e);
-            // if we fail to read the cache, fall back to the re-computation
+            // this happens when the symlink doesn't exist
+            // (and it cannot be distinguished from the case when the actual I/O error happened
         }
 
         if (b==null) {
@@ -116,40 +112,39 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             b = job.getLastBuild();
         }
 
-        int n;
         // start from the build 'b' and locate the build that matches the criteria going back in time
-        while (true) {
-            if (b==null) {
-                n = RESOLVES_TO_NONE;
-                break;
-            }
-            if (apply(b)) {
-                n = b.getNumber();
-                break;
-            }
+        b = find(b);
 
-            b=b.getPreviousBuild();
-        }
+        updateCache(job,b);
+        return b;
+    }
 
-        updateCache(job,n);
+    /**
+     * Start from the build 'b' and locate the build that matches the criteria going back in time
+     */
+    private Run<?,?> find(Run<?,?> b) {
+        for ( ; b!=null && !apply(b); b=b.getPreviousBuild())
+            ;
         return b;
     }
 
     /**
      * Remembers the value 'n' in the cache for future {@link #resolve(Job)}.
      */
-    protected void updateCache(Job<?,?> job, int n) {
+    protected void updateCache(@Nonnull Job<?,?> job, @Nullable Run<?,?> b) {
+        final int n = b==null ? RESOLVES_TO_NONE : b.getNumber();
+
         File cache = getPermalinkFile(job);
+        File tmp = new File(cache.getPath()+".tmp");
         cache.getParentFile().mkdirs();
 
         try {
             StringWriter w = new StringWriter();
             StreamTaskListener listener = new StreamTaskListener(w);
 
-            if (USE_SYMLINK) {
-                Util.createSymlink(cache.getParentFile(),"../builds/"+n,cache.getName(),listener);
-            } else {
-                // symlink not supported. use a regular
+            Util.createSymlink(tmp.getParentFile(),String.valueOf(n),tmp.getName(),listener);
+            if (Util.resolveSymlink(tmp)==null) {
+                // symlink not supported. use a regular file
                 AtomicFileWriter cw = new AtomicFileWriter(cache);
                 try {
                     cw.write(String.valueOf(n));
@@ -157,28 +152,55 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 } finally {
                     cw.abort();
                 }
+            } else {
+                cache.delete();
+                tmp.renameTo(cache);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update permalink cache for " + job, e);
+            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
             cache.delete();
         } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "Failed to update permalink cache for "+job,e);
+            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
             cache.delete();
+        } finally {
+            tmp.delete();
+        }
+    }
+
+    @Extension
+    public static class RunListenerImpl extends RunListener<Run<?,?>> {
+        /**
+         * If any of the peephole permalink points to the build to be deleted, update it to point to the new location.
+         */
+        @Override
+        public void onDeleted(Run run) {
+            Job<?, ?> j = run.getParent();
+            for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
+                if (pp.apply(run)) {
+                    if (pp.resolve(j)==run) {
+                        pp.updateCache(j,pp.find(run.getPreviousBuild()));
+                    }
+                }
+            }
+        }
+
+        /**
+         * See if the new build matches any of the peephole permalink.
+         */
+        @Override
+        public void onCompleted(Run<?,?> run, @Nonnull TaskListener listener) {
+            Job<?, ?> j = run.getParent();
+            for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
+                if (pp.apply(run)) {
+                    Run<?, ?> cur = pp.resolve(j);
+                    if (cur==null || cur.getNumber()<run.getNumber())
+                        pp.updateCache(j,run);
+                }
+            }
         }
     }
 
     private static final int RESOLVES_TO_NONE = -1;
 
     private static final Logger LOGGER = Logger.getLogger(PeepholePermalink.class.getName());
-
-    /**
-     * True if we use the symlink as cache, false if plain text file.
-     *
-     * <p>
-     * On Windows, even with Java7, using symlinks require one to go through quite a few hoops
-     * (you need to change the security policy to specifically have this permission, then
-     * you better not be in the administrator group because this token gets filtered out
-     * on UAC-enabled Windows.)
-     */
-    public static boolean USE_SYMLINK = !Functions.isWindows();
 }
