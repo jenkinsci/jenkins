@@ -1095,6 +1095,21 @@ public class Util {
     }
 
     /**
+     * Resolves a symlink to the {@link File} that points to.
+     *
+     * @return null
+     *      if the specified file is not a symlink.
+     */
+    public static File resolveSymlinkToFile(File link) throws InterruptedException, IOException {
+        String target = resolveSymlink(link);
+        if (target==null)   return null;
+
+        File f = new File(target);
+        if (f.isAbsolute()) return f;   // absolute symlink
+        return new File(link.getParentFile(),target);   // relative symlink
+    }
+
+    /**
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.

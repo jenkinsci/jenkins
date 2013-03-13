@@ -342,10 +342,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         try {
             if(Util.isSymlink(buildDir)) {
                 // "Util.resolveSymlink(file)" resolves NTFS symlinks. 
-                String resolvedSymlink = Util.resolveSymlink(buildDir);
-                if(resolvedSymlink != null) {
-                	buildDir = new File(resolvedSymlink);
-                }
+                File target = Util.resolveSymlinkToFile(buildDir);
+                if(target != null)
+                    buildDir = target;
             }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks

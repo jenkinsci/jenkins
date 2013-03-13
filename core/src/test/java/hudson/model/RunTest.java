@@ -30,6 +30,7 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -92,13 +93,11 @@ public class RunTest {
     public void testParseTimestampFromBuildDir() throws Exception {
         //Assume.assumeTrue(!Functions.isWindows() || (NTFS && JAVA7) || ...);
         
-        String buildDateTime = "2012-12-21_14-02-28";
-        long buildTimestamp = 1356091348000L;
+        String buildDateTime = "2012-12-21_04-02-28";
         int buildNumber = 155;
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener l = new StreamTaskListener(baos, Charset.defaultCharset());
-        
+        StreamTaskListener l = StreamTaskListener.fromStdout();
+
         File tempDir = Util.createTempDir();    
         File buildDir = new File(tempDir, buildDateTime);
         assertEquals(true, buildDir.mkdir());
@@ -108,7 +107,8 @@ public class RunTest {
         	buildDir.mkdir();
          
             Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
-            assertEquals(buildTimestamp, Run.parseTimestampFromBuildDir(buildDirSymLink));
+            long time = Run.parseTimestampFromBuildDir(buildDirSymLink);
+            assertEquals(buildDateTime, Run.ID_FORMATTER.get().format(new Date(time)));
         } finally {
             Util.deleteRecursive(tempDir);
         }
