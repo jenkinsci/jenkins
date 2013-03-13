@@ -221,6 +221,14 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return this;
     }
 
+    public RunList<R> limit(final int n) {
+        return limit(new CountingPredicate<R>() {
+            public boolean apply(int index, R input) {
+                return index<n;
+            }
+        });
+    }
+
     /**
      * Filter the list to non-successful builds only.
      */

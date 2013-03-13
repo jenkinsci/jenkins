@@ -612,7 +612,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported(name="builds")
     public RunList<RunT> getNewBuilds() {
-        return getBuilds().newBuilds();
+        return getBuilds().limit(100);
     }
 
     /**
