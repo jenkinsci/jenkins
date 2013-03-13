@@ -56,6 +56,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     private final String testName;
     private transient String safeName;
     private final boolean skipped;
+    private final String skippedMessage;
     private final String errorStackTrace;
     private final String errorDetails;
     private transient SuiteResult parent;
@@ -125,6 +126,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         this.parent = parent;
         duration = parseTime(testCase);
         skipped = isMarkedAsSkipped(testCase);
+        skippedMessage = getSkippedMessage(testCase);
         @SuppressWarnings("LeakingThisInConstructor")
         Collection<CaseResult> _this = Collections.singleton(this);
         stdout = possiblyTrimStdio(_this, keepLongStdio, testCase.elementText("system-out"));
@@ -165,6 +167,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         this.stderr = null;
         this.duration = 0.0f;
         this.skipped = false;
+        this.skippedMessage = null;
     }
     
     public ClassResult getParent() {
@@ -197,6 +200,17 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     private static boolean isMarkedAsSkipped(Element testCase) {
         return testCase.element("skipped") != null;
+    }
+
+    private static String getSkippedMessage(Element testCase) {
+        String message = null;
+        Element skippedElement = testCase.element("skipped");
+
+        if (skippedElement != null) {
+            message = skippedElement.attributeValue("message");
+        }
+
+        return message;
     }
 
     public String getDisplayName() {
@@ -458,6 +472,16 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     @Exported(visibility=9)
     public boolean isSkipped() {
         return skipped;
+    }
+
+    /**
+     * Provides the reason given for the test being being skipped.
+     * @return the message given for a skipped test if one has been provided, null otherwise.
+     * @since 1.507
+     */
+    @Exported
+    public String getSkippedMessage() {
+        return skippedMessage;
     }
 
     public SuiteResult getSuiteResult() {
