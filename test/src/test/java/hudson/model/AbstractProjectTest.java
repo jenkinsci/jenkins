@@ -343,15 +343,23 @@ public class AbstractProjectTest extends HudsonTestCase {
         FreeStyleBuild b1 = p.scheduleBuild2(0).get();
         File link = new File(p.getRootDir(), "lastStable");
         assertTrue(link.exists());
-        assertEquals(b1.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
         FreeStyleBuild b2 = p.scheduleBuild2(0).get();
         assertTrue(link.exists());
-        assertEquals(b2.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        assertEquals(b2.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
         b2.delete();
         assertTrue(link.exists());
-        assertEquals(b1.getRootDir().getAbsolutePath(), Util.resolveSymlink(link));
+        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
         b1.delete();
         assertFalse(link.exists());
+    }
+
+    private File resolveAll(File link) throws InterruptedException, IOException {
+        while (true) {
+            File f = Util.resolveSymlinkToFile(link);
+            if (f==null)    return link;
+            link = f;
+        }
     }
 
     @Bug(17138)

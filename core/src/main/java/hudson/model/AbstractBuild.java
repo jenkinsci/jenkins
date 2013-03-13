@@ -483,7 +483,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if (getProject().getBuildDir().equals(new File(getProject().getRootDir(), "builds"))) {
             targetDir = "builds/" + target.getId();
         } else {
-            targetDir = getProject().getBuildDir()+target.getId();
+            targetDir = getProject().getBuildDir()+"/"+target.getId();
         }
         Util.createSymlink(getProject().getRootDir(), targetDir, name, listener);
     }
