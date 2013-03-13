@@ -32,6 +32,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Remembers identifiers given by {@link FederatedLoginService} to this user.
+ *
+ * <p>
+ * See {@link FederatedLoginService} for what "identifier" exactly means
  *
  * @author Kohsuke Kawaguchi
  * @since 1.394
