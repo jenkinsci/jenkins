@@ -341,6 +341,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
         try {
+            if(Util.isSymlink(buildDir)) {
+                // "Util.resolveSymlink(file)" resolves NTFS symlinks. 
+                File target = Util.resolveSymlinkToFile(buildDir);
+                if(target != null)
+                    buildDir = target;
+            }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks
             return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
@@ -348,6 +354,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             throw new IOException2("Invalid directory name "+buildDir,e);
         } catch (NumberFormatException e) {
             throw new IOException2("Invalid directory name "+buildDir,e);
+        } catch (InterruptedException e) {
+            throw new IOException2("Interrupted while resolving symlink directory "+buildDir,e);
         }
     }
 
