@@ -210,6 +210,16 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return dir != null;
     }
 
+    /**
+     * Let go of all the loaded references.
+     *
+     * This is a bit more sophisticated version of forcing GC.
+     * Primarily for debugging and testing lazy loading behaviour.
+     */
+    public void purgeCache() {
+        index = new Index();
+    }
+
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
         if (buildDirs==null) {
