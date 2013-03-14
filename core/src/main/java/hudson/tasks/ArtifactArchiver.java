@@ -67,7 +67,13 @@ public class ArtifactArchiver extends Recorder {
     /**
      * Fail (or not) the build if archiving returns nothing.
      */
-    private final boolean allowEmptyArchive;
+    private Boolean allowEmptyArchive;
+
+    /**
+     * Compatibility for systems using the older setting.
+     */
+    private static final Boolean allowEmptyArchiveSystemProp =
+            Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
     @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
@@ -75,6 +81,14 @@ public class ArtifactArchiver extends Recorder {
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
         this.allowEmptyArchive = allowEmptyArchive;
+    }
+
+    // Backwards compatibility for older builds
+    public Object readResolve() {
+        if (allowEmptyArchive == null) {
+            this.allowEmptyArchive = allowEmptyArchiveSystemProp;
+        }
+        return this;
     }
 
     public String getArtifacts() {
@@ -108,7 +122,7 @@ public class ArtifactArchiver extends Recorder {
             build.setResult(Result.FAILURE);
             return true;
         }
-        
+
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 

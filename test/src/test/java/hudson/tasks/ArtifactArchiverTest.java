@@ -148,6 +148,14 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertEquals("file", kids[0].getName());
     }
 
+    @Bug(10502)
+    public void testAllowEmptyArchive() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, true)));
+        assertEquals("(no artifacts)", Result.SUCCESS, build(project));
+        assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+    }
+
     static class CreateArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
