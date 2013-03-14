@@ -2505,6 +2505,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             }
         });
 
+        final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
+
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
@@ -2527,7 +2529,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 if (slaves == null) slaves = new NodeList();
 
                 clouds.setOwner(Jenkins.this);
-                items.clear();
 
                 // JENKINS-8043: re-add the slaves which were not saved into the config file
                 // and are now missing, but still connected.
@@ -2550,9 +2551,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 public void run(Reactor session) throws Exception {
                     TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
                     items.put(item.getName(), item);
+                    loadedNames.add(item.getName());
                 }
             });
         }
+
+        g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
+            public void run(Reactor reactor) throws Exception {
+                // anything we didn't load from disk, throw them away.
+                // doing this after loading from disk allows newly loaded items
+                // to inspect what already existed in memory (in case of reloading)
+
+                // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
+                // hopefully there shouldn't be too many of them.
+                for (String name : items.keySet()) {
+                    if (!loadedNames.contains(name))
+                        items.remove(name);
+                }
+            }
+        });
 
         g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
             public void run(Reactor session) throws Exception {
