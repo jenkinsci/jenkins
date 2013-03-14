@@ -1278,7 +1278,6 @@ public class Util {
      * are overridden in the given derived type.
      */
     public static boolean isOverridden(Class base, Class derived, String methodName, Class... types) {
-        // the rewriteHudsonWar method isn't overridden.
         try {
             return !base.getMethod(methodName, types).equals(
                     derived.getMethod(methodName,types));
