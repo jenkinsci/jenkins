@@ -58,9 +58,11 @@ public abstract class ArtifactManager implements ExtensionPoint {
     /**
      * Permits the manager to restrict its operation to certain kinds of projects, slaves, etc.
      * @param build a running build ready for {@link #archive} (the choice of manager will be remembered via {@link #id})
-     * @return true to handle this build, false to continue the search
+     * @return true to handle this build (the default), false to continue the search
      */
-    public abstract boolean appliesTo(Run<?,?> build);
+    public boolean appliesTo(Run<?,?> build) {
+        return true;
+    }
 
     /**
      * Archive all configured artifacts from a build.

@@ -46,10 +46,6 @@ import org.kohsuke.stapler.HttpResponse;
  */
 public class StandardArtifactManager extends ArtifactManager {
 
-    @Override public boolean appliesTo(Run<?,?> build) {
-        return true;
-    }
-
     @Override public int archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
         File dir = getArtifactsDir(build);
         dir.mkdirs();
