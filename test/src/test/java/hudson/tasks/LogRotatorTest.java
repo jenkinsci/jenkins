@@ -34,7 +34,6 @@ import hudson.model.Run;
 import hudson.tasks.ArtifactArchiverTest.CreateArtifact;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -127,7 +126,7 @@ public class LogRotatorTest extends HudsonTestCase {
 
 
     static Result build(FreeStyleProject project) throws Exception {
-        return project.scheduleBuild2(0).get(10, TimeUnit.SECONDS).getResult();
+        return project.scheduleBuild2(0).get().getResult();
     }
 
     private static int numberOf(Run<?,?> run) {
