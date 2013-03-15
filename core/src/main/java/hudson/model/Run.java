@@ -107,11 +107,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionList;
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.FileOutputStream;
@@ -952,7 +949,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new File(project.getBuildDir(),getId());
     }
 
-    public final synchronized ArtifactManager getArtifactManager() {
+    /**
+     * Gets an object responsible for storing and retrieving build artifacts.
+     * The first time this is called on a running build, a list of all registered custom managers is checked
+     * to see if one will handle this build.
+     * If so, the identity of that manager is saved in the build and it will be used henceforth.
+     * If no manager claimed the build, or we are loading a historical build created prior to this feature, {@link StandardArtifactManager} is used.
+     * @return an appropriate artifact manager
+     * @since XXX
+     */
+    public final synchronized @Nonnull ArtifactManager getArtifactManager() {
         ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
         if (artifactManager != null) {
             for (ArtifactManager mgr : managers) {
@@ -973,35 +979,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     return mgr;
                 }
             }
-        } else { // compatibility: completed build prior to introduction of ArtifactManager
-            ArtifactManager mgr = managers.get(StandardArtifactManager.class);
-            if (mgr.appliesTo(this)) {
-                return mgr;
-            }
         }
-        return new ArtifactManager() { // fallback for non-AbstractProject runs
-            @Override public boolean appliesTo(Run<?, ?> build) {
-                return true;
-            }
-            @Override public int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
-                throw new IOException("not supported");
-            }
-            @Override public void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException {
-                throw new IOException("not supported");
-            }
-            @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
-                throw new IOException("not supported");
-            }
-            @Override public HttpResponse browseArtifacts(Run<?, ?> build) {
-                return HttpResponses.notFound();
-            }
-            @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
-                return build.new ArtifactList();
-            }
-            @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
-                throw new FileNotFoundException();
-            }
-        };
+        return new StandardArtifactManager();
     }
 
     /**

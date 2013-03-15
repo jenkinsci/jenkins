@@ -110,7 +110,7 @@ public class ArtifactArchiver extends Recorder {
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            if (build.getArtifactManager().archive(build, launcher, listener, artifacts, excludes) == 0) {
+            if (build.getArtifactManager().archive(build, ws, launcher, listener, artifacts, excludes) == 0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 

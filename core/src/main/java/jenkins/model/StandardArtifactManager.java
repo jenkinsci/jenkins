@@ -24,11 +24,9 @@
 
 package jenkins.model;
 
-import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
@@ -46,21 +44,15 @@ import org.kohsuke.stapler.HttpResponse;
  * May be subclassed to provide an artifact manager which uses the standard storage but which only overrides {@link #archive}.
  * @since XXX
  */
-@Extension(ordinal=0)
 public class StandardArtifactManager extends ArtifactManager {
 
     @Override public boolean appliesTo(Run<?,?> build) {
-        // XXX if #archive took a FilePath workspace argument, we could accept any Run
-        return build instanceof AbstractBuild;
+        return true;
     }
 
-    @Override public int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
+    @Override public int archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
         File dir = getArtifactsDir(build);
         dir.mkdirs();
-        FilePath workspace = ((AbstractBuild) build).getWorkspace();
-        if (workspace == null) {
-            return 0; // ArtifactArchiver has already checked this case
-        }
         return workspace.copyRecursiveTo(artifacts, excludes, new FilePath(dir));
     }
 

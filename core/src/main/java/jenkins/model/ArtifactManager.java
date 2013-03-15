@@ -57,7 +57,6 @@ public abstract class ArtifactManager implements ExtensionPoint {
 
     /**
      * Permits the manager to restrict its operation to certain kinds of projects, slaves, etc.
-     * (For example you can limit support to instances of {@link AbstractBuild}, for which {@link AbstractBuild#getWorkspace} is defined.)
      * @param build a running build ready for {@link #archive} (the choice of manager will be remembered via {@link #id})
      * @return true to handle this build, false to continue the search
      */
@@ -65,16 +64,18 @@ public abstract class ArtifactManager implements ExtensionPoint {
 
     /**
      * Archive all configured artifacts from a build.
+     * (If called multiple times for the same build, do not delete the old artifacts but keep them all.)
      * @param build the build which may have produced archivable files
+     * @param workspace the workspace from which to copy files
      * @param launcher a launcher to use if external processes need to be forked
      * @param listener a way to print messages about progress or problems
-     * @param artifacts comma- or space-separated list of patterns of files/directories to be archived (Ant format, any variables already substituted)
+     * @param artifacts comma- or space-separated list of patterns of files/directories to be archived relative to the workspace (Ant format, any variables already substituted)
      * @param excludes patterns of files to be excluded from the artifact list (Ant format, may be null for no excludes)
      * @return the number of files actually archived (may be zero)
      * @throws IOException if transfer or copying failed in any way
      * @see ArtifactArchiver#perform(AbstractBuild, Launcher, BuildListener)
      */
-    public abstract int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, @CheckForNull String excludes) throws IOException, InterruptedException;
+    public abstract int archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, String artifacts, @CheckForNull String excludes) throws IOException, InterruptedException;
 
     /**
      * Add a single file to the list of archives for a build.
