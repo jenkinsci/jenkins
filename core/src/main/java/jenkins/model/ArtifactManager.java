@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -32,7 +33,9 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.ArtifactArchiver;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -74,6 +77,18 @@ public abstract class ArtifactManager implements ExtensionPoint {
     public abstract int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, @CheckForNull String excludes) throws IOException, InterruptedException;
 
     /**
+     * Add a single file to the list of archives for a build.
+     * For example, the XVNC plugin could use this to save {@code screenshot.jpg} if so configured.
+     * @param build a build which may or may not already have archives
+     * @param launcher a launcher to use if external processes need to be forked
+     * @param listener a way to print messages about progress or problems
+     * @param source a file to copy
+     * @param target the full relative path to which this file should be archived, e.g. {@code subdir/something.jar}
+     * @throws IOException if transfer or copying failed in any way
+     */
+    public abstract void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException;
+
+    /**
      * Delete all artifacts associated with an earlier build (if any).
      * @param build a build which may have been previously passed to {@link #archive}
      * @return true if there was actually anything to delete
@@ -99,6 +114,15 @@ public abstract class ArtifactManager implements ExtensionPoint {
      */
     public abstract <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n);
 
-    // XXX way to open an Artifact as e.g. an InputStream
+    /**
+     * Load the contents of an artifact as a stream.
+     * Useful especially in conjunction with {@link #archiveSingle} to serve previously stored content.
+     * @param build a build which may have artifacts
+     * @param artifact the relative path of the artifact, e.g. {@code subdir/something.jar}
+     * @return the contents of the artifact
+     * @throws FileNotFoundException if no such artifact exists in this build
+     * @throws IOException in case of some other problem
+     */
+    public abstract InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException;
 
 }

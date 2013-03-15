@@ -34,7 +34,9 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import hudson.model.Run;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.kohsuke.stapler.HttpResponse;
@@ -48,6 +50,7 @@ import org.kohsuke.stapler.HttpResponse;
 public class StandardArtifactManager extends ArtifactManager {
 
     @Override public boolean appliesTo(Run<?,?> build) {
+        // XXX if #archive took a FilePath workspace argument, we could accept any Run
         return build instanceof AbstractBuild;
     }
 
@@ -59,6 +62,12 @@ public class StandardArtifactManager extends ArtifactManager {
             return 0; // ArtifactArchiver has already checked this case
         }
         return workspace.copyRecursiveTo(artifacts, excludes, new FilePath(dir));
+    }
+
+    @Override public void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException {
+        FilePath dest = new FilePath(getArtifactsDir(build)).child(target);
+        dest.getParent().mkdirs();
+        source.copyTo(dest);
     }
 
     @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
@@ -117,6 +126,10 @@ public class StandardArtifactManager extends ArtifactManager {
             }
         }
         return n;
+    }
+
+    @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
+        return new FileInputStream(new File(getArtifactsDir(build), artifact));
     }
 
     @SuppressWarnings("deprecation")

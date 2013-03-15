@@ -107,9 +107,11 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionList;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.FileOutputStream;
@@ -984,6 +986,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             @Override public int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
                 throw new IOException("not supported");
             }
+            @Override public void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException {
+                throw new IOException("not supported");
+            }
             @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
                 throw new IOException("not supported");
             }
@@ -992,6 +997,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
                 return build.new ArtifactList();
+            }
+            @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
+                throw new FileNotFoundException();
             }
         };
     }
@@ -1130,7 +1138,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @ExportedBean
     public final class Artifact {
         /**
-         * Relative path name from {@link Run#getArtifactsDir()}
+         * Relative path name from artifacts root.
          */
     	@Exported(visibility=3)
         public final String relativePath;
@@ -1176,7 +1184,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Gets the artifact file.
-         * @deprecated May not be meaningful with custom artifact managers.
+         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#loadArtifact} with {@link #relativePath} instead.
          */
         @Deprecated
         public File getFile() {
