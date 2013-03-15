@@ -150,7 +150,7 @@ public class ArtifactArchiver extends Recorder {
                 } else {
                     // remove old artifacts
                     try {
-                        if (build.getArtifactManager().deleteArtifacts(build)) {
+                        if (b.getArtifactManager().deleteArtifacts(b)) {
                             listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
                         }
                     } catch (IOException e) {
