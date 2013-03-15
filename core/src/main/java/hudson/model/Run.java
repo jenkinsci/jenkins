@@ -51,14 +51,12 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
-import hudson.util.ProcessTree;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -974,7 +972,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 }
             }
         } else { // compatibility: completed build prior to introduction of ArtifactManager
-            ArtifactManager mgr = StandardArtifactManager.instance();
+            ArtifactManager mgr = managers.get(StandardArtifactManager.class);
             if (mgr.appliesTo(this)) {
                 return mgr;
             }
@@ -1000,7 +998,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Gets the directory where the artifacts are archived.
-     * @deprecated Should only be used from {@link StandardArtifactManager} or managers delegating to it for storage.
+     * @deprecated Should only be used from {@link StandardArtifactManager} or subclasses.
      */
     @Deprecated
     public File getArtifactsDir() {

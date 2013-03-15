@@ -36,26 +36,16 @@ import hudson.model.Run;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.kohsuke.stapler.HttpResponse;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
+ * May be subclassed to provide an artifact manager which uses the standard storage but which only overrides {@link #archive}.
  * @since XXX
  */
 @Extension(ordinal=0)
 public class StandardArtifactManager extends ArtifactManager {
-
-    /**
-     * The singleton instance, for delegation from managers which only customize transfer and not storage.
-     * @return a {@link StandardArtifactManager}
-     */
-    public static ArtifactManager instance() {
-        return Jenkins.getInstance().getExtensionList(ArtifactManager.class).get(StandardArtifactManager.class);
-    }
 
     @Override public boolean appliesTo(Run<?,?> build) {
         return build instanceof AbstractBuild;
