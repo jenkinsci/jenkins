@@ -66,6 +66,9 @@ Upcoming changes</a>
     In-progress builds now survive the "reload from disk" administrator action.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-3265">issue 3265</a>)
   <li class=bug>
+    If artifact archiving failed with an I/O error, the build nonetheless was considered to be a success.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-2058">issue 2058</a>)
+  <li class=bug>
     Fixed a bad interaction between Windows symlinks and build record lazy loading.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15587">issue 15587</a>)
   <li class=rfe>

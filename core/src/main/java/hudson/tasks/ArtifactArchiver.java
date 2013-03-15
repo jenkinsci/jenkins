@@ -136,6 +136,7 @@ public class ArtifactArchiver extends Recorder {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error(
                     Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+            build.setResult(Result.FAILURE);
             return true;
         }
 
