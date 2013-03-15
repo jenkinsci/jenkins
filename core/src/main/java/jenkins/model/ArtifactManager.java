@@ -54,6 +54,7 @@ public abstract class ArtifactManager implements ExtensionPoint {
 
     /**
      * Permits the manager to restrict its operation to certain kinds of projects, slaves, etc.
+     * (For example you can limit support to instances of {@link AbstractBuild}, for which {@link AbstractBuild#getWorkspace} is defined.)
      * @param build a running build ready for {@link #archive} (the choice of manager will be remembered via {@link #id})
      * @return true to handle this build, false to continue the search
      */
