@@ -37,7 +37,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
-import java.io.File;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
@@ -101,9 +100,6 @@ public class ArtifactArchiver extends Recorder {
             build.setResult(Result.FAILURE);
             return true;
         }
-        
-        File dir = build.getArtifactsDir();
-        dir.mkdirs();
 
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
@@ -113,7 +109,8 @@ public class ArtifactArchiver extends Recorder {
             }
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
-            if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
+
+            if (build.getArtifactManager().archive(build, launcher, listener, artifacts, excludes) == 0) {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
@@ -152,14 +149,14 @@ public class ArtifactArchiver extends Recorder {
                     bestResultSoFar = b.getResult();
                 } else {
                     // remove old artifacts
-                    File ad = b.getArtifactsDir();
-                    if(ad.exists()) {
-                        listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
-                        try {
-                            Util.deleteRecursive(ad);
-                        } catch (IOException e) {
-                            e.printStackTrace(listener.error(e.getMessage()));
+                    try {
+                        if (build.getArtifactManager().deleteArtifacts(build)) {
+                            listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace(listener.error(e.getMessage()));
+                    } catch (InterruptedException x) {
+                        x.printStackTrace(listener.error(x.getMessage()));
                     }
                 }
                 b = b.getPreviousBuild();

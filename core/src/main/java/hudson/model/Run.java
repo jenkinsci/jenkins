@@ -34,7 +34,6 @@ import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
@@ -75,7 +74,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,6 +108,9 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import hudson.ExtensionList;
+import hudson.Launcher;
+import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -119,6 +120,8 @@ import java.io.OutputStream;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.ArtifactManager;
+import jenkins.model.StandardArtifactManager;
 
 /**
  * A particular execution of {@link Job}.
@@ -252,6 +255,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * This field is not persisted.
      */
     private volatile transient RunExecution runner;
+
+    /**
+     * {@link ArtifactManager#id} of the artifact manager associated with this build, if any.
+     * @since XXX
+     */
+    private @CheckForNull String artifactManager;
 
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
@@ -943,9 +952,57 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new File(project.getBuildDir(),getId());
     }
 
+    public final synchronized ArtifactManager getArtifactManager() {
+        ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
+        if (artifactManager != null) {
+            for (ArtifactManager mgr : managers) {
+                if (mgr.id().equals(artifactManager)) {
+                    return mgr;
+                }
+            }
+        }
+        if (isBuilding()) {
+            for (ArtifactManager mgr : managers) {
+                if (mgr.appliesTo(this)) {
+                    artifactManager = mgr.id();
+                    try {
+                        save();
+                    } catch (IOException x) {
+                        LOGGER.log(Level.WARNING, "could not persist artifactManager", x);
+                    }
+                    return mgr;
+                }
+            }
+        } else { // compatibility: completed build prior to introduction of ArtifactManager
+            ArtifactManager mgr = StandardArtifactManager.instance();
+            if (mgr.appliesTo(this)) {
+                return mgr;
+            }
+        }
+        return new ArtifactManager() { // fallback for non-AbstractProject runs
+            @Override public boolean appliesTo(Run<?, ?> build) {
+                return true;
+            }
+            @Override public int archive(Run<?,?> build, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
+                throw new IOException("not supported");
+            }
+            @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
+                throw new IOException("not supported");
+            }
+            @Override public HttpResponse browseArtifacts(Run<?, ?> build) {
+                return HttpResponses.notFound();
+            }
+            @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
+                return build.new ArtifactList();
+            }
+        };
+    }
+
     /**
      * Gets the directory where the artifacts are archived.
+     * @deprecated Should only be used from {@link StandardArtifactManager} or managers delegating to it for storage.
      */
+    @Deprecated
     public File getArtifactsDir() {
         return new File(getRootDir(),"archive");
     }
@@ -962,10 +1019,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the first N artifacts.
      */
     public List<Artifact> getArtifactsUpTo(int n) {
-        ArtifactList r = new ArtifactList();
-        addArtifacts(getArtifactsDir(),"","",r,null,n);
-        r.computeDisplayName();
-        return r;
+        return getArtifactManager().getArtifactsUpTo(this, n);
     }
 
     /**
@@ -976,44 +1030,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public boolean getHasArtifacts() {
         return !getArtifactsUpTo(1).isEmpty();
-    }
-
-    private int addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent, int upTo ) {
-        String[] children = dir.list();
-        if(children==null)  return 0;
-        Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
-
-        int n = 0;
-        for (String child : children) {
-            String childPath = path + child;
-            String childHref = pathHref + Util.rawEncode(child);
-            File sub = new File(dir, child);
-            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
-            boolean collapsed = (children.length==1 && parent!=null);
-            Artifact a;
-            if (collapsed) {
-                // Collapse single items into parent node where possible:
-                a = new Artifact(parent.getFileName() + '/' + child, childPath,
-                                 sub.isDirectory() ? null : childHref, length,
-                                 parent.getTreeNodeId());
-                r.tree.put(a, r.tree.remove(parent));
-            } else {
-                // Use null href for a directory:
-                a = new Artifact(child, childPath,
-                                 sub.isDirectory() ? null : childHref, length,
-                                 "n" + ++r.idSeq);
-                r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
-            }
-            if (sub.isDirectory()) {
-                n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
-                if (n>=upTo) break;
-            } else {
-                // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
-                if (++n>=upTo) break;
-            }
-        }
-        return n;
     }
 
     /**
@@ -1035,7 +1051,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
         private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
-        private int idSeq = 0;
 
         public Map<Artifact,String> getTree() {
             return tree;
@@ -1115,7 +1130,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * A build artifact.
      */
     @ExportedBean
-    public class Artifact {
+    public final class Artifact {
         /**
          * Relative path name from {@link Run#getArtifactsDir()}
          */
@@ -1150,7 +1165,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         private String length;
 
-        /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
+        /**
+         * @since XXX
+         */
+        public Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;
             this.relativePath = relativePath;
             this.href = href;
@@ -1160,7 +1178,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Gets the artifact file.
+         * @deprecated May not be meaningful with custom artifact managers.
          */
+        @Deprecated
         public File getFile() {
             return new File(getArtifactsDir(),relativePath);
         }
@@ -1866,11 +1886,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public DirectoryBrowserSupport doArtifact() {
+    public HttpResponse doArtifact() {
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.png", true);
+        return getArtifactManager().browseArtifacts(this);
     }
 
     /**

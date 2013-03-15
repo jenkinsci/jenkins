@@ -207,7 +207,7 @@ public interface MavenBuildProxy {
             return core.getModuleSetRootDir();
         }
 
-        public FilePath getArtifactsDir() {
+        public FilePath getArtifactsDir() { // XX
             return core.getArtifactsDir();
         }
 
