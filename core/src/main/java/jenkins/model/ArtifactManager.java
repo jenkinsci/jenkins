@@ -30,6 +30,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
+import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.ArtifactArchiver;
@@ -67,6 +68,11 @@ public abstract class ArtifactManager implements ExtensionPoint {
     /**
      * Archive all configured artifacts from a build.
      * (If called multiple times for the same build, do not delete the old artifacts but keep them all.)
+     *
+     * <p>
+     * This method can be only invoked from the {@link Executor} thread that's running the build,
+     * while the build is still in progress.
+     *
      * @param build the build which may have produced archivable files
      * @param workspace the workspace from which to copy files
      * @param launcher a launcher to use if external processes need to be forked
@@ -82,6 +88,11 @@ public abstract class ArtifactManager implements ExtensionPoint {
     /**
      * Add a single file to the list of archives for a build.
      * For example, the XVNC plugin could use this to save {@code screenshot.jpg} if so configured.
+     *
+     * <p>
+     * This method can be only invoked from the {@link Executor} thread that's running the build,
+     * while the build is still in progress.
+     *
      * @param build a build which may or may not already have archives
      * @param launcher a launcher to use if external processes need to be forked
      * @param listener a way to print messages about progress or problems
