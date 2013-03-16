@@ -598,8 +598,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         for( BuildWrapper w : wrappers) {
                             Environment e = w.setUp(MavenModuleSetBuild.this, launcher, listener);
-                            if(e==null)
-                                return (r = Result.FAILURE);
+                            if(e==null){
+                                setResult(r = Result.FAILURE);
+                                return r;
+                            }
                             buildEnvironments.add(e);
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
                         }
@@ -608,12 +610,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     	if(!preBuild(listener,project.getPrebuilders())
                         || !preBuild(listener,project.getPostbuilders())
                         || !preBuild(listener,project.getPublishers())){
-                    		r = FAILURE;
+                    		setResult(r = FAILURE);
                             return r;
                     	}
 
                     	if(!build(listener,project.getPrebuilders().toList())){
-                    		r = FAILURE;
+                    		setResult(r = FAILURE);
                             return r;
             			}
 
