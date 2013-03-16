@@ -1004,7 +1004,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the first N artifacts.
      */
     public List<Artifact> getArtifactsUpTo(int n) {
-        return getArtifactManager().getArtifactsUpTo(this, n);
+        return getArtifactManager().getArtifactsUpTo(_this(), n);
     }
 
     /**
