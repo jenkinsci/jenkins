@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
+import javax.annotation.Nonnull;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -67,13 +68,8 @@ public class ArtifactArchiver extends Recorder {
     /**
      * Fail (or not) the build if archiving returns nothing.
      */
+    @Nonnull
     private Boolean allowEmptyArchive;
-
-    /**
-     * Compatibility for systems using the older setting.
-     */
-    private static final Boolean allowEmptyArchiveSystemProp =
-            Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
 
     @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
@@ -86,7 +82,7 @@ public class ArtifactArchiver extends Recorder {
     // Backwards compatibility for older builds
     public Object readResolve() {
         if (allowEmptyArchive == null) {
-            this.allowEmptyArchive = allowEmptyArchiveSystemProp;
+            this.allowEmptyArchive = Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
         }
         return this;
     }
