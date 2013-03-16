@@ -140,7 +140,7 @@ public abstract class ArtifactManager implements ExtensionPoint {
      * @param n a maximum number of items to return
      * @return a list of artifact records
      */
-    public abstract <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n);
+    public abstract <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>> RunT.ArtifactList getArtifactsUpTo(RunT build, int n);
 
     /**
      * Load the contents of an artifact as a stream.
