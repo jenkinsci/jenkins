@@ -1871,7 +1871,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public HttpResponse doArtifact() {
+    public Object getArtifact() {
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }

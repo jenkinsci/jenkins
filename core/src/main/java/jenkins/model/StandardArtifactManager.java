@@ -37,7 +37,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import hudson.util.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses.HttpResponseException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
@@ -67,8 +74,10 @@ public class StandardArtifactManager extends ArtifactManager {
         return true;
     }
 
-    @Override public HttpResponse browseArtifacts(Run<?,?> build) {
-        return new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir(build)), build.getParent().getDisplayName() + ' ' + build.getDisplayName(), "package.png", true);
+    @Override public Object browseArtifacts(final Run<?,?> build) {
+        HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir(build)),
+                build.getParent().getDisplayName() + ' ' + build.getDisplayName(), "package.png", true));
+        throw new AssertionError(); // never get here
     }
 
     @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {

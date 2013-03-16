@@ -38,7 +38,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.CheckForNull;
+
+import hudson.util.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -111,14 +114,25 @@ public abstract class ArtifactManager implements ExtensionPoint {
     public abstract boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException;
 
     /**
-     * Displays all artifacts of a build in a web display.
-     * (There is no need to check {@link Run#ARTIFACTS} permission.)
+     * Returns an object that gets bound to URL under "job/JOB/15/artifact".
+     *
+     * <p>
+     * This object should displays all artifacts of a build in a web display.
+     * (The caller is responsible for checking {@link Run#ARTIFACTS} permission.)
+     *
+     * <p>
      * The response should also be capable of handling display of individual artifacts or subdirectories as per {@link StaplerRequest#getRestOfPath},
      * and serving {@code *fingerprint*} URLs as {@link DirectoryBrowserSupport} does.
+     *
      * @param build a build for which artifacts may have been archived
-     * @return some web page
+     * @return
+     *      the stapler-bound object to render the page.
+     * @throws HttpResponse
+     *      if the implementation wants to redirect to elsewhere, throw any exception that implements
+     *      {@link HttpResponse} to have Jenkins return a redirect (or any other HTTP request.)
+     *      See {@link HttpResponses#redirectTo(String)} for example.
      */
-    public abstract HttpResponse browseArtifacts(Run<?,?> build);
+    public abstract Object browseArtifacts(Run<?,?> build);
 
     /**
      * Loads a manifest of some or all artifact records.
