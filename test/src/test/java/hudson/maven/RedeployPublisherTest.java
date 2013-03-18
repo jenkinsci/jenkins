@@ -36,11 +36,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.FailsOnCloud;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -53,8 +52,9 @@ public class RedeployPublisherTest {
 
     @Bug(2593)
     @Test
-    @Category(FailsOnCloud.class) // Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.39/maven-antrun-extended-plugin-1.39.pom
     public void testBug2593() throws Exception {
+        Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.39/maven-antrun-extended-plugin-1.39.pom", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
+        System.err.println(System.getenv("JOB_URL")); // XXX in case the above does not work
         j.configureDefaultMaven();
         MavenModuleSet m2 = j.createMavenProject();
         File repo = tmp.getRoot();
