@@ -67,6 +67,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
 import org.junit.rules.TemporaryFolder
+import org.junit.experimental.categories.Category
+import org.jvnet.hudson.test.FailsOnCloud
 
 /**
  *
@@ -104,6 +106,7 @@ public class MatrixProjectTest {
      * Tests that axes are available as build variables in the Maven builds.
      */
     @Test
+    @Category(FailsOnCloud.class) // Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.40/maven-antrun-extended-plugin-1.40.pom
     public void testBuildAxisInMaven() throws Exception {
         MatrixProject p = createMatrixProject();
         Maven.MavenInstallation maven = j.configureDefaultMaven();
