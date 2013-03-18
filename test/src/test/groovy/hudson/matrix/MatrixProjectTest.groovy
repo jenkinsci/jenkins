@@ -164,7 +164,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         else 
            p.getBuildersList().add(new Shell("touch p"));
         
-        p.getPublishersList().add(new ArtifactArchiver("p",null,false));
+        p.getPublishersList().add(new ArtifactArchiver("p",null,false, false));
         p.getPublishersList().add(new Fingerprinter("",true));
         buildAndAssertSuccess(p);
     }
