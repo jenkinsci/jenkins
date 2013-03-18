@@ -809,7 +809,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         }
     }
 
-    protected final XmlFile getConfigFile() {
+    protected XmlFile getConfigFile() {
         return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
     }
 

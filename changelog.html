@@ -55,6 +55,16 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Option to make the build not fail if there is nothing to archive.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10502">issue 10502</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.507>What's new in 1.507</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=rfe>
       Show the reason for a skipped test if the test result contains one
       (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8713">issue 8713</a>)
@@ -74,12 +84,12 @@ Upcoming changes</a>
   <li class=rfe>
     Remember the lastStable/Failed/Successful/etc builds to avoid eager loading builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16089">issue 16089</a>)
+  <li class=bug>
+    Wrong build result in post build steps after failed pre build step in maven projects.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17177">issue 17177</a>)     
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.506>What's new in 1.506</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.506>What's new in 1.506</a> (2013/03/17)</h3>
 <ul class=image>
   <li class='major bug'>
     Saving Global Jenkins Global Config wipes out the crumb issuer settings in the Global Security Config.
@@ -107,7 +117,6 @@ Upcoming changes</a>
   <li class=rfe>
     Improved the duration browsers cache static resources.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.505>What's new in 1.505</a> (2013/03/10)</h3>
 <ul class=image>
   <li class='major bug'>

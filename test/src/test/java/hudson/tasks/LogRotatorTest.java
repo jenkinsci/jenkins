@@ -78,7 +78,7 @@ public class LogRotatorTest extends HudsonTestCase {
     public void testArtifactDelete() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 6, -1, 2));
-        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true)));
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
         assertEquals("(no artifacts)", Result.FAILURE, build(project)); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
         project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));

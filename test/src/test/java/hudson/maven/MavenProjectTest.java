@@ -164,6 +164,23 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setGoals("install");
         buildAndAssertSuccess(project);
     }
+    
+    @Bug(17177)
+    public void testCorrectResultInPostStepAfterFailedPreBuildStep() throws Exception {
+        MavenModuleSet p = createSimpleProject();
+        MavenInstallation mi = configureDefaultMaven();
+        p.setMaven(mi.getName());
+        p.setGoals("initialize");
+        
+        Shell pre = new Shell("exit 1"); // must fail to simulate scenario!
+        p.getPrebuilders().add(pre);
+        ResultExposingBuilder resultExposer = new ResultExposingBuilder();
+        p.getPostbuilders().add(resultExposer);
+        
+        assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        assertEquals("The result passed to the post build step was not the one from the pre build step", Result.FAILURE, resultExposer.getResult());
+    }
+    
 
     /**
      * Config roundtrip test around pre/post build step
