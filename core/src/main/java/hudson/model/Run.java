@@ -951,36 +951,51 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Gets an object responsible for storing and retrieving build artifacts.
-     * The first time this is called on a running build, a list of all registered custom managers is checked
-     * to see if one will handle this build.
-     * If so, the identity of that manager is saved in the build and it will be used henceforth.
-     * If no manager claimed the build, or we are loading a historical build created prior to this feature, {@link StandardArtifactManager} is used.
+     * If {@link #pickArtifactManager} has previously been called on this build,
+     * and a nondefault manager selected, that will be returned.
+     * Otherwise (including if we are loading a historical build created prior to this feature) {@link StandardArtifactManager} is used.
+     * <p>This method should be used when existing artifacts are to be loaded, displayed, or removed.
+     * If adding artifacts, use {@link #pickArtifactManager} instead.
      * @return an appropriate artifact manager
      * @since XXX
      */
-    public final synchronized @Nonnull ArtifactManager getArtifactManager() {
-        ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
+    public final @Nonnull ArtifactManager getArtifactManager() {
         if (artifactManager != null) {
-            for (ArtifactManager mgr : managers) {
+            for (ArtifactManager mgr : Jenkins.getInstance().getExtensionList(ArtifactManager.class)) {
                 if (mgr.id().equals(artifactManager)) {
                     return mgr;
                 }
             }
         }
-        if (isBuilding()) {
+        return new StandardArtifactManager();
+    }
+
+    /**
+     * Selects an object responsible for storing and retrieving build artifacts.
+     * The first time this is called on a running build, a list of all registered custom managers is checked
+     * to see if one will handle this build.
+     * If so, the identity of that manager is saved in the build and it will be used henceforth.
+     * If no manager claimed the build, {@link StandardArtifactManager} is used.
+     * <p>This method should be used when a build step expects to archive some artifacts.
+     * If only displaying existing artifacts, use {@link #getArtifactManager} instead.
+     * @return an appropriate artifact manager
+     * @throws IOException if a custom manager was selected but the selection could not be saved
+     * @since XXX
+     */
+    public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
+        ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
+        if (artifactManager != null) {
+            return getArtifactManager();
+        } else {
             for (ArtifactManager mgr : managers) {
                 if (mgr.appliesTo(this)) {
                     artifactManager = mgr.id();
-                    try {
-                        save();
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, "could not persist artifactManager", x);
-                    }
+                    save();
                     return mgr;
                 }
             }
+            return new StandardArtifactManager();
         }
-        return new StandardArtifactManager();
     }
 
     /**
