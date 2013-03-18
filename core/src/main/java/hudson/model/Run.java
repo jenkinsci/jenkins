@@ -2052,7 +2052,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 				IOUtils.closeQuietly(input);
 			}
 		}
-        out.close();
+        finally {
+            try {
+                out.close();
+            }
+            catch (IOException ioe) {
+                // swallow exception
+            }
+        }
     }
 
     /**
