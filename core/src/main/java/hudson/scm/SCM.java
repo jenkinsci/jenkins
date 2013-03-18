@@ -577,14 +577,24 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 //
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
+        FileWriter w = null;
         try {
-            FileWriter w = new FileWriter(changelogFile);
+            w = new FileWriter(changelogFile);
             w.write("<"+rootTag +"/>");
             w.close();
             return true;
         } catch (IOException e) {
             e.printStackTrace(listener.error(e.getMessage()));
             return false;
+        }
+        finally {
+            if (w != null) {
+                try {
+                    w.close();
+                } catch (IOException e) {
+                    // swallow exception
+                }
+            }
         }
     }
 
