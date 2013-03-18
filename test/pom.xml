@@ -42,6 +42,7 @@ THE SOFTWARE.
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
+    <test.excluded.groups/>
   </properties>
 
   <dependencies>
@@ -185,6 +186,7 @@ THE SOFTWARE.
           <reuseForks>true</reuseForks>
           <forkCount>${concurrency}</forkCount>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <excludedGroups>${test.excluded.groups}</excludedGroups>
         </configuration>
       </plugin>
       <plugin>
