@@ -31,8 +31,11 @@ THE SOFTWARE.
     <f:entry title="${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
-    <f:entry title="" field="latestOnly" >
+    <f:entry field="latestOnly" >
       <f:checkbox title="${%lastBuildOnly}"/>
+    </f:entry>
+    <f:entry field="allowEmptyArchive" >
+      <f:checkbox title="${%allowEmptyArchive}"/>
     </f:entry>
   </f:advanced>
 </j:jelly>
