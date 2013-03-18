@@ -170,8 +170,17 @@ public class JDKInstaller extends ToolInstaller {
             byte[] header = new byte[2];
             {
                 DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                in.readFully(header);
-                in.close();
+                try {
+                    in.readFully(header);
+                }
+                finally {
+                    try {
+                        in.close();
+                    }
+                    catch (IOException ioe) {
+                        // swallow exception
+                    }
+                }
             }
 
             ProcStarter starter;
