@@ -80,14 +80,14 @@ public class StandardArtifactManager extends ArtifactManager {
         throw new AssertionError(); // never get here
     }
 
-    @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> RunT.ArtifactList getArtifactsUpTo(RunT build, int n) {
-        RunT.ArtifactList r = build.new ArtifactList();
+    @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
+        Run<JobT,RunT>.ArtifactList r = build.new ArtifactList();
         addArtifacts(build, getArtifactsDir(build), "", "", r, null, n, new AtomicInteger());
         r.computeDisplayName();
         return r;
     }
 
-    private static <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> int addArtifacts(RunT build, File dir, String path, String pathHref, RunT.ArtifactList r, RunT.Artifact parent, int upTo, AtomicInteger idSeq) {
+    private static <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> int addArtifacts(Run<JobT,RunT> build, File dir, String path, String pathHref, Run<JobT,RunT>.ArtifactList r, Run<JobT,RunT>.Artifact parent, int upTo, AtomicInteger idSeq) {
         String[] children = dir.list();
         if(children==null)  return 0;
         Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
@@ -99,7 +99,7 @@ public class StandardArtifactManager extends ArtifactManager {
             File sub = new File(dir, child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (children.length==1 && parent!=null);
-            RunT.Artifact a;
+            Run<JobT,RunT>.Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
                 a = build.new Artifact(parent.getFileName() + '/' + child, childPath,
