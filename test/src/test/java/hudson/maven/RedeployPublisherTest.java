@@ -38,7 +38,9 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.FailsOnCloud;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -51,6 +53,7 @@ public class RedeployPublisherTest {
 
     @Bug(2593)
     @Test
+    @Category(FailsOnCloud.class) // Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.39/maven-antrun-extended-plugin-1.39.pom
     public void testBug2593() throws Exception {
         j.configureDefaultMaven();
         MavenModuleSet m2 = j.createMavenProject();
