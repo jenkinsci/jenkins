@@ -212,6 +212,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * JUnit 4.10+ style rule to allow test cases to fire up a Jenkins instance
@@ -764,7 +765,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * Allocates a new temporary directory for the duration of this test.
+     * @deprecated Use {@link TemporaryFolder} instead.
      */
+    @Deprecated
     public File createTmpDir() throws IOException {
         return env.temporaryDirectoryAllocator.allocate();
     }
