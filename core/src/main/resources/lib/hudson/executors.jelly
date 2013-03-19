@@ -105,30 +105,23 @@ THE SOFTWARE.
     <l:pane width="3" id="executors"
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
       <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
+
+      <tr>
+        <th class="pane">#</th>
+        <th class="pane" colspan="2">
+          <div style="margin-right:19px">
+            ${%Status}
+          </div>
+        </th>
+      </tr>
+
       <j:forEach var="c" items="${computers}">
         <tr>
-          <j:choose>
-            <j:when test="${c.node==app or computers.size()==1}">
-              <th class="pane">#</th>
-              <th class="pane" colspan="2">
-                <div style="margin-right:19px">
-                <j:choose>
-                  <j:when test="${empty(app.slaves) or computers.size()==1}">
-                    ${%Status}
-                  </j:when>
-                  <j:otherwise>
-                    <local:computerCaption title="${%Master}" />
-                  </j:otherwise>
-                </j:choose>
-                </div>
-              </th>
-            </j:when>
-            <j:otherwise>
-              <th class="pane" colspan="3">
-                <local:computerCaption title="${c.displayName}" />
-              </th>
-            </j:otherwise>
-          </j:choose>
+          <j:if test="${computers.size() gt 1 and (c.executors.size()!=0 or c.oneOffExecutors.size()!=0)}">
+            <th class="pane" colspan="3">
+              <local:computerCaption title="${c.displayName}" />
+            </th>
+          </j:if>
         </tr>
         <j:forEach var="e" items="${c.executors}" varStatus="eloop">
           <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
