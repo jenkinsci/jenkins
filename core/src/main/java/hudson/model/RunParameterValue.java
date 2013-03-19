@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import hudson.EnvVars;
 import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -79,8 +80,14 @@ public class RunParameterValue extends ParameterValue {
 
         env.put(name + ".number" , getNumber ());   // same as above
         env.put(name + "_NUMBER" , getNumber ());
-        
+
         env.put(name + "_NAME",  run.getDisplayName());  // since 1.504
+
+        String buildResult = "NOT_COMPLETED";
+        if (null != run.getResult()) {
+            buildResult = run.getResult().toString();
+        }
+        env.put(name + "_RESULT",  buildResult);  // since 1.505?
 
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
 

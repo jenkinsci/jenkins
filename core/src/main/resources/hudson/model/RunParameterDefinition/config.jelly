@@ -35,4 +35,20 @@ THE SOFTWARE.
     <f:entry title="${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" />
     </f:entry>
+    <f:entry name="threshold" title="${%Threshold}" help="/help/parameter/run-threshold.html">
+        <select name="threshold">
+            <option value="ALL">ALL</option>
+            <j:invokeStatic className="hudson.model.Result" method="getNames" var="results" />
+            <j:forEach var="result" items="${results}" varStatus="loop">
+                <j:choose>
+                    <j:when test="${instance.threshold==result}">
+                        <option value="${result}" selected="selected">${result}</option>
+                    </j:when>
+                    <j:otherwise>
+                        <option value="${result}">${result}</option>
+                    </j:otherwise>
+                </j:choose>
+            </j:forEach>
+        </select>
+    </f:entry>
 </j:jelly>

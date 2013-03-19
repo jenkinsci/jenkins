@@ -134,7 +134,7 @@ public final class Result implements Serializable, CustomExportedBean {
         return FAILURE;
     }
 
-    private static List<String> getNames() {
+    public static List<String> getNames() {
         List<String> l = new ArrayList<String>();
         for (Result r : all)
             l.add(r.name);

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,51 @@
 package hudson.model;
 
 import jenkins.model.Jenkins;
+import hudson.model.Result;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import hudson.Extension;
+import hudson.util.RunList;
+
 import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
     private final String projectName;
     private final String runId;
+    private final String threshold;
+    private static final String ALL = "ALL";
 
     @DataBoundConstructor
-    public RunParameterDefinition(String name, String projectName, String description) {
+    public RunParameterDefinition(String name, String projectName, String description, String threshold) {
         super(name, description);
         this.projectName = projectName;
         this.runId = null;
+        this.threshold = threshold;
     }
 
-    private RunParameterDefinition(String name, String projectName, String runId, String description) {
+    private RunParameterDefinition(String name, String projectName, String runId, String description, String threshold) {
         super(name, description);
         this.projectName = projectName;
         this.runId = runId;
+        this.threshold = threshold;
     }
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
         if (defaultValue instanceof RunParameterValue) {
             RunParameterValue value = (RunParameterValue) defaultValue;
-            return new RunParameterDefinition(getName(), value.getRunId(), getDescription());
+            return new RunParameterDefinition(getName(), value.getRunId(), getDescription(), getThreshold());
         } else {
             return this;
         }
+    }
+
+    private boolean isAllBuilds() {
+        return (null == threshold || ALL.equals(threshold));
     }
 
     @Exported
@@ -67,6 +78,21 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     public Job getProject() {
         return Jenkins.getInstance().getItemByFullName(projectName, Job.class);
+    }
+
+    public RunList getBuilds() {
+        if (isAllBuilds()) {
+            return getProject().getBuilds();
+        }
+        return getProject().getBuilds().overThresholdOnly(getThresholdResult());
+    }
+
+    public String getThreshold() {
+        return threshold;
+    }
+
+    private Result getThresholdResult() {
+        return Result.fromString(threshold);
     }
 
     @Extension
@@ -98,11 +124,17 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return createValue(runId);
         }
 
-        Run<?,?> lastBuild = getProject().getLastBuild();
-        if (lastBuild != null) {
-        	return createValue(lastBuild.getExternalizableId());
+        Run<?,?> lastBuild = null;
+        if(isAllBuilds()) {
+            lastBuild = getProject().getLastBuild();
         } else {
-        	return null;
+            lastBuild = getProject().getLastBuildOfThreshold(getThresholdResult());
+        }
+
+        if (lastBuild != null) {
+            return createValue(lastBuild.getExternalizableId());
+        } else {
+            return null;
         }
     }
 
