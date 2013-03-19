@@ -252,6 +252,15 @@ public class Util {
      */
     @IgnoreJRERequirement
     private static void makeWritable(File f) {
+        // try JDK6-way of doing it.
+        try {
+            if (f.setWritable(true)) {
+                return;
+            }
+        } catch (NoSuchMethodError e) {
+            // not JDK6
+        }
+
         // try chmod. this becomes no-op if this is not Unix.
         try {
             Chmod chmod = new Chmod();
@@ -261,13 +270,6 @@ public class Util {
             chmod.execute();
         } catch (BuildException e) {
             LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
-        }
-
-        // also try JDK6-way of doing it.
-        try {
-            f.setWritable(true);
-        } catch (NoSuchMethodError e) {
-            // not JDK6
         }
 
         try {// try libc chmod
