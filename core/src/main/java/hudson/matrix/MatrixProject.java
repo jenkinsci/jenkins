@@ -666,6 +666,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(Combination c) {
+        if (configurations == null) {
+            return null;
+        }
         return configurations.get(c);
     }
 
