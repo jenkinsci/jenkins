@@ -1058,14 +1058,23 @@ public class Queue extends ResourceController implements Saveable {
                 }
             });
             Jenkins h = Jenkins.getInstance();
-            hash.add(h, h.getNumExecutors()*100);
+            hash.add(h, (h.getNumExecutors() + /* JENKINS-7291 */1) * 100);
             for (Node n : h.getNodes())
                 hash.add(n,n.getNumExecutors()*100);
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
-                if (c==null || c.isOffline())    continue;
+                if (c == null) {
+                    if (n instanceof Jenkins) { // JENKINS-7291
+                        c = ((Jenkins) n).createComputer();
+                    } else {
+                        continue;
+                    }
+                }
+                if (c.isOffline()) {
+                    continue;
+                }
                 if (lbl!=null && !lbl.contains(n))  continue;
                 if (n.canTake(p) != null) continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
