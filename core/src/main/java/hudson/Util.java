@@ -33,7 +33,6 @@ import hudson.os.PosixAPI;
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.Kernel32;
 import hudson.util.jna.WinIOException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
@@ -237,6 +236,18 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
+                try {
+                    Class.forName("java.nio.file.Files").getMethod("delete", Class.forName("java.nio.file.Path")).invoke(null, File.class.getMethod("toPath").invoke(f));
+                } catch (InvocationTargetException x) {
+                    Throwable x2 = x.getCause();
+                    if (x2 instanceof IOException) {
+                        // may have a specific exception message
+                        throw (IOException) x2;
+                    }
+                    // else suppress
+                } catch (Throwable x) {
+                    // linkage errors, etc.; suppress
+                }
                 // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
