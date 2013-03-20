@@ -1468,7 +1468,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         public String toString() {
-            return getClass().getName()+':'+task.toString();
+            return getClass().getName() + ':' + task + ':' + getWhy();
         }
     }
     
