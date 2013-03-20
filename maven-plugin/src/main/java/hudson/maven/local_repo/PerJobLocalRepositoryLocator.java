@@ -17,6 +17,7 @@ public class PerJobLocalRepositoryLocator extends LocalRepositoryLocator {
 
     @Override
     public FilePath locate(AbstractMavenBuild build) {
+        // XXX should this use ((MavenBuild) build).getParentBuild().getWorkspace() when instanceof MavenBuild?
         return build.getWorkspace().child(".repository");
     }
 
