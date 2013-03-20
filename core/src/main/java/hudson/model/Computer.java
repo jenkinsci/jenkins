@@ -164,7 +164,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected final Object statusChangeLock = new Object();
 
     public Computer(Node node) {
-        assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
     }
 
