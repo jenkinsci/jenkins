@@ -1058,7 +1058,8 @@ public class Queue extends ResourceController implements Saveable {
                 }
             });
             Jenkins h = Jenkins.getInstance();
-            hash.add(h, Math.max(h.getNumExecutors(), /* JENKINS-7291 */1) * 100);
+            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
+            hash.add(h, Math.max(h.getNumExecutors(), 1) * 100);
             for (Node n : h.getNodes())
                 hash.add(n, Math.max(n.getNumExecutors(), 1) * 100);
 
@@ -1066,7 +1067,8 @@ public class Queue extends ResourceController implements Saveable {
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
                 if (c == null) {
-                    if (n instanceof Jenkins) { // JENKINS-7291
+                    if (n instanceof Jenkins) {
+                        // If n.numExecutors==0 then n.toComputer()==null as well, so make a transient MasterComputer just for this task.
                         c = ((Jenkins) n).createComputer();
                     } else {
                         continue;
