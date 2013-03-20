@@ -1058,9 +1058,9 @@ public class Queue extends ResourceController implements Saveable {
                 }
             });
             Jenkins h = Jenkins.getInstance();
-            hash.add(h, (h.getNumExecutors() + /* JENKINS-7291 */1) * 100);
+            hash.add(h, Math.max(h.getNumExecutors(), /* JENKINS-7291 */1) * 100);
             for (Node n : h.getNodes())
-                hash.add(n,n.getNumExecutors()*100);
+                hash.add(n, Math.max(n.getNumExecutors(), 1) * 100);
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
