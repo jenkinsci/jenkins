@@ -486,11 +486,7 @@ public class SlaveComputer extends Computer {
         if(channel==null)
             return Collections.emptyList();
         else
-            return channel.call(new Callable<List<LogRecord>,RuntimeException>() {
-                public List<LogRecord> call() {
-                    return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
-                }
-            });
+            return channel.call(new SlaveLogFetcher());
     }
 
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
@@ -743,5 +739,11 @@ public class SlaveComputer extends Computer {
             return c;
 
         return null;
+    }
+
+    private static class SlaveLogFetcher implements Callable<List<LogRecord>,RuntimeException> {
+        public List<LogRecord> call() {
+            return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
+        }
     }
 }
