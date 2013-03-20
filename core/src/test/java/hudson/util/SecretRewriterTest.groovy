@@ -5,10 +5,9 @@ import hudson.FilePath
 import jenkins.security.ConfidentialStoreRule
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 import javax.crypto.Cipher
-
-import static hudson.Util.createTempDir
 
 /**
  *
@@ -21,6 +20,8 @@ class SecretRewriterTest {
 
     @Rule
     public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder()
 
     @Test
     void singleFileRewrite() {
@@ -48,14 +49,10 @@ class SecretRewriterTest {
 
     void roundtrip(String before, String after) {
         def sr = new SecretRewriter(null);
-        def f = File.createTempFile("test","xml");
-        try {
-            f.text = before
-            sr.rewrite(f,null)
-            assert after.trim()==f.text.trim()
-        } finally {
-            f.delete()
-        }
+        def f = File.createTempFile("test", "xml", tmp.root)
+        f.text = before
+        sr.rewrite(f,null)
+        assert after.trim()==f.text.trim()
     }
 
     String encryptOld(str) {
@@ -73,7 +70,7 @@ class SecretRewriterTest {
      */
     @Test
     void recursionDetection() {
-        def backup = createTempDir()
+        def backup = tmp.newFolder("backup")
         def sw = new SecretRewriter(backup);
         def st = StreamTaskListener.fromStdout()
 
@@ -83,7 +80,7 @@ class SecretRewriterTest {
         def answer = "<msg>$n</msg>"
 
         // set up some directories with stuff
-        def t = createTempDir()
+        def t = tmp.newFolder("t")
         def dirs = ["a", "b", "c", "c/d", "c/d/e"]
         dirs.each { p ->
             def d = new File(t, p)
@@ -92,7 +89,7 @@ class SecretRewriterTest {
         }
 
         // stuff outside
-        def t2 = createTempDir()
+        def t2 = tmp.newFolder("t2")
         new File(t2,"foo.xml").text = payload
 
         // some recursions as well as valid symlinks
