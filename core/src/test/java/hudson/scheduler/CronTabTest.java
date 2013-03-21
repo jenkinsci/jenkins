@@ -35,11 +35,16 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
+import org.junit.BeforeClass;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest {
+
+    @BeforeClass public static void hashTokens() {
+        BaseParser.HASH_TOKENS = true;
+    }
 
     @Test
     public void test1() throws ANTLRException {
@@ -204,4 +209,14 @@ public class CronTabTest {
         assertEquals(x.bits[0],1L<<1);
         assertEquals(x.bits[1],1L<<6);
     }
+
+    @Test public void hashedMinute() throws Exception {
+        long t = new GregorianCalendar(2013, 2, 21, 16, 21).getTimeInMillis();
+        compare(new GregorianCalendar(2013, 2, 21, 17, 56), new CronTab("H 17 * * *", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("H * * * *", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("@hourly", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 17, 20), new CronTab("@hourly", Hash.from("junk")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 22, 13, 56), new CronTab("H H(12-13) * * *", Hash.from("stuff")).ceil(t));
+    }
+
 }
