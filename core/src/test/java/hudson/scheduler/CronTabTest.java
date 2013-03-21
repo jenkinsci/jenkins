@@ -194,8 +194,18 @@ public class CronTabTest {
             }
         });
 
-        assertEquals(x.bits[0],1L<<59);
-        assertEquals(x.bits[1],1L<<8);
+        assertEquals("59;", bitset(x.bits[0]));
+        assertEquals("8;", bitset(x.bits[1]));
+    }
+
+    private static String bitset(long bits) {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < 64; i++) {
+            if ((bits & 1L << i) != 0) {
+                b.append(i).append(';');
+            }
+        }
+        return b.toString();
     }
 
     @Test
@@ -206,8 +216,8 @@ public class CronTabTest {
             }
         });
 
-        assertEquals(x.bits[0],1L<<1);
-        assertEquals(x.bits[1],1L<<6);
+        assertEquals("1;", bitset(x.bits[0]));
+        assertEquals("6;", bitset(x.bits[1]));
     }
 
     @Test public void hashedMinute() throws Exception {
