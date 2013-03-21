@@ -40,6 +40,8 @@ import static java.util.Calendar.MONDAY;
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest {
+
+    @Test
     public void test1() throws ANTLRException {
         new CronTab("@yearly");
         new CronTab("@weekly");
@@ -48,6 +50,7 @@ public class CronTabTest {
         new CronTab("0 0 * 1-10/3 *");
     }
 
+    @Test
     public void testCeil1() throws Exception {
         CronTab x = new CronTab("0,30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,10);
@@ -58,6 +61,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,2, 0),x.ceil(c));
     }
 
+    @Test
     public void testCeil2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
@@ -65,6 +69,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,3,15),x.ceil(c));
     }
 
+    @Test
     public void testCeil3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday
         CronTab x = new CronTab("0 0 1 * 0");
@@ -87,6 +92,7 @@ public class CronTabTest {
      * Verifies that HUDSON-8656 never crops up again.
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Test
     public void testCeil4() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
@@ -108,6 +114,7 @@ public class CronTabTest {
      * Verifies that HUDSON-8656 never crops up again.
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Test
     public void testCeil5() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
@@ -125,6 +132,7 @@ public class CronTabTest {
         assertEquals(expectedDate.get(Calendar.DAY_OF_MONTH), next.get(Calendar.DAY_OF_MONTH)); // FAILS: is Monday, Jan 10th, 23:00
     }
 
+    @Test
     public void testFloor1() throws Exception {
         CronTab x = new CronTab("30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,40);
@@ -135,6 +143,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,0,30),x.floor(c));
     }
 
+    @Test
     public void testFloor2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
@@ -142,6 +151,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,3,45),x.floor(c));
     }
 
+    @Test
     public void testFloor3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
@@ -151,6 +161,7 @@ public class CronTabTest {
     }
 
     @Bug(8401)
+    @Test
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
@@ -171,6 +182,7 @@ public class CronTabTest {
         assertEquals(a,b);
     }
 
+    @Test
     public void testHash1() throws Exception {
         CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
             public int next(int n) {
@@ -182,6 +194,7 @@ public class CronTabTest {
         assertEquals(x.bits[1],1L<<8);
     }
 
+    @Test
     public void testHash2() throws Exception {
         CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
             public int next(int n) {
