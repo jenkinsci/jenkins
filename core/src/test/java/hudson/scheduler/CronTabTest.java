@@ -176,10 +176,9 @@ public class CronTabTest {
     /**
      * Humans can't easily see difference in two {@link Calendar}s, do help the diagnosis by using {@link DateFormat}. 
      */
-    private void compare(Calendar a, Calendar b) {
+    private void compare(Calendar expected, Calendar actual) {
         DateFormat f = DateFormat.getDateTimeInstance();
-        System.out.println(f.format(a.getTime())+" vs "+f.format(b.getTime()));
-        assertEquals(a,b);
+        assertEquals(f.format(expected.getTime()), f.format(actual.getTime()));
     }
 
     @Test
