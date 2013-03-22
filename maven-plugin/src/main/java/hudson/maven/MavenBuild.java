@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import jenkins.mvn.SettingsProvider;
 
@@ -153,7 +154,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      *      is manually triggered.
      * @see #getModuleSetBuild()
      */
-    public MavenModuleSetBuild getParentBuild() {
+    public @CheckForNull MavenModuleSetBuild getParentBuild() {
         return getParent().getParent().getBuildByNumber(getNumber());
     }
 
@@ -174,7 +175,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      *      is manually removed.
      * @see #getParentBuild()
      */
-    public MavenModuleSetBuild getModuleSetBuild() {
+    public @CheckForNull MavenModuleSetBuild getModuleSetBuild() {
         return getParent().getParent().getNearestOldBuild(getNumber());
     }
 

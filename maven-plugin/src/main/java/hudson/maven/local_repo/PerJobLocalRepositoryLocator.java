@@ -3,6 +3,8 @@ package hudson.maven.local_repo;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.maven.AbstractMavenBuild;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenModuleSetBuild;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -17,8 +19,17 @@ public class PerJobLocalRepositoryLocator extends LocalRepositoryLocator {
 
     @Override
     public FilePath locate(AbstractMavenBuild build) {
-        // XXX should this use ((MavenBuild) build).getParentBuild().getWorkspace() when instanceof MavenBuild?
-        return build.getWorkspace().child(".repository");
+        if (build instanceof MavenBuild) {
+            MavenModuleSetBuild parentBuild = ((MavenBuild) build).getModuleSetBuild();
+            if (parentBuild != null) {
+                build = parentBuild;
+            }
+        }
+        FilePath ws = build.getWorkspace();
+        if (ws == null) {
+            return null;
+        }
+        return ws.child(".repository");
     }
 
     @Extension

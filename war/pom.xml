@@ -270,7 +270,6 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <!-- when upgrading may need to add credentials and ssh-credentials too: https://github.com/jenkinsci/ssh-slaves-plugin/commit/7f7031bdaae528baf8e4a1cf29a95849ef268c5c -->
                   <version>0.23</version>
                   <type>hpi</type>
                 </artifactItem>

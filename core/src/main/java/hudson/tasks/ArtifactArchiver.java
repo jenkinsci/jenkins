@@ -32,7 +32,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.util.FormValidation;
-import hudson.util.TimeUnit2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
@@ -123,7 +122,6 @@ public class ArtifactArchiver extends Recorder {
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
-        final long start = System.nanoTime();
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
             FilePath ws = build.getWorkspace();
@@ -158,8 +156,6 @@ public class ArtifactArchiver extends Recorder {
             build.setResult(Result.FAILURE);
             return true;
         }
-
-        // System.out.println("Took "+ TimeUnit2.NANOSECONDS.toMillis(System.nanoTime()-start));
 
         return true;
     }
