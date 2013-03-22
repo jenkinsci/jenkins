@@ -2922,6 +2922,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(name==null || name.length()==0)
             throw new Failure(Messages.Hudson_NoName());
 
+        if("..".equals(name.trim())) 
+            throw new Failure(Messages.Jenkins_NotAllowedName(".."));
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch)) {
