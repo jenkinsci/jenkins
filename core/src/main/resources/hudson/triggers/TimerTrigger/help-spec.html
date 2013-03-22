@@ -45,6 +45,9 @@
   </p><p>
     The 'H' token can be used with a range. For example, '<tt>H H(0-7) * * *</tt>'
     means some time between midnight to 7:59am.
+    You can also use skips with 'H', with or without ranges.
+    For example, '<tt>H/15 * * * *</tt>' means every fifteen minutes (perhaps at :07, :22, :37, :52);
+    '<tt>H(0-29)/10 * * * *</tt>' means every ten minutes in the first half of every hour (perhaps at :04, :14, :24).
   </p><p>
     The '<tt>H</tt>' token can be thought of as a random value over a range,
     but it actually is a hash of the job name, not a random function, so that

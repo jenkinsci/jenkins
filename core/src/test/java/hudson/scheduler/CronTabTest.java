@@ -188,7 +188,7 @@ public class CronTabTest {
 
     @Test
     public void testHash1() throws Exception {
-        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
             public int next(int n) {
                 return n-1;
             }
@@ -196,6 +196,8 @@ public class CronTabTest {
 
         assertEquals("59;", bitset(x.bits[0]));
         assertEquals("8;", bitset(x.bits[1]));
+        assertEquals("3;6;9;12;15;18;21;24;27;", bitset(x.bits[2]));
+        assertEquals("4;8;", bitset(x.bits[3]));
     }
 
     private static String bitset(long bits) {
@@ -210,7 +212,7 @@ public class CronTabTest {
 
     @Test
     public void testHash2() throws Exception {
-        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
             public int next(int n) {
                 return 1;
             }
@@ -218,6 +220,8 @@ public class CronTabTest {
 
         assertEquals("1;", bitset(x.bits[0]));
         assertEquals("6;", bitset(x.bits[1]));
+        assertEquals("2;5;8;11;14;17;20;23;26;", bitset(x.bits[2]));
+        assertEquals("2;6;10;", bitset(x.bits[3]));
     }
 
     @Test public void hashedMinute() throws Exception {
@@ -227,6 +231,22 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("@hourly", Hash.from("stuff")).ceil(t));
         compare(new GregorianCalendar(2013, 2, 21, 17, 20), new CronTab("@hourly", Hash.from("junk")).ceil(t));
         compare(new GregorianCalendar(2013, 2, 22, 13, 56), new CronTab("H H(12-13) * * *", Hash.from("stuff")).ceil(t));
+    }
+
+    @Test public void hashSkips() throws Exception {
+        compare(new GregorianCalendar(2013, 2, 21, 16, 26), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 21)));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 41), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 31)));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 42)));
+        compare(new GregorianCalendar(2013, 2, 21, 17, 11), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 59)));
+        compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-15)/3 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+        compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+        compare(new GregorianCalendar(2013, 2, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 5)));
+        try {
+            compare(new GregorianCalendar(2013, 2, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+            fail();
+        } catch (ANTLRException x) {
+            // good
+        }
     }
 
 }
