@@ -23,7 +23,7 @@
  */
 package hudson.maven;
 
-import hudson.maven.local_repo.PerExecutorLocalRepositoryLocator;
+import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Result;
@@ -75,8 +75,7 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 scmResource)));
         project.setMaven(mi.getName());
-        // PerJobLocalRepositoryLocator does not work, since the repo for a module is distinct from that of the set
-        project.setLocalRepository(new PerExecutorLocalRepositoryLocator());
+        project.setLocalRepository(new PerJobLocalRepositoryLocator());
         return project;
     }
 
