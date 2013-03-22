@@ -420,8 +420,7 @@ public final class CronTab {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
                     if(i>0)
-                        return "Do you really mean \"every minute\" when you say \""+spec+"\"? "+
-                                "Perhaps you meant \"0 "+spec.substring(spec.indexOf(' ')+1)+"\"";
+                        return Messages.CronTab_do_you_really_mean_every_minute_when_you(spec, "0 " + spec.substring(spec.indexOf(' ')+1));
                     // once we find a sparse rank, upper ranks don't matter
                     return null;
                 }
