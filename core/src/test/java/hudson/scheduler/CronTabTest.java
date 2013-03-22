@@ -35,16 +35,11 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
-import org.junit.BeforeClass;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest {
-
-    @BeforeClass public static void hashTokens() {
-        BaseParser.HASH_TOKENS = true;
-    }
 
     @Test
     public void test1() throws ANTLRException {

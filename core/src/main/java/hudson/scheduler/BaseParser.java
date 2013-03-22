@@ -137,7 +137,6 @@ abstract class BaseParser extends LLkParser {
 
     /**
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
-     * This is more aggressive optimization that changes the semantics, so not on by default.
      */
-    public static boolean HASH_TOKENS = Boolean.getBoolean(BaseParser.class.getName()+".hash");
+    public static boolean HASH_TOKENS = !"false".equals(System.getProperty(BaseParser.class.getName()+".hash"));
 }
