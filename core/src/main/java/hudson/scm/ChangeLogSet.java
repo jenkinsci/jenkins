@@ -211,7 +211,9 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
                 try {
                     a.annotate(parent.build,this,markup);
                 } catch(Exception e) {
-                    LOGGER.fine("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                    LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
+                } catch(Error e) {
+                    LOGGER.severe("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
                 }
 
             return markup.toString(false);

@@ -196,6 +196,10 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testQuote() {
         Label l = jenkins.getLabel("\"abc\\\\\\\"def\"");
         assertEquals("abc\\\"def",l.getName());
+        
+        l = jenkins.getLabel("label1||label2"); // create label expression
+        l = jenkins.getLabel("\"label1||label2\"");
+        assertEquals("label1||label2",l.getName());
     }
 
     /**

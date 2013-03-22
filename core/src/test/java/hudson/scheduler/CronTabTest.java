@@ -173,6 +173,17 @@ public class CronTabTest {
         compare(answer,x.floor(c));
     }
 
+    @Test public void checkSanity() throws Exception {
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "0 * * * *"), new CronTab("* * * * *").checkSanity());
+        assertEquals(null, new CronTab("0 * * * *").checkSanity());
+        assertEquals(null, new CronTab("0 3 * * *").checkSanity());
+        assertEquals(null, new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "0 0 * * *"), new CronTab("* 0 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "0 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
+        // dubious; could be improved:
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "0 * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+    }
+
     /**
      * Humans can't easily see difference in two {@link Calendar}s, do help the diagnosis by using {@link DateFormat}. 
      */
