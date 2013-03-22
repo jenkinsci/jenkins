@@ -15,4 +15,10 @@
     thus unless a care is taken by your side, it'll likely to collide with each other.
     Otherwise, even when they are run on the same node, Jenkins will use different workspaces to keep
     them isolated.
+
+    <p>
+    When Jenkins creates different workspaces for isolation, Jenkins appends "@<I>num</I>" to the
+    workspace directory name, e.g. "@2".  The separator "@" can be configured by setting the system property
+    "hudson.slaves.WorkspaceList" to the desired separator string on the Jenkins command line. 
+    E.g. "-Dhudson.slaves.WorkspaceList=-" will use a dash as separator.
 </div>
