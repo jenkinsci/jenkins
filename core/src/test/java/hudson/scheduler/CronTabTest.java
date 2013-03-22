@@ -174,14 +174,19 @@ public class CronTabTest {
     }
 
     @Test public void checkSanity() throws Exception {
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "0 * * * *"), new CronTab("* * * * *").checkSanity());
-        assertEquals(null, new CronTab("0 * * * *").checkSanity());
-        assertEquals(null, new CronTab("0 3 * * *").checkSanity());
+        assertEquals(null, new CronTab("@hourly").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "H * * * *"), new CronTab("* * * * *").checkSanity());
         assertEquals(null, new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "0 0 * * *"), new CronTab("* 0 * * *").checkSanity());
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "0 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "H 0 * * *"), new CronTab("* 0 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "H 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
         // dubious; could be improved:
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "0 * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "H * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+        // promote hashes:
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H/15 * * * *", "*/15 * * * *"), new CronTab("*/15 * * * *").checkSanity());
+        // XXX 0,15,30,45 * * * * → H/15 * * * *
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H * * * *", "0 * * * *"), new CronTab("0 * * * *").checkSanity());
+        // if the user specifically asked for 3:00 AM, probably we should stick to 3:00–3:59
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 3 * * *", "0 3 * * *"), new CronTab("0 3 * * *").checkSanity());
     }
 
     /**
