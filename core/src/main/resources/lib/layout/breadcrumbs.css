@@ -47,3 +47,15 @@
 #breadcrumbs LI A:hover, #crumbs LI A:focus {
     color:#3465a4;
 }
+
+#menuSelector {/* used for showing '>' on the right of the anchor */
+  background-color:transparent;
+  background-image: url(menu_down_arrow.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  width: 14px;
+  height:14px;
+  position: absolute;
+  visibility: hidden;
+  cursor: pointer;
+}
