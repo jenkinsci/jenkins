@@ -140,7 +140,8 @@ var breadcrumbs = (function() {
             menu.addItems(items);
             menu.render("breadcrumb-menu-target");
             menu.show();
-            $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
+            if (items[0].tooltip)
+                $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
         }
 
         if (xhr)
@@ -167,7 +168,7 @@ var breadcrumbs = (function() {
                     var tooltip = e.getAttribute('tooltip');
                     if (tooltip) {
                         // join the tooltip into the context menu. color #000 to cancel out the text effect on disabled menu items
-                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true})
+                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true, tooltip:true})
                     }
 
                     e.items = function() { return a };
