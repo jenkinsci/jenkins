@@ -93,7 +93,7 @@ term [int field]
 returns [long bits=0]
 throws ANTLRException
 {
-  int d=1,s,e,t;
+  int d=NO_STEP,s,e,t;
 }
   : (token "-")=> s=token "-" e=token ( "/" d=token )?
   {

@@ -87,6 +87,10 @@ abstract class BaseParser extends LLkParser {
 
     /**
      * Uses {@link Hash} to choose a random (but stable) value from within this field.
+     *
+     * @param step
+     *      Increments. For example, 15 if "H/15". Or {@link #NO_STEP} to indicate
+     *      the special constant for "H" without the step value.
      */
     protected long doHash(int step, int field) throws ANTLRException {
         int u = UPPER_BOUNDS[field];
@@ -110,6 +114,7 @@ abstract class BaseParser extends LLkParser {
             error(Messages.BaseParser_MustBePositive(step));
             throw new AssertionError();
         } else {
+            assert step==NO_STEP;
             // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
             return 1L << (s+hash.next(e+1-s));
         }
@@ -139,4 +144,9 @@ abstract class BaseParser extends LLkParser {
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
      */
     public static boolean HASH_TOKENS = !"false".equals(System.getProperty(BaseParser.class.getName()+".hash"));
+
+    /**
+     * Constant that indicates no step value.
+     */
+    public static final int NO_STEP = 1;
 }
