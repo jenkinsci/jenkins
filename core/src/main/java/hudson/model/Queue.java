@@ -1061,22 +1061,12 @@ public class Queue extends ResourceController implements Saveable {
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
             hash.add(h, Math.max(h.getNumExecutors()*100, 1));
             for (Node n : h.getNodes())
-                hash.add(n, Math.max(n.getNumExecutors()*100, 1));
+                hash.add(n, n.getNumExecutors()*100);
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 Computer c = n.toComputer();
-                if (c == null) {
-                    if (n instanceof Jenkins) {
-                        // If n.numExecutors==0 then n.toComputer()==null as well, so make a transient MasterComputer just for this task.
-                        c = n.createComputer();
-                    } else {
-                        continue;
-                    }
-                }
-                if (c.isOffline()) {
-                    continue;
-                }
+                if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
                 if (n.canTake(p) != null) continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));

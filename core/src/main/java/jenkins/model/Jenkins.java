@@ -66,6 +66,7 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
+import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Slave;
@@ -3757,6 +3758,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
         public RetentionStrategy getRetentionStrategy() {
             return RetentionStrategy.NOOP;
+        }
+
+        /**
+         * Will always keep this guy alive so that it can function as a fallback to
+         * execute {@link FlyweightTask}s. See JENKINS-7291.
+         */
+        @Override
+        protected boolean isAlive() {
+            return true;
         }
 
         /**

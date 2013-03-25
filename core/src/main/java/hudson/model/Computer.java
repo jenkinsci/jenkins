@@ -32,6 +32,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
@@ -111,7 +112,9 @@ import static javax.servlet.http.HttpServletResponse.*;
  * This object is related to {@link Node} but they have some significant difference.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it.
+ * you won't have a {@link Computer} object for it (except for the master node,
+ * which always get its {@link Computer} in case we have no static executors and
+ * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
  * Also, even if you remove a {@link Node}, it takes time for the corresponding
  * {@link Computer} to be removed, if some builds are already in progress on that
@@ -817,7 +820,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Note that if an executor dies, we'll leave it in {@link #executors} until
      * the administrator yanks it out, so that we can see why it died.
      */
-    private boolean isAlive() {
+    protected boolean isAlive() {
         for (Executor e : executors)
             if (e.isAlive())
                 return true;
