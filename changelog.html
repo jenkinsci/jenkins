@@ -55,6 +55,17 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.508>What's new in 1.508</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Heavy thread congestion saving fingerprints.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13154">issue 13154</a>)
   <li class=rfe>
     Option to make the build not fail if there is nothing to archive.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10502">issue 10502</a>)
@@ -62,14 +73,26 @@ Upcoming changes</a>
     Better report file deletion failures.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17271">issue 17271</a>)
   <li class=bug>
+    "Local to the workspace" repository locator does not work when building one module in isolation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17331">issue 17331</a>)
+  <li class=bug>
     Master node mode not correctly displayed in <code>/computer/(master)/configure</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17263">issue 17263</a>)
+  <li class='major rfe'>
+    Performance improvement in master/slave communication throughput
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7813">issue 7813</a>)
+  <li class=bug>
+    Quoted label expression can result into dead executors (throwing exception)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17128">issue 17128</a>)
+  <li class=bug>
+    ChangeLog should produce some output even if some (plugin) annotator fails
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17084">issue 17084</a>)
+  <li class=bug>
+    View name should not allow "..".    
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16608">issue 16608</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.507>What's new in 1.507</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.507>What's new in 1.507</a> (2013/03/24)</h3>
 <ul class=image>
   <li class=rfe>
       Show the reason for a skipped test if the test result contains one
@@ -94,7 +117,6 @@ Upcoming changes</a>
     Wrong build result in post build steps after failed pre build step in maven projects.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17177">issue 17177</a>)     
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.506>What's new in 1.506</a> (2013/03/17)</h3>
 <ul class=image>
   <li class='major bug'>

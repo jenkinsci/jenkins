@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.508-SNAPSHOT</version>
+    <version>1.509-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -125,7 +125,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-1</version>
+      <version>build214-jenkins-2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -233,7 +233,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-2</version>
+      <version>1.4.4-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
