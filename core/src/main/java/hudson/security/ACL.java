@@ -134,7 +134,7 @@ public abstract class ACL {
      * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect
-     * @since XXX
+     * @since 1.509
      */
     public static void impersonate(Authentication auth, Runnable body) {
         SecurityContext old = impersonate(auth);
