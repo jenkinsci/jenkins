@@ -187,6 +187,8 @@ public class CronTabTest {
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H * * * *", "0 * * * *"), new CronTab("0 * * * *").checkSanity());
         // if the user specifically asked for 3:00 AM, probably we should stick to 3:00–3:59
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 3 * * *", "0 3 * * *"), new CronTab("0 3 * * *").checkSanity());
+
+        assertEquals(null, new CronTab("H/15 * 1 1 *").checkSanity());
     }
 
     /**

@@ -443,13 +443,15 @@ public final class CronTab {
      * @since XXX
      */
     public static @CheckForNull String hashify(String spec) {
-        if (spec.startsWith("*/")) {
+        if (spec.contains("H")) {
+            // if someone is already using H, presumably he knows what it is, so a warning is likely false positive
+            return null;
+        } else if (spec.startsWith("*/")) {// "*/15 ...." (every N minutes) to hash
             return "H" + spec.substring(1);
-        } else if (spec.matches("\\d+ .+")) {
+        } else if (spec.matches("\\d+ .+")) {// "0 ..." (certain minute) to hash
             return "H " + spec.substring(spec.indexOf(' ') + 1);
         } else {
             return null;
         }
     }
-
 }
