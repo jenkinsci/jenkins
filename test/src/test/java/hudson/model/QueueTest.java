@@ -324,7 +324,7 @@ public class QueueTest extends HudsonTestCase {
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw new AssertionError(jenkins.getQueue().getApproximateItemsQuickly().toString(), x);
+            throw (AssertionError) new AssertionError(jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
         }
         assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
