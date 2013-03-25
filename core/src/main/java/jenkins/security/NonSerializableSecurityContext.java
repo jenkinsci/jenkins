@@ -38,7 +38,7 @@ import javax.servlet.http.HttpSession;
  *
  * @author Kohsuke Kawaguchi
  * @see HttpSessionContextIntegrationFilter2
- * @since 1.502
+ * @since XXX
  */
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
