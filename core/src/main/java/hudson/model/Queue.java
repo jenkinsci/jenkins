@@ -1069,7 +1069,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (c == null) {
                     if (n instanceof Jenkins) {
                         // If n.numExecutors==0 then n.toComputer()==null as well, so make a transient MasterComputer just for this task.
-                        c = ((Jenkins) n).createComputer();
+                        c = n.createComputer();
                     } else {
                         continue;
                     }
