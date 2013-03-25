@@ -29,6 +29,8 @@ import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Calendar.*;
 import javax.annotation.CheckForNull;
@@ -451,6 +453,19 @@ public final class CronTab {
         } else if (spec.matches("\\d+ .+")) {// "0 ..." (certain minute) to hash
             return "H " + spec.substring(spec.indexOf(' ') + 1);
         } else {
+            Matcher m = Pattern.compile("0(,(\\d+)(,\\d+)*)( .+)").matcher(spec);
+            if (m.matches()) { // 0,15,30,45 to H/15
+                int period = Integer.parseInt(m.group(2));
+                if (period > 0) {
+                    StringBuilder b = new StringBuilder();
+                    for (int i = period; i < 60; i += period) {
+                        b.append(',').append(i);
+                    }
+                    if (b.toString().equals(m.group(1))) {
+                        return "H/" + period + m.group(4);
+                    }
+                }
+            }
             return null;
         }
     }
