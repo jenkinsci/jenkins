@@ -471,4 +471,20 @@ public class MatrixProjectTest {
         assertNull(defaultExecutionStrategy.getSorter());
     }
 
+    @Bug(17337)
+    @Test public void reload() throws Exception {
+        MatrixProject p = j.createMatrixProject();
+        AxisList axes = new AxisList();
+        axes.add(new TextAxis("p", "only"));
+        p.setAxes(axes);
+        String n = p.getFullName();
+        j.buildAndAssertSuccess(p);
+        j.jenkins.reload();
+        p = j.jenkins.getItemByFullName(n, MatrixProject.class);
+        assertNotNull(p);
+        MatrixConfiguration c = p.getItem("p=only");
+        assertNotNull(c);
+        assertNotNull(c.getBuildByNumber(1));
+    }
+
 }
