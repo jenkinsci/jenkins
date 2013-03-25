@@ -1059,9 +1059,9 @@ public class Queue extends ResourceController implements Saveable {
             });
             Jenkins h = Jenkins.getInstance();
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            hash.add(h, Math.max(h.getNumExecutors(), 1) * 100);
+            hash.add(h, Math.max(h.getNumExecutors()*100, 1));
             for (Node n : h.getNodes())
-                hash.add(n, Math.max(n.getNumExecutors(), 1) * 100);
+                hash.add(n, Math.max(n.getNumExecutors()*100, 1));
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
