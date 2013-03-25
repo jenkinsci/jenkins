@@ -50,15 +50,15 @@ import java.util.logging.Logger;
  */
 public class WindowsServiceLifecycle extends Lifecycle {
     public WindowsServiceLifecycle() {
-        updateHudsonExeIfNeeded();
+        updateJenkinsExeIfNeeded();
     }
 
     /**
-     * If <tt>hudson.exe</tt> is old compared to our copy,
+     * If <tt>jenkins.exe</tt> is old compared to our copy,
      * schedule an overwrite (except that since it's currently running,
-     * we can only do it when Hudson restarts next time.)
+     * we can only do it when Jenkins restarts next time.)
      */
-    private void updateHudsonExeIfNeeded() {
+    private void updateJenkinsExeIfNeeded() {
         try {
             File rootDir = Jenkins.getInstance().getRootDir();
 
@@ -83,7 +83,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
+            LOGGER.log(Level.SEVERE, "Failed to replace jenkins.exe",e);
         }
     }
 

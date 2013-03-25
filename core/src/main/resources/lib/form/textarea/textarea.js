@@ -34,8 +34,6 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
             };
 
             new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
-                method: "POST",
-                requestHeaders: "Content-Type: application/x-www-form-urlencoded",
                 parameters: {
                     text: text
                 },

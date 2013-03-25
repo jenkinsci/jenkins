@@ -195,11 +195,18 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         private boolean build(BuildListener listener, Collection<Builder> steps) throws IOException, InterruptedException {
-            for( BuildStep bs : steps )
+            for( BuildStep bs : steps ) {
                 if(!perform(bs,listener)) {
                     LOGGER.fine(MessageFormat.format("{0} : {1} failed", Build.this.toString(), bs));
                     return false;
                 }
+                
+                Executor executor = getExecutor();
+                if (executor != null && executor.isInterrupted()) {
+                    // someone asked build interruption, let stop the build before trying to run another build step
+                    throw new InterruptedException();
+                }
+            }
             return true;
         }
     }

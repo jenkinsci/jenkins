@@ -1,0 +1,10 @@
+<div>
+  對於某些儲存庫 URL (例如 <code>scpexe</code>)，可能需要額外的 Maven 設定 (例如使用者名稱、執行檔路徑等)。
+
+  Maven 要求您在 Jenkins 執行者的 <code>~/.m2/settings.xml</code>
+  檔裡設定，這裡的 ID 就是要由設定檔裡取得對應資訊的值
+  (也就是，找出設定檔裡叫這個 ID 的 &lt;server> 元素，取得各種通訊協定需要的設定值)。
+
+  <p>
+  <a href="http://maven.apache.org/plugins/maven-deploy-plugin/usage.html">maven-deploy-plugin 使用方式</a>這一頁裡有更多資訊。
+</div>

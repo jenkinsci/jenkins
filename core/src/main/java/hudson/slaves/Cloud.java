@@ -106,13 +106,14 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      Always >= 1. For example, if this is 3, the implementation
      *      should launch 3 slaves with 1 executor each, or 1 slave with
      *      3 executors, etc.
-     *
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
      *      provisioning operations. Can be empty but must not be null.
-     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}
+     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}s
      *      into Hudson via {@link jenkins.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
-     *      just needs to create a new node object.
+     *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
+     *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
+     *      provisioned {@link Node} object.
      */
     public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
 

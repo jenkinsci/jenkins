@@ -95,6 +95,16 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since 1.504 */
+        public ContextMenu add(String url, String icon, String text, boolean post) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url,icon,text);
+                item.post = post;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Default implementation of the context menu generation.
          * 
@@ -166,6 +176,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         @Exported
         public String icon;
+
+        /**
+         * True to make a POST request rather than GET.
+         * @since 1.504
+         */
+        @Exported public boolean post;
 
         /**
          * If this is a submenu, definition of subitems.

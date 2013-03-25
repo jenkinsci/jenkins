@@ -23,7 +23,9 @@
  */
 package jenkins.model.lazy;
 
+import hudson.model.Job;
 import hudson.model.Run;
+import hudson.model.RunMap;
 import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -200,6 +202,24 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             loadIdOnDisk();
     }
 
+    /**
+     * @return true if {@link AbstractLazyLoadRunMap#AbstractLazyLoadRunMap} was called with a non-null param, or {@link RunMap#load(Job, RunMap.Constructor)} was called
+     */
+    @Restricted(NoExternalUse.class)
+    public final boolean baseDirInitialized() {
+        return dir != null;
+    }
+
+    /**
+     * Let go of all the loaded references.
+     *
+     * This is a bit more sophisticated version of forcing GC.
+     * Primarily for debugging and testing lazy loading behaviour.
+     */
+    public void purgeCache() {
+        index = new Index();
+    }
+
     private void loadIdOnDisk() {
         String[] buildDirs = dir.list(createDirectoryFilter());
         if (buildDirs==null) {
@@ -240,6 +260,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     @Override
     public Set<Entry<Integer, R>> entrySet() {
+        assert baseDirInitialized();
         return Collections.unmodifiableSet(new BuildReferenceMapAdapter<R>(this,all()).entrySet());
     }
 

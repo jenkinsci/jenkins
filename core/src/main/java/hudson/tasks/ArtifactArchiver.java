@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
+import javax.annotation.Nonnull;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -63,15 +64,27 @@ public class ArtifactArchiver extends Recorder {
      * Just keep the last successful artifact set, no more.
      */
     private final boolean latestOnly;
-    
-    private static final Boolean allowEmptyArchive = 
-    	Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+
+    /**
+     * Fail (or not) the build if archiving returns nothing.
+     */
+    @Nonnull
+    private Boolean allowEmptyArchive;
 
     @DataBoundConstructor
-    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
+        this.allowEmptyArchive = allowEmptyArchive;
+    }
+
+    // Backwards compatibility for older builds
+    public Object readResolve() {
+        if (allowEmptyArchive == null) {
+            this.allowEmptyArchive = Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+        }
+        return this;
     }
 
     public String getArtifacts() {
@@ -84,6 +97,10 @@ public class ArtifactArchiver extends Recorder {
 
     public boolean isLatestOnly() {
         return latestOnly;
+    }
+
+    public boolean getAllowEmptyArchive() {
+        return allowEmptyArchive;
     }
     
     private void listenerWarnOrError(BuildListener listener, String message) {
@@ -101,7 +118,7 @@ public class ArtifactArchiver extends Recorder {
             build.setResult(Result.FAILURE);
             return true;
         }
-        
+
         File dir = build.getArtifactsDir();
         dir.mkdirs();
 
@@ -136,6 +153,7 @@ public class ArtifactArchiver extends Recorder {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error(
                     Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+            build.setResult(Result.FAILURE);
             return true;
         }
 

@@ -34,6 +34,7 @@ import hudson.model.BuildListener;
 import hudson.model.Environment;
 import hudson.model.JobProperty;
 import hudson.model.Run;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import hudson.scm.SCM;
@@ -86,6 +87,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      The listener for this build. This can be used to produce log messages, for example,
      *      which becomes a part of the "console output" of this build. But when this method runs,
      *      the build is considered completed, so its status cannot be changed anymore.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onCompleted(R r, @Nonnull TaskListener listener) {}
 
@@ -95,6 +99,10 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * <p>
      * At this point, all the records related to a build is written down to the disk. As such,
      * {@link TaskListener} is no longer available. This happens later than {@link #onCompleted(Run, TaskListener)}.
+     *
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onFinalized(R r) {}
 
@@ -107,6 +115,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @param listener
      *      The listener for this build. This can be used to produce log messages, for example,
      *      which becomes a part of the "console output" of this build.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onStarted(R r, TaskListener listener) {}
 
@@ -134,9 +145,12 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @throws IOException
      *      terminates the build abnormally. Hudson will handle the exception
      *      and reports a nice error message.
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected and the callee handled it gracefully, throw this exception
+     *      to suppress a stack trace by the receiver.
      * @since 1.410
      */
-    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException, RunnerAbortedException {
     	return new Environment() {};
     }
 
@@ -144,6 +158,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Called right before a build is going to be deleted.
      *
      * @param r The build.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onDeleted(R r) {}
 
@@ -194,7 +211,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
             if(l.targetType.isInstance(r))
                 try {
                     l.onStarted(r,listener);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     report(e);
                 }
         }
@@ -211,7 +228,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
             if(l.targetType.isInstance(r))
                 try {
                     l.onFinalized(r);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     report(e);
                 }
         }
@@ -225,7 +242,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
             if(l.targetType.isInstance(r))
                 try {
                     l.onDeleted(r);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     report(e);
                 }
         }

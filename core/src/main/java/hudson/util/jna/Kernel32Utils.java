@@ -61,7 +61,7 @@ public class Kernel32Utils {
    	// allow lookup of paths longer than MAX_PATH
     	// http://msdn.microsoft.com/en-us/library/aa365247(v=VS.85).aspx
     	String canonicalPath = file.getCanonicalPath();
-    	String path = null;
+    	String path;
     	if(canonicalPath.length() < 260) {
     		// path is short, use as-is
     		path = canonicalPath;
@@ -76,8 +76,21 @@ public class Kernel32Utils {
       return Kernel32.INSTANCE.GetFileAttributesW(new WString(path));
     }
 
+    /**
+     * @param target
+     *      If relative, resolved against the location of the symlink.
+     *      If absolute, it's absolute.
+     */
+    public static void createSymbolicLink(File symlink, String target, boolean dirLink) throws IOException {
+        if (!Kernel32.INSTANCE.CreateSymbolicLinkW(
+                new WString(symlink.getPath()), new WString(target),
+                dirLink?Kernel32.SYMBOLIC_LINK_FLAG_DIRECTORY:0)) {
+            throw new WinIOException("Failed to create a symlink "+symlink+" to "+target);
+        }
+    }
+
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-      return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+        return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
     }
 
     /*package*/ static Kernel32 load() {

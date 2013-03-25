@@ -199,6 +199,20 @@ public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,
         }
     }
     
+    protected boolean isDebug() {
+        for(String goal : goals) {
+            if (goal.equals("-X") || goal.equals("--debug"))  return true;
+        }
+        return false;
+    }
+    
+    protected boolean isQuiet() {
+        for(String goal : goals) {
+            if (goal.equals("-q") || goal.equals("--quiet"))  return true;
+        }
+        return false;
+    }
+
     protected static class FilterImpl extends MavenBuildProxy2.Filter<MavenBuildProxy2> implements Serializable {
         
         private MavenBuildInformation mavenBuildInformation;

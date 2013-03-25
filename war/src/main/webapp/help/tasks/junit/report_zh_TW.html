@@ -1,0 +1,15 @@
+<div>
+  Jenkins 認得 JUnit 測試報告 XML 格式 (TestNG 也是用一樣格式)。
+  設定這個選項後，Jenkins 便能提供測試結果的有用資訊，例如: 歷次測試結果趨勢、
+  能查看測試報表的網頁介面、追蹤失敗案例...。
+
+  <p>
+  要使用這個功能，請先讓您的建置會跑測試，
+  再使用<a href="http://ant.apache.org/manual/Types/fileset.html">Ant 檔名樣式語法</a>
+  指定  JUnit XML 檔的路徑，例如 <code>**/build/test-reports/*.xml</code>。
+  請注意該樣式不能包含不是報告的檔案。您可以設定多個檔名樣式，樣式之間請用半形逗號隔開。
+
+  <p>
+  有幾次建置都有測試結果後，
+  您應該就能看到<a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+graph">這樣</a>的東西。
+</div>

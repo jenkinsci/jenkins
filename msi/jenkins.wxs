@@ -13,6 +13,7 @@
               <Directory Id='JreDir' Name='jre'/>
               <Component Id='Main' Guid='e4a652bf-c210-4a45-95c4-5dc875b4880b'>
                 <File Name="jenkins.exe" Source='tmp/jenkins.exe' KeyPath='yes'/>
+                <File Name="jenkins.exe.config" Source='tmp/jenkins.exe.config' DiskId='1' />
                 <File Name="jenkins.xml" Source='tmp/jenkins.xml' DiskId='1' />
                 <File Name="jenkins.war" Source='$(var.WAR)' DiskId='1' />
                 <ServiceInstall Id="JenkinsService"

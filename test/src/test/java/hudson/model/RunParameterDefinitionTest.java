@@ -60,7 +60,9 @@ public class RunParameterDefinitionTest {
         val.buildEnvVars(null, env);
         assertEquals(j.jenkins.getRootUrl() + "job/dir/job/sub%20dir/job/some%20project/2/", env.get("build"));
         assertEquals("dir/sub dir/some project", env.get("build.jobName"));
+        assertEquals("dir/sub dir/some project", env.get("build_JOBNAME"));
         assertEquals("2", env.get("build.number"));
+        assertEquals("2", env.get("build_NUMBER"));
     }
 
 }

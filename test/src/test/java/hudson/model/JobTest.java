@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 
 import hudson.util.TextFile;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
@@ -168,14 +169,8 @@ public class JobTest extends HudsonTestCase {
     @LocalData
     public void testReadPermission() throws Exception {
         WebClient wc = new WebClient();
-        try {
-            HtmlPage page = wc.goTo("job/testJob/");
-            fail("getJob bypassed Item.READ permission: " + page.getTitleText());
-        } catch (FailingHttpStatusCodeException expected) { }
-        try {
-            HtmlPage page = wc.goTo("jobCaseInsensitive/testJob/");
-            fail("getJobCaseInsensitive bypassed Item.READ permission: " + page.getTitleText());
-        } catch (FailingHttpStatusCodeException expected) { }
+        wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
+        wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.login("joe");  // Has Item.READ permission
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
@@ -189,12 +184,7 @@ public class JobTest extends HudsonTestCase {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
-            try {
-                wc.goTo("job/testJob/config.xml", "text/plain");
-                fail("doConfigDotXml bypassed EXTENDED_READ permission");
-            } catch (FailingHttpStatusCodeException expected) {
-                assertEquals("403 for no permission", 403, expected.getStatusCode());
-            }
+            wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
             wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
             wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)

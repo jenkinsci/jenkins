@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.502-SNAPSHOT</version>
+    <version>1.509-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -43,7 +43,7 @@ THE SOFTWARE.
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/</contextPath><!-- context path during test -->
+    <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
   </properties>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.26</version>
+      <version>1.28</version>
       <scope>provided</scope>
     </dependency>
 
@@ -104,7 +104,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-40</version>
+      <version>0.9.10-jenkins-43</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -119,8 +119,13 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>slave-installer</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -265,8 +270,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <!-- when upgrading may need to add credentials and ssh-credentials too: https://github.com/jenkinsci/ssh-slaves-plugin/commit/7f7031bdaae528baf8e4a1cf29a95849ef268c5c -->
-                  <version>0.22</version>
+                  <version>0.23</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>credentials</artifactId>
+                  <version>1.3.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ssh-credentials</artifactId>
+                  <version>0.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -381,7 +397,6 @@ THE SOFTWARE.
         <artifactId>maven-jenkins-dev-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <contextPath>${contextPath}</contextPath>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
@@ -461,6 +476,7 @@ THE SOFTWARE.
             </systemProperty>
           </systemProperties>
           <webApp>
+            <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
           </webApp>
         </configuration>

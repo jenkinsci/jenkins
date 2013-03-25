@@ -6,9 +6,14 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.AggregatedTestResultAction;
+import hudson.tasks.test.TestResultProjectAction;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
@@ -145,6 +150,33 @@ public class MavenBuildTest extends HudsonTestCase {
         assertFalse( content.contains( "${maven.build.timestamp}") );
 
         System.out.println( "content " + content );
+    }
+    
+    @Bug(value=15865)
+    public void testMavenFailsafePluginTestResultsAreRecorded() throws Exception {
+        
+        // GIVEN: a Maven project with maven-failsafe-plugin and Maven 2.2.1
+        MavenModuleSet mavenProject = createMavenProject();
+        MavenInstallation mavenInstallation = configureDefaultMaven();
+        mavenProject.setMaven(mavenInstallation.getName());
+        mavenProject.getReporters().add(new TestReporter());
+        mavenProject.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-15865.zip")));
+        mavenProject.setGoals( "clean install" );
+        
+        // WHEN project is build
+        MavenModuleSetBuild mmsb =  buildAndAssertSuccess(mavenProject);
+        
+        // THEN we have a testresult recorded
+        AggregatedTestResultAction aggregatedTestResultAction = mmsb.getAggregatedTestResultAction();
+        assertNotNull(aggregatedTestResultAction);
+        assertEquals(1, aggregatedTestResultAction.getTotalCount());
+        
+        Map<MavenModule, MavenBuild> moduleBuilds = mmsb.getModuleLastBuilds();
+        assertEquals(1, moduleBuilds.size());
+        MavenBuild moduleBuild = moduleBuilds.values().iterator().next();
+         AbstractTestResultAction<?> testResultAction = moduleBuild.getTestResultAction();
+        assertNotNull(testResultAction);
+        assertEquals(1, testResultAction.getTotalCount());
     }    
     
     private static class TestReporter extends MavenReporter {

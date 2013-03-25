@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -43,17 +44,13 @@ THE SOFTWARE.
         <td style="white-space:normal;" colspan="2">
           <div style="float:right">
             <j:if test="${item.hasCancelPermission()}">
-              <a href="${rootURL}/queue/cancelItem?id=${item.id}">
-                <img src="${imagesURL}/16x16/stop.png" alt="${%cancel this build}" height="16" width="16"/>
-              </a>
+              <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
             </j:if>
           </div>
           <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
           <j:choose>
             <j:when test="${cause!=null}">
-              (${%pending} -
-                <st:include it="${cause}" page="summary.jelly" />
-              )
+              (${%pending}—<st:include it="${cause}" page="summary.jelly"/>)
             </j:when>
             <j:otherwise>
               (${%pending})

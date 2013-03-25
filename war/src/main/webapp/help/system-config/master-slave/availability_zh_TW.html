@@ -1,0 +1,43 @@
+<div>
+    控制 Jenkins 什麼時間啟動及停止 Slave。
+
+    <dl>
+        <dt><b>
+            盡可能讓 Slave 保持在上線狀態
+        </b></dt>
+        <dd>
+            這是預設值也是標準設定。
+            此模式下，Jenkins 會盡可以讓 Slave 上線。
+            如果 Jenkins 可以自已啟動 Slave，在 Slave 無法使用時會每隔一段時間試看看能不能將其重啟。
+            Jenkins 不會主動讓 Slave 離線。
+        </dd>
+
+        <!--dt><b>
+            分別在指定時間讓 Slave 上線及離線
+        </b></dt>
+        <dd>
+            此模式下，Jenkins 會依照排程讓 Slave 上線。
+            如果 Jenkins 可以自已啟動 Slave，在 Slave 該上線但卻沒有上線時，會每隔一段時間試看看能不能將其重啟。
+
+            在離線時段，Slave 只有在沒跑任何作業後才會被切換成離線。
+        </dd-->
+
+        <dt><b>
+            需要時讓 Jenkins 上線，閒置時離線
+        </b></dt>
+        <dd>
+            此模式下，如果 Jenkins 可以自已啟動 Slave，當有未執行作業符合下列情況時，Jenkins
+            會每隔一段時間試看看能不能將 Slave 啟動:
+            <ul>
+                <li>作業已經在佇列裡等超過指定的上線延遲時間</li>
+                <li>作業可以在這個 Slave 上執行</li>
+            </ul>
+
+            Slave 離線時機:
+            <ul>
+                <li>這個 Slave 沒在建置任何作業</li>
+                <li>Slave 已經閒置超過指定的離線延遲時間</li>
+            </ul>
+        </dd>
+    </dl>
+</div>

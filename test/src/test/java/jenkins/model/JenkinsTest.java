@@ -23,8 +23,9 @@
  */
 package jenkins.model;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import hudson.model.InvisibleAction;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
@@ -35,12 +36,11 @@ import hudson.util.FormValidation;
 
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
+import java.net.HttpURLConnection;
 
 /**
  * @author kingfai
@@ -174,6 +174,23 @@ public class JenkinsTest extends HudsonTestCase {
         Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);                
     }
 
+    @Bug(12251)
+    public void testItemFullNameExpansion() throws Exception {
+        HtmlForm f = createWebClient().goTo("/configure").getFormByName("config");
+        f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
+        f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
+        submit(f);
+
+        // build a dummy project
+        MavenModuleSet m = createMavenProject();
+        m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
+        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
+
+        // make sure these changes are effective
+        assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
+        assertTrue(b.getRootDir().toString().contains("test12251_builds"));
+    }
+
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
@@ -187,12 +204,7 @@ public class JenkinsTest extends HudsonTestCase {
         wc.goTo("/foobar/zot");
 
         // and make sure this fails
-        try {
-            wc.goTo("/foobar-zot/");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(500,e.getStatusCode());
-        }
+        wc.assertFails("/foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         assertEquals(3,jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }

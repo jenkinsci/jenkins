@@ -63,7 +63,7 @@ THE SOFTWARE.
       <p:config-blockWhenDownstreamBuilding />
       <st:include page="configure-advanced.jelly" optional="true" />
       <f:entry title="${%Display Name}" field="displayNameOrNull">
-         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${it.name}')"/>
+         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
       </f:entry>
       
     </f:advanced>

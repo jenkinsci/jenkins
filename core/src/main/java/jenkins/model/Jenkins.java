@@ -94,6 +94,7 @@ import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -110,6 +111,7 @@ import hudson.UDPBroadcastThread;
 import hudson.Util;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
+import hudson.WebAppMain;
 import hudson.XmlFile;
 import hudson.cli.CLICommand;
 import hudson.cli.CliEntryPoint;
@@ -195,6 +197,7 @@ import jenkins.InitReactorRunner;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
+import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -247,6 +250,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static hudson.init.InitMilestone.*;
+import hudson.security.BasicAuthenticationFilter;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -790,7 +794,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH);
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
             // initialization consists of ...
             executeReactor( is,
@@ -1566,6 +1570,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Label getLabel(String expr) {
         if(expr==null)  return null;
+        expr = hudson.util.QuotedStringTokenizer.unquote(expr);
         while(true) {
             Label l = labels.get(expr);
             if(l!=null)
@@ -1864,12 +1869,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @since 1.66
      * @see Descriptor#getCheckUrl(String)
      * @see #getRootUrlFromRequest()
+     * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
     public String getRootUrl() {
         String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
-            if (!url.endsWith("/")) url += '/';
-            return url;
+            return Util.ensureEndsWith(url,"/");
         }
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null)
@@ -1922,6 +1927,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     public FilePath getWorkspaceFor(TopLevelItem item) {
+        for (WorkspaceLocator l : WorkspaceLocator.all()) {
+            FilePath workspace = l.locate(item, this);
+            if (workspace != null) {
+                return workspace;
+            }
+        }
+ 
         return new FilePath(expandVariablesForDirectory(workspaceDir, item));
     }
 
@@ -1933,7 +1945,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return new File(Util.replaceMacro(base, ImmutableMap.of(
                 "JENKINS_HOME", getRootDir().getPath(),
                 "ITEM_ROOTDIR", item.getRootDir().getPath(),
-                "ITEM_FULLNAME", item.getFullName())));
+                "ITEM_FULLNAME", item.getFullName(),   // legacy, deprecated
+                "ITEM_FULL_NAME", item.getFullName().replace(':','$')))); // safe, see JENKINS-12251
     }
     
     public String getRawWorkspaceDir() {
@@ -2493,6 +2506,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             }
         });
 
+        final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
+
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
@@ -2515,7 +2530,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 if (slaves == null) slaves = new NodeList();
 
                 clouds.setOwner(Jenkins.this);
-                items.clear();
 
                 // JENKINS-8043: re-add the slaves which were not saved into the config file
                 // and are now missing, but still connected.
@@ -2538,9 +2552,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 public void run(Reactor session) throws Exception {
                     TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
                     items.put(item.getName(), item);
+                    loadedNames.add(item.getName());
                 }
             });
         }
+
+        g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
+            public void run(Reactor reactor) throws Exception {
+                // anything we didn't load from disk, throw them away.
+                // doing this after loading from disk allows newly loaded items
+                // to inspect what already existed in memory (in case of reloading)
+
+                // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
+                // hopefully there shouldn't be too many of them.
+                for (String name : items.keySet()) {
+                    if (!loadedNames.contains(name))
+                        items.remove(name);
+                }
+            }
+        });
 
         g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
             public void run(Reactor session) throws Exception {
@@ -2701,7 +2731,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
 
             boolean result = true;
-            for( Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig() )
+            for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
 
             version = VERSION;
@@ -2885,13 +2915,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Check if the given name is suitable as a name
      * for job, view, etc.
      *
-     * @throws ParseException
+     * @throws Failure
      *      if the given name is not good
      */
     public static void checkGoodName(String name) throws Failure {
         if(name==null || name.length()==0)
             throw new Failure(Messages.Hudson_NoName());
 
+        if("..".equals(name.trim())) 
+            throw new Failure(Messages.Jenkins_NotAllowedName(".."));
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch)) {
@@ -2906,7 +2938,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Makes sure that the given name is good as a job name.
-     * @return trimmed name if valid; throws ParseException if not
+     * @return trimmed name if valid; throws Failure if not
      */
     private String checkJobName(String name) throws Failure {
         checkGoodName(name);
@@ -3069,7 +3101,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
         ContextMenu menu = new ContextMenu().from(this, request, response);
         for (MenuItem i : menu.items) {
-            if (i.url.equals("/manage")) {
+            if (i.url.equals(request.getContextPath() + "/manage")) {
                 // add "Manage Jenkins" subitems
                 i.subMenu = new ContextMenu().from(this, request, response, "manage");
             }
@@ -3567,6 +3599,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
+            // XXX SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
             || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))

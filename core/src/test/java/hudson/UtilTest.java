@@ -37,6 +37,9 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 
 import hudson.util.StreamTaskListener;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import org.junit.internal.AssumptionViolatedException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -122,17 +125,7 @@ public class UtilTest {
         String encoded = Util.encode(urlWithSpaces);
         assertEquals(encoded, "http://hudson/job/Hudson%20Job");
     }
-    
-    /**
-     * Test that Strings that contain ampersand are correctly URL encoded.
-     */
-    @Test
-    public void testEncodeAmpersand() {
-        final String urlWithAmpersand = "http://hudson/job/Hudson-job/label1&&label2";
-        String encoded = Util.encode(urlWithAmpersand);
-        assertEquals(encoded, "http://hudson/job/Hudson-job/label1%26%26label2");
-    }
-    
+        
     /**
      * Test the rawEncode() method.
      */
@@ -141,7 +134,7 @@ public class UtilTest {
         String[] data = {  // Alternating raw,encoded
             "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz",
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "01234567890!@$*()-_=+',.", "01234567890!@$*()-_=+',.",
+            "01234567890!@$&*()-_=+',.", "01234567890!@$&*()-_=+',.",
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
             "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
@@ -197,6 +190,14 @@ public class UtilTest {
             
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work: 
             //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
+
+            File external = File.createTempFile("something", "");
+            try {
+                Util.createSymlink(d, external.getAbsolutePath(), "outside", l);
+                assertEquals(external.getAbsolutePath(), Util.resolveSymlink(new File(d, "outside")));
+            } finally {
+                assertTrue(external.delete());
+            }
         } finally {
             Util.deleteRecursive(d);
         }
@@ -227,6 +228,31 @@ public class UtilTest {
             Util.createSymlink(d,"dir","anotherDir/symlinkDir",l);
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             // assertTrue(Util.isSymlink(new File(d,"anotherDir/symlinkDir")));
+        } finally {
+            Util.deleteRecursive(d);
+        }
+    }
+
+    @Test public void deleteFile() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
+        Class<?> c;
+        try {
+            c = Class.forName("java.nio.file.FileSystemException");
+        } catch (ClassNotFoundException x) {
+            throw new AssumptionViolatedException("prior to JDK 7", x);
+        }
+        File d = Util.createTempDir();
+        try {
+            File f = new File(d, "f");
+            OutputStream os = new FileOutputStream(f);
+            try {
+                Util.deleteFile(f);
+                fail("should not have been deletable");
+            } catch (IOException x) {
+                assertEquals(c, x.getClass());
+            } finally {
+                os.close();
+            }
         } finally {
             Util.deleteRecursive(d);
         }

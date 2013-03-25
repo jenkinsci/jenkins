@@ -35,6 +35,9 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -46,7 +49,7 @@ public class ViewTest extends HudsonTestCase {
         assertNotNull(new WebClient().goTo("/").getWebResponse().getResponseHeaderValue("X-Hudson"));
     }
 
-	/**
+    /**
      * Creating two views with the same name.
      */
     @Email("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
@@ -64,7 +67,7 @@ public class ViewTest extends HudsonTestCase {
             submit(form);
             fail("shouldn't be allowed to create two views of the same name.");
         } catch (FailingHttpStatusCodeException e) {
-            assertEquals(400,e.getStatusCode());
+            assertEquals(400, e.getStatusCode());
         }
     }
 
@@ -100,24 +103,24 @@ public class ViewTest extends HudsonTestCase {
         assertEquals(((ProxyView) proxyView).getProxiedViewName(), "listView");
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
     }
-    
-    public void testDeleteView() throws Exception {
-    	WebClient wc = new WebClient();
 
-    	ListView v = new ListView("list", jenkins);
-		jenkins.addView(v);
-    	HtmlPage delete = wc.getPage(v, "delete");
-    	submit(delete.getFormByName("delete"));
-    	assertNull(jenkins.getView("list"));
-    	
-    	User user = User.get("user", true);
-    	MyViewsProperty p = user.getProperty(MyViewsProperty.class);
-    	v = new ListView("list", p);
-		p.addView(v);
-    	delete = wc.getPage(v, "delete");
-    	submit(delete.getFormByName("delete"));
-    	assertNull(p.getView("list"));
-    	
+    public void testDeleteView() throws Exception {
+        WebClient wc = new WebClient();
+
+        ListView v = new ListView("list", jenkins);
+        jenkins.addView(v);
+        HtmlPage delete = wc.getPage(v, "delete");
+        submit(delete.getFormByName("delete"));
+        assertNull(jenkins.getView("list"));
+
+        User user = User.get("user", true);
+        MyViewsProperty p = user.getProperty(MyViewsProperty.class);
+        v = new ListView("list", p);
+        p.addView(v);
+        delete = wc.getPage(v, "delete");
+        submit(delete.getFormByName("delete"));
+        assertNull(p.getView("list"));
+
     }
 
     @Bug(9367)
@@ -136,5 +139,19 @@ public class ViewTest extends HudsonTestCase {
         WebClient webClient = new WebClient();
         webClient.setJavaScriptEnabled(false);
         assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
+    }
+
+    @Bug(16608)
+    public void testNotAlloedName() throws Exception {
+        HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
+        form.getInputByName("name").setValueAttribute("..");
+        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+
+        try {
+            submit(form);
+            fail("\"..\" should not be allowed.");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(400, e.getStatusCode());
+        }
     }
 }

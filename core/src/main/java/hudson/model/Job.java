@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -60,8 +61,10 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
+import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
@@ -124,7 +127,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     private transient volatile boolean holdOffBuildUntilSave;
 
-    private volatile LogRotator logRotator;
+    private volatile BuildDiscarder logRotator;
 
     /**
      * Not all plugins are good at calculating their health report quickly.
@@ -362,23 +365,45 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the log rotator for this job, or null if none.
+     * Returns the configured build discarder for this job, or null if none.
      */
-    public LogRotator getLogRotator() {
+    public BuildDiscarder getBuildDiscarder() {
         return logRotator;
     }
 
-    public void setLogRotator(LogRotator logRotator) {
-        this.logRotator = logRotator;
+    public void setBuildDiscarder(BuildDiscarder bd) throws IOException {
+        this.logRotator = bd;
+        save();
+    }
+
+    /**
+     * Left for backward compatibility. Returns non-null if and only
+     * if {@link LogRotator} is configured as {@link BuildDiscarder}.
+     *
+     * @deprecated as of 1.503
+     *      Use {@link #getBuildDiscarder()}.
+     */
+    public LogRotator getLogRotator() {
+        if (logRotator instanceof LogRotator)
+            return (LogRotator) logRotator;
+        return null;
+    }
+
+    /**
+     * @deprecated as of 1.503
+     *      Use {@link #setBuildDiscarder(BuildDiscarder)}
+     */
+    public void setLogRotator(LogRotator logRotator) throws IOException {
+        setBuildDiscarder(logRotator);
     }
 
     /**
      * Perform log rotation.
      */
     public void logRotate() throws IOException, InterruptedException {
-        LogRotator lr = getLogRotator();
-        if (lr != null)
-            lr.perform(this);
+        BuildDiscarder bd = getBuildDiscarder();
+        if (bd != null)
+            bd.perform(this);
     }
 
     /**
@@ -548,7 +573,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     public void renameTo(String newName) throws IOException {
+        File oldBuildDir = getBuildDir();
         super.renameTo(newName);
+        File newBuildDir = getBuildDir();
+        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
+            if (!oldBuildDir.renameTo(newBuildDir)) {
+                throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
+            }
+        }
+    }
+
+    @Override public synchronized void delete() throws IOException, InterruptedException {
+        super.delete();
+        Util.deleteRecursive(getBuildDir());
     }
 
     /**
@@ -575,7 +612,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Exported(name="builds")
     public RunList<RunT> getNewBuilds() {
-        return getBuilds().newBuilds();
+        return getBuilds().limit(100);
     }
 
     /**
@@ -707,7 +744,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @see RunMap
      */
-    protected File getBuildDir() {
+    public File getBuildDir() {
         return Jenkins.getInstance().getBuildDirFor(this);
     }
 
@@ -762,13 +799,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastSuccessfulBuild() {
-        RunT r = getLastBuild();
-        // temporary hack till we figure out what's causing this bug
-        while (r != null
-                && (r.isBuilding() || r.getResult() == null || r.getResult()
-                        .isWorseThan(Result.UNSTABLE)))
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -1029,8 +1060,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             setDisplayName(json.optString("displayNameOrNull"));
 
-            if (req.getParameter("logrotate") != null)
-                logRotator = LogRotator.DESCRIPTOR.newInstance(req,json.getJSONObject("logrotate"));
+            if (json.optBoolean("logrotate"))
+                logRotator = req.bindJSON(BuildDiscarder.class, json.optJSONObject("buildDiscarder"));
             else
                 logRotator = null;
 

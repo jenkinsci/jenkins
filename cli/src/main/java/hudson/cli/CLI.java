@@ -34,9 +34,13 @@ import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
-import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -61,10 +65,10 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -125,24 +129,28 @@ public class CLI {
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
 
-        Channel channel = null;
-        CliPort clip = getCliTcpPort(url);
-        if(clip!=null) {
-            // connect via CLI port
+        Channel _channel;
+        try {
+            _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
             try {
-                channel = connectViaCliPort(jenkins, clip);
-            } catch (IOException e) {
-                LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+                _channel = connectViaHttp(url);
+            } catch (IOException e2) {
+                try { // Java 7: e.addSuppressed(e2);
+                    Throwable.class.getMethod("addSuppressed", Throwable.class).invoke(e, e2);
+                } catch (NoSuchMethodException _ignore) {
+                    // Java 6
+                } catch (Exception _huh) {
+                    LOGGER.log(Level.SEVERE, null, _huh);
+                }
+                throw e;
             }
         }
-        if (channel==null) {
-            // connect via HTTP
-            channel = connectViaHttp(url);
-        }
-        this.channel = channel;
+        this.channel = _channel;
 
         // execute the command
-        entryPoint = (CliEntryPoint)channel.waitForRemoteProperty(CliEntryPoint.class.getName());
+        entryPoint = (CliEntryPoint)_channel.waitForRemoteProperty(CliEntryPoint.class.getName());
 
         if(entryPoint.protocolVersion()!=CliEntryPoint.VERSION)
             throw new IOException(Messages.CLI_VersionMismatch());
@@ -275,7 +283,9 @@ public class CLI {
         String identity = head.getHeaderField("X-Instance-Identity");
 
         flushURLConnection(head);
-        if (p1==null && p2==null)     return null;
+        if (p1==null && p2==null) {
+            throw new IOException("No X-Jenkins-CLI2-Port among " + head.getHeaderFields().keySet());
+        }
 
         if (p2!=null)   return new CliPort(new InetSocketAddress(h,Integer.parseInt(p2)),identity,2);
         else            return new CliPort(new InetSocketAddress(h,Integer.parseInt(p1)),identity,1);
@@ -396,6 +406,20 @@ public class CLI {
                 args = args.subList(2,args.size());
                 continue;
             }
+            if (head.equals("-noCertificateCheck")) {
+                System.out.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+                SSLContext context = SSLContext.getInstance("TLS");
+                context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
+                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+                // bypass host name check, too.
+                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String s, SSLSession sslSession) {
+                        return true;
+                    }
+                });
+                args = args.subList(1,args.size());
+                continue;
+            }
             if(head.equals("-i") && args.size()>=2) {
                 File f = new File(args.get(1));
                 if (!f.exists()) {
@@ -436,7 +460,13 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
-        CLI cli = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy).connect();
+        CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
+        String userInfo = new URL(url).getUserInfo();
+        if (userInfo != null) {
+            factory = factory.basicAuth(userInfo);
+        }
+
+        CLI cli = factory.connect();
         try {
             if (!candidateKeys.isEmpty()) {
                 try {

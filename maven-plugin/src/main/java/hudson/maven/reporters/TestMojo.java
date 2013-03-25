@@ -36,7 +36,8 @@ enum TestMojo {
     },
     
     MAVEN_SUREFIRE("org.apache.maven.plugins", "maven-surefire-plugin","test","reportsDirectory"),
-    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
+    MAVEN_FAILSAFE("org.apache.maven.plugins", "maven-failsafe-plugin", "integration-test","reportsDirectory"),
+    MAVEN_FAILSAFE_B("org.apache.maven.plugins", "maven-failsafe-plugin", "verify","reportsDirectory"),
     
     MAVEN_JUNIT("com.sun.maven", "maven-junit-plugin", "test","reportsDirectory"),
     FLEXMOJOS("org.sonatype.flexmojos", "flexmojos-maven-plugin", "test-run",null),
@@ -113,7 +114,7 @@ enum TestMojo {
         }
 
         // some plugins just default to this:        
-        File reportsDir = new File(pom.getBasedir(), pom.getBuild().getDirectory()+File.separator+"surefire-reports");
+        File reportsDir = new File(pom.getBuild().getDirectory(), "surefire-reports");
         if (reportsDir.exists()) {
             return getReportFiles(reportsDir, getFileSet(reportsDir));
         }
@@ -159,7 +160,7 @@ enum TestMojo {
             }
         }
         
-        if (goal.equals("test") || goal.equals("test-run")) {
+        if (goal.equals("test") || goal.equals("test-run") || goal.equals("integration-test")) {
             return FALLBACK;
         }
         

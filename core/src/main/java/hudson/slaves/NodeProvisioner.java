@@ -52,21 +52,55 @@ public class NodeProvisioner {
     /**
      * The node addition activity in progress.
      */
-    public static final class PlannedNode {
+    public static class PlannedNode {
         /**
          * Used to display this planned node to UI. Should ideally include the identifier unique to the node
          * being provisioned (like the instance ID), but if such an identifier doesn't readily exist, this
          * can be just a name of the template being provisioned (like the machine image ID.)
          */
         public final String displayName;
+
+        /**
+         * Used to launch and return a {@link Node} object. {@link NodeProvisioner} will check
+         * this {@link Future}'s isDone() method to determine when to finalize this object.
+         */
         public final Future<Node> future;
+
+        /**
+         * The number of executors that will be provided by the {@link Node} launched by
+         * this object. This is used for capacity planning in {@link NodeProvisioner#update}.
+         */
         public final int numExecutors;
 
+        /**
+         * Construct a PlannedNode instance without {@link Cloud} callback for finalization.
+         *
+         * @param displayName Used to display this object in the UI.
+         * @param future Used to launch a @{link Node} object.
+         * @param numExecutors The number of executors that will be provided by the launched {@link Node}.
+         */
         public PlannedNode(String displayName, Future<Node> future, int numExecutors) {
             if(displayName==null || future==null || numExecutors<1)  throw new IllegalArgumentException();
             this.displayName = displayName;
             this.future = future;
             this.numExecutors = numExecutors;
+        }
+
+        /**
+         * Indicate that this {@link PlannedNode} is being finalized.
+         *
+         * <p>
+         * {@link NodeProvisioner} will call this method when it's done with {@link PlannedNode}.
+         * This indicates that the {@link PlannedNode}'s work has been completed
+         * (successfully or otherwise) and it is about to be removed from the list of pending
+         * {@link Node}s to be launched.
+         *
+         * <p>
+         * Create a subtype of this class and override this method to add any necessary behaviour.
+         *
+         * @since 1.503
+         */
+        public void spent() {
         }
     }
 
@@ -152,6 +186,9 @@ public class NodeProvisioner {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
                 }
+
+                f.spent();
+
                 itr.remove();
             } else
                 plannedCapacitySnapshot += f.numExecutors;

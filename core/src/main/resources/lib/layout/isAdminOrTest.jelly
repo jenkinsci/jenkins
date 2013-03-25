@@ -22,11 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-<%@ attribute name="test" required="true" type="java.lang.Boolean" %>
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
+    <s:documentation>Deprecated, do not use.</s:documentation>
     <j:choose>
         <j:when test="${!test &amp;&amp; app.useSecurity}">
             <s:isUserInRole role="admin">

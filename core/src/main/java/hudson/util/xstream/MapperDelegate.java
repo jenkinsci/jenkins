@@ -59,34 +59,6 @@ public class MapperDelegate extends MapperWrapper {
         return delegate.defaultImplementationOf(type);
     }
 
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForClassDefiningField() {
-        return delegate.attributeForClassDefiningField();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForImplementationClass() {
-        return delegate.attributeForImplementationClass();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForReadResolveField() {
-        return delegate.attributeForReadResolveField();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForEnumType() {
-        return delegate.attributeForEnumType();
-    }
-
     public String aliasForAttribute(String attribute) {
         return delegate.aliasForAttribute(attribute);
     }

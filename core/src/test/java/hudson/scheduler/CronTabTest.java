@@ -35,11 +35,18 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
+import org.junit.BeforeClass;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest {
+
+    @BeforeClass public static void hashTokens() {
+        BaseParser.HASH_TOKENS = true;
+    }
+
+    @Test
     public void test1() throws ANTLRException {
         new CronTab("@yearly");
         new CronTab("@weekly");
@@ -48,6 +55,7 @@ public class CronTabTest {
         new CronTab("0 0 * 1-10/3 *");
     }
 
+    @Test
     public void testCeil1() throws Exception {
         CronTab x = new CronTab("0,30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,10);
@@ -58,6 +66,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,2, 0),x.ceil(c));
     }
 
+    @Test
     public void testCeil2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
@@ -65,6 +74,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,3,15),x.ceil(c));
     }
 
+    @Test
     public void testCeil3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday
         CronTab x = new CronTab("0 0 1 * 0");
@@ -87,6 +97,7 @@ public class CronTabTest {
      * Verifies that HUDSON-8656 never crops up again.
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Test
     public void testCeil4() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
@@ -108,6 +119,7 @@ public class CronTabTest {
      * Verifies that HUDSON-8656 never crops up again.
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Test
     public void testCeil5() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
@@ -125,6 +137,7 @@ public class CronTabTest {
         assertEquals(expectedDate.get(Calendar.DAY_OF_MONTH), next.get(Calendar.DAY_OF_MONTH)); // FAILS: is Monday, Jan 10th, 23:00
     }
 
+    @Test
     public void testFloor1() throws Exception {
         CronTab x = new CronTab("30 * * * *");
         Calendar c = new GregorianCalendar(2000,2,1,1,40);
@@ -135,6 +148,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,0,30),x.floor(c));
     }
 
+    @Test
     public void testFloor2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
@@ -142,6 +156,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2000,2,1,3,45),x.floor(c));
     }
 
+    @Test
     public void testFloor3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
@@ -151,6 +166,7 @@ public class CronTabTest {
     }
 
     @Bug(8401)
+    @Test
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
@@ -162,15 +178,26 @@ public class CronTabTest {
         compare(answer,x.floor(c));
     }
 
+    @Test public void checkSanity() throws Exception {
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "0 * * * *"), new CronTab("* * * * *").checkSanity());
+        assertEquals(null, new CronTab("0 * * * *").checkSanity());
+        assertEquals(null, new CronTab("0 3 * * *").checkSanity());
+        assertEquals(null, new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "0 0 * * *"), new CronTab("* 0 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "0 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
+        // dubious; could be improved:
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "0 * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+    }
+
     /**
      * Humans can't easily see difference in two {@link Calendar}s, do help the diagnosis by using {@link DateFormat}. 
      */
-    private void compare(Calendar a, Calendar b) {
+    private void compare(Calendar expected, Calendar actual) {
         DateFormat f = DateFormat.getDateTimeInstance();
-        System.out.println(f.format(a.getTime())+" vs "+f.format(b.getTime()));
-        assertEquals(a,b);
+        assertEquals(f.format(expected.getTime()), f.format(actual.getTime()));
     }
 
+    @Test
     public void testHash1() throws Exception {
         CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
             public int next(int n) {
@@ -178,10 +205,21 @@ public class CronTabTest {
             }
         });
 
-        assertEquals(x.bits[0],1L<<59);
-        assertEquals(x.bits[1],1L<<8);
+        assertEquals("59;", bitset(x.bits[0]));
+        assertEquals("8;", bitset(x.bits[1]));
     }
 
+    private static String bitset(long bits) {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < 64; i++) {
+            if ((bits & 1L << i) != 0) {
+                b.append(i).append(';');
+            }
+        }
+        return b.toString();
+    }
+
+    @Test
     public void testHash2() throws Exception {
         CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
             public int next(int n) {
@@ -189,7 +227,17 @@ public class CronTabTest {
             }
         });
 
-        assertEquals(x.bits[0],1L<<1);
-        assertEquals(x.bits[1],1L<<6);
+        assertEquals("1;", bitset(x.bits[0]));
+        assertEquals("6;", bitset(x.bits[1]));
     }
+
+    @Test public void hashedMinute() throws Exception {
+        long t = new GregorianCalendar(2013, 2, 21, 16, 21).getTimeInMillis();
+        compare(new GregorianCalendar(2013, 2, 21, 17, 56), new CronTab("H 17 * * *", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("H * * * *", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("@hourly", Hash.from("stuff")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 21, 17, 20), new CronTab("@hourly", Hash.from("junk")).ceil(t));
+        compare(new GregorianCalendar(2013, 2, 22, 13, 56), new CronTab("H H(12-13) * * *", Hash.from("stuff")).ceil(t));
+    }
+
 }

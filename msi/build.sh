@@ -10,8 +10,9 @@ fi
 rm -rf tmp || true
 mkdir tmp || true
 unzip -p "$war" 'WEB-INF/lib/jenkins-core-*.jar' > tmp/core.jar
-unzip -p tmp/core.jar windows-service/jenkins.exe > tmp/jenkins.exe
-unzip -p tmp/core.jar windows-service/jenkins.xml > tmp/jenkins.xm_
+unzip -p tmp/core.jar windows-service/jenkins.exe        > tmp/jenkins.exe
+unzip -p tmp/core.jar windows-service/jenkins.exe.config > tmp/jenkins.exe.config
+unzip -p tmp/core.jar windows-service/jenkins.xml        > tmp/jenkins.xm_
 # replace executable name to the bundled JRE
 sed -e 's|executable.*|executable>%BASE%\\jre\\bin\\java</executable>|' < tmp/jenkins.xm_ > tmp/jenkins.xml
 

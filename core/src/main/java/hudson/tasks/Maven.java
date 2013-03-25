@@ -390,11 +390,6 @@ public class Maven extends Builder {
         }
 
         @Override
-        public String getHelpFile() {
-            return "/help/project-config/maven.html";
-        }
-
-        @Override
         public String getHelpFile(String fieldName) {
             if (fieldName != null && fieldName.equals("globalSettings")) fieldName = "settings"; // same help file
             return super.getHelpFile(fieldName);

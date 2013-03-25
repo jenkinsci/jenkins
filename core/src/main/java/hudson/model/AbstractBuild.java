@@ -37,6 +37,7 @@ import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.ChangeLogParser;
@@ -58,6 +59,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.*;
 import jenkins.model.Jenkins;
+import jenkins.model.PeepholePermalink;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.lazy.BuildReference;
 import org.kohsuke.stapler.HttpResponse;
@@ -88,6 +90,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -367,7 +370,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public final FilePath getModuleRoot() {
         FilePath ws = getWorkspace();
         if (ws==null)    return null;
-        return getParent().getScm().getModuleRoot(ws,this);
+        return getParent().getScm().getModuleRoot(ws, this);
     }
 
     /**
@@ -468,36 +471,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return hudsonVersion;
     }
 
-    @Override
-    public synchronized void delete() throws IOException {
-        // Need to check if deleting this build affects lastSuccessful/lastStable symlinks
-        R lastSuccessful = getProject().getLastSuccessfulBuild(),
-          lastStable = getProject().getLastStableBuild();
-
-        super.delete();
-
-        try {
-            if (lastSuccessful == this)
-                updateSymlink("lastSuccessful", getProject().getLastSuccessfulBuild());
-            if (lastStable == this)
-                updateSymlink("lastStable", getProject().getLastStableBuild());
-        } catch (InterruptedException ex) {
-            LOGGER.warning("Interrupted update of lastSuccessful/lastStable symlinks for "
-                           + getProject().getDisplayName());
-            // handle it later
-            Thread.currentThread().interrupt();
+    /**
+     * Backward compatibility.
+     *
+     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
+     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
+     * resolves to the symlink created by {@link PeepholePermalink}.
+     */
+    private void createSymlink(TaskListener listener, String name, Permalink target) throws InterruptedException {
+        String targetDir;
+        if (getProject().getBuildDir().equals(new File(getProject().getRootDir(), "builds"))) {
+            targetDir = "builds/" + target.getId();
+        } else {
+            targetDir = getProject().getBuildDir()+"/"+target.getId();
         }
-    }
-
-    private void updateSymlink(String name, AbstractBuild<?,?> newTarget) throws InterruptedException {
-        if (newTarget != null)
-            newTarget.createSymlink(new LogTaskListener(LOGGER, Level.WARNING), name);
-        else
-            new File(getProject().getBuildDir(), "../"+name).delete();
-    }
-
-    private void createSymlink(TaskListener listener, String name) throws InterruptedException {
-        Util.createSymlink(getProject().getBuildDir(),"builds/"+getId(),"../"+name,listener);
+        Util.createSymlink(getProject().getRootDir(), targetDir, name, listener);
     }
 
     /**
@@ -731,11 +719,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             try {
                 post2(listener);
 
-                if (result.isBetterOrEqualTo(Result.UNSTABLE))
-                    createSymlink(listener, "lastSuccessful");
-
-                if (result.isBetterOrEqualTo(Result.SUCCESS))
-                    createSymlink(listener, "lastStable");
+                createSymlink(listener, "lastSuccessful", Permalink.LAST_SUCCESSFUL_BUILD);
+                createSymlink(listener, "lastStable", Permalink.LAST_STABLE_BUILD);
             } finally {
                 // update the culprit list
                 HashSet<String> r = new HashSet<String>();
@@ -1360,6 +1345,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * 
      * @since 1.489
      */
+    @RequirePOST
     public synchronized HttpResponse doStop() throws IOException, ServletException {
         Executor e = getExecutor();
         if (e==null)

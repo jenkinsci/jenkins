@@ -26,6 +26,8 @@ package hudson.console;
 import hudson.Extension;
 import hudson.MarkupText;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -53,8 +55,16 @@ public class HyperlinkNote extends ConsoleNote {
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         String url = this.url;
-        if (url.startsWith("/"))
-            url = Jenkins.getInstance().getRootUrl()+url.substring(1);
+        if (url.startsWith("/")) {
+            StaplerRequest req = Stapler.getCurrentRequest();
+            if (req!=null) {
+                // if we are serving HTTP request, we want to use app relative URL
+                url = req.getContextPath()+url;
+            } else {
+                // otherwise presumably this is rendered for e-mails and other non-HTTP stuff
+                url = Jenkins.getInstance().getRootUrl()+url.substring(1);
+            }
+        }
         text.addMarkup(charPos, charPos + length, "<a href='" + url + "'"+extraAttributes()+">", "</a>");
         return null;
     }

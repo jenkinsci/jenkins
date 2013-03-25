@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Result;
@@ -38,7 +39,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import java.net.HttpURLConnection;
 
 /**
  * @author huybrechts
@@ -74,6 +75,7 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 scmResource)));
         project.setMaven(mi.getName());
+        project.setLocalRepository(new PerJobLocalRepositoryLocator());
         return project;
     }
 
@@ -98,12 +100,7 @@ public class MavenProjectTest extends HudsonTestCase {
         // this should succeed
         HudsonTestCase.WebClient wc = new WebClient();
         wc.getPage(project,"site");
-        try {
-            wc.getPage(project,"site/no-such-file");
-            fail("should have resulted in 404");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(404,e.getStatusCode());
-        }
+        wc.assertFails(project.getUrl() + "site/no-such-file", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
     /**
@@ -149,7 +146,7 @@ public class MavenProjectTest extends HudsonTestCase {
     @Bug(6779)
     public void testDeleteSetBuildDeletesModuleBuilds() throws Exception {
         MavenModuleSet project = createProject("maven-multimod.zip");
-        project.setGoals("package");
+        project.setGoals("install");
         buildAndAssertSuccess(project);
         buildAndAssertSuccess(project.getModule("org.jvnet.hudson.main.test.multimod:moduleB"));
         buildAndAssertSuccess(project);
@@ -169,6 +166,23 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setGoals("install");
         buildAndAssertSuccess(project);
     }
+    
+    @Bug(17177)
+    public void testCorrectResultInPostStepAfterFailedPreBuildStep() throws Exception {
+        MavenModuleSet p = createSimpleProject();
+        MavenInstallation mi = configureDefaultMaven();
+        p.setMaven(mi.getName());
+        p.setGoals("initialize");
+        
+        Shell pre = new Shell("exit 1"); // must fail to simulate scenario!
+        p.getPrebuilders().add(pre);
+        ResultExposingBuilder resultExposer = new ResultExposingBuilder();
+        p.getPostbuilders().add(resultExposer);
+        
+        assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        assertEquals("The result passed to the post build step was not the one from the pre build step", Result.FAILURE, resultExposer.getResult());
+    }
+    
 
     /**
      * Config roundtrip test around pre/post build step

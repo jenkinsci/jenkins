@@ -26,34 +26,44 @@ package hudson.maven;
 import hudson.model.Result;
 import hudson.tasks.Maven.MavenInstallation;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.Email;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import static org.junit.Assert.*;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class RedeployPublisherTest extends HudsonTestCase {
+public class RedeployPublisherTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
     @Bug(2593)
+    @Test
     public void testBug2593() throws Exception {
-        configureDefaultMaven();
-        MavenModuleSet m2 = createMavenProject();
-        File repo = createTmpDir();
+        Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.39/maven-antrun-extended-plugin-1.39.pom", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
+        j.configureDefaultMaven();
+        MavenModuleSet m2 = j.createMavenProject();
+        File repo = tmp.getRoot();
 
         // a fake build
         m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("big-artifact.pom")));
         m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, b);
+        j.assertBuildStatus(Result.SUCCESS, b);
 
         // TODO: confirm that the artifacts use a consistent timestamp
         // TODO: we need to somehow introduce a large delay between deploy since timestamp is only second precision
@@ -62,12 +72,13 @@ public class RedeployPublisherTest extends HudsonTestCase {
         System.out.println(repo);
     }
 
+    @Test
     public void testConfigRoundtrip() throws Exception {
-        MavenModuleSet p = createMavenProject();
+        MavenModuleSet p = j.createMavenProject();
         RedeployPublisher rp = new RedeployPublisher("theId", "http://some.url/", true, true);
         p.getPublishersList().add(rp);
-        submit(new WebClient().getPage(p,"configure").getFormByName("config"));
-        assertEqualBeans(rp,p.getPublishersList().get(RedeployPublisher.class),"id,url,uniqueVersion,evenIfUnstable");
+        j.submit(j.new WebClient().getPage(p,"configure").getFormByName("config"));
+        j.assertEqualBeans(rp,p.getPublishersList().get(RedeployPublisher.class),"id,url,uniqueVersion,evenIfUnstable");
     }
 
 //    /**
@@ -90,34 +101,34 @@ public class RedeployPublisherTest extends HudsonTestCase {
      */
     @Email("http://www.nabble.com/tar.gz-becomes-.gz-after-Hudson-deployment-td25391364.html")
     @Bug(3814)
+    @Test
     public void testTarGz() throws Exception {
-        configureDefaultMaven();
-        MavenModuleSet m2 = createMavenProject();
-        File repo = createTmpDir();
+        j.configureDefaultMaven();
+        MavenModuleSet m2 = j.createMavenProject();
+        File repo = tmp.getRoot();
 
         // a fake build
         m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
         m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, false));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, b);
+        j.assertBuildStatus(Result.SUCCESS, b);
 
         assertTrue("tar.gz doesn't exist",new File(repo,"test/test/0.1-SNAPSHOT/test-0.1-SNAPSHOT-bin.tar.gz").exists());
     }
     
+    @Test
     public void testTarGzUniqueVersionTrue() throws Exception {
-        configureDefaultMaven();
-        MavenModuleSet m2 = createMavenProject();
-        File repo = createTmpDir();
-        
-        FileUtils.cleanDirectory( repo );
+        j.configureDefaultMaven();
+        MavenModuleSet m2 = j.createMavenProject();
+        File repo = tmp.getRoot();
         
         // a fake build
         m2.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
         m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, b);
+        j.assertBuildStatus(Result.SUCCESS, b);
 
         File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
         String[] files = artifactDir.list( new FilenameFilter()
@@ -152,19 +163,19 @@ public class RedeployPublisherTest extends HudsonTestCase {
         
     }    
     
+    @Test
     public void testTarGzMaven3() throws Exception {
         
-        MavenModuleSet m3 = createMavenProject();
-        MavenInstallation mvn = configureMaven3();
+        MavenModuleSet m3 = j.createMavenProject();
+        MavenInstallation mvn = j.configureMaven3();
         m3.setMaven( mvn.getName() );
-        File repo = createTmpDir();
-        FileUtils.cleanDirectory( repo );
+        File repo = tmp.getRoot();
         // a fake build
         m3.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
         m3.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, false));
 
         MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, b);
+        j.assertBuildStatus(Result.SUCCESS, b);
 
         assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
         File artifactDir = new File(repo,"test/test/0.1-SNAPSHOT/");
@@ -180,18 +191,18 @@ public class RedeployPublisherTest extends HudsonTestCase {
         assertTrue("tar.gz doesn't exist",!files[0].contains( "SNAPSHOT" ));
     }    
     
+    @Test
     public void testTarGzUniqueVersionTrueMaven3() throws Exception {
-        MavenModuleSet m3 = createMavenProject();
-        MavenInstallation mvn = configureMaven3();
+        MavenModuleSet m3 = j.createMavenProject();
+        MavenInstallation mvn = j.configureMaven3();
         m3.setMaven( mvn.getName() );        
-        File repo = createTmpDir();
-        FileUtils.cleanDirectory( repo );
+        File repo = tmp.getRoot();
         // a fake build
         m3.setScm(new SingleFileSCM("pom.xml",getClass().getResource("targz-artifact.pom")));
         m3.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),true, false));
 
         MavenModuleSetBuild b = m3.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, b);
+        j.assertBuildStatus(Result.SUCCESS, b);
         
         assertTrue( MavenUtil.maven3orLater( b.getMavenVersionUsed() ) );
         
@@ -227,17 +238,17 @@ public class RedeployPublisherTest extends HudsonTestCase {
     }    
 
     @Bug(3773)
+    @Test
     public void testDeployUnstable() throws Exception {
-        configureDefaultMaven();
-        MavenModuleSet m2 = createMavenProject();
-        File repo = createTmpDir();
-        FileUtils.cleanDirectory( repo );
+        j.configureDefaultMaven();
+        MavenModuleSet m2 = j.createMavenProject();
+        File repo = tmp.getRoot();
         // a build with a failing unit tests
         m2.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure-findbugs.zip")));
         m2.getPublishersList().add(new RedeployPublisher("",repo.toURI().toString(),false, true));
 
         MavenModuleSetBuild b = m2.scheduleBuild2(0).get();
-        assertBuildStatus(Result.UNSTABLE, b);
+        j.assertBuildStatus(Result.UNSTABLE, b);
 
         assertTrue("Artifact should have been published even when the build is unstable",
                    new File(repo,"test/test/1.0-SNAPSHOT/test-1.0-SNAPSHOT.jar").exists());

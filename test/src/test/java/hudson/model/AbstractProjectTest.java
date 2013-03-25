@@ -24,11 +24,11 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.*;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
 import hudson.Launcher;
@@ -39,6 +39,10 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
+
+import jenkins.model.Jenkins;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.MemoryAssert;
@@ -46,9 +50,15 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import org.jvnet.hudson.test.MockFolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -100,12 +110,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue("Workspace should exist by now",b.getWorkspace().exists());
 
         // make sure that the action link is protected
-        try {
-            new WebClient().getPage(project,"doWipeOutWorkspace");
-            fail("Should have failed");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(e.getStatusCode(),403);
-        }
+        new WebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     /**
@@ -275,7 +280,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
         // Archive artifacts that don't exist to create failure in post-build action
-        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false));
+        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false, false));
         build = job.scheduleBuild2(0, new Cause.UserCause()).get();
         assertEquals(Result.FAILURE, build.getResult());
         // Links should not be updated since build failed
@@ -290,4 +295,91 @@ public class AbstractProjectTest extends HudsonTestCase {
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assertTrue(job.getLastBuild() != null);
     }
+
+    @Bug(13502)
+    public void testHandleBuildTrigger() throws Exception {
+        Project u = createFreeStyleProject("u"),
+                d = createFreeStyleProject("d"),
+                e = createFreeStyleProject("e");
+
+        u.addPublisher(new BuildTrigger("d", Result.SUCCESS));
+
+        jenkins.setSecurityRealm(createDummySecurityRealm());
+        ProjectMatrixAuthorizationStrategy authorizations = new ProjectMatrixAuthorizationStrategy();
+        jenkins.setAuthorizationStrategy(authorizations);
+
+        authorizations.add(Jenkins.ADMINISTER, "admin");
+        authorizations.add(Jenkins.READ, "user");
+
+        // user can READ u and CONFIGURE e
+        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Job.READ, Collections.singleton("user"));
+        u.addProperty(new AuthorizationMatrixProperty(permissions));
+
+        permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Job.CONFIGURE, Collections.singleton("user"));
+        e.addProperty(new AuthorizationMatrixProperty(permissions));
+
+        User user = User.get("user");
+        SecurityContext sc = ACL.impersonate(user.impersonate());
+        try {
+            e.convertUpstreamBuildTrigger(Collections.<AbstractProject>emptySet());
+        } finally {
+            SecurityContextHolder.setContext(sc);
+        }
+
+        assertEquals(1, u.getPublishersList().size());
+    }
+
+    @Bug(17137)
+    public void testExternalBuildDirectorySymlinks() throws Exception {
+        // XXX when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
+        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
+        File builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        submit(form);
+        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
+        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
+        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
+        File link = new File(p.getRootDir(), "lastStable");
+        assertTrue(link.exists());
+        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
+        FreeStyleBuild b2 = p.scheduleBuild2(0).get();
+        assertTrue(link.exists());
+        assertEquals(b2.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
+        b2.delete();
+        assertTrue(link.exists());
+        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
+        b1.delete();
+        assertFalse(link.exists());
+    }
+
+    private File resolveAll(File link) throws InterruptedException, IOException {
+        while (true) {
+            File f = Util.resolveSymlinkToFile(link);
+            if (f==null)    return link;
+            link = f;
+        }
+    }
+
+    @Bug(17138)
+    public void testExternalBuildDirectoryRenameDelete() throws Exception {
+        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
+        File builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        submit(form);
+        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
+        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        File oldBuildDir = new File(builds, "d/prj");
+        assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
+        assertTrue(b.getRootDir().isDirectory());
+        p.renameTo("proj");
+        File newBuildDir = new File(builds, "d/proj");
+        assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
+        assertTrue(b.getRootDir().isDirectory());
+        p.delete();
+        assertFalse(b.getRootDir().isDirectory());
+    }
+
 }

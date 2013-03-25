@@ -50,10 +50,6 @@ complete {
         rewriteLicense([],apacheLicense)
     }
 
-    match("*:stapler-adjunct-timeline") {
-        rewriteLicense([],license("BSD License","http://simile.mit.edu/license.html"))
-    }
-
     match("relaxngDatatype:relaxngDatatype") {
         // see http://sourceforge.net/projects/relaxng/
         rewriteLicense([],bsdLicense);
@@ -92,11 +88,6 @@ complete {
         rewriteLicense([license("CDDL or GPL 2 with Classpath Exception",null)],cddl);
     }
            
-
-    match("nekohtml:xercesMinimal:1.9.6.2") {
-        if (dependency.licenses.isEmpty())
-            rewriteLicense([], apacheLicense)
-    }    
 
     //
     // Choose from multi-licensed modules

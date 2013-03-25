@@ -1016,8 +1016,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
                     XStream2 xStream2 = new XStream2();
                     xStream2.omitField(View.class, "owner");
-                    rsp.getOutputStream().write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
-                    xStream2.toXML(this,  rsp.getOutputStream());
+                    xStream2.toXMLUTF8(this,  rsp.getOutputStream());
                 }
             };
         }

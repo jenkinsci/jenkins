@@ -68,12 +68,17 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return
      *      may be empty but never null.
      */
-    @Exported
-    public synchronized List<Action> getActions() {
-        if(actions==null)
-            actions = new CopyOnWriteArrayList<Action>();
-        return actions;
-    }
+	@Exported
+	public List<Action> getActions() {
+		if(actions == null) {
+			synchronized (this) {
+				if(actions == null) {
+					actions = new CopyOnWriteArrayList<Action>();
+				}
+			}
+		}
+		return actions;
+	}
 
     /**
      * Gets all actions of a specified type that contributed to this build.

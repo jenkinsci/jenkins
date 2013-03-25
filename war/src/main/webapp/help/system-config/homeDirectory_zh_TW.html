@@ -1,0 +1,13 @@
+<div>
+  Jenkins 把所有資料檔存在檔案系統的這個目錄裡。您可以透過下列方式修改:
+  <ol>
+    <li>
+      使用您 Web Container 的管理工具設定 <code>JENKINS_HOME</code> 環境項目。
+    <li>
+      啟動您的 Web Container 前設定 <code>JENKINS_HOME</code> 環境變數。
+    <li>
+      (不建議) 修改 <code>jenkins.war</code> (或解開到您 Web Container 裡的複本) 裡的 web.xml。
+  </ol>
+  Jenkins 執行時無法修改這個值。
+  這個項目主要是讓您確認設定正確與否。
+</div>

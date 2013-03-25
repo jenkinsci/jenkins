@@ -1,0 +1,22 @@
+<div>
+    監控電腦可用的虛擬記憶體空間 (也叫做「Swap 空間」)，並將低於臨界值的 Slave 標為離線。
+
+    <p>
+    Swap 空間的確切定義會隨平台而有所不同。
+
+    <ul>
+    <li>
+    在 Windows 下，該值代表
+    <a href="http://msdn.microsoft.com/en-us/library/aa366589(VS.85).aspx">分頁檔的可用空間</a>。
+    不過 Windows 可以自動加大分頁檔，所以數據的意義不大。
+
+    <li>
+    在 Linux 環境下，該值將由 <tt>/proc/meminfo</tt> 取得。
+
+    <li>
+    在其他的 Unix 系統裡，我們會執行 <tt>top</tt> 指令取得數據。
+    </ul>
+
+    <p>
+    如果您用到了無法正確取得數據的作業系統，請不吝指教，方便我們著手改善。
+</div>

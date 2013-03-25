@@ -68,6 +68,11 @@ THE SOFTWARE.
 		    </j:forEach>
       </table>
 
+      <j:if test="${!empty(it.skippedMessage)}">
+        <h3>${%Skip Message}</h3>
+        <pre><j:out value="${it.annotate(it.skippedMessage)}"/></pre>
+      </j:if>
+
       <j:if test="${!empty(it.errorDetails)}">
         <h3>${%Error Message}</h3>
         <pre><j:out value="${it.annotate(it.errorDetails)}"/></pre>

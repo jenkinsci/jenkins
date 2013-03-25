@@ -63,6 +63,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
+import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildStep;
@@ -88,7 +89,8 @@ import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
-import org.apache.tools.ant.taskdefs.email.Mailer;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -280,9 +282,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.onLoad(parent, name);
 
         RunMap<R> builds = createBuildRunMap();
-        if (this.builds!=null) {
+
+        RunMap<R> currentBuilds = this.builds;
+
+        if (currentBuilds==null) {
+            // are we overwriting what currently exist?
+            // this is primarily when Jenkins is getting reloaded
+            Item current = parent.getItem(name);
+            if (current!=null && current.getClass()==getClass()) {
+                currentBuilds = ((AbstractProject)current).builds;
+            }
+        }
+        if (currentBuilds !=null) {
             // if we are reloading, keep all those that are still building intact
-            for (R r : this.builds.getLoadedBuilds().values()) {
+            for (R r : currentBuilds.getLoadedBuilds().values()) {
                 if (r.isBuilding())
                     builds.put(r);
             }
@@ -748,60 +761,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         // dependency setting might have been changed by the user, so rebuild.
         Jenkins.getInstance().rebuildDependencyGraph();
+        convertUpstreamBuildTrigger(upstream);
 
-        // reflect the submission of the pseudo 'upstream build trriger'.
-        // this needs to be done after we release the lock on 'this',
-        // or otherwise we could dead-lock
-
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            // Don't consider child projects such as MatrixConfiguration:
-            if (!p.isConfigurable()) continue;
-            boolean isUpstream = upstream.contains(p);
-            synchronized(p) {
-                // does 'p' include us in its BuildTrigger? 
-                DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
-                BuildTrigger trigger = pl.get(BuildTrigger.class);
-                List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects(p);
-                if(isUpstream) {
-                    if(!newChildProjects.contains(this))
-                        newChildProjects.add(this);
-                } else {
-                    newChildProjects.remove(this);
-                }
-
-                if(newChildProjects.isEmpty()) {
-                    pl.remove(BuildTrigger.class);
-                } else {
-                    // here, we just need to replace the old one with the new one,
-                    // but there was a regression (we don't know when it started) that put multiple BuildTriggers
-                    // into the list.
-                    // for us not to lose the data, we need to merge them all.
-                    List<BuildTrigger> existingList = pl.getAll(BuildTrigger.class);
-                    BuildTrigger existing;
-                    switch (existingList.size()) {
-                    case 0:
-                        existing = null;
-                        break;
-                    case 1:
-                        existing = existingList.get(0);
-                        break;
-                    default:
-                        pl.removeAll(BuildTrigger.class);
-                        Set<AbstractProject> combinedChildren = new HashSet<AbstractProject>();
-                        for (BuildTrigger bt : existingList)
-                            combinedChildren.addAll(bt.getChildProjects(p));
-                        existing = new BuildTrigger(new ArrayList<AbstractProject>(combinedChildren),existingList.get(0).getThreshold());
-                        pl.add(existing);
-                        break;
-                    }
-
-                    if(existing!=null && existing.hasSame(p,newChildProjects))
-                        continue;   // no need to touch
-                    pl.replace(new BuildTrigger(newChildProjects,
-                        existing==null?Result.SUCCESS:existing.getThreshold()));
-                }
-            }
-        }
 
         // notify the queue as the project might be now tied to different node
         Jenkins.getInstance().getQueue().scheduleMaintenance();
@@ -810,7 +771,67 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Jenkins.getInstance().rebuildDependencyGraph();
     }
 
-	/**
+    /**
+     * Reflect the submission of the pseudo 'upstream build trigger'.
+     */
+    /* package */ void convertUpstreamBuildTrigger(Set<AbstractProject> upstream) throws IOException {
+
+        SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
+        try {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+                // Don't consider child projects such as MatrixConfiguration:
+                if (!p.isConfigurable()) continue;
+                boolean isUpstream = upstream.contains(p);
+                synchronized(p) {
+                    // does 'p' include us in its BuildTrigger?
+                    DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
+                    BuildTrigger trigger = pl.get(BuildTrigger.class);
+                    List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects(p);
+                    if(isUpstream) {
+                        if(!newChildProjects.contains(this))
+                            newChildProjects.add(this);
+                    } else {
+                        newChildProjects.remove(this);
+                    }
+
+                    if(newChildProjects.isEmpty()) {
+                        pl.remove(BuildTrigger.class);
+                    } else {
+                        // here, we just need to replace the old one with the new one,
+                        // but there was a regression (we don't know when it started) that put multiple BuildTriggers
+                        // into the list. For us not to lose the data, we need to merge them all.
+                        List<BuildTrigger> existingList = pl.getAll(BuildTrigger.class);
+                        BuildTrigger existing;
+                        switch (existingList.size()) {
+                        case 0:
+                            existing = null;
+                            break;
+                        case 1:
+                            existing = existingList.get(0);
+                            break;
+                        default:
+                            pl.removeAll(BuildTrigger.class);
+                            Set<AbstractProject> combinedChildren = new HashSet<AbstractProject>();
+                            for (BuildTrigger bt : existingList)
+                                combinedChildren.addAll(bt.getChildProjects(p));
+                            existing = new BuildTrigger(new ArrayList<AbstractProject>(combinedChildren),existingList.get(0).getThreshold());
+                            pl.add(existing);
+                            break;
+                        }
+
+                        if(existing!=null && existing.hasSame(p,newChildProjects))
+                            continue;   // no need to touch
+                        pl.replace(new BuildTrigger(newChildProjects,
+                            existing==null? Result.SUCCESS:existing.getThreshold()));
+                    }
+                }
+            }
+        } finally {
+            SecurityContextHolder.setContext(saveCtx);
+        }
+    }
+
+    /**
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
@@ -989,6 +1010,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public RunMap<R> _getRuns() {
+        assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + this + " yet";
         return builds;
     }
 
@@ -1115,7 +1137,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see TransientProjectActionFactory
      */
     @Override
-    public synchronized List<Action> getActions() {
+    public List<Action> getActions() {
         // add all the transient actions, too
         List<Action> actions = new Vector<Action>(super.getActions());
         actions.addAll(transientActions);
@@ -1752,10 +1774,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
         if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        if (pp != null && !req.getMethod().equals("POST")) {
+            // show the parameter entry form.
+            req.getView(pp, "index.jelly").forward(req, rsp);
+            return;
+        }
+
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+
         if (pp != null) {
             pp._doBuild(req,rsp,delay);
             return;
@@ -1765,7 +1794,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
         Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**
@@ -1825,12 +1854,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
         schedulePolling();
-        rsp.forwardToPreviousPage(req);
+        rsp.sendRedirect(".");
     }
 
     /**
      * Cancels a scheduled build.
      */
+    @RequirePOST
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(ABORT);
 
@@ -1906,6 +1936,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers = buildDescribable(req, Trigger.for_(this));
         for (Trigger t : triggers)
             t.start(this,true);
+
+        for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
+            BuildTrigger t = (BuildTrigger) _t;
+            for (AbstractProject downstream : t.getChildProjects(this)) {
+                downstream.checkPermission(BUILD);
+            }
+        }
     }
 
     /**

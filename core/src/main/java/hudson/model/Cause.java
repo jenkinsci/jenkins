@@ -36,6 +36,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -187,6 +188,14 @@ public abstract class Cause {
         @Exported(visibility=3)
         public int getUpstreamBuild() {
             return upstreamBuild;
+        }
+
+        /**
+         * @since 1.505
+         */
+        public @CheckForNull Run<?,?> getUpstreamRun() {
+            Job<?,?> job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
+            return job != null ? job.getBuildByNumber(upstreamBuild) : null;
         }
 
         @Exported(visibility=3)

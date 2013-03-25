@@ -210,9 +210,9 @@ import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * JUnit 4.10+ style rule to allow test cases to fire up a Jenkins instance
@@ -449,6 +449,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
+            // XXX use URLClassLoader.close() in Java 7
             System.gc();
         }
     }
@@ -764,7 +765,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * Allocates a new temporary directory for the duration of this test.
+     * @deprecated Use {@link TemporaryFolder} instead.
      */
+    @Deprecated
     public File createTmpDir() throws IOException {
         return env.temporaryDirectoryAllocator.allocate();
     }
@@ -1924,6 +1927,19 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 return null;
         }
 
+        /**
+         * Verify that the server rejects an attempt to load the given page.
+         * @param url a URL path (relative to Jenkins root)
+         * @param statusCode the expected failure code (such as {@link HttpURLConnection#HTTP_FORBIDDEN})
+         * @since 1.504
+         */
+        public void assertFails(String url, int statusCode) throws Exception {
+            try {
+                fail(url + " should have been rejected but produced: " + super.getPage(getContextPath() + url).getWebResponse().getContentAsString());
+            } catch (FailingHttpStatusCodeException x) {
+                assertEquals(statusCode, x.getStatusCode());
+            }
+        }
 
         /**
          * Returns the URL of the webapp top page.

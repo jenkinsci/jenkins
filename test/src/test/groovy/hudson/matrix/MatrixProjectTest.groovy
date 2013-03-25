@@ -32,7 +32,6 @@ import hudson.tasks.Maven
 import hudson.tasks.Shell
 import hudson.tasks.BatchFile
 import org.jvnet.hudson.test.Email
-import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.SingleFileSCM
 import org.jvnet.hudson.test.UnstableBuilder
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -63,19 +62,30 @@ import java.util.ArrayList;
 import hudson.model.Action;
 
 import java.util.concurrent.CountDownLatch
+import static org.junit.Assert.*
+import org.junit.Assume
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.JenkinsRule
+import org.junit.rules.TemporaryFolder
 
 /**
  *
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixProjectTest extends HudsonTestCase {
+public class MatrixProjectTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
     /**
      * Tests that axes are available as build variables in the Ant builds.
      */
+    @Test
     public void testBuildAxisInAnt() throws Exception {
         MatrixProject p = createMatrixProject();
-        Ant.AntInstallation ant = configureDefaultAnt();
+        Ant.AntInstallation ant = j.configureDefaultAnt();
         p.getBuildersList().add(new Ant('-Dprop=${db} test',ant.getName(),null,null,null));
 
         // we need a dummy build script that echos back our property
@@ -85,18 +95,20 @@ public class MatrixProjectTest extends HudsonTestCase {
         List<MatrixRun> runs = build.getRuns();
         assertEquals(4,runs.size());
         for (MatrixRun run : runs) {
-            assertBuildStatus(Result.SUCCESS, run);
+            j.assertBuildStatus(Result.SUCCESS, run);
             String expectedDb = run.getParent().getCombination().get("db");
-            assertLogContains("assertion "+expectedDb+"="+expectedDb, run);
+            j.assertLogContains("assertion "+expectedDb+"="+expectedDb, run);
         }
     }
 
     /**
      * Tests that axes are available as build variables in the Maven builds.
      */
+    @Test
     public void testBuildAxisInMaven() throws Exception {
+        Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.40/maven-antrun-extended-plugin-1.40.pom", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
         MatrixProject p = createMatrixProject();
-        Maven.MavenInstallation maven = configureDefaultMaven();
+        Maven.MavenInstallation maven = j.configureDefaultMaven();
         p.getBuildersList().add(new Maven('-Dprop=${db} validate',maven.getName()));
 
         // we need a dummy build script that echos back our property
@@ -106,10 +118,10 @@ public class MatrixProjectTest extends HudsonTestCase {
         List<MatrixRun> runs = build.getRuns();
         assertEquals(4,runs.size());
         for (MatrixRun run : runs) {
-            assertBuildStatus(Result.SUCCESS, run);
+            j.assertBuildStatus(Result.SUCCESS, run);
             String expectedDb = run.getParent().getCombination().get("db");
             System.out.println(run.getLog());
-            assertLogContains("assertion "+expectedDb+"="+expectedDb, run);
+            j.assertLogContains("assertion "+expectedDb+"="+expectedDb, run);
             // also make sure that the variables are expanded at the command line level.
             assertFalse(run.getLog().contains('-Dprop=${db}'));
         }
@@ -118,6 +130,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     /**
      * Test that configuration filters work
      */
+    @Test
     public void testConfigurationFilter() throws Exception {
         MatrixProject p = createMatrixProject();
         p.setCombinationFilter("db==\"mysql\"");
@@ -128,6 +141,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     /**
      * Test that touch stone builds  work
      */
+    @Test
     public void testTouchStone() throws Exception {
         MatrixProject p = createMatrixProject();
         p.setTouchStoneCombinationFilter("db==\"mysql\"");
@@ -140,9 +154,8 @@ public class MatrixProjectTest extends HudsonTestCase {
         assertEquals(2, build.exactRuns.size());
     }
 
-    @Override
     protected MatrixProject createMatrixProject() throws IOException {
-        MatrixProject p = super.createMatrixProject();
+        MatrixProject p = j.createMatrixProject();
 
         // set up 2x2 matrix
         AxisList axes = new AxisList();
@@ -157,6 +170,7 @@ public class MatrixProjectTest extends HudsonTestCase {
      * Fingerprinter failed to work on the matrix project.
      */
     @Email("http://www.nabble.com/1.286-version-and-fingerprints-option-broken-.-td22236618.html")
+    @Test
     public void testFingerprinting() throws Exception {
         MatrixProject p = createMatrixProject();
         if (Functions.isWindows()) 
@@ -164,13 +178,13 @@ public class MatrixProjectTest extends HudsonTestCase {
         else 
            p.getBuildersList().add(new Shell("touch p"));
         
-        p.getPublishersList().add(new ArtifactArchiver("p",null,false));
+        p.getPublishersList().add(new ArtifactArchiver("p",null,false, false));
         p.getPublishersList().add(new Fingerprinter("",true));
-        buildAndAssertSuccess(p);
+        j.buildAndAssertSuccess(p);
     }
 
     void assertRectangleTable(MatrixProject p) {
-        def html = createWebClient().getPage(p);
+        def html = j.createWebClient().getPage(p);
         HtmlTable table = html.selectSingleNode("id('matrix')/table")
 
         // remember cells that are extended from rows above.
@@ -193,6 +207,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     }
 
     @Bug(4245)
+    @Test
     void testLayout1() {
         // 5*5*5*5*5 matrix
         def p = createMatrixProject();
@@ -203,6 +218,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     }
 
     @Bug(4245)
+    @Test
     void testLayout2() {
         // 2*3*4*5*6 matrix
         def p = createMatrixProject();
@@ -215,20 +231,21 @@ public class MatrixProjectTest extends HudsonTestCase {
     /**
      * Makes sure that the configuration correctly roundtrips.
      */
+    @Test
     public void testConfigRoundtrip() {
-        jenkins.getJDKs().addAll([
+        j.jenkins.getJDKs().addAll([
                 new JDK("jdk1.7","somewhere"),
                 new JDK("jdk1.6","here"),
                 new JDK("jdk1.5","there")]);
 
-        List<Slave> slaves = (0..2).collect { createSlave() }
+        List<Slave> slaves = (0..2).collect { j.createSlave() }
 
         def p = createMatrixProject();
         p.axes.add(new JDKAxis(["jdk1.6","jdk1.5"]));
         p.axes.add(new LabelAxis("label1",[slaves[0].nodeName, slaves[1].nodeName]));
         p.axes.add(new LabelAxis("label2",[slaves[2].nodeName])); // make sure single value handling works OK
         def o = new AxisList(p.axes);
-        configRoundtrip(p);
+        j.configRoundtrip(p);
         def n = p.axes;
 
         assertEquals(o.size(),n.size());
@@ -243,35 +260,37 @@ public class MatrixProjectTest extends HudsonTestCase {
 
         def before = new DefaultMatrixExecutionStrategyImpl(true, "foo", Result.UNSTABLE, null)
         p.executionStrategy = before;
-        configRoundtrip(p);
-        assertEqualDataBoundBeans(p.executionStrategy,before);
+        j.configRoundtrip(p);
+        j.assertEqualDataBoundBeans(p.executionStrategy,before);
 
         before = new DefaultMatrixExecutionStrategyImpl(false, null, null, null)
         p.executionStrategy = before;
-        configRoundtrip(p);
-        assertEqualDataBoundBeans(p.executionStrategy,before);
+        j.configRoundtrip(p);
+        j.assertEqualDataBoundBeans(p.executionStrategy,before);
     }
 
+    @Test
     public void testLabelAxes() {
         def p = createMatrixProject();
 
-        List<Slave> slaves = (0..<4).collect { createSlave() }
+        List<Slave> slaves = (0..<4).collect { j.createSlave() }
 
         p.axes.add(new LabelAxis("label1",[slaves[0].nodeName, slaves[1].nodeName]));
         p.axes.add(new LabelAxis("label2",[slaves[2].nodeName, slaves[3].nodeName]));
 
         System.out.println(p.labels);
         assertEquals(4,p.labels.size());
-        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave2")));
-        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave2")));
-        assertTrue(p.labels.contains(jenkins.getLabel("slave0&&slave3")));
-        assertTrue(p.labels.contains(jenkins.getLabel("slave1&&slave3")));
+        assertTrue(p.labels.contains(j.jenkins.getLabel("slave0&&slave2")));
+        assertTrue(p.labels.contains(j.jenkins.getLabel("slave1&&slave2")));
+        assertTrue(p.labels.contains(j.jenkins.getLabel("slave0&&slave3")));
+        assertTrue(p.labels.contains(j.jenkins.getLabel("slave1&&slave3")));
     }
 
     /**
      * Quiettng down Hudson causes a dead lock if the parent is running but children is in the queue
      */
     @Bug(4873)
+    @Test
     void testQuietDownDeadlock() {
         def p = createMatrixProject();
         p.axes = new AxisList(new TextAxis("foo","1","2"));
@@ -290,11 +309,11 @@ public class MatrixProjectTest extends HudsonTestCase {
         // have foo=1 block to make sure the 2nd configuration is in the queue
         firstStarted.block();
         // enter into the quiet down while foo=2 is still in the queue
-        jenkins.doQuietDown();
+        j.jenkins.doQuietDown();
         buildCanProceed.signal();
 
         // make sure foo=2 still completes. use time out to avoid hang
-        assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+        j.assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
 
         // MatrixProject scheduled after the quiet down shouldn't start
         try {
@@ -307,17 +326,19 @@ public class MatrixProjectTest extends HudsonTestCase {
     }
 
     @Bug(9009)
+    @Test
     void testTrickyNodeName() {
-        def names = [ createSlave("Sean's Workstation",null), createSlave("John\"s Workstation",null) ]*.nodeName;
+        def names = [ j.createSlave("Sean's Workstation",null), j.createSlave("John\"s Workstation",null) ]*.nodeName;
         def p = createMatrixProject();
         p.setAxes(new AxisList([new LabelAxis("label",names)]));
-        configRoundtrip(p);
+        j.configRoundtrip(p);
 
         LabelAxis a = p.axes.find("label");
         assertEquals(a.values as Set,names as Set);
     }
 
     @Bug(10108)
+    @Test
     void testTwoFileParams() {
         def p = createMatrixProject();
         p.axes = new AxisList(new TextAxis("foo","1","2","3","4"));
@@ -326,7 +347,7 @@ public class MatrixProjectTest extends HudsonTestCase {
             new FileParameterDefinition("b.txt",""),
         ));
 
-        def dir = createTmpDir()
+        def dir = tmp.getRoot()
         def f = p.scheduleBuild2(0,new LegacyCodeCause(),new ParametersAction(
             ["aaa","bbb"].collect { it ->
                 def v = new FileParameterValue(it+".txt",File.createTempFile(it,"", dir),it)
@@ -335,16 +356,17 @@ public class MatrixProjectTest extends HudsonTestCase {
             }
         ))
         
-        assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
+        j.assertBuildStatusSuccess(f.get(10,TimeUnit.SECONDS));
     }
 
     /**
      * Verifies that the concurrent build feature works, and makes sure
      * that each gets its own unique workspace.
      */
+    @Test
     void testConcurrentBuild() {
-        jenkins.numExecutors = 10
-        jenkins.updateComputerList()
+        j.jenkins.numExecutors = 10
+        j.jenkins.updateComputerList()
 
         def p = createMatrixProject()
         p.axes = new AxisList(new TextAxis("foo","1","2"))
@@ -370,7 +392,7 @@ public class MatrixProjectTest extends HudsonTestCase {
         // get one going
         Thread.sleep(1000)
         def f2 = p.scheduleBuild2(0)
-        [f1,f2]*.get().each{ assertBuildStatusSuccess(it)}
+        [f1,f2]*.get().each{ j.assertBuildStatusSuccess(it)}
 
         assertEquals 4, dirs.size()
     }
@@ -379,6 +401,7 @@ public class MatrixProjectTest extends HudsonTestCase {
     /**
      * Test that Actions are passed to configurations
      */
+    @Test
     public void testParameterActions() throws Exception {
         MatrixProject p = createMatrixProject();
 
@@ -435,8 +458,9 @@ public class MatrixProjectTest extends HudsonTestCase {
 
     @Bug(15271)
     @LocalData
+    @Test
     public void testUpgrade() throws Exception {
-        MatrixProject p = jenkins.getItemByFullName("x", MatrixProject.class);
+        MatrixProject p = j.jenkins.getItemByFullName("x", MatrixProject.class);
         assertNotNull(p);
         MatrixExecutionStrategy executionStrategy = p.getExecutionStrategy();
         assertEquals(DefaultMatrixExecutionStrategyImpl.class, executionStrategy.getClass());

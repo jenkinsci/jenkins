@@ -3,6 +3,7 @@ package hudson.model
 import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.SleepBuilder
+import org.jvnet.hudson.test.TestEnvironment
 
 import javax.xml.transform.stream.StreamSource
 
@@ -40,4 +41,30 @@ class RunMapTest extends HudsonTestCase {
         assertSame b1.nextBuild,b2
         assertSame b2.previousBuild,b1
     }
+
+    /**
+     * Testing if the lazy loading can gracefully tolerate a RuntimeException during unmarshalling.
+     */
+    @Bug(15533)
+    public void testRuntimeExceptionInUnmarshalling() {
+        def p = createFreeStyleProject()
+        def b = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        b.addAction(new BombAction());
+        b.save()
+
+        p._getRuns().purgeCache()
+        assert p.getBuildByNumber(b.number)==null
+        assert bombed
+    }
+
+    public static class BombAction extends InvisibleAction {
+        public Object readResolve() {
+            TestEnvironment.get().testCase.bombed = true
+            throw new NullPointerException();
+        }
+    }
+
+    boolean bombed;
+
+
 }

@@ -183,6 +183,8 @@ public class Functions {
             the same thing as "/abc/def.ghi", but this avoids the stale cache
             problem when the user upgrades to new Jenkins. Stapler also sets a long
             future expiration dates for such static resources.
+
+            see https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML
          */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
@@ -780,6 +782,7 @@ public class Functions {
      *
      * @param predicate
      *      Filter the descriptors based on {@link GlobalConfigurationCategory}
+     * @since 1.494
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
@@ -805,12 +808,31 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but with a constant truth predicate, to include all descriptors.
+     */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
         return getSortedDescriptorsForGlobalConfig(Predicates.<GlobalConfigurationCategory>alwaysTrue());
     }
 
+    /**
+     * @deprecated This is rather meaningless.
+     */
+    @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
         return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
+    }
+
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but for unclassified descriptors only.
+     * @since 1.506
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassified() {
+        return getSortedDescriptorsForGlobalConfig(new Predicate<GlobalConfigurationCategory>() {
+            public boolean apply(GlobalConfigurationCategory cat) {
+                return cat instanceof GlobalConfigurationCategory.Unclassified;
+            }
+        });
     }
     
     private static class Tag implements Comparable<Tag> {
@@ -1548,6 +1570,9 @@ public class Functions {
      */
     public static String humanReadableByteSize(long size){
         String measure = "B";
+        if(size < 1024){
+            return size + " " + measure;
+        }
         Double number = new Double(size);
         if(number>=1024){
             number = number/1024;
@@ -1561,7 +1586,7 @@ public class Functions {
                 }
             }
         }
-        DecimalFormat format = new DecimalFormat("##.00");
+        DecimalFormat format = new DecimalFormat("#0.00");
         return format.format(number) + " " + measure;
     }
 }

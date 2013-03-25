@@ -609,6 +609,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 	            MatrixConfiguration config = configurations.get(c);
 	            if(config==null) {
 	                config = new MatrixConfiguration(this,c);
+                    config.onCreatedFromScratch();
 	                config.save();
 	                configurations.put(config.getCombination(), config);
 	            }
@@ -665,6 +666,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(Combination c) {
+        if (configurations == null) {
+            return null;
+        }
         return configurations.get(c);
     }
 

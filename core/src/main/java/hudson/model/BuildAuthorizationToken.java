@@ -31,7 +31,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Authorization token to allow projects to trigger themselves under the secured environment.
@@ -73,6 +75,16 @@ public final class BuildAuthorizationToken {
         }
 
         project.checkPermission(AbstractProject.BUILD);
+
+        if (req.getMethod().equals("POST")) {
+            return;
+        }
+
+        if (req.getAttribute(ApiTokenProperty.class.getName()) instanceof User) {
+            return;
+        }
+
+        throw HttpResponses.forwardToView(project, "requirePOST.jelly");
     }
 
     public String getToken() {
