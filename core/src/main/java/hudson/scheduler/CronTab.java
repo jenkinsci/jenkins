@@ -440,7 +440,7 @@ public final class CronTab {
      * Checks a prospective crontab specification to see if it could benefit from balanced hashes.
      * @param spec a (legal) spec
      * @return a similar spec that uses a hash, if such a transformation is necessary; null if it is OK as is
-     * @since XXX
+     * @since 1.509
      */
     public static @CheckForNull String hashify(String spec) {
         if (spec.contains("H")) {
