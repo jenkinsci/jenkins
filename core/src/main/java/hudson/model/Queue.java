@@ -1058,9 +1058,10 @@ public class Queue extends ResourceController implements Saveable {
                 }
             });
             Jenkins h = Jenkins.getInstance();
-            hash.add(h, h.getNumExecutors()*100);
+            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
+            hash.add(h, Math.max(h.getNumExecutors()*100, 1));
             for (Node n : h.getNodes())
-                hash.add(n,n.getNumExecutors()*100);
+                hash.add(n, n.getNumExecutors()*100);
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
@@ -1457,7 +1458,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         public String toString() {
-            return getClass().getName()+':'+task.toString();
+            return getClass().getName() + ':' + task + ':' + getWhy();
         }
     }
     

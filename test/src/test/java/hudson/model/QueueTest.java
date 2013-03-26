@@ -39,6 +39,10 @@ import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.XStream2;
 import hudson.util.OneShotEvent;
 import hudson.Launcher;
+import hudson.matrix.LabelAxis;
+import hudson.matrix.MatrixRun;
+import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProvisioner;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -59,8 +63,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -287,6 +295,42 @@ public class QueueTest extends HudsonTestCase {
 
         for (Future<MatrixBuild> f : r)
             assertBuildStatusSuccess(f);
+    }
+
+    private int INITIALDELAY;
+    private int RECURRENCEPERIOD;
+    @Override protected void setUp() throws Exception {
+        INITIALDELAY = NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY;
+        NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY = 0;
+        RECURRENCEPERIOD = NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD;
+        NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD = 10;
+        super.setUp();
+    }
+    @Override protected void tearDown() throws Exception {
+        super.tearDown();
+        NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY = INITIALDELAY;
+        NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD = RECURRENCEPERIOD;
+    }
+    @Bug(7291)
+    public void testFlyweightTasksWithoutMasterExecutors() throws Exception {
+        DummyCloudImpl cloud = new DummyCloudImpl(this, 0);
+        cloud.label = jenkins.getLabel("remote");
+        jenkins.clouds.add(cloud);
+        jenkins.setNumExecutors(0);
+        jenkins.setNodes(Collections.<Node>emptyList());
+        MatrixProject m = createMatrixProject();
+        m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
+        MatrixBuild build;
+        try {
+            build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
+        } catch (TimeoutException x) {
+            throw (AssertionError) new AssertionError(jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+        }
+        assertBuildStatusSuccess(build);
+        assertEquals("", build.getBuiltOnStr());
+        List<MatrixRun> runs = build.getRuns();
+        assertEquals(1, runs.size());
+        assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
 
     public void testWaitForStart() throws Exception {

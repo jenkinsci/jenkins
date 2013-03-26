@@ -134,6 +134,7 @@ public class SlaveComputer extends Computer {
         super(slave);
         this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
         this.taskListener = new StreamTaskListener(log);
+        assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
     }
 
     /**

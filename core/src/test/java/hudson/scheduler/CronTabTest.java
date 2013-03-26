@@ -35,16 +35,11 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
-import org.junit.BeforeClass;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class CronTabTest {
-
-    @BeforeClass public static void hashTokens() {
-        BaseParser.HASH_TOKENS = true;
-    }
 
     @Test
     public void test1() throws ANTLRException {
@@ -179,14 +174,23 @@ public class CronTabTest {
     }
 
     @Test public void checkSanity() throws Exception {
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "0 * * * *"), new CronTab("* * * * *").checkSanity());
-        assertEquals(null, new CronTab("0 * * * *").checkSanity());
-        assertEquals(null, new CronTab("0 3 * * *").checkSanity());
+        assertEquals(null, new CronTab("@hourly").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "H * * * *"), new CronTab("* * * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("*/1 * * * *", "H * * * *"), new CronTab("*/1 * * * *").checkSanity());
         assertEquals(null, new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "0 0 * * *"), new CronTab("* 0 * * *").checkSanity());
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "0 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "H 0 * * *"), new CronTab("* 0 * * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "H 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
         // dubious; could be improved:
-        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "0 * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+        assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * 3 * *", "H * 3 * *"), new CronTab("* * 3 * *").checkSanity());
+        // promote hashes:
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H/15 * * * *", "*/15 * * * *"), new CronTab("*/15 * * * *").checkSanity());
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H/15 * * * *", "0,15,30,45 * * * *"), new CronTab("0,15,30,45 * * * *").checkSanity());
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H * * * *", "0 * * * *"), new CronTab("0 * * * *").checkSanity());
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H * * * *", "5 * * * *"), new CronTab("5 * * * *").checkSanity());
+        // if the user specifically asked for 3:00 AM, probably we should stick to 3:00–3:59
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 3 * * *", "0 3 * * *"), new CronTab("0 3 * * *").checkSanity());
+        assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 22 * * 6", "00 22 * * 6"), new CronTab("00 22 * * 6").checkSanity());
+        assertEquals(null, new CronTab("H/15 * 1 1 *").checkSanity());
     }
 
     /**
@@ -199,7 +203,7 @@ public class CronTabTest {
 
     @Test
     public void testHash1() throws Exception {
-        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
             public int next(int n) {
                 return n-1;
             }
@@ -207,6 +211,8 @@ public class CronTabTest {
 
         assertEquals("59;", bitset(x.bits[0]));
         assertEquals("8;", bitset(x.bits[1]));
+        assertEquals("3;6;9;12;15;18;21;24;27;", bitset(x.bits[2]));
+        assertEquals("4;8;", bitset(x.bits[3]));
     }
 
     private static String bitset(long bits) {
@@ -221,7 +227,7 @@ public class CronTabTest {
 
     @Test
     public void testHash2() throws Exception {
-        CronTab x = new CronTab("H H(5-8) * * *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
             public int next(int n) {
                 return 1;
             }
@@ -229,6 +235,8 @@ public class CronTabTest {
 
         assertEquals("1;", bitset(x.bits[0]));
         assertEquals("6;", bitset(x.bits[1]));
+        assertEquals("2;5;8;11;14;17;20;23;26;", bitset(x.bits[2]));
+        assertEquals("2;6;10;", bitset(x.bits[3]));
     }
 
     @Test public void hashedMinute() throws Exception {
@@ -238,6 +246,22 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("@hourly", Hash.from("stuff")).ceil(t));
         compare(new GregorianCalendar(2013, 2, 21, 17, 20), new CronTab("@hourly", Hash.from("junk")).ceil(t));
         compare(new GregorianCalendar(2013, 2, 22, 13, 56), new CronTab("H H(12-13) * * *", Hash.from("stuff")).ceil(t));
+    }
+
+    @Test public void hashSkips() throws Exception {
+        compare(new GregorianCalendar(2013, 2, 21, 16, 26), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 21)));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 41), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 31)));
+        compare(new GregorianCalendar(2013, 2, 21, 16, 56), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 42)));
+        compare(new GregorianCalendar(2013, 2, 21, 17, 11), new CronTab("H/15 * * * *", Hash.from("stuff")).ceil(new GregorianCalendar(2013, 2, 21, 16, 59)));
+        compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-15)/3 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+        compare(new GregorianCalendar(2013, 2, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+        compare(new GregorianCalendar(2013, 2, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 5)));
+        try {
+            compare(new GregorianCalendar(2013, 2, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, 2, 21, 0, 0)));
+            fail();
+        } catch (ANTLRException x) {
+            // good
+        }
     }
 
 }

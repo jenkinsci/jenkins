@@ -55,6 +55,20 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Flyweight tasks should execute on the master if there's no static
+    executors available.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7291">issue 7291</a>)
+  <li class=rfe>
+    Promote the use of 'H' in cron.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17311">issue 17311</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.509>What's new in 1.509</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class='major bug'>
     Heavy thread congestion saving fingerprints.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13154">issue 13154</a>)
@@ -83,13 +97,13 @@ Upcoming changes</a>
     View name should not allow "..".    
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16608">issue 16608</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.508>What's new in 1.508</a> <!--=DATE=--></h3>
-<!--=RC-CHANGES=-->
 </div><!--=END=-->
+<h3><a name=v1.508>What's new in 1.508</a> (2013/03/25)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixing a regression in 1.507 that causes a failure to load matrix jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17337">issue 17337</a>)
+</ul>
 <h3><a name=v1.507>What's new in 1.507</a> (2013/03/24)</h3>
 <ul class=image>
   <li class=rfe>
