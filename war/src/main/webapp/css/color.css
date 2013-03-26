@@ -22,15 +22,15 @@
  * THE SOFTWARE.
  */
 .greyed {
-	color: #999;
+  color: #999;
 }
 
 .redbold {
-	color: darkred;
-	font-weight: bold;
+  color: darkred;
+  font-weight: bold;
 }
 
 .greenbold {
-	color: #6c0;
-	font-weight: bold;
+  color: #6c0;
+  font-weight: bold;
 }
