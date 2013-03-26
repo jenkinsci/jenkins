@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt">
+  <st:documentation>
+    Form the time
+    <st:attribute name="value" type="java.util.Date" use="required">
+        Date which will be formated
+    </st:attribute>
+    <st:attribute name="timeFormat" type="hudson.TimeFormat">
+        Formater which will form a date
+    </st:attribute>
+  </st:documentation>
+  <j:choose>
+    <j:when test="${h.getTimeFormat()!=null || attrs.timeFormat !=null}">
+      <st:include it="${attrs.timeFormat!=null?attrs.timeFormat:h.getTimeFormat()}" page="time.jelly" />
+    </j:when>
+    <j:otherwise>
+      <i:formatDate value="${value}" type="both" dateStyle="medium" timeStyle="medium"/>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>
