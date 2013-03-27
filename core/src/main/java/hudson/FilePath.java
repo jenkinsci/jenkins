@@ -493,9 +493,10 @@ public final class FilePath implements Serializable {
         });
     }
 
-    private void unzip(File dir, InputStream in) throws IOException {
+    private static void unzip(File dir, InputStream in) throws IOException {
         File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
         try {
+            // XXX why does this not simply use ZipInputStream?
             IOUtils.copy(in, tmpFile);
             unzip(dir,tmpFile);
         }
@@ -504,7 +505,7 @@ public final class FilePath implements Serializable {
         }
     }
 
-    private void unzip(File dir, File zipFile) throws IOException {
+    static private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
         @SuppressWarnings("unchecked")
@@ -724,6 +725,19 @@ public final class FilePath implements Serializable {
             if(listener!=null)
                 listener.getLogger().println(message);
 
+            if (isRemote()) {
+                // First try to download from the slave machine.
+                try {
+                    act(new Unpack(archive));
+                    timestamp.touch(sourceTimestamp);
+                    return true;
+                } catch (IOException x) {
+                    if (listener != null) {
+                        x.printStackTrace(listener.error("Failed to download " + archive + " from slave; will retry from master"));
+                    }
+                }
+            }
+
             // for HTTP downloads, enable automatic retry for added resilience
             InputStream in = archive.getProtocol().startsWith("http") ? ProxyConfiguration.getInputStream(archive) : con.getInputStream();
             CountingInputStream cis = new CountingInputStream(in);
@@ -740,6 +754,31 @@ public final class FilePath implements Serializable {
             return true;
         } catch (IOException e) {
             throw new IOException2("Failed to install "+archive+" to "+remote,e);
+        }
+    }
+
+    private static final class Unpack implements FileCallable<Void> {
+        private final URL archive;
+        Unpack(URL archive) {
+            this.archive = archive;
+        }
+        @Override public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+            InputStream in = archive.openStream();
+            try {
+                CountingInputStream cis = new CountingInputStream(in);
+                try {
+                    if (archive.toExternalForm().endsWith(".zip")) {
+                        unzip(dir, cis);
+                    } else {
+                        readFromTar("input stream", dir, GZIP.extract(cis));
+                    }
+                } catch (IOException x) {
+                    throw new IOException2(String.format("Failed to unpack %s (%d bytes read)", archive, cis.getByteCount()), x);
+                }
+            } finally {
+                in.close();
+            }
+            return null;
         }
     }
 
