@@ -247,7 +247,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public String getWhyKeepLog() {
         MatrixBuild b = getNextBuild();
         if (isLinkedBy(b))
-            return b.getDisplayName()+" depends on this";
+            return Messages.MatrixBuild_depends_on_this(b.getDisplayName());
         return super.getWhyKeepLog();
     }
 

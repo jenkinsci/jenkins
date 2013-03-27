@@ -528,8 +528,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * If {@link #isKeepLog()} returns true, returns a human readable
-     * one-line string that explains why it's being kept.
+     * If {@link #isKeepLog()} returns true, returns a short, human-readable
+     * sentence that explains why it's being kept.
      */
     public String getWhyKeepLog() {
         if(keepLog)
