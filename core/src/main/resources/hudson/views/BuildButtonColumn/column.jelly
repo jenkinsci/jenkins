@@ -27,10 +27,19 @@ THE SOFTWARE.
       <td>
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
-                  <img src="${imagesURL}/${subIconSize}/clock.png"
+                  <j:choose>
+                    <j:when test="${app.queue.contains(job)}">
+                       <img src="${imagesURL}/${subIconSize}/clock_anime.gif"
                        title="${%Schedule a build}" alt="${%Schedule a build}"
                        onclick="${job.parameterized ? null : 'return build(this)'}"
                        border="0"/>
+                    </j:when>
+                    <j:otherwise>
+                       <img src="${imagesURL}/${subIconSize}/clock.png"
+                       title="${%Schedule a build}" alt="${%Schedule a build}"
+                       border="0"/>
+                    </j:otherwise>
+                  </j:choose>
               </a>
               <script>
                 function build(img) {
