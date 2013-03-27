@@ -1926,6 +1926,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getLogText().doProgressText(req,rsp);
     }
 
+    /**
+     * Checks whether keep status can be toggled.
+     * Normally it can, but if there is a complex reason (from subclasses) why this build must be kept, the toggle is meaningless.
+     * @return true if {@link #doToggleLogKeep} and {@link #keepLog(boolean)} and {@link #keepLog()} are options
+     * @since 1.510
+     */
+    public boolean canToggleLogKeep() {
+        if (!keepLog && isKeepLog()) {
+            // Definitely prevented.
+            return false;
+        }
+        // XXX may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
+        // In such a case this will incorrectly return true and logKeep.jelly will allow the toggle.
+        // However at least then (after redirecting to the same page) the toggle button will correctly disappear.
+        return true;
+    }
+
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
