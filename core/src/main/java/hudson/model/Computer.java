@@ -663,9 +663,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     *
+     * @see #onRemoved()
      */
     protected void kill() {
         setNumExecutors(0);
+    }
+
+    /**
+     * Called by {@link Jenkins} when this computer is removed.
+     *
+     * This happens when list of nodes are updated (for example by {@link Jenkins#setNodes(List)} and
+     * the computer becomes redundant. Such {@link Computer}s get {@linkplain #kill() killed}, then
+     * after all its executors are finished, this method is called.
+     *
+     * @see #kill()
+     * @since 1.510
+     */
+    protected void onRemoved(){
     }
 
     private synchronized void setNumExecutors(int n) {
@@ -1076,8 +1091,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
                 OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                    Jenkins.getAuthentication().getName(),
-                    offlineMessage!=null ? " : " + offlineMessage : "")));
+                        Jenkins.getAuthentication().getName(),
+                        offlineMessage != null ? " : " + offlineMessage : "")));
         return HttpResponses.redirectToDot();
     }
 
