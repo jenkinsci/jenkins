@@ -782,10 +782,10 @@ public class Util {
 
     /**
      * Encode a single path component for use in an HTTP URL.
-     * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
-     * and HTTP special characters (/;:?) as specified in RFC1738.
-     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
-     * Note that slash(/) is encoded, so the given string should be a
+     * Escapes all non-ASCII, general unsafe (space and {@code "#%<>[\]^`{|}~})
+     * and HTTP special characters ({@code /;:?}) as specified in RFC1738.
+     * (so alphanumeric and {@code !@$&*()-_=+',.} are not encoded)
+     * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
      * Method name inspired by PHP's rawurlencode.
      */
