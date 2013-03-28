@@ -25,6 +25,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -190,7 +191,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu subMenu;
 
         public MenuItem(String url, String icon, String displayName) {
-            this.url = URI.create(Stapler.getCurrentRequest().getRequestURI()).resolve(url).toString();
+            try {
+                this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
+            } catch (URISyntaxException x) {
+                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
+            }
             this.icon = icon;
             this.displayName = Util.escape(displayName);
         }
