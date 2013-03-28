@@ -10,6 +10,7 @@ package hudson.slaves;
  * a new cloud to Jenkins.
  *
  * @author Kohsuke Kawaguchi
+ * @see AbstractCloudSlave
  */
 public abstract class AbstractCloudImpl extends Cloud {
     /**
