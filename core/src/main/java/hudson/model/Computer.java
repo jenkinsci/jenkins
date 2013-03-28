@@ -618,7 +618,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "computer/"+getDisplayName()+"/";
+        return "computer/" + Util.rawEncode(getDisplayName()) + "/";
     }
 
     /**
