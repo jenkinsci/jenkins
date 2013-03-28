@@ -172,10 +172,6 @@
             <version>1.6.5</version>
           </dependency>
         </dependencies>
-        <configuration>
-          <!-- use provider that matches Groovy version in core -->
-          <providerSelection>1.8</providerSelection>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
