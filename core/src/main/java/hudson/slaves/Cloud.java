@@ -55,6 +55,9 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
+     *
+     * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
+     * URL path token.
      */
     public final String name;
 
