@@ -691,17 +691,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private synchronized void setNumExecutors(int n) {
-        if(numExecutors==n) return; // no-op
-
-        int diff = n-numExecutors;
         this.numExecutors = n;
+        int diff = executors.size()-n;
 
-        if(diff<0) {
+        if (diff>0) {
+            // we have too many executors
             // send signal to all idle executors to potentially kill them off
             for( Executor e : executors )
                 if(e.isIdle())
                     e.interrupt();
-        } else {
+        }
+
+        if (diff<0) {
             // if the number is increased, add new ones
             addNewExecutorIfNecessary();
         }
