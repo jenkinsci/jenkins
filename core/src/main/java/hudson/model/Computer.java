@@ -663,23 +663,46 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * @see #onRemoved()
      */
     protected void kill() {
         setNumExecutors(0);
     }
 
+    /**
+     * Called by {@link Jenkins} when this computer is removed.
+     *
+     * <p>
+     * This happens when list of nodes are updated (for example by {@link Jenkins#setNodes(List)} and
+     * the computer becomes redundant. Such {@link Computer}s get {@linkplain #kill() killed}, then
+     * after all its executors are finished, this method is called.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * @see #kill()
+     * @since 1.510
+     */
+    protected void onRemoved(){
+    }
+
     private synchronized void setNumExecutors(int n) {
-        if(numExecutors==n) return; // no-op
-
-        int diff = n-numExecutors;
         this.numExecutors = n;
+        int diff = executors.size()-n;
 
-        if(diff<0) {
+        if (diff>0) {
+            // we have too many executors
             // send signal to all idle executors to potentially kill them off
             for( Executor e : executors )
                 if(e.isIdle())
                     e.interrupt();
-        } else {
+        }
+
+        if (diff<0) {
             // if the number is increased, add new ones
             addNewExecutorIfNecessary();
         }
@@ -1076,8 +1099,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
                 OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                    Jenkins.getAuthentication().getName(),
-                    offlineMessage!=null ? " : " + offlineMessage : "")));
+                        Jenkins.getAuthentication().getName(),
+                        offlineMessage != null ? " : " + offlineMessage : "")));
         return HttpResponses.redirectToDot();
     }
 

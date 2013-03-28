@@ -140,6 +140,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         for (Map.Entry<Node, Computer> e : computers.entrySet()) {
             if (e.getValue() == computer) {
                 computers.remove(e.getKey());
+                computer.onRemoved();
                 return;
             }
         }

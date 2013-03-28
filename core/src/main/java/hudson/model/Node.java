@@ -84,7 +84,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
     /**
-     * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
+     * Newly copied slaves get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
