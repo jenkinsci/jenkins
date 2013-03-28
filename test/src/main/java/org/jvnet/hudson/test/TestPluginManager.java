@@ -124,6 +124,15 @@ public class TestPluginManager extends PluginManager {
     static {
         try {
             INSTANCE = new TestPluginManager();
+            Runtime.getRuntime().addShutdownHook(new Thread("delete " + INSTANCE.rootDir) {
+                @Override public void run() {
+                    try {
+                        Util.deleteRecursive(INSTANCE.rootDir);
+                    } catch (IOException x) {
+                        x.printStackTrace();
+                    }
+                }
+            });
         } catch (IOException e) {
             throw new Error(e);
         }
