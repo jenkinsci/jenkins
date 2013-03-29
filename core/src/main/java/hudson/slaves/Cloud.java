@@ -55,7 +55,7 @@ import java.util.Collection;
  * <p>
  * Nodes provisioned from a cloud do not automatically get released just because it's created from {@link Cloud}.
  * Doing so requires a use of {@link RetentionStrategy}. Instantiate your {@link Slave} subtype with something
- * like {@link CloudSlaveRetentionstrategy} so that it gets automatically deleted after some idle time.
+ * like {@link CloudSlaveRetentionStrategy} so that it gets automatically deleted after some idle time.
  *
  * <h4>Freeing an external resource when a slave is removed</h4>
  * <p>

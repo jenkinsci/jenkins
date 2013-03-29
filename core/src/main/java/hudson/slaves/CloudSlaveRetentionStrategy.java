@@ -13,13 +13,13 @@ import java.util.logging.Logger;
  * Default convenience implementation of {@link RetentionStrategy} for slaves provisioned from {@link Cloud}.
  *
  * If a slave is idle for 10 mins, this retention strategy will remove the slave. This can be used as-is for
- * a {@link Node} provisioned by cloud to implement the auto-scaling semantics, it can be subtyped to twaeak
- * the behaviour, or it can be used as an example.
+ * a {@link Node} provisioned by cloud to implement the auto-scaling semantics, it can be subtyped to tweak
+ * the behavior, or it can be used as an example.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.510
  */
-public class CloudSlaveRetentionstrategy<T extends Computer> extends RetentionStrategy<T> {
+public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionStrategy<T> {
 
     @Override
     public long check(T c) {
@@ -69,7 +69,7 @@ public class CloudSlaveRetentionstrategy<T extends Computer> extends RetentionSt
     }
 
     // for debugging, it's convenient to be able to reduce this time
-    public static long TIMEOUT = Long.getLong(CloudSlaveRetentionstrategy.class.getName()+".timeout", TimeUnit2.MINUTES.toMillis(10));
+    public static long TIMEOUT = Long.getLong(CloudSlaveRetentionStrategy.class.getName()+".timeout", TimeUnit2.MINUTES.toMillis(10));
 
-    private static final Logger LOGGER = Logger.getLogger(CloudSlaveRetentionstrategy.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CloudSlaveRetentionStrategy.class.getName());
 }
