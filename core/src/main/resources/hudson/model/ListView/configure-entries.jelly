@@ -40,16 +40,19 @@ THE SOFTWARE.
   <f:entry title="${%Jobs}">
     <div class="listview-jobs">
       <j:forEach var="job" items="${it.ownerItemGroup.items}">
-        <f:checkbox name="${job.name}" checked="${it.contains(job)}" title="${job.name}" />
+        <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.contains(job)}" title="${job.getRelativeDisplayNameFrom(it.ownerItemGroup)}" />
         <br/>
       </j:forEach>
     </div>
   </f:entry>
 
   <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}"
-                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
+                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html" inline="true">
     <f:entry title="${%Regular expression}">
       <f:textbox name="includeRegex" field="includeRegex" />
+    </f:entry>
+    <f:entry title="${%Recurse in subfolders}" field="recurse">
+      <f:checkbox/>
     </f:entry>
   </f:optionalBlock>
 
