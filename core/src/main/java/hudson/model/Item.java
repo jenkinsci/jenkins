@@ -124,6 +124,14 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * of the ancestors.
      */
     String getFullDisplayName();
+    
+    /**
+     * Gets the relative display name to this item from the specified group
+     * 
+     * @since 1.512
+     * @return
+     */
+    String getRelativeDisplayNameFrom(ItemGroup g);
 
     /**
      * Gets the relative name to this item from the specified group.
@@ -159,7 +167,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *      URL that ends with '/'.
      */
     String getShortUrl();
-
+    
     /**
      * Returns the absolute URL of this item. This relies on the current
      * {@link StaplerRequest} to figure out what the host name is,

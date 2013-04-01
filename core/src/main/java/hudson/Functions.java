@@ -903,7 +903,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance()) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner())) {
                 assert i instanceof TopLevelItem;
                 if(view!=null && view.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
