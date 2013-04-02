@@ -1065,6 +1065,9 @@ public class Util {
                         return;
                     }
                     throw e;
+                } catch (UnsatisfiedLinkError e) {
+                    // not available on this Windows
+                    return;
                 }
             } else {
                 String errmsg = "";
