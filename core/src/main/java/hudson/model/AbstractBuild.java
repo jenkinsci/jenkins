@@ -87,6 +87,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -184,6 +185,26 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public final P getProject() {
         return getParent();
+    }
+    
+    public UUID getUuid() {
+        UuidAction uuidAction = getAction(UuidAction.class);
+        if(uuidAction != null) {
+            return uuidAction.getUuid();
+        }
+        
+        return null;
+    }
+
+    @Exported(name="uuid")
+    public String getUuidStr() {
+        UUID uuid = getUuid();
+        
+        if (uuid != null) {
+            return uuid.toString();
+        }
+        
+        return null;
     }
 
     @Override

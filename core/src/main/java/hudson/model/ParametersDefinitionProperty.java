@@ -148,7 +148,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
     }
     
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay, List<ParameterValue> params) throws IOException, ServletException {
-    	owner.doBuildSchedule(req, rsp, delay, new ParametersAction(params), owner.getBuildCause(req));
+    	owner.scheduleBuildRequest(req, rsp, delay, UuidAction.generate(), new ParametersAction(params), owner.getBuildCause(req));
     }
 
     /**

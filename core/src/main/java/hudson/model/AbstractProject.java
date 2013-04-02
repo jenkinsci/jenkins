@@ -103,6 +103,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -914,6 +915,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
+        
+        if(Util.filter(queueActions, UuidAction.class).isEmpty()) {
+            queueActions.add(UuidAction.generate());
+        }
 
         WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
         if(i!=null)
@@ -1072,6 +1077,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     // keep track of the previous time we started a build
     private transient long lastBuildStartTime;
+
+    private WaitingItem scheduledItem;
     
     /**
      * Creates a new build of this project for immediate execution.
@@ -1793,7 +1800,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        doBuildSchedule(req, rsp, delay, getBuildCause(req));
+        scheduleBuildRequest(req, rsp, delay, UuidAction.generate(), getBuildCause(req));
     }
 
     /**
@@ -1811,11 +1818,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
     
-    public void doBuildSchedule( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay, Action... actions) throws IOException, ServletException {
+    @Exported
+    public Queue.WaitingItem getScheduledItem() {
+        return scheduledItem;
+    }
+    
+    public void scheduleBuildRequest( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay, Action... actions) throws IOException, ServletException {
         if (delay==null)
             delay = new TimeDuration(getQuietPeriod());
         
-        Jenkins.getInstance().getQueue().schedule(this, delay.getTime(), actions);
+        this.scheduledItem = Jenkins.getInstance().getQueue().schedule(this, delay.getTime(), actions);
 
         if (requestWantsJson(req)) {
             rsp.setContentType("application/json");
