@@ -300,14 +300,14 @@ public class CLI {
         byte[] buf = new byte[1024];
         try {
             InputStream is = conn.getInputStream();
-            while (is.read(buf) > 0) {
+            while (is.read(buf) >= 0) {
                 // Ignore
             }
             is.close();
         } catch (IOException e) {
             try {
                 InputStream es = ((HttpURLConnection)conn).getErrorStream();
-                while (es.read(buf) > 0) {
+                while (es.read(buf) >= 0) {
                     // Ignore
                 }
                 es.close();

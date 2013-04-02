@@ -399,7 +399,7 @@ public abstract class Proc {
                     try {
                         byte[] buf = new byte[8192];
                         int len;
-                        while ((len = in.read(buf)) > 0) {
+                        while ((len = in.read(buf)) >= 0) {
                             out.write(buf, 0, len);
                             out.flush();
                         }
