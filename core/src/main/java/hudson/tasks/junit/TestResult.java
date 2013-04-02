@@ -377,6 +377,15 @@ public final class TestResult extends MetaTabulatedResult {
     public int getSkipCount() {
         return skippedTests;
     }
+    
+    /**
+     * Returns <tt>true</tt> if this doesn't have any any test results. 
+     * @since 1.511
+     */
+    @Exported(visibility=999)
+    public boolean isEmpty() {
+        return getTotalCount() == 0;
+    }
 
     @Override
     public List<CaseResult> getFailedTests() {
