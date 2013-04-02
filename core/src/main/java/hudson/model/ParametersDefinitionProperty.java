@@ -46,7 +46,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
-import org.kohsuke.stapler.export.Flavor;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -113,9 +112,6 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
      * This method is supposed to be invoked from {@link AbstractProject#doBuild(StaplerRequest, StaplerResponse, TimeDuration)}.
      */
     public void _doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
-
-
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         
         JSONObject formData = req.getSubmittedForm();
@@ -132,11 +128,7 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Jenkins.getInstance().getQueue().schedule(
-                owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-
-        // send the user back to the job top page.
-        rsp.sendRedirect(".");
+        buildWithParameters(req, rsp, delay, values);
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -151,24 +143,12 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         		values.add(value);
         	}
         }
-        if (delay==null)    delay=new TimeDuration(owner.getQuietPeriod());
 
-        Jenkins.getInstance().getQueue().schedule(
-                owner, delay.getTime(), new ParametersAction(values), owner.getBuildCause(req));
-
-        if (requestWantsJson(req)) {
-            rsp.setContentType("application/json");
-            rsp.serveExposedBean(req, owner, Flavor.JSON);
-        } else {
-            // send the user back to the job top page.
-            rsp.sendRedirect(".");
-        }
+        buildWithParameters(req, rsp, delay, values);
     }
-
-    private boolean requestWantsJson(StaplerRequest req) {
-        String a = req.getHeader("Accept");
-        if (a==null)    return false;
-        return !a.contains("text/html") && a.contains("application/json");
+    
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay, List<ParameterValue> params) throws IOException, ServletException {
+    	owner.doBuildSchedule(req, rsp, delay, new ParametersAction(params), owner.getBuildCause(req));
     }
 
     /**
