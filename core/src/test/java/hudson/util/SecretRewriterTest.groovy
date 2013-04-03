@@ -52,7 +52,7 @@ class SecretRewriterTest {
         def f = File.createTempFile("test", "xml", tmp.root)
         f.text = before
         sr.rewrite(f,null)
-        assert after.trim()==f.text.trim()
+        assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
     }
 
     String encryptOld(str) {
