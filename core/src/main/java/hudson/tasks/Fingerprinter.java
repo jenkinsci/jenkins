@@ -294,7 +294,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      */
     public static final class FingerprintAction implements RunAction {
         
-        private final AbstractBuild build;
+        private AbstractBuild build;
 
         private static final Random rand = new Random();
 
@@ -343,6 +343,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public void onLoad() {
+            if (build.getParent() == null) {
+                logger.warning("JENKINS-16845: broken FingerprintAction record");
+                build = null;
+                return;
+            }
             // share data structure with nearby builds, but to keep lazy loading efficient,
             // don't go back the history forever.
             if (rand.nextInt(2)!=0) {
@@ -429,6 +434,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+
+            if (build == null) {
+                // Broken, do not do anything.
+                return r;
+            }
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();
