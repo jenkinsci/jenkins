@@ -1010,6 +1010,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public RunMap<R> _getRuns() {
+        if (builds == null) {
+            throw new IllegalStateException("no run map created yet for " + this);
+        }
         assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + this + " yet";
         return builds;
     }
