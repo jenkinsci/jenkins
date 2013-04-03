@@ -56,6 +56,7 @@ THE SOFTWARE.
               (${%pending})
             </j:otherwise>
           </j:choose>
+          ${item.params}
         </td>
       </tr>
     </j:forEach>

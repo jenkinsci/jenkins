@@ -91,4 +91,8 @@ public class RunParameterValue extends ParameterValue {
     	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
     }
 
+    @Override public String getShortDescription() {
+        return name + "=" + getRun().getFullDisplayName();
+    }
+
 }
