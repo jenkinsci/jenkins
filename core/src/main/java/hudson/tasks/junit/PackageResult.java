@@ -114,7 +114,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
 
     @Override
     public String getTitle() {
-        return Messages.PackageResult_getTitle(getName());
+        return Messages.PackageResult_getTitle(getDisplayName());
     }
 
     @Override
@@ -307,6 +307,6 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     }
 
     public String getDisplayName() {
-        return packageName;
+        return TestNameTransformer.getTransformedName(packageName);
     }
 }

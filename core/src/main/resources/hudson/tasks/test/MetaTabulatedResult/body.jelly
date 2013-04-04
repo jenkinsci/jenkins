@@ -63,7 +63,7 @@ THE SOFTWARE.
             <a id="test-${f.fullName}-hidelink" style="display:none"
                href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
             <st:nbsp/>
-            <a href="${f.getRelativePathFrom(it)}" class="model-link"><st:out value="${f.fullName}"/></a>
+            <a href="${f.getRelativePathFrom(it)}" class="model-link"><st:out value="${f.fullDisplayName}"/></a>
             <st:nbsp/>
             <j:forEach var="badge" items="${f.testActions}">
               <st:include it="${badge}" page="badge.jelly" optional="true"/>
@@ -103,7 +103,7 @@ THE SOFTWARE.
           <j:set var="prev" value="${prevAll.findCorrespondingResult(p.id)}" />
           <tr>
             <td class="pane">
-              <a href="${p.safeName}/" class="model-link"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
+              <a href="${p.safeName}/" class="model-link"><span style="${prev==null?'font-weight:bold':''}"><st:out value="${p.displayName}" /></span></a>
                 <st:nbsp/>
                 <j:forEach var="badge" items="${p.testActions}">
                   <st:include it="${badge}" page="badge.jelly" optional="true"/>
