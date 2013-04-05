@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import hudson.model.Action;
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Bug;
@@ -139,4 +140,17 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    public void testBreakableString() {
+
+        assertEquals("Hello world!", Functions.breakableString("Hello world!"));
+        assertEquals(
+                "H&#8203;,e&#8203;.l&#8203;/l&#8203;:o&#8203;-w&#8203;_o&#8203;=+|d",
+                Functions.breakableString("H,e.l/l:o-w_o=+|d")
+        );
+        assertEquals(
+                "ALongStrin&#8203;gThatCanNo&#8203;tBeBrokenB&#8203;yDefault",
+                Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault")
+        );
+    }
 }

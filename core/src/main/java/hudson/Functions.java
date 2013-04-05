@@ -1589,4 +1589,21 @@ public class Functions {
         DecimalFormat format = new DecimalFormat("#0.00");
         return format.format(number) + " " + measure;
     }
+
+    /**
+     * Get a string that can be safely broken to several lines when necessary.
+     *
+     * This implementation inserts &amp;#8203; entities into string. It allows
+     * browsers to wrap line before any sequence of punctuation characters or
+     * anywhere in the middle of prolonged sequences of word characters. Clients
+     * are supposed to escape the text before calling this method.
+     *
+     * @since 1.510
+     */
+    public static String breakableString(final String plain) {
+
+        return plain.replaceAll("(\\p{Punct}+\\w)", "&#8203;$1")
+                .replaceAll("(\\w{10})(?=\\w{3})", "$1&#8203;")
+        ;
+    }
 }
