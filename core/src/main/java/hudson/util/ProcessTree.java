@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 
 import static com.sun.jna.Pointer.NULL;
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 
@@ -431,7 +432,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                                 env = new EnvVars(p.getEnvironmentVariables());
                             } catch (WinpException e)
                             {
-                                LOGGER.log(FINEST, "Failed to get environment variable ", e);
+                                LOGGER.log(FINE, "Failed to get environment variable ", e);
                             }                          
                         }
                         return env;
