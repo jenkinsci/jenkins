@@ -27,6 +27,7 @@ class SecretRewriterTest {
     void singleFileRewrite() {
         def o = encryptOld('foobar') // old
         def n = encryptNew('foobar') // new
+        def sep = System.getProperty("line.separator")
         roundtrip "<foo>${o}</foo>",
                   "<foo>${n}</foo>"
 
@@ -44,7 +45,8 @@ class SecretRewriterTest {
         roundtrip "$o</foo>", "$o</foo>"
 
         //
-        roundtrip "<abc>\n<foo>$o</foo>\n</abc>", "<abc>\n<foo>$n</foo>\n</abc>"
+        roundtrip "<abc>$sep<foo>$o</foo>$sep</abc>", "<abc>$sep<foo>$n</foo>$sep</abc>"
+
     }
 
     void roundtrip(String before, String after) {
