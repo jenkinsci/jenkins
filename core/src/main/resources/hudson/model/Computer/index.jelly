@@ -111,7 +111,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
+          <t:projectView jobs="${jobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
         </j:otherwise>
       </j:choose>
 
