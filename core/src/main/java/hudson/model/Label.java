@@ -61,6 +61,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import java.util.logging.Logger;
 
 /**
  * Group of {@link Node}s.
@@ -335,13 +336,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getItems(AbstractProject.class)) {
             if(this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
         return r;
     }
-
+    
     public boolean contains(Node node) {
         return getNodes().contains(node);
     }
