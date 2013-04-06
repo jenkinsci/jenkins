@@ -61,7 +61,6 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import java.util.logging.Logger;
 
 /**
  * Group of {@link Node}s.
