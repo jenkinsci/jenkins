@@ -425,16 +425,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     @Override
                     public synchronized EnvVars getEnvironmentVariables() {
-                        if(env==null)  
+                        if(env !=null)
+                          return env;
+                        env = new EnvVars();   
+                        
+                        try 
                         {
-                            try
-                            {
-                                env = new EnvVars(p.getEnvironmentVariables());
-                            } catch (WinpException e)
-                            {
-                                LOGGER.log(FINE, "Failed to get environment variable ", e);
-                            }                          
-                        }
+                           env.putAll(p.getEnvironmentVariables());
+                        } catch (WinpException e)
+                        {
+                           LOGGER.log(FINE, "Failed to get environment variable ", e);
+                        }                          
                         return env;
                     }
                 });
