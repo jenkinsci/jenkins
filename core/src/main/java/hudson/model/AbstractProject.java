@@ -285,13 +285,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         RunMap<R> currentBuilds = this.builds;
 
-        if (currentBuilds==null) {
+        if (currentBuilds==null && parent!=null) {
             // are we overwriting what currently exist?
             // this is primarily when Jenkins is getting reloaded
             Item current = parent.getItem(name);
             if (current!=null && current.getClass()==getClass()) {
                 currentBuilds = ((AbstractProject)current).builds;
-            }
         }
         if (currentBuilds !=null) {
             // if we are reloading, keep all those that are still building intact
