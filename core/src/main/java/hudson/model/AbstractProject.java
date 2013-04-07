@@ -291,6 +291,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             Item current = parent.getItem(name);
             if (current!=null && current.getClass()==getClass()) {
                 currentBuilds = ((AbstractProject)current).builds;
+            }
         }
         if (currentBuilds !=null) {
             // if we are reloading, keep all those that are still building intact
