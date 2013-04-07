@@ -63,6 +63,7 @@ function ts_makeSortable(table) {
             cell.firstChild.lastChild.sortdir = initialSortDir;
     }
     ts_loadDirection(table);
+    ts_refresh(table);
 }
 
 function ts_getInnerText(el) {
