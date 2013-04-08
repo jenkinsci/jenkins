@@ -335,13 +335,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getItems(AbstractProject.class)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             if(this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
         return r;
     }
-    
+
     public boolean contains(Node node) {
         return getNodes().contains(node);
     }
