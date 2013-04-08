@@ -36,23 +36,26 @@ THE SOFTWARE.
       <f:option value="2" selected="${it.statusFilter==false}">${%Disabled jobs only}</f:option>
     </select>
   </f:entry>
+  
+  <f:entry title="${%Recurse in subfolders}" field="recurse">
+    <f:checkbox id="recurse"/>
+  </f:entry>
 
   <f:entry title="${%Jobs}">
     <div class="listview-jobs">
-      <j:forEach var="job" items="${it.ownerItemGroup.items}">
-        <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.contains(job)}" title="${job.getRelativeDisplayNameFrom(it.ownerItemGroup)}" />
-        <br/>
+      <j:forEach var="job" items="${h.getAllTopLevelItems(it.ownerItemGroup)}">
+      	<span class="${job.parent==it.ownerItemGroup?'':'nested'}" style="${it.recurse?'':'display:none'}">
+          <f:checkbox name="${job.getRelativeNameFrom(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" />
+          <br/>
+        </span>
       </j:forEach>
     </div>
   </f:entry>
 
   <f:optionalBlock name="useincluderegex" title="${%Use a regular expression to include jobs into the view}"
-                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html" inline="true">
+                   checked="${it.includeRegex != null}" help="/help/view-config/includeregex.html">
     <f:entry title="${%Regular expression}">
       <f:textbox name="includeRegex" field="includeRegex" />
-    </f:entry>
-    <f:entry title="${%Recurse in subfolders}" field="recurse">
-      <f:checkbox/>
     </f:entry>
   </f:optionalBlock>
 
@@ -69,5 +72,18 @@ THE SOFTWARE.
       <f:repeatableHeteroProperty field="columns" hasHeader="true" addCaption="${%Add column}"/>
     </f:block>
   </f:section>
+  
+  <script>
+  	(function() {
+    Behaviour.specify("#recurse", 'ListView', 0, function(e) {
+			var nestedElements = $$('SPAN.nested')
+      		e.onclick = function() {
+    			nestedElements.each(function(el) {
+    				e.checked ? el.show() : el.hide();
+    			});
+    		}
+    	});
+	}());	
+  </script>
 
 </j:jelly>

@@ -79,7 +79,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <j:forEach var="job" items="${jobs}">
-         	<t:projectViewRow jobBaseUrl="${jobBaseUrl}"/>
+			<t:projectViewRow jobBaseUrl="${useFullName ? (jobBaseUrl ? jobBaseUrl + job.parent.url : job.parent.url) : jobBaseUrl}"/>
         </j:forEach>
       </table>
       <t:iconSize><t:rssBar/></t:iconSize>

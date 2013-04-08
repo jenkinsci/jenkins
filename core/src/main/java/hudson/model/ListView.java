@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -85,7 +84,7 @@ public class ListView extends View implements Saveable {
     /**
      * Whether to recurse in ItemGroups
      */
-    private boolean recurse = true;
+    private boolean recurse;
     
     /**
      * Compiled include pattern from the includeRegex string.
@@ -186,27 +185,6 @@ public class ListView extends View implements Saveable {
         return items;
     }
     
-    private TopLevelItem getItem(ItemGroup<? extends TopLevelItem> parent, String name) {
-        if (!name.contains("/")) { // same namespace
-            return parent.getItem(name);
-        }
-        StringTokenizer stringTokenizer = new StringTokenizer(name, "/");
-        TopLevelItem leaf = null;
-        ItemGroup<? extends TopLevelItem> node = parent;
-        // Navigate down to the item using / as separator
-        while(stringTokenizer.hasMoreTokens()) {
-            leaf = node.getItem(stringTokenizer.nextToken());
-            if (stringTokenizer.hasMoreTokens()) {
-                if (leaf instanceof ItemGroup) {
-                    node = (ItemGroup<? extends TopLevelItem>)leaf;
-                } else {
-                    return null;
-                }
-            }
-        }
-        return leaf;
-    }
-
     private void includeItems(ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
         includeItems(parent, parent, names);
     }
@@ -223,6 +201,11 @@ public class ListView extends View implements Saveable {
                 }
             }
         }
+    }
+    
+    public synchronized boolean jobNamesContains(TopLevelItem item) {
+        if (item == null) return false;
+        return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
     }
 
     public synchronized boolean contains(TopLevelItem item) {
@@ -317,10 +300,19 @@ public class ListView extends View implements Saveable {
     protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
         JSONObject json = req.getSubmittedForm();
         synchronized (this) {
+            recurse = json.optBoolean("recurse", true);
             jobNames.clear();
-            for (TopLevelItem item : getOwnerItemGroup().getItems()) {
-                if(req.getParameter(item.getName())!=null)
-                    jobNames.add(item.getName());
+            Iterable<? extends TopLevelItem> items;
+            if (recurse) {
+                items = Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class);
+            } else {
+                items = getOwnerItemGroup().getItems();
+            }
+            for (TopLevelItem item : items) {
+                String relativeNameFrom = item.getRelativeNameFrom(getOwnerItemGroup());
+                if(req.getParameter(relativeNameFrom)!=null) {
+                    jobNames.add(relativeNameFrom);
+                }
             }
         }
 
@@ -334,7 +326,6 @@ public class ListView extends View implements Saveable {
             includeRegex = null;
             includePattern = null;
         }
-        recurse = json.optBoolean("recurse", true);
 
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);

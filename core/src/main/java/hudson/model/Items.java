@@ -239,8 +239,10 @@ public class Items {
     /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
+     * 
+     * @since XXX
      */
-    public static <T extends Item> List<T> getAllItems(ItemGroup root, Class<T> type) {
+    public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
         List<T> r = new ArrayList<T>();
 
         Stack<ItemGroup> q = new Stack<ItemGroup>();
@@ -257,7 +259,23 @@ public class Items {
                     q.push((ItemGroup)i);
             }
         }
-
+        // sort by relative name, ignoring case
+        Collections.sort(r, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                if (o1 == null) {
+                    if (o2 == null) {
+                        return 0;
+                    }
+                    return 1;
+                }
+                if (o2 == null) {
+                    return -1;
+                }
+                return o1.getRelativeNameFrom(root).compareToIgnoreCase(o2.getRelativeNameFrom(root));
+            }
+            
+        });
         return r;
     }
 
