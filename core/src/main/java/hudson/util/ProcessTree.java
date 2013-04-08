@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 
 import static com.sun.jna.Pointer.NULL;
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 
@@ -424,7 +425,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                     @Override
                     public synchronized EnvVars getEnvironmentVariables() {
-                        if(env==null)   env = new EnvVars(p.getEnvironmentVariables());
+                        if(env !=null)
+                          return env;
+                        env = new EnvVars();   
+                        
+                        try 
+                        {
+                           env.putAll(p.getEnvironmentVariables());
+                        } catch (WinpException e)
+                        {
+                           LOGGER.log(FINE, "Failed to get environment variable ", e);
+                        }                          
                         return env;
                     }
                 });
