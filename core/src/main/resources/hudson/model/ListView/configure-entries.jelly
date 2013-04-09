@@ -44,7 +44,13 @@ THE SOFTWARE.
   <f:entry title="${%Jobs}">
     <div class="listview-jobs">
       <j:forEach var="job" items="${h.getAllTopLevelItems(it.ownerItemGroup)}">
-      	<span class="${job.parent==it.ownerItemGroup?'':'nested'}" style="${it.recurse?'':'display:none'}">
+        <j:set var="spanClass" value=""/>
+        <j:set var="spanStyle" value=""/>
+        <j:if test="${job.parent!=it.ownerItemGroup}">
+          <j:set var="spanClass" value="nested"/>
+          <j:set var="spanStyle" value="${it.recurse?'':'display:none'}"/>
+        </j:if>
+        <span class="${spanClass}" style="${spanStyle}">
           <f:checkbox name="${job.getRelativeNameFrom(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" />
           <br/>
         </span>
