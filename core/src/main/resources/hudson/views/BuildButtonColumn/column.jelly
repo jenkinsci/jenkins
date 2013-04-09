@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
       <td>
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-              <a href="${h.getRelativeLinkTo(job)}build?delay=0sec">
+              <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <img src="${imagesURL}/${subIconSize}/clock.png"
                        title="${%Schedule a build}" alt="${%Schedule a build}"
                        onclick="${job.parameterized ? null : 'return build(this)'}"
