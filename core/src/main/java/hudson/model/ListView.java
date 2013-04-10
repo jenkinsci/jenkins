@@ -67,14 +67,10 @@ public class ListView extends View implements Saveable {
      */
     @GuardedBy("this")
     /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
-
-    @GuardedBy("this")
-    private transient SortedSet<String> allJobNames;
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
-    
 
     /**
      * Include regex string.
@@ -152,11 +148,9 @@ public class ListView extends View implements Saveable {
     public List<TopLevelItem> getItems() {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
-        SortedSet<String> allNames;
 
         synchronized (this) {
             names = new TreeSet<String>(jobNames);
-            allNames = allJobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwnerItemGroup();
@@ -167,10 +161,8 @@ public class ListView extends View implements Saveable {
             if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
             // Add if no status filter or filter matches enabled/disabled status:
             if(statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter) {
+                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
                 items.add(item);
-                allNames.add(item.getName());
-            }
         }
 
         // check the filters
@@ -183,6 +175,11 @@ public class ListView extends View implements Saveable {
         items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
         
         return items;
+    }
+    
+    @Override
+    public boolean contains(TopLevelItem item) {
+      return getItems().contains(item);
     }
     
     private void includeItems(ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
@@ -208,12 +205,7 @@ public class ListView extends View implements Saveable {
         return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
     }
 
-    public synchronized boolean contains(TopLevelItem item) {
-        if(allJobNames == null) {
-            getItems();
-        }
-        return allJobNames.contains(item.getName());
-    }
+    
 
     /**
      * Adds the given item to this view.
@@ -222,7 +214,7 @@ public class ListView extends View implements Saveable {
      */
     public void add(TopLevelItem item) throws IOException {
         synchronized (this) {
-            jobNames.add(item.getName());
+            jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
         }
         save();
     }
@@ -249,7 +241,7 @@ public class ListView extends View implements Saveable {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
             if(item!=null) {
                 synchronized (this) {
-                    jobNames.add(item.getName());
+                    jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
                 }
                 owner.save();
             }
