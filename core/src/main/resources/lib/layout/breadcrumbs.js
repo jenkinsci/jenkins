@@ -53,6 +53,16 @@ var breadcrumbs = (function() {
         }
     }
 
+    function requireConfirmation(action, event, cfg) {
+        if (confirm(cfg.displayName + ': are you sure?')) { // XXX I18N
+            var form = document.createElement('form');
+            form.setAttribute('method', cfg.post ? 'POST' : 'GET');
+            form.setAttribute('action', cfg.url);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
     /**
      * Wraps a delayed action and its cancellation.
      */
@@ -158,7 +168,10 @@ var breadcrumbs = (function() {
                         e.text = makeMenuHtml(e.icon, e.displayName);
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
-                        if (e.post) {
+                        if (e.requiresConfirmation) {
+                            e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
+                            delete e.url;
+                        } else if (e.post) {
                             e.onclick = {fn: postRequest, obj: e.url};
                             delete e.url;
                         }
