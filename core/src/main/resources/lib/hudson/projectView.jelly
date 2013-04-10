@@ -79,8 +79,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <j:forEach var="job" items="${jobs}">
-          <j:set var="parentRelativeLink" value="${h.getRelativeLinkTo(job.parent)}"/>
-          <t:projectViewRow jobBaseUrl="${parentRelativeLink=='.'?'':parentRelativeLink}${jobBaseUrl}"/>
+          <t:projectViewRow jobBaseUrl="${h.getRelativeLinkTo(job).substring(0, h.getRelativeLinkTo(job).length() - job.shortUrl.length())}${jobBaseUrl}"/>
         </j:forEach>
       </table>
       <t:iconSize><t:rssBar/></t:iconSize>
