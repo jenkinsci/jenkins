@@ -31,6 +31,7 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import java.util.List;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Extension point to add icon to <tt>http://server/hudson/manage</tt> page.
@@ -79,6 +80,17 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * so relative paths are interpreted against the root {@link Jenkins} object.
      */
     public abstract String getUrlName();
+
+    /**
+     * Allows implementations to request that this link show a confirmation dialog, and use POST if confirmed.
+     * Suitable for links which perform an action rather than simply displaying a page.
+     * @return true if this link takes an action
+     * @see RequirePOST
+     * @since 1.512
+     */
+    public boolean getRequiresConfirmation() {
+        return false;
+    }
 
     /**
      * All registered instances.
