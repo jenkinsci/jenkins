@@ -919,42 +919,71 @@ public class Functions {
         }
 
         String path = ancestors.get(p);
-        if(path!=null)  return path;
+        if(path!=null) {
+            return normalizeURI(path + '/');
+        }
 
         Item i=p;
         String url = "";
+        Collection<TopLevelItem> viewItems;
+        if (view != null) {
+            viewItems = view.getItems();
+        } else {
+            viewItems = Collections.emptyList();
+        }
         while(true) {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner())) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if(view!=null && view.contains((TopLevelItem)i)) {
+                if(viewItems.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
-                    return ancestors.get(view)+'/'+url;
+                    return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
                     // otherwise return a path from the root Hudson
-                    return request.getContextPath()+'/'+p.getUrl();
+                    return normalizeURI(request.getContextPath()+'/'+p.getUrl());
                 }
             }
 
             path = ancestors.get(ig);
-            if(path!=null)  return path+'/'+url;
+            if(path!=null) {
+                return normalizeURI(path+'/'+url);
+            }
 
             assert ig instanceof Item; // if not, ig must have been the Hudson instance
             i = (Item) ig;
         }
     }
     
+    private static String normalizeURI(String uri) {
+        return URI.create(uri).normalize().toString();
+    }
+    
+    /**
+     * Gets all the {@link TopLevelItem}s recursively in the {@link ItemGroup} tree.
+     * 
+     * @since XXX
+     */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
       return Items.getAllItems(root, TopLevelItem.class);
     }
     
+    
+    /**
+     * Gets the relative display name to the given item from the specified group.
+     *
+     * @since XXX
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
         if (p == null) return null;
         String relativeName = p.getRelativeNameFrom(g);
         if (relativeName == null) return null;
-        return relativeName.replace("/", " \u00BB ");
+        return relativeName.replace("/", " » ");
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
