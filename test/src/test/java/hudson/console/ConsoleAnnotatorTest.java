@@ -66,7 +66,8 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         assertTrue(raw.getContent().contains(nl+"---"+nl+"ooo"+nl+"ooo"+nl));
 
         // there should be two 'ooo's
-        assertEquals(3,rsp.asXml().split("ooo").length);
+        String xml = rsp.asXml();
+        assertEquals(xml, 3, xml.split("ooo").length);
     }
 
     /**
