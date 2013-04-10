@@ -3031,6 +3031,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Reloads the configuration.
      */
     @CLIMethod(name="reload-configuration")
+    @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 

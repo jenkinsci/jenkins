@@ -105,6 +105,17 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since 1.512 */
+        public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url,icon,text);
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Default implementation of the context menu generation.
          * 
@@ -182,6 +193,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @since 1.504
          */
         @Exported public boolean post;
+
+        /**
+         * True to require confirmation after a click.
+         * @since 1.512
+         */
+        @Exported public boolean requiresConfirmation;
 
         /**
          * If this is a submenu, definition of subitems.
