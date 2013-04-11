@@ -88,13 +88,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue("Workspace should exist by now",
                 b.getWorkspace().exists());
 
-        // emulate the user behavior
-        WebClient webClient = new WebClient();
-        HtmlPage page = webClient.getPage(project);
-
-        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
-        page = (HtmlPage)page.getFirstAnchorByText("Wipe Out Workspace").click();
-        page = (HtmlPage)((HtmlForm)page.getElementById("confirmation")).submit(null);
+        project.doDoWipeOutWorkspace();
 
         assertFalse("Workspace should be gone by now",
                 b.getWorkspace().exists());
