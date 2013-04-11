@@ -95,6 +95,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -117,6 +118,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1880,11 +1882,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         delete();
         if (req == null || rsp == null)
             return;
-        View view = req.findAncestorObject(View.class);
-        if (view == null)
-            rsp.sendRedirect2(req.getContextPath() + '/' + getParent().getUrl());
-        else 
-            rsp.sendRedirect2(req.getContextPath() + '/' + view.getUrl());
+        List<Ancestor> ancestors = req.getAncestors();
+        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
+        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        while (it.hasPrevious()) {
+            Object a = it.previous().getObject();
+            if (a instanceof View) {
+                url = ((View) a).getUrl();
+                break;
+            } else if (a instanceof ViewGroup) {
+                url = ((ViewGroup) a).getUrl();
+                break;
+            }
+        }
+        rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
     
     @Override

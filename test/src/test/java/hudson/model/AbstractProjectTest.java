@@ -385,12 +385,21 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertFalse(b.getRootDir().isDirectory());
     }
 
+    @Bug(17575)
     public void testDeleteRedirect() throws Exception {
         createFreeStyleProject("j1");
         assertEquals("", deleteRedirectTarget("job/j1"));
         createFreeStyleProject("j2");
         Jenkins.getInstance().addView(new AllView("v1"));
         assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
+        MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
+        d.addView(new AllView("v2"));
+        d.createProject(FreeStyleProject.class, "j3");
+        d.createProject(FreeStyleProject.class, "j4");
+        d.createProject(FreeStyleProject.class, "j5");
+        assertEquals("job/d/", deleteRedirectTarget("job/d/job/j3"));
+        assertEquals("job/d/view/v2/", deleteRedirectTarget("job/d/view/v2/job/j4"));
+        assertEquals("view/v1/job/d/", deleteRedirectTarget("view/v1/job/d/job/j5"));
     }
     private String deleteRedirectTarget(String job) throws Exception {
         WebClient wc = new WebClient();
