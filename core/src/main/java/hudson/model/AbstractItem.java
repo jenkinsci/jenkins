@@ -344,6 +344,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *  Nested ItemGroups are separated by / character.
      */
     public String getRelativeNameFrom(ItemGroup p) {
+        if (p == null) return getFullName();
         // first list up all the parents
         Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
         int depth=0;
