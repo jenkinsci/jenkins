@@ -227,10 +227,10 @@ public class JDKInstaller extends ToolInstaller {
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(jdkBundle);
             if (isJava15() || isJava14()) {
-                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\""+ expectedLocation +"\" /L \""+logFile+"\"");
             } else {
                 // modern version supports arguments in more sane format.
-                args.add("/s","/v","/qn","/L","\\\""+logFile+"\\\"","REBOOT=ReallySuppress","INSTALLDIR=\\\""+ expectedLocation+"\\\"");
+                args.add("/s","/v","/qn","/L","\""+logFile+"\"","REBOOT=ReallySuppress","INSTALLDIR=\""+ expectedLocation+"\"");
             }
             // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
             // Oh Windows, oh windows, why do you have to be so difficult?
