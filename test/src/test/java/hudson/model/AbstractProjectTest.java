@@ -24,6 +24,8 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -58,6 +60,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import org.jvnet.hudson.test.MockFolder;
 
 /**
@@ -380,6 +383,21 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue(b.getRootDir().isDirectory());
         p.delete();
         assertFalse(b.getRootDir().isDirectory());
+    }
+
+    public void testDeleteRedirect() throws Exception {
+        createFreeStyleProject("j1");
+        assertEquals("", deleteRedirectTarget("job/j1"));
+        createFreeStyleProject("j2");
+        Jenkins.getInstance().addView(new AllView("v1"));
+        assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
+    }
+    private String deleteRedirectTarget(String job) throws Exception {
+        WebClient wc = new WebClient();
+        String base = wc.getContextPath();
+        String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
+        assertTrue(loc, loc.startsWith(base));
+        return loc.substring(base.length());
     }
 
 }
