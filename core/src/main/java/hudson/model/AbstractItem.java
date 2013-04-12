@@ -329,7 +329,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     
     /**
      * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
-     * @since XXX
+     * @since 1.512
      * @see #getRelativeNameFrom(ItemGroup)
      */
     public String getRelativeNameFromGroup(ItemGroup p) {

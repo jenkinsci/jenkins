@@ -963,7 +963,7 @@ public class Functions {
     /**
      * Gets all the {@link TopLevelItem}s recursively in the {@link ItemGroup} tree.
      * 
-     * @since XXX
+     * @since 1.512
      */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
       return Items.getAllItems(root, TopLevelItem.class);
@@ -973,7 +973,7 @@ public class Functions {
     /**
      * Gets the relative display name to the given item from the specified group.
      *
-     * @since XXX
+     * @since 1.512
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return

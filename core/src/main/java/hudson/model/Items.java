@@ -240,7 +240,7 @@ public class Items {
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
      * 
-     * @since XXX
+     * @since 1.512
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
         List<T> r = new ArrayList<T>();
