@@ -145,7 +145,7 @@ public class MyViewsProperty extends UserProperty implements ViewGroup, Action, 
     }
 
     public HttpResponse doIndex() {
-        return new HttpRedirect("view/" + Util.encode(getPrimaryView().getViewName()) + "/");
+        return new HttpRedirect("view/" + Util.rawEncode(getPrimaryView().getViewName()) + "/");
     }
 
     public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
