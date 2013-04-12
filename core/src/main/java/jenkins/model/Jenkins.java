@@ -1385,24 +1385,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * and filter them by the given type.
      */
     public <T extends Item> List<T> getAllItems(Class<T> type) {
-        List<T> r = new ArrayList<T>();
-
-        Stack<ItemGroup> q = new Stack<ItemGroup>();
-        q.push(this);
-
-        while(!q.isEmpty()) {
-            ItemGroup<?> parent = q.pop();
-            for (Item i : parent.getItems()) {
-                if(type.isInstance(i)) {
-                    if (i.hasPermission(Item.READ))
-                        r.add(type.cast(i));
-                }
-                if(i instanceof ItemGroup)
-                    q.push((ItemGroup)i);
-            }
-        }
-
-        return r;
+        return Items.getAllItems(this, type);
     }
 
     /**
