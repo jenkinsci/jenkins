@@ -24,6 +24,8 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -58,6 +60,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import org.jvnet.hudson.test.MockFolder;
 
 /**
@@ -85,13 +88,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue("Workspace should exist by now",
                 b.getWorkspace().exists());
 
-        // emulate the user behavior
-        WebClient webClient = new WebClient();
-        HtmlPage page = webClient.getPage(project);
-
-        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
-        page = (HtmlPage)page.getFirstAnchorByText("Wipe Out Workspace").click();
-        page = (HtmlPage)((HtmlForm)page.getElementById("confirmation")).submit(null);
+        project.doDoWipeOutWorkspace();
 
         assertFalse("Workspace should be gone by now",
                 b.getWorkspace().exists());
@@ -380,6 +377,30 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertTrue(b.getRootDir().isDirectory());
         p.delete();
         assertFalse(b.getRootDir().isDirectory());
+    }
+
+    @Bug(17575)
+    public void testDeleteRedirect() throws Exception {
+        createFreeStyleProject("j1");
+        assertEquals("", deleteRedirectTarget("job/j1"));
+        createFreeStyleProject("j2");
+        Jenkins.getInstance().addView(new AllView("v1"));
+        assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
+        MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
+        d.addView(new AllView("v2"));
+        d.createProject(FreeStyleProject.class, "j3");
+        d.createProject(FreeStyleProject.class, "j4");
+        d.createProject(FreeStyleProject.class, "j5");
+        assertEquals("job/d/", deleteRedirectTarget("job/d/job/j3"));
+        assertEquals("job/d/view/v2/", deleteRedirectTarget("job/d/view/v2/job/j4"));
+        assertEquals("view/v1/job/d/", deleteRedirectTarget("view/v1/job/d/job/j5"));
+    }
+    private String deleteRedirectTarget(String job) throws Exception {
+        WebClient wc = new WebClient();
+        String base = wc.getContextPath();
+        String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
+        assertTrue(loc, loc.startsWith(base));
+        return loc.substring(base.length());
     }
 
 }

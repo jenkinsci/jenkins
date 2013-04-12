@@ -494,6 +494,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Deletes this item.
+     * Note on the funny name: for reasons of historical compatibility, this URL is {@code /doDelete}
+     * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
+     * which should now be unused by core but is left in case plugins are still using it.
      */
     @CLIMethod(name="delete-job")
     @RequirePOST
