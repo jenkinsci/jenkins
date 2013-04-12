@@ -326,8 +326,25 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if(n.length()==0)   return getDisplayName();
         else                return n+" \u00BB "+getDisplayName();
     }
+    
+    /**
+     * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
+     * @since XXX
+     * @see #getRelativeNameFrom(ItemGroup)
+     */
+    public String getRelativeNameFromGroup(ItemGroup p) {
+        return getRelativeNameFrom(p);
+    }
 
+    /**
+     * @param p
+     *  The ItemGroup instance used as context to evaluate the relative name of this AbstractItem
+     * @return
+     *  The name of the current item, relative to p.
+     *  Nested ItemGroups are separated by / character.
+     */
     public String getRelativeNameFrom(ItemGroup p) {
+        if (p == null) return getFullName();
         // first list up all the parents
         Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
         int depth=0;
