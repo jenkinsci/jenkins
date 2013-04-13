@@ -3462,7 +3462,33 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
+     * Checks if a top-level view with the given name exists and 
+     * make sure that the name is good as a view name.
+     */
+    public FormValidation doCheckViewName(@QueryParameter String value) {
+        checkPermission(View.CREATE);
+        
+        String name = fixEmpty(value);
+        if (name == null) 
+            return FormValidation.ok();
+        
+        // already exists?
+        if (getView(name) != null) 
+            return FormValidation.error(Messages.Hudson_ViewAlreadyExists(name));
+        
+        // good view name?
+        try {
+            checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        return FormValidation.ok();
+    }
+    
+    /**
      * Checks if a top-level view with the given name exists.
+     * @deprecated 1.512
      */
     public FormValidation doViewExistsCheck(@QueryParameter String value) {
         checkPermission(View.CREATE);
