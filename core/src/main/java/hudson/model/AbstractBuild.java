@@ -213,7 +213,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             if (r==null) {
                 // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                R pb = getParent().builds.search(number-1, Direction.DESC);
+                P _parent = getParent();
+                if (_parent == null) {
+                    throw new IllegalStateException("no parent for " + this);
+                }
+                R pb = _parent._getRuns().search(number-1, Direction.DESC);
                 if (pb!=null) {
                     ((AbstractBuild)pb).nextBuild = selfReference;   // establish bi-di link
                     this.previousBuild = pb.selfReference;

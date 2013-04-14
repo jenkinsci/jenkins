@@ -175,6 +175,10 @@ public class FileParameterValue extends ParameterValue {
     	return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
     }
 
+    @Override public String getShortDescription() {
+        return name + "=" + originalFileName;
+    }
+
     /**
      * Serve this file parameter in response to a {@link StaplerRequest}.
      *

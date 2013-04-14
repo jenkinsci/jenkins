@@ -174,6 +174,34 @@ public class JenkinsTest extends HudsonTestCase {
         Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);                
     }
 
+    @Test
+    public void testDoCheckViewName_GoodName() throws Exception {
+        String[] viewNames = new String[] {
+            "", "Jenkins"    
+        };
+        
+        Jenkins jenkins = Jenkins.getInstance();
+        for (String viewName : viewNames) {
+            FormValidation v = jenkins.doCheckViewName(viewName);
+            Assert.assertEquals(FormValidation.Kind.OK, v.kind);
+        }
+    }
+
+    @Test
+    public void testDoCheckViewName_NotGoodName() throws Exception {
+        String[] viewNames = new String[] {
+            "Jenkins?", "Jenkins*", "Jenkin/s", "Jenkin\\s", "jenkins%", 
+            "Jenkins!", "Jenkins[]", "Jenkin<>s", "^Jenkins", ".."    
+        };
+        
+        Jenkins jenkins = Jenkins.getInstance();
+        
+        for (String viewName : viewNames) {
+            FormValidation v = jenkins.doCheckViewName(viewName);
+            Assert.assertEquals(FormValidation.Kind.ERROR, v.kind);
+        }
+    }
+    
     @Bug(12251)
     public void testItemFullNameExpansion() throws Exception {
         HtmlForm f = createWebClient().goTo("/configure").getFormByName("config");

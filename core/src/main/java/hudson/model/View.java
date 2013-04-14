@@ -475,6 +475,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return (owner!=null ? owner.getUrl() : "") + "view/" + Util.rawEncode(getViewName()) + '/';
     }
 
+    @Override public String toString() {
+        return super.toString() + "[" + getViewUrl() + "]";
+    }
+
     public String getSearchUrl() {
         return getUrl();
     }

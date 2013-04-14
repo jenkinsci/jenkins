@@ -25,6 +25,7 @@ package hudson.scheduler;
 
 import antlr.ANTLRException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
+import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -262,6 +264,17 @@ public class CronTabTest {
         } catch (ANTLRException x) {
             // good
         }
+    }
+
+    @Test public void repeatedHash() throws Exception {
+        CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
+        List<Integer> times = new ArrayList<Integer>();
+        for (int i = 0; i < 60; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[35, 56]", times.toString());
     }
 
 }

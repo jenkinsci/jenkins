@@ -451,7 +451,7 @@ public class Util {
     public static void copyStream(InputStream in,OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
-        while((len=in.read(buf))>0)
+        while((len=in.read(buf))>=0)
             out.write(buf,0,len);
     }
 
@@ -562,7 +562,7 @@ public class Util {
             byte[] buffer = new byte[1024];
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(buffer)>0)
+                while(in.read(buffer)>=0)
                     ; // simply discard the input
             } finally {
                 in.close();
@@ -1065,6 +1065,9 @@ public class Util {
                         return;
                     }
                     throw e;
+                } catch (UnsatisfiedLinkError e) {
+                    // not available on this Windows
+                    return;
                 }
             } else {
                 String errmsg = "";

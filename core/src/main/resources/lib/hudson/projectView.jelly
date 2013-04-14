@@ -33,10 +33,9 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="useFullName" use="optional" type="boolean">
       May be interpreted by columns to display the full name of a job.
-      Will also append a parent URL to jobBaseUrl if needed.
     </st:attribute>
     <st:attribute name="jobBaseUrl" type="String">
-      The base URL of all job links. Normally ${rootURL}/
+      Deprecated. Using this attribute has no effect.
     </st:attribute>
     <st:attribute name="showViewTabs" use="optional" type="boolean">
       If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly.
@@ -79,7 +78,7 @@ THE SOFTWARE.
         </j:forEach>
 
         <j:forEach var="job" items="${jobs}">
-          <t:projectViewRow jobBaseUrl="${useFullName ? jobBaseUrl + job.parent.url : jobBaseUrl}"/>
+          <t:projectViewRow jobBaseUrl="${h.getRelativeLinkTo(job).substring(0, h.getRelativeLinkTo(job).length() - job.shortUrl.length())}"/>
         </j:forEach>
       </table>
       <t:iconSize><t:rssBar/></t:iconSize>
