@@ -55,6 +55,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
@@ -127,7 +128,8 @@ public class AbstractProjectTest extends HudsonTestCase {
 
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
         try {
-            page.getFirstAnchorByText("Wipe Out Workspace");
+        	String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+            page.getFirstAnchorByText(wipeOutLabel);
             fail("shouldn't find a link");
         } catch (ElementNotFoundException e) {
             // OK
