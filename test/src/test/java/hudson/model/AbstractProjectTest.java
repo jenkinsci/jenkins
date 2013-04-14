@@ -53,6 +53,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.io.FileUtils;
@@ -88,9 +89,9 @@ public class AbstractProjectTest extends HudsonTestCase {
         // emulate the user behavior
         WebClient webClient = new WebClient();
         HtmlPage page = webClient.getPage(project);
-
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
-        page = (HtmlPage)page.getFirstAnchorByText("Wipe Out Workspace").click();
+        String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+        page = (HtmlPage)page.getFirstAnchorByText(wipeOutLabel).click();
         page = (HtmlPage)((HtmlForm)page.getElementById("confirmation")).submit(null);
 
         assertFalse("Workspace should be gone by now",
@@ -130,7 +131,8 @@ public class AbstractProjectTest extends HudsonTestCase {
 
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
         try {
-            page.getFirstAnchorByText("Wipe Out Workspace");
+        	String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
+            page.getFirstAnchorByText(wipeOutLabel);
             fail("shouldn't find a link");
         } catch (ElementNotFoundException e) {
             // OK
