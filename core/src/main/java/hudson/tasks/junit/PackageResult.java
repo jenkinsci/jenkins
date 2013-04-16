@@ -82,15 +82,16 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     @Override
     public TestResult findCorrespondingResult(String id) {
         String myID = safe(getName());
+
         int base = id.indexOf(myID);
-        String className;
-        String subId = null;
+        String className = id; // fall back value
         if (base > 0) {
             int classNameStart = base + myID.length() + 1;
-            className = id.substring(classNameStart);
-        } else {
-            className = id;
-    }
+            if (classNameStart<id.length())
+                className = id.substring(classNameStart);
+        }
+
+        String subId = null;
         int classNameEnd = className.indexOf('/');
         if (classNameEnd > 0) {
             subId = className.substring(classNameEnd + 1);
@@ -106,7 +107,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
                 return child.findCorrespondingResult(subId);
             } else {
                 return child;
-    }
+            }
         }
 
         return null;
