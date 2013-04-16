@@ -138,7 +138,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
         StringBuilder buf = new StringBuilder();
         TestObject next = this;
         TestObject cur = this;  
-        // Walk up my ancesotors from leaf to root, looking for "it"
+        // Walk up my ancestors from leaf to root, looking for "it"
         // and accumulating a relative url as I go
         while (next!=null && it!=next) {
             cur = next;
@@ -260,7 +260,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
 
     /**
      * Find the test result corresponding to the one identified by <code>id></code>
-     * withint this test result.
+     * within this test result.
      *
      * @param id The path to the original test result
      * @return A corresponding test result, or null if there is no corresponding
