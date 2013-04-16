@@ -91,7 +91,7 @@ var breadcrumbs = (function() {
      * '>' control used to launch context menu.
      */
     var menuSelector = (function() {
-        var menuSelector = document.createElement("div");
+        var menuSelector = $(document.createElement("div"));
         document.body.appendChild(menuSelector);
         menuSelector.id = 'menuSelector';
 
@@ -110,10 +110,10 @@ var breadcrumbs = (function() {
         menuSelector.hide = function() {
             this.style.visibility = "hidden";
         };
-        menuSelector.onclick = function () {
+        menuSelector.observe("click",function () {
             this.hide();
             handleHover(this.target);
-        };
+        });
 
         // if the mouse leaves the selector, hide it
         canceller = new Delayed(function () {
@@ -121,14 +121,14 @@ var breadcrumbs = (function() {
             menuSelector.hide();
         }.bind(menuSelector), 750);
 
-        menuSelector.onmouseover = function () {
+        menuSelector.observe("mouseover",function () {
             logger("mouse entered 'v'");
             canceller.cancel();
-        };
-        menuSelector.onmouseout = function () {
+        });
+        menuSelector.observe("mouseout",function () {
             logger("mouse left 'v'");
             canceller.schedule();
-        };
+        });
         menuSelector.canceller = canceller;
 
         return menuSelector;
@@ -152,8 +152,6 @@ var breadcrumbs = (function() {
             menu.addItems(items);
             menu.render("breadcrumb-menu-target");
             menu.show();
-            if (items[0].tooltip)
-                $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
         }
 
         if (xhr)
@@ -180,12 +178,6 @@ var breadcrumbs = (function() {
                     }
                     a.each(fillMenuItem);
 
-                    var tooltip = e.getAttribute('tooltip');
-                    if (tooltip) {
-                        // join the tooltip into the context menu. color #000 to cancel out the text effect on disabled menu items
-                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true, tooltip:true})
-                    }
-
                     e.items = function() { return a };
                     showMenu(a);
                 }
@@ -206,15 +198,15 @@ var breadcrumbs = (function() {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
         // $(a).observe("mouseover", function () { handleHover(a,500); });
 
-        a.onmouseover = function () {
+        a.observe("mouseover",function () {
             logger("mouse entered mode-link %s",this.href);
             menuSelector.canceller.cancel();
             menuSelector.show(this);
-        };
-        a.onmouseout = function () {
+        });
+        a.observe("mouseout",function () {
             logger("mouse left model-link %s",this.href);
             menuSelector.canceller.schedule();
-        };
+        });
     });
 
     /**
