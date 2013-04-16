@@ -71,16 +71,18 @@ var breadcrumbs = (function() {
      */
     function Delayed(action, timeout) {
         this.schedule = function () {
-            if (this.token != null)
-                window.clearTimeout(this.token);
+            this.cancel();
             this.token = window.setTimeout(function () {
                 this.token = null;
                 action();
             }.bind(this), timeout);
+            logger("Scheduled %s",this.token)
         };
         this.cancel = function () {
-            if (this.token != null)
+            if (this.token != null) {
+                logger("Cancelling %s",this.token);
                 window.clearTimeout(this.token);
+            }
             this.token = null;
         };
     }
@@ -115,18 +117,6 @@ var breadcrumbs = (function() {
 
         // if the mouse leaves the selector, hide it
         canceller = new Delayed(function () {
-            // if the mouse is in the hot spot for the selector, keep showing it
-            var r = this.target ? Dom.getRegion(this.target) : false;
-            if (r && r.contains(mouse)) {
-                logger("still in the hotspot");
-                return;
-            }
-            r = Dom.getRegion(this);
-            if (r && r.contains(mouse)) {
-                logger("still over the selector");
-                return;
-            }
-
             logger("hiding 'v'");
             menuSelector.hide();
         }.bind(menuSelector), 750);
@@ -136,8 +126,8 @@ var breadcrumbs = (function() {
             canceller.cancel();
         };
         menuSelector.onmouseout = function () {
-            canceller.schedule();
             logger("mouse left 'v'");
+            canceller.schedule();
         };
         menuSelector.canceller = canceller;
 
@@ -217,12 +207,13 @@ var breadcrumbs = (function() {
         // $(a).observe("mouseover", function () { handleHover(a,500); });
 
         a.onmouseover = function () {
-            logger("mouse entered mode-link %s",this);
+            logger("mouse entered mode-link %s",this.href);
+            menuSelector.canceller.cancel();
             menuSelector.show(this);
         };
         a.onmouseout = function () {
+            logger("mouse left model-link %s",this.href);
             menuSelector.canceller.schedule();
-            logger("mouse left model-link %s",this);
         };
     });
 
