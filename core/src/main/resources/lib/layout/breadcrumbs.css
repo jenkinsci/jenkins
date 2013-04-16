@@ -53,8 +53,8 @@
   background-image: url(menu_down_arrow.png);
   background-position: center center;
   background-repeat: no-repeat;
-  width: 1em;
-  height:1em;
+  width: 15px;
+  height:16px;
   position: absolute;
   visibility: hidden;
   cursor: pointer;

@@ -102,6 +102,7 @@ var breadcrumbs = (function() {
         menuSelector.show = function(target) {
             var xy = YAHOO.util.Dom.getXY(target);
             xy[0] += target.offsetWidth;
+            xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
             YAHOO.util.Dom.setXY(this, xy);
             this.target = target;
 
