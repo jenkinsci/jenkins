@@ -20,6 +20,9 @@ var breadcrumbs = (function() {
      */
     var mouse;
 
+    var logger = function() {};
+    // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
+
     function makeMenuHtml(icon,displayName) {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
@@ -114,18 +117,27 @@ var breadcrumbs = (function() {
         canceller = new Delayed(function () {
             // if the mouse is in the hot spot for the selector, keep showing it
             var r = this.target ? Dom.getRegion(this.target) : false;
-            if (r && r.contains(mouse))     return;
-            r = Dom.getRegion(menuSelector);
-            if (r && r.contains(mouse))     return;
+            if (r && r.contains(mouse)) {
+                logger("still in the hotspot");
+                return;
+            }
+            r = Dom.getRegion(this);
+            if (r && r.contains(mouse)) {
+                logger("still over the selector");
+                return;
+            }
 
+            logger("hiding 'v'");
             menuSelector.hide();
-        }, 750);
+        }.bind(menuSelector), 750);
 
         menuSelector.onmouseover = function () {
+            logger("mouse entered 'v'");
             canceller.cancel();
         };
         menuSelector.onmouseout = function () {
             canceller.schedule();
+            logger("mouse left 'v'");
         };
         menuSelector.canceller = canceller;
 
@@ -205,10 +217,12 @@ var breadcrumbs = (function() {
         // $(a).observe("mouseover", function () { handleHover(a,500); });
 
         a.onmouseover = function () {
+            logger("mouse entered mode-link %s",this);
             menuSelector.show(this);
         };
         a.onmouseout = function () {
             menuSelector.canceller.schedule();
+            logger("mouse left model-link %s",this);
         };
     });
 
