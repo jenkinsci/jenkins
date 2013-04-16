@@ -190,7 +190,6 @@ var breadcrumbs = (function() {
 
     Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
         // when the mouse hovers over LI, activate the menu
-        e = $(e);
         if (e.hasClassName("no-context-menu"))  return;
         e.observe("mouseover", function () { handleHover(e.firstChild) });
     });
@@ -200,7 +199,7 @@ var breadcrumbs = (function() {
         // $(a).observe("mouseover", function () { handleHover(a,500); });
 
         a.observe("mouseover",function () {
-            logger("mouse entered mode-link %s",this.href);
+            logger("mouse entered model-link %s",this.href);
             menuSelector.canceller.cancel();
             menuSelector.show(this);
         });
