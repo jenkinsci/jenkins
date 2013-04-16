@@ -102,15 +102,10 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         }
 
         ClassResult child = getClassResult(className);
-        if (child != null) {
-            if (subId != null) {
-                return child.findCorrespondingResult(subId);
-            } else {
-                return child;
-            }
-        }
+        if (child != null && subId != null)
+            return child.findCorrespondingResult(subId);
 
-        return null;
+        return child;
     }
 
     @Override
