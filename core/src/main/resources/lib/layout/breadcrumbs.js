@@ -100,10 +100,12 @@ var breadcrumbs = (function() {
          *      DOM node to attach this selector to.
          */
         menuSelector.show = function(target) {
-            var xy = YAHOO.util.Dom.getXY(target);
+            var xy = Dom.getXY(target);
+            if ($(target).hasClassName("inside"))
+                xy[0] -= this.offsetWidth;  // show the menu selector inside the text
             xy[0] += target.offsetWidth;
             xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
-            YAHOO.util.Dom.setXY(this, xy);
+            Dom.setXY(this, xy);
             this.target = target;
 
             this.style.visibility = "visible";

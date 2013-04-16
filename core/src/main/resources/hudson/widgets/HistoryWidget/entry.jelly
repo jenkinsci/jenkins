@@ -35,7 +35,7 @@ THE SOFTWARE.
       ${build.displayName}
     </td>
     <td style="padding-right:0">
-      <a class="tip model-link tl-tr" href="${link}">
+      <a class="tip model-link tl-tr inside" href="${link}">
         <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
       </a>
     </td>

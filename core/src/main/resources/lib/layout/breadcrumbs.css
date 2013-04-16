@@ -58,4 +58,9 @@
   position: absolute;
   visibility: hidden;
   cursor: pointer;
+  z-index: 999;
+}
+
+A.model-link.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
+  padding-right: 16px;
 }
