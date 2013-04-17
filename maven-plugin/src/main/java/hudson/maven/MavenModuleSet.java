@@ -122,7 +122,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers, ModelObjectWithChildren {
+public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
 	
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
@@ -1172,6 +1172,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return FormValidation.ok();
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (MavenModule mm : getModules()) {

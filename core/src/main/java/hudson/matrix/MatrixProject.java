@@ -96,7 +96,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, Saveable, FlyweightTask, BuildableItemWithBuildWrappers, ModelObjectWithChildren {
+public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> implements TopLevelItem, SCMedItem, ItemGroup<MatrixConfiguration>, Saveable, FlyweightTask, BuildableItemWithBuildWrappers {
     /**
      * Configuration axes.
      */
@@ -854,6 +854,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return rsp;
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (MatrixConfiguration c : getActiveConfigurations()) {

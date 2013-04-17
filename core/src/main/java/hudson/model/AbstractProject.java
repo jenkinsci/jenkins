@@ -39,11 +39,13 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.matrix.MatrixConfiguration;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.QueueTaskFuture;
@@ -83,6 +85,7 @@ import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
@@ -140,7 +143,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren {
 
     /**
      * {@link SCM} associated with the project.
@@ -1980,6 +1983,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
         return r;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        // not sure what would be really useful here. This needs more thoughts.
+        // for the time being, I'm starting with permalinks
+        ContextMenu menu = new ContextMenu();
+        for (Permalink p : getPermalinks()) {
+            if (p.resolve(this)!=null)
+                menu.add(p.getId(),p.getDisplayName());
+        }
+        return menu;
     }
 
     /**
