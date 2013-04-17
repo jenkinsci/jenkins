@@ -764,7 +764,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             upstream = new HashSet<AbstractProject>(Items.fromNameList(getParent(),req.getParameter("upstreamProjects"),AbstractProject.class));
         }
 
-        // dependency setting might have been changed by the user, so rebuild.
         convertUpstreamBuildTrigger(upstream);
 
         // notify the queue as the project might be now tied to different node
