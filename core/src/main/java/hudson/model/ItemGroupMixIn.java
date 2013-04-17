@@ -270,6 +270,7 @@ public abstract class ItemGroupMixIn {
         }
         item.save();
         add(item);
+        Jenkins.getInstance().rebuildDependencyGraph();
 
         if (notify)
             ItemListener.fireOnCreated(item);
