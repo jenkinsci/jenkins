@@ -28,7 +28,7 @@ var breadcrumbs = (function() {
     }
 
     Event.observe(window,"load",function(){
-      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
+      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000, zIndex:86});
     });
 
 
