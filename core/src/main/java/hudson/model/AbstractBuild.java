@@ -92,6 +92,8 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import static java.util.logging.Level.WARNING;
+
 /**
  * Base implementation of {@link Run}s that build software.
  *
@@ -778,7 +780,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     } catch (Exception e) {
                         String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
                         e.printStackTrace(listener.error(msg));
-                        LOGGER.log(Level.WARNING, msg, e);
+                        LOGGER.log(WARNING, msg, e);
                         setResult(Result.FAILURE);
                     }
             }
@@ -919,9 +921,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         try {
             return scm.parse(this,changelogFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         } catch (SAXException e) {
-            e.printStackTrace();
+            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         }
         return ChangeLogSet.createEmpty(this);
     }
