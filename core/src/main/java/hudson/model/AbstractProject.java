@@ -765,9 +765,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         // dependency setting might have been changed by the user, so rebuild.
-        Jenkins.getInstance().rebuildDependencyGraph();
         convertUpstreamBuildTrigger(upstream);
-
 
         // notify the queue as the project might be now tied to different node
         Jenkins.getInstance().getQueue().scheduleMaintenance();
