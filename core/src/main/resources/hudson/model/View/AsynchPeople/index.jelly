@@ -50,7 +50,7 @@ THE SOFTWARE.
                   var d = document.createElement('td');
                   var a = document.createElement('a');
                   a.href = '${rootURL}/' + e.url;
-                  a.className = 'model-link';
+                  a.className = 'model-link inside';
                   var i = document.createElement('img');
                   i.src = e.avatar;
                   i.className = 'icon${iconSize}';
@@ -81,7 +81,7 @@ THE SOFTWARE.
                   if (e.projectUrl != null) {
                       a = document.createElement('a');
                       a.href = '${rootURL}/' + e.projectUrl;
-                      a.className = 'model-link';
+                      a.className = 'model-link inside';
                       a.appendChild(document.createTextNode(e.projectFullDisplayName));
                       d.appendChild(a);
                   }
