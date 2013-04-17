@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
 import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
@@ -36,10 +38,15 @@ import java.util.List;
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
  *
+ * <p>
+ * Even though this is marked as {@link ExtensionPoint}, you do not register
+ * your implementation with @{@link Extension}. Instead, call {@link Queue#setLoadBalancer(LoadBalancer)}
+ * to install your implementation.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.301
  */
-public abstract class LoadBalancer /*implements ExtensionPoint*/ {
+public abstract class LoadBalancer implements ExtensionPoint {
     /**
      * Chooses the executor(s) to carry out the build for the given task.
      *
