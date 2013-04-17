@@ -29,14 +29,15 @@
 #breadcrumbs LI {
     float:left;
     line-height:2em;
-    padding-left:.75em;
     color:#555753;
+    padding-right: 15px;
+    background:url('breadcrumb.gif') no-repeat right center;
 }
 
 #breadcrumbs LI A {
-    display:block;
-    padding:0 15px 0 0;
-    background:url('breadcrumb.gif') no-repeat right center;
+    display: block;
+    padding-left: 0.75em;
+    line-height: 2em;
 }
 
 #breadcrumbs LI A:link, #breadcrumbs LI A:visited {

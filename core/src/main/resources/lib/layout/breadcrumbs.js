@@ -112,7 +112,6 @@ var breadcrumbs = (function() {
             this.style.visibility = "hidden";
         };
         menuSelector.observe("click",function () {
-            this.hide();
             handleHover(this.target);
         });
 
@@ -188,12 +187,11 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-        // when the mouse hovers over LI, activate the menu
-        e = $(e);
-        if (e.hasClassName("no-context-menu"))  return;
-        e.observe("mouseover", function () { handleHover(e.firstChild) });
-    });
+//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
+//        // when the mouse hovers over LI, activate the menu
+//        if (e.hasClassName("no-context-menu"))  return;
+//        e.observe("mouseover", function () { handleHover(e.firstChild) });
+//    });
 
     Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed

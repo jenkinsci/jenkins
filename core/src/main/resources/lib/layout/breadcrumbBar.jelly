@@ -58,8 +58,8 @@ THE SOFTWARE.
           <ul id="breadcrumbs">
             <j:forEach var="anc" items="${request.ancestors}">
               <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                <li class="${h.isModelWithContextMenu(anc.object)?null:'no-context-menu'}">
-                  <a href="${anc.url}/">
+                <li class="">
+                  <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
                     ${anc.object.displayName}
                   </a>
                 </li>
