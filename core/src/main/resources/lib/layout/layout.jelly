@@ -159,7 +159,7 @@ ${h.initPageVariables(context)}
         <td id="top-panel" colspan="2">
           <table cellpadding="0" cellspacing="0" width="100%" border="0">
             <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
+              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" width="139" height="34" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
 
               <!-- search box -->
