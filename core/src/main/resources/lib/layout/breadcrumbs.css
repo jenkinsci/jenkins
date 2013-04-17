@@ -29,9 +29,8 @@
 #breadcrumbs LI {
     float:left;
     line-height:2em;
+    height: 2em;
     color:#555753;
-    padding-right: 15px;
-    background:url('breadcrumb.gif') no-repeat right center;
 }
 
 #breadcrumbs LI A {
@@ -49,7 +48,26 @@
     color:#3465a4;
 }
 
-#menuSelector {/* used for showing '>' on the right of the anchor */
+#breadcrumbs LI.children, #breadcrumbs LI.separator {/* '>' separator between two items */
+    width: 16px;
+    background-image: url(menu_right_arrow2.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+#breadcrumbs LI.children {
+    cursor: pointer;
+}
+
+#breadcrumbs LI.children:hover {
+    background-image: url(menu_right_arrow.png);
+}
+
+#breadcrumbs LI.separator:last-child {/* separators are for in-between only */
+    display: none;
+}
+
+#menuSelector {/* used for showing 'v' on the right of the anchor */
   background-color:transparent;
   background-image: url(menu_down_arrow.png);
   background-position: center center;
