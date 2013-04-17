@@ -1,7 +1,6 @@
 package jenkins.plugins.ui_samples;
 
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.kohsuke.stapler.StaplerRequest;
@@ -31,7 +30,7 @@ public class NavigationContextMenu extends UISample implements ModelObjectWithCo
             return new ContextMenu()
                     .add("http://jenkins-ci.org/","Jenkins project")
                     .add("http://www.cloudbees.com/","CloudBees")
-                    .add(request.getContextPath(), Jenkins.RESOURCE_PATH+"/images/24x24/gear.png","top-page");
+                    .add(new MenuItem().withContextRelativeUrl("/").withStockIcon("gear.png").withDisplayName("top page"));
         }
     }
 

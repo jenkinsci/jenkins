@@ -33,6 +33,7 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Plugin;
 import hudson.Util;
+import hudson.matrix.MatrixConfiguration;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
@@ -89,6 +90,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
@@ -120,7 +122,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenModuleSetBuild> implements TopLevelItem, ItemGroup<MavenModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers, ModelObjectWithChildren {
 	
     /**
      * All {@link MavenModule}s, keyed by their {@link MavenModule#getModuleName()} module name}s.
@@ -1168,6 +1170,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 return ws.validateRelativePath(value,true,true);
         }
         return FormValidation.ok();
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (MavenModule mm : getModules()) {
+            menu.add(mm);
+        }
+        return menu;
     }
 
     public DescriptorImpl getDescriptor() {
