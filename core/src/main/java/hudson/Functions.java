@@ -127,6 +127,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.GlobalConfigurationCategory.Unclassified;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
@@ -181,6 +182,10 @@ public class Functions {
 
     public static boolean isModelWithContextMenu(Object o) {
         return o instanceof ModelObjectWithContextMenu;
+    }
+
+    public static boolean isModelWithChildren(Object o) {
+        return o instanceof ModelObjectWithChildren;
     }
 
     public static String xsDate(Calendar cal) {

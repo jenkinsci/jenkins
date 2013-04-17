@@ -39,6 +39,7 @@ import java.util.List;
  * shows the drop-down menu for providing quicker access to the actions to those objects.
  *     
  * @author Kohsuke Kawaguchi
+ * @see ModelObjectWithChildren
  */
 public interface ModelObjectWithContextMenu extends ModelObject {
     /**

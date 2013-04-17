@@ -307,7 +307,9 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
+public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
+        ViewGroup, AccessControlled, DescriptorByNameOwner,
+        ModelObjectWithContextMenu, ModelObjectWithChildren {
     private transient final Queue queue;
 
     /**
@@ -3090,6 +3092,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 // add "Manage Jenkins" subitems
                 i.subMenu = new ContextMenu().from(this, request, response, "manage");
             }
+        }
+        return menu;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (View view : getViews()) {
+            menu.add(view.getViewUrl(),view.getDisplayName());
         }
         return menu;
     }

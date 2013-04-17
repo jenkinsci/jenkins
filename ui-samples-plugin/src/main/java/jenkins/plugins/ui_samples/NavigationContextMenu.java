@@ -5,8 +5,6 @@ import jenkins.model.ModelObjectWithContextMenu;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.util.List;
-
 /**
  * @author Kohsuke Kawaguchi
  */
