@@ -271,6 +271,11 @@ public class Queue extends ResourceController implements Saveable {
         public boolean isNotExclusive() {
             return getNode().getMode() == Mode.NORMAL;
         }
+
+        @Override
+        public String toString() {
+            return String.format("JobOffer[%s #%d]",executor.getOwner().getName(), executor.getNumber());
+        }
     }
 
     /**
@@ -1024,6 +1029,7 @@ public class Queue extends ResourceController implements Saveable {
             if (isBuildBlocked(p)) {
                 itr.remove();
                 blockedProjects.put(p.task,new BlockedItem(p));
+                LOGGER.fine(String.format("Catching that %s is blocked in the last minute", p));
                 continue;
             }
 
@@ -1034,11 +1040,16 @@ public class Queue extends ResourceController implements Saveable {
 
             MappingWorksheet ws = new MappingWorksheet(p, candidates);
             Mapping m = loadBalancer.map(p.task, ws);
-            if (m == null)
+            if (m == null) {
                 // if we couldn't find the executor that fits,
                 // just leave it in the buildables list and
                 // check if we can execute other projects
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer(String.format("Failed to map %s to executors. candidates=%s parked=%s",
+                            p, candidates, parked.values()));
+                }
                 continue;
+            }
 
             // found a matching executor. use it.
             WorkUnitContext wuc = new WorkUnitContext(p);
@@ -1046,7 +1057,9 @@ public class Queue extends ResourceController implements Saveable {
 
             itr.remove();
             if (!wuc.getWorkUnits().isEmpty())
-                pendings.add(p);
+                makePending(p);
+            else
+                LOGGER.fine(String.format("BuildableItem %s with empty work units!?",p));
         }
     }
 
@@ -1070,7 +1083,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (lbl!=null && !lbl.contains(n))  continue;
                 if (n.canTake(p) != null) continue;
                 c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                pendings.add(p);
+                makePending(p);
                 return;
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
@@ -1078,6 +1091,11 @@ public class Queue extends ResourceController implements Saveable {
         }
         
         buildables.put(p.task,p);
+    }
+
+    private boolean makePending(BuildableItem p) {
+        p.isPending = true;
+        return pendings.add(p);
     }
 
     public static boolean ifBlockedByHudsonShutdown(Task task) {
@@ -1597,6 +1615,11 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#buildables} stage.
      */
     public final static class BuildableItem extends NotWaitingItem {
+        /**
+         * Set to true when this is added to the {@link Queue#pendings} list.
+         */
+        private boolean isPending;
+
         public BuildableItem(WaitingItem wi) {
             super(wi);
         }
@@ -1661,6 +1684,11 @@ public class Queue extends ResourceController implements Saveable {
                 // more than a day in the queue
                 return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
             }
+        }
+
+        @Exported
+        public boolean isPending() {
+            return isPending;
         }
     }
 
