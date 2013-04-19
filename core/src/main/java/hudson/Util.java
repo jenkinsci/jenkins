@@ -1264,9 +1264,7 @@ public class Util {
      * @since 1.173
      */
     public static String wrapToErrorSpan(String s) {
-        s = "<span class=error><img src='"+
-            Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+
-            "/images/none.gif' height=16 width=1>"+s+"</span>";
+        s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
     
