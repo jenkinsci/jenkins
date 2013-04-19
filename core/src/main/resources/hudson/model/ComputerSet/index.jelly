@@ -52,7 +52,7 @@ THE SOFTWARE.
         <th />
       </tr>
 
-      <tr>
+      <tr class="sorttop">
         <td/>
         <td height="32">${%Data obtained}</td>
         <j:forEach var="m" items="${monitors}">
