@@ -45,19 +45,17 @@ import java.util.logging.Logger;
  * where the "monitoring" consists of executing something periodically on every node
  * and taking some action based on its result.
  *
- * <p>
- * "T" represents the the result of the monitoring. 
- *
+ * @param <T>
+ *     represents the the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
-public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
 
     protected AbstractNodeMonitorDescriptor(long interval) {
         schedule(interval);
-
     }
 
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
