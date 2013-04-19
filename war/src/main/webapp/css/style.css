@@ -808,6 +808,14 @@ TABLE.fingerprint-in-build TD {
 
 /* ========================= repeatable elements ========================= */
 
+.repeated-chunk {
+    border: 2px dashed transparent;
+}
+
+.repeated-chunk.hover {
+    border-color: #CCC;
+}
+
 .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -966,12 +974,7 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
-.hetero-list-container.with-drag-drop .repeated-chunk.hover {
-    border: 2px dashed #CCC;
-}
-
 .hetero-list-container.with-drag-drop .repeated-chunk {
-    border: 2px dashed transparent;
     padding: 0.5em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;

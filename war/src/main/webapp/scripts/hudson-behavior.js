@@ -470,6 +470,8 @@ function registerRegexpValidator(e,regexp,message) {
  *      button element
  * @param onclick
  *      onclick handler
+ * @return
+ *      YUI Button widget.
  */
 function makeButton(e,onclick) {
     var h = e.onclick;

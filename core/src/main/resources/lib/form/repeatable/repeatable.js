@@ -119,10 +119,18 @@ Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
     });
 
 Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
-        makeButton(e,function(e) {
+        var b = makeButton(e,function(e) {
             repeatableSupport.onDelete(e.target);
         });
-        e = null; // avoid memory leak
+        var be = $(b.get("element"));
+        be.on("mouseover",function() {
+            $(this).up(".repeated-chunk").addClassName("hover");
+        });
+        be.on("mouseout",function() {
+            $(this).up(".repeated-chunk").removeClassName("hover");
+        });
+
+        e = be = null; // avoid memory leak
     });
 
     // radio buttons in repeatable content
