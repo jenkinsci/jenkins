@@ -23,6 +23,7 @@
  */
 package hudson.node_monitors;
 
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -80,7 +81,9 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     /**
-     * Represents the last record of the update
+     * Represents the last record of the update.
+     *
+     * Once set to non-null, never be null.
      */
     private volatile Record record = null;
 
@@ -123,9 +126,27 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         return record.data.get(c);
     }
 
+    /**
+     * Is the monitoring activity currently in progress?
+     */
     private boolean isInProgress() {
         Record r = inProgress;  // capture for atomicity
         return r!=null && r.isAlive();
+    }
+
+    /**
+     * The timestamp that indicates when the last round of the monitoring has completed.
+     */
+    public long getTimestamp() {
+        return record==null ? 0L : record.timestamp;
+    }
+
+    public String getTimestampString() {
+        if (record==null)
+            return Messages.AbstractNodeMonitorDescriptor_NoDataYet();
+//        return Messages.AbstractNodeMonitorDescriptor_DataObtainedSometimeAgo(
+//                Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp));
+        return Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp);
     }
 
     /**
@@ -195,6 +216,8 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
          */
         private final Map<Computer,T> data = new HashMap<Computer,T>();
 
+        private long timestamp;
+
         public Record() {
             super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
             synchronized(AbstractNodeMonitorDescriptor.this) {
@@ -232,6 +255,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                 }
                 setName(oldName);
 
+                timestamp = System.currentTimeMillis();
                 record = this;
 
                 LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");

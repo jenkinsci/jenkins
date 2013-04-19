@@ -46,11 +46,25 @@ THE SOFTWARE.
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
             <j:set var="tableWidth" value="${tableWidth+1}"/>
-            <th align="right">${m.columnCaption}</th>
+            <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
           </j:if>
         </j:forEach>
         <th />
       </tr>
+
+      <tr>
+        <td/>
+        <td height="32">${%Data obtained}</td>
+        <j:forEach var="m" items="${monitors}">
+          <j:if test="${m.columnCaption!=null}">
+            <td align="right">
+              ${m.descriptor.timestampString}
+            </td>
+          </j:if>
+        </j:forEach>
+        <td />
+      </tr>
+
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
           <td width="32" data="${c.icon}">
