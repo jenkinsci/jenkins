@@ -51,7 +51,7 @@ var Sortable = (function() {
         this.arrows = [];
         table.sortable = this;
 
-        var firstRow = this.getHeaderCells();
+        var firstRow = this.getFirstRow();
         if (!firstRow) return;
 
         // We have a first row: assume it's the header, and make its contents clickable links
@@ -93,20 +93,16 @@ var Sortable = (function() {
 
         getFirstRow : function() {
             if (this.table.rows && this.table.rows.length > 0) {
-                return this.table.rows[0];
+                return $A(this.table.rows[0].cells);
             }
             return null;
-        },
-
-        getHeaderCells : function() {
-            return $A(this.getFirstRow() || []);
         },
 
         getDataRows : function() {
             var newRows = [];
             var rows = this.table.rows;
             for (var j = 1; j < rows.length; j++) {
-                newRows.push(rows[j]);
+                newRows.push($(rows[j]));
             }
             return newRows;
         },
@@ -187,20 +183,27 @@ var Sortable = (function() {
                 s = sorter.reverse(s);
             }
 
+            // we allow some rows to stick to the top and bottom, so that is our first sort criteria
+            // regardless of the sort function
+            function rowPos(r) {
+                if (r.hasClassName("sorttop"))      return 0;
+                if (r.hasClassName("sortbottom"))   return 2;
+                return 1;
+            }
+
             var rows = this.getDataRows();
             rows.sort(function(a,b) {
+                var x = rowPos(a)-rowPos(b);
+                if (x!=0)   return x;
+
                 return s(
                     this.extractData(a.cells[column]),
                     this.extractData(b.cells[column]));
             }.bind(this));
-            for (var i=0;i<rows.length;i++) {
-                if (! Element.hasClassName(rows[i], 'sortbottom'))
-                    this.table.tBodies[0].appendChild(rows[i]);
-            }
-            for (var i=0;i<rows.length;i++) {
-                if (Element.hasClassName(rows[i], 'sortbottom'))
-                    this.table.tBodies[0].appendChild(rows[i]);
-            }
+
+            rows.each(function (e) {
+                this.table.tBodies[0].appendChild(e);
+            }.bind(this));
 
             // update arrow rendering
             this.arrows.each(function(e,i){
