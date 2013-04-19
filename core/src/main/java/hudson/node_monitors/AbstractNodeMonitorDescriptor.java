@@ -110,17 +110,22 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * If no data is available, a background task to collect data will be started.
      */
     public T get(Computer c) {
-        if(record==null) {
-            // if this is the first time, schedule the check now
-            if(inProgress==null) {
+        if(record==null || !record.data.containsKey(c)) {
+            // if we don't have the data, schedule the check now
+            if(!isInProgress()) {
                 synchronized(this) {
-                    if(inProgress==null)
+                    if(!isInProgress())
                         new Record().start();
                 }
             }
             return null;
         }
         return record.data.get(c);
+    }
+
+    private boolean isInProgress() {
+        Record r = inProgress;  // capture for atomicity
+        return r!=null && r.isAlive();
     }
 
     /**
@@ -204,34 +209,40 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
         @Override
         public void run() {
-            long startTime = System.currentTimeMillis();
-            String oldName = getName();
+            try {
+                long startTime = System.currentTimeMillis();
+                String oldName = getName();
 
-            for( Computer c : Jenkins.getInstance().getComputers() ) {
-                try {
-                    setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+                for( Computer c : Jenkins.getInstance().getComputers() ) {
+                    try {
+                        setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
 
-                    if(c.getChannel()==null)
-                        data.put(c,null);
-                    else
-                        data.put(c,monitor(c));
-                } catch (RuntimeException e) {
-                    LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
+                        if(c.getChannel()==null)
+                            data.put(c,null);
+                        else
+                            data.put(c,monitor(c));
+                    } catch (RuntimeException e) {
+                        LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
+                        return; // we are told to die
+                    }
+                }
+                setName(oldName);
+
+                record = this;
+
+                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: "+getDisplayName(),t);
+            } finally {
+                synchronized(AbstractNodeMonitorDescriptor.this) {
+                    if (inProgress==this)
+                        inProgress = null;
                 }
             }
-            setName(oldName);
-
-            synchronized(AbstractNodeMonitorDescriptor.this) {
-                assert inProgress==this;
-                inProgress = null;
-                record = this;
-            }
-
-            LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
         }
     }
 
