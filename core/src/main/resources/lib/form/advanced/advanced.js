@@ -1,15 +1,11 @@
 Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
         makeButton(e,function(e) {
-            var link = e.target;
-            while(!Element.hasClassName(link,"advancedLink"))
-                link = link.parentNode;
+            var link = $(e.target).up(".advancedLink");
             link.style.display = "none"; // hide the button
 
-            var container = $(link).next().down(); // TABLE -> TBODY
+            var container = link.next().down(); // TABLE -> TBODY
 
-            var tr = link;
-            while (tr.tagName != "TR")
-                tr = tr.parentNode;
+            var tr = link.up("TR");
 
             // move the contents of the advanced portion into the main table
             var nameRef = tr.getAttribute("nameref");
