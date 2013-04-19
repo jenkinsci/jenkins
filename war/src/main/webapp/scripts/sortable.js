@@ -49,7 +49,6 @@ var Sortable = (function() {
     function Sortable(table) {
         this.table = table;
         this.arrows = [];
-        table.sortable = this;
 
         var firstRow = this.getFirstRow();
         if (!firstRow) return;

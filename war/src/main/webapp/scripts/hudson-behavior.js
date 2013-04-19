@@ -582,7 +582,7 @@ var jenkinsRules = {
     },
 
     "TABLE.sortable" : function(e) {// sortable table
-        ts_makeSortable(e);
+        e.sortable = new Sortable.Sortable(e);
     },
 
     "TABLE.progress-bar" : function(e) { // progressBar.jelly

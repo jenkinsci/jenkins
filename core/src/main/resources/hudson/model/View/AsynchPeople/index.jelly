@@ -87,7 +87,7 @@ THE SOFTWARE.
                   }
                   r.appendChild(d);
 
-                  ts_refresh(p);
+                  p.sortable.refresh();
               }
           }
       </script>
