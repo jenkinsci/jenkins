@@ -32,12 +32,17 @@ var repeatableSupport = {
     expand : function() {
         // importNode isn't supported in IE.
         // nc = document.importNode(node,true);
-        var nc = document.createElement("div");
+        var nc = $(document.createElement("div"));
         nc.className = "repeated-chunk";
+        nc.setOpacity(0);
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
+
+        new YAHOO.util.Anim(nc, {
+            opacity: { to:1 }
+        }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
         Behaviour.applySubtree(nc,true);
         this.update();
