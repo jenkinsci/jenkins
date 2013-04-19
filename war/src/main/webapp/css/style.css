@@ -491,6 +491,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
+    line-height: 16px;
     background-image: url("../images/16x16/error.png");
     background-position: left center;
     background-repeat: no-repeat;
@@ -506,6 +507,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
+    line-height: 16px;
     background-image: url( "../images/16x16/warning.png" );
     background-position: left center;
     background-repeat: no-repeat;
