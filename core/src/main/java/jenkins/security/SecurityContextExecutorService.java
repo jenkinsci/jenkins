@@ -37,8 +37,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Creates a delegating ExecutorService implementation whose submit and related
- * methods capture the current SecurityContext and then wrap the task in a block
- * that resets the context afterwards.
+ * methods capture the current SecurityContext and then wrap any runnable/callable objects
+ * in another runnable/callable that sets the context before execution and resets it afterwards.
  * 
  * 
  * @author Patrick McKeown
@@ -46,8 +46,6 @@ import org.acegisecurity.context.SecurityContextHolder;
  */
 public class SecurityContextExecutorService implements ExecutorService {
     private final ExecutorService service;
-    private final SecurityContext initialContext = SecurityContextHolder
-            .getContext();
 
     public SecurityContextExecutorService(ExecutorService service) {
         this.service = service;
@@ -58,14 +56,70 @@ public class SecurityContextExecutorService implements ExecutorService {
         return new SecurityContextExecutorService(service);
     }
 
-    public void execute(Runnable arg0) {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            service.execute(arg0);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
+    private static Runnable wrapRunnableWithSecurityContext(final Runnable r) {
+        final SecurityContext callingContext = SecurityContextHolder
+                .getContext();
+        return new Runnable() {
+            public void run() {
+                SecurityContext originalExecutorContext = SecurityContextHolder
+                        .getContext();
+                SecurityContextHolder.setContext(callingContext);
+                try {
+                    r.run();
+                } finally {
+                    SecurityContextHolder.setContext(originalExecutorContext);
+                }
+            }
+        };
+    }
+
+    private static <T> Callable<T> wrapCallableWithSecurityContext(
+            final Callable<T> c) {
+        final SecurityContext callingContext = SecurityContextHolder
+                .getContext();
+        return new Callable<T>() {
+            public T call() throws Exception {
+                SecurityContext originalExecutorContext = SecurityContextHolder
+                        .getContext();
+                SecurityContextHolder.setContext(callingContext);
+                T result = null;
+                try {
+                    result = c.call();
+                } finally {
+                    SecurityContextHolder.setContext(originalExecutorContext);
+                }
+                return result;
+            }
+        };
+    }
+
+    private static <T> Collection<? extends Callable<T>> wrapCallableCollectionWithSecurityContext(
+            final Collection<? extends Callable<T>> tasks) {
+        final SecurityContext callingContext = SecurityContextHolder
+                .getContext();
+        for (final Callable<T> task : tasks) {
+            //TODO: Fix this
+            //tasks.remove(task);
+            //tasks.add(new Callable<T>() {
+            //    public T call() throws Exception {
+            //        SecurityContext originalExecutorContext = SecurityContextHolder
+            //                .getContext();
+            //        SecurityContextHolder.setContext(callingContext);
+            //        T result = null;
+            //        try {
+            //            result = task.call();
+            //        } finally {
+            //            SecurityContextHolder.setContext(originalExecutorContext);
+            //        }
+            //        return result;
+            //    }
+            //});
         }
+        return tasks;
+    }
+
+    public void execute(Runnable arg0) {
+        service.execute(wrapRunnableWithSecurityContext(arg0));
     }
 
     public boolean awaitTermination(long timeout, TimeUnit unit)
@@ -75,48 +129,24 @@ public class SecurityContextExecutorService implements ExecutorService {
 
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
             throws InterruptedException {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.invokeAll(tasks);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.invokeAll(wrapCallableCollectionWithSecurityContext(tasks));
     }
 
     public <T> List<Future<T>> invokeAll(
             Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.invokeAll(tasks, timeout, unit);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.invokeAll(wrapCallableCollectionWithSecurityContext(tasks), timeout, unit);
     }
 
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
             throws InterruptedException, ExecutionException {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.invokeAny(tasks);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.invokeAny(wrapCallableCollectionWithSecurityContext(tasks));
     }
 
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
             long timeout, TimeUnit unit) throws InterruptedException,
             ExecutionException, TimeoutException {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.invokeAny(tasks, timeout, unit);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.invokeAny(wrapCallableCollectionWithSecurityContext(tasks), timeout, unit);
     }
 
     public boolean isShutdown() {
@@ -136,33 +166,14 @@ public class SecurityContextExecutorService implements ExecutorService {
     }
 
     public <T> Future<T> submit(Callable<T> task) {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.submit(task);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.submit(wrapCallableWithSecurityContext(task));
     }
 
     public Future<?> submit(Runnable task) {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.submit(task);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.submit(wrapRunnableWithSecurityContext(task));
     }
 
     public <T> Future<T> submit(Runnable task, T result) {
-        SecurityContext executorContext = SecurityContextHolder.getContext();
-        SecurityContextHolder.setContext(initialContext);
-        try {
-            return service.submit(task, result);
-        } finally {
-            SecurityContextHolder.setContext(executorContext);
-        }
+        return service.submit(wrapRunnableWithSecurityContext(task), result);
     }
-
 }
