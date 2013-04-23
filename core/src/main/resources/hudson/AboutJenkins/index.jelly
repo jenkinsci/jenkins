@@ -35,9 +35,17 @@ THE SOFTWARE.
       <p>
         ${%dependencies}
       </p>
-      <t:thirdPartyLicenses>
-        <st:include page="/META-INF/licenses.xml" optional="true" />
-      </t:thirdPartyLicenses>
+      <j:set var="uri" value="${it.licensesURL}"/>
+      <j:choose>
+          <j:when test="${uri != null}">
+              <t:thirdPartyLicenses>
+                  <j:include uri="${uri}"/>
+              </t:thirdPartyLicenses>
+          </j:when>
+          <j:otherwise>
+              <p>${%No information recorded}</p>
+          </j:otherwise>
+      </j:choose>
       <p>${%plugin.dependencies}</p>
       <ul>
           <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- XXX sort -->
