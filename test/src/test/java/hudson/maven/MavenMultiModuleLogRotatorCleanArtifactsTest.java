@@ -16,8 +16,13 @@ import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.For;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Testing https://issues.jenkins-ci.org/browse/JENKINS-17508 <br />
@@ -28,42 +33,52 @@ import org.jvnet.hudson.test.HudsonTestCase;
  * 
  * 
  */
-public class MavenMultiModuleLogRotatorCleanArtifacts extends HudsonTestCase {
+public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 
+	
+	@Rule
+	public JenkinsRule j = new JenkinsRule();
 	private MavenModuleSet m;
 	private FilePath jobs;
 
 	private static class TestReporter extends MavenReporter {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public boolean end(MavenBuild build, Launcher launcher,
 				BuildListener listener) throws InterruptedException,
 				IOException {
-			assertNotNull(build.getProject().getWorkspace());
-			assertNotNull(build.getWorkspace());
+			Assert.assertNotNull(build.getProject().getWorkspace());
+			Assert.assertNotNull(build.getWorkspace());
 			return true;
 		}
 	}
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-		m = createMavenProject();
+	@Before
+	public void setUp() throws Exception {
+		j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+		m = j.createMavenProject();
 		m.setBuildDiscarder(new LogRotator("-1", "2", "-1", "1"));
 		m.getReporters().add(new TestReporter());
 		m.getReporters().add(new MavenFingerprinter());
 		m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource(
 				"maven-multimod.zip"), getClass().getResource(
 				"maven-multimod-changes.zip")));
-		buildAndAssertSuccess(m);
+		j.buildAndAssertSuccess(m);
 		// Now run a second build with the changes.
 		m.setIncrementalBuild(false);
-		buildAndAssertSuccess(m);
+		j.buildAndAssertSuccess(m);
 		FilePath workspace = m.getWorkspace();
 		FilePath parent = workspace.getParent().getParent();
 		jobs = new FilePath(parent, "jobs");
 	}
-
+	
+	@Test
+	@Bug(17508)
+	@For(MavenModuleSetBuild.class)
 	@SuppressWarnings("unchecked")
 	public void testArtifactsAreDeletedInBuildOneWhenBuildDiscarderRun()
 			throws Exception {
@@ -82,10 +97,10 @@ public class MavenMultiModuleLogRotatorCleanArtifacts extends HudsonTestCase {
 	 * Performs a third build and expecting build one to be deleted
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
+	@Test
 	public void testArtifactsOldBuildsDeletedWhenBuildDiscarderRun()
 			throws Exception {
-		buildAndAssertSuccess(m);
+		j.buildAndAssertSuccess(m);
 		File directory = new File(new FilePath(jobs, "test0/builds/1").toURI());
 		Assert.assertFalse("oops the build should have been deleted", directory.exists());
 	}
