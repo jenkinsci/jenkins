@@ -58,12 +58,101 @@ Upcoming changes</a>
   <li class='major bug'>
     NPE configuring Copy Artifact with Maven jobs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17402">issue 17402</a>)
+  <li class=bug>
+    <code>StringIndexOutOfBoundsException</code> in <code>PackageResult.findCorrespondingResult</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17721">issue 17721</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.509>What's new in 1.509</a> <!--=DATE=--></h3>
+<h3><a name=v1.513>What's new in 1.513</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Slave status monitor page shows when the data is last obtained
+  <li class=rfe>
+    Delete button to highlight what it is going to delete.
+  <li class=bug>
+    <code>StringIndexOutOfBoundsException</code> in <code>PackageResult.findCorrespondingResult</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17721">issue 17721</a>)
+  <li class=rfe>
+    Breadcrumb is reworked to show descendants to provide additional navigational shortcuts.
+    (<a href="https://wiki.jenkins-ci.org/display/JENKINS/FOSDEM+UI+Enhancement+discussion+notes+2013">discussion</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.512>What's new in 1.512</a> (2013/04/21)</h3>
+<ul class=image>
+  <li class=rfe>
+    Views can now include jobs located within folders.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/757">pull 757</a>)
+  <li class=rfe>
+    Added confirmation dialog before reloading configuration from disk.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15340">issue 15340</a>)
+  <li class=rfe>
+    Switched confirmation before deleting jobs or wiping out workspace to a dialog.
+  <li class=rfe>
+    Different text than “Build Now”  for parameterized jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10738">issue 10738</a>)
+  <li class=rfe>
+    Check the view name with ajax.
+  <li class=bug>
+    “Build Now” context menu item broken for parameterized jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17110">issue 17110</a>)
+  <li class=bug>
+    Incorrect redirection after delete of job in folder in view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17575">issue 17575</a>)
+  <li class=bug>
+    ”My Views" links leads to 404 Not Found.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17317">issue 17317</a>)
+  <li class=bug>
+    Quoting Issue with JDK Installer with Windows Installer. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5408">issue 5408</a>)
+  <li class=bug>
+    Restored compatibility in <code>ArtifactArchiver</code> signature; broken in 1.509 and could affect plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17637">issue 17637</a>)
+  <li class=bug>
+    Fixed a bug in the logic that hides context menu anchor 'v'
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13995">issue 13995</a>)
+</ul>
+<h3><a name=v1.511>What's new in 1.511</a> (2013/04/14)</h3>
+<ul class=image>
+  <li class=bug>
+    JUnit result archiver should only fail builds if there are really no results - i.e. also no skipped tests.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7970">issue 7970</a>)
+  <li class='major bug'>
+      <code>NullPointerException</code> related to lazy loading when loading some builds using fingerprinting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16845">issue 16845</a>)
+  <li class=rfe>
+    Better display of parameters in queue items.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17454">issue 17454</a>)
+  <li class='bug'>
+    sort order of plugin list is not working by default.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17039">issue 17039</a>)
+</ul>
+<h3><a name=v1.510>What's new in 1.510</a> (2013/04/06)</h3>
+<ul class=image>
+  <li class=bug>
+    <tt>UnsatisfiedLinkError</tt> on <tt>CreateSymbolicLinkw</tt> on Windows XP.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17343">issue 17343</a>)
+  <li class=bug>
+    Flyweight tasks should execute on the master if there's no static
+    executors available.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7291">issue 7291</a>)
+  <li class='major bug'>
+    Download tool installations directly from the slave when possible, since this is much faster than going through the master.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17330">issue 17330</a>)
+  <li class=bug>
+    Improved UI for implicitly locked builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10197">issue 10197</a>)
+  <li class=rfe>
+    Promote the use of 'H' in cron.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17311">issue 17311</a>)
+  <li class='major rfe'>
+    Context menu no longer automatically pops up
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13995">issue 13995</a>)
+</ul>
+<h3><a name=v1.509>What's new in 1.509</a> (2013/04/02)</h3>
+>>>>>>> c10c814... [JENKINS-17721] Noting.
 <ul class=image>
   <li class='major bug'>
     Heavy thread congestion saving fingerprints.
