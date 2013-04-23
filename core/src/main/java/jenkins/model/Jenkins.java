@@ -820,11 +820,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             } else
                 tcpSlaveAgentListener = null;
 
-            try {
-                udpBroadcastThread = new UDPBroadcastThread(this);
-                udpBroadcastThread.start();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
+            if (UDPBroadcastThread.PORT != -1) {
+                try {
+                    udpBroadcastThread = new UDPBroadcastThread(this);
+                    udpBroadcastThread.start();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
+                }
             }
             dnsMultiCast = new DNSMultiCast(this);
 
