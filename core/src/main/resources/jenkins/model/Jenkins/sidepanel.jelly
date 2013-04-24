@@ -22,5 +22,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<?jelly escape-by-default='true'?>
+Li<?jelly escape-by-default='true'?>
 <st:include it="${it.primaryView}" page="sidepanel.jelly" xmlns:st="jelly:stapler" />
