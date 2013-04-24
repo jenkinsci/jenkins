@@ -101,6 +101,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
@@ -729,10 +730,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if(!fileName.endsWith(".jpi") && !fileName.endsWith(".hpi")){ 
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             }
-            final String baseName = FilenameUtils.getBaseName(fileName);
-            new File(rootDir, baseName + ".hpi").delete(); // don't keep confusing legacy *.hpi
-            fileItem.write(new File(rootDir, baseName + ".jpi")); // rename all new plugins to *.jpi
+
+            // first copy into a temporary file name
+            File t = File.createTempFile("uploaded", "jp_",rootDir);
+            fileItem.write(t); // rename all new plugins to *.jpi
             fileItem.delete();
+
+            final String baseName = identifyPluginShortName(t);
+
+            // and move the temp file into a proper name
+            new File(rootDir, baseName + ".hpi").delete(); // don't keep confusing legacy *.hpi
+            new File(rootDir, baseName + ".jpi").delete(); // rename can fail if the file already exists
+            t.renameTo(new File(rootDir, baseName + ".jpi"));
 
             PluginWrapper existing = getPlugin(baseName);
             if (existing!=null && existing.isBundled){
@@ -747,6 +756,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (Exception e) {// grrr. fileItem.write throws this
             throw new ServletException(e);
         }
+    }
+
+    protected String identifyPluginShortName(File t) {
+        try {
+            JarFile j = new JarFile(t);
+            try {
+                String name = j.getManifest().getMainAttributes().getValue("Short-Name");
+                if (name!=null) return name;
+            } finally {
+                j.close();
+            }
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to identify the short name from "+t,e);
+        }
+        return FilenameUtils.getBaseName(t.getName());    // fall back to the base name of what's uploaded
     }
 
     public Descriptor<ProxyConfiguration> getProxyDescriptor() {
