@@ -25,11 +25,11 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
- * Testing https://issues.jenkins-ci.org/browse/JENKINS-17508 <br />
- * test that looks in jobs archive with 2 builds when LogRotator set as build
+ * 
+ * Test that looks in jobs archive with 2 builds. When LogRotator set as build
  * discarder with settings to keep only 1 build with artifacts, test searches
  * for jars in archive for build one and build two, expecting no jars in build 1
- * and expecting jars in build 2
+ * and expecting jars in build 2.
  * 
  * 
  */
@@ -51,7 +51,7 @@ public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 		public boolean end(MavenBuild build, Launcher launcher,
 				BuildListener listener) throws InterruptedException,
 				IOException {
-			Assert.assertNotNull(build.getProject().getWorkspace());
+			Assert.assertNotNull(build.getProject().getSomeWorkspace());
 			Assert.assertNotNull(build.getWorkspace());
 			return true;
 		}
@@ -71,14 +71,14 @@ public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 		// Now run a second build with the changes.
 		m.setIncrementalBuild(false);
 		j.buildAndAssertSuccess(m);
-		FilePath workspace = m.getWorkspace();
+		FilePath workspace = m.getSomeWorkspace();
 		FilePath parent = workspace.getParent().getParent();
 		jobs = new FilePath(parent, "jobs");
 	}
 	
 	@Test
 	@Bug(17508)
-	@For(MavenModuleSetBuild.class)
+	@For({MavenModuleSetBuild.class, LogRotator.class})
 	@SuppressWarnings("unchecked")
 	public void testArtifactsAreDeletedInBuildOneWhenBuildDiscarderRun()
 			throws Exception {
@@ -97,6 +97,7 @@ public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 	 * Performs a third build and expecting build one to be deleted
 	 * @throws Exception
 	 */
+	@For({MavenModuleSetBuild.class, LogRotator.class})
 	@Test
 	public void testArtifactsOldBuildsDeletedWhenBuildDiscarderRun()
 			throws Exception {
