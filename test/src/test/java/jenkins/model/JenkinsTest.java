@@ -23,6 +23,8 @@
  */
 package jenkins.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
@@ -32,6 +34,9 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.HttpResponses;
 import junit.framework.Assert;
 import hudson.model.FreeStyleProject;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.LegacySecurityRealm;
+import hudson.security.Permission;
 import hudson.util.FormValidation;
 
 import org.junit.Test;
@@ -41,6 +46,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * @author kingfai
@@ -235,6 +241,36 @@ public class JenkinsTest extends HudsonTestCase {
         wc.assertFails("/foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         assertEquals(3,jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
+    }
+
+    public void testDoScript() throws Exception {
+        jenkins.setSecurityRealm(new LegacySecurityRealm());
+        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
+            @Override public boolean hasPermission(String sid, Permission p) {
+                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
+            }
+        };
+        gmas.add(Jenkins.ADMINISTER, "alice");
+        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
+        gmas.add(Jenkins.READ, "bob");
+        gmas.add(Jenkins.ADMINISTER, "charlie");
+        jenkins.setAuthorizationStrategy(gmas);
+        WebClient wc = createWebClient();
+        wc.login("alice");
+        wc.goTo("script");
+        wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
+        assertNull(System.getProperty("hack"));
+        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
+        wc.getPage(wc.addCrumb(req));
+        assertEquals("me", System.getProperty("hack"));
+        wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
+        req = new WebRequestSettings(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
+        wc.getPage(wc.addCrumb(req));
+        assertEquals("you", System.getProperty("huck"));
+        wc.login("bob");
+        wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
+        wc.login("charlie");
+        wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @TestExtension("testUnprotectedRootAction")

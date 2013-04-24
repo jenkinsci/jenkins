@@ -261,6 +261,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.BindException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
@@ -3357,25 +3358,31 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_script.jelly"));
+        _doScript(req, rsp, req.getView(this, "_script.jelly"), MasterComputer.localChannel, getACL());
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
+        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), MasterComputer.localChannel, getACL());
     }
 
-    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
+    /**
+     * @since 1.509.1
+     */
+    public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        checkPermission(RUN_SCRIPTS);
+        acl.checkPermission(RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if (text != null) {
+            if (!"POST".equals(req.getMethod())) {
+                throw HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "requires POST");
+            }
             try {
                 req.setAttribute("output",
-                        RemotingDiagnostics.executeGroovy(text, MasterComputer.localChannel));
+                        RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
                 throw new ServletException(e);
             }
