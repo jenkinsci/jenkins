@@ -35,6 +35,12 @@ import hudson.model.View;
  *   &lt;l:pane width="2" title="..."> ...body... &lt;/l:pane> structure.
  *   In this view, "it" points to the {@link Widget} and "view" points to {@link View}
  *   that's rendering the widget.
+ * </ul>
+ *
+ * TODO:
+ *  - make Widget describable & provide the UI to let admin configure widgets?
+ *    - backward compatibility implications?
+ *
  *
  * @author Kohsuke Kawaguchi
  * @since 1.146
