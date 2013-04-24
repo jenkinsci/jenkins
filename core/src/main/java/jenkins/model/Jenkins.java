@@ -3398,7 +3398,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
+        checkPermission(RUN_SCRIPTS);
 
         try {
             MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());

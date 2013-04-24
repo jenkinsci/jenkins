@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -271,6 +272,45 @@ public class JenkinsTest extends HudsonTestCase {
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
         wc.login("charlie");
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    public void testDoEval() throws Exception {
+        jenkins.setSecurityRealm(new LegacySecurityRealm());
+        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
+            @Override public boolean hasPermission(String sid, Permission p) {
+                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
+            }
+        };
+        gmas.add(Jenkins.ADMINISTER, "alice");
+        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
+        gmas.add(Jenkins.READ, "bob");
+        gmas.add(Jenkins.ADMINISTER, "charlie");
+        jenkins.setAuthorizationStrategy(gmas);
+        // Otherwise get "RuntimeException: Trying to set the request parameters, but the request body has already been specified;the two are mutually exclusive!" from WebRequestSettings.setRequestParameters when POSTing content:
+        jenkins.setCrumbIssuer(null);
+        WebClient wc = createWebClient();
+        wc.login("alice");
+        wc.assertFails("eval", HttpURLConnection.HTTP_INTERNAL_ERROR);
+        assertEquals("3", eval(wc));
+        wc.login("bob");
+        try {
+            eval(wc);
+            fail("bob has only READ");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+        }
+        wc.login("charlie");
+        try {
+            eval(wc);
+            fail("charlie has ADMINISTER but not RUN_SCRIPTS");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+        }
+    }
+    private String eval(WebClient wc) throws Exception {
+        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
+        return wc.getPage(/*wc.addCrumb(*/req/*)*/).getWebResponse().getContentAsString();
     }
 
     @TestExtension("testUnprotectedRootAction")
