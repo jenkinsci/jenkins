@@ -41,10 +41,9 @@ THE SOFTWARE.
           <tr>
             <td class="pane">
             	<a href="${app.rootUrl}${b.url}testReport${p.url}" class="model-link">${b.fullDisplayName}</a>
-	          	<st:nbsp/>
-		        <j:forEach var="badge" items="${p.testActions}">
-		          <st:include it="${badge}" page="badge.jelly" optional="true"/>
-		        </j:forEach>
+              <j:forEach var="badge" items="${p.testActions}">
+                <st:include it="${badge}" page="badge.jelly" optional="true"/>
+              </j:forEach>
             </td>
             <td class="pane" style="text-align:right"><j:out value="${p.description}"/></td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>

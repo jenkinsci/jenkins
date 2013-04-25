@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
@@ -55,6 +56,7 @@ import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -123,7 +125,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
 
     /**
      * Container of this view. Set right after the construction
@@ -473,6 +475,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public String getViewUrl() {
         return (owner!=null ? owner.getUrl() : "") + "view/" + Util.rawEncode(getViewName()) + '/';
+    }
+
+    @Override public String toString() {
+        return super.toString() + "[" + getViewUrl() + "]";
     }
 
     public String getSearchUrl() {
@@ -1064,6 +1070,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
     }
 
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu m = new ContextMenu();
+        for (TopLevelItem i : getItems())
+            m.add(i.getShortUrl(),i.getDisplayName());
+        return m;
+    }
 
     /**
      * A list of available view types.

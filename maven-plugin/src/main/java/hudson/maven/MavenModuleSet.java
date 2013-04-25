@@ -33,6 +33,7 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Plugin;
 import hudson.Util;
+import hudson.matrix.MatrixConfiguration;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
@@ -89,6 +90,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
@@ -432,7 +434,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     public MavenModule getItem(String name) {
-        return modules.get(ModuleName.fromString(name));
+        try {
+            return modules.get(ModuleName.fromString(name));
+        } catch (IllegalArgumentException x) {
+            return null; // not a Maven module name, ignore
+        }
     }
 
     public MavenModule getModule(String name) {
@@ -1168,6 +1174,15 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
                 return ws.validateRelativePath(value,true,true);
         }
         return FormValidation.ok();
+    }
+
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (MavenModule mm : getModules()) {
+            menu.add(mm);
+        }
+        return menu;
     }
 
     public DescriptorImpl getDescriptor() {

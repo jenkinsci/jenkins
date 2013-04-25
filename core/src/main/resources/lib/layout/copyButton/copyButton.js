@@ -1,4 +1,4 @@
-// @include "org.kohsuke.stapler.zeroclipboard"
+// @include org.kohsuke.stapler.zeroclipboard
 
 Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         var btn = e.firstChild;

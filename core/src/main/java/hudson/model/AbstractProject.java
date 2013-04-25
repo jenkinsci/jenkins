@@ -39,11 +39,13 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.matrix.MatrixConfiguration;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.QueueTaskFuture;
@@ -83,6 +85,7 @@ import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
@@ -95,6 +98,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -117,6 +121,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -138,7 +143,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren {
 
     /**
      * {@link SCM} associated with the project.
@@ -285,7 +290,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         RunMap<R> currentBuilds = this.builds;
 
-        if (currentBuilds==null) {
+        if (currentBuilds==null && parent!=null) {
             // are we overwriting what currently exist?
             // this is primarily when Jenkins is getting reloaded
             Item current = parent.getItem(name);
@@ -448,7 +453,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT,this,Messages.AbstractProject_BuildNow());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, isParameterized() ? Messages.AbstractProject_build_with_parameters() : Messages.AbstractProject_BuildNow());
     }
 
     /**
@@ -759,10 +764,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             upstream = new HashSet<AbstractProject>(Items.fromNameList(getParent(),req.getParameter("upstreamProjects"),AbstractProject.class));
         }
 
-        // dependency setting might have been changed by the user, so rebuild.
-        Jenkins.getInstance().rebuildDependencyGraph();
         convertUpstreamBuildTrigger(upstream);
-
 
         // notify the queue as the project might be now tied to different node
         Jenkins.getInstance().getQueue().scheduleMaintenance();
@@ -1880,11 +1882,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         delete();
         if (req == null || rsp == null)
             return;
-        View view = req.findAncestorObject(View.class);
-        if (view == null)
-            rsp.sendRedirect2(req.getContextPath() + '/' + getParent().getUrl());
-        else 
-            rsp.sendRedirect2(req.getContextPath() + '/' + view.getUrl());
+        List<Ancestor> ancestors = req.getAncestors();
+        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
+        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        while (it.hasPrevious()) {
+            Object a = it.previous().getObject();
+            if (a instanceof View) {
+                url = ((View) a).getUrl();
+                break;
+            } else if (a instanceof ViewGroup) {
+                url = ((ViewGroup) a).getUrl();
+                break;
+            }
+        }
+        rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
     
     @Override
@@ -1969,6 +1980,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
         return r;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        // not sure what would be really useful here. This needs more thoughts.
+        // for the time being, I'm starting with permalinks
+        ContextMenu menu = new ContextMenu();
+        for (Permalink p : getPermalinks()) {
+            if (p.resolve(this)!=null)
+                menu.add(p.getId(),p.getDisplayName());
+        }
+        return menu;
     }
 
     /**

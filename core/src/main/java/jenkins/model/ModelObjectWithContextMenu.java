@@ -4,7 +4,12 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
+import hudson.model.BallColor;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.ModelObject;
+import hudson.model.Node;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -39,6 +44,7 @@ import java.util.List;
  * shows the drop-down menu for providing quicker access to the actions to those objects.
  *     
  * @author Kohsuke Kawaguchi
+ * @see ModelObjectWithChildren
  */
 public interface ModelObjectWithContextMenu extends ModelObject {
     /**
@@ -104,6 +110,64 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 items.add(item);
             }
             return this;
+        }
+
+        /** @since 1.512 */
+        public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url,icon,text);
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                items.add(item);
+            }
+            return this;
+        }
+
+        /**
+         * Adds a manually constructed {@link MenuItem}
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(MenuItem item) {
+            items.add(item);
+            return this;
+        }
+
+        /**
+         * Adds a node
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Node n) {
+            Computer c = n.toComputer();
+            return add(new MenuItem()
+                .withDisplayName(n.getDisplayName())
+                .withStockIcon((c==null) ? "computer.png" : c.getIcon())
+                .withContextRelativeUrl(n.getSearchUrl()));
+        }
+
+        /**
+         * Adds a computer
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Computer c) {
+            return add(new MenuItem()
+                .withDisplayName(c.getDisplayName())
+                .withStockIcon(c.getIcon())
+                .withContextRelativeUrl(c.getUrl()));
+        }
+
+        /**
+         * Adds a child item when rendering context menu of its parent.
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Job job) {
+            return add(new MenuItem()
+                .withDisplayName(job.getDisplayName())
+                .withIcon(job.getIconColor())
+                .withUrl(job.getSearchUrl()));
         }
 
         /**
@@ -185,19 +249,69 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported public boolean post;
 
         /**
+         * True to require confirmation after a click.
+         * @since 1.512
+         */
+        @Exported public boolean requiresConfirmation;
+
+        /**
          * If this is a submenu, definition of subitems.
          */
         @Exported(inline=true)
         public ContextMenu subMenu;
 
         public MenuItem(String url, String icon, String displayName) {
+            withUrl(url).withIcon(icon).withDisplayName(displayName);
+        }
+
+        public MenuItem() {
+        }
+
+        public MenuItem withUrl(String url) {
             try {
                 this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
             } catch (URISyntaxException x) {
                 throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
             }
+            return this;
+        }
+
+        /**
+         * Sets the URL by passing in a URL relative to the context path of Jenkins
+         */
+        public MenuItem withContextRelativeUrl(String url) {
+            if (!url.startsWith("/"))   url = '/'+url;
+            this.url = Stapler.getCurrentRequest().getContextPath()+url;
+            return this;
+        }
+
+        public MenuItem withIcon(String icon) {
             this.icon = icon;
+            return this;
+        }
+
+        public MenuItem withIcon(BallColor color) {
+            return withStockIcon(color.getImage());
+        }
+
+        /**
+         * Sets the icon from core's stock icon
+         *
+         * @param icon
+         *      String like "gear.png" that resolves to 24x24 stock icon in the core
+         */
+        public MenuItem withStockIcon(String icon) {
+            this.icon = Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH + "/images/24x24/"+icon;
+            return this;
+        }
+
+        public MenuItem withDisplayName(String displayName) {
             this.displayName = Util.escape(displayName);
+            return this;
+        }
+
+        public MenuItem withDisplayName(ModelObject o) {
+            return withDisplayName(o.getDisplayName());
         }
     }
 }

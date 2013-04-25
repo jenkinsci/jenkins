@@ -63,6 +63,7 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
@@ -853,6 +854,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return rsp;
     }
 
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (MatrixConfiguration c : getActiveConfigurations()) {
+            menu.add(c);
+        }
+        return menu;
+    }
 
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;

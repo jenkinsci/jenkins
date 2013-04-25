@@ -20,12 +20,15 @@ var breadcrumbs = (function() {
      */
     var mouse;
 
+    var logger = function() {};
+    // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
+
     function makeMenuHtml(icon,displayName) {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
 
     Event.observe(window,"load",function(){
-      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
+      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000, zIndex:2001});
     });
 
 
@@ -53,21 +56,33 @@ var breadcrumbs = (function() {
         }
     }
 
+    function requireConfirmation(action, event, cfg) {
+        if (confirm(cfg.displayName + ': are you sure?')) { // XXX I18N
+            var form = document.createElement('form');
+            form.setAttribute('method', cfg.post ? 'POST' : 'GET');
+            form.setAttribute('action', cfg.url);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
     /**
      * Wraps a delayed action and its cancellation.
      */
     function Delayed(action, timeout) {
         this.schedule = function () {
-            if (this.token != null)
-                window.clearTimeout(this.token);
+            this.cancel();
             this.token = window.setTimeout(function () {
                 this.token = null;
                 action();
             }.bind(this), timeout);
+            logger("Scheduled %s",this.token)
         };
         this.cancel = function () {
-            if (this.token != null)
+            if (this.token != null) {
+                logger("Cancelling %s",this.token);
                 window.clearTimeout(this.token);
+            }
             this.token = null;
         };
     }
@@ -76,7 +91,7 @@ var breadcrumbs = (function() {
      * '>' control used to launch context menu.
      */
     var menuSelector = (function() {
-        var menuSelector = document.createElement("div");
+        var menuSelector = $(document.createElement("div"));
         document.body.appendChild(menuSelector);
         menuSelector.id = 'menuSelector';
 
@@ -85,9 +100,12 @@ var breadcrumbs = (function() {
          *      DOM node to attach this selector to.
          */
         menuSelector.show = function(target) {
-            var xy = YAHOO.util.Dom.getXY(target);
+            var xy = Dom.getXY(target);
+            if ($(target).hasClassName("inside"))
+                xy[0] -= this.offsetWidth;  // show the menu selector inside the text
             xy[0] += target.offsetWidth;
-            YAHOO.util.Dom.setXY(this, xy);
+            xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
+            Dom.setXY(this, xy);
             this.target = target;
 
             this.style.visibility = "visible";
@@ -95,42 +113,42 @@ var breadcrumbs = (function() {
         menuSelector.hide = function() {
             this.style.visibility = "hidden";
         };
-        menuSelector.onclick = function () {
-            this.hide();
-            handleHover(this.target);
-        };
+        menuSelector.observe("click",function () {
+            invokeContextMenu(this.target);
+        });
 
         // if the mouse leaves the selector, hide it
         canceller = new Delayed(function () {
-            // if the mouse is in the hot spot for the selector, keep showing it
-            var r = this.target ? Dom.getRegion(this.target) : false;
-            if (r && r.contains(mouse))     return;
-            r = Dom.getRegion(menuSelector);
-            if (r && r.contains(mouse))     return;
-
+            logger("hiding 'v'");
             menuSelector.hide();
-        }, 750);
+        }.bind(menuSelector), 750);
 
-        menuSelector.onmouseover = function () {
+        menuSelector.observe("mouseover",function () {
+            logger("mouse entered 'v'");
             canceller.cancel();
-        };
-        menuSelector.onmouseout = function () {
+        });
+        menuSelector.observe("mouseout",function () {
+            logger("mouse left 'v'");
             canceller.schedule();
-        };
+        });
         menuSelector.canceller = canceller;
 
         return menuSelector;
     })();
 
     /**
-     * Called when the mouse cursor comes into the context menu hot spot.
+     * Called when the user clicks a mouse to show a context menu.
      *
      * If the mouse stays there for a while, a context menu gets displayed.
      *
      * @param {HTMLElement} e
      *      anchor tag
+     * @param {String} contextMenuUrl
+     *      The URL that renders JSON for context menu. Optional.
      */
-    function handleHover(e) {
+    function invokeContextMenu(e,contextMenuUrl) {
+        contextMenuUrl = contextMenuUrl || "contextMenu";
+
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
@@ -140,8 +158,6 @@ var breadcrumbs = (function() {
             menu.addItems(items);
             menu.render("breadcrumb-menu-target");
             menu.show();
-            if (items[0].tooltip)
-                $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
         }
 
         if (xhr)
@@ -151,25 +167,22 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {// fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
                         e.text = makeMenuHtml(e.icon, e.displayName);
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
-                        if (e.post) {
+                        if (e.requiresConfirmation) {
+                            e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
+                            delete e.url;
+                        } else if (e.post) {
                             e.onclick = {fn: postRequest, obj: e.url};
                             delete e.url;
                         }
                     }
                     a.each(fillMenuItem);
-
-                    var tooltip = e.getAttribute('tooltip');
-                    if (tooltip) {
-                        // join the tooltip into the context menu. color #000 to cancel out the text effect on disabled menu items
-                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true, tooltip:true})
-                    }
 
                     e.items = function() { return a };
                     showMenu(a);
@@ -180,23 +193,34 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-        // when the mouse hovers over LI, activate the menu
-        e = $(e);
-        if (e.hasClassName("no-context-menu"))  return;
-        e.observe("mouseover", function () { handleHover(e.firstChild) });
-    });
+//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
+//        // when the mouse hovers over LI, activate the menu
+//        if (e.hasClassName("no-context-menu"))  return;
+//        e.observe("mouseover", function () { handleHover(e.firstChild) });
+//    });
 
     Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
         // $(a).observe("mouseover", function () { handleHover(a,500); });
 
-        a.onmouseover = function () {
+        a.observe("mouseover",function () {
+            logger("mouse entered model-link %s",this.href);
+            menuSelector.canceller.cancel();
             menuSelector.show(this);
-        };
-        a.onmouseout = function () {
+        });
+        a.observe("mouseout",function () {
+            logger("mouse left model-link %s",this.href);
             menuSelector.canceller.schedule();
-        };
+        });
+    });
+
+    Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
+        a.observe("mouseover",function() {
+            menuSelector.hide();
+        });
+        a.observe("click",function() {
+            invokeContextMenu(this,"childrenContextMenu");
+        })
     });
 
     /**

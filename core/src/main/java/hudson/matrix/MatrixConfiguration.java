@@ -232,7 +232,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         MatrixBuild lb = getParent().getLastBuild();
         for (Action a : actions) {
             if (a instanceof ParentBuildAction) {
-                lb = ((ParentBuildAction) a).parent;
+                MatrixBuild _lb = ((ParentBuildAction) a).parent;
+                if (_lb != null) {
+                    lb = _lb;
+                }
             }
         }
 

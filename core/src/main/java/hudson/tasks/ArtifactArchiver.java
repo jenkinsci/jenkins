@@ -71,6 +71,10 @@ public class ArtifactArchiver extends Recorder {
     @Nonnull
     private Boolean allowEmptyArchive;
 
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
+        this(artifacts, excludes, latestOnly, false);
+    }
+
     @DataBoundConstructor
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
         this.artifacts = artifacts.trim();

@@ -307,7 +307,9 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
+public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
+        ViewGroup, AccessControlled, DescriptorByNameOwner,
+        ModelObjectWithContextMenu, ModelObjectWithChildren {
     private transient final Queue queue;
 
     /**
@@ -818,11 +820,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             } else
                 tcpSlaveAgentListener = null;
 
-            try {
-                udpBroadcastThread = new UDPBroadcastThread(this);
-                udpBroadcastThread.start();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
+            if (UDPBroadcastThread.PORT != -1) {
+                try {
+                    udpBroadcastThread = new UDPBroadcastThread(this);
+                    udpBroadcastThread.start();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
+                }
             }
             dnsMultiCast = new DNSMultiCast(this);
 
@@ -1385,24 +1389,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * and filter them by the given type.
      */
     public <T extends Item> List<T> getAllItems(Class<T> type) {
-        List<T> r = new ArrayList<T>();
-
-        Stack<ItemGroup> q = new Stack<ItemGroup>();
-        q.push(this);
-
-        while(!q.isEmpty()) {
-            ItemGroup<?> parent = q.pop();
-            for (Item i : parent.getItems()) {
-                if(type.isInstance(i)) {
-                    if (i.hasPermission(Item.READ))
-                        r.add(type.cast(i));
-                }
-                if(i instanceof ItemGroup)
-                    q.push((ItemGroup)i);
-            }
-        }
-
-        return r;
+        return Items.getAllItems(this, type);
     }
 
     /**
@@ -3032,6 +3019,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Reloads the configuration.
      */
     @CLIMethod(name="reload-configuration")
+    @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 
@@ -3106,6 +3094,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 // add "Manage Jenkins" subitems
                 i.subMenu = new ContextMenu().from(this, request, response, "manage");
             }
+        }
+        return menu;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (View view : getViews()) {
+            menu.add(view.getViewUrl(),view.getDisplayName());
         }
         return menu;
     }
@@ -3478,7 +3474,33 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
+     * Checks if a top-level view with the given name exists and 
+     * make sure that the name is good as a view name.
+     */
+    public FormValidation doCheckViewName(@QueryParameter String value) {
+        checkPermission(View.CREATE);
+        
+        String name = fixEmpty(value);
+        if (name == null) 
+            return FormValidation.ok();
+        
+        // already exists?
+        if (getView(name) != null) 
+            return FormValidation.error(Messages.Hudson_ViewAlreadyExists(name));
+        
+        // good view name?
+        try {
+            checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        return FormValidation.ok();
+    }
+    
+    /**
      * Checks if a top-level view with the given name exists.
+     * @deprecated 1.512
      */
     public FormValidation doViewExistsCheck(@QueryParameter String value) {
         checkPermission(View.CREATE);
@@ -3928,7 +3950,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Prefix to static resources like images and javascripts in the war file.
-     * Either "" or strings like "/static/VERSION", which avoids Hudson to pick up
+     * Either "" or strings like "/static/VERSION", which avoids Jenkins to pick up
      * stale cache when the user upgrades to a different version.
      * <p>
      * Value computed in {@link WebAppMain}.

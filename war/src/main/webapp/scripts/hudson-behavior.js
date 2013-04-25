@@ -470,6 +470,8 @@ function registerRegexpValidator(e,regexp,message) {
  *      button element
  * @param onclick
  *      onclick handler
+ * @return
+ *      YUI Button widget.
  */
 function makeButton(e,onclick) {
     var h = e.onclick;
@@ -582,7 +584,7 @@ var jenkinsRules = {
     },
 
     "TABLE.sortable" : function(e) {// sortable table
-        ts_makeSortable(e);
+        e.sortable = new Sortable.Sortable(e);
     },
 
     "TABLE.progress-bar" : function(e) { // progressBar.jelly
@@ -1187,8 +1189,6 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
-        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
-
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {

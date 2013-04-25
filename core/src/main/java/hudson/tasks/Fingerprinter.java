@@ -343,6 +343,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public void onLoad() {
+            if (build == null) {
+                return;
+            }
             if (build.getParent() == null) {
                 logger.warning("JENKINS-16845: broken FingerprintAction record");
                 build = null;

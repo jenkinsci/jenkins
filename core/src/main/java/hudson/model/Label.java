@@ -44,6 +44,9 @@ import hudson.slaves.Cloud;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -70,7 +73,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Jenkins#getLabel(String)
  */
 @ExportedBean
-public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
+public abstract class Label extends Actionable implements Comparable<Label>, ModelObjectWithChildren {
     /**
      * Display name of this label.
      */
@@ -453,6 +456,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Override
     public String toString() {
         return name;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (Node node : getNodes()) {
+            menu.add(node);
+        }
+        return menu;
     }
 
     public static final class ConverterImpl implements Converter {

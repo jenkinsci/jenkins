@@ -39,7 +39,7 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="user" items="${it.allUsers}">
           <tr>
-            <td><a href="${user.url}/" class="model-link"><img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/></a></td>
+            <td><a href="${user.url}/" class="model-link inside"><img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/></a></td>
             <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>

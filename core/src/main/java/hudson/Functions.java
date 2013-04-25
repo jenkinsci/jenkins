@@ -25,13 +25,33 @@
  */
 package hudson;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Items;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.PageDecorator;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
+import hudson.model.Project;
+import hudson.model.Run;
+import hudson.model.TopLevelItem;
+import hudson.model.User;
+import hudson.model.View;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
@@ -53,36 +73,11 @@ import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.Iterators;
-import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import jenkins.model.GlobalConfiguration;
-import jenkins.model.GlobalConfigurationCategory;
-import jenkins.model.GlobalConfigurationCategory.Unclassified;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithContextMenu;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.jelly.JellyTagException;
-import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.jexl.parser.ASTSizeFunction;
-import org.apache.commons.jexl.util.Introspector;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
-import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -93,8 +88,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -108,6 +103,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -115,14 +111,43 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.GlobalConfigurationCategory.Unclassified;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
+
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyTagException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.jexl.parser.ASTSizeFunction;
+import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 /**
  * Utility functions used in views.
@@ -157,6 +182,10 @@ public class Functions {
 
     public static boolean isModelWithContextMenu(Object o) {
         return o instanceof ModelObjectWithContextMenu;
+    }
+
+    public static boolean isModelWithChildren(Object o) {
+        return o instanceof ModelObjectWithChildren;
     }
 
     public static String xsDate(Calendar cal) {
@@ -895,31 +924,71 @@ public class Functions {
         }
 
         String path = ancestors.get(p);
-        if(path!=null)  return path;
+        if(path!=null) {
+            return normalizeURI(path + '/');
+        }
 
         Item i=p;
         String url = "";
+        Collection<TopLevelItem> viewItems;
+        if (view != null) {
+            viewItems = view.getItems();
+        } else {
+            viewItems = Collections.emptyList();
+        }
         while(true) {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance()) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if(view!=null && view.contains((TopLevelItem)i)) {
+                if(viewItems.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
-                    return ancestors.get(view)+'/'+url;
+                    return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
                     // otherwise return a path from the root Hudson
-                    return request.getContextPath()+'/'+p.getUrl();
+                    return normalizeURI(request.getContextPath()+'/'+p.getUrl());
                 }
             }
 
             path = ancestors.get(ig);
-            if(path!=null)  return path+'/'+url;
+            if(path!=null) {
+                return normalizeURI(path+'/'+url);
+            }
 
             assert ig instanceof Item; // if not, ig must have been the Hudson instance
             i = (Item) ig;
         }
+    }
+    
+    private static String normalizeURI(String uri) {
+        return URI.create(uri).normalize().toString();
+    }
+    
+    /**
+     * Gets all the {@link TopLevelItem}s recursively in the {@link ItemGroup} tree.
+     * 
+     * @since 1.512
+     */
+    public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
+      return Items.getAllItems(root, TopLevelItem.class);
+    }
+    
+    
+    /**
+     * Gets the relative display name to the given item from the specified group.
+     *
+     * @since 1.512
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
+    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+        if (p == null) return null;
+        String relativeName = p.getRelativeNameFrom(g);
+        if (relativeName == null) return null;
+        return relativeName.replace("/", " » ");
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {

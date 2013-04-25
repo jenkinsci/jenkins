@@ -491,7 +491,8 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url("../images/16x16/error.gif");
+    line-height: 16px;
+    background-image: url("../images/16x16/error.png");
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -506,7 +507,8 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/warning.gif" );
+    line-height: 16px;
+    background-image: url( "../images/16x16/warning.png" );
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -806,6 +808,14 @@ TABLE.fingerprint-in-build TD {
 
 /* ========================= repeatable elements ========================= */
 
+.repeated-chunk {
+    border: 2px dashed transparent;
+}
+
+.repeated-chunk.hover {
+    border-color: #CCC;
+}
+
 .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -880,7 +890,7 @@ DIV.yahooTree td {
 
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
-  background: white url(../images/16x16/search.gif) no-repeat 2px center;
+  background: white url(../images/16x16/search.png) no-repeat 2px center;
   padding-left: 20px;
   width: 15em;
   position: static; 
@@ -964,12 +974,7 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
-.hetero-list-container.with-drag-drop .repeated-chunk.hover {
-    border: 2px dashed #CCC;
-}
-
 .hetero-list-container.with-drag-drop .repeated-chunk {
-    border: 2px dashed transparent;
     padding: 0.5em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;

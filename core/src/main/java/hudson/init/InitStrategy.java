@@ -51,10 +51,10 @@ public class InitStrategy {
         getBundledPluginsFromProperty(r);
 
         // similarly, we prefer *.jpi over *.hpi
-        listPluginFiles(pm, ".hpi", r); // plugin jar file (for backward compatibility)
-        listPluginFiles(pm, ".jpi", r); // plugin jar file
-        listPluginFiles(pm, ".hpl", r); // linked plugin. for debugging. (for backward compatibility)
         listPluginFiles(pm, ".jpl", r); // linked plugin. for debugging.
+        listPluginFiles(pm, ".hpl", r); // linked plugin. for debugging. (for backward compatibility)
+        listPluginFiles(pm, ".jpi", r); // plugin jar file
+        listPluginFiles(pm, ".hpi", r); // plugin jar file (for backward compatibility)
 
         return r;
     }

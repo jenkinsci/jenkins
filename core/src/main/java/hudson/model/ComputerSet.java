@@ -36,6 +36,8 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -65,7 +67,7 @@ import net.sf.json.JSONObject;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet> {
+public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet>, ModelObjectWithChildren {
     /**
      * This is the owner that persists {@link #monitors}.
      */
@@ -95,6 +97,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported(name="computer",inline=true)
     public Computer[] get_all() {
         return Jenkins.getInstance().getComputers();
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu m = new ContextMenu();
+        for (Computer c : get_all()) {
+            m.add(c);
+        }
+        return m;
     }
 
     /**

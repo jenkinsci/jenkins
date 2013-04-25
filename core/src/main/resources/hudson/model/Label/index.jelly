@@ -36,11 +36,10 @@ THE SOFTWARE.
         ${%Nodes:}
         <j:forEach var="n" items="${it.nodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <a href="${rootURL}/computer/${n.nodeName}" class="model-link">
+          <a href="${rootURL}/computer/${n.nodeName}" class="model-link inside">
             <img src="${imagesURL}/16x16/${c.icon}" width="16" height="16" alt=""/>
             ${c.displayName}
           </a>
-          <st:nbsp />
         </j:forEach>
       </div>
 
@@ -53,7 +52,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
+          <t:projectView jobs="${jobs}"/>
         </j:otherwise>
       </j:choose>
 
