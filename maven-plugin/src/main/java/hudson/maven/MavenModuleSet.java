@@ -434,7 +434,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     public MavenModule getItem(String name) {
-        return modules.get(ModuleName.fromString(name));
+        try {
+            return modules.get(ModuleName.fromString(name));
+        } catch (IllegalArgumentException x) {
+            return null; // not a Maven module name, ignore
+        }
     }
 
     public MavenModule getModule(String name) {

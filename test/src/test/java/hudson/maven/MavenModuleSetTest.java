@@ -2,6 +2,7 @@ package hudson.maven;
 
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.model.Item;
+import org.jvnet.hudson.test.Bug;
 
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -22,4 +23,10 @@ public class MavenModuleSetTest extends HudsonTestCase {
         assertEqualDataBoundBeans(p.getLocalRepository(),before);
         assertTrue(before!=p.getLocalRepository());
     }
+
+    @Bug(17402)
+    public void testGetItem() throws Exception {
+        assertNull(createMavenProject().getItem("invalid"));
+    }
+
 }
