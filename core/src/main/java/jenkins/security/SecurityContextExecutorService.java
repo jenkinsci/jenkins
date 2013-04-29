@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -93,29 +94,28 @@ public class SecurityContextExecutorService implements ExecutorService {
         };
     }
 
-    private static <T> Collection<? extends Callable<T>> wrapCallableCollectionWithSecurityContext(
+    private static <T> ArrayList<Callable<T>> wrapCallableCollectionWithSecurityContext(
             final Collection<? extends Callable<T>> tasks) {
         final SecurityContext callingContext = SecurityContextHolder
                 .getContext();
+        ArrayList<Callable<T>> wrappedTasks = new ArrayList<Callable<T>>();
         for (final Callable<T> task : tasks) {
-            //TODO: Fix this
-            //tasks.remove(task);
-            //tasks.add(new Callable<T>() {
-            //    public T call() throws Exception {
-            //        SecurityContext originalExecutorContext = SecurityContextHolder
-            //                .getContext();
-            //        SecurityContextHolder.setContext(callingContext);
-            //        T result = null;
-            //        try {
-            //            result = task.call();
-            //        } finally {
-            //            SecurityContextHolder.setContext(originalExecutorContext);
-            //        }
-            //        return result;
-            //    }
-            //});
+            wrappedTasks.add(new Callable<T>() {
+                public T call() throws Exception {
+                    SecurityContext originalExecutorContext = SecurityContextHolder
+                            .getContext();
+                    SecurityContextHolder.setContext(callingContext);
+                    T result = null;
+                    try {
+                        result = task.call();
+                    } finally {
+                        SecurityContextHolder.setContext(originalExecutorContext);
+                    }
+                    return result;
+                }
+            });
         }
-        return tasks;
+        return wrappedTasks;
     }
 
     public void execute(Runnable arg0) {
