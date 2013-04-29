@@ -20,6 +20,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
@@ -43,6 +44,8 @@ public class CrumbFilter implements Filter {
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        Stapler.setAdministrator(Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER));
+
         CrumbIssuer crumbIssuer = getCrumbIssuer();
         if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {
             chain.doFilter(request, response);
