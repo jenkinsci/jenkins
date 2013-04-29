@@ -26,8 +26,20 @@ public class SecurityContextExecutorServiceTest {
     public void testExecutorServiceWithSecurity() throws Exception {
         ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(
                 NUM_THREADS);
-        SecurityContext initialContext = SecurityContextHolder.getContext();
+        final SecurityContext initialContext = SecurityContextHolder
+                .getContext();
 
+        SecurityContextExecutorService.wrapExecutorWithSecurityContext(service)
+        .execute(new Runnable() {
+            public void run() {
+                SecurityContext threadContext = SecurityContextHolder
+                        .getContext();
+                // Assert the thread context is identical to the calling
+                // context
+                assertEquals(initialContext, threadContext);
+            }
+        });
+        
         Future<Object> result = SecurityContextExecutorService
                 .wrapExecutorWithSecurityContext(service).submit(
                         new Callable<Object>() {
@@ -36,6 +48,9 @@ public class SecurityContextExecutorServiceTest {
                             }
                         });
         SecurityContext threadContext = (SecurityContext) result.get();
+        // Assert the thread context was identical to the calling context
         assertEquals(initialContext, threadContext);
+        // Assert the calling context was not modified
+        assertEquals(initialContext, SecurityContextHolder.getContext());
     }
 }
