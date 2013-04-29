@@ -107,7 +107,7 @@ public class MavenFingerprinter extends MavenReporter {
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         
-        recordParents(build, pom);
+        recordParents(build, pom, listener);
         
         build.executeAsync(new BuildCallable<Void,IOException>() {
             private static final long serialVersionUID = -1360161848504044869L;
@@ -137,8 +137,8 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-	private void recordParents(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
-		MavenProject parent = pom.getParent();
+	private void recordParents(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws IOException, InterruptedException {
+		MavenProject parent = getParent(pom, listener);
 		while (parent != null) {
 			File parentFile = parent.getFile();
 
@@ -163,9 +163,19 @@ public class MavenFingerprinter extends MavenReporter {
     			record(parent.getGroupId() + ":" + parent.getArtifactId(),
     					parentFile, used);
 			}
-			parent = parent.getParent();
+			parent = getParent(parent, listener);
 		}
 	}
+
+    // XXX consider calling also from PomInfo which makes a naked call to getParent
+    private static MavenProject getParent(MavenProject pom, BuildListener listener) {
+        try {
+            return pom.getParent();
+        } catch (IllegalStateException x) { // MNG-5075
+            x.printStackTrace(listener.error("Warning: failed to resolve parent of " + pom.getId()));
+            return null;
+        }
+    }
 
 	private Artifact getArtifact(MavenProject parent) {
 	    Artifact art = parent.getArtifact();
