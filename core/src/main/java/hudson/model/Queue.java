@@ -88,6 +88,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
@@ -499,7 +500,12 @@ public class Queue extends ResourceController implements Saveable {
      */
     private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
         Calendar due = new GregorianCalendar();
+        UUID uuid;
+        
     	due.add(Calendar.SECOND, quietPeriod);
+    	
+    	// Find eventual UUID for item to schedule
+    	uuid = UuidAction.getUuidInActions(actions);
 
         // Do we already have this task in the queue? Because if so, we won't schedule a new one.
     	List<Item> duplicatesInQueue = new ArrayList<Item>();
@@ -516,7 +522,9 @@ public class Queue extends ResourceController implements Saveable {
     		}
     	}
     	if (duplicatesInQueue.isEmpty()) {
-    		LOGGER.fine(p.getFullDisplayName() + " added to queue");
+    	    String logLine = p.getFullDisplayName() + " added to queue";
+    	    if(uuid != null) logLine += " [UUID " + uuid + "]";
+    		LOGGER.fine(logLine);
 
     		// put the item in the queue
             WaitingItem added = new WaitingItem(due,p,actions);
@@ -525,7 +533,11 @@ public class Queue extends ResourceController implements Saveable {
             return added;
     	}
 
-        LOGGER.fine(p.getFullDisplayName() + " is already in the queue");
+    	{
+    	    String logLine = p.getFullDisplayName() + " is already in the queue";
+            if(uuid != null) logLine += " [UUID " + uuid + "]";
+            LOGGER.fine(logLine);
+    	}
 
         // but let the actions affect the existing stuff.
         for(Item item : duplicatesInQueue) {
@@ -568,7 +580,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     public synchronized WaitingItem schedule(Task p, int quietPeriod) {
-    	return schedule(p, quietPeriod, new Action[0]);
+    	return schedule(p, quietPeriod, UuidAction.generate());
     }
 
     /**
@@ -1438,6 +1450,13 @@ public class Queue extends ResourceController implements Saveable {
         		}
         	}
         	return s.toString();
+        }
+        
+        @Exported
+        public String getUuid() {
+            UUID uuid = UuidAction.getUuidInActions(getActions());
+            if(uuid != null) return uuid.toString();
+            return null;
         }
         
         public boolean hasCancelPermission() {

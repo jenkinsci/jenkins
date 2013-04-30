@@ -107,6 +107,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
@@ -915,6 +917,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
+        
+        if(Util.filter(queueActions, UuidAction.class).isEmpty()) {
+            queueActions.add(UuidAction.generate());
+        }
 
         WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
         if(i!=null)
@@ -1076,6 +1082,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     // keep track of the previous time we started a build
     private transient long lastBuildStartTime;
+
+    private WaitingItem scheduledItem;
     
     /**
      * Creates a new build of this project for immediate execution.
@@ -1778,28 +1786,67 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-
-        // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        
+        // Show the parameter entry form if this has not been sent through a form
         if (pp != null && !req.getMethod().equals("POST")) {
-            // show the parameter entry form.
             req.getView(pp, "index.jelly").forward(req, rsp);
             return;
         }
 
         BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
 
+        // If a build is parameterized, let that take over
         if (pp != null) {
-            pp._doBuild(req,rsp,delay);
+            pp._doBuild(req, rsp, delay);
             return;
         }
 
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
-        rsp.sendRedirect(".");
+        scheduleBuildRequest(req, rsp, delay, UuidAction.generate(), getBuildCause(req));
+    }
+
+    /**
+     * Supports build trigger with parameters via an HTTP GET or POST.
+     * Currently only String parameters are supported.
+     */
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
+        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+
+        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
+        if (pp != null) {
+            pp.buildWithParameters(req,rsp,delay);
+        } else {
+            throw new IllegalStateException("This build is not parameterized!");
+        }
+    }
+    
+    @Exported
+    public Queue.WaitingItem getScheduledItem() {
+        return scheduledItem;
+    }
+    
+    public void scheduleBuildRequest( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay, Action... actions) throws IOException, ServletException {
+        if (delay==null)
+            delay = new TimeDuration(getQuietPeriod());
+        
+        this.scheduledItem = Jenkins.getInstance().getQueue().schedule(this, delay.getTime(), actions);
+
+        if (requestWantsJson(req)) {
+            rsp.setContentType("application/json");
+            rsp.serveExposedBean(req, this, Flavor.JSON);
+        } else {
+            // send the user back to the job top page.
+            rsp.sendRedirect(".");
+        }
+    }
+    
+    private boolean requestWantsJson(StaplerRequest req) {
+        String a = req.getHeader("Accept");
+        if (a==null)    return false;
+        return !a.contains("text/html") && a.contains("application/json");
     }
 
     /**
@@ -1835,22 +1882,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } catch (NumberFormatException e) {
             throw new ServletException("Invalid delay parameter value: "+delay);
         }
-    }
-
-    /**
-     * Supports build trigger with parameters via an HTTP GET or POST.
-     * Currently only String parameters are supported.
-     */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-
-        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
-        if (pp != null) {
-            pp.buildWithParameters(req,rsp,delay);
-        } else {
-        	throw new IllegalStateException("This build is not parameterized!");
-        }
-    	
     }
 
     /**
