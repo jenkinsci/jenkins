@@ -329,54 +329,30 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if(n.length()==0)   return getDisplayName();
         else                return n+" \u00BB "+getDisplayName();
     }
-    
+
+    /**
+     * Gets the display name of the current item relative to the given group.
+     *
+     * @since XXX
+     * @param p the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
     public String getRelativeDisplayNameFrom(ItemGroup p) {
-        String relativeName = getRelativeNameFrom(p);
-        if (relativeName == null) return null;
-        return relativeName.replace("/", " \u00BB ");
+        return Functions.getRelativeDisplayNameFrom(this, p);
     }
     
     /**
-     * This method only exists to disambiguate getRelativeNameFrom(Itemgroup) and getRelativeNameFrom(Item)
-     * @param p
-     * @return
+     * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
+     * @since 1.512
+     * @see #getRelativeNameFrom(ItemGroup)
      */
     public String getRelativeNameFromGroup(ItemGroup p) {
         return getRelativeNameFrom(p);
     }
 
     public String getRelativeNameFrom(ItemGroup p) {
-        // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
-        int depth=0;
-        while (p!=null) {
-            parents.put(p, depth++);
-            if (p instanceof Item)
-                p = ((Item)p).getParent();
-            else
-                p = null;
-        }
-
-        StringBuilder buf = new StringBuilder();
-        Item i=this;
-        while (true) {
-            if (buf.length()>0) buf.insert(0,'/');
-            buf.insert(0,i.getName());
-            ItemGroup g = i.getParent();
-
-            Integer d = parents.get(g);
-            if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+="../";
-                return s+buf;
-            }
-
-            if (g instanceof Item)
-                i = (Item)g;
-            else
-                return null;
-        }
+        return Functions.getRelativeNameFrom(this, p);
     }
 
     public String getRelativeNameFrom(Item item) {
