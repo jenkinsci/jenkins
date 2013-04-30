@@ -40,6 +40,7 @@ import hudson.model.Node;
 import jenkins.model.Jenkins;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
@@ -163,8 +164,8 @@ public class Maven extends Builder {
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
         this.usePrivateRepository = usePrivateRepository;
-        this.settings = settings != null ? settings : new DefaultSettingsProvider();
-        this.globalSettings = globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        this.settings = settings;
+        this.globalSettings = globalSettings;
     }
 
     public String getTargets() {
@@ -175,14 +176,22 @@ public class Maven extends Builder {
      * @since 1.491
      */
     public SettingsProvider getSettings() {
-        return settings != null ? settings : new DefaultSettingsProvider();
+        return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
+    }
+    
+    protected void setSettings(SettingsProvider settings) {
+        this.settings = settings;
     }
     
     /**
      * @since 1.491
      */
     public GlobalSettingsProvider getGlobalSettings() {
-        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
+    }
+    
+    protected void setGlobalSettings(GlobalSettingsProvider globalSettings) {
+        this.globalSettings = globalSettings;
     }
 
     public void setUsePrivateRepository(boolean usePrivateRepository) {
@@ -420,7 +429,10 @@ public class Maven extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return req.bindJSON(Maven.class,formData);
+            Maven m = req.bindJSON(Maven.class,formData);
+            m.setSettings(GlobalMavenConfig.get().getSettingsProvider());
+            m.setGlobalSettings(GlobalMavenConfig.get().getGlobalSettingsProvider());
+            return m;
         }
     }
 
