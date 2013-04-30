@@ -58,6 +58,9 @@ Upcoming changes</a>
   <li class=bug>
     Display Name is not shown.
      (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17715">issue 17715</a>)
+  <li class='major bug'>
+    Properly find parent POMs when fingerprinting a Maven project.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17775">issue 17775</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -73,7 +76,7 @@ Upcoming changes</a>
     Third-party license display for core was broken since 1.506.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17724">issue 17724</a>)
   <li class='major bug'>
-    Amelioration of exception from fingerprinting in a Maven project when a parent POM could not be located.
+    Mitigation of exception from fingerprinting in a Maven project when a parent POM could not be located.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17775">issue 17775</a>)
   <li class=bug>
     NPE from <code>MatrixConfiguration.newBuild</code>.
