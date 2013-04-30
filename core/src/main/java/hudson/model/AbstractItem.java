@@ -52,8 +52,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -330,7 +328,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Gets the display name of the current item relative to the given group.
      *
-     * @since XXX
+     * @since 1.515
      * @param p the ItemGroup used as point of reference for the item
      * @return
      *      String like "foo » bar"
