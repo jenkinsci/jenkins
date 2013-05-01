@@ -81,12 +81,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         Run<?,?> b=null;
 
         try {
-            String target = Util.resolveSymlink(f);
-            if (target==null && f.exists()) {
-                // if this file isn't a symlink, it must be a regular file
-                target = FileUtils.readFileToString(f,"UTF-8").trim();
-            }
-
+            String target = readSymlink(f);
             if (target!=null) {
                 int n = Integer.parseInt(Util.getFileName(target));
                 if (n==RESOLVES_TO_NONE)  return null;
@@ -135,19 +130,39 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         final int n = b==null ? RESOLVES_TO_NONE : b.getNumber();
 
         File cache = getPermalinkFile(job);
-        File tmp = new File(cache.getPath()+".tmp");
         cache.getParentFile().mkdirs();
 
         try {
-            StringWriter w = new StringWriter();
-            StreamTaskListener listener = new StreamTaskListener(w);
+            writeSymlink(cache, String.valueOf(n));
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
+            cache.delete();
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
+            cache.delete();
+        }
+    }
 
-            Util.createSymlink(tmp.getParentFile(),String.valueOf(n),tmp.getName(),listener);
+    static String readSymlink(File cache) throws IOException, InterruptedException {
+        String target = Util.resolveSymlink(cache);
+        if (target==null && cache.exists()) {
+            // if this file isn't a symlink, it must be a regular file
+            target = FileUtils.readFileToString(cache,"UTF-8").trim();
+        }
+        return target;
+    }
+
+    static void writeSymlink(File cache, String target) throws IOException, InterruptedException {
+        StringWriter w = new StringWriter();
+        StreamTaskListener listener = new StreamTaskListener(w);
+        File tmp = new File(cache.getPath()+".tmp");
+        try {
+            Util.createSymlink(tmp.getParentFile(),target,tmp.getName(),listener);
             if (Util.resolveSymlink(tmp)==null) {
                 // symlink not supported. use a regular file
                 AtomicFileWriter cw = new AtomicFileWriter(cache);
                 try {
-                    cw.write(String.valueOf(n));
+                    cw.write(target);
                     cw.commit();
                 } finally {
                     cw.abort();
@@ -156,12 +171,6 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 cache.delete();
                 tmp.renameTo(cache);
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
-            cache.delete();
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
-            cache.delete();
         } finally {
             tmp.delete();
         }
