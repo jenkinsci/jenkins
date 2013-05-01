@@ -40,28 +40,27 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:new var="customizedFields" className="java.util.TreeSet"/>
-  <j:mute>
-    <d:invokeBody/>
-  </j:mute>
-  <j:choose>
-    <j:when test="${!customizedFields.isEmpty()}">
-      <d:invokeBody/>
-    </j:when>
-    <j:otherwise>
 	<tr><td/><td/>
 	  <td>
       <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
+              <j:set var="id" value="${h.generateId()}"/>
+              <span style="display: none" id="${id}">
+                <img src="${imagesURL}/16x16/document_edit.png" style="vertical-align: super" alt="${%customizedFields}" tooltip="${%customizedFields}"/>
+              </span>
 	    </div>
+            <j:new var="customizedFields" className="java.util.TreeSet"/>
 	    <table class="advancedBody"><tbody>
 	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
 	      <d:invokeBody/>
 	    </tbody></table>
+            <j:if test="${!customizedFields.isEmpty()}">
+              <script>
+                $$('${id}').style.display = null;
+              </script>
+            </j:if>
 	  </td>
 	</tr>
-    </j:otherwise>
-  </j:choose>
 </j:jelly>
