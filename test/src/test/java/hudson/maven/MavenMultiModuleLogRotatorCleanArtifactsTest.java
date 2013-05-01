@@ -82,14 +82,14 @@ public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 	@SuppressWarnings("unchecked")
 	public void testArtifactsAreDeletedInBuildOneWhenBuildDiscarderRun()
 			throws Exception {
-		File directory = new File(new FilePath(jobs, "test0/builds/1").toURI());
+		File directory = new File(new FilePath(jobs, "test0/builds/1").getRemote());
 		Collection<File> files = FileUtils.listFiles(directory,
 				new String[] { "jar" }, true);
 		Assert.assertTrue(
 				"Found jars in previous build, that should not happen",
 				files.isEmpty());
 		Collection<File> files2 = FileUtils.listFiles(new File(new FilePath(
-				jobs, "test0/builds/2").toURI()), new String[] { "jar" }, true);
+				jobs, "test0/builds/2").getRemote()), new String[] { "jar" }, true);
 		Assert.assertFalse("No jars in last build ALERT!", files2.isEmpty());
 	}
 
@@ -102,7 +102,7 @@ public class MavenMultiModuleLogRotatorCleanArtifactsTest {
 	public void testArtifactsOldBuildsDeletedWhenBuildDiscarderRun()
 			throws Exception {
 		j.buildAndAssertSuccess(m);
-		File directory = new File(new FilePath(jobs, "test0/builds/1").toURI());
+		File directory = new File(new FilePath(jobs, "test0/builds/1").getRemote());
 		Assert.assertFalse("oops the build should have been deleted", directory.exists());
 	}
 
