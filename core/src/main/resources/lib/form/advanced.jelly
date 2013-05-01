@@ -58,7 +58,7 @@ THE SOFTWARE.
 	    </tbody></table>
             <j:if test="${!customizedFields.isEmpty()}">
               <script>
-                $$('${id}').style.display = null;
+                $$('${id}').style.display = '';
               </script>
             </j:if>
 	  </td>
