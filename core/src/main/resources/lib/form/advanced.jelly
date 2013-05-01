@@ -40,6 +40,15 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <j:new var="customizedFields" className="java.util.TreeSet"/>
+  <j:mute>
+    <d:invokeBody/>
+  </j:mute>
+  <j:choose>
+    <j:when test="${!customizedFields.isEmpty()}">
+      <d:invokeBody/>
+    </j:when>
+    <j:otherwise>
 	<tr><td/><td/>
 	  <td>
       <st:adjunct includes="lib.form.advanced.advanced"/>
@@ -53,4 +62,6 @@ THE SOFTWARE.
 	    </tbody></table>
 	  </td>
 	</tr>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
