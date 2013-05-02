@@ -399,6 +399,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     @Override
+    public synchronized void deleteArtifacts() throws IOException {
+    	super.deleteArtifacts();
+    	for (List<MavenBuild> list : getModuleBuilds().values())
+            for (MavenBuild build : list)
+                build.deleteArtifacts();
+    }
+    
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         // map corresponding module build under this object
         if(token.indexOf('$')>0) {
