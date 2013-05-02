@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -143,6 +144,12 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         }
     }
 
+    // File.exists returns false for a link with a missing target, so for Java 6 compatibility we have to use this circuitous method to see if it was created.
+    private static boolean exists(File link) {
+        File[] kids = link.getParentFile().listFiles();
+        return kids != null && Arrays.asList(kids).contains(link);
+    }
+
     static String readSymlink(File cache) throws IOException, InterruptedException {
         String target = Util.resolveSymlink(cache);
         if (target==null && cache.exists()) {
@@ -158,7 +165,8 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         File tmp = new File(cache.getPath()+".tmp");
         try {
             Util.createSymlink(tmp.getParentFile(),target,tmp.getName(),listener);
-            if (Util.resolveSymlink(tmp)==null) {
+            // Avoid calling resolveSymlink on a nonexistent file as it will probably throw an IOException:
+            if (!exists(tmp) || Util.resolveSymlink(tmp)==null) {
                 // symlink not supported. use a regular file
                 AtomicFileWriter cw = new AtomicFileWriter(cache);
                 try {
