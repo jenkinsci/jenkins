@@ -286,7 +286,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
     }
 
     void assertPaneDiffText(String msg, int expectedValue, Object paneObj) { 
-        assertTrue( "paneObj should be an HtmlElement", paneObj instanceof HtmlElement );
+        assertTrue( "paneObj should be an HtmlElement, it was " + paneObj.getClass(), paneObj instanceof HtmlElement );
         String paneText = ((HtmlElement) paneObj).asText();
         if (expectedValue==0) {
             assertStringEmptyOrNull(msg, paneText);
