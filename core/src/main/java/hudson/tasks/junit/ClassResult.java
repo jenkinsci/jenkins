@@ -98,7 +98,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     public String getTitle() {
-        return Messages.ClassResult_getTitle(getName());
+        return Messages.ClassResult_getTitle(getDisplayName());
     }
 
     @Override
@@ -223,11 +223,15 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     public String getDisplayName() {
-        return getName();
+        return TestNameTransformer.getTransformedName(getName());
     }
     
     public String getFullName() {
-    	return getParent().getDisplayName() + "." + className;
+    	return getParent().getName() + "." + className;
+    }
+    
+    public String getFullDisplayName() {
+    	return getParent().getDisplayName() + "." + TestNameTransformer.getTransformedName(className);
     }
 
     /**
