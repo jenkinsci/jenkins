@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.514</version>
+    <version>1.515-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
