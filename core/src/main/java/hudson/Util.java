@@ -1228,6 +1228,10 @@ public class Util {
             } catch (ClassNotFoundException x3) {
                 assert false : x3; // should be Java 7+ here
             }
+            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
+                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
+                return null;
+            }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;
             }
