@@ -43,7 +43,7 @@ public class MyspacePolicyTest extends Assert {
         assertReject("script","<script src='relative.js'></script>");
 
         assertIntact("<style>H1 { display:none; }</style>");
-        assertIntact("<link rel='stylesheet' type='text/css' href='http://www.microsoft.com/'>");
+        assertReject("link", "<link rel='stylesheet' type='text/css' href='http://www.microsoft.com/'>");
         assertIntact("<div style='background-color:white'>inline CSS</div>");
         assertIntact("<br><hr>");
 

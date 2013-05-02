@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.514-SNAPSHOT</version>
+    <version>1.515-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -164,7 +164,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.0.7-2</version>
+      <version>1.1.7-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>

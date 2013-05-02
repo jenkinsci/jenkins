@@ -28,6 +28,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import hudson.model.Action;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
@@ -169,6 +170,30 @@ public class FunctionsTest {
         when(view.getItems()).thenReturn(Arrays.asList(i));
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
+    }
+    
+    @Test
+    public void testGetRelativeDisplayName() {
+        Item i = mock(Item.class);
+        when(i.getName()).thenReturn("jobName");
+        when(i.getFullDisplayName()).thenReturn("displayName");
+        assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
+    }
+    
+    @Test
+    public void testGetRelativeDisplayNameInsideItemGroup() {
+        Item i = mock(Item.class);
+        when(i.getName()).thenReturn("jobName");
+        when(i.getDisplayName()).thenReturn("displayName");
+        TopLevelItemAndItemGroup ig = mock(TopLevelItemAndItemGroup.class);
+        Jenkins j = mock(Jenkins.class);
+        when(ig.getName()).thenReturn("parent");
+        when(ig.getDisplayName()).thenReturn("parentDisplay");
+        when(ig.getParent()).thenReturn((ItemGroup) j);
+        when(i.getParent()).thenReturn(ig);
+        
+        assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, ig));
+        assertEquals("parentDisplay » displayName", Functions.getRelativeDisplayNameFrom(i, j));
     }
     
     private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
