@@ -35,6 +35,7 @@ import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
 import jenkins.model.Jenkins;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -42,8 +43,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
-import org.jruby.ext.posix.FileStat;
-import org.jruby.ext.posix.POSIX;
+import jnr.posix.FileStat;
+import jnr.posix.POSIX;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.Stapler;
 
