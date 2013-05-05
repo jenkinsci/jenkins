@@ -509,11 +509,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setClassLoader(getClass().getClassLoader());
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         context.setMimeTypes(MIME_TYPES);
-        if(Functions.isWindows()) {
-            // this is only needed on Windows because of the file
-            // locking issue as described in JENKINS-12647
-            context.setCopyWebDir(true);
-        }
         return context;
     }
 
