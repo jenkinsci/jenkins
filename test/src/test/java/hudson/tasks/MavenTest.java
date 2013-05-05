@@ -26,6 +26,11 @@ package hudson.tasks;
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.FilePathGlobalSettingsProvider;
+import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
@@ -47,6 +52,7 @@ import java.util.Collections;
 
 import junit.framework.Assert;
 
+import org.apache.maven.settings.building.FileSettingsSource;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -196,4 +202,31 @@ public class MavenTest extends HudsonTestCase {
 	System.out.println(buildLog);
         assertFalse(buildLog.contains("-Dpassword=12345"));
     }
+    
+    public void testDefaultSettingsProvider() throws Exception {
+        {
+            FreeStyleProject p = createFreeStyleProject();
+            p.getBuildersList().add(new Maven("a", null, "a.pom", "c=d", "-e", true));
+    
+            Maven m = p.getBuildersList().get(Maven.class);
+            assertNotNull(m);
+            assertEquals(DefaultSettingsProvider.class, m.getSettings().getClass());
+            assertEquals(DefaultGlobalSettingsProvider.class, m.getGlobalSettings().getClass());
+        }
+        
+        {
+            GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
+            assertNotNull("No global Maven Config available", globalMavenConfig);
+            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settigns.xml"));
+            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settigns.xml"));
+            
+            FreeStyleProject p = createFreeStyleProject();
+            p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
+            
+            Maven m = p.getBuildersList().get(Maven.class);
+            assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
+            assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
+            assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
+        }
+    }    
 }
