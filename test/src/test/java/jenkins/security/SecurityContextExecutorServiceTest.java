@@ -73,8 +73,7 @@ public class SecurityContextExecutorServiceTest {
         SecurityContextHolder.clearContext();
         nullContext = SecurityContextHolder.getContext();
 
-        // Create a service with the system context
-        SecurityContextHolder.setContext(systemContext);
+        // Create a wrapped service 
         wrappedService = SecurityContextExecutorService.wrapExecutorWithSecurityContext(service);
 
         testRunnableAgainstAllContexts();
@@ -107,7 +106,7 @@ public class SecurityContextExecutorServiceTest {
         SecurityContextHolder.setContext(nullContext);
         wrappedService.execute(r);
         wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
-        // Assert the context inside the runnable thread was set to null
+        // Assert the context inside the runnable thread was set to the null context
         assertEquals(nullContext, runnableThreadContext);
     }
 
@@ -129,7 +128,7 @@ public class SecurityContextExecutorServiceTest {
 
         SecurityContextHolder.setContext(nullContext);
         result = wrappedService.submit(c);
-        // Assert the context inside the callable thread was set to the user's context
+        // Assert the context inside the callable thread was set to the null context
         assertEquals(nullContext, result.get());
     }
 
@@ -177,13 +176,13 @@ public class SecurityContextExecutorServiceTest {
         SecurityContextHolder.setContext(systemContext);
         wrappedService.execute(r);
         wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
-        // Assert the current context is once again the systemContext
+        // Assert the current context is once again ACL.SYSTEM
         assertEquals(systemContext, SecurityContextHolder.getContext());
 
         SecurityContextHolder.setContext(userContext);
         wrappedService.execute(r);
         wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
-        // Assert the current context is once again the systemContext
+        // Assert the current context is once again the userContext
         assertEquals(userContext, SecurityContextHolder.getContext());
     }
 }
