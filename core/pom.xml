@@ -504,7 +504,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.winsw</groupId>
       <artifactId>winsw</artifactId>
-      <version>1.10</version>
+      <version>1.13</version>
       <classifier>bin</classifier>
       <type>exe</type>
       <scope>provided</scope><!-- this isn't really a dependency that Maven should care about, so putting 'provided' -->
