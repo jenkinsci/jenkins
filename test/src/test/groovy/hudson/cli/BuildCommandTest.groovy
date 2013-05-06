@@ -27,6 +27,7 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.junit.Rule
 import org.junit.Test
 import static org.junit.Assert.*
+import org.junit.Assume
 import hudson.tasks.Shell
 import hudson.util.OneShotEvent
 import org.jvnet.hudson.test.TestBuilder
@@ -136,6 +137,7 @@ public class BuildCommandTest {
     }
 
     @Test void consoleOutput() {
+        Assume.assumeFalse("Started test0 #1", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")))
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
         try {
