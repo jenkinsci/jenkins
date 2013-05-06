@@ -45,4 +45,6 @@ THE SOFTWARE.
   <interactive />
   -->
   <logmode>rotate</logmode>
+
+  <onfailure action="restart" />
 </service>
