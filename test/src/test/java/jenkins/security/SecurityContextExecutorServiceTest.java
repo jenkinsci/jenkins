@@ -149,7 +149,6 @@ public class SecurityContextExecutorServiceTest {
         for (Future<SecurityContext> result : results) {
             // Assert each thread context was identical to the initial service context
             SecurityContext value = result.get();
-            System.err.println(value);
             assertEquals(systemContext, value);
         }
 
