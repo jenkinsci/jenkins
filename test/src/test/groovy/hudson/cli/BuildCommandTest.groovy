@@ -23,7 +23,10 @@
  */
 package hudson.cli
 
-import org.jvnet.hudson.test.HudsonTestCase
+import org.jvnet.hudson.test.JenkinsRule
+import org.junit.Rule
+import org.junit.Test
+import static org.junit.Assert.*
 import hudson.tasks.Shell
 import hudson.util.OneShotEvent
 import org.jvnet.hudson.test.TestBuilder
@@ -40,12 +43,15 @@ import org.apache.commons.io.output.TeeOutputStream
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildCommandTest extends HudsonTestCase {
+public class BuildCommandTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Just schedules a build and return.
      */
-    void testAsync() {
-        def p = createFreeStyleProject();
+    @Test void async() {
+        def p = j.createFreeStyleProject();
         def started = new OneShotEvent();
         def completed = new OneShotEvent();
         p.buildersList.add([perform: {AbstractBuild build, Launcher launcher, BuildListener listener ->
@@ -55,7 +61,7 @@ public class BuildCommandTest extends HudsonTestCase {
         }] as TestBuilder);
 
         // this should be asynchronous
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             assertEquals(0,cli.execute(["build", p.name]))
             started.block()
@@ -70,11 +76,11 @@ public class BuildCommandTest extends HudsonTestCase {
     /**
      * Tests synchronous execution.
      */
-    void testSync() {
-        def p = createFreeStyleProject();
+    @Test void sync() {
+        def p = j.createFreeStyleProject();
         p.buildersList.add(new Shell("sleep 3"));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s",p.name])
             assertFalse(p.getBuildByNumber(1).isBuilding())
@@ -87,11 +93,11 @@ public class BuildCommandTest extends HudsonTestCase {
     /**
      * Tests synchronous execution with retried verbose output
      */
-    void testSyncWOutputStreaming() {
-        def p = createFreeStyleProject();
+    @Test void syncWOutputStreaming() {
+        def p = j.createFreeStyleProject();
         p.buildersList.add(new Shell("sleep 3"));
 
-        def cli =new CLI(getURL())
+        def cli =new CLI(j.URL)
         try {
             cli.execute(["build","-s","-v","-r","5",p.name])
             assertFalse(p.getBuildByNumber(1).isBuilding())
@@ -100,28 +106,28 @@ public class BuildCommandTest extends HudsonTestCase {
         }
     }
 
-    void testParameters() {
-        def p = createFreeStyleProject();
+    @Test void parameters() {
+        def p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key",null)]));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s","-p","key=foobar",p.name])
-            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            def b = j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
         } finally {
             cli.close();
         }
     }
 
-    void testDefaultParameters() {
-        def p = createFreeStyleProject();
+    @Test void defaultParameters() {
+        def p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key","default"), new StringParameterDefinition("key2","default2") ]));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s","-p","key=foobar",p.name])
-            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            def b = j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
             assertEquals("default2",b.getAction(ParametersAction.class).getParameter("key2").value)
         } finally {
@@ -129,13 +135,13 @@ public class BuildCommandTest extends HudsonTestCase {
         }
     }
 
-    void testConsoleOutput() {
-        def p = createFreeStyleProject()
-        def cli = new CLI(getURL())
+    @Test void consoleOutput() {
+        def p = j.createFreeStyleProject()
+        def cli = new CLI(j.URL)
         try {
             def o = new ByteArrayOutputStream()
             cli.execute(["build","-s","-v",p.name],System.in,new TeeOutputStream(System.out,o),System.err)
-            assertBuildStatusSuccess(p.getBuildByNumber(1))
+            j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertTrue(o.toString(), o.toString().contains("Started by command line by anonymous"))
             assertTrue(o.toString().contains("Finished: SUCCESS"))
         } finally {
