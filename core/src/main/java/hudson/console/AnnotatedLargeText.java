@@ -25,13 +25,30 @@
  */
 package hudson.console;
 
-import com.trilead.ssh2.crypto.Base64;
-import jenkins.model.Jenkins;
+import static java.lang.Math.abs;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOException2;
-import hudson.util.Secret;
 import hudson.util.TimeUnit2;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+
+import jenkins.model.Jenkins;
 import jenkins.security.CryptoConfidentialKey;
+
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -39,22 +56,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.kohsuke.stapler.framework.io.LargeText;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import static java.lang.Math.abs;
+import com.trilead.ssh2.crypto.Base64;
 
 /**
  * Extension to {@link LargeText} that handles annotations by {@link ConsoleAnnotator}.
@@ -152,6 +154,13 @@ public class AnnotatedLargeText<T> extends LargeText {
     public long writeLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
     }
+    
+    public long writeLogTo(long start, OutputStream out,Charset clientCharset ) throws IOException {
+	   	 if( null == clientCharset ){
+	   		   return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+	   	   }
+     	  return super.writeLogTo(start, new OutputStreamWriter( out,clientCharset));
+   }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {
         ConsoleAnnotationOutputStream caw = new ConsoleAnnotationOutputStream(

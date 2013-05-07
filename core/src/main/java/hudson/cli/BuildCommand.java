@@ -23,37 +23,36 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
-import hudson.model.ParametersAction;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.ParameterDefinition;
-import hudson.Extension;
-import hudson.AbortException;
-import hudson.console.ModelHyperlinkNote;
 import hudson.model.Item;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.concurrent.ExecutionException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import jenkins.model.Jenkins;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * Builds a job, and optionally waits until its completion.
@@ -145,9 +144,11 @@ public class BuildCommand extends CLICommand {
                         // exception on a slow/busy machine, if it takes
                         // longish to create the log file
                         int retryInterval = 100;
+                        final Charset clientCharset = this.getClientCharset();
+                        stdout.println("ClientCharset "+clientCharset+" channel:"+this.checkChannel().getName());
                         for (int i=0;i<=retryCnt;) {
                             try {
-                                b.writeWholeLogTo(stdout);
+                                b.writeWholeLogTo(stdout,clientCharset);
                                 break;
                             }
                             catch (FileNotFoundException e) {
