@@ -78,9 +78,19 @@ public class BuildCommand extends CLICommand {
 
     @Option(name="-c",usage="Check for SCM changes before starting the build, and if there's no change, exit without doing a build")
     public boolean checkSCM = false;
-
+    
+    public Map<String,String> parameters = new HashMap<String, String>();    
+    
     @Option(name="-p",usage="Specify the build parameters in the key=value format.")
-    public Map<String,String> parameters = new HashMap<String, String>();
+    protected void setParameter(final String property)  {
+	   //custom parameter key=value parse 
+	   // fixed for parameter value contain '='  will  ignore substring  after '='
+		int eqIndex =  property.indexOf("=");
+		if (eqIndex == -1) {
+			throw new IllegalArgumentException("build parameters must be specified in the form: <key>=<value>");
+		}
+		parameters.put(property.substring(0,eqIndex), property.substring(eqIndex+1));
+	}
 
     @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
     public boolean consoleOutput = false;
