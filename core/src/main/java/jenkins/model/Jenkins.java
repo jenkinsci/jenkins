@@ -3625,6 +3625,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             String rest = Stapler.getCurrentRequest().getRestOfPath();
             if(rest.startsWith("/login")
             || rest.startsWith("/logout")
+            || rest.startsWith("/error") // in case anonymous lacks READ: error.jelly run w/o authentication
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
