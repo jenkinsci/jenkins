@@ -5,7 +5,7 @@ set -e
 case "$1" in
     purge)
         userdel jenkins || true
-        rm -rf /var/lib/jenkins /var/log/jenkins \
+        rm -rf /var/log/jenkins \
                /var/run/jenkins /var/cache/jenkins
     ;;
 
