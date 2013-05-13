@@ -25,6 +25,7 @@ package hudson.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -112,4 +113,18 @@ public class CopyOnWriteMapTest {
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
+
+    @Test public void equalsHashCodeToString() throws Exception {
+        Map<String,Integer> m1 = new TreeMap<String,Integer>();
+        Map<String,Integer> m2 = new CopyOnWriteMap.Tree<String,Integer>();
+        m1.put("foo", 5);
+        m1.put("bar", 7);
+        m2.put("foo", 5);
+        m2.put("bar", 7);
+        assertEquals(m1.hashCode(), m2.hashCode());
+        assertTrue(m2.equals(m1));
+        assertTrue(m1.equals(m2));
+        assertEquals(m1.toString(), m2.toString());
+    }
+
 }
