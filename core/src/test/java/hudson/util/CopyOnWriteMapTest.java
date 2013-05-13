@@ -26,12 +26,13 @@ package hudson.util;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * @author Mike Dillon, Alan Harder
  */
-public class CopyOnWriteMapTest extends TestCase {
+public class CopyOnWriteMapTest {
     public static final class HashData {
         CopyOnWriteMap.Hash<String,String> map1 = new CopyOnWriteMap.Hash<String,String>();
         HashMap<String,String> map2 = new HashMap<String,String>();
@@ -40,7 +41,7 @@ public class CopyOnWriteMapTest extends TestCase {
     /**
      * Verify that serialization form of CopyOnWriteMap.Hash and HashMap are the same.
      */
-    public void testHashSerialization() throws Exception {
+    @Test public void hashSerialization() throws Exception {
         HashData td = new HashData();
         XStream2 xs = new XStream2();
 
@@ -82,7 +83,7 @@ public class CopyOnWriteMapTest extends TestCase {
      * Verify that an empty CopyOnWriteMap.Tree can be serialized,
      * and that serialization form is the same as a standard TreeMap.
      */
-    public void testTreeSerialization() throws Exception {
+    @Test public void treeSerialization() throws Exception {
         TreeData td = new TreeData();
         XStream2 xs = new XStream2();
 
