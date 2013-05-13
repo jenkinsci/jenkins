@@ -23,11 +23,15 @@
  */
 package hudson.model;
 
+import java.net.HttpURLConnection;
+import java.util.Collection;
+import java.util.Collections;
 import static org.junit.Assert.*;
 
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -67,4 +71,26 @@ public class RunTest  {
         assertEquals(a.get(0).getDisplayPath(),"a.xml");
         assertEquals(a.get(1).getDisplayPath(),"a/a.xml");
     }
+
+    @Bug(17935)
+    @Test public void getDynamicInvisibleTransientAction() throws Exception {
+        TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
+            @Override public Collection<? extends Action> createFor(Run target) {
+                return Collections.singleton(new Action() {
+                    @Override public String getDisplayName() {
+                        return "Test";
+                    }
+                    @Override public String getIconFileName() {
+                        return null;
+                    }
+                    @Override public String getUrlName() {
+                        return null;
+                    }
+                });
+            }
+        });
+        j.assertBuildStatusSuccess(j.createFreeStyleProject("stuff").scheduleBuild2(0));
+        j.createWebClient().assertFails("job/stuff/1/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
 }
