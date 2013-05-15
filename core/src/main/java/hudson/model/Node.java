@@ -62,6 +62,7 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -442,20 +443,20 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Constants that control how Hudson allocates jobs to slaves.
      */
     public enum Mode {
-        NORMAL(Messages.Node_Mode_NORMAL()),
-        EXCLUSIVE(Messages.Node_Mode_EXCLUSIVE());
+        NORMAL(Messages._Node_Mode_NORMAL()),
+        EXCLUSIVE(Messages._Node_Mode_EXCLUSIVE());
 
-        private final String description;
+        private final Localizable description;
 
         public String getDescription() {
-            return description;
+            return description.toString();
         }
 
         public String getName() {
             return name();
         }
 
-        Mode(String description) {
+        Mode(Localizable description) {
             this.description = description;
         }
 

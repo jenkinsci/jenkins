@@ -148,6 +148,39 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
+        /**
+         * @since 1.515
+         */
+        @Override
+        public boolean equals(Object rhs) {
+
+            if (this == rhs) return true;
+
+            if (!(rhs instanceof UpstreamCause)) return false;
+
+            final UpstreamCause o = (UpstreamCause) rhs;
+
+            if (upstreamBuild != o.upstreamBuild) return false;
+            if (!upstreamCauses.equals(o.upstreamCauses)) return false;
+            if (upstreamUrl == null ? o.upstreamUrl != null : !upstreamUrl.equals(o.upstreamUrl)) return false;
+            if (upstreamProject == null ? o.upstreamProject != null : !upstreamProject.equals(o.upstreamProject)) return false;
+
+            return true;
+        }
+
+        /**
+         * @since 1.515
+         */
+        @Override
+        public int hashCode() {
+
+            int hashCode = 17;
+            hashCode = hashCode * 31 + upstreamCauses.hashCode();
+            hashCode = hashCode * 31 + upstreamBuild;
+            hashCode = hashCode * 31 + (upstreamUrl == null ? 0 : upstreamUrl.hashCode ());
+            return hashCode * 31 + (upstreamProject == null ? 0 : upstreamProject.hashCode ());
+        }
+
         private @Nonnull Cause trim(@Nonnull Cause c, int depth, Set<String> traversed) {
             if (!(c instanceof UpstreamCause)) {
                 return c;

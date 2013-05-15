@@ -732,25 +732,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // first copy into a temporary file name
-            File t = File.createTempFile("uploaded", "jp_",rootDir);
-            fileItem.write(t); // rename all new plugins to *.jpi
+            File t = File.createTempFile("uploaded", ".jpi");
+            t.deleteOnExit();
+            fileItem.write(t);
             fileItem.delete();
 
             final String baseName = identifyPluginShortName(t);
 
-            // and move the temp file into a proper name
-            new File(rootDir, baseName + ".hpi").delete(); // don't keep confusing legacy *.hpi
-            new File(rootDir, baseName + ".jpi").delete(); // rename can fail if the file already exists
-            t.renameTo(new File(rootDir, baseName + ".jpi"));
-
-            PluginWrapper existing = getPlugin(baseName);
-            if (existing!=null && existing.isBundled){
-                existing.doPin();
-            }
-
             pluginUploaded = true;
 
-            return new HttpRedirect(".");
+            // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
+            JSONObject cfg = new JSONObject().
+                    element("name", baseName).
+                    element("version", "0"). // unused but mandatory
+                    element("url", t.toURI().toString()).
+                    element("dependencies", new JSONArray());
+            new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
+            return new HttpRedirect("../updateCenter");
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {// grrr. fileItem.write throws this

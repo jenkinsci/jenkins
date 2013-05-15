@@ -188,6 +188,7 @@ import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import java.net.HttpURLConnection;
+import jenkins.model.JenkinsLocationConfiguration;
 
 /**
  * Base class for all Jenkins test cases.
@@ -330,7 +331,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         jenkins.servletContext.setAttribute("app", jenkins);
         jenkins.servletContext.setAttribute("version","?");
         WebAppMain.installExpressionFactory(new ServletContextEvent(jenkins.servletContext));
-        Mailer.descriptor().setHudsonUrl(getURL().toExternalForm());
+        Mailer.descriptor().setHudsonUrl(getURL().toExternalForm()); // for compatibility only
+        JenkinsLocationConfiguration.get().setUrl(getURL().toString()); // in case we are using older mailer plugin
 
         // set a default JDK to be the one that the harness is using.
         jenkins.getJDKs().add(new JDK("default",System.getProperty("java.home")));
@@ -343,9 +345,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         // cause all the descriptors to reload.
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
-        DescriptorImpl desc = Mailer.descriptor();
-        // prevent NPE with eclipse 
-        if (desc != null) Mailer.descriptor().setHudsonUrl(null);
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
 
