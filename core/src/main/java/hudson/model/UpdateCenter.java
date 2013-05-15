@@ -89,6 +89,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -119,6 +121,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.483
      */
     public static final String ID_DEFAULT = "default";
+
+    @Restricted(NoExternalUse.class)
+    public static final String ID_UPLOAD = "_upload";
 	
     /**
      * {@link ExecutorService} that performs installation.
@@ -1012,6 +1017,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         public void run() {
+            if (ID_UPLOAD.equals(site.getId())) {
+                return;
+            }
             LOGGER.fine("Doing a connectivity check");
             try {
                 String connectionCheckUrl = site.getConnectionCheckUrl();
