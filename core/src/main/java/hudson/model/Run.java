@@ -27,46 +27,51 @@
  */
 package hudson.model;
 
-import hudson.console.ConsoleLogFilter;
-import hudson.Functions;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.security.PermissionScope;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
-import hudson.tasks.BuildWrapper;
+import hudson.security.PermissionScope;
 import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
-import hudson.util.XStream2;
 import hudson.util.ProcessTree;
+import hudson.util.XStream2;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -82,17 +87,19 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -101,24 +108,21 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import com.thoughtworks.xstream.XStream;
-import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
-import static java.util.logging.Level.*;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import com.thoughtworks.xstream.XStream;
 
 /**
  * A particular execution of {@link Job}.
@@ -1274,15 +1278,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * If someone is still writing to the log, this method will not return until the whole log
      * file gets written out.
      */
-    public void writeWholeLogTo(OutputStream out) throws IOException, InterruptedException {
+    public void writeWholeLogTo(OutputStream out, Charset clientCharset ) throws IOException, InterruptedException {
         long pos = 0;
         AnnotatedLargeText logText;
         do {
             logText = getLogText();
-            pos = logText.writeLogTo(pos, out);
+            pos = logText.writeLogTo(pos, out,clientCharset);
         } while (!logText.isComplete());
     }
-
+    
     /**
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
