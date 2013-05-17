@@ -93,6 +93,9 @@ THE SOFTWARE.
   <div class="textarea-handle"/>
   <j:if test="${attrs.previewEndpoint!=null}">
     <div class="textarea-preview-container">
+      <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
+        [${app.markupFormatter.descriptor.displayName}]<st:nbsp/>
+      </j:if>
       <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
       <st:nbsp/>
       <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
