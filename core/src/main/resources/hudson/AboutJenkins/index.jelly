@@ -46,23 +46,6 @@ THE SOFTWARE.
               <p>${%No information recorded}</p>
           </j:otherwise>
       </j:choose>
-      <p>${%plugin.dependencies}</p>
-      <ul>
-          <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- XXX sort -->
-              <li>
-                  <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
-                      <j:choose>
-                          <j:when test="${p.active}">
-                              ${p.displayName}
-                          </j:when>
-                          <j:otherwise>
-                              <strike>${p.displayName}</strike>
-                          </j:otherwise>
-                      </j:choose>
-                  </a>
-              </li>
-          </j:forEach>
-      </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>
