@@ -494,23 +494,32 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /**
+     * Prepares a Jenkins webapp context for testing.
+     * 
+     * You can override this to customize the webapp context.
+     * 
+     * @return WebAppContext of Jenkins
+     * @throws Exception
+     */
+    protected WebAppContext createWebAppContext() throws Exception
+    {
+        explodedWarDir = WarExploder.getExplodedDir();
+        WebAppContext context = new WebAppContext(explodedWarDir.getPath(), contextPath);
+        context.setClassLoader(getClass().getClassLoader());
+        context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
+        context.setMimeTypes(MIME_TYPES);
+        return context;
+    }
+
+    /**
      * Prepares a webapp hosting environment to get {@link ServletContext} implementation
      * that we need for testing.
      */
     protected ServletContext createWebServer() throws Exception {
         server = new Server();
 
-        explodedWarDir = WarExploder.getExplodedDir();
-        WebAppContext context = new WebAppContext(explodedWarDir.getPath(), contextPath);
-        context.setClassLoader(getClass().getClassLoader());
-        context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
+        WebAppContext context = createWebAppContext();
         server.setHandler(context);
-        context.setMimeTypes(MIME_TYPES);
-        if(Functions.isWindows()) {
-            // this is only needed on Windows because of the file
-            // locking issue as described in JENKINS-12647
-            context.setCopyWebDir(true);
-        }
 
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
