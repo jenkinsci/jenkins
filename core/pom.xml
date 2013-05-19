@@ -749,6 +749,14 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkCount>0.5C</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>-XX:MaxPermSize=128m</argLine>
+        </configuration>
+      </plugin>
       <plugin><!-- set main class -->
         <artifactId>maven-jar-plugin</artifactId>
         <!-- version specified in grandparent pom -->
