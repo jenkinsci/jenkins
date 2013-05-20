@@ -350,7 +350,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      defines what we mean by "nearby" above.
      *      If EXACT, find #N or return null.
      *      If ASC, finds the closest #M that satisfies M>=N.
-     *      If DESC, finds the closest #M that satisfies M<=N.
+     *      If DESC, finds the closest #M that satisfies M&lt;=N.
      */
     public R search(final int n, final Direction d) {
         Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
