@@ -23,14 +23,16 @@
  */
 package hudson.model;
 
-import junit.framework.TestCase;
 import hudson.model.Fingerprint.RangeSet;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FingerprintTest extends TestCase {
-    public void test() {
+public class FingerprintTest {
+    
+    @Test public void rangeSet() {
         RangeSet rs = new RangeSet();
         assertFalse(rs.includes(0));
         assertFalse(rs.includes(3));
@@ -62,7 +64,7 @@ public class FingerprintTest extends TestCase {
         assertEquals("[3,7),[9,11)",rs.toString());
     }
 
-    public void testMerge() {
+    @Test public void merge() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(2);
@@ -81,7 +83,7 @@ public class FingerprintTest extends TestCase {
         assertEquals("[1,7)",x.toString());
     }
 
-    public void testMerge2() {
+    @Test public void merge2() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(2);
@@ -98,7 +100,7 @@ public class FingerprintTest extends TestCase {
         assertEquals("[1,7)",x.toString());
     }
 
-    public void testMerge3() {
+    @Test public void merge3() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(5);
