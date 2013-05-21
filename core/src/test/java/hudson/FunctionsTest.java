@@ -264,6 +264,7 @@ public class FunctionsTest {
         }
     }
 
+    @Bug(17030)
     @Test
     public void testBreakableString() {
 

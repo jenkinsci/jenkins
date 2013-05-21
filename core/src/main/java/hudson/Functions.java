@@ -1724,7 +1724,7 @@ public class Functions {
      * to wrap line before any sequence of punctuation characters or anywhere
      * in the middle of prolonged sequences of word characters.
      *
-     * @since 1.516
+     * @since 1.517
      */
     public static String breakableString(final String plain) {
 
