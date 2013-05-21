@@ -79,7 +79,7 @@ THE SOFTWARE.
                       </j:invokeStatic>
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}">${exeparent.fullDisplayName}</a>&#160;<a href="${rootURL}/${exe.url}" class="model-link inside">#${exe.number}</a>
+                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>&#160;<a href="${rootURL}/${exe.url}" class="model-link inside">#${exe.number}</a>
                           <t:buildProgressBar build="${exe}" executor="${executor}"/>
                         </j:when>
                         <j:otherwise>
