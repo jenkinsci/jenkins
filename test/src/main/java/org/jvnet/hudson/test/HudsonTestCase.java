@@ -506,11 +506,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration(), new NoListenerConfiguration()});
         server.setHandler(context);
         context.setMimeTypes(MIME_TYPES);
-        if(Functions.isWindows()) {
-            // this is only needed on Windows because of the file
-            // locking issue as described in JENKINS-12647
-            context.setCopyWebDir(true);
-        }
 
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
