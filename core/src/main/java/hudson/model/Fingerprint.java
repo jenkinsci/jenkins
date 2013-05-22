@@ -578,7 +578,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
 
-    private PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
+    PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
 
     /**
      * Lazily computed immutable {@link FingerprintFacet}s created from {@link TransientFingerprintFacetFactory}.
@@ -712,7 +712,12 @@ public class Fingerprint implements ModelObject, Saveable {
      * Records that a build of a job has used this file.
      */
     public synchronized void add(String jobFullName, int n) throws IOException {
-        synchronized(usages) {
+        addWithoutSaving(jobFullName, n);
+        save();
+    }
+
+    void addWithoutSaving(String jobFullName, int n) {
+        synchronized(usages) { // XXX why not synchronized (this) like some, though not all, other accesses?
             RangeSet r = usages.get(jobFullName);
             if(r==null) {
                 r = new RangeSet();
@@ -720,7 +725,6 @@ public class Fingerprint implements ModelObject, Saveable {
             }
             r.add(n);
         }
-        save();
     }
 
     /**
