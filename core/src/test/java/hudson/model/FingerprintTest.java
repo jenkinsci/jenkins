@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.model.Fingerprint.RangeSet;
+import java.io.File;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -115,4 +116,16 @@ public class FingerprintTest {
         x.add(y);
         assertEquals("[1,2),[3,4),[5,6),[7,8)",x.toString());
     }
+
+    @Test public void deserialize() throws Exception {
+        assertEquals("Fingerprint["
+                + "original=stapler/org.kohsuke.stapler:stapler-jelly #123,"
+                + "hash=069484c9e963cc615c51278327da8eab,"
+                + "fileName=org.kohsuke.stapler:stapler-jelly-1.207.jar,"
+                + "timestamp=2013-05-21 19:20:03.534 UTC,"
+                + "usages={stuff=[304,306),[307,324),[328,330), stuff/test:stuff=[2,67),[72,77),[84,223),[228,229),[232,268)},"
+                + "facets=[]]",
+                Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
+    }
+
 }
