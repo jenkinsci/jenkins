@@ -246,7 +246,7 @@ public abstract class TestResult extends TestObject {
         sb.append("Total Count: ").append(this.getTotalCount()).append(", ");
         sb.append("Fail: ").append(this.getFailCount()).append(", ");
         sb.append("Skipt: ").append(this.getSkipCount()).append(", ");
-        sb.append("Pass: ").append(this.getSkipCount()).append(",\n");
+        sb.append("Pass: ").append(this.getPassCount()).append(",\n");
         sb.append("Test Result Class: " ).append(this.getClass().getName()).append(" }\n");
         return sb.toString(); 
     }
