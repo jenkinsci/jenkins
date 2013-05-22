@@ -98,6 +98,9 @@ THE SOFTWARE.
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+
+    <mcompiler.source>1.5</mcompiler.source>
+    <mcompiler.target>${mcompiler.source}</mcompiler.target>
   </properties>
 
 
@@ -625,7 +628,7 @@ THE SOFTWARE.
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.6</maxJdkVersion>
+                  <maxJdkVersion>${mcompiler.target}</maxJdkVersion>
                 </enforceBytecodeVersion>
               </rules>
             </configuration>
