@@ -343,7 +343,7 @@ public class Search {
             m.find(index,token,items);
             for (SearchItem si : items) {
                 paths[w].add(new SuggestedItem(si));
-                LOGGER.info("found search item:" + si.getSearchName());
+                LOGGER.fine("found search item:" + si.getSearchName());
             }
             w++;
         }
