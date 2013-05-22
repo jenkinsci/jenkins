@@ -332,9 +332,7 @@ public class Search {
 
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-        if(LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("tokens="+tokens.toString());
-        }
+        LOGGER.log(Level.FINE, "tokens={0}", tokens);
         
         // first token
         int w=1;    // width of token
@@ -343,7 +341,7 @@ public class Search {
             m.find(index,token,items);
             for (SearchItem si : items) {
                 paths[w].add(new SuggestedItem(si));
-                LOGGER.fine("found search item:" + si.getSearchName());
+                LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
         }
