@@ -23,15 +23,21 @@
  */
 package hudson.model;
 
+import hudson.Util;
 import hudson.model.Fingerprint.RangeSet;
 import java.io.File;
+import jenkins.model.FingerprintFacet;
 import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class FingerprintTest {
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
     
     @Test public void rangeSet() {
         RangeSet rs = new RangeSet();
@@ -126,6 +132,45 @@ public class FingerprintTest {
                 + "usages={stuff=[304,306),[307,324),[328,330), stuff/test:stuff=[2,67),[72,77),[84,223),[228,229),[232,268)},"
                 + "facets=[]]",
                 Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
+    }
+
+    @Test public void roundTrip() throws Exception {
+        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff.jar", SOME_MD5);
+        f.addWithoutSaving("some", 1);
+        f.addWithoutSaving("some", 2);
+        f.addWithoutSaving("some", 3);
+        f.addWithoutSaving("some", 10);
+        f.addWithoutSaving("other", 6);
+        File xml = tmp.newFile();
+        f.save(xml);
+        Fingerprint f2 = Fingerprint.load(xml);
+        assertEquals(f.toString(), f2.toString());
+        f.facets.setOwner(Saveable.NOOP);
+        f.facets.add(new TestFacet(f, 123, "val"));
+        f.save(xml);
+        //System.out.println(FileUtils.readFileToString(xml));
+        f2 = Fingerprint.load(xml);
+        assertEquals(f.toString(), f2.toString());
+        assertEquals(1, f2.facets.size());
+        TestFacet facet = (TestFacet) f2.facets.get(0);
+        assertEquals(f2, facet.getFingerprint());
+    }
+    private static byte[] toByteArray(String md5sum) {
+        byte[] data = new byte[16];
+        for( int i=0; i<md5sum.length(); i+=2 )
+            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
+        return data;
+    }
+    private static final byte[] SOME_MD5 = toByteArray(Util.getDigestOf("whatever"));
+    public static final class TestFacet extends FingerprintFacet {
+        final String property;
+        public TestFacet(Fingerprint fingerprint, long timestamp, String property) {
+            super(fingerprint, timestamp);
+            this.property = property;
+        }
+        @Override public String toString() {
+            return "TestFacet[" + property + "@" + getTimestamp() + "]";
+        }
     }
 
 }
