@@ -487,9 +487,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private void createSymlink(TaskListener listener, String name, Permalink target) throws InterruptedException {
         String targetDir;
         if (getProject().getBuildDir().equals(new File(getProject().getRootDir(), "builds"))) {
-            targetDir = "builds/" + target.getId();
+            targetDir = "builds" + File.separator + target.getId();
         } else {
-            targetDir = getProject().getBuildDir()+"/"+target.getId();
+            targetDir = getProject().getBuildDir() + File.separator + target.getId();
         }
         Util.createSymlink(getProject().getRootDir(), targetDir, name, listener);
     }
