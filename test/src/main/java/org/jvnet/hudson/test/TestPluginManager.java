@@ -57,7 +57,12 @@ public class TestPluginManager extends PluginManager {
 
     private TestPluginManager() throws IOException {
         // TestPluginManager outlives a Jetty server, so can't pass in ServletContext.
-        super(null, Util.createTempDir());
+        this(Util.createTempDir());
+    }
+
+    private TestPluginManager(File dir) throws IOException {
+        // TestPluginManager outlives a Jetty server, so can't pass in ServletContext.
+        super(null, dir);
     }
 
     @Override
@@ -123,7 +128,14 @@ public class TestPluginManager extends PluginManager {
 
     static {
         try {
-            INSTANCE = new TestPluginManager();
+            File rootDir = new File("./target/plugin-manager-for-test").getAbsoluteFile();
+            if(rootDir.exists()) {
+                // Cleanup rootDir if already exists.
+                // It is created in the last test execution and contains old plugins.
+                // This often happens in Windows.
+                Util.deleteRecursive(rootDir);
+            }
+            INSTANCE = new TestPluginManager(rootDir);
             Runtime.getRuntime().addShutdownHook(new Thread("delete " + INSTANCE.rootDir) {
                 @Override public void run() {
                     try {
