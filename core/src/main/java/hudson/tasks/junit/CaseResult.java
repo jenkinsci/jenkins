@@ -214,7 +214,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     }
 
     public String getDisplayName() {
-        return testName;
+        return TestNameTransformer.getTransformedName(testName);
     }
 
     /**
@@ -233,7 +233,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public String getTitle() {
-        return "Case Result: " + getName();
+        return "Case Result: " + getDisplayName();
     }
 
     /**
@@ -285,11 +285,17 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         if(idx<0)       return "(root)";
         else            return className.substring(0,idx);
     }
-
+    
     public String getFullName() {
-        return className+'.'+getName();
+    	return className+'.'+getName();
     }
-
+    
+    /**
+     * @since 1.515
+     */
+    public String getFullDisplayName() {
+    	return TestNameTransformer.getTransformedName(getFullName());
+    }
 
     @Override
     public int getFailCount() {

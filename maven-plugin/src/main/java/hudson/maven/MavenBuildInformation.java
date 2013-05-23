@@ -21,9 +21,13 @@ package hudson.maven;
  */
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.model.Model;
+import org.apache.maven.project.MavenProject;
 
 /**
  * @author Olivier Lamy
@@ -33,6 +37,15 @@ public class MavenBuildInformation implements Serializable {
 
     private static final long serialVersionUID = -3719709179508200057L;
     private String mavenVersion;
+    /**
+     * Map of model IDs to IDs of the model parents (if defined).
+     * @see MavenProject#getId
+     * @see Model#getId
+     * @see MavenProject#getParent
+     * @see Model#getParent
+     * @since 1.515
+     */
+    public final Map<String,String> modelParents = new HashMap<String,String>();
     
     public MavenBuildInformation(String mavenVersion) {
         this.mavenVersion = mavenVersion;

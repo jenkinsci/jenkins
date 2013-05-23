@@ -974,6 +974,67 @@ public class Functions {
       return Items.getAllItems(root, TopLevelItem.class);
     }
     
+    /**
+     * Gets the relative name or display name to the given item from the specified group.
+     *
+     * @since 1.515
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @param useDisplayName if true, returns a display name, otherwise returns a name
+     * @return
+     *      String like "foo » bar"
+     */
+    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+        if (p == null) return null;
+        if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
+        String separationString = useDisplayName ? " » " : "/";
+        
+        // first list up all the parents
+        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
+        int depth=0;
+        while (g!=null) {
+            parents.put(g, depth++);
+            if (g instanceof Item)
+                g = ((Item)g).getParent();
+            else
+                g = null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        Item i=p;
+        while (true) {
+            if (buf.length()>0) buf.insert(0,separationString);
+            buf.insert(0,useDisplayName ? i.getDisplayName() : i.getName());
+            ItemGroup gr = i.getParent();
+
+            Integer d = parents.get(gr);
+            if (d!=null) {
+                String s="";
+                for (int j=d; j>0; j--)
+                    s+=".." + separationString;
+                return s+buf;
+            }
+
+            if (gr instanceof Item)
+                i = (Item)gr;
+            else
+                return null;
+        }
+    }
+    
+    /**
+     * Gets the name to the given item relative to given group.
+     *
+     * @since 1.515
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
+    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+        return getRelativeNameFrom(p, g, false);
+    }    
+    
     
     /**
      * Gets the relative display name to the given item from the specified group.
@@ -985,10 +1046,7 @@ public class Functions {
      *      String like "foo » bar"
      */
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
-        if (p == null) return null;
-        String relativeName = p.getRelativeNameFrom(g);
-        if (relativeName == null) return null;
-        return relativeName.replace("/", " » ");
+        return getRelativeNameFrom(p, g, true);
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
@@ -1657,5 +1715,21 @@ public class Functions {
         }
         DecimalFormat format = new DecimalFormat("#0.00");
         return format.format(number) + " " + measure;
+    }
+
+    /**
+     * Get a string that can be safely broken to several lines when necessary.
+     *
+     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * to wrap line before any sequence of punctuation characters or anywhere
+     * in the middle of prolonged sequences of word characters.
+     *
+     * @since 1.517
+     */
+    public static String breakableString(final String plain) {
+
+        return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
+                .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
+        ;
     }
 }

@@ -8,8 +8,17 @@
     place the file.</li>
     <li>Perform data processing by uploading a dataset.</li>
     </ol>
-    <p>It is possible to not submit any file. If it's case and if no file is
-    already present at the specified location in the workspace, then nothing
-    happens. If there's already a file present in the workspace, then this file
-    will be kept as-is.</p>
+    <p>
+        The name of the submitted file is available in the environment variable
+        whose name is the same as file location. For example, if you set the file
+        location to be <tt>abc.zip</tt>, then <tt>${abc.zip}</tt> would give you
+        the original file name passed from the browser (such as <tt>my.zip</tt>.)
+        The name will not include the directory name portion.
+    </p>
+    <p>
+        File upload is optional. If a user chooses not to upload anything,
+        Jenkins will simply skips this parameter and will not place
+        anything (but it also will not delete anything that's already in the
+        workspace.)
+    </p>
 </div>

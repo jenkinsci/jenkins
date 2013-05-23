@@ -66,7 +66,7 @@ public class ListView extends View implements Saveable {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ final SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
@@ -108,6 +108,9 @@ public class ListView extends View implements Saveable {
     private Object readResolve() {
         if(includeRegex!=null)
             includePattern = Pattern.compile(includeRegex);
+        if (jobNames == null) {
+            jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+        }
         initColumns();
         initJobFilters();
         return this;

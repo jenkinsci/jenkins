@@ -24,11 +24,11 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -61,6 +61,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -179,6 +180,10 @@ public class Fingerprint implements ModelObject, Saveable {
             }
 
             return false;
+        }
+
+        @Override public String toString() {
+            return name + " #" + number;
         }
     }
 
@@ -573,7 +578,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private final Hashtable<String,RangeSet> usages = new Hashtable<String,RangeSet>();
 
-    private PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
+    PersistedList<FingerprintFacet> facets = new PersistedList<FingerprintFacet>(this);
 
     /**
      * Lazily computed immutable {@link FingerprintFacet}s created from {@link TransientFingerprintFacetFactory}.
@@ -581,11 +586,15 @@ public class Fingerprint implements ModelObject, Saveable {
     private transient volatile List<FingerprintFacet> transientFacets = null;
 
     public Fingerprint(Run build, String fileName, byte[] md5sum) throws IOException {
-        this.original = build==null ? null : new BuildPtr(build);
+        this(build==null ? null : new BuildPtr(build), fileName, md5sum);
+        save();
+    }
+
+    Fingerprint(BuildPtr original, String fileName, byte[] md5sum) {
+        this.original = original;
         this.md5sum = md5sum;
         this.fileName = fileName;
         this.timestamp = new Date();
-        save();
     }
 
     /**
@@ -703,7 +712,12 @@ public class Fingerprint implements ModelObject, Saveable {
      * Records that a build of a job has used this file.
      */
     public synchronized void add(String jobFullName, int n) throws IOException {
-        synchronized(usages) {
+        addWithoutSaving(jobFullName, n);
+        save();
+    }
+
+    void addWithoutSaving(String jobFullName, int n) {
+        synchronized(usages) { // XXX why not synchronized (this) like some, though not all, other accesses?
             RangeSet r = usages.get(jobFullName);
             if(r==null) {
                 r = new RangeSet();
@@ -711,7 +725,6 @@ public class Fingerprint implements ModelObject, Saveable {
             }
             r.add(n);
         }
-        save();
     }
 
     /**
@@ -838,11 +851,15 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         File file = getFingerprintFile(md5sum);
-        getConfigFile(file).write(this);
+        save(file);
         SaveableListener.fireOnChange(this, getConfigFile(file));
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
+    }
+
+    void save(File file) throws IOException {
+        getConfigFile(file).write(this);
     }
 
     /**
@@ -930,6 +947,10 @@ public class Fingerprint implements ModelObject, Saveable {
             logger.log(Level.WARNING, "Failed to load "+configFile,e);
             throw e;
         }
+    }
+
+    @Override public String toString() {
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + new DateConverter().toString(timestamp) + ",usages=" + new TreeMap<String,RangeSet>(usages) + ",facets=" + facets + "]";
     }
 
     private static final XStream XSTREAM = new XStream2();

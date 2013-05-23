@@ -1430,14 +1430,12 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
-                    var next = hist.next();
-                    p.removeChild(hist);
 
                     var div = document.createElement('div');
                     div.innerHTML = rsp.responseText;
 
                     var node = $(div).firstDescendant();
-                    p.insertBefore(node, next);
+                    p.replaceChild(node, hist);
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();

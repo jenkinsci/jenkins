@@ -52,8 +52,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -328,6 +326,18 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
     
     /**
+     * Gets the display name of the current item relative to the given group.
+     *
+     * @since 1.515
+     * @param p the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
+    public String getRelativeDisplayNameFrom(ItemGroup p) {
+        return Functions.getRelativeDisplayNameFrom(this, p);
+    }
+    
+    /**
      * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
      * @since 1.512
      * @see #getRelativeNameFrom(ItemGroup)
@@ -344,38 +354,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *  Nested ItemGroups are separated by / character.
      */
     public String getRelativeNameFrom(ItemGroup p) {
-        if (p == null) return getFullName();
-        // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
-        int depth=0;
-        while (p!=null) {
-            parents.put(p, depth++);
-            if (p instanceof Item)
-                p = ((Item)p).getParent();
-            else
-                p = null;
-        }
-
-        StringBuilder buf = new StringBuilder();
-        Item i=this;
-        while (true) {
-            if (buf.length()>0) buf.insert(0,'/');
-            buf.insert(0,i.getName());
-            ItemGroup g = i.getParent();
-
-            Integer d = parents.get(g);
-            if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+="../";
-                return s+buf;
-            }
-
-            if (g instanceof Item)
-                i = (Item)g;
-            else
-                return null;
-        }
+        return Functions.getRelativeNameFrom(this, p);
     }
 
     public String getRelativeNameFrom(Item item) {

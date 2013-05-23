@@ -204,6 +204,7 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.acegisecurity.GrantedAuthorityImpl;
 
 import static org.hamcrest.Matchers.hasXPath;
@@ -351,7 +352,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
         Mailer.DescriptorImpl desc = Mailer.descriptor();
         // prevent NPE with eclipse
-        if (desc != null) Mailer.descriptor().setHudsonUrl(null);
+        if (desc != null) Mailer.descriptor().setHudsonUrl(getURL().toString());
+        JenkinsLocationConfiguration.get().setUrl(getURL().toString());
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
     }

@@ -328,6 +328,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         List<Action> actions = new ArrayList<Action>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
             actions.addAll(factory.createFor(this));
+            assert !actions.contains(null) : "null action added by " + factory;
         }
         return Collections.unmodifiableList(actions);
     }
@@ -2210,8 +2211,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (result == null){
             //check transient actions too
             for(Action action: getTransientActions()){
-                if(action.getUrlName().equals(token))
+                String urlName = action.getUrlName();
+                if (urlName == null) {
+                    continue;
+                }
+                if (urlName.equals(token)) {
                     return action;
+                }
             }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds

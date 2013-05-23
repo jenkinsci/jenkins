@@ -30,11 +30,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
-import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
-import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -45,7 +43,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.jruby.ext.posix.FileStat;
 import org.jruby.ext.posix.POSIX;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
-import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -61,7 +58,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -76,6 +72,7 @@ import java.util.regex.Pattern;
 import hudson.util.jna.Kernel32Utils;
 
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -554,23 +551,10 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
+     * @see DigestUtils#md5(InputStream)
      */
     public static String getDigestOf(InputStream source) throws IOException {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-
-            byte[] buffer = new byte[1024];
-            DigestInputStream in =new DigestInputStream(source,md5);
-            try {
-                while(in.read(buffer)>=0)
-                    ; // simply discard the input
-            } finally {
-                in.close();
-            }
-            return toHexString(md5.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new IOException2("MD5 not installed",e);    // impossible
-        }
+        return DigestUtils.md5Hex(source);
     }
 
     public static String getDigestOf(String text) {
@@ -1199,6 +1183,10 @@ public class Util {
                 }
             } catch (ClassNotFoundException x3) {
                 assert false : x3; // should be Java 7+ here
+            }
+            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
+                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
+                return null;
             }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;

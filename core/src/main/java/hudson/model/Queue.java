@@ -516,7 +516,7 @@ public class Queue extends ResourceController implements Saveable {
     		}
     	}
     	if (duplicatesInQueue.isEmpty()) {
-    		LOGGER.fine(p.getFullDisplayName() + " added to queue");
+    		LOGGER.log(Level.FINE, "{0} added to queue", p);
 
     		// put the item in the queue
             WaitingItem added = new WaitingItem(due,p,actions);
@@ -525,7 +525,7 @@ public class Queue extends ResourceController implements Saveable {
             return added;
     	}
 
-        LOGGER.fine(p.getFullDisplayName() + " is already in the queue");
+        LOGGER.log(Level.FINE, "{0} is already in the queue", p);
 
         // but let the actions affect the existing stuff.
         for(Item item : duplicatesInQueue) {
@@ -593,7 +593,7 @@ public class Queue extends ResourceController implements Saveable {
      *         false if this was no-op.
      */
     public synchronized boolean cancel(Task p) {
-        LOGGER.fine("Cancelling " + p.getFullDisplayName());
+        LOGGER.log(Level.FINE, "Cancelling {0}", p);
         for (Iterator<WaitingItem> itr = waitingList.iterator(); itr.hasNext();) {
             Item item = itr.next();
             if (item.task.equals(p)) {
@@ -607,7 +607,7 @@ public class Queue extends ResourceController implements Saveable {
     }
     
     public synchronized boolean cancel(Item item) {
-        LOGGER.fine("Cancelling " + item.task.getFullDisplayName() + " item#" + item.id);
+        LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
         // use bitwise-OR to make sure that all the branches get evaluated all the time
         boolean r = (item instanceof WaitingItem && waitingList.remove(item)) | blockedProjects.remove(item) | buildables.remove(item);
         if(r)
@@ -890,7 +890,7 @@ public class Queue extends ResourceController implements Saveable {
                 // am I woken up because I have a project to build?
                 if (offer.workUnit != null) {
                     // if so, just build it
-                    LOGGER.fine("Pop returning " + offer.workUnit + " for " + exec.getName());
+                    LOGGER.log(Level.FINE, "Pop returning {0} for {1}", new Object[] {offer.workUnit, exec.getName()});
 
                     // TODO: I think this has to be done by the last executor that leaves the pop(), not by main executor
                     if (offer.workUnit.isMainWork())
@@ -979,8 +979,7 @@ public class Queue extends ResourceController implements Saveable {
      * and it also gets invoked periodically (see {@link MaintainTask}.)
      */
     public synchronized void maintain() {
-        if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine("Queue maintenance started " + this);
+        LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
         {// blocked -> buildable
             Iterator<BlockedItem> itr = blockedProjects.values().iterator();
@@ -988,7 +987,7 @@ public class Queue extends ResourceController implements Saveable {
                 BlockedItem p = itr.next();
                 if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                     // ready to be executed
-                    LOGGER.fine(p.task.getFullDisplayName() + " no longer blocked");
+                    LOGGER.log(Level.FINE, "{0} no longer blocked", p.task);
                     itr.remove();
                     makeBuildable(new BuildableItem(p));
                 }
@@ -1006,12 +1005,12 @@ public class Queue extends ResourceController implements Saveable {
             Task p = top.task;
             if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                 // ready to be executed immediately
-                LOGGER.fine(p.getFullDisplayName() + " ready to build");
+                LOGGER.log(Level.FINE, "{0} ready to build", p);
                 makeBuildable(new BuildableItem(top));
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
-                LOGGER.fine(p.getFullDisplayName() + " is blocked");
+                LOGGER.log(Level.FINE, "{0} is blocked", p);
                 blockedProjects.put(p,new BlockedItem(top));
             }
         }
@@ -1029,7 +1028,7 @@ public class Queue extends ResourceController implements Saveable {
             if (isBuildBlocked(p)) {
                 itr.remove();
                 blockedProjects.put(p.task,new BlockedItem(p));
-                LOGGER.fine(String.format("Catching that %s is blocked in the last minute", p));
+                LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
                 continue;
             }
 
@@ -1044,10 +1043,7 @@ public class Queue extends ResourceController implements Saveable {
                 // if we couldn't find the executor that fits,
                 // just leave it in the buildables list and
                 // check if we can execute other projects
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.finer(String.format("Failed to map %s to executors. candidates=%s parked=%s",
-                            p, candidates, parked.values()));
-                }
+                LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}", new Object[] {p, candidates, parked.values()});
                 continue;
             }
 
@@ -1059,7 +1055,7 @@ public class Queue extends ResourceController implements Saveable {
             if (!wuc.getWorkUnits().isEmpty())
                 makePending(p);
             else
-                LOGGER.fine(String.format("BuildableItem %s with empty work units!?",p));
+                LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
         }
     }
 

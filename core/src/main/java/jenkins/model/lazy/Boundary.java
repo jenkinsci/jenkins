@@ -32,7 +32,7 @@ package jenkins.model.lazy;
  * this class provides likes of {@code ceil(X,p)} which is the smallest x<sub>i</sub>
  * that still satisfies x<sub>i</sub> >= p.
  *
- * Simiarly, {@link #HIGHER} is the smallest x<sub>i</sub>
+ * Similarly, {@link #HIGHER} is the smallest x<sub>i</sub>
  * that still satisfies x<sub>i</sub> > p.
  *
  * @author Kohsuke Kawaguchi
