@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,12 +126,16 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
     @Override
     public boolean equals(Object o) {
-        return core.equals(o);
+        return core.equals(o); // XXX this is wrong
     }
 
     @Override
     public int hashCode() {
         return core.hashCode();
+    }
+
+    @Override public String toString() {
+        return new LinkedHashMap<Integer,R>(this).toString();
     }
 
     private class CollectionAdapter implements Collection<R> {
