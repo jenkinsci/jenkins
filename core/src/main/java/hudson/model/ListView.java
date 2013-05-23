@@ -189,15 +189,18 @@ public class ListView extends View implements Saveable {
         includeItems(parent, parent, names);
     }
     
-    private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
+    private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<?> parent, SortedSet<String> names) {
         if (includePattern != null) {
             for (Item item : parent.getItems()) {
                 if (recurse && item instanceof ItemGroup) {
-                    includeItems(root, (ItemGroup<? extends TopLevelItem>)item, names);
+                    ItemGroup<?> ig = (ItemGroup<?>) item;
+                    includeItems(root, ig, names);
                 }
-                String itemName = item.getRelativeNameFrom(root);
-                if (includePattern.matcher(itemName).matches()) {
-                    names.add(itemName);
+                if (item instanceof TopLevelItem) {
+                    String itemName = item.getRelativeNameFrom(root);
+                    if (includePattern.matcher(itemName).matches()) {
+                        names.add(itemName);
+                    }
                 }
             }
         }
@@ -228,6 +231,13 @@ public class ListView extends View implements Saveable {
     
     public boolean isRecurse() {
         return recurse;
+    }
+    
+    /*
+     * For testing purposes
+     */
+    void setRecurse(boolean recurse) {
+        this.recurse = recurse;
     }
 
     /**
