@@ -113,12 +113,6 @@ public class TestPluginManager extends PluginManager {
         return names;
     }
     
-    @Override
-    public void stop() {
-        for (PluginWrapper p : activePlugins)
-            p.stop();
-    }
-
     private static final Logger LOGGER = Logger.getLogger(TestPluginManager.class.getName());
 
     static {
