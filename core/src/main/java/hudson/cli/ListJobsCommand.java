@@ -49,9 +49,23 @@ public class ListJobsCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
-        final Collection<TopLevelItem> jobs;
+        final Collection<TopLevelItem> jobs = getJobs(Jenkins.getInstance());
 
+        if (jobs.isEmpty()) {
+            stderr.println("No view or item group with the given name found");
+        }
+
+        // Print all jobs.
+        for (TopLevelItem item : jobs) {
+            stdout.println(item.getDisplayName());
+        }
+
+        return 0;
+    }
+
+    /*package*/ Collection<TopLevelItem> getJobs(final Jenkins h) {
+
+        final Collection<TopLevelItem> jobs;
         // If name is given retrieve jobs for the given view.
         if (name != null) {
             View view = h.getView(name);
@@ -70,7 +84,7 @@ public class ListJobsCommand extends CLICommand {
                 }
                 // No view and no item group with the given name found.
                 else {
-                    stderr.println("No view or item group with the given name found");
+
                     jobs = Collections.emptyList();
                 }
             }
@@ -79,12 +93,6 @@ public class ListJobsCommand extends CLICommand {
         else {
             jobs = h.getItems();
         }
-
-        // Print all jobs.
-        for (TopLevelItem item : jobs) {
-            stdout.println(item.getDisplayName());
-        }
-
-        return 0;
+        return jobs;
     }
 }
