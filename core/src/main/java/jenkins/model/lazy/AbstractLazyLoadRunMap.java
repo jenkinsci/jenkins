@@ -215,6 +215,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *
      * This is a bit more sophisticated version of forcing GC.
      * Primarily for debugging and testing lazy loading behaviour.
+     * @since 1.507
      */
     public void purgeCache() {
         index = new Index();
