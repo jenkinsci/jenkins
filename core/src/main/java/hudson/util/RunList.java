@@ -221,6 +221,12 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return this;
     }
 
+    /**
+     * Return only the most recent builds.
+     * @param n a count
+     * @return the n most recent builds
+     * @since 1.507
+     */
     public RunList<R> limit(final int n) {
         return limit(new CountingPredicate<R>() {
             public boolean apply(int index, R input) {
