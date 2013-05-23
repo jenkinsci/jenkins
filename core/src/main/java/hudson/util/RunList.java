@@ -241,9 +241,9 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
-     * Filter the list to builds >= threshold.
+     * Filter the list to builds above threshold.
      * 
-     * @since 1.516
+     * @since 1.517
      */
     public RunList<R> overThresholdOnly(final Result threshold) {
         return filter(new Predicate<R>() {

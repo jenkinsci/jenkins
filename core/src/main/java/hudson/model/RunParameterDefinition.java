@@ -38,7 +38,8 @@ import org.kohsuke.stapler.QueryParameter;
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
     /**
-     * Constants that control how Run Parameter is filtered
+     * Constants that control how Run Parameter is filtered.
+     * @since 1.517
      */
     public enum RunParameterFilter {
         ALL,
@@ -59,6 +60,9 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     private final String runId;
     private final RunParameterFilter filter;
 
+    /**
+     * @since 1.517
+     */
     @DataBoundConstructor
     public RunParameterDefinition(String name, String projectName, String description, RunParameterFilter filter) {
         super(name, description);
@@ -103,6 +107,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     /**
      * @return The current filter value, if filter is null, returns ALL
+     * @since 1.517
      */
     public RunParameterFilter getFilter() {
     	// if filter is null, default to RunParameterFilter.ALL

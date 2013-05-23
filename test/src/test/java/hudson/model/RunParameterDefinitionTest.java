@@ -238,7 +238,7 @@ public class RunParameterDefinitionTest {
     
     static class ResultPublisher extends Publisher {
 
-        private Result result = Result.FAILURE;
+        private final Result result;
 
         public ResultPublisher(Result result) {
             this.result = result;
