@@ -136,6 +136,17 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
         return mixin().copy(src, name);
     }
 
+    @Override public void onCopiedFrom(Item src) {
+        super.onCopiedFrom(src);
+        for (TopLevelItem item : ((MockFolder) src).getItems()) {
+            try {
+                copy(item, item.getName());
+            } catch (IOException x) {
+                assert false : x;
+            }
+        }
+    }
+
     @Override public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         return mixin().createProjectFromXML(name, xml);
     }
