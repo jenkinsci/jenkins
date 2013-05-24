@@ -113,6 +113,8 @@ public class TestPluginManager extends PluginManager {
         return names;
     }
     
+    // Overwrite PluginManager#stop, not to release plugins in each tests.
+    // Releasing plugins result fail to access files in webapp directory in following tests.
     @Override
     public void stop() {
         for (PluginWrapper p : activePlugins)
@@ -126,6 +128,14 @@ public class TestPluginManager extends PluginManager {
             INSTANCE = new TestPluginManager();
             Runtime.getRuntime().addShutdownHook(new Thread("delete " + INSTANCE.rootDir) {
                 @Override public void run() {
+                    // Shutdown and release plugins as in PluginManager#stop
+                    for(PluginWrapper p: INSTANCE.getPlugins()) {
+                        p.stop();
+                        p.releaseClassLoader();
+                    }
+                    INSTANCE.getPlugins().clear();
+                    // allow JVM cleanup handles of jar files...
+                    System.gc();
                     try {
                         Util.deleteRecursive(INSTANCE.rootDir);
                     } catch (IOException x) {
