@@ -26,20 +26,23 @@ package hudson.model;
 import jenkins.model.Jenkins;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author kingfai
  *
  */
-public class DisplayNameTest extends HudsonTestCase {
+public class DisplayNameTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testRenameJobWithNoDisplayName() throws Exception {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         Assert.assertEquals(projectName, project.getDisplayName());
         
         project.renameTo(newProjectName);
@@ -51,7 +54,7 @@ public class DisplayNameTest extends HudsonTestCase {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
         final String displayName = "displayName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         project.setDisplayName(displayName);
         Assert.assertEquals(displayName, project.getDisplayName());
         
@@ -64,7 +67,7 @@ public class DisplayNameTest extends HudsonTestCase {
     public void testCopyJobWithNoDisplayName() throws Exception {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         Assert.assertEquals(projectName, project.getDisplayName());
 
         AbstractProject newProject = Jenkins.getInstance().copy((AbstractProject)project, newProjectName);
@@ -78,7 +81,7 @@ public class DisplayNameTest extends HudsonTestCase {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
         final String oldDisplayName = "oldDisplayName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         project.setDisplayName(oldDisplayName);
         Assert.assertEquals(oldDisplayName, project.getDisplayName());
 
