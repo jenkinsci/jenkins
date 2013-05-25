@@ -23,11 +23,15 @@
  */
 package hudson.tasks.junit;
 
-import org.jvnet.localizer.Localizable;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestResult;
+
 import org.dom4j.Element;
+
+import org.jvnet.localizer.Localizable;
+
 import org.kohsuke.stapler.export.Exported;
 
 import java.text.DecimalFormat;
@@ -316,22 +320,66 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      * If this test failed, then return the build number
      * when this test started failing.
      */
-    @Exported(visibility=9)
+    @Exported(visibility = 9)
     public int getFailedSince() {
-        // If we haven't calculated failedSince yet, and we should,
-        // do it now.
-        if (failedSince==0 && getFailCount()==1) {
+        // If we haven't calculated failedSince yet, and we should, do it now.
+        if (failedSince == 0 && getFailCount() == 1) {
+            
             CaseResult prev = getPreviousResult();
-            if(prev!=null && !prev.isPassed())
-                this.failedSince = prev.failedSince;
-            else if (getOwner() != null) {
+
+            AbstractBuild<?, ?> previousBuild = getOwner().getPreviousBuild();
+
+            // If:
+            // - the previous build is not the first one,
+            // - previous build was aborted,
+            // - and we had no result for this test in the previous build
+            // we should check earlier builds for test results to calculate the proper failure age.
+            while (previousBuild != null &&
+                   previousBuild.getResult().equals(hudson.model.Result.ABORTED) &&
+                   prev == null) {
+                
+                previousBuild = previousBuild.getPreviousBuild();
+                prev = getResultForBuild(previousBuild);
+            }
+            
+            if (prev != null && !prev.isPassed()) {
+                this.failedSince = prev.getFailedSince();
+            } else if (getOwner() != null) {
                 this.failedSince = getOwner().getNumber();
             } else {
                 LOGGER.warning("trouble calculating getFailedSince. We've got prev, but no owner.");
                 // failedSince will be 0, which isn't correct. 
             }
         }
+        
         return failedSince;
+    }
+    
+    /**
+     * Returns previous CaseResult of this test case for a given build.
+     * Null if test was not performed or the [build] parameter is null
+     * 
+     * @param build Build in which test case was performed 
+     * 
+     * @return CaseResult
+     */
+    private CaseResult getResultForBuild(AbstractBuild<?,?> build) {
+        
+        if (build == null) {
+            return null;
+        }
+        
+        AbstractTestResultAction testResultAction = (AbstractTestResultAction) build.getTestResultAction();
+        if (testResultAction != null) {
+            hudson.tasks.junit.TestResult testResult = (hudson.tasks.junit.TestResult) testResultAction.getResult();
+            if (testResult != null) {
+                SuiteResult suiteResult = testResult.getSuite(getSuiteResult().getName());
+                if (suiteResult != null) {
+                    return suiteResult.getCase(getName());
+                } 
+            }
+        }
+        return null;
     }
     
     public Run<?,?> getFailedSinceRun() {
