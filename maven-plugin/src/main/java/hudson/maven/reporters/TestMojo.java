@@ -69,7 +69,45 @@ enum TestMojo {
             return null;
         }
     },
-    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory");
+    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory"),
+    SCALATEST_MAVEN_PLUGIN("org.scalatest", "scalatest-maven-plugin", "test", null) {
+        @Override
+        public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo)
+                throws ComponentConfigurationException {
+            /* scalatest-maven-plugin has a configuration entry 'junitxml' which is a
+             * comma-separated list of entries; commas may be escaped with a backslash (\,).
+             * Each entry should be just a directory name (which is taken relative to the
+             * reportsDirectory), but the parsers support a leading format (separated by
+             * space), just like for other reporters, which is ultimately ignored (this is
+             * behavior is not documented, but can be gleaned from reading the code).
+             */
+            File reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
+            String junitConfigs = mojo.getConfigurationValue("junitxml", String.class);
+
+            if (junitConfigs == null || junitConfigs.trim().length() == 0) {
+                return null;
+            }
+
+            // split along non-escaped commas
+            String[] junitConfigsList = junitConfigs.trim().split("(?<!\\\\),");
+            for (String config : junitConfigsList) {
+                if (config.trim().length() > 0) {
+                    // unescape escaped commas
+                    String junitConfig = config.trim().replaceAll("\\\\,", ",");
+                    // get the directory, removing the leading format if present
+                    String[] parts = junitConfig.split("\\s", 2);
+                    String junitDirName = (parts.length > 1) ? parts[1] : parts[0];
+
+                    File junitDir = new File(reportsDir, junitDirName);
+                    if (junitDir.exists()) {
+                        return super.getReportFiles(junitDir, super.getFileSet(junitDir));
+                    }
+                }
+            }
+
+            return null;
+        }
+    };
 
     private String reportDirectoryConfigKey;
     private Key key;
