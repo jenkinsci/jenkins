@@ -69,7 +69,36 @@ enum TestMojo {
             return null;
         }
     },
-    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory");
+    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory"),
+    SCALATEST_MAVEN_PLUGIN("org.scalatest", "scalatest-maven-plugin", "test", null) {
+        @Override
+        public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo)
+                throws ComponentConfigurationException {
+            // scalatest-maven plugin uses junitxml which is a list of entries
+            File reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
+            String junitConfigs = mojo.getConfigurationValue("junitxml", String.class);
+
+            if (junitConfigs == null || junitConfigs.trim().length() == 0) {
+                return null;
+            }
+
+            String[] junitConfigsList = junitConfigs.trim().split("(?<!\\\\),");
+            for (String config : junitConfigsList) {
+                if (config.trim().length() > 0) {
+                    String junitConfig = config.trim().replaceAll("\\\\,", ",");
+                    String[] parts = junitConfig.split("\\s", 2);
+                    String junitDirName = (parts.length > 1) ? parts[1] : parts[0];
+
+                    File junitDir = new File(reportsDir, junitDirName);
+                    if (junitDir.exists()) {
+                        return super.getReportFiles(junitDir, super.getFileSet(junitDir));
+                    }
+                }
+            }
+
+            return null;
+        }
+    };
 
     private String reportDirectoryConfigKey;
     private Key key;

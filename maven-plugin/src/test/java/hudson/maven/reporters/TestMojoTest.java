@@ -2,6 +2,8 @@ package hudson.maven.reporters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -80,5 +82,106 @@ public class TestMojoTest {
         } finally {
             testResults.delete();
         }
+    }
+
+    @Test
+    public void testGetReportFilesScalatestMavenPlugin() throws ComponentConfigurationException, Exception {
+        MojoInfoBuilder mojoBuilder =
+                MojoInfoBuilder.mojoBuilder("org.scalatest", "scalatest-maven-plugin", "test");
+
+        final String testResultsName = "TEST-are-we-foobared.xml";
+
+        File testDir = hudson.Util.createTempDir();
+        File targetDir = new File(testDir, "target");
+        File reportsDir = new File(targetDir, "scalatest-reports");
+        File junitXmlDir = new File(reportsDir, "ut-xml");
+        assertTrue(junitXmlDir.mkdirs());
+
+        File testResults = new File(junitXmlDir, testResultsName);
+        try {
+            FileWriter fw = new FileWriter(testResults, false);
+            fw.write("this is a fake surefire reports output file");
+            fw.close();
+
+            MavenProject pom = mock(MavenProject.class);
+            when(pom.getBasedir()).thenReturn(testDir);
+
+            Build build = mock(Build.class);
+            when(build.getDirectory()).thenReturn(targetDir.getAbsolutePath());
+            when(pom.getBuild()).thenReturn(build);
+
+            TestMojo testMojo = TestMojo.SCALATEST_MAVEN_PLUGIN;
+
+            // no junitxml
+            MojoInfo mojoInfo =
+                    mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString())
+                               .build();
+            Iterable<File> files = testMojo.getReportFiles(pom, mojoInfo);
+            assertNull("unexpected report files returned", files);
+
+            // empty junitxml
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertNull("unexpected report files returned", files);
+
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", ", ").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertNull("unexpected report files returned", files);
+
+            // entry in junitxml does not exist
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "foo").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertNull("unexpected report files returned", files);
+
+            // one entry in junitxml
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "ut-xml").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "ut-xml,").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", ",ut-xml").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", ",ut-xml,").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+            // multiple entries in junitxml
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "ut-xml, foo, baz").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+            mojoInfo = mojoBuilder.copy().configValue("reportsDirectory", reportsDir.toString()).
+                                          configValue("junitxml", "foo, ut-xml, baz").build();
+            files = testMojo.getReportFiles(pom, mojoInfo);
+            assertHasOneFile(files, testResultsName);
+
+        } finally {
+            testResults.delete();
+        }
+    }
+
+    private void assertHasOneFile(Iterable<File> files, String expectedFile) {
+        assertNotNull("no report files returned", files);
+
+        boolean found = false;
+        for (File file : files) {
+            assertFalse("unexpected report files returned: " + file, found);
+            assertEquals(expectedFile, file.getName());
+            found = true;
+        }
+        assertTrue("report file not found", found);
     }
 }
