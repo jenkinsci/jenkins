@@ -592,6 +592,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns true if we should display "build now" icon
      */
     @Exported
+    public boolean isUserBuildable() {
+        return isBuildable();
+    }
+
+    /**
+     * Returns true if this project can be built.
+     */
+    @Exported
     public abstract boolean isBuildable();
 
     /**
