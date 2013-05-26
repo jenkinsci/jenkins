@@ -25,10 +25,14 @@ package hudson.cli;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
@@ -49,15 +53,29 @@ public class ListJobsCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
-        final Collection<TopLevelItem> jobs;
+        final Collection<TopLevelItem> jobs = getJobs(Jenkins.getInstance());
 
+        if (jobs.isEmpty()) {
+            stderr.println("No view or item group with the given name found");
+        }
+
+        // Print all jobs.
+        for (TopLevelItem item : jobs) {
+            stdout.println(item.getDisplayName());
+        }
+
+        return 0;
+    }
+
+    /*package*/ Collection<TopLevelItem> getJobs(final Jenkins h) {
+
+        final Collection<TopLevelItem> jobs;
         // If name is given retrieve jobs for the given view.
         if (name != null) {
             View view = h.getView(name);
 
             if (view != null) {
-                jobs = view.getItems();
+                jobs = getViewItems(view);
             }
             // If no view was found, try with an item group.
             else {
@@ -70,7 +88,7 @@ public class ListJobsCommand extends CLICommand {
                 }
                 // No view and no item group with the given name found.
                 else {
-                    stderr.println("No view or item group with the given name found");
+
                     jobs = Collections.emptyList();
                 }
             }
@@ -79,12 +97,23 @@ public class ListJobsCommand extends CLICommand {
         else {
             jobs = h.getItems();
         }
+        return jobs;
+    }
 
-        // Print all jobs.
-        for (TopLevelItem item : jobs) {
-            stdout.println(item.getDisplayName());
+    private Collection<TopLevelItem> getViewItems(View view) {
+
+        final Collection<TopLevelItem> jobs = new LinkedHashSet<TopLevelItem>(
+                view.getItems()
+        );
+
+        if (view instanceof ViewGroup) {
+
+            for(View subview: ((ViewGroup) view).getViews()) {
+
+                jobs.addAll(getViewItems(subview));
+            }
         }
 
-        return 0;
+        return jobs;
     }
 }
