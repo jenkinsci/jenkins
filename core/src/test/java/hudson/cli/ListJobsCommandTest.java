@@ -20,8 +20,8 @@ import java.util.List;
 
 import jenkins.model.Jenkins;
 
-import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -94,6 +94,30 @@ public class ListJobsCommandTest {
         assertThat(stdout, listsJobs("some-job", "some-other-job"));
     }
 
+    @Test
+    public void getJobsRecursivelyFromViewGroup() throws Exception {
+
+        final CompositeView rootView = mock(CompositeView.class);
+        final View leftView = mock(View.class);
+        final View rightView = mock(View.class);
+
+        final TopLevelItem rootJob = job("rootJob");
+        final TopLevelItem leftJob = job("leftJob");
+        final TopLevelItem rightJob = job("rightJob");
+        final TopLevelItem sharedJob = job("sharedJob");
+
+        when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
+        when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
+        when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
+        when(rightView.getItems()).thenReturn(Arrays.asList(rightJob));
+
+        when(jenkins.getView("Root")).thenReturn(rootView);
+
+        assertThat(runWith("Root"), equalTo(0));
+        assertThat(stderr, is(empty()));
+        assertThat(stdout, listsJobs("rootJob", "leftJob", "rightJob", "sharedJob"));
+    }
+
     private TopLevelItem job(final String name) {
 
         final TopLevelItem item = mock(TopLevelItem.class);
@@ -110,16 +134,14 @@ public class ListJobsCommandTest {
         return command.run();
     }
 
-    private <T> BaseMatcher<ByteArrayOutputStream> empty() {
+    private TypeSafeMatcher<ByteArrayOutputStream> empty() {
 
-        return new BaseMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<ByteArrayOutputStream>() {
 
             @Override
-            public boolean matches(Object item) {
+            protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                if (!(item instanceof ByteArrayOutputStream)) throw new IllegalArgumentException();
-
-                return ((ByteArrayOutputStream) item).toString().isEmpty();
+                return item.toString().isEmpty();
             }
 
             @Override
@@ -130,19 +152,15 @@ public class ListJobsCommandTest {
         };
     }
 
-    private BaseMatcher<ByteArrayOutputStream> listsJobs(final String... expected) {
+    private TypeSafeMatcher<ByteArrayOutputStream> listsJobs(final String... expected) {
 
-        return new BaseMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<ByteArrayOutputStream>() {
 
             @Override
-            public boolean matches(Object item) {
-
-                if (!(item instanceof ByteArrayOutputStream)) return false;
-
-                final ByteArrayOutputStream actual = (ByteArrayOutputStream) item;
+            protected boolean matchesSafely(ByteArrayOutputStream item) {
 
                 final HashSet<String> jobs = new HashSet<String>(
-                        Arrays.asList(actual.toString().split("\n"))
+                        Arrays.asList(item.toString().split("\n"))
                 );
 
                 return new HashSet<String>(Arrays.asList(expected)).equals(jobs);
