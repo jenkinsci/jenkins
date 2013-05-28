@@ -867,6 +867,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     void save(File file) throws IOException {
         if (facets.isEmpty()) {
+            file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
             PrintWriter w = new PrintWriter(file, "UTF-8");
             try {
