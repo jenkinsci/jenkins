@@ -49,7 +49,7 @@ public class DisplayNameListener extends ItemListener {
      * displayed.
      */
     public void onCopied(Item src, Item item) {
-        // bug 5056825 - Display name field should be cleared when you copy a job.
+        // bug 5056825 - Display name field should be cleared when you copy a job within the same folder.
         if(item instanceof AbstractItem && src.getParent() == item.getParent()) {
             AbstractItem dest = (AbstractItem)item;
             try {                
