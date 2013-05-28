@@ -933,7 +933,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (lastBuild != null)
             return lastBuild.getIconColor();
         else
-            return BallColor.GREY;
+            return BallColor.NOTBUILT;
     }
 
     /**
