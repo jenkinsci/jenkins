@@ -51,6 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -508,7 +510,10 @@ public class Fingerprint implements ModelObject, Saveable {
 
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
                 RangeSet src = (RangeSet) source;
+                writer.setValue(serialize(src));
+            }
 
+            static String serialize(RangeSet src) {
                 StringBuilder buf = new StringBuilder(src.ranges.size()*10);
                 for (Range r : src.ranges) {
                     if(buf.length()>0)  buf.append(',');
@@ -517,7 +522,7 @@ public class Fingerprint implements ModelObject, Saveable {
                     else
                         buf.append(r.start).append('-').append(r.end-1);
                 }
-                writer.setValue(buf.toString());
+                return buf.toString();
             }
 
             public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -560,6 +565,8 @@ public class Fingerprint implements ModelObject, Saveable {
             }
         }
     }
+
+    private static final DateConverter DATE_CONVERTER = new DateConverter();
     
     private final Date timestamp;
 
@@ -859,7 +866,53 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     void save(File file) throws IOException {
-        getConfigFile(file).write(this);
+        if (facets.isEmpty()) {
+            // JENKINS-16301: fast path for the common case.
+            PrintWriter w = new PrintWriter(file, "UTF-8");
+            try {
+                w.println("<?xml version='1.0' encoding='UTF-8'?>");
+                w.println("<fingerprint>");
+                w.print("  <timestamp>");
+                w.print(DATE_CONVERTER.toString(timestamp));
+                w.println("</timestamp>");
+                if (original != null) {
+                    w.println("  <original>");
+                    w.print("    <name>");
+                    w.print(original.name);
+                    w.println("</name>");
+                    w.print("    <number>");
+                    w.print(original.number);
+                    w.println("</number>");
+                    w.println("  </original>");
+                }
+                w.print("  <md5sum>");
+                w.print(Util.toHexString(md5sum));
+                w.println("</md5sum>");
+                w.print("  <fileName>");
+                w.print(fileName);
+                w.println("</fileName>");
+                w.println("  <usages>");
+                for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
+                    w.println("    <entry>");
+                    w.print("      <string>");
+                    w.print(e.getKey());
+                    w.println("</string>");
+                    w.print("      <ranges>");
+                    w.print(RangeSet.ConverterImpl.serialize(e.getValue()));
+                    w.println("</ranges>");
+                    w.println("    </entry>");
+                }
+                w.println("  </usages>");
+                w.println("  <facets/>");
+                w.print("</fingerprint>");
+                w.flush();
+            } finally {
+                w.close();
+            }
+        } else {
+            // Slower fallback that can persist facets.
+            getConfigFile(file).write(this);
+        }
     }
 
     /**
@@ -950,7 +1003,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + new DateConverter().toString(timestamp) + ",usages=" + new TreeMap<String,RangeSet>(usages) + ",facets=" + facets + "]";
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + new TreeMap<String,RangeSet>(usages) + ",facets=" + facets + "]";
     }
 
     private static final XStream XSTREAM = new XStream2();
