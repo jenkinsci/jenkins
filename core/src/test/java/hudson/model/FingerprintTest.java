@@ -141,7 +141,7 @@ public class FingerprintTest {
         f.addWithoutSaving("some", 3);
         f.addWithoutSaving("some", 10);
         f.addWithoutSaving("other", 6);
-        File xml = tmp.newFile();
+        File xml = new File(new File(tmp.getRoot(), "dir"), "fp.xml");
         f.save(xml);
         Fingerprint f2 = Fingerprint.load(xml);
         assertEquals(f.toString(), f2.toString());
