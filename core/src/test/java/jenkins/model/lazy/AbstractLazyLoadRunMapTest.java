@@ -35,6 +35,7 @@ import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.jvnet.hudson.test.Bug;
 
 /**
@@ -251,4 +252,28 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
         assert x.n==201;
     }
+
+    @Ignore("proper fix TBD")
+    @Bug(15652)
+    @Test public void outOfOrder() throws Exception {
+        FakeMap map = localBuilder
+                .add( 4, "2012-A")
+                .add( 5, "2012-B")
+                .add( 6, "2012-C")
+                .add( 7, "2012-D")
+                .add( 8, "2012-E")
+                .add( 9, "2012-F")
+                .add(10, "2012-G")
+                .add(11, "2012-H")
+                .add(12, "2012-I")
+                .add( 1, "2013-A")
+                .add( 7, "2013-B")
+                .add( 9, "2013-C")
+                .add(10, "2013-D")
+                .add(11, "2013-E")
+                .make();
+        map.entrySet(); // forces Index to be populated
+        map.search(3, Direction.DESC);
+    }
+
 }
