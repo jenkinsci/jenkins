@@ -688,7 +688,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         BallColor baseColor;
         RunT pb = getPreviousBuild();
         if(pb==null)
-            baseColor = BallColor.GREY;
+            baseColor = BallColor.NOTBUILT;
         else
             baseColor = pb.getIconColor();
 
