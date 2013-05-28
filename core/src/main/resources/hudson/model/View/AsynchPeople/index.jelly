@@ -88,7 +88,9 @@ THE SOFTWARE.
                   }
                   r.appendChild(d);
 
-                  p.sortable.refresh();
+                  if (p.sortable != null) {
+                      p.sortable.refresh();
+                  }
               }
           }
       </script>
