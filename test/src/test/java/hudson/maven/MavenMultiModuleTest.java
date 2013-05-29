@@ -1,8 +1,6 @@
 package hudson.maven;
 
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
@@ -18,37 +16,45 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
+import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Andrew Bayer
  */
-public class MavenMultiModuleTest extends HudsonTestCase {
+public class MavenMultiModuleTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * NPE in {@code build.getProject().getWorkspace()} for {@link MavenBuild}.
      */
     @Bug(4192)
-    public void testMultiModMavenWsExists() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void multiModMavenWsExists() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
 	    assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
     }
 
-    public void testIncrementalMultiModMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void incrementalMultiModMaven() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.getReporters().add(new MavenFingerprinter());
     	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
     						   getClass().getResource("maven-multimod-changes.zip")));
     
-    	buildAndAssertSuccess(m);
+    	j.buildAndAssertSuccess(m);
     
     	// Now run a second build with the changes.
     	m.setIncrementalBuild(true);
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
     
     	MavenModuleSetBuild pBuild = m.getLastBuild();
     	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
@@ -111,19 +117,19 @@ public class MavenMultiModuleTest extends HudsonTestCase {
     }
 
     @Bug(5357)
-    public void testIncrRelMultiModMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void incrRelMultiModMaven() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.setRootPOM("parent/pom.xml");
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-rel-base.zip"),
 						   getClass().getResource("maven-multimod-changes.zip")));
         
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
         
         // Now run a second build with the changes.
         m.setIncrementalBuild(true);
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
         
         MavenModuleSetBuild pBuild = m.getLastBuild();
         ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
@@ -153,21 +159,21 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 
         
     @Bug(6544)
-    // kutzi 10/10/11 ignore test until I can figure out why it fails sometimes
-    public void ignore_testEstimatedDurationForIncrementalMultiModMaven()
+    @Ignore("kutzi 10/10/11 ignore test until I can figure out why it fails sometimes")
+    @Test public void estimatedDurationForIncrementalMultiModMaven()
             throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource(
                 "maven-multimod.zip"), getClass().getResource(
                 "maven-multimod-changes.zip")));
 
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
 
         // Now run a second, incremental build with the changes.
         m.setIncrementalBuild(true);
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
 
         MavenModuleSetBuild lastBuild = m.getLastBuild();
         MavenModuleSetBuild previousBuild = lastBuild.getPreviousBuild();
@@ -188,29 +194,29 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      * NPE in {@code getChangeSetFor(m)} in {@link MavenModuleSetBuild} when incremental build is
      * enabled and a new module is added.
      */
-    public void testNewModMultiModMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void newModMultiModMaven() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
                 getClass().getResource("maven-multimod-changes.zip")));
 
         m.setIncrementalBuild(true);
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
     }
 
     /**
      * When "-N' or "--non-recursive" show up in the goals, any child modules should be ignored.
      */
     @Bug(4491)
-    public void testMultiModMavenNonRecursiveParsing() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void multiModMavenNonRecursiveParsing() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.setGoals("clean install -N");
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
 
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
 
         MavenModuleSetBuild pBuild = m.getLastBuild();
 
@@ -238,15 +244,15 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      * incremental build is enabled and nothing changed in those modules.
      */
     @Bug(4152)
-    public void testIncrementalMultiModWithErrorsMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void incrementalMultiModWithErrorsMaven() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.setIncrementalBuild(true);
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-incr.zip"),
 						   getClass().getResource("maven-multimod-changes.zip")));
 
-        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
         MavenModuleSetBuild pBuild = m.getLastBuild();
         
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
@@ -266,7 +272,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         }   
 
         // Now run a second build with the changes.
-        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
 
     	pBuild = m.getLastBuild();
     	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
@@ -301,16 +307,16 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      * then all modules build this time, have to be build next time, again.
      */
     @Bug(5121)
-    public void testIncrementalRedeployAfterAggregatorError() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void incrementalRedeployAfterAggregatorError() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.setIncrementalBuild(true);
         m.getReporters().add(new TestReporter());
         m.getPublishers().add(new DummyRedeployPublisher());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-incr.zip"),
                            getClass().getResource("maven-multimod-changes.zip")));
 
-        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
         MavenModuleSetBuild pBuild = m.getLastBuild();
         
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
@@ -330,7 +336,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
         }   
 
         // Now run a second build.
-        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
 
         pBuild = m.getLastBuild();
         ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
@@ -364,13 +370,13 @@ public class MavenMultiModuleTest extends HudsonTestCase {
      * Test failures in a child module should lead to the parent being marked as unstable.
      */
     @Bug(4378)
-    public void testMultiModWithTestFailuresMaven() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void multiModWithTestFailuresMaven() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod-incr.zip")));
 
-        assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
 
         MavenModuleSetBuild pBuild = m.getLastBuild();
 
@@ -394,19 +400,19 @@ public class MavenMultiModuleTest extends HudsonTestCase {
     }
     
     @Bug(8484)
-    public void testMultiModMavenNonRecursive() throws Exception {
-        configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
-        MavenModuleSet m = createMavenProject();
+    @Test public void multiModMavenNonRecursive() throws Exception {
+        j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
+        MavenModuleSet m = j.createMavenProject();
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
         m.setGoals( "-N validate" );
         assertTrue("MavenModuleSet.isNonRecursive() should be true", m.isNonRecursive());
-        buildAndAssertSuccess(m);
+        j.buildAndAssertSuccess(m);
         assertEquals("not only one module", 1, m.getModules().size());
     }    
-    
+
     /*
-    public void testParallelMultiModMavenWsExists() throws Exception {
+    @Test public void parallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
 	m.setAggregatorStyleBuild(false);
@@ -430,7 +436,7 @@ public class MavenMultiModuleTest extends HudsonTestCase {
 	
     }
     
-    public void testPrivateRepoParallelMultiModMavenWsExists() throws Exception {
+    @Test public void privateRepoParallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
 	m.setAggregatorStyleBuild(false);
