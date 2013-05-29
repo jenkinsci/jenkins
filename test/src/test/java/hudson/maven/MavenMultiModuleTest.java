@@ -1,5 +1,6 @@
 package hudson.maven;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -410,6 +411,24 @@ public class MavenMultiModuleTest {
         j.buildAndAssertSuccess(m);
         assertEquals("not only one module", 1, m.getModules().size());
     }    
+
+    @Ignore("still failing")
+    @Bug(17713)
+    @Test public void modulesPageLinks() throws Exception {
+        j.configureMaven3();
+        MavenModuleSet ms = j.createMavenProject();
+        ms.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+        j.buildAndAssertSuccess(ms);
+        MavenModule m = ms.getModule("org.jvnet.hudson.main.test.multimod:moduleA");
+        assertNotNull(m);
+        assertEquals(1, m.getLastBuild().getNumber());
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage modulesPage = wc.getPage(ms, "modules");
+//        for (HtmlAnchor a : modulesPage.getAnchors()) {
+//            System.out.println(a.getHrefAttribute() + " → " + a.asText());
+//        }
+        modulesPage.getAnchorByText(m.getDisplayName()).openLinkInNewWindow();
+    }
 
     /*
     @Test public void parallelMultiModMavenWsExists() throws Exception {
