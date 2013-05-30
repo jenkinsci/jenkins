@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
@@ -36,6 +37,7 @@ import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
@@ -106,8 +108,14 @@ public class ListView extends View implements Saveable {
     }
 
     private Object readResolve() {
-        if(includeRegex!=null)
-            includePattern = Pattern.compile(includeRegex);
+        if(includeRegex!=null) {
+            try {
+                includePattern = Pattern.compile(includeRegex);
+            } catch (PatternSyntaxException x) {
+                includeRegex = null;
+                OldDataMonitor.report(this, Collections.<Throwable>singleton(x));
+            }
+        }
         if (jobNames == null) {
             jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
         }
