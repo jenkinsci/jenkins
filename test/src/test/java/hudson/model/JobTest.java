@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import hudson.util.TextFile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
@@ -39,7 +40,9 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -253,4 +256,25 @@ public class JobTest {
         }
         j.createFreeStyleProject("project");
     }
+
+    @Bug(16023)
+    @Test public void getLastFailedBuild() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject();
+        RunLoadCounter.prepare(p);
+        p.getBuildersList().add(new FailureBuilder());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        p.getBuildersList().remove(FailureBuilder.class);
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(6, p.getLastSuccessfulBuild().getNumber());
+        assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
+            @Override public Integer call() throws Exception {
+                return p.getLastFailedBuild().getNumber();
+            }
+        }).intValue());
+    }
+
 }
