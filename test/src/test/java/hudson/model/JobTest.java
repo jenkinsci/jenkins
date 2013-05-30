@@ -35,26 +35,31 @@ import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class JobTest extends HudsonTestCase {
+public class JobTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @SuppressWarnings("unchecked")
-    public void testJobPropertySummaryIsShownInMainPage() throws Exception {
-        AbstractProject project = createFreeStyleProject();
+    @Test public void jobPropertySummaryIsShownInMainPage() throws Exception {
+        AbstractProject project = j.createFreeStyleProject();
         project.addProperty(new JobPropertyImpl("NeedleInPage"));
                 
-        HtmlPage page = new WebClient().getPage(project);
+        HtmlPage page = j.createWebClient().getPage(project);
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
 
-    public void testBuildNumberSynchronization() throws Exception {
-        AbstractProject project = createFreeStyleProject();
+    @Test public void buildNumberSynchronization() throws Exception {
+        AbstractProject project = j.createFreeStyleProject();
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch stopLatch = new CountDownLatch(2);
         BuildNumberSyncTester test1 = new BuildNumberSyncTester(project, startLatch, stopLatch, true);
@@ -167,8 +172,8 @@ public class JobTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testReadPermission() throws Exception {
-        WebClient wc = new WebClient();
+    @Test public void readPermission() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.login("joe");  // Has Item.READ permission
@@ -178,9 +183,9 @@ public class JobTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testConfigDotXmlPermission() throws Exception {
-        jenkins.setCrumbIssuer(null);
-        WebClient wc = new WebClient();
+    @Test public void configDotXmlPermission() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
@@ -196,7 +201,7 @@ public class JobTest extends HudsonTestCase {
         }
     }
 
-    private static void tryConfigDotXml(WebClient wc, int status, String msg) throws Exception {
+    private static void tryConfigDotXml(JenkinsRule.WebClient wc, int status, String msg) throws Exception {
         // Verify we can GET the config.xml:
         wc.goTo("job/testJob/config.xml", "application/xml");
         // This page is a simple form to POST to /job/testJob/config.xml
@@ -212,10 +217,10 @@ public class JobTest extends HudsonTestCase {
     }
 
     @LocalData @Bug(6371)
-    public void testGetArtifactsUpTo() throws Exception {
+    @Test public void getArtifactsUpTo() throws Exception {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
-        Run r = jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
+        Run r = j.jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
         assertEquals(3, r.getArtifacts().size());
         assertEquals(3, r.getArtifactsUpTo(3).size());
         assertEquals(2, r.getArtifactsUpTo(2).size());
@@ -223,29 +228,29 @@ public class JobTest extends HudsonTestCase {
     }
 
     @Bug(10182)
-    public void testEmptyDescriptionReturnsEmptyPage() throws Exception {
+    @Test public void emptyDescriptionReturnsEmptyPage() throws Exception {
         // A NPE was thrown if a job had a null (empty) description.
-        WebClient wc = createWebClient();
-        FreeStyleProject project = createFreeStyleProject("project");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        FreeStyleProject project = j.createFreeStyleProject("project");
         project.setDescription("description");
         assertEquals("description", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
         project.setDescription(null);
         assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
     }
     
-    public void testProjectNamingStrategy() throws Exception {
-        jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = createFreeStyleProject("DUMMY_project");
+    @Test public void projectNamingStrategy() throws Exception {
+        j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
+        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
         assertNotNull("no project created", p);
         try {
-            createFreeStyleProject("project");
+            j.createFreeStyleProject("project");
             fail("should not get here, the project name is not allowed, therefore the creation must fail!");
         } catch (Failure e) {
             // OK, expected
         }finally{
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
-            jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
+            j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
-        createFreeStyleProject("project");
+        j.createFreeStyleProject("project");
     }
 }
