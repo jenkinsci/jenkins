@@ -66,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -353,5 +354,61 @@ public class QueueTest extends HudsonTestCase {
         ev.signal();    // let the build complete
         FreeStyleBuild b2 = assertBuildStatusSuccess(v);
         assertSame(b,b2);
+    }
+    
+    public void testPendingsConsistenceAfterErrorDuringMaintain() throws IOException, ExecutionException, InterruptedException{
+        FreeStyleProject project1 = createFreeStyleProject();
+        FreeStyleProject project2 = createFreeStyleProject();
+        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
+         @Override
+            public FreeStyleProject newInstance(ItemGroup parent, String name) {
+                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                     @Override
+                    public Label getAssignedLabel(){
+                        throw new IllegalArgumentException("Test exception"); //cause dead of executor
+                    }   
+                     
+                    @Override
+                     public void save(){
+                         //do not need save
+                     }
+            };
+        }
+
+            @Override
+            public String getDisplayName() {
+                return "simulate-error";
+            }
+        };
+        FreeStyleProject projectError = (FreeStyleProject) jenkins.createProject(descriptor, "throw-error");
+        project1.setAssignedLabel(jenkins.getSelfLabel());
+        project2.setAssignedLabel(jenkins.getSelfLabel());
+        project1.getBuildersList().add(new Shell("sleep 2"));
+        project1.scheduleBuild2(0);
+        QueueTaskFuture<FreeStyleBuild> v = project2.scheduleBuild2(0);
+        projectError.scheduleBuild2(0);
+        Executor e = jenkins.toComputer().getExecutors().get(0);
+        Thread.sleep(2000);
+        while(project2.getLastBuild()==null){
+             if(!e.isAlive()){
+                    break; // executor is dead due to exception
+             }
+             if(e.isIdle()){
+                 assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());   
+             }
+                Thread.sleep(1000);
+        }
+        if(project2.getLastBuild()!=null)
+            return;
+        Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
+        e.doYank(); //restart executor
+        while(!e.isIdle()){ //executor should take project2 from queue
+            Thread.sleep(1000); 
+        }
+        //project2 should not be in pendings
+        List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
+        for(Queue.BuildableItem item : items){
+            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName())); 
+        }
     }
 }
