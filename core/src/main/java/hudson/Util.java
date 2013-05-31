@@ -42,8 +42,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
-import org.jruby.ext.posix.FileStat;
-import org.jruby.ext.posix.POSIX;
+import jnr.posix.FileStat;
+import jnr.posix.POSIX;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.Stapler;
 
@@ -284,7 +284,7 @@ public class Util {
         }
 
         try {// try libc chmod
-            POSIX posix = PosixAPI.get();
+            POSIX posix = PosixAPI.jnr();
             String path = f.getAbsolutePath();
             FileStat stat = posix.stat(path);
             posix.chmod(path, stat.mode()|0200); // u+w
@@ -1089,13 +1089,16 @@ public class Util {
                     } catch (LinkageError e) {
                         // if JNA is unavailable, fall back.
                         // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        if (PosixAPI.supportsNative()) {
-                            r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                        POSIX posix = PosixAPI.jnr();
+                        if (posix.isNative()) {
+                            // XXX should we rethrow PosixException as IOException here?
+                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
                         }
                     }
                 }
                 if (r==null) {
                     // if all else fail, fall back to the most expensive approach of forking a process
+                    // XXX is this really necessary? JavaPOSIX should do this automatically
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
                         new String[0],listener.getLogger(), baseDir).join();
@@ -1233,7 +1236,7 @@ public class Util {
         } catch (LinkageError e) {
             // if JNA is unavailable, fall back.
             // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.get().readlink(filename);
+            return PosixAPI.jnr().readlink(filename);
         }
     }
 

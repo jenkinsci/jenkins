@@ -118,7 +118,7 @@ public class ClientAuthenticationCache implements Serializable {
                 }
 
                 // try to protect this file from other users, if we can.
-                PosixAPI.get().chmod(f.getAbsolutePath(),0600);
+                PosixAPI.jnr().chmod(f.getAbsolutePath(),0600);
                 return null;
             }
         });

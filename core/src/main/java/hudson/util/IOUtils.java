@@ -122,7 +122,7 @@ public class IOUtils extends org.apache.commons.io.IOUtils {
      */
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
-        return PosixAPI.get().stat(f.getPath()).mode();
+        return PosixAPI.jnr().stat(f.getPath()).mode();
     }
 
     /**
