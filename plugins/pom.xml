@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.30</version>
+    <version>1.31</version>
     <relativePath />
   </parent>
 
@@ -101,13 +101,6 @@
       not to have version number in the .hpi file name.
     -->
     <finalName>${project.artifactId}</finalName>
-    <!--
-      I don't really understand how this works, but it makes Maven recognizes
-      <packaging>hpi</packaging> defined in maven-hpi-plugin.
-
-      <extensions>true</extensions> is apparently needed to have Maven read
-      the plugin's Plexus component file.
-    -->
     <plugins>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
