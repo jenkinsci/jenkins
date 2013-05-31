@@ -24,7 +24,7 @@ public class ParametersTest extends HudsonTestCase {
                 new StringParameterDefinition("string", "defaultValue", "string description"),
                 new BooleanParameterDefinition("boolean", true, "boolean description"),
                 new ChoiceParameterDefinition("choice", "Choice 1\nChoice 2", "choice description"),
-                new RunParameterDefinition("run", otherProject.getName(), "run description"));
+                new RunParameterDefinition("run", otherProject.getName(), "run description", null));
         project.addProperty(pdp);
         CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
         project.getBuildersList().add(builder);

@@ -1716,4 +1716,20 @@ public class Functions {
         DecimalFormat format = new DecimalFormat("#0.00");
         return format.format(number) + " " + measure;
     }
+
+    /**
+     * Get a string that can be safely broken to several lines when necessary.
+     *
+     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * to wrap line before any sequence of punctuation characters or anywhere
+     * in the middle of prolonged sequences of word characters.
+     *
+     * @since 1.517
+     */
+    public static String breakableString(final String plain) {
+
+        return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
+                .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
+        ;
+    }
 }

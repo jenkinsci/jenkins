@@ -35,6 +35,7 @@ THE SOFTWARE.
         <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
         <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
       </h1>
+      <p>${%blurb}</p>
       <script>
           function display(data) {
               var p = document.getElementById('people');
@@ -87,7 +88,9 @@ THE SOFTWARE.
                   }
                   r.appendChild(d);
 
-                  p.sortable.refresh();
+                  if (p.sortable != null) {
+                      p.sortable.refresh();
+                  }
               }
           }
       </script>

@@ -26,20 +26,25 @@ package hudson.model;
 import jenkins.model.Jenkins;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
 
 /**
  * @author kingfai
  *
  */
-public class DisplayNameTest extends HudsonTestCase {
+public class DisplayNameTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testRenameJobWithNoDisplayName() throws Exception {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         Assert.assertEquals(projectName, project.getDisplayName());
         
         project.renameTo(newProjectName);
@@ -51,7 +56,7 @@ public class DisplayNameTest extends HudsonTestCase {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
         final String displayName = "displayName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         project.setDisplayName(displayName);
         Assert.assertEquals(displayName, project.getDisplayName());
         
@@ -64,7 +69,7 @@ public class DisplayNameTest extends HudsonTestCase {
     public void testCopyJobWithNoDisplayName() throws Exception {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         Assert.assertEquals(projectName, project.getDisplayName());
 
         AbstractProject newProject = Jenkins.getInstance().copy((AbstractProject)project, newProjectName);
@@ -78,7 +83,7 @@ public class DisplayNameTest extends HudsonTestCase {
         final String projectName = "projectName";
         final String newProjectName = "newProjectName";
         final String oldDisplayName = "oldDisplayName";
-        FreeStyleProject project = createFreeStyleProject(projectName);
+        FreeStyleProject project = j.createFreeStyleProject(projectName);
         project.setDisplayName(oldDisplayName);
         Assert.assertEquals(oldDisplayName, project.getDisplayName());
 
@@ -87,4 +92,16 @@ public class DisplayNameTest extends HudsonTestCase {
         Assert.assertEquals(newProjectName, newProject.getDisplayName());
         
     }
+
+    @Bug(18074)
+    @Test public void copyJobWithDisplayNameToDifferentFolder() throws Exception {
+        MockFolder d1 = j.createFolder("d1");
+        FreeStyleProject job = d1.createProject(FreeStyleProject.class, "job");
+        job.setDisplayName("My Job");
+        MockFolder d2 = j.jenkins.copy(d1, "d2");
+        FreeStyleProject j2 = (FreeStyleProject) d2.getItem("job");
+        Assert.assertNotNull(j2);
+        Assert.assertEquals("My Job", j2.getDisplayName());
+    }
+
 }

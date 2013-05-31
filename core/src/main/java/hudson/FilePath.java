@@ -97,6 +97,7 @@ import java.util.zip.GZIPInputStream;
 
 import com.sun.jna.Native;
 import hudson.os.PosixException;
+import java.io.BufferedInputStream;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -1663,7 +1664,7 @@ public final class FilePath implements Serializable {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1L;
             public String invoke(File f, VirtualChannel channel) throws IOException {
-                return Util.getDigestOf(new FileInputStream(f));
+                return Util.getDigestOf(new BufferedInputStream(new FileInputStream(f)));
             }
         });
     }

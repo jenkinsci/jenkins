@@ -792,7 +792,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                 UserInfo info = users.get(user);
                                 if (info == null) {
                                     UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolve(user, iconSize);
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
                                     synchronized (this) {
                                         users.put(user, userInfo);
                                         modified.add(user);
@@ -824,7 +824,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     }
                     if (!users.containsKey(u)) {
                         UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolve(u, iconSize);
+                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
                         synchronized (this) {
                             users.put(u, userInfo);
                             modified.add(u);
@@ -842,7 +842,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", i.avatar).
+                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 AbstractProject<?,?> p = i.getProject();

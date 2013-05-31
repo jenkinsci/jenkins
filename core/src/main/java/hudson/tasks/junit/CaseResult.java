@@ -290,6 +290,9 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     	return className+'.'+getName();
     }
     
+    /**
+     * @since 1.515
+     */
     public String getFullDisplayName() {
     	return TestNameTransformer.getTransformedName(getFullName());
     }

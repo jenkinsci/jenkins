@@ -26,7 +26,6 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -64,7 +63,6 @@ import hudson.widgets.Widget;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
@@ -809,11 +807,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
-        RunT r = getLastBuild();
-        while (r != null
-                && (r.isBuilding() || r.getResult() == Result.SUCCESS))
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -823,11 +817,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnstableBuild() {
-        RunT r = getLastBuild();
-        while (r != null
-                && (r.isBuilding() || r.getResult() != Result.UNSTABLE))
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
 
     /**
@@ -837,11 +827,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastStableBuild() {
-        RunT r = getLastBuild();
-        while (r != null
-                && (r.isBuilding() || r.getResult().isWorseThan(Result.SUCCESS)))
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_STABLE_BUILD.resolve(this);
     }
 
     /**
@@ -850,10 +836,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastFailedBuild() {
-        RunT r = getLastBuild();
-        while (r != null && (r.isBuilding() || r.getResult() != Result.FAILURE))
-            r = r.getPreviousBuild();
-        return r;
+        return (RunT)Permalink.LAST_FAILED_BUILD.resolve(this);
     }
 
     /**
@@ -933,7 +916,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         if (lastBuild != null)
             return lastBuild.getIconColor();
         else
-            return BallColor.GREY;
+            return BallColor.NOTBUILT;
     }
 
     /**

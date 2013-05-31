@@ -226,6 +226,9 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
         return TestNameTransformer.getTransformedName(getName());
     }
     
+    /**
+     * @since 1.515
+     */
     public String getFullName() {
     	return getParent().getName() + "." + className;
     }

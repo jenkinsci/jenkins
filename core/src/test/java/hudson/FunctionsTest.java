@@ -171,7 +171,24 @@ public class FunctionsTest {
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }
-    
+
+    @Bug(17713)
+    @PrepareForTest({Stapler.class, Jenkins.class})
+    @Test public void getRelativeLinkTo_MavenModules() throws Exception {
+        Jenkins j = createMockJenkins();
+        StaplerRequest req = createMockRequest("/jenkins");
+        mockStatic(Stapler.class);
+        when(Stapler.getCurrentRequest()).thenReturn(req);
+        TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
+        when(ms.getShortUrl()).thenReturn("job/ms/");
+        // XXX "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
+        createMockAncestors(req, createAncestor(j, "../.."), createAncestor(ms, "."));
+        Item m = mock(Item.class);
+        when(m.getParent()).thenReturn(ms);
+        when(m.getShortUrl()).thenReturn("grp$art/");
+        assertEquals("grp$art/", Functions.getRelativeLinkTo(m));
+    }
+
     @Test
     public void testGetRelativeDisplayName() {
         Item i = mock(Item.class);
@@ -264,4 +281,12 @@ public class FunctionsTest {
         }
     }
 
+    @Bug(17030)
+    @Test
+    public void testBreakableString() {
+
+        assertEquals("Hello world!", Functions.breakableString("Hello world!"));
+        assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
+        assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
+    }
 }
