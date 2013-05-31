@@ -359,11 +359,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks
-            return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
+            // (just in case the symlink check above did not work)
+            buildDir = buildDir.getCanonicalFile();
+            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
-        } catch (NumberFormatException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
+            throw new IOException2("[JENKINS-15587] Invalid directory name "+buildDir,e);
         } catch (InterruptedException e) {
             throw new IOException2("Interrupted while resolving symlink directory "+buildDir,e);
         }
