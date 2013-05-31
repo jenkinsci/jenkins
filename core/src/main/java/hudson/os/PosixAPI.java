@@ -1,10 +1,9 @@
 package hudson.os;
 
-import org.jruby.ext.posix.JavaPOSIX;
-import org.jruby.ext.posix.POSIX;
-import org.jruby.ext.posix.POSIXFactory;
-import org.jruby.ext.posix.POSIXHandler;
-import org.jruby.ext.posix.POSIX.ERRORS;
+import jnr.constants.platform.Errno;
+import jnr.posix.POSIX;
+import jnr.posix.POSIXFactory;
+import jnr.posix.POSIXHandler;
 
 import java.io.File;
 import java.io.InputStream;
@@ -35,12 +34,12 @@ public class PosixAPI {
      * used a fallback java implementation which does not support many operations.
      */
     public static boolean supportsNative() {
-        return !(posix instanceof JavaPOSIX);
+        return posix.isNative();
     }
     
     private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {
-        public void error(ERRORS errors, String s) {
-            throw new PosixException(s,errors);
+        public void error(Errno error, String s) {
+            throw new PosixException(s, error);
         }
 
         public void unimplementedError(String s) {

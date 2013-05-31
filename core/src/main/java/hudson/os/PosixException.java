@@ -1,6 +1,6 @@
 package hudson.os;
 
-import org.jruby.ext.posix.POSIX.ERRORS;
+import jnr.constants.platform.Errno;
 
 /**
  * Indicates an error during POSIX API call.
@@ -8,19 +8,19 @@ import org.jruby.ext.posix.POSIX.ERRORS;
  * @author Kohsuke Kawaguchi
  */
 public class PosixException extends RuntimeException {
-    private final ERRORS errors;
+    private final Errno error;
 
-    public PosixException(String message, ERRORS errors) {
+    public PosixException(String message, Errno error) {
         super(message);
-        this.errors = errors;
+        this.error = error;
     }
 
-    public ERRORS getErrorCode() {
-        return errors;
+    public Errno getErrorCode() {
+        return error;
     }
 
     @Override
     public String toString() {
-        return super.toString()+" "+errors;
+        return super.toString()+" "+error;
     }
 }
