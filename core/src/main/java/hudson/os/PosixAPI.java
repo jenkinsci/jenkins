@@ -1,45 +1,74 @@
 package hudson.os;
 
-import org.jruby.ext.posix.JavaPOSIX;
-import org.jruby.ext.posix.POSIX;
-import org.jruby.ext.posix.POSIXFactory;
-import org.jruby.ext.posix.POSIXHandler;
-import org.jruby.ext.posix.POSIX.ERRORS;
-
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.logging.Logger;
+import jnr.constants.platform.Errno;
+import jnr.posix.POSIX;
+import jnr.posix.POSIXFactory;
+import jnr.posix.util.DefaultPOSIXHandler;
 
 /**
  * POSIX API wrapper.
- * 
+ * Formerly used the jna-posix library, but this has been superseded by jnr-posix.
  * @author Kohsuke Kawaguchi
  */
 public class PosixAPI {
-    public static POSIX get() {
+
+    private static POSIX posix;
+    
+    /**
+     * Load the JNR implementation of the POSIX APIs for the current platform.
+     * Runtime exceptions will be of type {@link PosixException}.
+     * @return some implementation (even on Windows or unsupported Unix)
+     * @since 1.518
+     */
+    public static synchronized POSIX jnr() {
+        if (posix == null) {
+            posix = POSIXFactory.getPOSIX(new DefaultPOSIXHandler() {
+                @Override public void error(Errno error, String extraData) {
+                    throw new PosixException("native error " + error.description() + " " + extraData, convert(error));
+                }
+                @Override public void error(Errno error, String methodName, String extraData) {
+                    throw new PosixException("native error calling " + methodName + ": " + error.description() + " " + extraData, convert(error));
+                }
+                private org.jruby.ext.posix.POSIX.ERRORS convert(Errno error) {
+                    try {
+                        return org.jruby.ext.posix.POSIX.ERRORS.valueOf(error.name());
+                    } catch (IllegalArgumentException x) {
+                        return org.jruby.ext.posix.POSIX.ERRORS.EIO; // PosixException.message has real error anyway
+                    }
+                }
+            }, true);
+        }
         return posix;
     }
 
     /**
-     * @deprecated as of 1.448
-     *      Use {@link #supportsNative()}.
+     * @deprecated use {@link #jnr} and {@link POSIX#isNative}
      */
+    @Deprecated
     public boolean isNative() {
         return supportsNative();
     }
 
     /**
-     * Determine if the jna-posix library could not provide native support, and
-     * used a fallback java implementation which does not support many operations.
+     * @deprecated use {@link #jnr} and {@link POSIX#isNative}
      */
+    @Deprecated
     public static boolean supportsNative() {
-        return !(posix instanceof JavaPOSIX);
+        return !(jnaPosix instanceof org.jruby.ext.posix.JavaPOSIX);
     }
-    
-    private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler() {
-        public void error(ERRORS errors, String s) {
+
+    private static org.jruby.ext.posix.POSIX jnaPosix;
+    /** @deprecated Use {@link #jnr} instead. */
+    @Deprecated
+    public static synchronized org.jruby.ext.posix.POSIX get() {
+        if (jnaPosix == null) {
+            jnaPosix = org.jruby.ext.posix.POSIXFactory.getPOSIX(new org.jruby.ext.posix.POSIXHandler() {
+        public void error(org.jruby.ext.posix.POSIX.ERRORS errors, String s) {
             throw new PosixException(s,errors);
         }
 
@@ -87,6 +116,9 @@ public class PosixAPI {
             return System.err;
         }
     }, true);
+        }
+        return jnaPosix;
+    }
 
     private static final Logger LOGGER = Logger.getLogger(PosixAPI.class.getName());
 }
