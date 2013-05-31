@@ -45,6 +45,7 @@ THE SOFTWARE.
                 var form = document.createElement('form');
                 form.setAttribute('method', post ? 'POST' : 'GET');
                 form.setAttribute('action', href);
+                crumb.appendToForm(form);
                 document.body.appendChild(form);
                 form.submit();
             }
