@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
@@ -41,6 +42,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MappingWorksheet;
@@ -1353,7 +1355,8 @@ public class Queue extends ResourceController implements Saveable {
          * <p>
          * Just like {@link #id}, the same object tracks various stages of the queue.
          */
-        public Future<Executable> getFuture() { return future; }
+        @WithBridgeMethods(Future.class)
+        public QueueTaskFuture<Executable> getFuture() { return future; }
 
         /**
          * If this task needs to be run on a node with a particular label,
