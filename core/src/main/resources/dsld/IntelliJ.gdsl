@@ -50,36 +50,7 @@ contributor(ctx) {
 
     One work around that appears to work is to add a dummy 2nd parameter.
 
-TO BE FILED:
-Title: GDSL: With named parameter type information, undefined properties should be flagged
-
-IDEA-71141 adds the named parameter support. However, I did a bit of experiments and noticed that if I
-type in the parameter name that's not defined in the source code, IDEA does not flag it as undefined.
-
-Example:
-my.gdsl:
-{code}
-contributor(context(ctype:"my.Foo")) {
-    def named = [
-            parameter(name: 'a', type: Integer),
-            parameter(name: 'b', type: Integer)
-    ]
-    method name: "bar", type: void, params:[args:named]
-}
-{code}
-something.groovy:
-{code}
-Foo foo = new Foo();
-foo.bar(a:1, b:2, c:3)
-{code}
-
-If I give a string value to the "a" argument, that gets flagged as a type error, so I know that the GDSL
-definition is taking an effect. It just appears to be lacking a validation for undefined argument names.
-In my humble opinion, this significantly reduces the value of defining named argument type information.
-
-It should be either made a warning just like incorrect type, or it should be the same underscore given
-to any undefined property access/method invocations.
-
+    Also see http://youtrack.jetbrains.com/issue/IDEA-108375
 */
 
 // experiment
