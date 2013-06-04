@@ -38,6 +38,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.EnvironmentContributingAction;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Computer;
 import hudson.model.Environment;
@@ -613,6 +614,12 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
                             buildEnvironments.add(e);
                             e.buildEnvVars(envVars); // #3502: too late for getEnvironment to do this
+                            Collection<? extends Action> actionsFromWrapper = w.getProjectActions(project);
+                            for (Action action : actionsFromWrapper) {
+                                if(action instanceof EnvironmentContributingAction){ // #17555
+                                    ((EnvironmentContributingAction) action).buildEnvVars(MavenModuleSetBuild.this, envVars);
+                                }
+                            }                            
                         }
                         
                     	// run pre build steps
