@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -34,6 +35,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.util.RunList;
+import java.io.File;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -44,6 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  *
@@ -248,6 +251,27 @@ public class FingerprinterTest {
             assertTrue(jobs.contains(renamedProject2));
             assertFalse(jobs.contains(oldDownstreamName));
         }
+    }
+
+    @LocalData
+    @Test public void actionSerialization() throws Exception {
+        FreeStyleProject job = j.jenkins.getItemByFullName("j", FreeStyleProject.class);
+        assertNotNull(job);
+        FreeStyleBuild build = job.getBuildByNumber(2);
+        assertNotNull(build);
+        Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertNotNull(action);
+        assertEquals(build, action.getBuild());
+        assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
+        j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        job._getRuns().purgeCache(); // force build records to be reloaded
+        build = job.getBuildByNumber(3);
+        assertNotNull(build);
+        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
+        action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertNotNull(action);
+        assertEquals(build, action.getBuild());
+        assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
     }
     
     private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws IOException, Exception {
