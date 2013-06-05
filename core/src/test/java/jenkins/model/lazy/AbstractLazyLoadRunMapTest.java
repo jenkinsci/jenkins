@@ -30,11 +30,14 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.jvnet.hudson.test.Bug;
 
 /**
@@ -272,6 +275,45 @@ public class AbstractLazyLoadRunMapTest extends Assert {
                 .make();
         map.entrySet(); // forces Index to be populated
         assertNull(map.search(3, Direction.DESC));
+    }
+
+    @Ignore("just calling entrySet triggers loading of every build!")
+    @Bug(18065)
+    @Test public void all() throws Exception {
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        Set<Map.Entry<Integer,Build>> entries = a.entrySet();
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertFalse(entries.isEmpty());
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals(5, a.getById("C").n);
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("A", a.getByNumber(1).id);
+        assertEquals("[5, 1]", a.getLoadedBuilds().keySet().toString());
+        a.purgeCache();
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        Iterator<Map.Entry<Integer,Build>> iterator = entries.iterator();
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertTrue(iterator.hasNext());
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        Map.Entry<Integer,Build> entry = iterator.next();
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals(5, entry.getKey().intValue());
+        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("C", entry.getValue().id);
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertTrue(iterator.hasNext());
+        entry = iterator.next();
+        assertEquals(3, entry.getKey().intValue());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("B", entry.getValue().id);
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertTrue(iterator.hasNext());
+        entry = iterator.next();
+        assertEquals(1, entry.getKey().intValue());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("A", entry.getValue().id);
+        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
+        assertFalse(iterator.hasNext());
     }
 
 }
