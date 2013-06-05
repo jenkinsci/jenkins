@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
+ * @since 1.482
  */
 public class JSONSignatureValidator {
     private final String name;
