@@ -120,6 +120,7 @@ import java.io.OutputStream;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.RunAction2;
 
 /**
  * A particular execution of {@link Job}.
@@ -314,10 +315,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Called after the build is loaded and the object is added to the build list.
      */
+    @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getActions())
-            if (a instanceof RunAction)
+        for (Action a : getActions()) {
+            if (a instanceof RunAction2) {
+                ((RunAction2) a).onLoad(this);
+            } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
+            }
+        }
     }
     
     /**
@@ -334,11 +340,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return Collections.unmodifiableList(actions);
     }
    
+    @SuppressWarnings("deprecation")
     @Override
     public void addAction(Action a) {
         super.addAction(a);
-        if (a instanceof RunAction)
+        if (a instanceof RunAction2) {
+            ((RunAction2) a).onAttached(this);
+        } else if (a instanceof RunAction) {
             ((RunAction) a).onAttached(this);
+        }
     }
 
     static class InvalidDirectoryNameException extends IOException {

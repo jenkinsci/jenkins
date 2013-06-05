@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright 2013 Jesse Glick.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
 
-import jenkins.model.RunAction2;
+package jenkins.model;
+
+import hudson.model.Action;
+import hudson.model.Run;
 
 /**
- * @deprecated Use {@link RunAction2} instead: {@link #onLoad} does not work well with lazy loading if you are trying to persist the owner; and {@link #onBuildComplete} was never called.
+ * Optional interface for {@link Action}s that add themselves to a {@link Run}.
+ * @since 1.519
  */
-@Deprecated
-public interface RunAction extends Action {
-    /**
-     * Called after the build is loaded and the object is added to the build list.
-     * 
-     * Because {@link RunAction}s are persisted with {@link Run}, the implementation
-     * can keep a reference to {@link Run} in a field (which is set via {@link #onAttached(Run)})
-     */
-    void onLoad();
+public interface RunAction2 extends Action {
 
     /**
-     * Called when the action is aded to the {@link Run} object.
-     * @since 1.376
+     * Called when this action is {@linkplain Run#addAction added to a build}.
      */
-    void onAttached(Run r);
+    void onAttached(Run<?,?> r);
 
     /**
-     * Called after the build is finished.
+     * Called after a {@linkplain Run#onLoad build is loaded} to which this action was previously {@linkplain #onAttached attached}.
      */
-    void onBuildComplete();
+    void onLoad(Run<?,?> r);
+
 }
