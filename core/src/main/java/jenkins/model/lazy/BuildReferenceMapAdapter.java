@@ -100,7 +100,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
     }
 
     public boolean containsValue(Object value) {
-        return core.containsValue(value);
+        return core.containsValue(value); // XXX should this be core.containsValue(wrap(value))?
     }
 
     public R get(Object key) {
