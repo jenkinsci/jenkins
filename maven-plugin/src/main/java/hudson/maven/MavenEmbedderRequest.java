@@ -163,6 +163,9 @@ public class MavenEmbedderRequest
         return alternateSettings;
     }
 
+    /**
+     * Overrides the user settings (by default we look at ~/.m2/settings.xml)
+     */
     public MavenEmbedderRequest setAlternateSettings( File alternateSettings ) {
         this.alternateSettings = alternateSettings;
         return this;
