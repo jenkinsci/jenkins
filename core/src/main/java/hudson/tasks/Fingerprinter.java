@@ -44,7 +44,6 @@ import hudson.model.FingerprintMap;
 import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.RunAction;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
@@ -75,6 +74,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.RunAction2;
 
 /**
  * Records fingerprints of the specified files.
@@ -292,10 +292,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     /**
      * Action for displaying fingerprints.
      */
-    public static final class FingerprintAction implements RunAction {
-        
-        private AbstractBuild build;
+    public static final class FingerprintAction implements RunAction2 {
 
+        private transient AbstractBuild build;
+        
         private static final Random rand = new Random();
 
         /**
@@ -308,7 +308,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
             this.record = PackedMap.of(record);
-            onLoad();   // make compact
+            compact();
         }
 
         public void add(Map<String,String> moreRecords) {
@@ -316,7 +316,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             r.putAll(moreRecords);
             record = PackedMap.of(r);
             ref = null;
-            onLoad();
+            compact();
         }
 
         public String getIconFileName() {
@@ -342,15 +342,16 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return record;
         }
 
-        public void onLoad() {
-            if (build == null) {
-                return;
-            }
-            if (build.getParent() == null) {
-                logger.warning("JENKINS-16845: broken FingerprintAction record");
-                build = null;
-                return;
-            }
+        @Override public void onLoad(Run<?,?> r) {
+            build = (AbstractBuild) r;
+            compact();
+        }
+
+        @Override public void onAttached(Run<?,?> r) {
+            // for historical reasons this setup is done in the constructor instead
+        }
+
+        private void compact() {
             // share data structure with nearby builds, but to keep lazy loading efficient,
             // don't go back the history forever.
             if (rand.nextInt(2)!=0) {
@@ -361,12 +362,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                         compact(a);
                 }
             }
-        }
-
-        public void onAttached(Run r) {
-        }
-
-        public void onBuildComplete() {
         }
 
         /**
@@ -437,11 +432,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
             Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
-
-            if (build == null) {
-                // Broken, do not do anything.
-                return r;
-            }
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();
