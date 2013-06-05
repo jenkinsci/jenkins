@@ -175,7 +175,7 @@ public class FingerprinterTest {
         assertEquals(0, downstreamProjects.size());
     }
     
-    @Test public void MatrixDependency() throws Exception {
+    @Test public void matrixDependency() throws Exception {
         MatrixProject matrixProject = j.createMatrixProject();
         matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
