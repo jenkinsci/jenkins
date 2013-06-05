@@ -44,6 +44,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -253,6 +254,7 @@ public class FingerprinterTest {
         }
     }
 
+    @Bug(17125)
     @LocalData
     @Test public void actionSerialization() throws Exception {
         FreeStyleProject job = j.jenkins.getItemByFullName("j", FreeStyleProject.class);
