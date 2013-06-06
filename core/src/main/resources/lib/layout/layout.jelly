@@ -45,7 +45,7 @@ THE SOFTWARE.
 
       This was originally added to allow plugins to load their stylesheets, but
       *the use of thie attribute is discouraged now.*
-      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
+      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elementsg
       in &lt;l:header/> tag.
     </st:attribute>
     <st:attribute name="permission">
@@ -170,7 +170,7 @@ ${h.initPageVariables(context)}
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                  <input name="q" value="${%search}" id="search-box" class="has-default-text defaulted" />
+                  <input name="q" placeholder="${%search}" id="search-box" />
                   <st:nbsp />
                   <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
                   <div id="search-box-completion" />

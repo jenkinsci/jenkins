@@ -607,25 +607,6 @@ var jenkinsRules = {
         e = null; // avoid memory leak
     },
 
-// scripting for having default value in the input field
-    "INPUT.has-default-text" : function(e) {
-        var defaultValue = e.value;
-        Element.addClassName(e, "defaulted");
-        e.onfocus = function() {
-            if (this.value == defaultValue) {
-                this.value = "";
-                Element.removeClassName(this, "defaulted");
-            }
-        }
-        e.onblur = function() {
-            if (this.value == "") {
-                this.value = defaultValue;
-                Element.addClassName(this, "defaulted");
-            }
-        }
-        e = null; // avoid memory leak
-    },
-
 // <label> that doesn't use ID, so that it can be copied in <repeatable>
     "LABEL.attach-previous" : function(e) {
         e.onclick = function() {
