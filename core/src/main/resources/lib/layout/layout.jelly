@@ -170,7 +170,7 @@ ${h.initPageVariables(context)}
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                  <input name="q" placeholder="${%search}" id="search-box" />
+                  <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" />
                   <st:nbsp />
                   <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
                   <div id="search-box-completion" />
