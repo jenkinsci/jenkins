@@ -67,6 +67,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -445,6 +446,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public MavenModule getModule(String name) {
         return getItem(name);
     }
+
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModuleSet_Pronoun());
+    }
+
 
     @Override   // to make this accessible from MavenModuleSetBuild
     protected void updateTransientActions() {
