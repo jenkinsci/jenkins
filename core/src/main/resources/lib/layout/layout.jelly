@@ -45,7 +45,7 @@ THE SOFTWARE.
 
       This was originally added to allow plugins to load their stylesheets, but
       *the use of thie attribute is discouraged now.*
-      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elementsg
+      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
       in &lt;l:header/> tag.
     </st:attribute>
     <st:attribute name="permission">
