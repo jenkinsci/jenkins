@@ -41,6 +41,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node;
 import hudson.slaves.WorkspaceList;
+import hudson.util.AlternativeUiTextProvider;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -192,6 +193,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public MatrixProject(ItemGroup parent, String name) {
         super(parent, name);
+    }
+
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MatrixProject_Pronoun());
     }
 
     /**
