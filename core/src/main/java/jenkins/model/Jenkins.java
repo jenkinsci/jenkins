@@ -2780,6 +2780,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             bc.commit();
         }
 
+        updateComputerList();
+
         rsp.sendRedirect(req.getContextPath()+'/'+toComputer().getUrl());  // back to the computer page
     }
 
