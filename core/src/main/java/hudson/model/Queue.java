@@ -179,31 +179,10 @@ public class Queue extends ResourceController implements Saveable {
      *
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
-//    private final FifoMap<Integer,LeftItem> leftItems = new FifoMap<Integer,LeftItem>(256);
     private final Cache<Integer,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
 
     private final CachedItemList itemsView = new CachedItemList();
 
-//    class FifoMap<K,V> {
-//        private final ConcurrentMap<K,V> store = new ConcurrentHashMap<K,V>();
-//        private final BlockingQueue<K> order = new LinkedBlockingQueue<K>();
-//        private final int size;
-//
-//        FifoMap(int size) {
-//            this.size = size;
-//        }
-//
-//        private void add(K k, V v) {
-//            store.put(k,v);
-//            order.add(k);
-//            while (order.size()>size)
-//                store.remove(order.remove());
-//        }
-//
-//        public V get(K k) {
-//            return store.get(k);
-//        }
-//    }
     /**
      * Maintains a copy of {@link Queue#getItems()}
      *
