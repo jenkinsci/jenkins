@@ -140,7 +140,7 @@ public class MavenUtil {
      *
      */
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public static MavenEmbedder createEmbedder(MavenEmbedderRequest mavenEmbedderRequest) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(MavenEmbedderRequest mer) throws MavenEmbedderException, IOException {
         
         
         MavenRequest mavenRequest = new MavenRequest();
@@ -151,41 +151,41 @@ public class MavenUtil {
         if(!m2Home.exists())
             throw new AbortException("Failed to create "+m2Home);
 
-        if (mavenEmbedderRequest.getPrivateRepository()!=null)
-            mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );
+        if (mer.getPrivateRepository()!=null)
+            mavenRequest.setLocalRepositoryPath( mer.getPrivateRepository() );
 
-        if (mavenEmbedderRequest.getProfiles() != null) {
-            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mavenEmbedderRequest.getProfiles(), "," ) ));    
+        if (mer.getProfiles() != null) {
+            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mer.getProfiles(), "," ) ));
         }
         
 
-        if ( mavenEmbedderRequest.getAlternateSettings() != null ) {
-            mavenRequest.setUserSettingsFile( mavenEmbedderRequest.getAlternateSettings().getAbsolutePath() );
+        if ( mer.getAlternateSettings() != null ) {
+            mavenRequest.setUserSettingsFile( mer.getAlternateSettings().getAbsolutePath() );
         } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
 
-        if ( mavenEmbedderRequest.getGlobalSettings() != null) {
-            mavenRequest.setGlobalSettingsFile( mavenEmbedderRequest.getGlobalSettings().getAbsolutePath() );
+        if ( mer.getGlobalSettings() != null) {
+            mavenRequest.setGlobalSettingsFile( mer.getGlobalSettings().getAbsolutePath() );
         } else {
-            mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+            mavenRequest.setGlobalSettingsFile( new File( mer.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
         }
         
-        if (mavenEmbedderRequest.getWorkspaceReader() != null ) {
-            mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );
+        if (mer.getWorkspaceReader() != null ) {
+            mavenRequest.setWorkspaceReader( mer.getWorkspaceReader() );
         }
         
-        mavenRequest.setUpdateSnapshots(mavenEmbedderRequest.isUpdateSnapshots());
+        mavenRequest.setUpdateSnapshots(mer.isUpdateSnapshots());
 
         // TODO olamy check this sould be userProperties 
-        mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
+        mavenRequest.setSystemProperties(mer.getSystemProperties());
 
-        if (mavenEmbedderRequest.getTransferListener() != null) {
+        if (mer.getTransferListener() != null) {
             if (debugMavenEmbedder) {
-                mavenEmbedderRequest.getListener().getLogger()
-                    .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
+                mer.getListener().getLogger()
+                    .println( "use transfertListener " + mer.getTransferListener().getClass().getName() );
             }
-            mavenRequest.setTransferListener( mavenEmbedderRequest.getTransferListener() );
+            mavenRequest.setTransferListener( mer.getTransferListener() );
         }
 
         mavenRequest.setMavenLoggerManager( new Slf4jLoggerManager() );
@@ -204,9 +204,9 @@ public class MavenUtil {
             }
         }
 
-        mavenRequest.setProcessPlugins( mavenEmbedderRequest.isProcessPlugins() );
-        mavenRequest.setResolveDependencies( mavenEmbedderRequest.isResolveDependencies() );
-        mavenRequest.setValidationLevel( mavenEmbedderRequest.getValidationLevel() );
+        mavenRequest.setProcessPlugins( mer.isProcessPlugins() );
+        mavenRequest.setResolveDependencies( mer.isResolveDependencies() );
+        mavenRequest.setValidationLevel( mer.getValidationLevel() );
             
         // TODO check this MaskingClassLoader with maven 3 artifacts
         MavenEmbedder maven = new MavenEmbedder( mavenEmbedderClassLoader, mavenRequest );

@@ -25,6 +25,8 @@
 package hudson.maven;
 
 import static hudson.model.Result.FAILURE;
+import static org.apache.maven.model.building.ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -1199,16 +1201,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             try {
-                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
+                MavenEmbedderRequest mer = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
-                mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
-                mavenEmbedderRequest.setUpdateSnapshots( this.updateSnapshots );
+                mer.setTransferListener(new SimpleTransferListener(listener));
+                mer.setUpdateSnapshots(this.updateSnapshots);
                 
-                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
-                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
+                mer.setProcessPlugins(this.processPlugins);
+                mer.setResolveDependencies(this.resolveDependencies);
                 if (globalSettings != null) {
-                    mavenEmbedderRequest.setGlobalSettings( new File(globalSettings) );
+                    mer.setGlobalSettings(new File(globalSettings));
                 }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
@@ -1216,28 +1218,28 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 ReactorReader reactorReader = null;
                 boolean maven3OrLater = MavenUtil.maven3orLater(mavenVersion);
                 if (maven3OrLater) {
-                    mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+                    mer.setValidationLevel(VALIDATION_LEVEL_MAVEN_3_0);
                 } else {
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
-                    mavenEmbedderRequest.setWorkspaceReader( reactorReader );
+                    mer.setWorkspaceReader(reactorReader);
                 }
 
                 {// create a classloader that loads extensions
                     List<URL> urls = plexusContributors.getPlexusComponentJars();
                     if (!urls.isEmpty()) {
-                        mavenEmbedderRequest.setClassLoader(
-                            new URLClassLoader(urls.toArray(new URL[urls.size()]),
-                                mavenEmbedderRequest.getClassLoader()));
+                        mer.setClassLoader(
+                                new URLClassLoader(urls.toArray(new URL[urls.size()]),
+                                        mer.getClassLoader()));
                     }
                 }
                 
                 if (this.mavenValidationLevel >= 0) {
-                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                    mer.setValidationLevel(this.mavenValidationLevel);
                 }
                 
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
-                MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
+                MavenEmbedder embedder = MavenUtil.createEmbedder( mer );
                 
                 MavenProject rootProject = null;
                 
