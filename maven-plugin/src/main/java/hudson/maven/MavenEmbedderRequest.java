@@ -229,6 +229,11 @@ public class MavenEmbedderRequest
         return validationLevel;
     }
 
+    /**
+     * Controls the level of error checks done while parsing POM.
+     *
+     * @see ModelBuildingRequest#VALIDATION_LEVEL_MAVEN_3_0
+     */
     public MavenEmbedderRequest setValidationLevel( int validationLevel ) {
         this.validationLevel = validationLevel;
         return this;

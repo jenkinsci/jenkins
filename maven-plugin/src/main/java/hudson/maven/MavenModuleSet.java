@@ -248,7 +248,9 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * parameter for validation level during pom parsing by default the one corresponding
      * to the maven version used (2 or 3)
+     *
      * @since 1.394
+     * @see DescriptorImpl#mavenValidationLevels
      */    
     private int mavenValidationLevel = -1;
 
