@@ -27,6 +27,8 @@ import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -76,6 +78,10 @@ public final class WorkUnit {
         return executable;
     }
 
+    /**
+     * This method is only meant to be called internally by {@link Executor}.
+     */
+    @Restricted(NoExternalUse.class)
     public void setExecutable(Executable executable) {
         this.executable = executable;
     }

@@ -741,6 +741,8 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Returns the snapshot of all {@link LeftItem}s.
+     *
+     * @since 1.519
      */
     public Collection<LeftItem> getLeftItems() {
         return Collections.unmodifiableCollection(leftItems.asMap().values());
@@ -1444,6 +1446,7 @@ public class Queue extends ResourceController implements Saveable {
          *
          * @return
          *      URL that ends with '/'.
+         * @since 1.519
          */
         @Exported
         public String getUrl() {
@@ -1741,6 +1744,8 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * {@link Item} in the {@link Queue#leftItems} stage. These are items that had left the queue
      * by either began executing or by getting cancelled.
+     *
+     * @since 1.519
      */
     public final static class LeftItem extends Item {
         public final WorkUnitContext outcome;

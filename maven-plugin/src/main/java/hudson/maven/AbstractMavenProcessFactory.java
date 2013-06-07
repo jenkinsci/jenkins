@@ -260,6 +260,7 @@ public abstract class AbstractMavenProcessFactory
 
     /**
      * Apply extension plexus modules to the newly launched Maven process.
+     * @since 1.519
      */
     protected abstract void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException;
 

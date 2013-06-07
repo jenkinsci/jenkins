@@ -192,6 +192,7 @@ public class MavenEmbedderRequest
 
     /**
      * Default value of {@link #getClassLoader()}
+     * @since 1.519
      */
     public static ClassLoader getDefaultMavenClassLoader() {
         return new MaskingClassLoader( MavenUtil.class.getClassLoader() );
