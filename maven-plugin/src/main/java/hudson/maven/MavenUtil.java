@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.util.MaskingClassLoader;
 import jenkins.model.Jenkins;
 import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
@@ -195,9 +196,7 @@ public class MavenUtil {
                             : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
         mavenRequest.setMavenLoggerManager( logger );
         
-        ClassLoader mavenEmbedderClassLoader =
-            mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( MavenUtil.class.getClassLoader() )
-                            : mavenEmbedderRequest.getClassLoader(); 
+        ClassLoader mavenEmbedderClassLoader = mavenEmbedderRequest.getClassLoader();
 
         {// are we loading the right components.xml? (and not from Maven that's running Jetty, if we are running in "mvn hudson-dev:run" or "mvn hpi:run"?
             Enumeration<URL> e = mavenEmbedderClassLoader.getResources("META-INF/plexus/components.xml");
@@ -272,79 +271,6 @@ public class MavenUtil {
         project.setCollectedProjects( modules );
     }
 
-    /**
-     * When we run in Jetty during development, embedded Maven will end up
-     * seeing some of the Maven class visible through Jetty, and this confuses it.
-     *
-     * <p>
-     * Specifically, embedded Maven will find all the component descriptors
-     * visible through Jetty, yet when it comes to loading classes, classworlds
-     * still load classes from local realms created inside embedder.
-     *
-     * <p>
-     * This classloader prevents this issue by hiding the component descriptor
-     * visible through Jetty.
-     */
-    private static final class MaskingClassLoader extends ClassLoader {
-
-        public MaskingClassLoader(ClassLoader parent) {
-            super(parent);
-        }
-
-        public Enumeration<URL> getResources(String name) throws IOException {
-            final Enumeration<URL> e = super.getResources(name);
-            return new Enumeration<URL>() {
-                URL next;
-
-                public boolean hasMoreElements() {
-                    fetch();
-                    return next!=null;
-                }
-
-                public URL nextElement() {
-                    fetch();
-                    URL r = next;
-                    next = null;
-                    return r;
-                }
-
-                private void fetch() {
-                    while(next==null && e.hasMoreElements()) {
-                        next = e.nextElement();
-                        if(shouldBeIgnored(next))
-                            next = null;
-                    }
-                }
-
-                private boolean shouldBeIgnored(URL url) {
-                    String s = url.toExternalForm();
-                    if(s.contains("maven-plugin-tools-api"))
-                        return true;
-                    // because RemoteClassLoader mangles the path, we can't check for plexus/components.xml,
-                    // which would have otherwise made the test cheaper.
-                    if(s.endsWith("components.xml")) {
-                        BufferedReader r=null;
-                        try {
-                            // is this designated for interception purpose? If so, don't load them in the MavenEmbedder
-                            // earlier I tried to use a marker file in the same directory, but that won't work
-                            r = new BufferedReader(new InputStreamReader(url.openStream()));
-                            for (int i=0; i<2; i++) {
-                                String l = r.readLine();
-                                if(l!=null && l.contains("MAVEN-INTERCEPTION-TO-BE-MASKED"))
-                                    return true;
-                            }
-                        } catch (IOException _) {
-                            // let whoever requesting this resource re-discover an error and report it
-                        } finally {
-                            IOUtils.closeQuietly(r);
-                        }
-                    }
-                    return false;
-                }
-            };
-        }
-    }
-    
     public static boolean maven3orLater(String mavenVersion) {
         // null or empty so false !
         if (StringUtils.isBlank( mavenVersion )) {

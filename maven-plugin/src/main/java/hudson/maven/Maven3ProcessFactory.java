@@ -26,16 +26,19 @@ package hudson.maven;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
 
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
@@ -77,6 +80,23 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
             InterruptedException {
         return null;
     }
+
+    @Override
+    protected void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask());
+    }
+
+    private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
+        PlexusModuleContributor c = PlexusModuleContributor.aggregate();
+
+        public Void call() throws IOException {
+            Maven3Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));
+            return null;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
 
     /**
      * Finds classworlds.jar

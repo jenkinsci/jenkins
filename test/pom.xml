@@ -161,6 +161,12 @@ THE SOFTWARE.
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.test</groupId>
+      <artifactId>sample-plexus-component</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

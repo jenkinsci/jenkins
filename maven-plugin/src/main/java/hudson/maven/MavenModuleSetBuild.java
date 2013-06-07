@@ -51,6 +51,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStep;
@@ -66,6 +67,8 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -691,6 +694,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                   new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
                                                                                            pom.getParent() ) );
                         }
+
+                        PlexusModuleContributor.apply(process);
+
+
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
                         if(localRepo!=null)
@@ -748,7 +755,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 							if (newMargs != null) {
 								margs = newMargs;
 							}
-						}                        
+						}
                         
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
@@ -1038,6 +1045,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private boolean updateSnapshots = false;
         
         String rootPOMRelPrefix;
+
+        private final PlexusModuleContributor plexusContributors = PlexusModuleContributor.aggregate();
         
         PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
@@ -1185,7 +1194,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
                     mavenEmbedderRequest.setWorkspaceReader( reactorReader );
                 }
-                
+
+                {// create a classloader that loads extensions
+                    List<URL> urls = plexusContributors.getPlexusComponentJars();
+                    if (!urls.isEmpty()) {
+                        mavenEmbedderRequest.setClassLoader(
+                            new URLClassLoader(urls.toArray(new URL[urls.size()]),
+                                mavenEmbedderRequest.getClassLoader()));
+                    }
+                }
                 
                 if (this.mavenValidationLevel >= 0) {
                     mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );

@@ -95,8 +95,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             registerSystemProperties();
 
             listener.getLogger().println(formatArgs(goals));
-            
-            
+
+
             int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
