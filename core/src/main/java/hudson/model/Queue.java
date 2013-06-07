@@ -24,6 +24,8 @@
  */
 package hudson.model;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
@@ -90,6 +92,11 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
@@ -116,7 +123,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * <p>
  * This class implements the core scheduling logic. {@link Task} represents the executable
  * task that are placed in the queue. While in the queue, it's wrapped into {@link Item}
- * so that we can keep track of additional data used for deciding what to exeucte when.
+ * so that we can keep track of additional data used for deciding what to execute when.
  *
  * <p>
  * Items in queue goes through several stages, as depicted below:
@@ -125,7 +132,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *                           |        ^
  *                           |        |
  *                           |        v
- *                           +--> buildables ---> pending ---> (executed)
+ *                           +--> buildables ---> pending ---> left
  * </pre>
  *
  * <p>
@@ -167,8 +174,36 @@ public class Queue extends ResourceController implements Saveable {
      */
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
 
+    /**
+     * Items that left queue would stay here for a while to enable tracking via {@link Item#id}.
+     *
+     * This map is forgetful, since we can't remember everything that executed in the past.
+     */
+//    private final FifoMap<Integer,LeftItem> leftItems = new FifoMap<Integer,LeftItem>(256);
+    private final Cache<Integer,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
+
     private final CachedItemList itemsView = new CachedItemList();
 
+//    class FifoMap<K,V> {
+//        private final ConcurrentMap<K,V> store = new ConcurrentHashMap<K,V>();
+//        private final BlockingQueue<K> order = new LinkedBlockingQueue<K>();
+//        private final int size;
+//
+//        FifoMap(int size) {
+//            this.size = size;
+//        }
+//
+//        private void add(K k, V v) {
+//            store.put(k,v);
+//            order.add(k);
+//            while (order.size()>size)
+//                store.remove(order.remove());
+//        }
+//
+//        public V get(K k) {
+//            return store.get(k);
+//        }
+//    }
     /**
      * Maintains a copy of {@link Queue#getItems()}
      *
@@ -612,6 +647,10 @@ public class Queue extends ResourceController implements Saveable {
         LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
         // use bitwise-OR to make sure that all the branches get evaluated all the time
         boolean r = (item instanceof WaitingItem && waitingList.remove(item)) | blockedProjects.remove(item) | buildables.remove(item);
+
+        LeftItem li = new LeftItem(item);
+        leftItems.put(li.id,li);
+
         if(r)
             item.onCancelled();
         return r;
@@ -683,7 +722,8 @@ public class Queue extends ResourceController implements Saveable {
     	for (Item item: blockedProjects) if (item.id == id) return item;
     	for (Item item: buildables) if (item.id == id) return item;
         for (Item item: pendings) if (item.id == id) return item;
-    	return null;
+
+        return leftItems.getIfPresent(id);
     }
 
     /**
@@ -718,6 +758,13 @@ public class Queue extends ResourceController implements Saveable {
      */
     public synchronized List<BuildableItem> getPendingItems() {
         return new ArrayList<BuildableItem>(pendings.values());
+    }
+
+    /**
+     * Returns the snapshot of all {@link LeftItem}s.
+     */
+    public Collection<LeftItem> getLeftItems() {
+        return Collections.unmodifiableCollection(leftItems.asMap().values());
     }
 
     /**
@@ -852,6 +899,9 @@ public class Queue extends ResourceController implements Saveable {
             OneOffExecutor ooe = (OneOffExecutor) exec;
             final WorkUnit wu = ooe.getAssignedWorkUnit();
             pendings.remove(wu.context.item);
+
+            LeftItem li = new LeftItem(wu.context);
+            leftItems.put(li.id,li);
             return wu;
         }
 
@@ -895,8 +945,11 @@ public class Queue extends ResourceController implements Saveable {
                     LOGGER.log(Level.FINE, "Pop returning {0} for {1}", new Object[] {offer.workUnit, exec.getName()});
 
                     // TODO: I think this has to be done by the last executor that leaves the pop(), not by main executor
-                    if (offer.workUnit.isMainWork())
+                    if (offer.workUnit.isMainWork()) {
                         pendings.remove(offer.workUnit.context.item);
+                        LeftItem li = new LeftItem(offer.workUnit.context);
+                        leftItems.put(li.id,li);
+                    }
 
                     return offer.workUnit;
                 }
@@ -1408,6 +1461,17 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
+         * Returns the URL of this {@link Item} relative to the context path of Jenkins
+         *
+         * @return
+         *      URL that ends with '/'.
+         */
+        @Exported
+        public String getUrl() {
+            return "queue/item/"+id+'/';
+        }
+
+        /**
          * Gets a human-readable status message describing why it's in the queue.
          */
         @Exported
@@ -1466,6 +1530,10 @@ public class Queue extends ResourceController implements Saveable {
          */
         /*package*/ void onCancelled() {
             future.setAsCancelled();
+        }
+
+        public Api getApi() {
+            return new Api(this);
         }
 
         private Object readResolve() {
@@ -1688,6 +1756,52 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public boolean isPending() {
             return isPending;
+        }
+    }
+
+    /**
+     * {@link Item} in the {@link Queue#leftItems} stage. These are items that had left the queue
+     * by either began executing or by getting cancelled.
+     */
+    public final static class LeftItem extends Item {
+        public final WorkUnitContext outcome;
+
+        /**
+         * When item has left the queue and begin executing.
+         */
+        public LeftItem(WorkUnitContext wuc) {
+            super(wuc.item);
+            this.outcome = wuc;
+        }
+
+        /**
+         * When item is cancelled.
+         */
+        public LeftItem(Item cancelled) {
+            super(cancelled);
+            this.outcome = null;
+        }
+
+        @Override
+        public CauseOfBlockage getCauseOfBlockage() {
+            return null;
+        }
+
+        /**
+         * If this is representing an item that started executing, this property returns
+         * the primary executable (such as {@link AbstractBuild}) that created out of it.
+         */
+        @Exported
+        public Executable getExecutable() {
+            return outcome!=null ? outcome.getPrimaryWorkUnit().getExecutable() : null;
+        }
+
+        /**
+         * Is this representing a cancelled item?
+         */
+        @Exported
+        public boolean isCancelled() {
+            return outcome==null;
         }
     }
 

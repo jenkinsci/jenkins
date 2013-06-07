@@ -214,6 +214,7 @@ public class Executor extends Thread implements ModelObject {
                         task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
+                        workUnit.setExecutable(executable);
                     }
                     if (LOGGER.isLoggable(FINE))
                         LOGGER.log(FINE, getName()+" is going to execute "+executable);

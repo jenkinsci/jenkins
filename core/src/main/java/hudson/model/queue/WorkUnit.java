@@ -48,6 +48,7 @@ public final class WorkUnit {
     public final WorkUnitContext context;
 
     private volatile Executor executor;
+    private Executable executable;
 
     WorkUnit(WorkUnitContext context, SubTask work) {
         this.context = context;
@@ -69,10 +70,14 @@ public final class WorkUnit {
     }
 
     /**
-     * If the execution has already started, return the current executable.
+     * If the execution has already started, return the executable that was created.
      */
     public Executable getExecutable() {
-        return executor!=null ? executor.getCurrentExecutable() : null;
+        return executable;
+    }
+
+    public void setExecutable(Executable executable) {
+        this.executable = executable;
     }
 
     /**
