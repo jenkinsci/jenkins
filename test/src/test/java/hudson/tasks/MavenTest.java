@@ -23,6 +23,9 @@
  */
 package hudson.tasks;
 
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.PlexusModuleContributor;
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import jenkins.model.Jenkins;
@@ -48,7 +51,10 @@ import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
 import hudson.util.DescribableList;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -61,6 +67,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.ExtractResourceSCM;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -228,5 +236,5 @@ public class MavenTest extends HudsonTestCase {
             assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
             assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
         }
-    }    
+    }
 }

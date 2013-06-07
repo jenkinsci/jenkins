@@ -69,6 +69,11 @@ import org.kohsuke.stapler.framework.io.IOException2;
  */
 
 /**
+ * Launches the maven process.
+ *
+ * This class captures the common part, and {@link MavenProcessFactory} and {@link Maven3ProcessFactory}
+ * adds Maven2/Maven3 flavors to it to make it concrete.
+ *
  * @author Olivier Lamy
  */
 public abstract class AbstractMavenProcessFactory
@@ -234,11 +239,14 @@ public abstract class AbstractMavenProcessFactory
                 throw e;
             }
 
-            return new NewProcess(
-                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+            Channel ch = Channels.forProcess("Channel to Maven " + Arrays.toString(cmds),
                     Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
-                    listener.getLogger(), proc),
-                proc);
+                    listener.getLogger(), proc);
+
+            if (!PlexusModuleContributor.all().isEmpty())
+                applyPlexusModuleContributor(ch);
+
+            return new NewProcess(ch,proc);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659
@@ -249,6 +257,11 @@ public abstract class AbstractMavenProcessFactory
             throw e;
         }
     }
+
+    /**
+     * Apply extension plexus modules to the newly launched Maven process.
+     */
+    protected abstract void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException;
 
     /**
      * Builds the command line argument list to launch the maven process.

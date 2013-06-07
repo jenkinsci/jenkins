@@ -32,16 +32,17 @@ import hudson.model.BuildListener;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
 
 
 /**
- * Launches the maven process.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -84,6 +85,20 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
                 slaveRoot.child("maven2.1-interceptor.jar").getRemote();
         }
         return null;
+    }
+
+    @Override
+    protected void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask());
+    }
+
+    private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
+        PlexusModuleContributor c = PlexusModuleContributor.aggregate();
+
+        public Void call() throws IOException {
+            Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));
+            return null;
+        }
     }
 
     /**
