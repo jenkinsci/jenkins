@@ -160,6 +160,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             throw new IOException2(e);
         } catch (Exception e) {
             throw new IOException2(e);
+        } finally {
+            if (DUMP_PERFORMANCE_COUNTERS)
+                Channel.current().dumpPerformanceCounters(listener.error("Remoting stats"));
         }
     }
 
@@ -571,4 +574,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = Logger.getLogger(Maven3Builder.class.getName());
+
+    public static boolean DUMP_PERFORMANCE_COUNTERS = Boolean.getBoolean(Maven3Builder.class.getName()+".dumpPerformanceCounters");
 }
