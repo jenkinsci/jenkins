@@ -57,8 +57,6 @@ import hudson.model.*;
 import hudson.model.Executor;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
-import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -233,11 +231,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     private List<WebClient> clients = new ArrayList<WebClient>();
 
     /**
-     * Remember channels that are created, to release them at the end.
-     */
-    private List<Channel> channels = new ArrayList<Channel>();
-
-    /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
      * and the current values of the local variables in those stack frame.
      *
@@ -401,14 +394,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
             clients.clear();
 
-            synchronized(channels) {
-                for (Channel c : channels)
-                    c.close();
-                for (Channel c : channels)
-                    c.join();
-                channels.clear();
-            }
-
         } finally {
             if (server!=null)
                 server.stop();
@@ -543,22 +528,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return realm;
     }
 
-    @TestExtension
-    public static class ComputerListenerImpl extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-            VirtualChannel ch = c.getChannel();
-            if (ch instanceof Channel)
-            TestEnvironment.get().testCase.addChannel((Channel)ch);
-        }
-    }
-
-    private void addChannel(Channel ch) {
-        synchronized (channels) {
-            channels.add(ch);
-        }
-    }
-    
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
