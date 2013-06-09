@@ -88,6 +88,7 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -99,6 +100,7 @@ import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -382,6 +384,45 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     /**
+     * Disconnect all slaves.
+     * 
+     * Wait for disconnecting commands are sent to remote slaves.
+     * This should be called before calling Jenkins.cleanup().
+     * Though Jenkins.cleanup() also disconnects slaves,
+     * it does not wait for slaves shut down.
+     */
+    private void purgeSlaves() {
+        List<Computer> disconnectingComputers = new ArrayList<Computer>();
+        List<VirtualChannel> closingChannels = new ArrayList<VirtualChannel>();
+        for (Computer computer: jenkins.getComputers()) {
+            if (!(computer instanceof SlaveComputer)) {
+                continue;
+            }
+            // disconnect slaves.
+            // retrieve the channel before disconnecting.
+            // even a computer gets offline, channel delays to close.
+            if (!computer.isOffline()) {
+                VirtualChannel ch = computer.getChannel();
+                computer.disconnect(null);
+                disconnectingComputers.add(computer);
+                closingChannels.add(ch);
+            }
+        }
+        
+        try {
+            // Wait for all computers disconnected and all channels closed.
+            for (Computer computer: disconnectingComputers) {
+                computer.waitUntilOffline();
+            }
+            for (VirtualChannel ch: closingChannels) {
+                ch.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Override to tear down your specific external resource.
      */
     protected void after() {
@@ -416,6 +457,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     // ignore
                 }
 
+            purgeSlaves();
             jenkins.cleanUp();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
