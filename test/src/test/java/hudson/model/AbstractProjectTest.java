@@ -291,6 +291,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     public void testGetBuildAfterGC() throws Exception {
         FreeStyleProject job = createFreeStyleProject();
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
+        jenkins.getQueue().clearLeftItems();
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assertTrue(job.getLastBuild() != null);
     }

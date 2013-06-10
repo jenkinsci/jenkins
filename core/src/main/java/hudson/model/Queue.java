@@ -92,10 +92,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.Map.Entry;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
@@ -746,6 +742,15 @@ public class Queue extends ResourceController implements Saveable {
      */
     public Collection<LeftItem> getLeftItems() {
         return Collections.unmodifiableCollection(leftItems.asMap().values());
+    }
+
+    /**
+     * Immediately clear the {@link #getLeftItems} cache.
+     * Useful for tests which need to verify that no links to a build remain.
+     * @since 1.519
+     */
+    public void clearLeftItems() {
+        leftItems.invalidateAll();
     }
 
     /**
