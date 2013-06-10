@@ -25,12 +25,20 @@ package hudson.logging;
 
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
+import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
+import hudson.model.Computer;
 import jenkins.model.Jenkins;
 import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -43,11 +51,20 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Records a selected set of logs so that the system administrator
@@ -133,6 +150,54 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             Logger l = getLogger();
             if(!l.isLoggable(getLevel()))
                 l.setLevel(getLevel());
+            new SetLevel(name, getLevel()).broadcast();
+        }
+
+        public void disable() {
+            getLogger().setLevel(null);
+            new SetLevel(name, null).broadcast();
+        }
+
+    }
+
+    private static final class SetLevel implements Callable<Void,Error> {
+        /** known loggers (kept per slave), to avoid GC */
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();
+        private final String name;
+        private final Level level;
+        SetLevel(String name, Level level) {
+            this.name = name;
+            this.level = level;
+        }
+        @Override public Void call() throws Error {
+            Logger logger = Logger.getLogger(name);
+            loggers.add(logger);
+            logger.setLevel(level);
+            return null;
+        }
+        void broadcast() {
+            for (Computer c : Jenkins.getInstance().getComputers()) {
+                if (c.getName().length() > 0) { // i.e. not master
+                    VirtualChannel ch = c.getChannel();
+                    if (ch != null) {
+                        try {
+                            ch.call(this);
+                        } catch (Exception x) {
+                            Logger.getLogger(LogRecorder.class.getName()).log(Level.WARNING, "could not set up logging on " + c, x);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
+        @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+            for (LogRecorder recorder : Jenkins.getInstance().getLog().logRecorders.values()) {
+                for (Target t : recorder.targets) {
+                    channel.call(new SetLevel(t.name, t.getLevel()));
+                }
+            }
         }
     }
 
@@ -216,7 +281,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         // Disable logging for all our targets,
         // then reenable all other loggers in case any also log the same targets
         for (Target t : targets)
-            t.getLogger().setLevel(null);
+            t.disable();
         for (LogRecorder log : getParent().logRecorders.values())
             for (Target t : log.targets)
                 t.enable();
@@ -242,6 +307,44 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public List<LogRecord> getLogRecords() {
         return handler.getView();
+    }
+
+    /**
+     * Gets a view of log records per slave matching this recorder.
+     * @return a map (sorted by display name) from computer to (nonempty) list of log records
+     * @since 1.519
+     */
+    public Map<Computer,List<LogRecord>> getSlaveLogRecords() {
+        Map<Computer,List<LogRecord>> result = new TreeMap<Computer,List<LogRecord>>(new Comparator<Computer>() {
+            final Collator COLL = Collator.getInstance();
+            public int compare(Computer c1, Computer c2) {
+                return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
+            }
+        });
+        for (Computer c : Jenkins.getInstance().getComputers()) {
+            if (c.getName().length() == 0) {
+                continue; // master
+            }
+            List<LogRecord> recs = new ArrayList<LogRecord>();
+            try {
+                for (LogRecord rec : c.getLogRecords()) {
+                    for (Target t : targets) {
+                        if (t.includes(rec)) {
+                            recs.add(rec);
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException x) {
+                continue;
+            } catch (InterruptedException x) {
+                continue;
+            }
+            if (!recs.isEmpty()) {
+                result.put(c, recs);
+            }
+        }
+        return result;
     }
 
     /**

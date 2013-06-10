@@ -33,6 +33,15 @@ THE SOFTWARE.
           <img src="${imagesURL}/spinner.gif" alt=""/>
         </div>
         <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" />
+        <!-- TODO dubious value: INFO+ shown in logText anyway; FINE- configured in /log/*/ maybe better viewed there
+        <j:set var="logRecords" value="${it.logRecords}"/>
+        <j:if test="${!logRecords.isEmpty()}">
+          <h1>${%Log Records}</h1>
+          <j:forEach var="log" items="${logRecords}">
+              <pre>${h.printLogRecord(log)}</pre>
+          </j:forEach>
+        </j:if>
+        -->
       </l:hasPermission>
     </l:main-panel>
   </l:layout>
