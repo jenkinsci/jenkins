@@ -29,18 +29,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
-import hudson.model.User;
 import hudson.security.Permission;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Locale;
-
 import jenkins.model.Jenkins;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,75 +39,53 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class GetNodeCommandTest {
 
-    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream err = new ByteArrayOutputStream();
-
-    private GetNodeCommand command;
+    private CLICommandInvoker command;
 
     @Rule public final JenkinsRule j = new JenkinsRule();
 
     @Before public void setUp() {
 
-        command = new GetNodeCommand();
+        command = new CLICommandInvoker(j, new GetNodeCommand());
     }
 
     @Test public void getNodeShouldFailWithoutAdministerPermision() throws Exception {
 
-        forUser("user");
-
         j.createSlave("MySlave", null, null);
 
-        final int result = execute("MySlave");
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Permission.READ)
+                .invokeWithArgs("MySlave")
+        ;
 
-        assertThat(err.toString(), containsString("user is missing the Administer permission"));
-        assertThat("No output expected", out.toString(), isEmptyString());
-        assertThat("Command is expected to fail", result, equalTo(-1));
+        assertThat(result.stderr(), containsString("user is missing the Administer permission"));
+        assertThat("No output expected", result.stdout(), isEmptyString());
+        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
 
     @Test public void getNodeShouldYieldConfigXml() throws Exception {
 
-        forUser("administrator");
-
         j.createSlave("MySlave", null, null);
 
-        final int result = execute("MySlave");
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.ADMINISTER)
+                .invokeWithArgs("MySlave")
+        ;
 
-        assertThat(out.toString(), startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-        assertThat(out.toString(), containsString("<name>MySlave</name>"));
-        assertThat("No error output expected", err.toString(), isEmptyString());
-        assertThat("Command is expected to succeed", result, equalTo(0));
+        assertThat(result.stdout(), startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertThat(result.stdout(), containsString("<name>MySlave</name>"));
+        assertThat("No error output expected", result.stderr(), isEmptyString());
+        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
     }
 
     @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
 
-        forUser("administrator");
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.ADMINISTER)
+                .invokeWithArgs("MySlave")
+        ;
 
-        final int result = execute("MySlave");
-
-        assertThat(err.toString(), containsString("No such node 'MySlave'"));
-        assertThat("No output expected", out.toString(), isEmptyString());
-        assertThat("Command is expected to fail", result, equalTo(-1));
-    }
-
-    private void forUser(final String user) {
-
-        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
-        realm.addGroups("user", "group");
-        realm.addGroups("administrator", "administrator");
-        j.jenkins.setSecurityRealm(realm);
-
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
-        auth.add(Permission.READ, "group");
-        auth.add(Jenkins.ADMINISTER, "administrator");
-        j.jenkins.setAuthorizationStrategy(auth);
-
-        command.setTransportAuth(User.get(user).impersonate());
-    }
-
-    private int execute(final String... args) {
-
-        return command.main(
-                Arrays.asList(args), Locale.ENGLISH, new NullInputStream(0), new PrintStream(out), new PrintStream(err)
-        );
+        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
+        assertThat("No output expected", result.stdout(), isEmptyString());
+        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
 }
