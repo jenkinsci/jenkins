@@ -341,8 +341,7 @@ public final class WebAppMain implements ServletContextListener {
 
         // Logger is in the system classloader, so if we don't do this
         // the whole web app will never be undepoyed.
-        Logger.getLogger("hudson").removeHandler(handler);
-        Logger.getLogger("jenkins").removeHandler(handler);
+        Logger.getLogger("").removeHandler(handler);
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
