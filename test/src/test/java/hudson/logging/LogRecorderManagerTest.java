@@ -23,30 +23,36 @@
  */
 package hudson.logging;
 
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import static org.junit.Assert.assertEquals;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LogRecorderManagerTest extends HudsonTestCase {
+public class LogRecorderManagerTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Makes sure that the logger configuration works.
      */
     @Url("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
-    public void testLoggerConfig() throws Exception {
+    @Test public void loggerConfig() throws Exception {
         Logger logger = Logger.getLogger("foo.bar.zot");
 
-        HtmlPage page = new WebClient().goTo("log/levels");
+        HtmlPage page = j.createWebClient().goTo("log/levels");
         HtmlForm form = page.getFormByName("configLogger");
         form.getInputByName("name").setValueAttribute("foo.bar.zot");
         form.getSelectByName("level").getOptionByValue("finest").setSelected(true);
-        submit(form);
+        j.submit(form);
 
         assertEquals(logger.getLevel(), Level.FINEST);
     }
