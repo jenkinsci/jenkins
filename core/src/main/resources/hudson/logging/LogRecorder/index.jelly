@@ -34,6 +34,12 @@ THE SOFTWARE.
     <j:forEach var="log" items="${it.logRecords}">
       <pre>${h.printLogRecord(log)}</pre>
     </j:forEach>
+    <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
+      <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
+      <j:forEach var="log" items="${entry.value}">
+        <pre>${h.printLogRecord(log)}</pre>
+      </j:forEach>
+    </j:forEach>
 
     <st:include it="${it.parent}" page="feeds.jelly" />    
   </l:main-panel>
