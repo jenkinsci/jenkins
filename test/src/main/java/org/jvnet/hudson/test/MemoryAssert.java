@@ -24,6 +24,7 @@
 
 package org.jvnet.hudson.test;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
+import org.netbeans.insane.live.LiveReferences;
 import org.netbeans.insane.scanner.CountingVisitor;
 import org.netbeans.insane.scanner.Filter;
 import org.netbeans.insane.scanner.ScannerUtils;
@@ -133,6 +135,7 @@ public class MemoryAssert {
      * Forces GC by causing an OOM and then verifies the given {@link WeakReference} has been garbage collected.
      * @param reference object used to verify garbage collection.
      */
+    @SuppressWarnings("DLS_DEAD_LOCAL_STORE_OF_NULL")
     public static void assertGC(WeakReference<?> reference) {
         assertTrue(true); reference.get(); // preload any needed classes!
         Set<Object[]> objects = new HashSet<Object[]>();
@@ -143,7 +146,12 @@ public class MemoryAssert {
                 break;
             }
         }
-        assertTrue(reference.get() == null);
+        objects = null;
+        System.gc();
+        Object obj = reference.get();
+        if (obj != null) {
+            fail(LiveReferences.fromRoots(Collections.singleton(obj)).toString());
+        }
     }
 
 }
