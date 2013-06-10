@@ -206,6 +206,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.acegisecurity.GrantedAuthorityImpl;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -1623,6 +1624,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
 				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
 				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                if (jpi.getFile() == null) {
+                    throw new ArtifactNotFoundException("cannot find plugin dependency", jpi);
+                }
 				return jpi.getFile();
 				
 			}
