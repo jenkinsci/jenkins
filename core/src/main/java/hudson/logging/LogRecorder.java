@@ -259,6 +259,5 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * Log levels that can be configured for {@link Target}.
      */
     public static List<Level> LEVELS =
-            Arrays.asList(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
-                    Level.FINE, Level.FINER, Level.FINEST, Level.ALL);
+            Arrays.asList(Level.ALL, Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO, Level.WARNING, Level.SEVERE);
 }
