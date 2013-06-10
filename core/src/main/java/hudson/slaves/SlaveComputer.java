@@ -39,6 +39,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.AbortException;
 import hudson.remoting.Launcher;
+import hudson.security.ACL;
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Secret;
@@ -80,6 +81,8 @@ import org.kohsuke.stapler.HttpRedirect;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.compression.FilterServletOutputStream;
@@ -460,8 +463,14 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer());
-        for (ComputerListener cl : ComputerListener.all())
-            cl.preOnline(this,channel,root,taskListener);
+        SecurityContext old = ACL.impersonate(ACL.SYSTEM);
+        try {
+            for (ComputerListener cl : ComputerListener.all()) {
+                cl.preOnline(this,channel,root,taskListener);
+            }
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
 
         offlineCause = null;
 
@@ -486,8 +495,14 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onOnline(this,taskListener);
+        old = ACL.impersonate(ACL.SYSTEM);
+        try {
+            for (ComputerListener cl : ComputerListener.all()) {
+                cl.onOnline(this,taskListener);
+            }
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
         log.println("Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
