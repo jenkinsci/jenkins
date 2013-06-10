@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -100,7 +99,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         @DataBoundConstructor
         public Target(String name, String level) {
-            this(name,Level.parse(level.toUpperCase(Locale.ENGLISH)));
+            this(name,Level.parse(level));
         }
 
         public Level getLevel() {
