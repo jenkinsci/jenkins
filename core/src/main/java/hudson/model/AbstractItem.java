@@ -401,7 +401,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public String getShortUrl() {
-        return getParent().getUrlChildPrefix()+'/'+Util.rawEncode(getName())+'/';
+        String prefix = getParent().getUrlChildPrefix();
+        String subdir = Util.rawEncode(getName());
+        return prefix.equals(".") ? subdir : prefix+'/'+subdir+'/';
     }
 
     public String getSearchUrl() {
