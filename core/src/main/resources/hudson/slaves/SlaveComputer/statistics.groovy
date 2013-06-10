@@ -10,7 +10,15 @@ table(class: 'bigtable') {
     tr {
         td _('Classes')
         td(style: right) {text(fmt.format(my.classLoadingTime / 1000000000))}
-        td(style: right) {text(my.classLoadingCount)}
+        td(style: right) {
+            text(my.classLoadingCount)
+            def classLoadingPrefetchCacheCount = my.classLoadingPrefetchCacheCount;
+            if (classLoadingPrefetchCacheCount != -1) {
+                text(_(' (prefetch cache: '))
+                text(classLoadingPrefetchCacheCount)
+                text(_(')'))
+            }
+        }
     }
     tr {
         td _('Resources')

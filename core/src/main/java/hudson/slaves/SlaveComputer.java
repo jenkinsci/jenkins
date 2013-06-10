@@ -349,6 +349,18 @@ public class SlaveComputer extends Computer {
     }
 
     /**
+     * Shows {@link Channel#classLoadingPrefetchCacheCount}.
+     * @return -1 in case that capability is not supported
+     * @since XXX prefetch-JENKINS-15120
+     */
+    public int getClassLoadingPrefetchCacheCount() throws IOException, InterruptedException {
+        if (!channel.remoteCapability.supportsPrefetch()) {
+            return -1;
+        }
+        return channel.call(new LoadingPrefetchCacheCount());
+    }
+
+    /**
      * Shows {@link Channel#resourceLoadingCount}.
      * @since 1.495
      */
@@ -380,6 +392,12 @@ public class SlaveComputer extends Computer {
         @Override public Integer call() {
             Channel c = Channel.current();
             return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
+        }
+    }
+
+    static class LoadingPrefetchCacheCount implements Callable<Integer,RuntimeException> {
+        @Override public Integer call() {
+            return Channel.current().classLoadingPrefetchCacheCount.get();
         }
     }
 
