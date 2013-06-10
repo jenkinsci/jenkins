@@ -797,7 +797,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<Future<UpdateCenter.UpdateCenterJob>>();
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
-        // XXX call uc.updateAllSites() when available? perhaps not, since we should not block on network here
+        // TODO call uc.updateAllSites() when available? perhaps not, since we should not block on network here
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
             PluginWrapper pw = getPlugin(requestedPlugin.getKey());
             if (pw == null) { // install new

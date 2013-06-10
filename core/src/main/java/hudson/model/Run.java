@@ -1369,7 +1369,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (tmp.exists()) {
             Util.deleteRecursive(tmp);
         }
-        // XXX on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
+        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
         // some user reported that they see some left-over .xyz files in the workspace,
@@ -1955,7 +1955,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // Definitely prevented.
             return false;
         }
-        // XXX may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
+        // TODO may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
         // In such a case this will incorrectly return true and logKeep.jelly will allow the toggle.
         // However at least then (after redirecting to the same page) the toggle button will correctly disappear.
         return true;

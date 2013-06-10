@@ -1766,9 +1766,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
                     return FormValidation.error(value + " does not exist and probably cannot be created");
                 }
-                // XXX failure to use either ITEM_* variable might be an error too?
+                // TODO failure to use either ITEM_* variable might be an error too?
             }
-            return FormValidation.ok(); // XXX assumes it will be OK after substitution, but can we be sure?
+            return FormValidation.ok(); // TODO assumes it will be OK after substitution, but can we be sure?
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
@@ -2271,7 +2271,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             if (ctx instanceof ItemGroup) {
                 ItemGroup g = (ItemGroup) ctx;
                 Item i = g.getItem(s);
-                if (i==null || !i.hasPermission(Item.READ)) { // XXX consider DISCOVER
+                if (i==null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx=null;    // can't go up further
                     break;
                 }
@@ -2339,7 +2339,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 return null;    // this item can't have any children
 
             if (!item.hasPermission(Item.READ))
-                return null; // XXX consider DISCOVER
+                return null; // TODO consider DISCOVER
 
             parent = (ItemGroup) item;
         }
@@ -3631,7 +3631,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
-            // XXX SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
             || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
             || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
@@ -3658,8 +3658,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Collection<String> getUnprotectedRootActions() {
         Set<String> names = new TreeSet<String>();
-        names.add("jnlpJars"); // XXX cleaner to refactor doJnlpJars into a URA
-        // XXX consider caching (expiring cache when actions changes)
+        names.add("jnlpJars"); // TODO cleaner to refactor doJnlpJars into a URA
+        // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
                 names.add(a.getUrlName());

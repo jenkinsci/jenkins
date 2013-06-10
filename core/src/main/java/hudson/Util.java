@@ -1075,14 +1075,14 @@ public class Util {
                         // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
                         POSIX posix = PosixAPI.jnr();
                         if (posix.isNative()) {
-                            // XXX should we rethrow PosixException as IOException here?
+                            // TODO should we rethrow PosixException as IOException here?
                             r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
                         }
                     }
                 }
                 if (r==null) {
                     // if all else fail, fall back to the most expensive approach of forking a process
-                    // XXX is this really necessary? JavaPOSIX should do this automatically
+                    // TODO is this really necessary? JavaPOSIX should do this automatically
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
                         new String[0],listener.getLogger(), baseDir).join();

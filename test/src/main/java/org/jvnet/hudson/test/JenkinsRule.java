@@ -451,7 +451,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
-            // XXX use URLClassLoader.close() in Java 7
+            // TODO use URLClassLoader.close() in Java 7
             System.gc();
         }
     }

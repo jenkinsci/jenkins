@@ -100,12 +100,12 @@ var crumb = {
     wrap: function(headers) {
         if (this.fieldName!=null) {
             if (headers instanceof Array)
-                // XXX prototype.js only seems to interpret object
+                // TODO prototype.js only seems to interpret object
                 headers.push(this.fieldName, this.value);
             else
                 headers[this.fieldName]=this.value;
         }
-        // XXX return value unused
+        // TODO return value unused
         return headers;
     },
 
@@ -578,7 +578,7 @@ function sequencer(fs) {
 
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = {
-// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
+// TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },

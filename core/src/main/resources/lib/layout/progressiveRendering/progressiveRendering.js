@@ -29,7 +29,7 @@ function progressivelyRender(handler, callback) {
             callback(r.data);
             $('status').style.display = 'none';
         } else if (r.status == 'canceled') {
-            // XXX ugly; replace with single tr of class=unknown?
+            // TODO ugly; replace with single tr of class=unknown?
             $$('#status .progress-bar-done')[0].innerHTML = 'Aborted.';
         } else if (r.status == 'error') {
             $$('#status .progress-bar-done')[0].style.width = '100%';

@@ -805,7 +805,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                     }
                                 }
                             }
-                            // XXX consider also adding the user of the UserCause when applicable
+                            // TODO consider also adding the user of the UserCause when applicable
                             buildCount++;
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
@@ -818,7 +818,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if (canceled()) {
                     return;
                 }
-                for (User u : User.getAll()) { // XXX nice to have a method to iterate these lazily
+                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
                     if (u == unknown) {
                         continue;
                     }

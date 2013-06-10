@@ -122,7 +122,7 @@ public class XStream2 extends XStream {
     }
 
     static String trimVersion(String version) {
-        // XXX seems like there should be some trick with VersionNumber to do this
+        // TODO seems like there should be some trick with VersionNumber to do this
         return version.replaceFirst(" .+$", "");
     }
 

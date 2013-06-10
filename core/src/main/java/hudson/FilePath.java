@@ -497,7 +497,7 @@ public final class FilePath implements Serializable {
     private static void unzip(File dir, InputStream in) throws IOException {
         File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
         try {
-            // XXX why does this not simply use ZipInputStream?
+            // TODO why does this not simply use ZipInputStream?
             IOUtils.copy(in, tmpFile);
             unzip(dir,tmpFile);
         }

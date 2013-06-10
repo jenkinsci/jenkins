@@ -63,7 +63,7 @@ public class MemoryAssert {
      * @param max the maximum desired memory usage (in bytes)
      */
     public static void assertHeapUsage(Object o, int max) throws Exception {
-        // XXX could use ScannerUtils.recursiveSizeOf here
+        // TODO could use ScannerUtils.recursiveSizeOf here
         CountingVisitor v = new CountingVisitor();
         ScannerUtils.scan(ScannerUtils.skipNonStrongReferencesFilter(), v, Collections.singleton(o), false);
         int memoryUsage = v.getTotalSize();

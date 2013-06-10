@@ -39,7 +39,7 @@ public class GroovyInitScriptTest {
     @LocalData
     @Test public void errorsHandled() throws Exception {
         assertEquals("true", System.getProperty("started"));
-        /* XXX Jenkins.logRecords empty during a test, and adding a handler to root logger in JenkinsRule.before() does not work:
+        /* TODO Jenkins.logRecords empty during a test, and adding a handler to root logger in JenkinsRule.before() does not work:
         assertTrue(log, log.contains("Nonexistent"));
         */
     }

@@ -333,7 +333,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Bug(17137)
     public void testExternalBuildDirectorySymlinks() throws Exception {
-        // XXX when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
+        // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
         HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
         File builds = createTmpDir();
         form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");

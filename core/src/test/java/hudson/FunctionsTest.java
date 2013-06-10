@@ -181,7 +181,7 @@ public class FunctionsTest {
         when(Stapler.getCurrentRequest()).thenReturn(req);
         TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
         when(ms.getShortUrl()).thenReturn("job/ms/");
-        // XXX "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
+        // TODO "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(ms, "."));
         Item m = mock(Item.class);
         when(m.getParent()).thenReturn(ms);

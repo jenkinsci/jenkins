@@ -724,7 +724,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     void addWithoutSaving(String jobFullName, int n) {
-        synchronized(usages) { // XXX why not synchronized (this) like some, though not all, other accesses?
+        synchronized(usages) { // TODO why not synchronized (this) like some, though not all, other accesses?
             RangeSet r = usages.get(jobFullName);
             if(r==null) {
                 r = new RangeSet();
