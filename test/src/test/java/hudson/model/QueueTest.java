@@ -43,6 +43,14 @@ import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixRun;
 import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProvisioner;
+import jenkins.model.Jenkins;
+import jenkins.security.ProjectAuthenticator;
+import jenkins.security.ProjectAuthenticatorConfiguration;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.GrantedAuthorityImpl;
+import org.acegisecurity.providers.TestingAuthenticationToken;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -51,11 +59,13 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -354,4 +364,36 @@ public class QueueTest extends HudsonTestCase {
         FreeStyleBuild b2 = assertBuildStatusSuccess(v);
         assertSame(b,b2);
     }
+
+    @Inject
+    ProjectAuthenticatorConfiguration pac;
+
+    /**
+     * Make sure that the running build actually carries an credential.
+     */
+    public void testAccessControl() throws Exception {
+        configureUserRealm();
+        pac.getAuthenticators().add(new ProjectAuthenticatorImpl());
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                assertEquals(alice,Jenkins.getAuthentication());
+                return true;
+            }
+        });
+        assertBuildStatusSuccess(p.scheduleBuild2(0));
+    }
+
+    @TestExtension
+    public static class ProjectAuthenticatorImpl extends ProjectAuthenticator {
+
+        @Override
+        public Authentication authenticate(AbstractProject<?, ?> project) {
+            return alice;
+        }
+    }
+
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice");
+
 }
