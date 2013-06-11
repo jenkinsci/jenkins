@@ -37,8 +37,6 @@ import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import jenkins.security.ExecutorAuthenticator;
-import jenkins.security.ExecutorAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -241,15 +239,7 @@ public class Executor extends Thread implements ModelObject {
                         }
                     }
 
-                    Authentication a = null;
-                    for (ExecutorAuthenticator auth : ExecutorAuthenticatorConfiguration.get().getAuthenticators()) {
-                        a = auth.authenticate(this,executable);
-                        if (a!=null)
-                            break;
-                    }
-                    if (a==null)    a=ACL.SYSTEM;
-
-                    final SecurityContext savedContext = ACL.impersonate(a);
+                    final SecurityContext savedContext = ACL.impersonate(Tasks.getIdentityOf(task));
                     try {
                         setName(threadName + " : executing " + executable.toString());
                         if (LOGGER.isLoggable(FINE))

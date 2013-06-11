@@ -30,6 +30,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceList;
+import org.acegisecurity.Authentication;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -117,5 +118,9 @@ public abstract class QueueTaskFilter implements Queue.Task {
 
     public Object getSameNodeConstraint() {
         return base.getSameNodeConstraint();
+    }
+
+    public Authentication getIdentity() {
+        return base.getIdentity();
     }
 }

@@ -1,8 +1,7 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.model.Executor;
-import hudson.model.Queue.Executable;
+import hudson.model.AbstractProject;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -10,18 +9,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DefaultExecutorAuthenticator extends ExecutorAuthenticator {
+public class DefaultProjectAuthenticator extends ProjectAuthenticator {
     @DataBoundConstructor
-    public DefaultExecutorAuthenticator() {
+    public DefaultProjectAuthenticator() {
     }
 
     @Override
-    public Authentication authenticate(Executor executor, Executable executable) {
+    public Authentication authenticate(AbstractProject<?, ?> project) {
         return ACL.SYSTEM;
     }
 
     @Extension
-    public static class DescriptorImpl extends ExecutorAuthenticatorDescriptor {
+    public static class DescriptorImpl extends ProjectAuthenticatorDescriptor {
         @Override
         public String getDisplayName() {
             return "Default"; // TODO: fix

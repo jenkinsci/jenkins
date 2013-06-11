@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ExecutorAuthenticatorConfiguration;
+package jenkins.security.ProjectAuthenticatorConfiguration;
 
 f=namespace(lib.FormTagLib)
 
-f.section(title:_("Access Control of Executors")) {
+f.section(title:_("Access Control for Builds")) {
     f.block() {
         f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
     }
