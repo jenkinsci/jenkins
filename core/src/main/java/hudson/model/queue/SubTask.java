@@ -88,7 +88,7 @@ public interface SubTask extends ResourceActivity {
     Object getSameNodeConstraint();
 
     /**
-     * Returns the identity that this task runs as for the purpose of access control.
+     * Returns the identity that this task carries when it runs, for the purpose of access control.
      *
      * When the task execution touches other objects inside Jenkins, the access control is performed
      * based on whether this {@link Authentication} is allowed to use them. Implementers, if you are unsure,
