@@ -26,8 +26,11 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Node;
+import hudson.model.Slave;
+import hudson.model.User;
 import jenkins.model.Jenkins;
 
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 
 /**
@@ -36,6 +39,9 @@ import org.kohsuke.args4j.CmdLineException;
  */
 @Extension
 public class CreateNodeCommand extends CLICommand {
+
+    @Argument(metaVar="NODE", usage="Name of the node")
+    public String nodeName;
 
     @Override
     public String getShortDescription() {
@@ -50,6 +56,17 @@ public class CreateNodeCommand extends CLICommand {
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);
+
+        if (nodeName != null) {
+
+            // Using deprecated method but it's contract is preserved
+            newNode.setNodeName(nodeName);
+        }
+
+        if(newNode instanceof Slave) { //change userId too
+            User user = User.current();
+            ((Slave) newNode).setUserId(user==null ? "anonymous" : user.getId());
+        }
 
         if (jenkins.getNode(newNode.getNodeName()) != null) {
 

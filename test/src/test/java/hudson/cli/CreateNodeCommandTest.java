@@ -27,8 +27,10 @@ package hudson.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
@@ -72,9 +74,50 @@ public class CreateNodeCommandTest {
         assertThat("No error output expected", result.stderr(), isEmptyString());
         assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
 
-        final Node updatedSlave = j.jenkins.getNode("SlaveFromXML");
+        final Slave updatedSlave = (Slave) j.jenkins.getNode("SlaveFromXML");
         assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
+    }
+
+    @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.ADMINISTER)
+                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .invokeWithArgs("CustomSlaveName")
+        ;
+
+        assertThat("No error output expected", result.stderr(), isEmptyString());
+        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
+
+        assertThat("A slave with original name should not exist", j.jenkins.getNode("SlaveFromXml"), nullValue());
+
+        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
+        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
+        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
+    }
+
+    @Test public void createNodeSpecifyingDifferentNameExplicitly() throws Exception {
+
+        final Node originalSlave = j.createSlave("SlaveFromXml", null, null);
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.ADMINISTER)
+                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .invokeWithArgs("CustomSlaveName")
+        ;
+
+        assertThat("No error output expected", result.stderr(), isEmptyString());
+        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
+
+        assertThat("A slave with original name should be left untouched", j.jenkins.getNode("SlaveFromXml"), equalTo(originalSlave));
+
+        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
+        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
+        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        assertThat(updatedSlave.getUserId(), equalTo(command.user().getId()));
     }
 
     @Test public void createNodeShouldFailIfNodeAlreadyExist() throws Exception {
@@ -88,6 +131,21 @@ public class CreateNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("Node 'SlaveFromXML' already exists"));
+        assertThat("No output expected", result.stdout(), isEmptyString());
+        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+    }
+
+    @Test public void createNodeShouldFailIfNodeAlreadyExistWhenNameSpecifiedExplicitly() throws Exception {
+
+        j.createSlave("ExistingSlave", null, null);
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.ADMINISTER)
+                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .invokeWithArgs("ExistingSlave")
+        ;
+
+        assertThat(result.stderr(), containsString("Node 'ExistingSlave' already exists"));
         assertThat("No output expected", result.stdout(), isEmptyString());
         assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
