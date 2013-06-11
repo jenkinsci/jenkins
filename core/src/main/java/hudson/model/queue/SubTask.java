@@ -32,6 +32,7 @@ import hudson.model.ResourceActivity;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -97,5 +98,5 @@ public interface SubTask extends ResourceActivity {
      * @since 1.520
      * @see Tasks#getIdentityOf(SubTask)
      */
-    Authentication getIdentity();
+    @Nonnull Authentication getIdentity();
 }
