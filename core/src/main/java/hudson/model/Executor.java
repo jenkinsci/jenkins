@@ -37,7 +37,11 @@ import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import jenkins.security.ExecutorAuthenticator;
+import jenkins.security.ExecutorAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -236,10 +240,24 @@ public class Executor extends Thread implements ModelObject {
                             ((Actionable) executable).addAction(action);
                         }
                     }
-                    setName(threadName+" : executing "+executable.toString());
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" is now executing "+executable);
-                    queue.execute(executable, task);
+
+                    Authentication a = null;
+                    for (ExecutorAuthenticator auth : ExecutorAuthenticatorConfiguration.get().getAuthenticators()) {
+                        a = auth.authenticate(this,executable);
+                        if (a!=null)
+                            break;
+                    }
+                    if (a==null)    a=ACL.SYSTEM;
+
+                    final SecurityContext savedContext = ACL.impersonate(a);
+                    try {
+                        setName(threadName + " : executing " + executable.toString());
+                        if (LOGGER.isLoggable(FINE))
+                            LOGGER.log(FINE, getName()+" is now executing "+executable);
+                        queue.execute(executable, task);
+                    } finally {
+                        SecurityContextHolder.setContext(savedContext);
+                    }
                 } catch (Throwable e) {
                     // for some reason the executor died. this is really
                     // a bug in the code, but we don't want the executor to die,

@@ -1,13 +1,11 @@
 package jenkins.security;
 
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.util.DescribableList;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -35,12 +33,6 @@ public class ExecutorAuthenticatorConfiguration extends GlobalConfiguration {
         return authenticators;
     }
 
-    // TODO: get rid of this method by making PersistedList derive from List via the use of bridge-method injector
-    @Restricted(NoExternalUse.class)
-    public DescriptorExtensionList<ExecutorAuthenticator,ExecutorAuthenticatorDescriptor> getAuthenticatorsDescriptors() {
-        return ExecutorAuthenticatorDescriptor.all();
-    }
-
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
@@ -49,5 +41,9 @@ public class ExecutorAuthenticatorConfiguration extends GlobalConfiguration {
         } catch (IOException e) {
             throw new FormException(e,"authenticators");
         }
+    }
+
+    public static ExecutorAuthenticatorConfiguration get() {
+        return Jenkins.getInstance().getInjector().getInstance(ExecutorAuthenticatorConfiguration.class);
     }
 }
