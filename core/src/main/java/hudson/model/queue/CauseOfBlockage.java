@@ -43,6 +43,10 @@ public abstract class CauseOfBlockage {
         };
     }
 
+    @Override public String toString() {
+        return getShortDescription();
+    }
+
     /**
      * Marker interface to indicates that we can reasonably expect
      * that adding a suitable executor/node will resolve this blockage.

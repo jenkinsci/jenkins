@@ -27,6 +27,8 @@ import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -48,6 +50,7 @@ public final class WorkUnit {
     public final WorkUnitContext context;
 
     private volatile Executor executor;
+    private Executable executable;
 
     WorkUnit(WorkUnitContext context, SubTask work) {
         this.context = context;
@@ -69,10 +72,18 @@ public final class WorkUnit {
     }
 
     /**
-     * If the execution has already started, return the current executable.
+     * If the execution has already started, return the executable that was created.
      */
     public Executable getExecutable() {
-        return executor!=null ? executor.getCurrentExecutable() : null;
+        return executable;
+    }
+
+    /**
+     * This method is only meant to be called internally by {@link Executor}.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setExecutable(Executable executable) {
+        this.executable = executable;
     }
 
     /**

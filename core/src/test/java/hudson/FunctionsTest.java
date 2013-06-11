@@ -28,6 +28,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import hudson.model.Action;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
@@ -170,6 +171,47 @@ public class FunctionsTest {
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }
+
+    @Bug(17713)
+    @PrepareForTest({Stapler.class, Jenkins.class})
+    @Test public void getRelativeLinkTo_MavenModules() throws Exception {
+        Jenkins j = createMockJenkins();
+        StaplerRequest req = createMockRequest("/jenkins");
+        mockStatic(Stapler.class);
+        when(Stapler.getCurrentRequest()).thenReturn(req);
+        TopLevelItemAndItemGroup ms = mock(TopLevelItemAndItemGroup.class);
+        when(ms.getShortUrl()).thenReturn("job/ms/");
+        // TODO "." (in second ancestor) is what Stapler currently fails to do. Could edit test to use ".." but set a different request path?
+        createMockAncestors(req, createAncestor(j, "../.."), createAncestor(ms, "."));
+        Item m = mock(Item.class);
+        when(m.getParent()).thenReturn(ms);
+        when(m.getShortUrl()).thenReturn("grp$art/");
+        assertEquals("grp$art/", Functions.getRelativeLinkTo(m));
+    }
+
+    @Test
+    public void testGetRelativeDisplayName() {
+        Item i = mock(Item.class);
+        when(i.getName()).thenReturn("jobName");
+        when(i.getFullDisplayName()).thenReturn("displayName");
+        assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
+    }
+    
+    @Test
+    public void testGetRelativeDisplayNameInsideItemGroup() {
+        Item i = mock(Item.class);
+        when(i.getName()).thenReturn("jobName");
+        when(i.getDisplayName()).thenReturn("displayName");
+        TopLevelItemAndItemGroup ig = mock(TopLevelItemAndItemGroup.class);
+        Jenkins j = mock(Jenkins.class);
+        when(ig.getName()).thenReturn("parent");
+        when(ig.getDisplayName()).thenReturn("parentDisplay");
+        when(ig.getParent()).thenReturn((ItemGroup) j);
+        when(i.getParent()).thenReturn(ig);
+        
+        assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, ig));
+        assertEquals("parentDisplay » displayName", Functions.getRelativeDisplayNameFrom(i, j));
+    }
     
     private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
@@ -239,4 +281,12 @@ public class FunctionsTest {
         }
     }
 
+    @Bug(17030)
+    @Test
+    public void testBreakableString() {
+
+        assertEquals("Hello world!", Functions.breakableString("Hello world!"));
+        assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
+        assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
+    }
 }

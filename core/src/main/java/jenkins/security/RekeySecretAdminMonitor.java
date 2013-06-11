@@ -114,7 +114,7 @@ public class RekeySecretAdminMonitor extends AdministrativeMonitor implements St
         if(req.hasParameter("dismiss")) {
             disable(true);
         } else
-            throw HttpResponses.error(400,"Invalid request submission");
+            throw HttpResponses.error(400,"Invalid request submission: " + req.getParameterMap());
 
         return HttpResponses.redirectViaContextPath("/manage");
     }

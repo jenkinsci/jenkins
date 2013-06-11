@@ -39,6 +39,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.AbortException;
 import hudson.remoting.Launcher;
+import hudson.security.ACL;
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Secret;
@@ -80,6 +81,8 @@ import org.kohsuke.stapler.HttpRedirect;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.compression.FilterServletOutputStream;
@@ -349,6 +352,18 @@ public class SlaveComputer extends Computer {
     }
 
     /**
+     * Shows {@link Channel#classLoadingPrefetchCacheCount}.
+     * @return -1 in case that capability is not supported
+     * @since 1.519
+     */
+    public int getClassLoadingPrefetchCacheCount() throws IOException, InterruptedException {
+        if (!channel.remoteCapability.supportsPrefetch()) {
+            return -1;
+        }
+        return channel.call(new LoadingPrefetchCacheCount());
+    }
+
+    /**
      * Shows {@link Channel#resourceLoadingCount}.
      * @since 1.495
      */
@@ -380,6 +395,12 @@ public class SlaveComputer extends Computer {
         @Override public Integer call() {
             Channel c = Channel.current();
             return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
+        }
+    }
+
+    static class LoadingPrefetchCacheCount implements Callable<Integer,RuntimeException> {
+        @Override public Integer call() {
+            return Channel.current().classLoadingPrefetchCacheCount.get();
         }
     }
 
@@ -442,8 +463,14 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer());
-        for (ComputerListener cl : ComputerListener.all())
-            cl.preOnline(this,channel,root,taskListener);
+        SecurityContext old = ACL.impersonate(ACL.SYSTEM);
+        try {
+            for (ComputerListener cl : ComputerListener.all()) {
+                cl.preOnline(this,channel,root,taskListener);
+            }
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
 
         offlineCause = null;
 
@@ -468,8 +495,14 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onOnline(this,taskListener);
+        old = ACL.impersonate(ACL.SYSTEM);
+        try {
+            for (ComputerListener cl : ComputerListener.all()) {
+                cl.onOnline(this,taskListener);
+            }
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
         log.println("Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
@@ -718,7 +751,7 @@ public class SlaveComputer extends Computer {
             return null;
         }
         private static final long serialVersionUID = 1L;
-        private static final Logger LOGGER = Logger.getLogger("hudson");
+        private static final Logger LOGGER = Logger.getLogger("");
     }
 
     /**

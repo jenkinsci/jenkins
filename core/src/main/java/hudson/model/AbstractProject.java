@@ -1798,8 +1798,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        Jenkins.getInstance().getQueue().schedule(this, (int)delay.getTime(), getBuildCause(req));
-        rsp.sendRedirect(".");
+        WaitingItem item = Jenkins.getInstance().getQueue().schedule(this, (int) delay.getTime(), getBuildCause(req));
+        if (item!=null) {
+            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
+        } else
+            rsp.sendRedirect(".");
     }
 
     /**

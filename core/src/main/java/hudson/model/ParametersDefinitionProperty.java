@@ -34,6 +34,7 @@ import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
+import hudson.model.Queue.WaitingItem;
 import jenkins.model.Jenkins;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
@@ -47,6 +48,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
 import org.kohsuke.stapler.export.Flavor;
+
+import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -132,11 +135,13 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             values.add(parameterValue);
         }
 
-    	Jenkins.getInstance().getQueue().schedule(
+    	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
                 owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-
-        // send the user back to the job top page.
-        rsp.sendRedirect(".");
+        if (item!=null)
+            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
+        else
+            // send the user back to the job top page.
+            rsp.sendRedirect(".");
     }
 
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {

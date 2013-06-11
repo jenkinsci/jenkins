@@ -792,7 +792,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                 UserInfo info = users.get(user);
                                 if (info == null) {
                                     UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolve(user, iconSize);
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
                                     synchronized (this) {
                                         users.put(user, userInfo);
                                         modified.add(user);
@@ -805,7 +805,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                     }
                                 }
                             }
-                            // XXX consider also adding the user of the UserCause when applicable
+                            // TODO consider also adding the user of the UserCause when applicable
                             buildCount++;
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
@@ -818,13 +818,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if (canceled()) {
                     return;
                 }
-                for (User u : User.getAll()) { // XXX nice to have a method to iterate these lazily
+                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
                     if (u == unknown) {
                         continue;
                     }
                     if (!users.containsKey(u)) {
                         UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolve(u, iconSize);
+                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
                         synchronized (this) {
                             users.put(u, userInfo);
                             modified.add(u);
@@ -842,7 +842,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", i.avatar).
+                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 AbstractProject<?,?> p = i.getProject();

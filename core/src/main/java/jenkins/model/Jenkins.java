@@ -261,6 +261,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.BindException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
@@ -820,11 +821,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             } else
                 tcpSlaveAgentListener = null;
 
-            try {
-                udpBroadcastThread = new UDPBroadcastThread(this);
-                udpBroadcastThread.start();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
+            if (UDPBroadcastThread.PORT != -1) {
+                try {
+                    udpBroadcastThread = new UDPBroadcastThread(this);
+                    udpBroadcastThread.start();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
+                }
             }
             dnsMultiCast = new DNSMultiCast(this);
 
@@ -1763,9 +1766,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
                     return FormValidation.error(value + " does not exist and probably cannot be created");
                 }
-                // XXX failure to use either ITEM_* variable might be an error too?
+                // TODO failure to use either ITEM_* variable might be an error too?
             }
-            return FormValidation.ok(); // XXX assumes it will be OK after substitution, but can we be sure?
+            return FormValidation.ok(); // TODO assumes it will be OK after substitution, but can we be sure?
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
@@ -2268,7 +2271,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             if (ctx instanceof ItemGroup) {
                 ItemGroup g = (ItemGroup) ctx;
                 Item i = g.getItem(s);
-                if (i==null || !i.hasPermission(Item.READ)) { // XXX consider DISCOVER
+                if (i==null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx=null;    // can't go up further
                     break;
                 }
@@ -2336,7 +2339,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 return null;    // this item can't have any children
 
             if (!item.hasPermission(Item.READ))
-                return null; // XXX consider DISCOVER
+                return null; // TODO consider DISCOVER
 
             parent = (ItemGroup) item;
         }
@@ -2776,6 +2779,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         } finally {
             bc.commit();
         }
+
+        updateComputerList();
 
         rsp.sendRedirect(req.getContextPath()+'/'+toComputer().getUrl());  // back to the computer page
     }
@@ -3355,25 +3360,31 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_script.jelly"));
+        _doScript(req, rsp, req.getView(this, "_script.jelly"), MasterComputer.localChannel, getACL());
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
+        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), MasterComputer.localChannel, getACL());
     }
 
-    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
+    /**
+     * @since 1.509.1
+     */
+    public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        checkPermission(RUN_SCRIPTS);
+        acl.checkPermission(RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if (text != null) {
+            if (!"POST".equals(req.getMethod())) {
+                throw HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "requires POST");
+            }
             try {
                 req.setAttribute("output",
-                        RemotingDiagnostics.executeGroovy(text, MasterComputer.localChannel));
+                        RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
                 throw new ServletException(e);
             }
@@ -3389,7 +3400,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
+        checkPermission(RUN_SCRIPTS);
 
         try {
             MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
@@ -3620,7 +3631,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/adjuncts/")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
-            // XXX SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
             || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
             || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
@@ -3647,8 +3658,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Collection<String> getUnprotectedRootActions() {
         Set<String> names = new TreeSet<String>();
-        names.add("jnlpJars"); // XXX cleaner to refactor doJnlpJars into a URA
-        // XXX consider caching (expiring cache when actions changes)
+        names.add("jnlpJars"); // TODO cleaner to refactor doJnlpJars into a URA
+        // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
                 names.add(a.getUrlName());

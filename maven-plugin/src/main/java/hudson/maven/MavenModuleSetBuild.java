@@ -25,6 +25,8 @@
 package hudson.maven;
 
 import static hudson.model.Result.FAILURE;
+import static org.apache.maven.model.building.ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -51,6 +53,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStep;
@@ -65,6 +68,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
+import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -398,6 +404,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     }
 
     @Override
+    public synchronized void deleteArtifacts() throws IOException {
+    	super.deleteArtifacts();
+    	for (List<MavenBuild> list : getModuleBuilds().values())
+            for (MavenBuild build : list)
+                build.deleteArtifacts();
+    }
+    
+    @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         // map corresponding module build under this object
         if(token.indexOf('$')>0) {
@@ -582,7 +596,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
                 
                 if(!project.isAggregatorStyleBuild()) {
-                    parsePoms(listener, logger, envVars, mvn, mavenVersion);
+                    parsePoms(listener, logger, envVars, mvn, mavenVersion, mavenBuildInformation);
                     // start module builds
                     logger.println("Triggering "+project.getRootModule().getModuleName());
                     project.getRootModule().scheduleBuild(new UpstreamCause((Run<?,?>)MavenModuleSetBuild.this));
@@ -619,7 +633,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             return r;
             			}
 
-                        parsePoms(listener, logger, envVars, mvn, mavenVersion); // #5428 : do pre-build *before* parsing pom
+                        parsePoms(listener, logger, envVars, mvn, mavenVersion, mavenBuildInformation); // #5428 : do pre-build *before* parsing pom
                         SplittableBuildListener slistener = new SplittableBuildListener(listener);
                         proxies = new HashMap<ModuleName, ProxyImpl2>();
                         List<ModuleName> changedModules = new ArrayList<ModuleName>();
@@ -682,6 +696,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                   new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
                                                                                            pom.getParent() ) );
                         }
+
+                        PlexusModuleContributor.apply(process);
+
+
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
                         if(localRepo!=null)
@@ -739,7 +757,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 							if (newMargs != null) {
 								margs = newMargs;
 							}
-						}                        
+						}
                         
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
@@ -856,12 +874,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             return unbuiltModules;
         }
 
-        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String mavenVersion) throws IOException, InterruptedException {
+        private void parsePoms(BuildListener listener, PrintStream logger, EnvVars envVars, MavenInstallation mvn, String mavenVersion, MavenBuildInformation mavenBuildInformation) throws IOException, InterruptedException {
             logger.println("Parsing POMs");
 
             List<PomInfo> poms;
             try {
-                poms = getModuleRoot().act(new PomParser(listener, mvn, mavenVersion, envVars, MavenModuleSetBuild.this));
+                PomParser.Result result = getModuleRoot().act(new PomParser(listener, mvn, mavenVersion, envVars, MavenModuleSetBuild.this));
+                poms = result.infos;
+                mavenBuildInformation.modelParents.putAll(result.modelParents);
             } catch (IOException e) {
                 if (project.isIncrementalBuild()) {
                     // If POM parsing failed we should do a full build next time.
@@ -997,7 +1017,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * Executed on the slave to parse POM and extract information into {@link PomInfo},
      * which will be then brought back to the master.
      */
-    private static final class PomParser implements FileCallable<List<PomInfo>> {
+    private static final class PomParser implements FileCallable<PomParser.Result> {
         private final BuildListener listener;
         private final String rootPOM;
         /**
@@ -1027,8 +1047,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private boolean updateSnapshots = false;
         
         String rootPOMRelPrefix;
+
+        private final PlexusModuleContributor plexusContributors = PlexusModuleContributor.aggregate();
         
-        public PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
+        PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             MavenModuleSet project = build.getProject();
             this.listener = listener;
@@ -1082,7 +1104,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
           return StringUtils.contains(goals, "-U") || StringUtils.contains(goals, "--update-snapshots");
         }
 
-        public List<PomInfo> invoke(File ws, VirtualChannel channel) throws IOException {
+        public static final class Result implements Serializable {
+            public final List<PomInfo> infos;
+            public final Map<String,String> modelParents;
+            public Result(List<PomInfo> infos, Map<String,String> modelParents) {
+                this.infos = infos;
+                this.modelParents = modelParents;
+            }
+        }
+
+        public Result invoke(File ws, VirtualChannel channel) throws IOException {
             File pom;
             
             PrintStream logger = listener.getLogger();
@@ -1143,16 +1174,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             try {
-                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
+                MavenEmbedderRequest mer = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
-                mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
-                mavenEmbedderRequest.setUpdateSnapshots( this.updateSnapshots );
+                mer.setTransferListener(new SimpleTransferListener(listener));
+                mer.setUpdateSnapshots(this.updateSnapshots);
                 
-                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
-                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
+                mer.setProcessPlugins(this.processPlugins);
+                mer.setResolveDependencies(this.resolveDependencies);
                 if (globalSettings != null) {
-                    mavenEmbedderRequest.setGlobalSettings( new File(globalSettings) );
+                    mer.setGlobalSettings(new File(globalSettings));
                 }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
@@ -1160,20 +1191,28 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 ReactorReader reactorReader = null;
                 boolean maven3OrLater = MavenUtil.maven3orLater(mavenVersion);
                 if (maven3OrLater) {
-                    mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+                    mer.setValidationLevel(VALIDATION_LEVEL_MAVEN_3_0);
                 } else {
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
-                    mavenEmbedderRequest.setWorkspaceReader( reactorReader );
+                    mer.setWorkspaceReader(reactorReader);
+                }
+
+                {// create a classloader that loads extensions
+                    List<URL> urls = plexusContributors.getPlexusComponentJars();
+                    if (!urls.isEmpty()) {
+                        mer.setClassLoader(
+                                new URLClassLoader(urls.toArray(new URL[urls.size()]),
+                                        mer.getClassLoader()));
+                    }
                 }
                 
-                
                 if (this.mavenValidationLevel >= 0) {
-                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                    mer.setValidationLevel(this.mavenValidationLevel);
                 }
                 
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
-                MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
+                MavenEmbedder embedder = MavenUtil.createEmbedder( mer );
                 
                 MavenProject rootProject = null;
                 
@@ -1194,10 +1233,23 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     }
                 }
                 Map<String,MavenProject> canonicalPaths = new HashMap<String, MavenProject>( mps.size() );
+                Map<String,String> modelParents = new HashMap<String,String>();
                 for(MavenProject mp : mps) {
                     // Projects are indexed by POM path and not module path because
                     // Maven allows to have several POMs with different names in the same directory
                     canonicalPaths.put( mp.getFile().getCanonicalPath(), mp );
+                    while (true) {
+                        String k = mp.getId();
+                        if (modelParents.containsKey(k)) {
+                            break;
+                        }
+                        MavenProject mpp = mp.getParent();
+                        if (mpp == null) {
+                            break;
+                        }
+                        modelParents.put(k, mpp.getId());
+                        mp = mpp;
+                    }
                 }                
                 //MavenUtil.resolveModules(embedder,mp,getRootPath(rootPOMRelPrefix),relPath,listener,nonRecursive);
 
@@ -1225,7 +1277,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 for (PomInfo pi : infos)
                     pi.cutCycle();
 
-                return new ArrayList<PomInfo>(infos);
+                return new Result(new ArrayList<PomInfo>(infos), modelParents);
             } catch (MavenEmbedderException e) {
                 throw new MavenExecutionException(e);
             } catch (ProjectBuildingException e) {

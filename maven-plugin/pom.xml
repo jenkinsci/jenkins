@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.513</version>
+    <version>1.520-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -41,7 +41,7 @@ THE SOFTWARE.
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Maven+2+Project+Plugin</url>
 
   <properties>
-    <mavenInterceptorsVersion>1.2</mavenInterceptorsVersion>
+    <mavenInterceptorsVersion>1.3</mavenInterceptorsVersion>
     <mavenVersion>3.0.5</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>1.13.1</aetherVersion>
@@ -69,7 +69,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.3</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -359,17 +359,17 @@ THE SOFTWARE.
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
-   </dependency>
-   <dependency>
+    </dependency>
+    <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito</artifactId>
       <scope>test</scope>
-   </dependency>
-   <dependency>
-     <groupId>org.slf4j</groupId>
-     <artifactId>slf4j-jdk14</artifactId>
-     <scope>test</scope>
-  </dependency>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 

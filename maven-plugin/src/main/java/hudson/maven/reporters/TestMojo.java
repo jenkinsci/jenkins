@@ -69,7 +69,38 @@ enum TestMojo {
             return null;
         }
     },
-    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory");
+    TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory"),
+    SCALATEST_MAVEN_PLUGIN("org.scalatest", "scalatest-maven-plugin", "test", null) {
+        @Override
+        public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo)
+                throws ComponentConfigurationException {
+            /* scalatest-maven-plugin has a configuration entry 'junitxml' which is a
+             * comma-separated list of directories; commas may be escaped with a backslash
+             * (\,). Each directory is taken relative to the reportsDirectory.
+             */
+            File reportsDir = mojo.getConfigurationValue("reportsDirectory", File.class);
+            String junitDirs = mojo.getConfigurationValue("junitxml", String.class);
+
+            if (junitDirs == null || junitDirs.trim().length() == 0) {
+                return null;
+            }
+
+            // split along non-escaped commas
+            String[] junitDirsList = junitDirs.trim().split("(?<!\\\\),");
+            for (String dir : junitDirsList) {
+                if (dir.trim().length() > 0) {
+                    // unescape escaped commas
+                    String junitDirName = dir.trim().replaceAll("\\\\,", ",");
+                    File junitDir = new File(reportsDir, junitDirName);
+                    if (junitDir.exists()) {
+                        return super.getReportFiles(junitDir, super.getFileSet(junitDir));
+                    }
+                }
+            }
+
+            return null;
+        }
+    };
 
     private String reportDirectoryConfigKey;
     private Key key;

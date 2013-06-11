@@ -426,8 +426,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                         r.add(i);
                 }
             monitors.replaceBy(r.toList());
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to instanciate NodeMonitors",e);
+        } catch (Throwable x) {
+            LOGGER.log(Level.WARNING, "Failed to instantiate NodeMonitors", x);
         }
     }
 

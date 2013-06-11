@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.513</version>
+    <version>1.520-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -112,10 +112,15 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
 
-    <dependency>
+    <dependency> <!-- for compatibility only; all new code should use JNR -->
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
       <version>1.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -164,7 +169,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.0.7-2</version>
+      <version>1.1.7-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -502,14 +507,6 @@ THE SOFTWARE.
       <version>3.4.0-jenkins-3</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.winsw</groupId>
-      <artifactId>winsw</artifactId>
-      <version>1.10</version>
-      <classifier>bin</classifier>
-      <type>exe</type>
-      <scope>provided</scope><!-- this isn't really a dependency that Maven should care about, so putting 'provided' -->
-    </dependency>
-    <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
       <version>3.3.0-jenkins-3</version>
@@ -746,7 +743,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.10</version>
+                  <version>1.13</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -756,6 +753,14 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkCount>0.5C</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>-XX:MaxPermSize=128m</argLine>
+        </configuration>
       </plugin>
       <plugin><!-- set main class -->
         <artifactId>maven-jar-plugin</artifactId>

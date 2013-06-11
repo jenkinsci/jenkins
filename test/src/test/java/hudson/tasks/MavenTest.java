@@ -23,9 +23,17 @@
  */
 package hudson.tasks;
 
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.PlexusModuleContributor;
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.FilePathGlobalSettingsProvider;
+import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import hudson.model.JDK;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
@@ -43,10 +51,14 @@ import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
 import hudson.util.DescribableList;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.maven.settings.building.FileSettingsSource;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -55,6 +67,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.ExtractResourceSCM;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -195,5 +209,32 @@ public class MavenTest extends HudsonTestCase {
         assertNotNull(buildLog);
 	System.out.println(buildLog);
         assertFalse(buildLog.contains("-Dpassword=12345"));
+    }
+    
+    public void testDefaultSettingsProvider() throws Exception {
+        {
+            FreeStyleProject p = createFreeStyleProject();
+            p.getBuildersList().add(new Maven("a", null, "a.pom", "c=d", "-e", true));
+    
+            Maven m = p.getBuildersList().get(Maven.class);
+            assertNotNull(m);
+            assertEquals(DefaultSettingsProvider.class, m.getSettings().getClass());
+            assertEquals(DefaultGlobalSettingsProvider.class, m.getGlobalSettings().getClass());
+        }
+        
+        {
+            GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
+            assertNotNull("No global Maven Config available", globalMavenConfig);
+            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settigns.xml"));
+            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settigns.xml"));
+            
+            FreeStyleProject p = createFreeStyleProject();
+            p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
+            
+            Maven m = p.getBuildersList().get(Maven.class);
+            assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
+            assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
+            assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
+        }
     }
 }

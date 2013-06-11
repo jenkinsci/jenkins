@@ -67,6 +67,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -94,6 +95,7 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.GlobalSettingsProviderDescriptor;
 import jenkins.mvn.SettingsProvider;
@@ -246,7 +248,9 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * parameter for validation level during pom parsing by default the one corresponding
      * to the maven version used (2 or 3)
+     *
      * @since 1.394
+     * @see DescriptorImpl#mavenValidationLevels
      */    
     private int mavenValidationLevel = -1;
 
@@ -284,12 +288,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * @since 1.491
      */
-    private SettingsProvider settings = new DefaultSettingsProvider();
+    private SettingsProvider settings;
     
     /**
      * @since 1.491
      */
-    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
+    private GlobalSettingsProvider globalSettings;
 
 
     /**
@@ -434,12 +438,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     public MavenModule getItem(String name) {
-        return modules.get(ModuleName.fromString(name));
+        try {
+            return modules.get(ModuleName.fromString(name));
+        } catch (IllegalArgumentException x) {
+            return null; // not a Maven module name, ignore
+        }
     }
 
     public MavenModule getModule(String name) {
         return getItem(name);
     }
+
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModuleSet_Pronoun());
+    }
+
 
     @Override   // to make this accessible from MavenModuleSetBuild
     protected void updateTransientActions() {
@@ -646,14 +660,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.481
      */
     public SettingsProvider getSettings() {
-        return settings != null ? settings : new DefaultSettingsProvider();
+        return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
     }
 
     /**
      * @since 1.481
      */
     public GlobalSettingsProvider getGlobalSettings() {
-        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
 
     /**
@@ -1256,7 +1270,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         }
 
         public MavenModuleSet newInstance(ItemGroup parent, String name) {
-            return new MavenModuleSet(parent,name);
+            MavenModuleSet mms = new MavenModuleSet(parent,name);
+            mms.setSettings(GlobalMavenConfig.get().getSettingsProvider());
+            mms.setGlobalSettings(GlobalMavenConfig.get().getGlobalSettingsProvider());
+            return mms;
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {

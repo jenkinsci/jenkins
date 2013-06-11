@@ -44,6 +44,24 @@ contributor(ctx) {
     }
 }
 
+/*
+    Adding methods that's not defined in Java works, but trying to define a method of the same name
+    as Java doesn't. See http://youtrack.jetbrains.com/issue/IDEA-108355
+
+    One work around that appears to work is to add a dummy 2nd parameter.
+
+    Also see http://youtrack.jetbrains.com/issue/IDEA-108375
+*/
+
+// experiment
+contributor(context(ctype:"lib.FormTagLib")) {
+    def named = [
+            parameter(name: 'param1', type: String, doc: 'My doc'),
+            parameter(name: 'param2', type: Integer),
+    ]
+    method name: "textbox3", type: void, params:[args:named, c:Closure]
+}
+
 // Record of past experiments
 /*
 try to infer "it" from the class name of Groovy page

@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.CheckForNull;
 
 import org.jvnet.localizer.Localizable;
 
@@ -223,7 +224,7 @@ public final class Permission {
      *      null if the conversion failed.
      * @see #getId()
      */
-    public static Permission fromId(String id) {
+    public static @CheckForNull Permission fromId(String id) {
         int idx = id.lastIndexOf('.');
         if(idx<0)   return null;
 

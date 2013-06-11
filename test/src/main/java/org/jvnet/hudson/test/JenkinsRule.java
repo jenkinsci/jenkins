@@ -204,7 +204,9 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.acegisecurity.GrantedAuthorityImpl;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -351,7 +353,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
         Mailer.DescriptorImpl desc = Mailer.descriptor();
         // prevent NPE with eclipse
-        if (desc != null) Mailer.descriptor().setHudsonUrl(null);
+        if (desc != null) Mailer.descriptor().setHudsonUrl(getURL().toString());
+        JenkinsLocationConfiguration.get().setUrl(getURL().toString());
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
     }
@@ -449,7 +452,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
-            // XXX use URLClassLoader.close() in Java 7
+            // TODO use URLClassLoader.close() in Java 7
             System.gc();
         }
     }
@@ -1621,6 +1624,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
 				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
 				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+                if (jpi.getFile() == null) {
+                    throw new ArtifactNotFoundException("cannot find plugin dependency", jpi);
+                }
 				return jpi.getFile();
 				
 			}

@@ -44,7 +44,7 @@ public class JUnitParser extends TestResultParser {
 
     private final boolean keepLongStdio;
 
-    /** XXX TestResultParser.all does not seem to ever be called so why must this be an Extension? */
+    /** TODO TestResultParser.all does not seem to ever be called so why must this be an Extension? */
     @Deprecated
     public JUnitParser() {
         this(false);

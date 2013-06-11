@@ -57,7 +57,7 @@ var breadcrumbs = (function() {
     }
 
     function requireConfirmation(action, event, cfg) {
-        if (confirm(cfg.displayName + ': are you sure?')) { // XXX I18N
+        if (confirm(cfg.displayName + ': are you sure?')) { // TODO I18N
             var form = document.createElement('form');
             form.setAttribute('method', cfg.post ? 'POST' : 'GET');
             form.setAttribute('action', cfg.url);

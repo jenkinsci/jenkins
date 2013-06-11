@@ -417,7 +417,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
-            if (con == null) { // XXX is this even permitted by URL.openConnection?
+            if (con == null) { // TODO is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }
             return new BufferedReader(

@@ -193,6 +193,10 @@ public class PersistedList<T> implements Iterable<T> {
         return data.contains(item);
     }
 
+    @Override public String toString() {
+        return toList().toString();
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      *

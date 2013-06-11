@@ -61,17 +61,168 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.513>What's new in 1.513</a> <!--=DATE=--></h3>
+<h3><a name=v1.519>What's new in 1.519</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Log cluttered with irrelevant warnings about build timestamps when running on Windows on Java 6.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15587">issue 15587</a>)
+  <li class='major bug'>
+    Fingerprint action deserialization problem fixed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17125">issue 17125</a>)
+  <li class='rfe'>
+    Improved the tracking of queued jobs and their eventual builds in the REST API.
+  <li class='rfe'>
+    Configured log recorders can now pick up messages logged from slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18274">issue 18274</a>)
+  <li class='rfe'>
+    Added a new extension point to contribute custom plexus components into Maven for the maven project type.
+  <li class='major rfe'>
+    Remoting classloader performance improvement upon reconnection to the same slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15120">issue 15120</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.518>What's new in 1.518</a> (2013/06/11)</h3>
+<ul class=image>
+  <li class=bug>
+    NPE in <code>DefaultMatrixExecutionStrategyImpl.waitForCompletion</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18024">issue 18024</a>)
+  <li class=bug>
+    Optimizations in fingerprint recording.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16301">issue 16301</a>)
+  <li class=bug>
+    Using JNR-POSIX rather than JNA-POSIX for better platform support.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14351">issue 14351</a>)
+  <li class='major bug'>
+    Errors searching build records when builds were misordered.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15652">issue 15652</a>)
+  <li class='major bug'>
+    Finding the last failed build for a job (e.g. from a view column) broke lazy loading.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16023">issue 16023</a>)
+  <li class=bug>
+    Do not fail startup in case <code>ListView.includeRegex</code> was syntactically malformed.
+  <li class=bug>
+    CSS stylesheets misrendered in Chrome due to caching.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17684">issue 17684</a>)
+  <li class=bug>
+    User icon in People broken if Jenkins root URL unconfigured.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18118">issue 18118</a>)
+  <li class=bug>
+    Progress bar sometimes broken in People.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18119">issue 18119</a>)
+</ul>
+<h3><a name=v1.517>What's new in 1.517</a> (2013/06/02)</h3>
+<ul class=image>
+  <li class=rfe>
+    Enable word breaking in potentially long strings like job names.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17030">issue 17030</a>)
+  <li class=rfe>
+    Allow filtering of the Run parameter build list by result.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7280">issue 7280</a>)
+  <li class=rfe>
+    Add support for scalatest-maven-plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18086">issue 18086</a>)
+  <li class=bug>
+    When copying a folder, the display names of contained jobs were gratuitously cleared.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18074">issue 18074</a>)
+  <li class=bug>
+    “Recurse in subfolders” option for list views produced exceptions when used with native Maven projects.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18025">issue 18025</a>)
+  <li class=bug>
+    Using proper directory separator character for permalinks on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17681">issue 17681</a>)
+</ul>
+<h3><a name=v1.516>What's new in 1.516</a> (2013/05/27)</h3>
+<ul class=image>
+  <li class=bug>
+    NPE from <code>Run.getDynamic</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17935">issue 17935</a>)
+  <li class=bug>
+    Should be able to collect all log records at a given level using a blank logger name.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17983">issue 17983</a>)
+  <li class=bug>
+    Reworked Upload Plugin gesture to work more like installation from an update center, and in particular to support dynamic load.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16652">issue 16652</a>)
+  <li class=bug>
+    Errors in <code>init.groovy</code> halted startup; changed to just log a warning.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17933">issue 17933</a>)
+</ul>
+<h3><a name=v1.515>What's new in 1.515</a> (2013/05/18)</h3>
+<ul class=image>
+  <li class=rfe>
+    Windows services now auto-restart in case of abnormal process termination.
+  <li class=rfe>
+    &lt;f:dropdownDescriptorSelector> does not allow defaulting to specifig instance
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17858">issue 17858</a>)
+  <li class=rfe>
+    mark maven settings / global settings as default for new jobs
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17723">issue 17723</a>)
+  <li class=bug>
+    Display Name is not shown.
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17715">issue 17715</a>)
+  <li class='major bug'>
+    Symlink handling problem with build permalinks on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17681">issue 17681</a>)
+  <li class=bug>
+    List views missing a required field were unloadable.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15309">issue 15309</a>)
+  <li class=bug>
+    Maven module artifacts were not being deleted by the log rotator.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17508">issue 17508</a>)
+  <li class='major bug'>
+    Properly find parent POMs when fingerprinting a Maven project.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17775">issue 17775</a>)
+  <li class=rfe>
+    Allow the combination filter to accept parameter values.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7285">issue 7285</a>)
+  <li class=rfe>
+    Extension point to transform test names (for use with alternative JVM languages).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17478">issue 17478</a>)
+</ul>
+<h3><a name=v1.514>What's new in 1.514</a> (2013/05/01)</h3>
+<ul class=image>
+  <li class=rfe>
+    Added a new <tt>set-build-parameter</tt> command that can update a build variable from within a build.
+  <li class=rfe>
+    Can use <code>-Dhudson.udp=-1</code> to disable UDP broadcast without showing an ugly exception.
+  <li class=bug>
+    Third-party license display for core was broken since 1.506.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17724">issue 17724</a>)
+  <li class='major bug'>
+    Mitigation of exception from fingerprinting in a Maven project when a parent POM could not be located.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17775">issue 17775</a>)
+  <li class=bug>
+    NPE from <code>MatrixConfiguration.newBuild</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17728">issue 17728</a>)
+  <li class='major bug'>
+    NPE configuring Copy Artifact with Maven jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17402">issue 17402</a>)
+  <li class=rfe>
+    <code>/about</code> now links to license information for plugins as well.
+  <li class=rfe>
+    Updated bundled plugins.
+</ul>
+<h3><a name=v1.513>What's new in 1.513</a> (2013/04/28)</h3>
 <ul class=image>
   <li class=rfe>
     Slave status monitor page shows when the data is last obtained
   <li class=rfe>
     Delete button to highlight what it is going to delete.
+  <li class=bug>
+    <code>StringIndexOutOfBoundsException</code> in <code>PackageResult.findCorrespondingResult</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17721">issue 17721</a>)
   <li class=rfe>
     Breadcrumb is reworked to show descendants to provide additional navigational shortcuts.
     (<a href="https://wiki.jenkins-ci.org/display/JENKINS/FOSDEM+UI+Enhancement+discussion+notes+2013">discussion</a>)
+  <li class=bug>
+    Fixed CSRF vulnerabilities
+    (SECURITY-63,SECURITY-69)
+  <li class=bug>
+    Fixed an XSS vulnerability via stylesheet
+    (SECURITY-67)
+  <li class=bug>
+    Fixed an XSS vulnerability to copy arbitrary text into clipboard
+    (SECURITY-71/CVE-2013-1808)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.512>What's new in 1.512</a> (2013/04/21)</h3>
 <ul class=image>
   <li class=rfe>
@@ -136,6 +287,9 @@ Upcoming changes</a>
   <li class=bug>
     Improved UI for implicitly locked builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10197">issue 10197</a>)
+  <li class=bug>
+    Incorrect URL computation broke context menu for computers with spaces in their names.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18236">issue 18236</a>)
   <li class=rfe>
     Promote the use of 'H' in cron.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17311">issue 17311</a>)

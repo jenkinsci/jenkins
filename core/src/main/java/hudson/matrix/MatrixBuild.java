@@ -368,7 +368,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     final int n = getNumber();
                     for (MatrixConfiguration c : activeConfigurations) {
                         for (Item i : q.getItems(c)) {
-                            if (i.getAction(ParentBuildAction.class).parent==getBuild()) {
+                            ParentBuildAction a = i.getAction(ParentBuildAction.class);
+                            if (a!=null && a.parent==getBuild()) {
                                 q.cancel(i);
                                 logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                             }
