@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.207.JENKINS-14362-jzlib</stapler.version>
+    <stapler.version>1.211-SNAPSHOT</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
   </properties>
 
