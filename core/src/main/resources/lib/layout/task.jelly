@@ -115,9 +115,10 @@ THE SOFTWARE.
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
 
+          <j:set var="id" value="${h.generateId()}"/>
           <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
               <script>
-                  function postRequest(a) {
+                  function postRequest_${id}(a) {
                       new Ajax.Request(a.href);
                       hoverNotification('${%Done.}', a.parentNode);
                       return false;
@@ -132,7 +133,7 @@ THE SOFTWARE.
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
+              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
                 <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
               </a>
             </j:otherwise>
@@ -153,7 +154,7 @@ THE SOFTWARE.
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
+              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
                 <j:choose>
                   <j:when test="${match}">
                     <b>${title}</b>
