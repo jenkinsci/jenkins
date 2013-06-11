@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
       <td>
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+              <j:set var="id" value="${h.generateId()}"/>
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <img src="${imagesURL}/${subIconSize}/clock.png"
                        title="${%Schedule a build}" alt="${%Schedule a build}"
@@ -33,7 +34,7 @@ THE SOFTWARE.
                        border="0"/>
               </a>
               <script>
-                function build(img) {
+                function build_${id}(img) {
                   new Ajax.Request(img.parentNode.href);
                   hoverNotification('${%Build scheduled}', img, -100);
                   return false;
