@@ -403,7 +403,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public String getShortUrl() {
         String prefix = getParent().getUrlChildPrefix();
         String subdir = Util.rawEncode(getName());
-        return prefix.equals(".") ? subdir : prefix+'/'+subdir+'/';
+        return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
     public String getSearchUrl() {
