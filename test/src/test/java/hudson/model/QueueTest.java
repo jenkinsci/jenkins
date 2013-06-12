@@ -429,15 +429,15 @@ public class QueueTest extends HudsonTestCase {
         assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
         // ACL that allow anyone to do anything except Alice can't build.
-        final SparseACL alicCantBuild = new SparseACL(null);
-        alicCantBuild.add(new PrincipalSid(alice), AbstractProject.BUILD, false);
-        alicCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
+        final SparseACL aliceCantBuild = new SparseACL(null);
+        aliceCantBuild.add(new PrincipalSid(alice), AbstractProject.BUILD, false);
+        aliceCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {
             @Override
             public ACL getACL(Node node) {
                 if (node==b1.getBuiltOn())
-                    return alicCantBuild;
+                    return aliceCantBuild;
                 return super.getACL(node);
             }
         };
