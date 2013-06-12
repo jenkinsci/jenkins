@@ -649,7 +649,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>1.8</version>
         <executions>
           <execution>
             <goals>
