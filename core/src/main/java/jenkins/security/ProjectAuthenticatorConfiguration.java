@@ -17,6 +17,7 @@ import java.io.IOException;
  * Show the {@link ProjectAuthenticator} configurations on the system config page.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.520
  */
 @Extension
 public class ProjectAuthenticatorConfiguration extends GlobalConfiguration {

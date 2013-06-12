@@ -1180,6 +1180,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Let the identity determined by {@link ProjectAuthenticator}.
+     *
+     * @since 1.520
      */
     public Authentication getIdentity() {
         return ProjectAuthenticatorConfiguration.get().authenticate(this);

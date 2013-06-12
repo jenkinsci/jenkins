@@ -7,6 +7,8 @@ import hudson.model.AbstractProject;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Extension point to run {@link AbstractBuild}s under a specific identity for better access control.
  *
@@ -28,7 +30,7 @@ public abstract class ProjectAuthenticator extends AbstractDescribableImpl<Proje
      *      the executor. If everything fails, fall back to the historical behaviour of
      *      {@link ACL#SYSTEM}.
      */
-    public abstract Authentication authenticate(AbstractProject<?,?> project);
+    public abstract @CheckForNull Authentication authenticate(AbstractProject<?,?> project);
 
     @Override
     public ProjectAuthenticatorDescriptor getDescriptor() {
