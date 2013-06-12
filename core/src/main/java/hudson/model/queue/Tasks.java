@@ -94,6 +94,11 @@ public class Tasks {
         return t.getDefaultAuthentication();
     }
 
+    /**
+     * @param t a task
+     * @return {@link Task#getDefaultAuthentication}, or {@link ACL#SYSTEM}
+     * @since 1.520
+     */
     public static Authentication getDefaultAuthenticationOf(Task t) {
         try {
             return _getDefaultAuthenticationOf(t);
