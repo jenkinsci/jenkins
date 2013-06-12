@@ -21,12 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ProjectAuthenticatorConfiguration;
+package jenkins.security.ProjectAuthenticatorConfiguration
+
+import jenkins.security.ProjectAuthenticatorDescriptor;
 
 f=namespace(lib.FormTagLib)
 
-f.section(title:_("Access Control for Builds")) {
-    f.block() {
-        f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
+if (!ProjectAuthenticatorDescriptor.all().isEmpty()) {
+    f.section(title:_("Access Control for Builds")) {
+        f.block() {
+            f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
+        }
     }
 }
