@@ -26,8 +26,10 @@ package hudson;
 import hudson.slaves.OfflineCause;
 import jenkins.AgentProtocol;
 
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
@@ -139,7 +141,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
-                PrintWriter out = new PrintWriter(s.getOutputStream(),true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
+                PrintWriter out = new PrintWriter(
+                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
+                        true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 String s = in.readUTF();
 
