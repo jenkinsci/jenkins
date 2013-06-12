@@ -33,6 +33,10 @@ import hudson.matrix.TextAxis;
 import hudson.model.Cause.*;
 import hudson.model.Queue.*;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.security.ACL;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.SparseACL;
+import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -43,6 +47,13 @@ import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixRun;
 import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProvisioner;
+import jenkins.model.Jenkins;
+import jenkins.security.ProjectAuthenticator;
+import jenkins.security.ProjectAuthenticatorConfiguration;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -51,11 +62,13 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -353,5 +366,88 @@ public class QueueTest extends HudsonTestCase {
         ev.signal();    // let the build complete
         FreeStyleBuild b2 = assertBuildStatusSuccess(v);
         assertSame(b,b2);
+    }
+
+    @Inject
+    ProjectAuthenticatorConfiguration pac;
+
+    /**
+     * Make sure that the running build actually carries an credential.
+     */
+    public void testAccessControl() throws Exception {
+        configureUserRealm();
+        pac.getAuthenticators().add(new ProjectAuthenticatorImpl());
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                assertEquals(alice,Jenkins.getAuthentication());
+                return true;
+            }
+        });
+        assertBuildStatusSuccess(p.scheduleBuild2(0));
+    }
+
+    @TestExtension
+    public static class ProjectAuthenticatorImpl extends ProjectAuthenticator {
+
+        @Override
+        public Authentication authenticate(AbstractProject<?, ?> project) {
+            return alice;
+        }
+    }
+
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
+
+
+    /**
+     * Make sure that the slave assignment honors the permissions.
+     *
+     * We do this test by letting a build run twice to determine its natural home,
+     * and then introduce a security restriction to prohibit that.
+     */
+    public void testPermissionSensitiveSlaveAllocations() throws Exception {
+        jenkins.setNumExecutors(0); // restrict builds to those slaves
+        DumbSlave s1 = createSlave();
+        DumbSlave s2 = createSlave();
+
+        configureUserRealm();
+        pac.getAuthenticators().add(new ProjectAuthenticatorImpl());
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                assertEquals(alice,Jenkins.getAuthentication());
+                return true;
+            }
+        });
+
+        final FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        final FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        // scheduling algorithm would prefer running the same job on the same node
+        assertSame(b1.getBuiltOn(),b2.getBuiltOn());
+
+        // ACL that allow anyone to do anything except Alice can't build.
+        final SparseACL alicCantBuild = new SparseACL(null);
+        alicCantBuild.add(new PrincipalSid(alice), AbstractProject.BUILD, false);
+        alicCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
+
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {
+            @Override
+            public ACL getACL(Node node) {
+                if (node==b1.getBuiltOn())
+                    return alicCantBuild;
+                return super.getACL(node);
+            }
+        };
+        auth.add(Jenkins.ADMINISTER,"anonymous");
+        jenkins.setAuthorizationStrategy(auth);
+
+        // now that we prohibit alice to do a build on the same node, the build should run elsewhere
+        for (int i=0; i<3; i++) {
+            FreeStyleBuild b3 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+            assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
+        }
     }
 }

@@ -38,6 +38,8 @@ import hudson.security.ACL;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -236,10 +238,16 @@ public class Executor extends Thread implements ModelObject {
                             ((Actionable) executable).addAction(action);
                         }
                     }
-                    setName(threadName+" : executing "+executable.toString());
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" is now executing "+executable);
-                    queue.execute(executable, task);
+
+                    final SecurityContext savedContext = ACL.impersonate(Tasks.getIdentityOf(task));
+                    try {
+                        setName(threadName + " : executing " + executable.toString());
+                        if (LOGGER.isLoggable(FINE))
+                            LOGGER.log(FINE, getName()+" is now executing "+executable);
+                        queue.execute(executable, task);
+                    } finally {
+                        SecurityContextHolder.setContext(savedContext);
+                    }
                 } catch (Throwable e) {
                     // for some reason the executor died. this is really
                     // a bug in the code, but we don't want the executor to die,

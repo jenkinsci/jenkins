@@ -90,8 +90,12 @@ import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.security.ProjectAuthenticator;
+import jenkins.security.ProjectAuthenticatorConfiguration;
+import jenkins.security.ProjectAuthenticatorConfiguration;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
@@ -1172,6 +1176,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public final Task getOwnerTask() {
         return this;
+    }
+
+    /**
+     * Let the identity determined by {@link ProjectAuthenticator}.
+     */
+    public Authentication getIdentity() {
+        return ProjectAuthenticatorConfiguration.get().authenticate(this);
     }
 
     /**

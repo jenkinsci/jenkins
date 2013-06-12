@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright (c) 2011, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,42 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.queue;
+package jenkins.security.ProjectAuthenticatorConfiguration
 
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.ResourceList;
-import hudson.security.ACL;
-import org.acegisecurity.Authentication;
+import jenkins.security.ProjectAuthenticatorDescriptor;
 
-/**
- * Partial default implementation of {@link SubTask} to avoid
- * {@link AbstractMethodError} with future additions to {@link SubTask}.
- *
- * @author Kohsuke Kawaguchi
- */
-public abstract class AbstractSubTask implements SubTask {
-    public Label getAssignedLabel() {
-        return null;
-    }
+f=namespace(lib.FormTagLib)
 
-    public Node getLastBuiltOn() {
-        return null;
-    }
-
-    public long getEstimatedDuration() {
-        return -1;
-    }
-
-    public Object getSameNodeConstraint() {
-        return null;
-    }
-
-    public ResourceList getResourceList() {
-        return new ResourceList();
-    }
-
-    public Authentication getIdentity() {
-        return getOwnerTask().getIdentity();
+if (!ProjectAuthenticatorDescriptor.all().isEmpty()) {
+    f.section(title:_("Access Control for Builds")) {
+        f.block() {
+            f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
+        }
     }
 }

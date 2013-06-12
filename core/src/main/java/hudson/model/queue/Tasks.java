@@ -24,6 +24,8 @@
 package hudson.model.queue;
 
 import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -83,4 +85,21 @@ public class Tasks {
             return (Task)t;
         }
     }
+
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private static Authentication _getIdentityOf(SubTask t) {
+        return t.getIdentity();
+    }
+
+    public static Authentication getIdentityOf(SubTask t) {
+        try {
+            return _getIdentityOf(t);
+        } catch (AbstractMethodError e) {
+            return ACL.SYSTEM;
+        }
+    }
+
 }

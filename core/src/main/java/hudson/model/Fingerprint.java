@@ -794,21 +794,13 @@ public class Fingerprint implements ModelObject, Saveable {
 
             @Override
             public boolean add(FingerprintFacet e) {
-                try {
-                    facets.add(e);
-                    return true;
-                } catch (IOException x) {
-                    throw new Error(x);
-                }
+                facets.add(e);
+                return true;
             }
 
             @Override
             public boolean remove(Object o) {
-                try {
-                    return facets.remove((FingerprintFacet)o);
-                } catch (IOException x) {
-                    throw new Error(x);
-                }
+                return facets.remove(o);
             }
 
             @Override
