@@ -217,9 +217,9 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * JUnit 4.10+ style rule to allow test cases to fire up a Jenkins instance
+ * JUnit rule to allow test cases to fire up a Jenkins instance.
  *
- * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test+JUnit4">Wiki article about unit testing in Jenkins</a>
+ * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Jenkins</a>
  * @author Stephen Connolly
  * @since 1.436
  */
