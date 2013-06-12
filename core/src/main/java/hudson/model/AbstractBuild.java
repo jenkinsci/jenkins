@@ -217,7 +217,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 // having two neighbors pointing to each other is important to make RunMap.removeValue work
                 P _parent = getParent();
                 if (_parent == null) {
-                    throw new IllegalStateException("no parent for " + this);
+                    throw new IllegalStateException("no parent for " + number + " in " + workspace);
                 }
                 R pb = _parent._getRuns().search(number-1, Direction.DESC);
                 if (pb!=null) {
