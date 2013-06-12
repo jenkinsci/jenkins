@@ -250,7 +250,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * <p>
      * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
      */
-    protected String contextPath = "";
+    protected String contextPath = "/jenkins";
 
     /**
      * {@link Runnable}s to be invoked at {@link #after()} .
