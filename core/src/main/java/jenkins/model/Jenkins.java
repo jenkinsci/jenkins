@@ -2065,7 +2065,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Gets the dependency injection container that hosts all the extension implementations and other
      * components in Jenkins.
      *
-     * @since 1.GUICE
+     * @since 1.433
      */
     public Injector getInjector() {
         return lookup(Injector.class);
