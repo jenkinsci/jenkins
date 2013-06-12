@@ -62,6 +62,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
+import hudson.security.ACL;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.OneShotEvent;
@@ -99,10 +100,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
@@ -1282,6 +1287,28 @@ public class Queue extends ResourceController implements Saveable {
          * @since 1.377
          */
         Collection<? extends SubTask> getSubTasks();
+
+        /**
+         * This method allows the task to provide the default fallback authentication object to be used
+         * when {@link QueueItemAuthenticator} fails to authenticate the build.
+         *
+         * <p>
+         * When the task execution touches other objects inside Jenkins, the access control is performed
+         * based on whether this {@link Authentication} is allowed to use them. Implementers, if you are unsure,
+         * consider returning the identity of the user who created the task, or
+         * {@link ACL#SYSTEM} to bypass the access control and run as the super user, which has been
+         * the traditional behaviour.)
+         *
+         * <p>
+         * This method was added to an interface after it was created, so plugins built against
+         * older versions of Jenkins may not have this method implemented. Called {@link Tasks#_getDefaultAuthenticationOf(Task)}
+         * to avoid {@link AbstractMethodError}.
+         *
+         * @since 1.520
+         * @see QueueItemAuthenticator
+         * @see Tasks#getDefaultAuthenticationOf(Task)
+         */
+        @Nonnull Authentication getDefaultAuthentication();
     }
 
     /**
@@ -1511,6 +1538,27 @@ public class Queue extends ResourceController implements Saveable {
         	Jenkins.getInstance().getQueue().cancel(this);
             return HttpResponses.forwardToPreviousPage();
         }
+
+        /**
+         * Returns the identity that this task carries when it runs, for the purpose of access control.
+         *
+         * When the task execution touches other objects inside Jenkins, the access control is performed
+         * based on whether this {@link Authentication} is allowed to use them. Implementers, if you are unsure,
+         * return the identity of the user who queued the task, or {@link ACL#SYSTEM} to bypass the access control
+         * and run as the super user.
+         *
+         * @since 1.520
+         */
+        @Nonnull
+        public Authentication authenticate() {
+            for (QueueItemAuthenticator auth : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+                Authentication a = auth.authenticate(this);
+                if (a!=null)
+                    return a;
+            }
+            return Tasks.getDefaultAuthenticationOf(task);
+        }
+
 
         /**
          * Participates in the cancellation logic to set the {@link #future} accordingly.

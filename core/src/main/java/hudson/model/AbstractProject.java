@@ -39,7 +39,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.matrix.MatrixConfiguration;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
@@ -90,9 +89,6 @@ import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
-import jenkins.security.ProjectAuthenticator;
-import jenkins.security.ProjectAuthenticatorConfiguration;
-import jenkins.security.ProjectAuthenticatorConfiguration;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -113,6 +109,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -1178,13 +1175,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return this;
     }
 
-    /**
-     * Let the identity determined by {@link ProjectAuthenticator}.
-     *
-     * @since 1.520
-     */
-    public Authentication getIdentity() {
-        return ProjectAuthenticatorConfiguration.get().authenticate(this);
+    @Nonnull
+    public Authentication getDefaultAuthentication() {
+        // backward compatible behaviour.
+        return ACL.SYSTEM;
     }
 
     /**

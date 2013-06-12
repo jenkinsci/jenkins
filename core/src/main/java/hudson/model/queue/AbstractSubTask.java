@@ -26,8 +26,6 @@ package hudson.model.queue;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.ResourceList;
-import hudson.security.ACL;
-import org.acegisecurity.Authentication;
 
 /**
  * Partial default implementation of {@link SubTask} to avoid
@@ -54,9 +52,5 @@ public abstract class AbstractSubTask implements SubTask {
 
     public ResourceList getResourceList() {
         return new ResourceList();
-    }
-
-    public Authentication getIdentity() {
-        return getOwnerTask().getIdentity();
     }
 }

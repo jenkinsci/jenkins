@@ -62,7 +62,7 @@ public abstract class AbstractQueueTask implements Queue.Task {
 
     /**
      * This default implementation is the historical behaviour, but this is no longer desirable. Please override.
-     * See {@link SubTask#getIdentity()} for the contract.
+     * See {@link Task#getIdentity()} for the contract.
      */
     public Authentication getIdentity() {
         return ACL.SYSTEM;

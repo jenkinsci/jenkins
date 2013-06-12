@@ -48,8 +48,8 @@ import hudson.matrix.MatrixRun;
 import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProvisioner;
 import jenkins.model.Jenkins;
-import jenkins.security.ProjectAuthenticator;
-import jenkins.security.ProjectAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -369,14 +369,14 @@ public class QueueTest extends HudsonTestCase {
     }
 
     @Inject
-    ProjectAuthenticatorConfiguration pac;
+    QueueItemAuthenticatorConfiguration qac;
 
     /**
      * Make sure that the running build actually carries an credential.
      */
     public void testAccessControl() throws Exception {
         configureUserRealm();
-        pac.getAuthenticators().add(new ProjectAuthenticatorImpl());
+        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
@@ -389,10 +389,9 @@ public class QueueTest extends HudsonTestCase {
     }
 
     @TestExtension
-    public static class ProjectAuthenticatorImpl extends ProjectAuthenticator {
-
+    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
         @Override
-        public Authentication authenticate(AbstractProject<?, ?> project) {
+        public Authentication authenticate(Queue.Item item) {
             return alice;
         }
     }
@@ -412,7 +411,7 @@ public class QueueTest extends HudsonTestCase {
         DumbSlave s2 = createSlave();
 
         configureUserRealm();
-        pac.getAuthenticators().add(new ProjectAuthenticatorImpl());
+        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override

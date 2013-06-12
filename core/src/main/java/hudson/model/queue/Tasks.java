@@ -90,13 +90,13 @@ public class Tasks {
      * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
-    private static Authentication _getIdentityOf(SubTask t) {
-        return t.getIdentity();
+    private static Authentication _getDefaultAuthenticationOf(Task t) {
+        return t.getDefaultAuthentication();
     }
 
-    public static Authentication getIdentityOf(SubTask t) {
+    public static Authentication getDefaultAuthenticationOf(Task t) {
         try {
-            return _getIdentityOf(t);
+            return _getDefaultAuthenticationOf(t);
         } catch (AbstractMethodError e) {
             return ACL.SYSTEM;
         }

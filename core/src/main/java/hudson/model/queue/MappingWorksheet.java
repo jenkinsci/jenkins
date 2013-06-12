@@ -67,9 +67,6 @@ import static java.lang.Math.*;
  * See {@link SubTask#getSameNodeConstraint()}
  * <li>
  * Label constraint. {@link SubTask}s can specify that it can be only run on nodes that has the label.
- * <li>
- * Permission constraint. {@link SubTask}s have {@linkplain SubTask#getIdentity() identities} that need to have
- * permissions to build on the node.
  * </ul>
  *
  * <p>
@@ -137,10 +134,8 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            for (SubTask task : c) {
-                if (!nodeAcl.hasPermission(task.getIdentity(), AbstractProject.BUILD))
-                    return false;   // tasks don't have a permission to run on this node
-            }
+            if (!nodeAcl.hasPermission(item.authenticate(), AbstractProject.BUILD))
+                return false;   // tasks don't have a permission to run on this node
 
             return true;
         }

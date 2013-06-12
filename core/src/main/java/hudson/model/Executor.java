@@ -239,7 +239,7 @@ public class Executor extends Thread implements ModelObject {
                         }
                     }
 
-                    final SecurityContext savedContext = ACL.impersonate(Tasks.getIdentityOf(task));
+                    final SecurityContext savedContext = ACL.impersonate(workUnit.context.item.authenticate());
                     try {
                         setName(threadName + " : executing " + executable.toString());
                         if (LOGGER.isLoggable(FINE))
