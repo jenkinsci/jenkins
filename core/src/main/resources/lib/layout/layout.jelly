@@ -56,6 +56,7 @@ THE SOFTWARE.
 <st:header name="Expires" value="0" />
 <st:header name="Cache-Control" value="no-cache,must-revalidate" />
 <st:header name="X-Hudson-Theme" value="default" />
+<st:header name="X-Frame-Options" value="sameorigin" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
