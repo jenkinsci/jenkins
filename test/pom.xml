@@ -208,13 +208,6 @@ THE SOFTWARE.
               <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
             </configuration>
           </execution>
-          <execution>
-            <id>test-in-groovy</id>
-            <!-- allow tests written in Groovy -->
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
         </executions>
         <dependencies>
           <dependency>

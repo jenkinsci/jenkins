@@ -26,7 +26,7 @@ public class SetBuildParameterCommandTest {
         def p = j.createFreeStyleProject();
         p.buildersList.add(new TestBuilder() {
             @Override
-            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 def jar = j.jenkins.servletContext.getResource("/WEB-INF/jenkins-cli.jar")
                 build.workspace.child("cli.jar").copyFrom(jar);
 

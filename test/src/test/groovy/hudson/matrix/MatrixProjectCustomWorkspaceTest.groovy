@@ -124,7 +124,7 @@ class MatrixProjectCustomWorkspaceTest extends HudsonTestCase {
         def latch = new CountDownLatch(4)
 
         p.buildersList.add(new TestBuilder() {
-            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+            boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
                 latch.countDown()
                 latch.await()
                 return true
