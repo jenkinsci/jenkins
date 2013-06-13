@@ -1033,7 +1033,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     public <N extends Node> N configRoundtrip(N node) throws Exception {
-        submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
+        submit(createWebClient().goTo("computer/" + node.getNodeName() + "/configure").getFormByName("config"));
         return (N)jenkins.getNode(node.getNodeName());
     }
 
@@ -1767,7 +1767,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * Logs in to Hudson.
          */
         public WebClient login(String username, String password) throws Exception {
-            HtmlPage page = goTo("/login");
+            HtmlPage page = goTo("login");
 //            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
@@ -1913,6 +1913,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+            assert !relative.startsWith("/");
             Page p = super.getPage(getContextPath() + relative);
             assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
             return p;
@@ -1940,6 +1941,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * @since 1.504
          */
         public void assertFails(String url, int statusCode) throws Exception {
+            assert !url.startsWith("/");
             try {
                 fail(url + " should have been rejected but produced: " + super.getPage(getContextPath() + url).getWebResponse().getContentAsString());
             } catch (FailingHttpStatusCodeException x) {
