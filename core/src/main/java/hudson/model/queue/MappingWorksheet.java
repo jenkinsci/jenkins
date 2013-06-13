@@ -134,7 +134,7 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!nodeAcl.hasPermission(item.authenticate(), AbstractProject.BUILD))
+            if (!nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
                 return false;   // tasks don't have a permission to run on this node
 
             return true;

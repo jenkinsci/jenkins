@@ -429,7 +429,7 @@ public class QueueTest extends HudsonTestCase {
 
         // ACL that allow anyone to do anything except Alice can't build.
         final SparseACL aliceCantBuild = new SparseACL(null);
-        aliceCantBuild.add(new PrincipalSid(alice), AbstractProject.BUILD, false);
+        aliceCantBuild.add(new PrincipalSid(alice), Computer.BUILD, false);
         aliceCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {

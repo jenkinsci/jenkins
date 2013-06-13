@@ -328,7 +328,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
 
         Authentication identity = item.authenticate();
-        if (!getACL().hasPermission(identity,AbstractProject.BUILD)) {
+        if (!getACL().hasPermission(identity,Computer.BUILD)) {
             // doesn't have a permission
             // TODO: does it make more sense to define a separate permission?
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
