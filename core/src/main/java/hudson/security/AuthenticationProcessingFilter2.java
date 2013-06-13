@@ -85,6 +85,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
         // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
         // doFilter method.
+        request.getSession().invalidate();
         request.getSession();
     }
 
