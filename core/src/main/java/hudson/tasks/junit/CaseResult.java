@@ -479,6 +479,14 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     public boolean isSkipped() {
         return skipped;
     }
+    
+    /**
+     * @return true if the test failed - i.e. was not skipped and did not pass.
+     * @since 1.520
+     */
+    public boolean isFailed() {
+        return !(isSkipped() || isPassed());
+    }
 
     /**
      * Provides the reason given for the test being being skipped.
