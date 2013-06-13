@@ -91,7 +91,7 @@ public abstract class Slave extends Node implements Serializable {
     private final String description;
 
     /**
-     * Path to the root of the workspace
+     * Absolute path to the root of the workspace
      * from the view point of this node, such as "/hudson"
      */
     protected final String remoteFS;
@@ -411,6 +411,10 @@ public abstract class Slave extends Node implements Serializable {
 
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
+
+            if (!value.startsWith("\\") && !value.startsWith("/")) {
+                return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
+            }
 
             return FormValidation.ok();
         }
