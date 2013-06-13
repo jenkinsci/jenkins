@@ -33,6 +33,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.MavenReporter;
 import hudson.maven.MavenReporterDescriptor;
+import hudson.maven.ModuleName;
 import hudson.maven.MojoInfo;
 import hudson.maven.MavenBuildProxy.BuildCallable;
 import hudson.model.AbstractItem;
@@ -41,6 +42,9 @@ import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Result;
+
+import org.apache.maven.model.DistributionManagement;
+import org.apache.maven.model.Site;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 
@@ -103,27 +107,62 @@ public class MavenSiteArchiver extends MavenReporter {
      * @throws InterruptedException 
      */
     private String getModuleName(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
-        String moduleRoot = build.execute(new BuildCallable<String, IOException>() {
+        Object[] moduleRoot = build.execute(new BuildCallable<Object[], IOException>() {
             private static final long serialVersionUID = 1L;
 
             //@Override
-            public String call(MavenBuild mavenBuild) throws IOException, InterruptedException {
+            @Override
+            public Object[] call(MavenBuild mavenBuild) throws IOException, InterruptedException {
                  MavenModuleSetBuild moduleSetBuild = mavenBuild.getModuleSetBuild();
                  if (moduleSetBuild == null) {
                      throw new IOException("Parent build not found!"); 
                  }
-                 return moduleSetBuild.getModuleRoot().getRemote();
+                 MavenModuleSet project = moduleSetBuild.getProject();
+                 MavenModule rootModule = project.getRootModule();
+                 ModuleName moduleName = rootModule.getModuleName();
+
+                 return new Object[] { moduleSetBuild.getModuleRoot().getRemote(), moduleName };
             }
         });
         final File pomBaseDir = pom.getBasedir();
-        final File remoteWorkspaceDir = new File(moduleRoot);
+        final File remoteWorkspaceDir = new File((String)moduleRoot[0]);
         if (pomBaseDir.equals(remoteWorkspaceDir)) {
             return "";
         } else {
+            String projectSite = getDistributionUrl(pom);
+            if (projectSite != null) {
+                String parentSite = getRootDistributionUrl(pom, (ModuleName)moduleRoot[1]);
+                if (parentSite != null) {
+                    return projectSite.substring(parentSite.length() + 1, projectSite.length());
+                }
+            }
             return pom.getArtifactId();
         }
     }
 
+    private String getRootDistributionUrl(MavenProject pom, ModuleName rootModuleName) {
+        MavenProject parent = pom.getParent();
+        while (parent != null) {
+            ModuleName parentModuleName = new ModuleName(parent.getGroupId(), parent.getArtifactId());
+            if (rootModuleName.equals(parentModuleName)) {
+                String parentSite = getDistributionUrl(parent);
+                return parentSite;
+            }
+            parent = parent.getParent();
+        }
+        return null;
+    }
+
+    private String getDistributionUrl(MavenProject pom) {
+        final DistributionManagement distributionManagement = pom.getDistributionManagement();
+        if (distributionManagement != null) {
+            final Site site = distributionManagement.getSite();
+            if (site != null) {
+                return site.getUrl();
+            }
+        }
+        return null;
+    }
 
     public Collection<? extends Action> getProjectActions(MavenModule project) {
         return Collections.singleton(new SiteAction(project));
