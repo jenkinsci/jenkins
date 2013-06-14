@@ -375,7 +375,7 @@ public class MatrixProjectTest {
         def dirs = Collections.synchronizedSet(new HashSet())
         
         p.buildersList.add(new TestBuilder() {
-            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+            boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
                 dirs << build.workspace.getRemote()
                 def marker = build.workspace.child("file")
                 def name = build.fullDisplayName

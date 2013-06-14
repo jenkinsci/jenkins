@@ -145,28 +145,6 @@
         <!-- version specified in parent pom -->
       </plugin>
       <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <id>test-in-groovy</id>
-            <!-- allow tests written in Groovy -->
-            <goals>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.6.5</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
@@ -260,20 +238,6 @@
                                 <versionRange>[1.0,)</versionRange>
                                 <goals>
                                     <goal>display-info</goal>
-                                </goals>
-                            </pluginExecutionFilter>
-                            <action>
-                                <ignore />
-                            </action>
-                        </pluginExecution>
-                        <pluginExecution>
-                            <pluginExecutionFilter>
-                                <groupId>org.codehaus.gmaven</groupId>
-                                <artifactId>gmaven-plugin</artifactId>
-                                <versionRange>[1.0,)</versionRange>
-                                <goals>
-                                    <goal>testCompile</goal>
-                                    <goal>generateTestStubs</goal>
                                 </goals>
                             </pluginExecutionFilter>
                             <action>
