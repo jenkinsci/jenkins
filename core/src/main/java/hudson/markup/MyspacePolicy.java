@@ -66,7 +66,6 @@ public class MyspacePolicy {
             tag("span,div");
             tag("img",      "src",ONSITE_OR_OFFSITE_URL,
                             "hspace","vspace");
-            tag("iframe",   "src");
             tag("link",     "type","rel");
             tag("ul,ol,li,dd,dl,dt,thead,tbody,tfoot");
             tag("table",    "noresize");
