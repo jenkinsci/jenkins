@@ -1800,6 +1800,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         rsp.sendRedirect(".");
     }
 
+    /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
+    public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    }
+
     /**
      * Computes the build cause, using RemoteCause or UserCause as appropriate.
      */
@@ -1818,7 +1824,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Computes the delay by taking the default value and the override in the request parameter into the account.
      *
-     * @deprecated as of 1.488
+     * @deprecated as of 1.489
      *      Inject {@link TimeDuration}.
      */
     public int getDelay(StaplerRequest req) throws ServletException {
@@ -1849,6 +1855,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         	throw new IllegalStateException("This build is not parameterized!");
         }
     	
+    }
+
+    /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doBuildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     /**

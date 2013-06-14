@@ -46,6 +46,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
+import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.export.Flavor;
 
 /**
@@ -102,6 +103,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return (AbstractProject<?, ?>) owner;
     }
 
+    /** @deprecated use {@link #_doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
     public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
     }
@@ -139,11 +142,13 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         rsp.sendRedirect(".");
     }
 
+    /** @deprecated use {@link #buildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
     }
 
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay) throws IOException, ServletException {
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);

@@ -56,6 +56,47 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    “Build Now” link did not work for multijobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16974">issue 16974</a>)
+  <li class='major bug'>
+    Fixed API incompatibility since 1.489.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18356">issue 18356</a>)
+  <li class=bug>
+    “Projects tied to slave” shows unrelated Maven module jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17451">issue 17451</a>)
+  <li class=rfe>
+    Added a new extension point to monitor the flow of stuff in the queue.
+  <li class=rfe>
+    Executors running the builds can be now a subject of access control.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18285">issue 18285</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.519>What's new in 1.519</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Log cluttered with irrelevant warnings about build timestamps when running on Windows on Java 6.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15587">issue 15587</a>)
+  <li class='major bug'>
+    Fingerprint action deserialization problem fixed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17125">issue 17125</a>)
+  <li class='rfe'>
+    Improved the tracking of queued jobs and their eventual builds in the REST API.
+  <li class='rfe'>
+    Configured log recorders can now pick up messages logged from slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18274">issue 18274</a>)
+  <li class='rfe'>
+    Added a new extension point to contribute custom plexus components into Maven for the maven project type.
+  <li class='major rfe'>
+    Remoting classloader performance improvement upon reconnection to the same slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15120">issue 15120</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.518>What's new in 1.518</a> (2013/06/11)</h3>
+<ul class=image>
+  <li class=bug>
     NPE in <code>DefaultMatrixExecutionStrategyImpl.waitForCompletion</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18024">issue 18024</a>)
   <li class=bug>
