@@ -554,7 +554,11 @@ public class Util {
      * @see DigestUtils#md5(InputStream)
      */
     public static String getDigestOf(InputStream source) throws IOException {
-        return DigestUtils.md5Hex(source);
+        try {
+            return DigestUtils.md5Hex(source);
+        } finally {
+            source.close();
+        }
     }
 
     public static String getDigestOf(String text) {
