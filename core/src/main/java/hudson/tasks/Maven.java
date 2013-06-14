@@ -29,6 +29,7 @@ import hudson.Functions;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.CopyOnWrite;
+import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
@@ -123,7 +124,16 @@ public class Maven extends Builder {
      * @since 1.322
      */
     public boolean usePrivateRepository = false;
-    
+
+    /**
+     * If true, we don't store the private maven repository within the workspace itself, but instead in a
+     * peer directory. SCMs that offer a reset (make work tree look like repository) before build will blow
+     * away anything stored in the workspace, which is unhelpful as it means all files need to be downloaded.
+     *
+     * Identical to logic used in maven-plugin.
+     */
+    public boolean storePrivateRepositoryOutsideWorkspace = false;
+
     /**
      * Provides access to the settings.xml to be used for a build.
      * @since 1.491
@@ -143,25 +153,26 @@ public class Maven extends Builder {
     private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
 
     public Maven(String targets,String name) {
-        this(targets,name,null,null,null,false, null, null);
+        this(targets,name,null,null,null,false, false, null, null);
     }
 
     public Maven(String targets, String name, String pom, String properties, String jvmOptions) {
-        this(targets, name, pom, properties, jvmOptions, false, null, null);
+        this(targets, name, pom, properties, jvmOptions, false, false, null, null);
     }
     
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository) {
-        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, false, null, null);
     }
     
     @DataBoundConstructor
-    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, boolean storePrivateRepositoryOutsideWorkspace, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
         this.usePrivateRepository = usePrivateRepository;
+        this.storePrivateRepositoryOutsideWorkspace = storePrivateRepositoryOutsideWorkspace;
         this.settings = settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
         this.globalSettings = globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
@@ -198,6 +209,14 @@ public class Maven extends Builder {
 
     public boolean usesPrivateRepository() {
         return usePrivateRepository;
+    }
+
+    public boolean storesPrivateRepositoryOutsideWorkspace() {
+        return storePrivateRepositoryOutsideWorkspace;
+    }
+
+    public void setStorePrivateRepositoryOutsideWorkspace(boolean storePrivateRepositoryOutsideWorkspace) {
+        this.storePrivateRepositoryOutsideWorkspace = storePrivateRepositoryOutsideWorkspace;
     }
 
     /**
@@ -315,8 +334,7 @@ public class Maven extends Builder {
 
             args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
             args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
-            if (usesPrivateRepository())
-                args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
+            addPrivateRepositorySetting(build, args);
             args.addTokenized(normalizedTarget);
             wrapUpArguments(args,normalizedTarget,build,launcher,listener);
 
@@ -336,6 +354,21 @@ public class Maven extends Builder {
             startIndex = endIndex + 1;
         } while (startIndex < targets.length());
         return true;
+    }
+
+    private void addPrivateRepositorySetting(AbstractBuild<?, ?> build, ArgumentListBuilder args) {
+        if (usesPrivateRepository()) {
+
+            FilePath workspace = build.getWorkspace();
+            FilePath repository;
+            if( storesPrivateRepositoryOutsideWorkspace() ) {
+                repository = workspace.getParent().child(workspace.getName() + ".repository");
+            } else {
+                repository = workspace.child(".repository");
+            }
+
+            args.add("-Dmaven.repo.local=" + repository);
+        }
     }
 
     /**

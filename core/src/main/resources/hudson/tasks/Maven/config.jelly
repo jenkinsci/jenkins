@@ -50,7 +50,9 @@ THE SOFTWARE.
     <f:entry field="usePrivateRepository" title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html">
       <f:checkbox checked="${it.usesPrivateRepository()}" />
     </f:entry>
-    
+    <f:entry field="storePrivateRepositoryOutsideWorkspace" title="${%Store repository parallel to workspace}">
+      <f:checkbox checked="${it.storesPrivateRepositoryOutsideWorkspace()}" />
+    </f:entry>
     <f:dropdownDescriptorSelector title="${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}"/>
 <!--
     <f:entry   help="/help/tasks/maven/maven-settings.html">

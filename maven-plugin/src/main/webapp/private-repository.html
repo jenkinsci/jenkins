@@ -21,6 +21,11 @@
   at the expense of additional disk space consumption.
 
   <p>
+  If you opt to store the repository in parallel to the workspace, the storage will instead be <tt>$WORKSPACE/../$WORKSPACE.repository</tt> .
+  This can be useful if your SCM options delete <tt>$WORKSPACE</tt> prior to the build commencing, and you want to preserve your local Maven
+  repository.
+
+  <p>
   When using this option, consider setting up a Maven artifact manager so that you don't have to hit
   remote Maven repositories too often.
 
