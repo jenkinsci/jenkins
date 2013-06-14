@@ -1664,7 +1664,12 @@ public final class FilePath implements Serializable {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1L;
             public String invoke(File f, VirtualChannel channel) throws IOException {
-                return Util.getDigestOf(new BufferedInputStream(new FileInputStream(f)));
+                BufferedInputStream source = new BufferedInputStream(new FileInputStream(f));
+                try {
+                    return Util.getDigestOf(source);
+                } finally {
+                    source.close();
+                }
             }
         });
     }
