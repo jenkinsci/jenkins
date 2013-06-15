@@ -50,6 +50,7 @@ import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
+import org.kohsuke.stapler.AttributeKey;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -148,7 +149,9 @@ public class ListView extends View implements Saveable {
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
-    
+
+    private static final AttributeKey<List<TopLevelItem>> CACHE = AttributeKey.requestScoped();
+
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -157,8 +160,14 @@ public class ListView extends View implements Saveable {
      * concurrent modification issue.
      */
     public List<TopLevelItem> getItems() {
+        List<TopLevelItem> items = CACHE.get();
+        if (items!=null && true /* TODO: stale check */)
+            return items;
+
+        items = new ArrayList<TopLevelItem>();
+        CACHE.set(items);
+
         SortedSet<String> names;
-        List<TopLevelItem> items = new ArrayList<TopLevelItem>();
 
         synchronized (this) {
             names = new TreeSet<String>(jobNames);
