@@ -258,6 +258,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.410
      */
     private String customWorkspace;
+    /**
+     * See {@link #setCustomWorkspaceConcurrent(boolean)}.
+     */
+    private boolean customWorkspaceConcurrent;
     
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
@@ -1946,6 +1950,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             customWorkspace = null;
         }
+        
+        customWorkspaceConcurrent = req.getParameter("customWorkspaceConcurrent")!=null;
 
         if (json.has("scmCheckoutStrategy"))
             scmCheckoutStrategy = req.bindJSON(SCMCheckoutStrategy.class,
@@ -2318,6 +2324,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public String getCustomWorkspace() {
         return customWorkspace;
     }
+    
+    public boolean customWorkspaceConcurrent() {
+    	return customWorkspaceConcurrent;
+    }
 
     /**
      * User-specified workspace directory, or null if it's up to Jenkins.
@@ -2338,6 +2348,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void setCustomWorkspace(String customWorkspace) throws IOException {
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
+    }
+    
+    /**
+     * If set to true, the custom workspace will be passed through the same concurrency mechanism
+     * as is done for normal jobs for which concurrent execution is allowed. This is useful if you
+     * have more than one job using the same custom workspace - as many custom workspaces will be
+     * created as are needed for the number of jobs running concurrently. Workspaces will be reused,
+     * so the maximum number of workspace instances will be the number of executors on the box. This
+     * is useful if you have a lot of jobs working off the same large source repository, and you
+     * don't want to incur the disk penalty of having a separate workspace for each job.
+     */
+    public void setCustomWorkspaceConcurrent(boolean customWorkspaceConcurrent) throws IOException {
+    	this.customWorkspaceConcurrent=customWorkspaceConcurrent;
+    	save();
     }
     
 }

@@ -29,5 +29,6 @@ THE SOFTWARE.
     <f:entry title="${%Directory}">
       <f:textbox name="customWorkspace.directory" field="customWorkspace" />
     </f:entry>
+    <f:optionalBlock name="customWorkspaceConcurrent" title="${%Create multiple workspaces in case of concurrency}" checked="${it.customWorkspaceConcurrent()}" />
   </f:optionalBlock>
 </j:jelly>
