@@ -179,7 +179,7 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         List<CaseResult> r = new ArrayList<CaseResult>();
         for (ClassResult clr : classes.values()) {
             for (CaseResult cr : clr.getChildren()) {
-                if (!cr.isPassed() && !cr.isSkipped()) {
+                if (cr.isFailed()) {
                     r.add(cr);
             }
         }
