@@ -34,7 +34,9 @@ import org.kohsuke.stapler.export.Exported;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import static java.util.Collections.emptyList;
