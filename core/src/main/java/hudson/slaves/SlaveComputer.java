@@ -72,6 +72,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
+import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -217,6 +218,9 @@ public class SlaveComputer extends Computer {
             public Object call() throws Exception {
                 // do this on another thread so that the lengthy launch operation
                 // (which is typical) won't block UI thread.
+
+                ACL.impersonate(ACL.SYSTEM);    // background activity should run like a super user
+
                 try {
                     log.rewind();
                     try {
