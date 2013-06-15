@@ -9,6 +9,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import hudson.model.TopLevelItem;
 import hudson.model.ViewGroup;
+import hudson.model.ViewTest.CompositeView;
 import hudson.model.View;
 
 import java.io.ByteArrayOutputStream;
@@ -84,7 +85,7 @@ public class ListJobsCommandTest {
                 job("some-job"), job("some-other-job")
         );
 
-        final View customView = mock(View.class);
+        final View customView = view();
         when(customView.getItems()).thenReturn(viewJobs);
 
         when(jenkins.getView("CustomView")).thenReturn(customView);
@@ -98,8 +99,9 @@ public class ListJobsCommandTest {
     public void getJobsRecursivelyFromViewGroup() throws Exception {
 
         final CompositeView rootView = mock(CompositeView.class);
-        final View leftView = mock(View.class);
-        final View rightView = mock(View.class);
+        when(rootView.getAllItems()).thenCallRealMethod();
+        final View leftView = view();
+        final View rightView = view();
 
         final TopLevelItem rootJob = job("rootJob");
         final TopLevelItem leftJob = job("leftJob");
@@ -116,6 +118,15 @@ public class ListJobsCommandTest {
         assertThat(runWith("Root"), equalTo(0));
         assertThat(stderr, is(empty()));
         assertThat(stdout, listsJobs("rootJob", "leftJob", "rightJob", "sharedJob"));
+    }
+
+    private View view() {
+
+        final View view = mock(View.class);
+
+        when(view.getAllItems()).thenCallRealMethod();
+
+        return view;
     }
 
     private TopLevelItem job(final String name) {
@@ -172,12 +183,5 @@ public class ListJobsCommandTest {
                 description.appendText("Job listing of " + Arrays.toString(expected));
             }
         };
-    }
-
-    private abstract static class CompositeView extends View implements ViewGroup {
-
-        protected CompositeView(String name) {
-            super(name);
-        }
     }
 }

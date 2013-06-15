@@ -61,7 +61,7 @@ public class ListJobsCommand extends CLICommand {
             View view = h.getView(name);
 
             if (view != null) {
-                jobs = getViewItems(view);
+                jobs = view.getAllItems();
             }
             // If no view was found, try with an item group.
             else {
@@ -90,21 +90,5 @@ public class ListJobsCommand extends CLICommand {
         }
 
         return 0;
-    }
-
-    private Collection<TopLevelItem> getViewItems(View view) {
-
-        final Collection<TopLevelItem> jobs = new LinkedHashSet<TopLevelItem>(
-                view.getItems()
-        );
-
-        if (view instanceof ViewGroup) {
-
-            for(View subview: ((ViewGroup) view).getViews()) {
-
-                jobs.addAll(getViewItems(subview));
-            }
-        }
-        return jobs;
     }
 }
