@@ -58,8 +58,7 @@ public class ListJobsCommandTest {
         when(jenkins.getView(null)).thenReturn(null);
         when(jenkins.getItemByFullName(null)).thenReturn(null);
 
-        // TODO: One would expect -1 here
-        assertThat(runWith("NoSuchViewOrItemGroup"), equalTo(0));
+        assertThat(runWith("NoSuchViewOrItemGroup"), equalTo(-1));
         assertThat(stdout, is(empty()));
         assertThat(stderr, is(not(empty())));
     }
