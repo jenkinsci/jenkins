@@ -179,23 +179,24 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Gets all the items recursively contained in this collection in a read-only view.
+     * <p>
+     * The default implementation recursively adds the items of all contained Views
+     * in case this view implements {@link ViewGroup}, which should be enough for most cases.
+     *
      * @since 1.520
      */
     public Collection<TopLevelItem> getAllItems() {
 
-        final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(
-                getItems()
-        );
-
         if (this instanceof ViewGroup) {
+            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
 
-            for(final View view: ((ViewGroup) this).getViews()) {
-
+            for(View view: ((ViewGroup) this).getViews()) {
                 items.addAll(view.getAllItems());
             }
+            return Collections.unmodifiableCollection(items);
+        } else {
+            return getItems();
         }
-
-        return Collections.unmodifiableCollection(items);
     }
 
     /**

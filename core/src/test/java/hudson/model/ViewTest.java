@@ -1,16 +1,23 @@
 package hudson.model;
 
+import hudson.model.Descriptor.FormException;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
+import hudson.views.ViewsTabBar;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.ServletException;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
 
 public class ViewTest {
@@ -73,26 +80,21 @@ public class ViewTest {
     @Test
     public void getAllItems() throws Exception {
 
-        final CompositeView rootView = Mockito.mock(CompositeView.class);
         final View leftView = Mockito.mock(View.class);
         final View rightView = Mockito.mock(View.class);
+        CompositeView rootView = new CompositeView("rootJob", leftView, rightView);
 
-        Mockito.when(rootView.getAllItems()).thenCallRealMethod();
         Mockito.when(leftView.getAllItems()).thenCallRealMethod();
         Mockito.when(rightView.getAllItems()).thenCallRealMethod();
 
-        final TopLevelItem rootJob = Mockito.mock(TopLevelItem.class);
-        final TopLevelItem leftJob = Mockito.mock(TopLevelItem.class);
-        final TopLevelItem rightJob = Mockito.mock(TopLevelItem.class);
-        final TopLevelItem sharedJob = Mockito.mock(TopLevelItem.class);
+        final TopLevelItem rootJob = createJob("rootJob");
+        final TopLevelItem sharedJob = createJob("sharedJob");
+        
+        rootView = rootView.withJobs(rootJob, sharedJob);
+        
+        final TopLevelItem leftJob = createJob("leftJob");
+        final TopLevelItem rightJob = createJob("rightJob");
 
-        Mockito.when(rootJob.getDisplayName()).thenReturn("rootJob");
-        Mockito.when(leftJob.getDisplayName()).thenReturn("leftJob");
-        Mockito.when(rightJob.getDisplayName()).thenReturn("rightJob");
-        Mockito.when(sharedJob.getDisplayName()).thenReturn("sharedJob");
-
-        Mockito.when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
-        Mockito.when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         Mockito.when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
         Mockito.when(rightView.getItems()).thenReturn(Arrays.asList(rightJob));
 
@@ -101,10 +103,91 @@ public class ViewTest {
         Assert.assertArrayEquals(expected, rootView.getAllItems().toArray());
     }
 
-    public static abstract class CompositeView extends View implements ViewGroup {
+    private TopLevelItem createJob(String jobName) {
+        final TopLevelItem rootJob = Mockito.mock(TopLevelItem.class);
+        Mockito.when(rootJob.getDisplayName()).thenReturn(jobName);
+        return rootJob;
+    }
 
-        protected CompositeView(final String name) {
+    public static class CompositeView extends View implements ViewGroup {
+
+        private View[] views;
+        private TopLevelItem[] jobs;
+
+        protected CompositeView(final String name, View... views) {
             super(name);
+            this.views = views;
+        }
+        
+        private CompositeView withJobs(TopLevelItem... jobs) {
+            this.jobs = jobs;
+            return this;
+        }
+        
+        @Override
+        public Collection<TopLevelItem> getItems() {
+            return Arrays.asList(this.jobs);
+        }
+
+        @Override
+        public Collection<View> getViews() {
+            return Arrays.asList(this.views);
+        }
+        
+        @Override
+        public boolean canDelete(View view) {
+            return false;
+        }
+
+        @Override
+        public void deleteView(View view) throws IOException {
+        }
+
+        @Override
+        public View getView(String name) {
+            return null;
+        }
+
+        @Override
+        public View getPrimaryView() {
+            return null;
+        }
+
+        @Override
+        public void onViewRenamed(View view, String oldName, String newName) {
+        }
+
+        @Override
+        public ViewsTabBar getViewsTabBar() {
+            return null;
+        }
+
+        @Override
+        public ItemGroup<? extends TopLevelItem> getItemGroup() {
+            return null;
+        }
+
+        @Override
+        public List<Action> getViewActions() {
+            return null;
+        }
+
+        @Override
+        public boolean contains(TopLevelItem item) {
+            return false;
+        }
+
+        @Override
+        public void onJobRenamed(Item item, String oldName, String newName) {
+        }
+
+        @Override
+        protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
+        }
+
+        @Override
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            return null;
         }
     }
 }
