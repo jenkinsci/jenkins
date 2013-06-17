@@ -160,6 +160,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractNodeMonitorDesc
     }
 
     protected static final class GetUsableSpace implements FileCallable<DiskSpace> {
+        public GetUsableSpace() {}
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
             try {
