@@ -35,6 +35,7 @@ import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -157,4 +158,18 @@ public class ViewTest {
             assertEquals(400, e.getStatusCode());
         }
     }
+
+    @Ignore("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
+    @Bug(18373)
+    @Test public void unicodeName() throws Exception {
+        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        String name = "I ♥ NY";
+        form.getInputByName("name").setValueAttribute(name);
+        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        j.submit(form);
+        View view = j.jenkins.getView(name);
+        assertNotNull(view);
+        j.submit(j.createWebClient().getPage(view, "configure").getFormByName("viewConfig"));
+    }
+
 }
