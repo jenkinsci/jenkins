@@ -933,7 +933,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         save();
 
-        FormApply.success("../"+name).generateResponse(req,rsp,this);
+        FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
     }
 
     /**
