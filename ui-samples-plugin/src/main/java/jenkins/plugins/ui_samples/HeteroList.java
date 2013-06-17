@@ -121,10 +121,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
     public static final class ChoiceEntry extends Entry {
 
-        public static String[] getChoices() {
-            return new String[] {"good", "bad", "ugly"};
-        }
-
         private final String choice;
 
         @DataBoundConstructor public ChoiceEntry(String choice) {
@@ -136,9 +132,15 @@ import org.kohsuke.stapler.StaplerRequest;
         }
 
         @Extension public static class DescriptorImpl extends Descriptor<Entry> {
+
             @Override public String getDisplayName() {
                 return "Choice Entry";
             }
+            
+            public String[] getChoices() {
+                return new String[] {"good", "bad", "ugly"};
+            }
+
         }
     }
 

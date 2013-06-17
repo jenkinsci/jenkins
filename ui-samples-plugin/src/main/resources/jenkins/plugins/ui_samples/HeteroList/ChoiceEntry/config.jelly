@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <j:forEach var="choice" items="${instance.choices}">
+    <j:forEach var="choice" items="${descriptor.choices}">
         <f:radioBlock name="choice" value="${choice}" title="${choice}" checked="${instance.choice == choice}"/>
     </j:forEach>
 </j:jelly>
