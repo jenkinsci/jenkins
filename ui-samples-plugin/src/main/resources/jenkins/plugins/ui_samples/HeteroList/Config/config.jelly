@@ -25,11 +25,15 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:repeatableHeteroProperty field="entries" hasHeader="true">
-        <f:entry title="">
-            <div align="right">
-                <f:repeatableDeleteButton/>
-            </div>
-        </f:entry>
-    </f:repeatableHeteroProperty>
+    <f:section title="Entries">
+        <f:block>
+            <f:repeatableHeteroProperty field="entries" hasHeader="true">
+                <f:entry title="">
+                    <div align="right">
+                        <f:repeatableDeleteButton/>
+                    </div>
+                </f:entry>
+            </f:repeatableHeteroProperty>
+        </f:block>
+    </f:section>
 </j:jelly>
