@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-                instance=${instance} descriptor=${descriptor}
     <f:repeatableHeteroProperty field="entries" hasHeader="true">
         <f:entry title="">
             <div align="right">
