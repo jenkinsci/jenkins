@@ -93,6 +93,7 @@ public class LauncherTest extends ChannelTestCase {
         assertTrue(log, log.contains("val1 val2"));
     }
 
+    @Bug(18368)
     public void testDecoratedByEnvMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
@@ -104,6 +105,7 @@ public class LauncherTest extends ChannelTestCase {
         assertEquals(true, decorated.isUnix());
     }
 
+    @Bug(18368)
     public void testDecoratedByPrefixMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
