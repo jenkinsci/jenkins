@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.519-SNAPSHOT</version>
+    <version>1.519</version>
   </parent>
 
   <artifactId>ui-samples-plugin</artifactId>
