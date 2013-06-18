@@ -63,7 +63,7 @@ THE SOFTWARE.
       <d:invokeBody/>
       <!-- project list -->
       <table id="projectstatus" class="sortable pane bigtable"
-             style="${showViewTabs!=null?'margin-top:0px; border-top: none;':null}">
+             style="${showViewTabs?'margin-top:0px; border-top: none;':null}">
         <tr style="border-top: 0px;">
           <j:forEach var="col" items="${columnExtensions}">
              <st:include page="columnHeader.jelly" it="${col}" />
