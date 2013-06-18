@@ -31,6 +31,8 @@ import hudson.model.Descriptor;
 import hudson.util.FormApply;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -84,11 +86,11 @@ import org.kohsuke.stapler.StaplerRequest;
         private final List<Entry> entries;
 
         @DataBoundConstructor public Config(List<Entry> entries) {
-            this.entries = entries;
+            this.entries = entries != null ? new ArrayList<Entry>(entries) : Collections.<Entry>emptyList();
         }
 
         public List<Entry> getEntries() {
-            return entries;
+            return Collections.unmodifiableList(entries);
         }
 
         @Extension public static class DescriptorImpl extends Descriptor<Config> {
