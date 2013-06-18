@@ -324,8 +324,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
-        if(l==null && getMode()== Mode.EXCLUSIVE)
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+        if(l==null && getMode()== Mode.EXCLUSIVE) {
+            // flyweight tasks need to get executed somewhere, if every node
+            if (!(item.task instanceof Queue.FlyweightTask && (
+                    this instanceof Jenkins
+                            || Jenkins.getInstance().getNumExecutors() < 1
+                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
+            )) {
+                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+            }
+        }
 
         Authentication identity = item.authenticate();
         if (!getACL().hasPermission(identity,Computer.BUILD)) {
