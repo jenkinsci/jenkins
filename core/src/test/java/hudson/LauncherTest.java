@@ -98,10 +98,10 @@ public class LauncherTest extends ChannelTestCase {
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
-        assertEquals("not unix before decoration, unix after", false, decorated.isUnix());
+        assertEquals(false, decorated.isUnix());
         remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
         decorated = remoteLauncher.decorateByEnv(new EnvVars());
-        assertEquals("unix before decoration, not unix after", true, decorated.isUnix());
+        assertEquals(true, decorated.isUnix());
     }
 
     public void testDecoratedByPrefixMaintainsIsUnix() throws Exception {
@@ -109,10 +109,10 @@ public class LauncherTest extends ChannelTestCase {
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByPrefix("test");
-        assertEquals("not unix before decoration, unix after", false, decorated.isUnix());
+        assertEquals(false, decorated.isUnix());
         remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
         decorated = remoteLauncher.decorateByPrefix("test");
-        assertEquals("unix before decoration, not unix after", true, decorated.isUnix());
+        assertEquals(true, decorated.isUnix());
     }
 
 }
