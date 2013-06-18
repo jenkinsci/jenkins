@@ -26,8 +26,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:s="/lib/samples">
     <s:sample title="Hetero List Sample">
-        <a href="configure">Configure me!</a>
+        <p>
+            <a href="configure">Configure me!</a>
+        </p>
         <j:if test="${it.configFile.exists()}">
+            <p>
+                Current configuration:
+            </p>
             <pre>
                 ${it.configFile.asString()}
             </pre>
