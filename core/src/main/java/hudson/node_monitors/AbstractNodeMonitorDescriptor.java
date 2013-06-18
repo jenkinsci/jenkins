@@ -85,12 +85,12 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *
      * Once set to non-null, never be null.
      */
-    private volatile Record record = null;
+    private transient volatile Record record = null;
 
     /**
      * Represents the update activity in progress.
      */
-    private volatile Record inProgress = null;
+    private transient volatile Record inProgress = null;
 
     /**
      * Performs monitoring of the given computer object.
@@ -270,7 +270,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         }
     }
 
-    private final Logger LOGGER = Logger.getLogger(getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractNodeMonitorDescriptor.class.getName());
 
     private static final long HOUR = 1000*60*60L;
 }

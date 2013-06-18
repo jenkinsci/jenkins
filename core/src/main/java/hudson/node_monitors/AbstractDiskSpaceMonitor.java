@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 /**
  * @author Kohsuke Kawaguchi
+ * @see DiskSpaceMonitorDescriptor
  */
 public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
     /**
