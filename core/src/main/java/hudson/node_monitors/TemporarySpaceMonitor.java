@@ -66,7 +66,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
-        protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
+        @Override protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
 

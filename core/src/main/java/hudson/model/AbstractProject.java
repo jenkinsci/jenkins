@@ -39,7 +39,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.matrix.MatrixConfiguration;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
@@ -92,6 +91,7 @@ import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
@@ -109,6 +109,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -1174,6 +1175,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return this;
     }
 
+    @Nonnull
+    public Authentication getDefaultAuthentication() {
+        // backward compatible behaviour.
+        return ACL.SYSTEM;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -1805,6 +1812,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             rsp.sendRedirect(".");
     }
 
+    /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
+    public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
+    }
+
     /**
      * Computes the build cause, using RemoteCause or UserCause as appropriate.
      */
@@ -1823,7 +1836,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Computes the delay by taking the default value and the override in the request parameter into the account.
      *
-     * @deprecated as of 1.488
+     * @deprecated as of 1.489
      *      Inject {@link TimeDuration}.
      */
     public int getDelay(StaplerRequest req) throws ServletException {
@@ -1854,6 +1867,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         	throw new IllegalStateException("This build is not parameterized!");
         }
     	
+    }
+
+    /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
+    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        doBuildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     /**

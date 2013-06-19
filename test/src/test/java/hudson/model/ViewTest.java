@@ -31,52 +31,56 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.fail;
+import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ViewTest extends HudsonTestCase {
+public class ViewTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Bug(7100)
-    public void testXHudsonHeader() throws Exception {
-        assertNotNull(new WebClient().goTo("/").getWebResponse().getResponseHeaderValue("X-Hudson"));
+    @Test public void xHudsonHeader() throws Exception {
+        assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
     }
 
     /**
      * Creating two views with the same name.
      */
     @Email("http://d.hatena.ne.jp/ssogabe/20090101/1230744150")
-    public void testConflictingName() throws Exception {
-        assertNull(jenkins.getView("foo"));
+    @Test public void conflictingName() throws Exception {
+        assertNull(j.jenkins.getView("foo"));
 
-        HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
+        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
-        submit(form);
-        assertNotNull(jenkins.getView("foo"));
+        j.submit(form);
+        assertNotNull(j.jenkins.getView("foo"));
 
         // do it again and verify an error
         try {
-            submit(form);
+            j.submit(form);
             fail("shouldn't be allowed to create two views of the same name.");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(400, e.getStatusCode());
         }
     }
 
-    public void testPrivateView() throws Exception {
-        createFreeStyleProject("project1");
+    @Test public void privateView() throws Exception {
+        j.createFreeStyleProject("project1");
         User user = User.get("me", true); // create user
 
-        WebClient wc = new WebClient();
-        HtmlPage userPage = wc.goTo("/user/me");
+        WebClient wc = j.createWebClient();
+        HtmlPage userPage = wc.goTo("user/me");
         HtmlAnchor privateViewsLink = userPage.getFirstAnchorByText("My Views");
         assertNotNull("My Views link not available", privateViewsLink);
 
@@ -85,48 +89,48 @@ public class ViewTest extends HudsonTestCase {
         Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//table[@id='viewList']//td[@class='active']/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
-        View listView = new ListView("listView", jenkins);
-        jenkins.addView(listView);
+        View listView = new ListView("listView", j.jenkins);
+        j.jenkins.addView(listView);
 
-        HtmlPage newViewPage = wc.goTo("/user/me/my-views/newView");
+        HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
         ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
-        HtmlPage proxyViewConfigurePage = submit(form);
+        HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
         assertNotNull(proxyView);
         form = proxyViewConfigurePage.getFormByName("viewConfig");
         form.getSelectByName("proxiedViewName").setSelectedAttribute("listView", true);
-        submit(form);
+        j.submit(form);
 
         assertTrue(proxyView instanceof ProxyView);
         assertEquals(((ProxyView) proxyView).getProxiedViewName(), "listView");
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
     }
 
-    public void testDeleteView() throws Exception {
-        WebClient wc = new WebClient();
+    @Test public void deleteView() throws Exception {
+        WebClient wc = j.createWebClient();
 
-        ListView v = new ListView("list", jenkins);
-        jenkins.addView(v);
+        ListView v = new ListView("list", j.jenkins);
+        j.jenkins.addView(v);
         HtmlPage delete = wc.getPage(v, "delete");
-        submit(delete.getFormByName("delete"));
-        assertNull(jenkins.getView("list"));
+        j.submit(delete.getFormByName("delete"));
+        assertNull(j.jenkins.getView("list"));
 
         User user = User.get("user", true);
         MyViewsProperty p = user.getProperty(MyViewsProperty.class);
         v = new ListView("list", p);
         p.addView(v);
         delete = wc.getPage(v, "delete");
-        submit(delete.getFormByName("delete"));
+        j.submit(delete.getFormByName("delete"));
         assertNull(p.getView("list"));
 
     }
 
     @Bug(9367)
-    public void testPersistence() throws Exception {
-        ListView view = new ListView("foo", jenkins);
-        jenkins.addView(view);
+    @Test public void persistence() throws Exception {
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
 
         ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
         System.out.println(v.getProperties());
@@ -134,24 +138,38 @@ public class ViewTest extends HudsonTestCase {
     }
 
     @Bug(9367)
-    public void testAllImagesCanBeLoaded() throws Exception {
+    @Test public void allImagesCanBeLoaded() throws Exception {
         User.get("user", true);
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         webClient.setJavaScriptEnabled(false);
-        assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
+        j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 
     @Bug(16608)
-    public void testNotAlloedName() throws Exception {
-        HtmlForm form = new WebClient().goTo("newView").getFormByName("createItem");
+    @Test public void notAllowedName() throws Exception {
+        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("..");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
 
         try {
-            submit(form);
+            j.submit(form);
             fail("\"..\" should not be allowed.");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(400, e.getStatusCode());
         }
     }
+
+    @Ignore("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
+    @Bug(18373)
+    @Test public void unicodeName() throws Exception {
+        HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
+        String name = "I ♥ NY";
+        form.getInputByName("name").setValueAttribute(name);
+        form.getRadioButtonsByName("mode").get(0).setChecked(true);
+        j.submit(form);
+        View view = j.jenkins.getView(name);
+        assertNotNull(view);
+        j.submit(j.createWebClient().getPage(view, "configure").getFormByName("viewConfig"));
+    }
+
 }

@@ -26,7 +26,10 @@ package hudson.model.queue;
 
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -56,5 +59,14 @@ public abstract class AbstractQueueTask implements Queue.Task {
 
     public Object getSameNodeConstraint() {
         return null;
+    }
+
+    /**
+     * This default implementation is the historical behaviour, but this is no longer desirable. Please override.
+     * See {@link Task#getDefaultAuthentication()} for the contract.
+     */
+    @Nonnull
+    public Authentication getDefaultAuthentication() {
+        return ACL.SYSTEM;
     }
 }

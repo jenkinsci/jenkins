@@ -24,18 +24,23 @@
 package hudson.tasks.junit;
 
 import org.jvnet.localizer.Localizable;
+
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
+
 import org.dom4j.Element;
 import org.kohsuke.stapler.export.Exported;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 /**
  * One test result.
@@ -299,7 +304,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
 
     @Override
     public int getFailCount() {
-        if (!isPassed() && !isSkipped()) return 1; else return 0;
+        if (isFailed()) return 1; else return 0;
     }
 
     @Override
@@ -416,7 +421,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getFailedTests() {
-        return singletonListOrEmpty(!isPassed());
+        return singletonListOfThisOrEmptyList(isFailed());
     }
 
     /**
@@ -426,7 +431,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getPassedTests() {
-        return singletonListOrEmpty(isPassed());
+        return singletonListOfThisOrEmptyList(isPassed());
     }
 
     /**
@@ -436,12 +441,12 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getSkippedTests() {
-        return singletonListOrEmpty(isSkipped());
+        return singletonListOfThisOrEmptyList(isSkipped());
     }
 
-    private Collection<? extends hudson.tasks.test.TestResult> singletonListOrEmpty(boolean f) {
+    private Collection<? extends hudson.tasks.test.TestResult> singletonListOfThisOrEmptyList(boolean f) {
         if (f)
-            return Collections.singletonList(this);
+            return singletonList(this);
         else
             return emptyList();
     }
@@ -478,6 +483,14 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     @Exported(visibility=9)
     public boolean isSkipped() {
         return skipped;
+    }
+    
+    /**
+     * @return true if the test was not skipped and did not pass, false otherwise.
+     * @since 1.520
+     */
+    public boolean isFailed() {
+        return !isPassed() && !isSkipped();
     }
 
     /**

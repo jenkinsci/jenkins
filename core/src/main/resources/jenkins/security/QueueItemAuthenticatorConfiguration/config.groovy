@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright (c) 2011, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model.queue;
+package jenkins.security.QueueItemAuthenticatorConfiguration
 
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticatorDescriptor;
 
-import java.util.Collection;
-import java.util.Collections;
+f=namespace(lib.FormTagLib)
 
-/**
- * Externally contributes {@link SubTask}s to {@link AbstractProject#getSubTasks()}.
- *
- * <p>
- * Put @{@link Extension} on your implementation classes to register them.
- *
- * @author Kohsuke Kawaguchi
- * @since 1.377
- */
-public abstract class SubTaskContributor implements ExtensionPoint {
-    public Collection<? extends SubTask> forProject(AbstractProject<?,?> p) {
-        return Collections.emptyList();
-    }
-
-    /**
-     * All registered {@link SubTaskContributor} instances.
-     */
-    public static ExtensionList<SubTaskContributor> all() {
-        return Jenkins.getInstance().getExtensionList(SubTaskContributor.class);
+if (!QueueItemAuthenticatorDescriptor.all().isEmpty()) {
+    f.section(title:_("Access Control for Builds")) {
+        f.block() {
+            f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
+        }
     }
 }

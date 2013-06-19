@@ -195,7 +195,9 @@ import jenkins.model.JenkinsLocationConfiguration;
  *
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
+ * @deprecated New code should use {@link JenkinsRule}.
  */
+@Deprecated
 @SuppressWarnings("rawtypes")
 public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**

@@ -797,6 +797,22 @@ public class Functions {
     }
 
     /**
+     * Returns those node properties which can be configured as global node properties.
+     *
+     * @since 1.520
+     */
+    public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
+        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        for (NodePropertyDescriptor npd : list) {
+            if (npd.isApplicableAsGlobal()) {
+                result.add(npd);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
      * so that descriptors of similar types come nearby.
      *

@@ -80,20 +80,18 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     @Override
     public hudson.tasks.test.TestResult findCorrespondingResult(String id) {
         String myID = safe(getName());
+        String caseName = id;
         int base = id.indexOf(myID);
-        String caseName;
         if (base > 0) {
             int caseNameStart = base + myID.length() + 1;
-            caseName = id.substring(caseNameStart);
-        } else {
-            caseName = id;
-    }
-
+			if (id.length() > caseNameStart) {
+            	caseName = id.substring(caseNameStart);
+            }
+        } 
         CaseResult child = getCaseResult(caseName);
         if (child != null) {
             return child;
         }
-
         return null;
     }
 

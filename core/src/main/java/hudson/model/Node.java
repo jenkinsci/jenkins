@@ -62,6 +62,7 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
@@ -325,6 +326,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         if(l==null && getMode()== Mode.EXCLUSIVE)
             return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+
+        Authentication identity = item.authenticate();
+        if (!getACL().hasPermission(identity,Computer.BUILD)) {
+            // doesn't have a permission
+            // TODO: does it make more sense to define a separate permission?
+            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
+        }
 
         // Check each NodeProperty to see whether they object to this node
         // taking the task
