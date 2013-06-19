@@ -1,6 +1,5 @@
 package hudson.maven;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
@@ -413,7 +412,6 @@ public class MavenMultiModuleTest {
         assertEquals("not only one module", 1, m.getModules().size());
     }    
 
-    @Ignore("still failing")
     @Bug(17713)
     @Test public void modulesPageLinks() throws Exception {
         j.configureMaven3();
@@ -425,9 +423,6 @@ public class MavenMultiModuleTest {
         assertEquals(1, m.getLastBuild().getNumber());
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage modulesPage = wc.getPage(ms, "modules");
-        for (HtmlAnchor a : modulesPage.getAnchors()) {
-            System.out.println(a.getHrefAttribute() + " → " + a.asText());
-        }
         modulesPage.getAnchorByText(m.getDisplayName()).openLinkInNewWindow();
     }
 
