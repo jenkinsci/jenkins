@@ -46,7 +46,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Pluggable ability to manage transfer and/or storage of build artifacts.
- * @since XXX
+ * @since TODO
  */
 public abstract class ArtifactManager implements ExtensionPoint {
 

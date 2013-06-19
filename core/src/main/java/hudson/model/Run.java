@@ -255,7 +255,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * {@link ArtifactManager#id} of the artifact manager associated with this build, if any.
-     * @since XXX
+     * @since TODO
      */
     private @CheckForNull String artifactManager;
 
@@ -957,7 +957,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>This method should be used when existing artifacts are to be loaded, displayed, or removed.
      * If adding artifacts, use {@link #pickArtifactManager} instead.
      * @return an appropriate artifact manager
-     * @since XXX
+     * @since TODO
      */
     public final @Nonnull ArtifactManager getArtifactManager() {
         if (artifactManager != null) {
@@ -980,7 +980,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * If only displaying existing artifacts, use {@link #getArtifactManager} instead.
      * @return an appropriate artifact manager
      * @throws IOException if a custom manager was selected but the selection could not be saved
-     * @since XXX
+     * @since TODO
      */
     public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
         ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
@@ -1166,7 +1166,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         private String length;
 
         /**
-         * @since XXX
+         * @since TODO
          */
         public Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;

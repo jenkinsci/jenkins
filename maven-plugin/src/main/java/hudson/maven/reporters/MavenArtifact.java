@@ -177,7 +177,7 @@ public final class MavenArtifact implements Serializable {
         }
 
         Artifact a = factory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
-        a.setFile(getFile(build)); // XXX
+        a.setFile(getFile(build)); // TODO
        
         return a;
     }
@@ -196,7 +196,7 @@ public final class MavenArtifact implements Serializable {
     /**
      * Obtains the {@link File} representing the archived artifact.
      */
-    public File getFile(MavenBuild build) throws IOException { // XXX
+    public File getFile(MavenBuild build) throws IOException { // TODO
         File f = new File(new File(new File(new File(build.getArtifactsDir(), groupId), artifactId), version), canonicalName);
         if(!f.exists())
             throw new IOException("Archived artifact is missing: "+f);
@@ -209,10 +209,10 @@ public final class MavenArtifact implements Serializable {
      * TODO: figure out how to make this URL more discoverable to the remote API.
      */
     public HttpResponse doFile(@AncestorInPath MavenArtifactRecord parent) throws IOException {
-        return HttpResponses.staticResource(getFile(parent.parent)); // XXX
+        return HttpResponses.staticResource(getFile(parent.parent)); // TODO
     }
 
-    private FilePath getArtifactArchivePath(MavenBuildProxy build, String groupId, String artifactId, String version) { // XXX
+    private FilePath getArtifactArchivePath(MavenBuildProxy build, String groupId, String artifactId, String version) { // TODO
         return build.getArtifactsDir().child(groupId).child(artifactId).child(version).child(canonicalName);
     }
 
@@ -228,7 +228,7 @@ public final class MavenArtifact implements Serializable {
             FilePath origin = new FilePath(file);
             if (!target.exists()) {
                 listener.getLogger().println("[JENKINS] Archiving "+ file+" to "+target);
-                origin.copyTo(target); // XXX use an ArtifactManager method instead
+                origin.copyTo(target); // TODO use an ArtifactManager method instead
             } else if (!origin.digest().equals(target.digest())) {
                 listener.getLogger().println("[JENKINS] Re-archiving "+file);
                 origin.copyTo(target);

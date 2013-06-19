@@ -172,7 +172,7 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         }
         Artifact main = mainArtifact.toArtifact(handlerManager, artifactFactory, parent);
         if (!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent))); // XXX
+            main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent))); // TODO
 
         if (main.getType().equals("maven-plugin")) {
             GroupRepositoryMetadata metadata = new GroupRepositoryMetadata(main.getGroupId());
@@ -206,11 +206,11 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
 
         Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
         if(!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent))); // XXX
-        installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository()); // XXX
+            main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent))); // TODO
+        installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository()); // TODO
 
         for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository()); // XXX
+            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository()); // TODO
     }
 
     public void recordFingerprints() throws IOException {

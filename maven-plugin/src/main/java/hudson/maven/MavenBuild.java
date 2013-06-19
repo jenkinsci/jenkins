@@ -427,7 +427,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
 
         public FilePath getArtifactsDir() {
-            return new FilePath(MavenBuild.this.getArtifactsDir());//XXX
+            return new FilePath(MavenBuild.this.getArtifactsDir());//TODO
         }
 
         public void setResult(Result result) {

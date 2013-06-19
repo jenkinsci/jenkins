@@ -49,7 +49,7 @@ import javax.servlet.ServletException;
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
  * May be subclassed to provide an artifact manager which uses the standard storage but which only overrides {@link #archive}.
- * @since XXX
+ * @since TODO
  */
 public class StandardArtifactManager extends ArtifactManager {
 
