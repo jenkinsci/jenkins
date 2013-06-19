@@ -281,7 +281,7 @@ public class NodeProvisioner {
                         Collection<PlannedNode> additionalCapacities = c.provision(label, workloadToProvision);
 
                         for (CloudProvisioningListener cl : CloudProvisioningListener.all())
-                                cl.onStarted(c, label, additionalCapacities);
+                            cl.onStarted(c, label, additionalCapacities);
 
                         for (PlannedNode ac : additionalCapacities) {
                             excessWorkload -= ac.numExecutors;

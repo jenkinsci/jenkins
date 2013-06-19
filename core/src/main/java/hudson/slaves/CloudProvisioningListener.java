@@ -4,6 +4,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.queue.CauseOfBlockage;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 
@@ -31,9 +32,9 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @param numExecutors The number of executors needed.
      *
      * @return <code>null</code> if provisioning can proceed, or a
-     * {@link Localizable} reason why it cannot be provisioned.
+     * {@link CauseOfBlockage} reason why it cannot be provisioned.
      */
-    public Localizable canProvision(Cloud cloud, Label label, int numExecutors) {
+    public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
         return null;
     }
 
