@@ -1,5 +1,6 @@
 package hudson.maven;
 
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
@@ -424,9 +425,9 @@ public class MavenMultiModuleTest {
         assertEquals(1, m.getLastBuild().getNumber());
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage modulesPage = wc.getPage(ms, "modules");
-//        for (HtmlAnchor a : modulesPage.getAnchors()) {
-//            System.out.println(a.getHrefAttribute() + " → " + a.asText());
-//        }
+        for (HtmlAnchor a : modulesPage.getAnchors()) {
+            System.out.println(a.getHrefAttribute() + " → " + a.asText());
+        }
         modulesPage.getAnchorByText(m.getDisplayName()).openLinkInNewWindow();
     }
 
