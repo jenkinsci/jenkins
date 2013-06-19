@@ -57,7 +57,6 @@ import hudson.model.*;
 import hudson.model.Executor;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
-import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
@@ -71,6 +70,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
+import hudson.slaves.SlaveComputer;
 import hudson.tasks.Ant;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BuildWrapper;
@@ -235,11 +235,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     private List<WebClient> clients = new ArrayList<WebClient>();
 
     /**
-     * Remember channels that are created, to release them at the end.
-     */
-    private List<Channel> channels = new ArrayList<Channel>();
-
-    /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
      * and the current values of the local variables in those stack frame.
      *
@@ -387,6 +382,45 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
 
+    /**
+     * Disconnect all slaves.
+     * 
+     * Wait for disconnecting commands are sent to remote slaves.
+     * This should be called before calling Jenkins.cleanup().
+     * Though Jenkins.cleanup() also disconnects slaves,
+     * it does not wait for slaves shut down.
+     */
+    private void purgeSlaves() {
+        List<Computer> disconnectingComputers = new ArrayList<Computer>();
+        List<VirtualChannel> closingChannels = new ArrayList<VirtualChannel>();
+        for (Computer computer: jenkins.getComputers()) {
+            if (!(computer instanceof SlaveComputer)) {
+                continue;
+            }
+            // disconnect slaves.
+            // retrieve the channel before disconnecting.
+            // even a computer gets offline, channel delays to close.
+            if (!computer.isOffline()) {
+                VirtualChannel ch = computer.getChannel();
+                computer.disconnect(null);
+                disconnectingComputers.add(computer);
+                closingChannels.add(ch);
+            }
+        }
+        
+        try {
+            // Wait for all computers disconnected and all channels closed.
+            for (Computer computer: disconnectingComputers) {
+                computer.waitUntilOffline();
+            }
+            for (VirtualChannel ch: closingChannels) {
+                ch.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void tearDown() throws Exception {
         try {
@@ -403,22 +437,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             }
             clients.clear();
 
-            synchronized(channels) {
-                for (Channel c : channels)
-                    c.close();
-                for (Channel c : channels)
-                    c.join();
-                channels.clear();
-            }
-
         } finally {
             if (server!=null)
                 server.stop();
             for (LenientRunnable r : tearDowns)
                 r.run();
 
-            if (jenkins!=null)
+            if (jenkins!=null) {
+                purgeSlaves();
                 jenkins.cleanUp();
+            }
             env.dispose();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
@@ -545,22 +573,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return realm;
     }
 
-    @TestExtension
-    public static class ComputerListenerImpl extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-            VirtualChannel ch = c.getChannel();
-            if (ch instanceof Channel)
-            TestEnvironment.get().testCase.addChannel((Channel)ch);
-        }
-    }
-
-    private void addChannel(Channel ch) {
-        synchronized (channels) {
-            channels.add(ch);
-        }
-    }
-    
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */
