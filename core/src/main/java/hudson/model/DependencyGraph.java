@@ -324,7 +324,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     public static final DependencyGraph EMPTY = new DependencyGraph(false);
 
     /**
-     * Compare to Projects based on the topological order defined by this Dependency Graph
+     * Compare two Projects based on the topological order defined by this Dependency Graph
      */
     public int compare(AbstractProject o1, AbstractProject o2) {
         Set<AbstractProject> o1sdownstreams = getTransitiveDownstream(o1);
