@@ -121,6 +121,14 @@ public class TestPluginManager extends PluginManager {
             p.stop();
     }
 
+    /**
+     * As we don't actually shut down classloaders, we instead provide this method that does
+     * what {@link #stop()} normally does.
+     */
+    private void reallyStop() {
+        super.stop();
+    }
+
     private static final Logger LOGGER = Logger.getLogger(TestPluginManager.class.getName());
 
     static {
@@ -129,13 +137,11 @@ public class TestPluginManager extends PluginManager {
             Runtime.getRuntime().addShutdownHook(new Thread("delete " + INSTANCE.rootDir) {
                 @Override public void run() {
                     // Shutdown and release plugins as in PluginManager#stop
-                    for(PluginWrapper p: INSTANCE.getPlugins()) {
-                        p.stop();
-                        p.releaseClassLoader();
-                    }
-                    INSTANCE.getPlugins().clear();
+                    ((TestPluginManager)INSTANCE).reallyStop();
+
                     // allow JVM cleanup handles of jar files...
                     System.gc();
+
                     try {
                         Util.deleteRecursive(INSTANCE.rootDir);
                     } catch (IOException x) {
