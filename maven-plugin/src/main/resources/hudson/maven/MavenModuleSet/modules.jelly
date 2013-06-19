@@ -44,7 +44,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <j:set var="needsView" value="${it.hasDisabledModule()}" />
-          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}" indenter="${it.createIndenter()}">
+          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}" indenter="${it.createIndenter()}" itemGroup="${it}">
             <!-- view tab bar -->
             <j:if test="${needsView}">
               <l:tabBar>

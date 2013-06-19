@@ -49,6 +49,9 @@ THE SOFTWARE.
     <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>">
       List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used.
     </st:attribute>
+    <st:attribute name="itemGroup" use="optional" type="hudson.model.ItemGroup">
+      The containing group, for purposes of name calculation.
+    </st:attribute>
   </st:documentation>
 
   <t:setIconSize/>
