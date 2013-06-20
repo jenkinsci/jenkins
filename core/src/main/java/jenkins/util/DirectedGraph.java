@@ -62,38 +62,38 @@ public abstract class DirectedGraph<N> {
     }
 
     /**
+     * Node of the cyclic graph, which is primarily {@link N} but with additional
+     * data structures needed for the Tarjan's algorithm.
+     */
+    class Node {
+        final N n;
+        /**
+         * DFS visit order.
+         */
+        int index = -1;
+        /**
+         * The smallest index of any nodes reachable from this node transitively.
+         */
+        int lowlink;
+
+        SCC scc;
+
+        Node(N n) {
+            this.n = n;
+        }
+
+        Collection<N> edges() {
+            return forward(n);
+        }
+    }
+
+    /**
      * Performs the Tarjan's algorithm and computes strongly-connected components from the
      * sink to source order.
      *
      * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     public List<SCC<N>> getStronglyConnectedComponents() {
-        /**
-         * Node of the cyclic graph, which is primarily {@link N} but with additional
-         * data structures needed for the Tarjan's algorithm.
-         */
-        class Node {
-            final N n;
-            /**
-             * DFS visit order.
-             */
-            int index = -1;
-            /**
-             * The smallest index of any nodes reachable from this node transitively.
-             */
-            int lowlink;
-
-            SCC scc;
-
-            Node(N n) {
-                this.n = n;
-            }
-            
-            Collection<N> edges() {
-                return forward(n);
-            }
-        }
-        
         final Map<N, Node> nodes = new HashMap<N, Node>();
         for (N n : nodes()) {
             nodes.put(n,new Node(n));
