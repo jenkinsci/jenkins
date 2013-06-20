@@ -249,7 +249,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
                     } catch (InterruptedException e) {
-                        LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
+                        LOGGER.log(Level.FINE,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
                         return; // we are told to die
                     }
                 }
