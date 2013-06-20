@@ -66,6 +66,7 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
