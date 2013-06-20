@@ -137,6 +137,14 @@ public abstract class ParameterDefinition implements
         return description;
     }
 
+    public String getSafeDescription() {
+        try {
+            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+        } catch (IOException e) {
+            return "failed to translate description using configured markup formatter";
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
