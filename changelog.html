@@ -145,8 +145,44 @@ Upcoming changes</a>
     When copying a folder, the display names of contained jobs were gratuitously cleared.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18074">issue 18074</a>)
   <li class=bug>
-    Using JNR-POSIX rather than JNA-POSIX for better platform support.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14351">issue 14351</a>)opt in).
+    “Recurse in subfolders” option for list views produced exceptions when used with native Maven projects.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18025">issue 18025</a>)
+  <li class=bug>
+    Using proper directory separator character for permalinks on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17681">issue 17681</a>)
+  <li class="bug">
+    Use markup formater to display parameter description.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18427">issue 18427</a>)
+  </li>
+</ul>
+<h3><a name=v1.516>What's new in 1.516</a> (2013/05/27)</h3>
+<ul class=image>
+  <li class=bug>
+    NPE from <code>Run.getDynamic</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17935">issue 17935</a>)
+  <li class=bug>
+    Should be able to collect all log records at a given level using a blank logger name.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17983">issue 17983</a>)
+  <li class=bug>
+    Reworked Upload Plugin gesture to work more like installation from an update center, and in particular to support dynamic load.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16652">issue 16652</a>)
+  <li class=bug>
+    Errors in <code>init.groovy</code> halted startup; changed to just log a warning.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17933">issue 17933</a>)
+</ul>
+<h3><a name=v1.515>What's new in 1.515</a> (2013/05/18)</h3>
+<ul class=image>
+  <li class=rfe>
+    Windows services now auto-restart in case of abnormal process termination.
+  <li class=rfe>
+    &lt;f:dropdownDescriptorSelector> does not allow defaulting to specifig instance
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17858">issue 17858</a>)
+  <li class=rfe>
+    mark maven settings / global settings as default for new jobs
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17723">issue 17723</a>)
+  <li class=bug>
+    Display Name is not shown.
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17715">issue 17715</a>)
   <li class='major bug'>
     NPE configuring Copy Artifact with Maven jobs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17402">issue 17402</a>)

@@ -1726,7 +1726,7 @@ function shortenName(name) {
 //   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
 function buildFormTree(form) {
     try {
-        // I initially tried to use an associative array with DOM elemnets as keys
+        // I initially tried to use an associative array with DOM elements as keys
         // but that doesn't seem to work neither on IE nor Firefox.
         // so I switch back to adding a dynamic property on DOM.
         form.formDom = {}; // root object
