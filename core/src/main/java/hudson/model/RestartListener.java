@@ -51,7 +51,7 @@ public abstract class RestartListener implements ExtensionPoint {
     public static class Default extends RestartListener {
         @Override
         public boolean isReadyToRestart() throws IOException, InterruptedException {
-            return new ComputerSet().getBusyExecutors() != 0;
+            return new ComputerSet().getBusyExecutors() == 0;
         }
     }
 }
