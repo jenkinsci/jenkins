@@ -28,12 +28,12 @@ import jenkins.model.DependencyDeclarer;
 import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
+import jenkins.util.DirectedGraph;
+import jenkins.util.DirectedGraph.SCC;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.collections.map.HashedMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,106 +110,31 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     private void topologicalDagSort() {
-        /**
-         * Node of the cyclic graph, which is primarily {@link AbstractProject} but with additional
-         * data structures needed for the Tarjan's algorithm.
-         */
-        class Node {
-            final AbstractProject project;
-            /**
-             * DFS visit order.
-             */
-            int index = -1;
-            /**
-             * The smallest index of any nodes reachable from this node transitively.
-             */
-            int lowlink;
-
-            /**
-             * Strongly connected component index.
-             * All the {@link Node}s that have the same SCC number belongs to the same strongly-connected
-             * component, and more over, the Tarjan's algorithm is such that the scc index constitutes
-             * the reverse topological order of the topological sort of the SCC DAG.
-             *
-             * Smallest SCC# means everyone depends on you.
-             */
-            int scc = -1;
-
-            Node(AbstractProject project) {
-                this.project = project;
-            }
-            
-            Collection<AbstractProject> edges() {
-                return getDownstream(project);
-            }
-        }
-        
-        final Map<AbstractProject, Node> nodes = new HashMap<AbstractProject, Node>();
-        for (AbstractProject p : forward.keySet()) {
-            if (!nodes.containsKey(p))
-                nodes.put(p,new Node(p));
-        }
-        for (AbstractProject p : backward.keySet()) {
-            if (!nodes.containsKey(p))
-                nodes.put(p,new Node(p));
-        }
-
-        class Tarjan {
-            int index = 0;
-            int scc = 0;
-            /**
-             * Nodes not yet classified for the strongly connected components
-             */
-            Stack<Node> pending = new Stack<Node>();
-            
-            void traverse() {
-                for (Node n : nodes.values()) {
-                    if (n.index==-1)
-                        visit(n);
-                }
-            }
-            
-            void visit(Node v) {
-                v.index = v.lowlink = index++;
-                pending.push(v);
-
-                for (AbstractProject q : v.edges()) {
-                    Node w = nodes.get(q);
-                    if (w.index==-1) {
-                        visit(w);
-                        v.lowlink = Math.min(v.lowlink,w.lowlink);
-                    } else
-                    if (pending.contains(w)) {
-                        v.lowlink = Math.min(v.lowlink,w.index);
-                    }
-                }
-
-                if (v.lowlink==v.index) {
-                    Node w;
-                    do {
-                        w = pending.pop();
-                        w.scc = scc;
-                    } while(w!=v);
-                    scc++;
-                }
-            }
-        }
-
-        new Tarjan().traverse();
-
-        // sort nodes in the topological order
-        Node[] a = nodes.values().toArray(new Node[nodes.size()]);
-        Arrays.sort(a,new Comparator<Node>() {
+        DirectedGraph<AbstractProject> g = new DirectedGraph<AbstractProject>() {
             @Override
-            public int compare(Node o1, Node o2) {
-                return o2.scc-o1.scc; // Tarjan finds them backward, so the order is swapped here
+            protected Collection<AbstractProject> nodes() {
+                final Set<AbstractProject> nodes = new HashSet<AbstractProject>();
+                nodes.addAll(forward.keySet());
+                nodes.addAll(backward.keySet());
+                return nodes;
             }
-        });
+
+            @Override
+            protected Collection<AbstractProject> forward(AbstractProject node) {
+                return getDownstream(node);
+            }
+        };
+
+        List<SCC<AbstractProject>> sccs = g.getStronglyConnectedComponents();
 
         final Map<AbstractProject,Integer> topoOrder = new HashMap<AbstractProject,Integer>();
+        topologicallySorted = new ArrayList<AbstractProject<?,?>>();
         int idx=0;
-        for (Node n : a) {
-            topoOrder.put(n.project,idx++);
+        for (SCC<AbstractProject> scc : sccs) {
+            for (AbstractProject n : scc) {
+                topoOrder.put(n,idx++);
+                topologicallySorted.add(n);
+            }
         }
 
         topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
@@ -219,9 +144,6 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             }
         };
 
-        topologicallySorted = new ArrayList<AbstractProject<?,?>>(a.length);
-        for (Node n : a)
-            topologicallySorted.add(n.project);
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
     }
 
