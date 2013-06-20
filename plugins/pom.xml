@@ -11,7 +11,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.509.3-SNAPSHOT</version>
+  <version>1.509.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
