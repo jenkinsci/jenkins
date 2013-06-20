@@ -54,6 +54,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
 
             f.target = target.id;
             f.elements['core:apply'].value = "true";
+            Event.fire(f,"jenkins:apply"); // give everyone a chance to write back to DOM
             try {
                 buildFormTree(f);
                 f.submit();
