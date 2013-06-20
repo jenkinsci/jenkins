@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
-import hudson.security.Permission;
+import hudson.model.Computer;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
@@ -48,16 +48,16 @@ public class GetNodeCommandTest {
         command = new CLICommandInvoker(j, new GetNodeCommand());
     }
 
-    @Test public void getNodeShouldFailWithoutAdministerPermision() throws Exception {
+    @Test public void getNodeShouldFailWithoutComputerReadPermission() throws Exception {
 
         j.createSlave("MySlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Permission.READ)
+                .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("user is missing the Slave/Read permission"));
         assertThat("No output expected", result.stdout(), isEmptyString());
         assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
@@ -67,7 +67,7 @@ public class GetNodeCommandTest {
         j.createSlave("MySlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
+                .authorizedTo(Computer.READ, Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 
@@ -80,7 +80,7 @@ public class GetNodeCommandTest {
     @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
+                .authorizedTo(Computer.READ, Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 

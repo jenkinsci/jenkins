@@ -29,8 +29,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import hudson.model.Computer;
 import hudson.model.Node;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
@@ -49,16 +49,16 @@ public class UpdateNodeCommandTest {
         command = new CLICommandInvoker(j, new UpdateNodeCommand());
     }
 
-    @Test public void updateNodeShouldFailWithoutAdministerPermision() throws Exception {
+    @Test public void updateNodeShouldFailWithoutComputerConfigurePermission() throws Exception {
 
         j.createSlave("MySlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Permission.READ)
+                .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("user is missing the Slave/Configure permission"));
         assertThat("No output expected", result.stdout(), isEmptyString());
         assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
@@ -68,8 +68,8 @@ public class UpdateNodeCommandTest {
         j.createSlave("MySlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invokeWithArgs("MySlave")
         ;
 
@@ -86,8 +86,8 @@ public class UpdateNodeCommandTest {
     @Test public void updateNodeShouldFailIfNodeDoesNotExist() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invokeWithArgs("MySlave")
         ;
 

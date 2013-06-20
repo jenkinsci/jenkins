@@ -24,6 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class GetNodeCommand extends CLICommand {
     @Override
     protected int run() throws IOException {
 
-        node.checkPermission(Jenkins.ADMINISTER);
+        node.checkPermission(Computer.READ);
 
         Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
 
