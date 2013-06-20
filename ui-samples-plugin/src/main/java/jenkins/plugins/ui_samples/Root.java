@@ -37,7 +37,15 @@ public class Root implements RootAction, ModelObjectWithContextMenu {
     public List<UISample> getAll() {
         return UISample.all();
     }
+    
+    public List<UISample> getAllGroovy() {
+      return UISample.getGroovySamples();
+    }
 
+    public List<UISample> getAllOther() {
+      return UISample.getOtherSamples();
+    }
+    
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().addAll(getAll());
     }
