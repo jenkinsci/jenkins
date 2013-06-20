@@ -30,8 +30,10 @@ import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.collections.map.HashedMap;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -75,6 +77,9 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
     private boolean built;
 
+    private Comparator<AbstractProject<?,?>> topologicalOrder;
+    private List<AbstractProject<?,?>> topologicallySorted;
+
     /**
      * Builds the dependency graph.
      */
@@ -91,14 +96,135 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
             forward = finalize(forward);
             backward = finalize(backward);
-
+            topologicalDagSort();
             this.computationalData = null;
             built = true;
         } finally {
             SecurityContextHolder.setContext(saveCtx);
         }
     }
-    
+
+    /**
+     *
+     *
+     * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
+     */
+    private void topologicalDagSort() {
+        /**
+         * Node of the cyclic graph, which is primarily {@link AbstractProject} but with additional
+         * data structures needed for the Tarjan's algorithm.
+         */
+        class Node {
+            final AbstractProject project;
+            /**
+             * DFS visit order.
+             */
+            int index = -1;
+            /**
+             * The smallest index of any nodes reachable from this node transitively.
+             */
+            int lowlink;
+
+            /**
+             * Strongly connected component index.
+             * All the {@link Node}s that have the same SCC number belongs to the same strongly-connected
+             * component, and more over, the Tarjan's algorithm is such that the scc index constitutes
+             * the reverse topological order of the topological sort of the SCC DAG.
+             *
+             * Smallest SCC# means everyone depends on you.
+             */
+            int scc = -1;
+
+            Node(AbstractProject project) {
+                this.project = project;
+            }
+            
+            Collection<AbstractProject> edges() {
+                return getDownstream(project);
+            }
+        }
+        
+        final Map<AbstractProject, Node> nodes = new HashMap<AbstractProject, Node>();
+        for (AbstractProject p : forward.keySet()) {
+            if (!nodes.containsKey(p))
+                nodes.put(p,new Node(p));
+        }
+        for (AbstractProject p : backward.keySet()) {
+            if (!nodes.containsKey(p))
+                nodes.put(p,new Node(p));
+        }
+
+        class Tarjan {
+            int index = 0;
+            int scc = 0;
+            /**
+             * Nodes not yet classified for the strongly connected components
+             */
+            Stack<Node> pending = new Stack<Node>();
+            
+            void traverse() {
+                for (Node n : nodes.values()) {
+                    if (n.index==-1)
+                        visit(n);
+                }
+            }
+            
+            void visit(Node v) {
+                v.index = v.lowlink = index++;
+                pending.push(v);
+
+                for (AbstractProject q : v.edges()) {
+                    Node w = nodes.get(q);
+                    if (w.index==-1) {
+                        visit(w);
+                        v.lowlink = Math.min(v.lowlink,w.lowlink);
+                    } else
+                    if (pending.contains(w)) {
+                        v.lowlink = Math.min(v.lowlink,w.index);
+                    }
+                }
+
+                if (v.lowlink==v.index) {
+                    Node w;
+                    do {
+                        w = pending.pop();
+                        w.scc = scc;
+                    } while(w!=v);
+                    scc++;
+                }
+            }
+        }
+
+        new Tarjan().traverse();
+
+        // sort nodes in the topological order
+        Node[] a = nodes.values().toArray(new Node[nodes.size()]);
+        Arrays.sort(a,new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                return o2.scc-o1.scc; // Tarjan finds them backward, so the order is swapped here
+            }
+        });
+
+        final Map<AbstractProject,Integer> topoOrder = new HashMap<AbstractProject,Integer>();
+        int idx=0;
+        for (Node n : a) {
+            topoOrder.put(n.project,idx++);
+        }
+
+        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
+            @Override
+            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
+                return topoOrder.get(o1)-topoOrder.get(o2);
+            }
+        };
+
+        topologicallySorted = new ArrayList<AbstractProject<?,?>>(a.length);
+        for (Node n : a)
+            topologicallySorted.add(n.project);
+        topologicallySorted = Collections.unmodifiableList(topologicallySorted);
+    }
+
     Collection<AbstractProject> getAllProjects() {
         return Jenkins.getInstance().getAllItems(AbstractProject.class);
     }
@@ -108,6 +234,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      */
     private DependencyGraph(boolean dummy) {
         forward = backward = Collections.emptyMap();
+        topologicalDagSort();
         built = true;
     }
 
@@ -199,7 +326,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         if(built)
             throw new IllegalStateException();
         add(forward,dep.getUpstreamProject(),dep);
-        add(backward,dep.getDownstreamProject(),dep);
+        add(backward, dep.getDownstreamProject(), dep);
     }
 
     /**
@@ -327,13 +454,19 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
     public int compare(AbstractProject o1, AbstractProject o2) {
-        Set<AbstractProject> o1sdownstreams = getTransitiveDownstream(o1);
-        Set<AbstractProject> o2sdownstreams = getTransitiveDownstream(o2);
-        if (o1sdownstreams.contains(o2)) {
-            if (o2sdownstreams.contains(o1)) return 0; else return 1;
-        } else {
-            if (o2sdownstreams.contains(o1)) return -1; else return 0;
-        }
+        return topologicalOrder.compare(o1,o2);
+    }
+
+    /**
+     * Returns all the projects in the topological order of the dependency.
+     *
+     * Intuitively speaking, the first one in the list is the source of the dependency graph,
+     * and the last one is the sink.
+     *
+     * @since 1.521
+     */
+    public List<AbstractProject<?,?>> getTopologicallySorted() {
+        return topologicallySorted;
     }
 
     /**
