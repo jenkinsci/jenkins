@@ -37,7 +37,8 @@ public class ParametersTest extends HudsonTestCase {
 
         HtmlElement element = (HtmlElement) form.selectSingleNode("//tr[td/div/input/@value='string']");
         assertNotNull(element);
-        assertEquals("string description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("string description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
+
         HtmlTextInput stringParameterInput = (HtmlTextInput) element.selectSingleNode(".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
         assertEquals("string", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
