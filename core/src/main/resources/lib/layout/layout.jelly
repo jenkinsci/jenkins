@@ -53,9 +53,9 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
   </st:documentation>
-<st:header name="Expires" value="0" />
-<st:header name="Cache-Control" value="no-cache,must-revalidate" />
-<st:header name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Expires" value="0" />
+<st:setHeader name="Cache-Control" value="no-cache,must-revalidate" />
+<st:setHeader name="X-Hudson-Theme" value="default" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -71,15 +71,15 @@ ${h.initPageVariables(context)}
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-    <st:header name="X-Hudson" value="1.395"/>
-    <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
-    <st:header name="X-Jenkins-Session" value="${app.SESSION_HASH}"/>
+    <st:setHeader name="X-Hudson" value="1.395"/>
+    <st:setHeader name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
+    <st:setHeader name="X-Jenkins-Session" value="${app.SESSION_HASH}"/>
     <j:if test="${app.tcpSlaveAgentListener!=null}">
       <!-- advertise the CLI TCP port -->
-      <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI2-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
+      <st:setHeader name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:setHeader name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:setHeader name="X-Jenkins-CLI2-Port" value="${app.tcpSlaveAgentListener.port}"/>
+      <st:setHeader name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
     </j:if>
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
