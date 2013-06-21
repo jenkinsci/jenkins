@@ -55,6 +55,11 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Fixed the master/slave handshake problem when a slave runs on non-ASCII compatible encoding (such as EBCDIC.)
+  <li class=rfe>
+    Added a diagnosis for <tt>StreamCorruptedException</tt> problem
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8856">issue 8856</a>)
   <li class=rfe>
     Matrix project's parent can be now tied to labels/slaves.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7825">issue 7825</a>)
