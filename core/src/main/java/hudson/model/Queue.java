@@ -1812,7 +1812,7 @@ public class Queue extends ResourceController implements Saveable {
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
             } else {
-                CauseOfBlockage c = null;
+                CauseOfBlockage c;
                 for (Node node : allNodes) {
                     if (node.toComputer().isPartiallyIdle()) {
                         c = canTake(node);

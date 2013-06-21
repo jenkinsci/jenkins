@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2012, CloudBees, Inc.
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  Configuration for the assigned label
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form"
-         xmlns:st="jelly:stapler">
-  <s:documentation>
-    "Apply" button that submits the form but without a page transition.
-    See hudson.util.FormApply for the server-side code.
-
-    When this button is pressed, the FORM element fires the "jenkins:apply" event
-    that allows interested parties to write back whatever states back into the INPUT
-    elements.
-  </s:documentation>
-  <st:adjunct includes="lib.form.apply.apply"/>
-  <input type="hidden" name="core:apply" value="" />
-  <input type="button" value="${%Apply}" class="apply-button applyButton" /><!-- applyButton is legacy -->
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!-- master/slave -->
+  <j:if test="${app.labels.size() gt 1 || app.clouds.size() gt 0 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
+    <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}" field="slaveAffinity">
+      <f:entry title="${%Label Expression}" field="assignedLabelString">
+        <f:textbox autoCompleteDelimChar=" "/>
+      </f:entry>
+    </f:optionalBlock>
+  </j:if>
 </j:jelly>
