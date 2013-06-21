@@ -89,7 +89,7 @@ public class ParametersTest extends HudsonTestCase {
 
         HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("choice description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
         assertEquals("choice", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
         HtmlOption opt = (HtmlOption)element.selectSingleNode("td/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);

@@ -32,6 +32,7 @@ import hudson.util.DescriptorList;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -137,11 +138,16 @@ public abstract class ParameterDefinition implements
         return description;
     }
 
-    public String getSafeDescription() {
+    /**
+     * return parameter description, applying the configured MarkupFormatter for jenkins instance.
+     * @since 1.521
+     */
+    public String getFormattedDescription() {
         try {
             return Jenkins.getInstance().getMarkupFormatter().translate(description);
         } catch (IOException e) {
-            return "failed to translate description using configured markup formatter";
+            LOGGER.warning("failed to translate description using configured markup formatter");
+            return "";
         }
     }
 
@@ -249,4 +255,6 @@ public abstract class ParameterDefinition implements
             return "Parameter";
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ParameterDefinition.class.getName());
 }
