@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-2</version>
+      <version>build214-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
