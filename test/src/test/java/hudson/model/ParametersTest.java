@@ -46,7 +46,7 @@ public class ParametersTest extends HudsonTestCase {
 
         element = (HtmlElement) form.selectSingleNode("//tr[td/div/input/@value='boolean']");
         assertNotNull(element);
-        assertEquals("boolean description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("boolean description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
         Object o = element.selectSingleNode(".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
@@ -55,12 +55,12 @@ public class ParametersTest extends HudsonTestCase {
 
         element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("choice description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
         assertEquals("choice", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
 
         element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
         assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.selectSingleNode("td/div")).getAttribute("description"));
+        assertEquals("run description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
         assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
 
         submit(form);
