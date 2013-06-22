@@ -2,30 +2,46 @@ package hudson.cli;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import hudson.matrix.MatrixConfiguration;
+import hudson.matrix.MatrixProject;
+import hudson.model.AbstractProject;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.model.ViewGroup;
 import hudson.model.ViewTest.CompositeView;
 import hudson.model.View;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+import javax.servlet.ServletException;
+
 import jenkins.model.Jenkins;
+import jenkins.model.ModifiableTopLevelItemGroup;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
@@ -53,14 +69,58 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void getNullForNonexistingName() throws Exception {
+    public void failForNonexistingName() throws Exception {
 
-        when(jenkins.getView(null)).thenReturn(null);
-        when(jenkins.getItemByFullName(null)).thenReturn(null);
+        when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
+        when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
 
         assertThat(runWith("NoSuchViewOrItemGroup"), equalTo(-1));
         assertThat(stdout, is(empty()));
-        assertThat(stderr, is(not(empty())));
+        assertThat(stderr.toString(), containsString("No view or item group with the given name found"));
+    }
+
+    @Test
+    public void failForMatrixProject() throws Exception {
+
+        final MatrixProject matrix = mock(MatrixProject.class);
+        final MatrixConfiguration config = mock(MatrixConfiguration.class);
+        when(matrix.getItems()).thenReturn(Arrays.asList(config));
+
+        when(jenkins.getView("MatrixJob")).thenReturn(null);
+        when(jenkins.getItemByFullName("MatrixJob")).thenReturn(matrix);
+
+        assertThat(runWith("MatrixJob"), equalTo(-1));
+        assertThat(stdout, is(empty()));
+        assertThat(stderr.toString(), containsString("No view or item group with the given name found"));
+    }
+
+    @Test
+    public void getAllJobsFromFolders() throws Exception {
+
+        abstract class Folder implements ModifiableTopLevelItemGroup, TopLevelItem {
+        }
+
+        final Folder folder = mock(Folder.class);
+        final Folder nestedFolder = mock(Folder.class);
+        when(folder.getDisplayName()).thenReturn("Folder");
+        when(nestedFolder.getDisplayName()).thenReturn("NestedFolder");
+
+        final TopLevelItem job = job("job");
+        final TopLevelItem nestedJob = job("nestedJob");
+        when(job.hasPermission(Item.READ)).thenReturn(true);
+        when(nestedJob.hasPermission(Item.READ)).thenReturn(true);
+        when(job.getRelativeNameFrom((ItemGroup<TopLevelItem>) folder)).thenReturn("job");
+        when(nestedJob.getRelativeNameFrom((ItemGroup<TopLevelItem>) folder)).thenReturn("nestedJob");
+
+        when(folder.getItems()).thenReturn(Arrays.asList(nestedFolder, job));
+        when(nestedFolder.getItems()).thenReturn(Arrays.asList(nestedJob));
+
+        when(jenkins.getView("OuterFolder")).thenReturn(null);
+        when(jenkins.getItemByFullName("OuterFolder")).thenReturn(folder);
+
+        assertThat(runWith("OuterFolder"), equalTo(0));
+        assertThat(stdout, listsJobs("job", "nestedJob"));
+        assertThat(stderr, is(empty()));
     }
 
     @Test

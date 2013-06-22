@@ -24,16 +24,13 @@
 package hudson.cli;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
-
-import java.util.Collections;
 
 import hudson.model.Item;
-import hudson.model.ItemGroup;
+import hudson.model.Items;
 import hudson.model.TopLevelItem;
-import hudson.model.ViewGroup;
 import hudson.model.View;
 import hudson.Extension;
+import jenkins.model.ModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -68,9 +65,8 @@ public class ListJobsCommand extends CLICommand {
                 final Item item = h.getItemByFullName(name);
 
                 // If item group was found use it's jobs.
-                if (item instanceof ItemGroup) {
-                    ItemGroup itemGroup = (ItemGroup) item;
-                    jobs = itemGroup.getItems();
+                if (item instanceof ModifiableTopLevelItemGroup) {
+                    jobs = Items.getAllItems((ModifiableTopLevelItemGroup) item, TopLevelItem.class);
                 }
                 // No view and no item group with the given name found.
                 else {
