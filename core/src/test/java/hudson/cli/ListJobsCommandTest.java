@@ -40,6 +40,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Bug;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
@@ -80,6 +81,7 @@ public class ListJobsCommandTest {
     }
 
     @Test
+    @Bug(18393)
     public void failForMatrixProject() throws Exception {
 
         final MatrixProject matrix = mock(MatrixProject.class);
