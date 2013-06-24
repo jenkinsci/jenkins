@@ -56,6 +56,7 @@ import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
+import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -1371,7 +1372,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
+        try {
+            workspace.mkdirs();
+        } catch (IOException e) {
+            // Can't create workspace dir - Is slave disk full ?
+            new DiskSpaceMonitor().data(build.getBuiltOn().toComputer());
+            throw e;
+        }
         
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {
