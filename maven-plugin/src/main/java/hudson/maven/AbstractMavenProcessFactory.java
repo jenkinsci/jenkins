@@ -80,6 +80,7 @@ public abstract class AbstractMavenProcessFactory
 {
 
     private final MavenModuleSet mms;
+    private final AbstractMavenBuild<?,?> build;
     private final Launcher launcher;
     /**
      * Environment variables to be set to the maven process.
@@ -99,7 +100,8 @@ public abstract class AbstractMavenProcessFactory
 
     private final String mavenOpts;
 
-    AbstractMavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+    AbstractMavenProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        this.build = build;
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
@@ -243,8 +245,8 @@ public abstract class AbstractMavenProcessFactory
                     Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
                     listener.getLogger(), proc);
 
-            if (!PlexusModuleContributor.all().isEmpty())
-                applyPlexusModuleContributor(ch);
+            if (!PlexusModuleContributorFactory.all().isEmpty())
+                applyPlexusModuleContributor(ch,build);
 
             return new NewProcess(ch,proc);
         } catch (IOException e) {
@@ -260,8 +262,15 @@ public abstract class AbstractMavenProcessFactory
 
     /**
      * Apply extension plexus modules to the newly launched Maven process.
+     *
+     *
+     * @param channel
+     *      Channel to the Maven process.
+     * @param context
+     *      Context that {@link PlexusModuleContributor} needs to figure out what it needs to do.
+     * @since 1.519
      */
-    protected abstract void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException;
+    protected abstract void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException;
 
     /**
      * Builds the command line argument list to launch the maven process.
