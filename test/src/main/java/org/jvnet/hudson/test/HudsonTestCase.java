@@ -381,8 +381,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void tearDown() throws Exception {
         try {
-            for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
-                tl.onTearDown();
+            if (jenkins!=null)
+                for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                    tl.onTearDown();
 
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
