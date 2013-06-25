@@ -46,6 +46,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -69,30 +70,28 @@ import org.jvnet.hudson.test.MockFolder;
  */
 public class AbstractProjectTest extends HudsonTestCase {
     public void testConfigRoundtrip() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
-        Label l = jenkins.getLabel("foo && bar");
-        project.setAssignedLabel(l);
-        configRoundtrip((Item)project);
+        def project = createFreeStyleProject();
+        def l = jenkins.getLabel("foo && bar");
+        project.assignedLabel = l;
+        configRoundtrip((Item) project);
 
-        assertEquals(l,project.getAssignedLabel());
+        assert l == project.getAssignedLabel();
     }
 
     /**
      * Tests the workspace deletion.
      */
     public void testWipeWorkspace() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
-        project.getBuildersList().add(new Shell("echo hello"));
+        def project = createFreeStyleProject();
+        project.buildersList.add(new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        def b = project.scheduleBuild2(0).get();
 
-        assertTrue("Workspace should exist by now",
-                b.getWorkspace().exists());
+        assert b.workspace.exists(): "Workspace should exist by now";
 
         project.doDoWipeOutWorkspace();
 
-        assertFalse("Workspace should be gone by now",
-                b.getWorkspace().exists());
+        assert !b.workspace.exists(): "Workspace should be gone by now";
     }
 
     /**
@@ -100,15 +99,15 @@ public class AbstractProjectTest extends HudsonTestCase {
      */
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void testWipeWorkspaceProtected() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        def project = createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        def b = project.scheduleBuild2(0).get();
 
-        assertTrue("Workspace should exist by now",b.getWorkspace().exists());
+        assert b.getWorkspace().exists(): "Workspace should exist by now";
 
         // make sure that the action link is protected
-        new WebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
+        createWebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     /**
@@ -123,7 +122,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         testWipeWorkspaceProtected();
 
         // there shouldn't be any "wipe out workspace" link for anonymous user
-        WebClient webClient = new WebClient();
+        def webClient = createWebClient();
         HtmlPage page = webClient.getPage(jenkins.getItem("test0"));
 
         page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
@@ -140,11 +139,11 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Tests the &lt;optionalBlock @field> round trip behavior by using {@link AbstractProject#concurrentBuild}
      */
     public void testOptionalBlockDataBindingRoundtrip() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        for( boolean b : new boolean[]{true,false}) {
-            p.setConcurrentBuild(b);
-            submit(new WebClient().getPage(p,"configure").getFormByName("config"));
-            assertEquals(b,p.isConcurrentBuild());
+        def p = createFreeStyleProject();
+        [true,false].each { b ->
+            p.concurrentBuild = b;
+            submit(createWebClient().getPage(p,"configure").getFormByName("config"));
+            assert b==p.isConcurrentBuild();
         }
     }
 
@@ -153,20 +152,20 @@ public class AbstractProjectTest extends HudsonTestCase {
      */
     @Bug(4423)
     public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();        
+        def p = createFreeStyleProject();
         p.blockBuildWhenUpstreamBuilding = false;
-        
-        HtmlForm form = new WebClient().getPage(p, "configure").getFormByName("config");
-        HtmlInput input = form.getInputByName("blockBuildWhenUpstreamBuilding");
-        assertFalse("blockBuildWhenUpstreamBuilding check box is checked.", input.isChecked());
-        
+
+        def form = createWebClient().getPage(p, "configure").getFormByName("config");
+        def input = form.getInputByName("blockBuildWhenUpstreamBuilding");
+        assert !input.isChecked(): "blockBuildWhenUpstreamBuilding check box is checked.";
+
         input.setChecked(true);
-        submit(form);        
-        assertTrue("blockBuildWhenUpstreamBuilding was not updated from configuration form", p.blockBuildWhenUpstreamBuilding);
-        
-        form = new WebClient().getPage(p, "configure").getFormByName("config");
+        submit(form);
+        assert p.blockBuildWhenUpstreamBuilding: "blockBuildWhenUpstreamBuilding was not updated from configuration form";
+
+        form = createWebClient().getPage(p, "configure").getFormByName("config");
         input = form.getInputByName("blockBuildWhenUpstreamBuilding");
-        assertTrue("blockBuildWhenUpstreamBuilding check box is not checked.", input.isChecked());
+        assert input.isChecked(): "blockBuildWhenUpstreamBuilding check box is not checked.";
     }
 
     /**
@@ -178,9 +177,9 @@ public class AbstractProjectTest extends HudsonTestCase {
         final OneShotEvent sync = new OneShotEvent();
 
         final FreeStyleProject p = createFreeStyleProject();
-        FreeStyleBuild b1 = buildAndAssertSuccess(p);
+        def b1 = buildAndAssertSuccess(p);
 
-        p.setScm(new NullSCM() {
+        p.scm = new NullSCM() {
             @Override
             public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener) {
                 try {
@@ -195,11 +194,11 @@ public class AbstractProjectTest extends HudsonTestCase {
              * Don't write 'this', so that subtypes can be implemented as anonymous class.
              */
             private Object writeReplace() { return new Object(); }
-            
+
             @Override public boolean requiresWorkspaceForPolling() {
                 return true;
             }
-        });
+        };
         Thread t = new Thread() {
             @Override public void run() {
                 p.pollSCMChanges(StreamTaskListener.fromStdout());
@@ -207,7 +206,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         };
         try {
             t.start();
-            Future<FreeStyleBuild> f = p.scheduleBuild2(0);
+            def f = p.scheduleBuild2(0);
 
             // add a bit of delay to make sure that the blockage is happening
             Thread.sleep(3000);
@@ -215,10 +214,10 @@ public class AbstractProjectTest extends HudsonTestCase {
             // release the polling
             sync.signal();
 
-            FreeStyleBuild b2 = assertBuildStatusSuccess(f);
+            def b2 = assertBuildStatusSuccess(f);
 
             // they should have used the same workspace.
-            assertEquals(b1.getWorkspace(), b2.getWorkspace());
+            assert b1.workspace == b2.workspace;
         } finally {
             t.interrupt();
         }
@@ -230,11 +229,11 @@ public class AbstractProjectTest extends HudsonTestCase {
         if (Functions.isWindows())
             return;
 
-        FreeStyleProject job = createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-             lastStable = new File(job.getRootDir(), "lastStable");
+        def job = createFreeStyleProject();
+        job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
+        def build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        File lastSuccessful = new File(job.rootDir, "lastSuccessful"),
+             lastStable = new File(job.rootDir, "lastStable");
         // First build creates links
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
@@ -248,18 +247,17 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastStable, 1);
         // Delete all builds should remove links
         build.delete();
-        assertFalse("lastSuccessful link should be removed", lastSuccessful.exists());
-        assertFalse("lastStable link should be removed", lastStable.exists());
+        assert !lastSuccessful.exists(): "lastSuccessful link should be removed";
+        assert !lastStable.exists(): "lastStable link should be removed";
     }
 
     private static void assertSymlinkForBuild(File file, int buildNumber)
             throws IOException, InterruptedException {
-        assertTrue("should exist and point to something that exists", file.exists());
-        assertTrue("should be symlink", Util.isSymlink(file));
+        assert file.exists(): "should exist and point to something that exists";
+        assert Util.isSymlink(file): "should be symlink";
         String s = FileUtils.readFileToString(new File(file, "log"));
-        assertTrue("link should point to build #" + buildNumber + ", but link was: "
-                   + Util.resolveSymlink(file, TaskListener.NULL) + "\nand log was:\n" + s,
-                   s.contains("Build #" + buildNumber + "\n"));
+        assert s.contains("Build #" + buildNumber + "\n") :
+                "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
     }
 
     @Bug(2543)
@@ -269,19 +267,19 @@ public class AbstractProjectTest extends HudsonTestCase {
             return;
 
         // Links should be updated after post-build actions when final build result is known
-        FreeStyleProject job = createFreeStyleProject();
-        job.getBuildersList().add(new Shell("echo \"Build #$BUILD_NUMBER\"\n"));
-        FreeStyleBuild build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assertEquals(Result.SUCCESS, build.getResult());
-        File lastSuccessful = new File(job.getRootDir(), "lastSuccessful"),
-             lastStable = new File(job.getRootDir(), "lastStable");
+        def job = createFreeStyleProject();
+        job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
+        def build = job.scheduleBuild2(0, new Cause.UserCause()).get();
+        assert Result.SUCCESS == build.result;
+        File lastSuccessful = new File(job.rootDir, "lastSuccessful"),
+             lastStable = new File(job.rootDir, "lastStable");
         // First build creates links
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
         // Archive artifacts that don't exist to create failure in post-build action
-        job.getPublishersList().add(new ArtifactArchiver("*.foo", "", false, false));
+        job.publishersList.add(new ArtifactArchiver("*.foo", "", false, false));
         build = job.scheduleBuild2(0, new Cause.UserCause()).get();
-        assertEquals(Result.FAILURE, build.getResult());
+        assert Result.FAILURE == build.getResult();
         // Links should not be updated since build failed
         assertSymlinkForBuild(lastSuccessful, 1);
         assertSymlinkForBuild(lastStable, 1);
@@ -291,9 +289,9 @@ public class AbstractProjectTest extends HudsonTestCase {
     public void testGetBuildAfterGC() throws Exception {
         FreeStyleProject job = createFreeStyleProject();
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
-        jenkins.getQueue().clearLeftItems();
+        jenkins.queue.clearLeftItems();
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
-        assertTrue(job.getLastBuild() != null);
+        assert job.lastBuild != null;
     }
 
     @Bug(13502)
@@ -323,35 +321,35 @@ public class AbstractProjectTest extends HudsonTestCase {
         User user = User.get("user");
         SecurityContext sc = ACL.impersonate(user.impersonate());
         try {
-            e.convertUpstreamBuildTrigger(Collections.<AbstractProject>emptySet());
+            e.convertUpstreamBuildTrigger(Collections.<AbstractProject> emptySet());
         } finally {
             SecurityContextHolder.setContext(sc);
         }
 
-        assertEquals(1, u.getPublishersList().size());
+        assert 1 == u.getPublishersList().size();
     }
 
     @Bug(17137)
     public void testExternalBuildDirectorySymlinks() throws Exception {
         // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
-        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
-        File builds = createTmpDir();
-        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        def form = createWebClient().goTo("configure").getFormByName("config");
+        def builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").valueAttribute = builds.toString() + "/\${ITEM_FULL_NAME}";
         submit(form);
-        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
-        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
-        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
-        File link = new File(p.getRootDir(), "lastStable");
-        assertTrue(link.exists());
-        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
-        FreeStyleBuild b2 = p.scheduleBuild2(0).get();
-        assertTrue(link.exists());
-        assertEquals(b2.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
+        assert builds.toString() + "/\${ITEM_FULL_NAME}" == jenkins.getRawBuildsDir();
+        def p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
+        def b1 = p.scheduleBuild2(0).get();
+        def link = new File(p.rootDir, "lastStable");
+        assert link.exists();
+        assert b1.rootDir.absolutePath == resolveAll(link).absolutePath;
+        def b2 = p.scheduleBuild2(0).get();
+        assert link.exists();
+        assert b2.rootDir.absolutePath == resolveAll(link).absolutePath;
         b2.delete();
-        assertTrue(link.exists());
-        assertEquals(b1.getRootDir().getAbsolutePath(), resolveAll(link).getAbsolutePath());
+        assert link.exists();
+        assert b1.rootDir.absolutePath == resolveAll(link).absolutePath;
         b1.delete();
-        assertFalse(link.exists());
+        assert !link.exists();
     }
 
     private File resolveAll(File link) throws InterruptedException, IOException {
@@ -364,45 +362,43 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Bug(17138)
     public void testExternalBuildDirectoryRenameDelete() throws Exception {
-        HtmlForm form = new WebClient().goTo("configure").getFormByName("config");
-        File builds = createTmpDir();
-        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds + "/${ITEM_FULL_NAME}");
+        def form = createWebClient().goTo("configure").getFormByName("config");
+        def builds = createTmpDir();
+        form.getInputByName("_.rawBuildsDir").setValueAttribute(builds.toString() + "/\${ITEM_FULL_NAME}");
         submit(form);
-        assertEquals(builds + "/${ITEM_FULL_NAME}", jenkins.getRawBuildsDir());
-        FreeStyleProject p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-        File oldBuildDir = new File(builds, "d/prj");
-        assertEquals(new File(oldBuildDir, b.getId()), b.getRootDir());
-        assertTrue(b.getRootDir().isDirectory());
+        assert builds.toString() + "/\${ITEM_FULL_NAME}" == jenkins.rawBuildsDir;
+        def p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
+        def b = p.scheduleBuild2(0).get();
+        def oldBuildDir = new File(builds, "d/prj");
+        assert new File(oldBuildDir, b.id) == b.rootDir;
+        assert b.getRootDir().isDirectory();
         p.renameTo("proj");
-        File newBuildDir = new File(builds, "d/proj");
-        assertEquals(new File(newBuildDir, b.getId()), b.getRootDir());
-        assertTrue(b.getRootDir().isDirectory());
+        def newBuildDir = new File(builds, "d/proj");
+        assert new File(newBuildDir, b.id) == b.rootDir;
+        assert b.rootDir.isDirectory();
         p.delete();
-        assertFalse(b.getRootDir().isDirectory());
+        assert !b.rootDir.isDirectory();
     }
 
     @Bug(17575)
     public void testDeleteRedirect() throws Exception {
         createFreeStyleProject("j1");
-        assertEquals("", deleteRedirectTarget("job/j1"));
+        assert "" == deleteRedirectTarget("job/j1");
         createFreeStyleProject("j2");
         Jenkins.getInstance().addView(new AllView("v1"));
-        assertEquals("view/v1/", deleteRedirectTarget("view/v1/job/j2"));
+        assert "view/v1/" == deleteRedirectTarget("view/v1/job/j2");
         MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
         d.addView(new AllView("v2"));
-        d.createProject(FreeStyleProject.class, "j3");
-        d.createProject(FreeStyleProject.class, "j4");
-        d.createProject(FreeStyleProject.class, "j5");
-        assertEquals("job/d/", deleteRedirectTarget("job/d/job/j3"));
-        assertEquals("job/d/view/v2/", deleteRedirectTarget("job/d/view/v2/job/j4"));
-        assertEquals("view/v1/job/d/", deleteRedirectTarget("view/v1/job/d/job/j5"));
+        ["j3","j4","j5"].each { n -> d.createProject(FreeStyleProject.class, n) }
+        assert "job/d/" == deleteRedirectTarget("job/d/job/j3");
+        assert "job/d/view/v2/" == deleteRedirectTarget("job/d/view/v2/job/j4");
+        assert "view/v1/job/d/" == deleteRedirectTarget("view/v1/job/d/job/j5");
     }
     private String deleteRedirectTarget(String job) throws Exception {
-        WebClient wc = new WebClient();
+        WebClient wc = createWebClient();
         String base = wc.getContextPath();
         String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
-        assertTrue(loc, loc.startsWith(base));
+        assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
 
