@@ -2,12 +2,9 @@ package hudson.maven;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.maven.ProcessCache.MavenProcess;
-import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,19 +31,6 @@ public abstract class PlexusModuleContributor implements ExtensionPoint, Seriali
     }
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Tweaks the classworlds setup in the given Maven process to insert extension plexus modules.
-     */
-    public static void apply(MavenProcess process) throws InterruptedException, IOException {
-        PlexusModuleContributor all = aggregate();
-        process.channel.call(new Callable<Void, IOException>() {
-            public Void call() throws IOException {
-
-                return null;
-            }
-        });
-    }
 
     /**
      * Returns a single {@link PlexusModuleContributor} that aggregates all the registered
