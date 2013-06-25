@@ -1376,7 +1376,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             workspace.mkdirs();
         } catch (IOException e) {
             // Can't create workspace dir - Is slave disk full ?
-            new DiskSpaceMonitor().data(build.getBuiltOn().toComputer());
+            new DiskSpaceMonitor().markNodeOfflineIfDiskspaceIsTooLow(build.getBuiltOn().toComputer());
             throw e;
         }
         
