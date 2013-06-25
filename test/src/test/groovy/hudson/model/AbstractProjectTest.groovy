@@ -23,7 +23,8 @@
  */
 package hudson.model;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.ElementNotFoundException
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -69,7 +70,7 @@ import org.jvnet.hudson.test.MockFolder;
  * @author Kohsuke Kawaguchi
  */
 public class AbstractProjectTest extends HudsonTestCase {
-    public void testConfigRoundtrip() throws Exception {
+    public void testConfigRoundtrip() {
         def project = createFreeStyleProject();
         def l = jenkins.getLabel("foo && bar");
         project.assignedLabel = l;
@@ -81,7 +82,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests the workspace deletion.
      */
-    public void testWipeWorkspace() throws Exception {
+    public void testWipeWorkspace() {
         def project = createFreeStyleProject();
         project.buildersList.add(new Shell("echo hello"));
 
@@ -98,7 +99,7 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Makes sure that the workspace deletion is protected.
      */
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
-    public void testWipeWorkspaceProtected() throws Exception {
+    public void testWipeWorkspaceProtected() {
         def project = createFreeStyleProject();
         project.getBuildersList().add(new Shell("echo hello"));
 
@@ -115,7 +116,7 @@ public class AbstractProjectTest extends HudsonTestCase {
      * when the user doesn't have an access.
      */
     @PresetData(DataSet.ANONYMOUS_READONLY)
-    public void testWipeWorkspaceProtected2() throws Exception {
+    public void testWipeWorkspaceProtected2() {
         ((GlobalMatrixAuthorizationStrategy) jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
 
         // make sure that the deletion is protected in the same way
@@ -138,7 +139,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests the &lt;optionalBlock @field> round trip behavior by using {@link AbstractProject#concurrentBuild}
      */
-    public void testOptionalBlockDataBindingRoundtrip() throws Exception {
+    public void testOptionalBlockDataBindingRoundtrip() {
         def p = createFreeStyleProject();
         [true,false].each { b ->
             p.concurrentBuild = b;
@@ -151,7 +152,7 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Tests round trip configuration of the blockBuildWhenUpstreamBuilding field
      */
     @Bug(4423)
-    public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() throws Exception {
+    public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() {
         def p = createFreeStyleProject();
         p.blockBuildWhenUpstreamBuilding = false;
 
@@ -173,7 +174,7 @@ public class AbstractProjectTest extends HudsonTestCase {
      * to avoid allocating unnecessary workspaces.
      */
     @Bug(4202)
-    public void testPollingAndBuildExclusion() throws Exception {
+    public void testPollingAndBuildExclusion() {
         final OneShotEvent sync = new OneShotEvent();
 
         final FreeStyleProject p = createFreeStyleProject();
@@ -224,7 +225,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(1986)
-    public void testBuildSymlinks() throws Exception {
+    public void testBuildSymlinks() {
         // If we're on Windows, don't bother doing this.
         if (Functions.isWindows())
             return;
@@ -261,7 +262,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(2543)
-    public void testSymlinkForPostBuildFailure() throws Exception {
+    public void testSymlinkForPostBuildFailure() {
         // If we're on Windows, don't bother doing this.
         if (Functions.isWindows())
             return;
@@ -286,7 +287,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(15156)
-    public void testGetBuildAfterGC() throws Exception {
+    public void testGetBuildAfterGC() {
         FreeStyleProject job = createFreeStyleProject();
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
         jenkins.queue.clearLeftItems();
@@ -295,7 +296,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(13502)
-    public void testHandleBuildTrigger() throws Exception {
+    public void testHandleBuildTrigger() {
         Project u = createFreeStyleProject("u"),
                 d = createFreeStyleProject("d"),
                 e = createFreeStyleProject("e");
@@ -330,7 +331,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(17137)
-    public void testExternalBuildDirectorySymlinks() throws Exception {
+    public void testExternalBuildDirectorySymlinks() {
         // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
         def form = createWebClient().goTo("configure").getFormByName("config");
         def builds = createTmpDir();
@@ -361,7 +362,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(17138)
-    public void testExternalBuildDirectoryRenameDelete() throws Exception {
+    public void testExternalBuildDirectoryRenameDelete() {
         def form = createWebClient().goTo("configure").getFormByName("config");
         def builds = createTmpDir();
         form.getInputByName("_.rawBuildsDir").setValueAttribute(builds.toString() + "/\${ITEM_FULL_NAME}");
@@ -381,7 +382,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     @Bug(17575)
-    public void testDeleteRedirect() throws Exception {
+    public void testDeleteRedirect() {
         createFreeStyleProject("j1");
         assert "" == deleteRedirectTarget("job/j1");
         createFreeStyleProject("j2");
@@ -394,12 +395,58 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert "job/d/view/v2/" == deleteRedirectTarget("job/d/view/v2/job/j4");
         assert "view/v1/job/d/" == deleteRedirectTarget("view/v1/job/d/job/j5");
     }
-    private String deleteRedirectTarget(String job) throws Exception {
-        WebClient wc = createWebClient();
+
+    private String deleteRedirectTarget(String job) {
+        def wc = createWebClient();
         String base = wc.getContextPath();
         String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
         assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
 
+    @Bug(18407)
+    public void testQueueSuccessBehavior() {
+        // prevent any builds to test the behaviour
+        jenkins.numExecutors = 0;
+        jenkins.updateComputerList(false);
+
+        def p = createFreeStyleProject()
+        def f = p.scheduleBuild2(0)
+        assert f!=null;
+        def g = p.scheduleBuild2(0)
+        assert f==g;
+
+        p.makeDisabled(true)
+        assert p.scheduleBuild2(0)==null
+    }
+
+    /**
+     * Do the same as {@link #testQueueSuccessBehavior()} but over HTTP
+     */
+    @Bug(18407)
+    public void testQueueSuccessBehaviorOverHTTP() {
+        // prevent any builds to test the behaviour
+        jenkins.numExecutors = 0;
+        jenkins.updateComputerList(false);
+
+        def p = createFreeStyleProject()
+        def wc = createWebClient();
+
+        def rsp = wc.getPage("${getURL()}${p.url}build").webResponse
+        assert rsp.statusCode==201;
+        assert rsp.getResponseHeaderValue("Location")!=null;
+
+        def rsp2 = wc.getPage("${getURL()}${p.url}build").webResponse
+        assert rsp2.statusCode==201;
+        assert rsp.getResponseHeaderValue("Location")==rsp2.getResponseHeaderValue("Location")
+
+        p.makeDisabled(true)
+
+        try {
+            wc.getPage("${getURL()}${p.url}build")
+            fail();
+        } catch (FailingHttpStatusCodeException e) {
+            // request should fail
+        }
+    }
 }

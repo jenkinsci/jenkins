@@ -48,8 +48,8 @@ import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
-import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
@@ -918,9 +918,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             queueActions.add(new CauseAction(c));
         }
 
-        WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
-        if(i!=null)
-            return (QueueTaskFuture)i.getFuture();
+        ScheduleResult i = Jenkins.getInstance().getQueue().schedule2(this, quietPeriod, queueActions);
+        if(i.isAccepted())
+            return (QueueTaskFuture)i.getItem().getFuture();
         return null;
     }
 
@@ -1812,9 +1812,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        WaitingItem item = Jenkins.getInstance().getQueue().schedule(this, (int) delay.getTime(), getBuildCause(req));
-        if (item!=null) {
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
+        ScheduleResult r = Jenkins.getInstance().getQueue().schedule2(this, delay.getTime(), getBuildCause(req));
+        if (r.isAccepted()) {
+            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+r.getItem().getUrl());
         } else
             rsp.sendRedirect(".");
     }

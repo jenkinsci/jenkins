@@ -46,6 +46,8 @@ import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.ScheduleResult.Created;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.FutureImpl;
 import hudson.model.queue.MappingWorksheet;
@@ -474,6 +476,14 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * @deprecated as of 1.521
+     *  Use {@link #schedule2(Task, int, List)}
+     */
+    public synchronized WaitingItem schedule(Task p, int quietPeriod, List<Action> actions) {
+        return schedule2(p, quietPeriod, actions).getCreateItem();
+    }
+
+    /**
      * Schedules an execution of a task.
      *
      * @param actions
@@ -483,14 +493,18 @@ public class Queue extends ResourceController implements Saveable {
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
-     *      null if this task is already in the queue and therefore the add operation was no-op.
-     *      Otherwise indicates the {@link WaitingItem} object added, although the nature of the queue
+     *      {@link ScheduleResult.Refused} if Jenkins refused to add this task into the queue (for example because the system
+     *      is about to shutdown.) Otherwise the task is either merged into existing items in the queue
+     *      (in which case you get {@link ScheduleResult.Existing} instance back), or a new item
+     *      gets created in the queue (in which case you get {@link Created}.
+     *
+     *      Note the nature of the queue
      *      is that such {@link Item} only captures the state of the item at a particular moment,
      *      and by the time you inspect the object, some of its information can be already stale.
      *
-     *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
+     *      That said, one can still look at {@link Item#future}, {@link Item#id}, etc.
      */
-    public synchronized WaitingItem schedule(Task p, int quietPeriod, List<Action> actions) {
+    public synchronized @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
         // remove nulls
         actions = new ArrayList<Action>(actions);
         for (Iterator<Action> itr = actions.iterator(); itr.hasNext();) {
@@ -500,7 +514,7 @@ public class Queue extends ResourceController implements Saveable {
 
     	for(QueueDecisionHandler h : QueueDecisionHandler.all())
     		if (!h.shouldSchedule(p, actions))
-                return null;    // veto
+                return ScheduleResult.refused();    // veto
 
         return scheduleInternal(p, quietPeriod, actions);
     }
@@ -517,7 +531,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
      */
-    private synchronized WaitingItem scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
+    private synchronized @Nonnull ScheduleResult scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
         Calendar due = new GregorianCalendar();
     	due.add(Calendar.SECOND, quietPeriod);
 
@@ -542,7 +556,7 @@ public class Queue extends ResourceController implements Saveable {
             WaitingItem added = new WaitingItem(due,p,actions);
             added.enter(this);
             scheduleMaintenance();   // let an executor know that a new item is in the queue.
-            return added;
+            return ScheduleResult.created(added);
     	}
 
         LOGGER.log(Level.FINE, "{0} is already in the queue", p);
@@ -576,7 +590,12 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         if (queueUpdated)   scheduleMaintenance();
-        return null;
+
+        // REVISIT: when there are multiple existing items in the queue that matches the incoming one,
+        // whether the new one should affect all existing ones or not is debateable. I for myself
+        // thought this would only affect one, so the code was bit of surprise, but I'm keeping the current
+        // behaviour.
+        return ScheduleResult.existing(duplicatesInQueue.get(0));
     }
 
 
@@ -604,7 +623,14 @@ public class Queue extends ResourceController implements Saveable {
      * Convenience wrapper method around {@link #schedule(Task, int, List)}
      */
     public synchronized WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
-    	return schedule(p, quietPeriod, Arrays.asList(actions));
+    	return schedule2(p, quietPeriod, actions).getCreateItem();
+    }
+
+    /**
+     * Convenience wrapper method around {@link #schedule2(Task, int, List)}
+     */
+    public synchronized @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, Action... actions) {
+    	return schedule2(p, quietPeriod, Arrays.asList(actions));
     }
 
     /**
