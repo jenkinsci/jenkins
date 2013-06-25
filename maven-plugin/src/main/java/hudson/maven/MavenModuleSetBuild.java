@@ -695,9 +695,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                                                                            pom.getParent() ) );
                         }
 
-                        PlexusModuleContributor.apply(process);
-
-
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
                         if(localRepo!=null)
