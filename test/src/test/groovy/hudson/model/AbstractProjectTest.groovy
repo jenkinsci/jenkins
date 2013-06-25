@@ -257,8 +257,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert file.exists(): "should exist and point to something that exists";
         assert Util.isSymlink(file): "should be symlink";
         String s = FileUtils.readFileToString(new File(file, "log"));
-        assert s.contains("Build #" + buildNumber + "\n") :
-                "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
+        assert s.contains("Build #" + buildNumber + "\n") : "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
     }
 
     @Bug(2543)
