@@ -232,7 +232,7 @@ public class ListJobsCommandTest {
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
                 final HashSet<String> jobs = new HashSet<String>(
-                        Arrays.asList(item.toString().split("\n"))
+                        Arrays.asList(item.toString().split(System.getProperty("line.separator")))
                 );
 
                 return new HashSet<String>(Arrays.asList(expected)).equals(jobs);

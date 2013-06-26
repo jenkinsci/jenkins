@@ -23,6 +23,7 @@
  */
 package hudson.maven;
 
+import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
@@ -151,6 +152,7 @@ public class MavenProjectTest extends HudsonTestCase {
     @Bug(6779)
     public void testDeleteSetBuildDeletesModuleBuilds() throws Exception {
         MavenModuleSet project = createProject("maven-multimod.zip");
+        project.setLocalRepository(new DefaultLocalRepositoryLocator());
         project.setGoals("install");
         buildAndAssertSuccess(project);
         buildAndAssertSuccess(project.getModule("org.jvnet.hudson.main.test.multimod:moduleB"));

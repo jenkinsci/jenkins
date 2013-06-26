@@ -48,14 +48,15 @@ import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
-import hudson.model.Queue.WaitingItem;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
+import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -854,9 +855,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project.
      *
      * @return
-     *      true if the project is actually added to the queue.
-     *      false if the queue contained it and therefore the add()
-     *      was noop
+     *      true if the project is added to the queue.
+     *      false if the task was rejected from the queue (such as when the system is being shut down.)
      */
     public boolean scheduleBuild(Cause c) {
         return scheduleBuild(getQuietPeriod(), c);
@@ -917,9 +917,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             queueActions.add(new CauseAction(c));
         }
 
-        WaitingItem i = Jenkins.getInstance().getQueue().schedule(this, quietPeriod, queueActions);
-        if(i!=null)
-            return (QueueTaskFuture)i.getFuture();
+        ScheduleResult i = Jenkins.getInstance().getQueue().schedule2(this, quietPeriod, queueActions);
+        if(i.isAccepted())
+            return (QueueTaskFuture)i.getItem().getFuture();
         return null;
     }
 
@@ -1371,7 +1371,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
+        try {
+            workspace.mkdirs();
+        } catch (IOException e) {
+            // Can't create workspace dir - Is slave disk full ?
+            new DiskSpaceMonitor().markNodeOfflineIfDiskspaceIsTooLow(build.getBuiltOn().toComputer());
+            throw e;
+        }
         
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {
@@ -1805,9 +1811,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable())
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
 
-        WaitingItem item = Jenkins.getInstance().getQueue().schedule(this, (int) delay.getTime(), getBuildCause(req));
-        if (item!=null) {
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
+        ScheduleResult r = Jenkins.getInstance().getQueue().schedule2(this, delay.getTime(), getBuildCause(req));
+        if (r.isAccepted()) {
+            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+r.getItem().getUrl());
         } else
             rsp.sendRedirect(".");
     }

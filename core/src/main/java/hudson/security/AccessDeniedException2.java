@@ -23,7 +23,8 @@ public class AccessDeniedException2 extends AccessDeniedException {
     }
 
     public AccessDeniedException2(Throwable t, Authentication authentication, Permission permission) {
-        super(Messages.AccessDeniedException2_MissingPermission(authentication.getName(),permission.name), t);
+        super(Messages.AccessDeniedException2_MissingPermission(authentication.getName(),
+                permission.group.title+"/"+permission.name), t);
         this.authentication = authentication;
         this.permission = permission;
     }

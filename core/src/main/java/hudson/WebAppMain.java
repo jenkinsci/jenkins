@@ -206,7 +206,7 @@ public final class WebAppMain implements ServletContextListener {
 
             context.setAttribute(APP,new HudsonIsLoading());
 
-            initThread = new Thread("hudson initialization thread") {
+            initThread = new Thread("Jenkins initialization thread") {
                 @Override
                 public void run() {
                     boolean success = false;

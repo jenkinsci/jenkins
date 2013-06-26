@@ -55,6 +55,20 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.521>What's new in 1.521</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Build with parameters returns empty web page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18425">issue 18425</a>)
+  <li class=bug>
+    Access denied error results in ERR_CONTENT_DECODING_FAILED on most browsers, masking the root cause.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15437">issue 15437</a>)
   <li class=bug>
     Fixed the master/slave handshake problem when a slave runs on non-ASCII compatible encoding (such as EBCDIC.)
   <li class=rfe>
@@ -71,12 +85,16 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17247">issue 17247</a>)
   <li class=bug>
     Edited description wasn't reflected when pressing the "Apply" button.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18436">issue 18436</a>) </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.520>What's new in 1.520</a> <!--=DATE=--></h3>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18436">issue 18436</a>)
+  <li class=bug>
+    Fixed a regression in remoting since 1.519 that caused FindBugs plugins to break.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18349">issue 18349</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-18405">issue 18405</a>)
+  <li class=rfe>
+    Revisited the extension point added in 1.519 that adds custom plexus components.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.520>What's new in 1.520</a> (2013/06/25)</h3>
 <ul class=image>
   <li class=bug>
     Slave launch thread should have the background activity credential.
@@ -134,7 +152,6 @@ Upcoming changes</a>
     100% CPU pegging in <tt>Deflator.deflateBytes</tt>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14362">issue 14362</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.519>What's new in 1.519</a> (2013/06/17)</h3>
 <ul class=image>
   <li class='major bug'>

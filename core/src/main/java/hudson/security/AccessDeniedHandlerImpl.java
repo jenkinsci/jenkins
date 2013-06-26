@@ -27,6 +27,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.ui.AccessDeniedHandler;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.WebApp;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -52,25 +53,8 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
 
         rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         req.setAttribute("exception",accessDeniedException);
-        Stapler stapler = new Stapler();
-        stapler.init(new ServletConfig() {
-            public String getServletName() {
-                return "Stapler";
-            }
 
-            public ServletContext getServletContext() {
-                return Jenkins.getInstance().servletContext;
-            }
-
-            public String getInitParameter(String name) {
-                return null;
-            }
-
-            public Enumeration getInitParameterNames() {
-                return new Vector().elements();
-            }
-        });
-
-        stapler.invoke(req,rsp, Jenkins.getInstance(),"/accessDenied");
+        WebApp.get(Jenkins.getInstance().servletContext).getSomeStapler()
+                .invoke(req,rsp, Jenkins.getInstance(), "/accessDenied");
     }
 }

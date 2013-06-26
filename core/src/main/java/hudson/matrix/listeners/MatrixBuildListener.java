@@ -41,7 +41,7 @@ import java.util.List;
  * <p>
  * Plugins can implement this extension point to filter out the subset of matrix project to build.
  * Most typically, such a plugin would add a custom {@link Action} to a build when it goes to the queue
- * ({@link Queue#schedule(Task, int, List)}, then access this from {@link MatrixBuild} to drive
+ * ({@link Queue#schedule2(Task, int, List)}, then access this from {@link MatrixBuild} to drive
  * the filtering logic.
  *
  * <p>

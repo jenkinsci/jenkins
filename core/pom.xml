@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.521-SNAPSHOT</version>
+    <version>1.522-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.211</stapler.version>
+    <stapler.version>1.213</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
   </properties>
 

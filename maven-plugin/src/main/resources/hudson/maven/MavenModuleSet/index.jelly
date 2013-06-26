@@ -42,7 +42,7 @@ THE SOFTWARE.
             ${act.displayName}
           </t:summary>
         </j:forEach>
-        <t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
+        <t:summary icon="folder.png" href="ws/" permission="${it.WORKSPACE}">
           ${%Workspace}
         </t:summary>
 
@@ -50,13 +50,13 @@ THE SOFTWARE.
             build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
             permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
 
-        <t:summary icon="notepad.gif" href="changes">
+        <t:summary icon="notepad.png" href="changes">
           ${%Recent Changes}
         </t:summary>
 
         <j:set var="tr" value="${it.lastBuild.testResultAction}"/>
         <j:if test="${tr!=null}">
-          <t:summary icon="clipboard.gif">
+          <t:summary icon="clipboard.png">
             <a href="lastBuild/testReport/">${%Latest Test Result}</a>
             <st:nbsp/>
             <t:test-result it="${tr}" />
