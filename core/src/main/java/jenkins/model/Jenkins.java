@@ -126,6 +126,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -1958,6 +1959,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     public ClockDifference getClockDifference() {
         return ClockDifference.ZERO;
+    }
+
+    @Override
+    public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
+        return new Callable<ClockDifference, IOException>() {
+            public ClockDifference call() throws IOException {
+                return new ClockDifference(0);
+            }
+        };
     }
 
     /**

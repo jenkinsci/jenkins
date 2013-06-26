@@ -70,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -996,6 +997,27 @@ public final class FilePath implements Serializable {
             // the file is on the local machine
             return callable.call();
         }
+    }
+
+    /**
+     * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
+     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * on this {@link FilePath}.
+     *
+     * @since 1.522
+     */
+    public <V> Callable<V,IOException> asCallableWith(final FileCallable<V> task) {
+        return new Callable<V,IOException>() {
+            @Override
+            public V call() throws IOException {
+                try {
+                    return act(task);
+                } catch (InterruptedException e) {
+                    throw (IOException)new InterruptedIOException().initCause(e);
+                }
+            }
+            private static final long serialVersionUID = 1L;
+        };
     }
 
     /**
