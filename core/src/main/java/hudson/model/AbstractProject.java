@@ -855,9 +855,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a build of this project.
      *
      * @return
-     *      true if the project is actually added to the queue.
-     *      false if the queue contained it and therefore the add()
-     *      was noop
+     *      true if the project is added to the queue.
+     *      false if the task was rejected from the queue (such as when the system is being shut down.)
      */
     public boolean scheduleBuild(Cause c) {
         return scheduleBuild(getQuietPeriod(), c);

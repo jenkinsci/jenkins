@@ -249,16 +249,16 @@ public class QueueTest extends HudsonTestCase {
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
         assertNotNull(fb);
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new UserIdCause()));
-        assertFalse(project.scheduleBuild(new TimerTriggerCause()));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertFalse(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new TimerTriggerCause()));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new UserIdCause()));
+        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
+        assertTrue(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();
