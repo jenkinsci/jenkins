@@ -59,7 +59,7 @@ public final class MavenProbeAction implements Action {
 
     public String getIconFileName() {
         if(channel==null)   return null;
-        return "computer.gif";
+        return "computer.png";
     }
 
     public String getDisplayName() {
