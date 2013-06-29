@@ -170,7 +170,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 				}
 
 				sendStartAuthentication(request, response, chain, new InsufficientAuthenticationException(
-						"Full authentication is required to access this resource"));
+						"Full authentication is required to access this resource",exception));
 			}
 			else {
 				if (logger.isDebugEnabled()) {
