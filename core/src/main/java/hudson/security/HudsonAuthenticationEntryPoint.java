@@ -25,19 +25,18 @@ package hudson.security;
 
 import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.InsufficientAuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
@@ -60,7 +59,7 @@ import java.text.MessageFormat;
  */
 public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
     @Override
-    public void commence(ServletRequest request, ServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
 
@@ -82,6 +81,22 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
 
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
+
+            // report the diagnosis information if possible
+            if (reason instanceof InsufficientAuthenticationException) {
+                if (reason.getCause() instanceof AccessDeniedException2) {
+                    AccessDeniedException2 cause = (AccessDeniedException2) reason.getCause();
+                    rsp.addHeader("X-You-Are-Authenticated-As",cause.authentication.getName());
+                    for (GrantedAuthority auth : cause.authentication.getAuthorities()) {
+                        rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
+                    }
+                    rsp.addHeader("X-Required-Permission", cause.permission.getId());
+                    for (Permission p=cause.permission.impliedBy; p!=null; p=p.impliedBy) {
+                        rsp.addHeader("X-Permission-Implied-By", p.getId());
+                    }
+                }
+            }
+
             PrintWriter out;
             try {
                 out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
