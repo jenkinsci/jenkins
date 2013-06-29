@@ -213,6 +213,11 @@ THE SOFTWARE.
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${slf4jVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
