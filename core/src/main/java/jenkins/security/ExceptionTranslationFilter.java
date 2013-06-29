@@ -220,7 +220,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		// existing Authentication is no longer considered valid
 		SecurityContextHolder.getContext().setAuthentication(null);
 
-		authenticationEntryPoint.commence(httpRequest, (HttpServletResponse) response, reason);
+		authenticationEntryPoint.commence(httpRequest, response, reason);
 	}
 
 	public void setAccessDeniedHandler(AccessDeniedHandler accessDeniedHandler) {

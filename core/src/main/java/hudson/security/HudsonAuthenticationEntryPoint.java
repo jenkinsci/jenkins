@@ -25,7 +25,6 @@ package hudson.security;
 
 import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.InsufficientAuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
@@ -82,18 +81,12 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
 
+            AccessDeniedException2 cause = null;
             // report the diagnosis information if possible
             if (reason instanceof InsufficientAuthenticationException) {
                 if (reason.getCause() instanceof AccessDeniedException2) {
-                    AccessDeniedException2 cause = (AccessDeniedException2) reason.getCause();
-                    rsp.addHeader("X-You-Are-Authenticated-As",cause.authentication.getName());
-                    for (GrantedAuthority auth : cause.authentication.getAuthorities()) {
-                        rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
-                    }
-                    rsp.addHeader("X-Required-Permission", cause.permission.getId());
-                    for (Permission p=cause.permission.impliedBy; p!=null; p=p.impliedBy) {
-                        rsp.addHeader("X-Permission-Implied-By", p.getId());
-                    }
+                    cause = (AccessDeniedException2) reason.getCause();
+                    cause.reportAsHeaders(rsp);
                 }
             }
 
@@ -108,9 +101,17 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
                 "</head>" +
-                "<body style='background-color:white; color:white;'>" +
-                "Authentication required</body></html>", loginForm
-            );
+                "<body style='background-color:white; color:white;'>\n" +
+                "\n\n"+
+                "Authentication required\n"+
+                "<!--\n",loginForm);
+
+            if (cause!=null)
+                cause.report(out);
+
+            out.printf(
+                "-->\n\n"+
+                "</body></html>");
             // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
             // See http://support.microsoft.com/kb/294807
             for (int i=0; i < 10; i++)
