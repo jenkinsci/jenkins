@@ -15,7 +15,7 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
         scroller.style.height = h+"px";
 
         // the form needs to be populated before the "Apply" button
-        e.up('form').on("jenkins:apply",function() {
+        YAHOO.util.Event.on(e.up('form'), "jenkins:apply", function() {
             e.value = codemirror.getValue()
         })
     });
