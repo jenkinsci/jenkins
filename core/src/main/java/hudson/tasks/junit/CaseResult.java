@@ -143,23 +143,23 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     }
 
     private static final int HALF_MAX_SIZE = 500;
-    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, CharSequence stdio) { // HUDSON-6516
+    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, String stdio) { // HUDSON-6516
         if (stdio == null) {
             return null;
         }
         if (!isTrimming(results, keepLongStdio)) {
-            return stdio.toString();
+            return stdio;
         }
         int len = stdio.length();
         int middle = len - HALF_MAX_SIZE * 2;
         if (middle <= 0) {
-            return stdio.toString();
+            return stdio;
         }
         return stdio.subSequence(0, HALF_MAX_SIZE) + "\n...[truncated " + middle + " chars]...\n" + stdio.subSequence(len - HALF_MAX_SIZE, len);
     }
 
     /**
-     * Flavor of {@link #possiblyTrimStdio(Collection, boolean, CharSequence)} that doesn't try to read the whole thing into memory.
+     * Flavor of {@link #possiblyTrimStdio(Collection, boolean, String)} that doesn't try to read the whole thing into memory.
      */
     static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, File stdio) throws IOException {
         if (!isTrimming(results, keepLongStdio) && stdio.length()<1024*1024) {
