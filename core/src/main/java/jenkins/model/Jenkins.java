@@ -3601,6 +3601,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         dependencyGraph = graph;
     }
 
+    /**
+     * Rebuilds the dependency map asynchronously.
+     *
+     * <p>
+     * This would keep the UI thread more responsive and helps avoid the deadlocks,
+     * as dependency graph recomputation tends to touch a lot of other things.
+     *
+     * @since 1.522
+     */
+    public Future<DependencyGraph> rebuildDependencyGraphAsync() {
+        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+            @Override
+            public DependencyGraph call() throws Exception {
+                rebuildDependencyGraph();
+                return dependencyGraph;
+            }
+        });
+    }
+
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }

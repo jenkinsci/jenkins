@@ -213,7 +213,7 @@ public abstract class ItemGroupMixIn {
 
         add(result);
         ItemListener.fireOnCopied(src,result);
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
 
         return result;
     }
@@ -239,7 +239,7 @@ public abstract class ItemGroupMixIn {
             add(result);
 
             ItemListener.fireOnCreated(result);
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
         } catch (IOException e) {
@@ -270,7 +270,7 @@ public abstract class ItemGroupMixIn {
         }
         item.save();
         add(item);
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
 
         if (notify)
             ItemListener.fireOnCreated(item);
