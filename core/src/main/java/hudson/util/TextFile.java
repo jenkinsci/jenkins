@@ -144,18 +144,22 @@ public class TextFile {
     public @Nonnull String fastTail(int numChars, Charset cs) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file,"r");
 
-        long len = raf.length();
-        // err on the safe side and assume each char occupies 4 bytes
-        // additional 1024 byte margin is to bring us back in sync in case we started reading from non-char boundary.
-        long pos = Math.max(0, len - (numChars*4+1024));
-        raf.seek(pos);
+        try {
+            long len = raf.length();
+            // err on the safe side and assume each char occupies 4 bytes
+            // additional 1024 byte margin is to bring us back in sync in case we started reading from non-char boundary.
+            long pos = Math.max(0, len - (numChars*4+1024));
+            raf.seek(pos);
 
-        byte[] tail = new byte[(int) (len-pos)];
-        raf.readFully(tail);
+            byte[] tail = new byte[(int) (len-pos)];
+            raf.readFully(tail);
 
-        String tails = new String(tail,cs);
+            String tails = new String(tail,cs);
 
-        return new String(tails.substring(Math.max(0,tails.length()-numChars))); // trim the baggage of substring by allocating a new String
+            return new String(tails.substring(Math.max(0,tails.length()-numChars))); // trim the baggage of substring by allocating a new String
+        } finally {
+            raf.close();
+        }
     }
 
     /**
