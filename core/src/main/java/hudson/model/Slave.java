@@ -405,7 +405,9 @@ public abstract class Slave extends Node implements Serializable {
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
-            if (!value.startsWith("\\") && !value.startsWith("/")) {
+            if (!value.contains("\\") && !value.startsWith("/")) {
+                // Unix-looking path that doesn't start with '/'
+                // TODO: detect Windows-looking relative path
                 return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
             }
 
