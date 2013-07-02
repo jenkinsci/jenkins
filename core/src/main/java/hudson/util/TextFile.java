@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.*;
 import java.nio.charset.Charset;
 
 /**
@@ -154,7 +155,7 @@ public class TextFile {
             byte[] tail = new byte[(int) (len-pos)];
             raf.readFully(tail);
 
-            String tails = new String(tail,cs);
+            String tails = cs.decode(java.nio.ByteBuffer.wrap(tail)).toString();
 
             return new String(tails.substring(Math.max(0,tails.length()-numChars))); // trim the baggage of substring by allocating a new String
         } finally {
