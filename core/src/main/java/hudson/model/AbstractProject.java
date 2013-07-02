@@ -125,6 +125,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -234,7 +235,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of all {@link Trigger}s for this project.
      */
-    protected List<Trigger<?>> triggers = new Vector<Trigger<?>>();
+    protected volatile DescribableList<Trigger<?>,TriggerDescriptor> triggers = new DescribableList<Trigger<?>,TriggerDescriptor>(this);
+    private AtomicReferenceFieldUpdater<AbstractProject,List> triggersUpdater
+            = AtomicReferenceFieldUpdater.newUpdater(AbstractProject.class,List.class,"triggers");
 
     /**
      * {@link Action}s contributed from subsidiary objects associated with
@@ -303,6 +306,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
         this.builds = builds;
+        triggers().setOwner(this);
         for (Trigger t : triggers())
             t.start(this, Items.updatingByXml.get());
         if(scm==null)
@@ -321,9 +325,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         });
     }
 
-    private synchronized List<Trigger<?>> triggers() {
+    @WithBridgeMethods(List.class)
+    protected DescribableList<Trigger<?>,TriggerDescriptor> triggers() {
         if (triggers == null) {
-            triggers = new Vector<Trigger<?>>();
+            triggersUpdater.compareAndSet(this,null,new DescribableList<Trigger<?>,TriggerDescriptor>(this));
         }
         return triggers;
     }
@@ -1634,8 +1639,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized Map<TriggerDescriptor,Trigger> getTriggers() {
-        return (Map)Descriptor.toMap(triggers());
+    public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
+        return triggers().toMap();
     }
 
     /**
@@ -1959,8 +1964,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Trigger t : triggers())
             t.stop();
-        triggers = buildDescribable(req, Trigger.for_(this));
-        for (Trigger t : triggers)
+        triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
+        for (Trigger t : triggers())
             t.start(this,true);
 
         for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
