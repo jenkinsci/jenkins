@@ -26,9 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.WebRequestSettings
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.*;
 import hudson.tasks.BuildTrigger;
@@ -38,32 +36,21 @@ import hudson.Launcher;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
-import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.ArtifactArchiver
+import hudson.triggers.SCMTrigger;
 import hudson.util.StreamTaskListener;
-import hudson.util.OneShotEvent;
-import java.io.IOException;
-
+import hudson.util.OneShotEvent
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
+import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.concurrent.Future;
+import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
-import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.lang.ref.WeakReference
+
 import org.jvnet.hudson.test.MockFolder;
 
 /**
@@ -447,5 +434,17 @@ public class AbstractProjectTest extends HudsonTestCase {
         } catch (FailingHttpStatusCodeException e) {
             // request should fail
         }
+    }
+
+    /**
+     * We used to store {@link AbstractProject#triggers} as {@link Vector}, so make sure
+     * we can still read back the configuration from that.
+     */
+    public void testVectorTriggers() {
+        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+        assert j.triggers().size()==1
+        def t = j.triggers()[0]
+        assert t.class==SCMTrigger.class;
+        assert t.spec=="*/10 * * * *"
     }
 }

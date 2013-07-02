@@ -429,7 +429,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             r.addAll(step.getProjectActions(this));
         for (BuildWrapper step : buildWrappers)
             r.addAll(step.getProjectActions(this));
-        for (Trigger<?> trigger : triggers)
+        for (Trigger<?> trigger : triggers())
             r.addAll(trigger.getProjectActions());
 
         return r;
