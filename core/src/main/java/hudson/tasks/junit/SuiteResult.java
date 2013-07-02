@@ -210,22 +210,7 @@ public final class SuiteResult implements Serializable {
                 File mavenOutputFile = new File(xmlReport.getParentFile(),m.group(1)+"-output.txt");
                 if (mavenOutputFile.exists()) {
                     try {
-                        CharSequence out;
-                        long sz = mavenOutputFile.length();
-                        if (sz<64*1024) {
-                            out = FileUtils.readFileToString(mavenOutputFile);
-                        } else {
-                            // memory mapped files have unpredictable release timing, which blocks file deletion on Windows.
-                            // so don't do this unless there's a clear saving
-                            RandomAccessFile raf = new RandomAccessFile(mavenOutputFile, "r");
-                            try {
-                                ByteBuffer bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, sz);
-                                out = Charset.defaultCharset().decode(bb);
-                            } finally {
-                                raf.close();
-                            }
-                        }
-                        stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, out);
+                        stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, mavenOutputFile);
                     } catch (IOException e) {
                         throw new IOException2("Failed to read "+mavenOutputFile,e);
                     }

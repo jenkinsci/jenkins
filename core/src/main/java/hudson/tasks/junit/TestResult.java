@@ -98,7 +98,14 @@ public final class TestResult extends MetaTabulatedResult {
      * Creates an empty result.
      */
     public TestResult() {
-        keepLongStdio = false;
+        this(false);
+    }
+
+    /**
+     * @since 1.522
+     */
+    public TestResult(boolean keepLongStdio) {
+        this.keepLongStdio = keepLongStdio;
     }
 
     @Deprecated
