@@ -77,7 +77,7 @@ public class MavenTestDataPublisher extends Recorder {
         
             SurefireReport report = moduleBuild.getAction(SurefireReport.class);
             if (report == null) {
-                return true;
+                continue;
             }
             
             List<Data> data = new ArrayList<Data>();
