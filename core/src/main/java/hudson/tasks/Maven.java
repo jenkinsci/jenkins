@@ -435,10 +435,7 @@ public class Maven extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            Maven m = req.bindJSON(Maven.class,formData);
-            m.setSettings(GlobalMavenConfig.get().getSettingsProvider());
-            m.setGlobalSettings(GlobalMavenConfig.get().getGlobalSettingsProvider());
-            return m;
+            return req.bindJSON(Maven.class,formData);
         }
     }
 
