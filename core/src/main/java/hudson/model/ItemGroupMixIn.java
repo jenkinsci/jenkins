@@ -189,9 +189,6 @@ public abstract class ItemGroupMixIn {
 
     /**
      * Copies an existing {@link TopLevelItem} to a new name.
-     *
-     * The caller is responsible for calling {@link ItemListener#fireOnCopied(Item, Item)}. This method
-     * cannot do that because it doesn't know how to make the newly added item reachable from the parent.
      */
     @SuppressWarnings({"unchecked"})
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
