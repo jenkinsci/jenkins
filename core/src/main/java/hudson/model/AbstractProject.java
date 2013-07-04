@@ -238,7 +238,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @AdaptField(was=List.class)
     protected volatile DescribableList<Trigger<?>,TriggerDescriptor> triggers = new DescribableList<Trigger<?>,TriggerDescriptor>(this);
-    private AtomicReferenceFieldUpdater<AbstractProject,DescribableList> triggersUpdater
+    private static final AtomicReferenceFieldUpdater<AbstractProject,DescribableList> triggersUpdater
             = AtomicReferenceFieldUpdater.newUpdater(AbstractProject.class,DescribableList.class,"triggers");
 
     /**
