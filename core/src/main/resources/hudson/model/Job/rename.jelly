@@ -36,7 +36,7 @@ THE SOFTWARE.
             <br/> ${%configWasSaved}
           </j:if>
         </j:when>
-        <j:when test="${app.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
+        <j:when test="${it.parent.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
           ${%newNameInUse(newName)}
           <j:if test="${request.referer.endsWith('/configure')}">
             <br/> ${%configWasSaved}
