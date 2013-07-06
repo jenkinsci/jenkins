@@ -333,7 +333,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * to the sum of durations of the module builds.
      */
     private long estimateModuleSetBuildDurationOverhead(int numberOfBuilds) {
-        List<MavenModuleSetBuild> moduleSetBuilds = getPreviousBuildsOverThreshold(numberOfBuilds, Result.UNSTABLE);
+        List<MavenModuleSetBuild> moduleSetBuilds = getParent().getEstimedDurationCandidates();
         
         if (moduleSetBuilds.isEmpty()) {
             return 0;
