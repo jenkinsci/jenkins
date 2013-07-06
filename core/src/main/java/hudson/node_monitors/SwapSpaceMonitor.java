@@ -78,9 +78,10 @@ public class SwapSpaceMonitor extends NodeMonitor {
     }
 
     @Extension
-    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>() {
-        protected MemoryUsage monitor(Computer c) throws IOException, InterruptedException {
-            return c.getChannel().call(new MonitorTask());
+    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<MemoryUsage>() {
+        @Override
+        protected MonitorTask createCallable(Computer c) {
+            return new MonitorTask();
         }
 
         public String getDisplayName() {

@@ -33,7 +33,7 @@ import hudson.security.ChainedServletFilter
 import hudson.security.UnwrapSecurityExceptionFilter
 import hudson.security.HudsonAuthenticationEntryPoint
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
-import org.acegisecurity.ui.ExceptionTranslationFilter
+import jenkins.security.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter

@@ -47,7 +47,7 @@ import org.kohsuke.stapler.export.Exported;
  * @author Kohsuke Kawaguchi
  * @since 1.520
 */
-public abstract class DiskSpaceMonitorDescriptor extends AbstractNodeMonitorDescriptor<DiskSpace> {
+public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonitorDescriptor<DiskSpace> {
     /**
      * Value object that represents the disk space.
      */

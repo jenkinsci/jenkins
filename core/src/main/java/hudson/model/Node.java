@@ -35,6 +35,7 @@ import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -324,8 +325,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
-        if(l==null && getMode()== Mode.EXCLUSIVE)
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+        if(l==null && getMode()== Mode.EXCLUSIVE) {
+            // flyweight tasks need to get executed somewhere, if every node
+            if (!(item.task instanceof Queue.FlyweightTask && (
+                    this instanceof Jenkins
+                            || Jenkins.getInstance().getNumExecutors() < 1
+                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
+            )) {
+                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+            }
+        }
 
         Authentication identity = item.authenticate();
         if (!getACL().hasPermission(identity,Computer.BUILD)) {
@@ -445,7 +454,22 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @throws InterruptedException
      *      if the operation is aborted.
      */
-    public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
+    public ClockDifference getClockDifference() throws IOException, InterruptedException {
+        VirtualChannel channel = getChannel();
+        if(channel==null)
+            throw new IOException(getNodeName()+" is offline");
+
+        return channel.call(getClockDifferenceCallable());
+    }
+
+    /**
+     * Returns a {@link Callable} that when run on the channel, estimates the clock difference.
+     *
+     * @return
+     *      always non-null.
+     * @sine 1.522
+     */
+    public abstract Callable<ClockDifference,IOException> getClockDifferenceCallable();
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.

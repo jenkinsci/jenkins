@@ -126,6 +126,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -1960,6 +1961,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return ClockDifference.ZERO;
     }
 
+    @Override
+    public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
+        return new Callable<ClockDifference, IOException>() {
+            public ClockDifference call() throws IOException {
+                return new ClockDifference(0);
+            }
+        };
+    }
+
     /**
      * For binding {@link LogRecorderManager} to "/log".
      * Everything below here is admin-only, so do the check here.
@@ -3589,6 +3599,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         // volatile acts a as a memory barrier here and therefore guarantees 
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
+    }
+
+    /**
+     * Rebuilds the dependency map asynchronously.
+     *
+     * <p>
+     * This would keep the UI thread more responsive and helps avoid the deadlocks,
+     * as dependency graph recomputation tends to touch a lot of other things.
+     *
+     * @since 1.522
+     */
+    public Future<DependencyGraph> rebuildDependencyGraphAsync() {
+        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+            @Override
+            public DependencyGraph call() throws Exception {
+                rebuildDependencyGraph();
+                return dependencyGraph;
+            }
+        });
     }
 
     public DependencyGraph getDependencyGraph() {

@@ -26,6 +26,7 @@ package hudson.tasks.junit;
 import hudson.tasks.test.TestObject;
 import hudson.util.IOException2;
 import hudson.util.io.ParserConfigurator;
+import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -209,14 +210,7 @@ public final class SuiteResult implements Serializable {
                 File mavenOutputFile = new File(xmlReport.getParentFile(),m.group(1)+"-output.txt");
                 if (mavenOutputFile.exists()) {
                     try {
-                        RandomAccessFile raf = new RandomAccessFile(mavenOutputFile, "r");
-                        try {
-                            ByteBuffer bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, mavenOutputFile.length());
-                            CharBuffer cb = Charset.defaultCharset().decode(bb);
-                            stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, cb);
-                        } finally {
-                            raf.close();
-                        }
+                        stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, mavenOutputFile);
                     } catch (IOException e) {
                         throw new IOException2("Failed to read "+mavenOutputFile,e);
                     }

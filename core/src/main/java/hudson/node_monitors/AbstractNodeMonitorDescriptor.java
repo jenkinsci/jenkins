@@ -34,6 +34,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.slaves.OfflineCause;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,18 +52,34 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(long interval) {
         schedule(interval);
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
         this(clazz,HOUR);
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz, long interval) {
         super(clazz);
 
@@ -105,6 +122,33 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      corrected.
      */
     protected abstract T monitor(Computer c) throws IOException,InterruptedException;
+
+    /**
+     * Performs monitoring across the board.
+     *
+     * @return
+     *      For all the computers, report the monitored values.
+     */
+    protected Map<Computer,T> monitor() throws InterruptedException {
+        Map<Computer,T> data = new HashMap<Computer,T>();
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
+            try {
+                Thread.currentThread().setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+
+                if(c.getChannel()==null)
+                    data.put(c,null);
+                else
+                    data.put(c,monitor(c));
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+            } catch (InterruptedException e) {
+                throw (InterruptedException)new InterruptedException("Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.").initCause(e);
+            }
+        }
+        return data;
+    }
 
     /**
      * Obtains the monitoring result currently available, or null if no data is available.
@@ -214,7 +258,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         /**
          * Last computed monitoring result.
          */
-        private final Map<Computer,T> data = new HashMap<Computer,T>();
+        private /*final*/ Map<Computer,T> data = Collections.emptyMap();
 
         private long timestamp;
 
@@ -235,24 +279,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             try {
                 long startTime = System.currentTimeMillis();
                 String oldName = getName();
-
-                for( Computer c : Jenkins.getInstance().getComputers() ) {
-                    try {
-                        setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
-
-                        if(c.getChannel()==null)
-                            data.put(c,null);
-                        else
-                            data.put(c,monitor(c));
-                    } catch (RuntimeException e) {
-                        LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                    } catch (InterruptedException e) {
-                        LOGGER.log(Level.FINE,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
-                        return; // we are told to die
-                    }
-                }
+                data=monitor();
                 setName(oldName);
 
                 timestamp = System.currentTimeMillis();
