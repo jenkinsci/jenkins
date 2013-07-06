@@ -266,7 +266,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
 
-        if(!Jenkins.getInstance().getNodes().isEmpty()) {
+        if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
