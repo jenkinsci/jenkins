@@ -250,10 +250,24 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         /**
+         * Returns true if two {@link Range}s do not share any common integer.
+         */
+        public boolean isDisjoint(Range that) {
+            return this.end<=that.start || that.end<=this.start;
+        }
+
+        /**
          * Returns true if this range only represents a single number.
          */
         public boolean isSingle() {
             return end-1==start;
+        }
+
+        /**
+         * If this range contains every int that's in the other range, return true
+         */
+        public boolean contains(Range that) {
+            return this.start<=that.start && that.end<=this.end;
         }
 
         /**
@@ -265,10 +279,35 @@ public class Fingerprint implements ModelObject, Saveable {
                 Math.min(this.start,that.start),
                 Math.max(this.end  ,that.end  ));
         }
+
+        /**
+         * Returns the {@link Range} that represents the intersection of the two.
+         */
+        public Range intersect(Range that) {
+            assert !isDisjoint(that);
+            return new Range(
+                Math.max(this.start, that.start),
+                Math.min(this.end, that.end));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Range that = (Range) o;
+            return start == that.start && end == that.end;
+
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * start + end;
+        }
     }
 
     /**
-     * Set of {@link Range}s.
+     * Set of {@link Range}s. Mutable.
      */
     @ExportedBean(defaultVisibility=3)
     public static final class RangeSet {
@@ -281,6 +320,11 @@ public class Fingerprint implements ModelObject, Saveable {
 
         private RangeSet(List<Range> data) {
             this.ranges = data;
+        }
+
+        private RangeSet(Range initial) {
+            this();
+            ranges.add(initial);
         }
 
         /**
@@ -370,6 +414,12 @@ public class Fingerprint implements ModelObject, Saveable {
             ranges.add(new Range(n,n+1));
         }
 
+        public synchronized void addAll(int... n) {
+            for (int i : n)
+                add(i);
+        }
+
+
         private void checkCollapse(int i) {
             if(i<0 || i==ranges.size()-1)     return;
             Range lhs = ranges.get(i);
@@ -425,6 +475,121 @@ public class Fingerprint implements ModelObject, Saveable {
             this.ranges.addAll(that.ranges.subList(rhs,that.ranges.size()));
         }
 
+        /**
+         * Updates this range set by the intersection of this range and the given range.
+         *
+         * @return true if this range set was modified as a result.
+         */
+        public synchronized boolean retainAll(RangeSet that) {
+            List<Range> intersection = new ArrayList<Range>();
+
+            int lhs=0,rhs=0;
+            while(lhs<this.ranges.size() && rhs<that.ranges.size()) {
+                Range lr = this.ranges.get(lhs);
+                Range rr = that.ranges.get(rhs);
+
+                if(lr.end<=rr.start) {// lr has no overlap with that.ranges
+                    lhs++;
+                    continue;
+                }
+                if(rr.end<=lr.start) {// rr has no overlap with this.ranges
+                    rhs++;
+                    continue;
+                }
+
+                // overlap. figure out the intersection
+                Range v = lr.intersect(rr);
+                intersection.add(v);
+
+                // move on to the next pair
+                if (lr.end<rr.end) {
+                    lhs++;
+                } else {
+                    rhs++;
+                }
+            }
+
+            boolean same = this.ranges.equals(intersection);
+
+            if (!same) {
+                this.ranges.clear();
+                this.ranges.addAll(intersection);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Updates this range set by removing all the values in the given range set.
+         *
+         * @return true if this range set was modified as a result.
+         */
+        public synchronized boolean removeAll(RangeSet that) {
+            boolean modified = false;
+            List<Range> sub = new ArrayList<Range>();
+
+            int lhs=0,rhs=0;
+            while(lhs<this.ranges.size() && rhs<that.ranges.size()) {
+                Range lr = this.ranges.get(lhs);
+                Range rr = that.ranges.get(rhs);
+
+                if(lr.end<=rr.start) {// lr has no overlap with that.ranges. lr stays
+                    sub.add(lr);
+                    lhs++;
+                    continue;
+                }
+                if(rr.end<=lr.start) {// rr has no overlap with this.ranges
+                    rhs++;
+                    continue;
+                }
+
+                // some overlap between lr and rr
+                assert !lr.isDisjoint(rr);
+                modified = true;
+
+                if (rr.contains(lr)) {
+                    // lr completely removed by rr
+                    lhs++;
+                    continue;
+                }
+
+                // we want to look at A and B below, if they are non-null.
+                // |------------| lr
+                //     |-----|    rr
+                //   A         B
+                //
+                // note that lr and rr could be something like or the other way around
+                // |------------| lr
+                //         |------------| rr
+                //     A             (no B)
+
+                if (lr.start<rr.start) {// if A is non-empty, that will stay
+                    Range a = new Range(lr.start, rr.start);
+                    sub.add(a);
+                }
+
+                if (rr.end<lr.end) {// if B is non-empty
+                    // we still need to check that with that.ranges, so keep it in the place of lr.
+                    // how much of them will eventually stay is up to the remainder of that.ranges
+                    this.ranges.set(lhs,new Range(rr.end,lr.end));
+                    rhs++;
+                } else {
+                    // if B is empty, we are done considering lr
+                    lhs++;
+                }
+            }
+
+            if (!modified)  return false;   // no changes
+
+            // whatever that remains in lhs will survive
+            sub.addAll(this.ranges.subList(lhs,this.ranges.size()));
+
+            this.ranges.clear();
+            this.ranges.addAll(sub);
+            return true;
+        }
+
         @Override
         public synchronized String toString() {
             StringBuilder buf = new StringBuilder();
@@ -433,6 +598,20 @@ public class Fingerprint implements ModelObject, Saveable {
                 buf.append(r);
             }
             return buf.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            return ranges.equals(((RangeSet) o).ranges);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return ranges.hashCode();
         }
 
         public synchronized boolean isEmpty() {
@@ -712,7 +891,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     public synchronized void add(AbstractBuild b) throws IOException {
-        add(b.getParent().getFullName(),b.getNumber());
+        add(b.getParent().getFullName(), b.getNumber());
     }
 
     /**
@@ -763,6 +942,65 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Trim off references to non-existent builds and jobs, thereby making the fingerprint smaller.
+     *
+     * @return true
+     *      if this record was modified.
+     */
+    public synchronized boolean trim() throws IOException {
+        boolean modified = false;
+
+        for (Entry<String,RangeSet> e : new Hashtable<String,RangeSet>(usages).entrySet()) {// copy because we mutate
+            Job j = Jenkins.getInstance().getItemByFullName(e.getKey(),Job.class);
+            if(j==null) {// no such job any more. recycle the record
+                modified = true;
+                usages.remove(e.getKey());
+                continue;
+            }
+
+            Run firstBuild = j.getFirstBuild();
+            if(firstBuild==null) {// no builds. recycle the whole record
+                modified = true;
+                usages.remove(e.getKey());
+                continue;
+            }
+
+            RangeSet cur = e.getValue();
+
+            // builds that are around without the keepLog flag on are normally clustered together (in terms of build #)
+            // so our basic strategy is to discard everything up to the first ephemeral build, except those builds
+            // that are marked as kept
+            RangeSet kept = new RangeSet();
+            Run r = firstBuild;
+            while (r!=null && r.isKeepLog()) {
+                kept.add(r.getNumber());
+                r = r.getNextBuild();
+            }
+
+            if (r==null) {
+                // all the build records are permanently kept ones, so we'll just have to keep 'kept' out of whatever currently in 'cur'
+                modified |= cur.retainAll(kept);
+            } else {
+                // otherwise we are ready to discard [0,r.number) except those marked as 'kept'
+                RangeSet discarding =  new RangeSet(new Range(-1,r.getNumber()));
+                discarding.removeAll(kept);
+                modified |= cur.removeAll(discarding);
+            }
+
+            if (cur.isEmpty()) {
+                usages.remove(e.getKey());
+                modified = true;
+            }
+        }
+
+        if (modified)
+            save();
+
+        return modified;
+    }
+
+
+    /**
      * Gets the associated {@link FingerprintFacet}s.
      *
      * <p>
@@ -794,21 +1032,13 @@ public class Fingerprint implements ModelObject, Saveable {
 
             @Override
             public boolean add(FingerprintFacet e) {
-                try {
-                    facets.add(e);
-                    return true;
-                } catch (IOException x) {
-                    throw new Error(x);
-                }
+                facets.add(e);
+                return true;
             }
 
             @Override
             public boolean remove(Object o) {
-                try {
-                    return facets.remove((FingerprintFacet)o);
-                } catch (IOException x) {
-                    throw new Error(x);
-                }
+                return facets.remove(o);
             }
 
             @Override

@@ -43,14 +43,15 @@ import java.net.URL;
 
 
 /**
+ * {@link AbstractMavenProcessFactory} for Maven 2.
  *
  * @author Kohsuke Kawaguchi
  */
 final class MavenProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory {
 
 
-    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
-        super( mms, launcher, envVars, mavenOpts, workDir );
+    MavenProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, build, launcher, envVars, mavenOpts, workDir );
     }
 
     @Override
@@ -88,12 +89,16 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
     }
 
     @Override
-    protected void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException {
-        channel.call(new InstallPlexusModulesTask());
+    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask(context));
     }
 
     private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
-        PlexusModuleContributor c = PlexusModuleContributor.aggregate();
+        PlexusModuleContributor c;
+
+        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
+            c = PlexusModuleContributorFactory.aggregate(context);
+        }
 
         public Void call() throws IOException {
             Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));

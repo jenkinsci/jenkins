@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.520-SNAPSHOT</version>
+    <version>1.524-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.207</stapler.version>
+    <stapler.version>1.213</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
   </properties>
 
@@ -130,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-2</version>
+      <version>build214-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -192,13 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.4</version>
-      <exclusions> <!-- https://github.com/infradna/bridge-method-injector/issues/1 -->
-        <exclusion>
-          <artifactId>annotation-indexer</artifactId>
-          <groupId>org.jvnet.hudson</groupId>
-        </exclusion>
-      </exclusions>
+      <version>1.8</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -474,7 +468,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -655,7 +648,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>1.8</version>
         <executions>
           <execution>
             <goals>

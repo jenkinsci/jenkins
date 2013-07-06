@@ -28,7 +28,7 @@ THE SOFTWARE.
     <a href="${link}redeploy/">
       <img width="16" height="16" alt="[deployed]"
            tooltip="${%Deployed to repository}"
-           src="${imagesURL}/16x16/redo.gif"/>
+           src="${imagesURL}/16x16/redo.png"/>
     </a>
   </j:if>
 </j:jelly>

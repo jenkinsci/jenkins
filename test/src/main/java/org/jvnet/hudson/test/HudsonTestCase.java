@@ -57,8 +57,6 @@ import hudson.model.*;
 import hudson.model.Executor;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
-import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -77,7 +75,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Mailer;
-import hudson.tasks.Mailer.DescriptorImpl;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
@@ -177,7 +174,6 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -195,7 +191,9 @@ import jenkins.model.JenkinsLocationConfiguration;
  *
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Hudson</a>
  * @author Kohsuke Kawaguchi
+ * @deprecated New code should use {@link JenkinsRule}.
  */
+@Deprecated
 @SuppressWarnings("rawtypes")
 public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
@@ -231,11 +229,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Remember {@link WebClient}s that are created, to release them properly.
      */
     private List<WebClient> clients = new ArrayList<WebClient>();
-
-    /**
-     * Remember channels that are created, to release them at the end.
-     */
-    private List<Channel> channels = new ArrayList<Channel>();
 
     /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
@@ -388,6 +381,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     @Override
     protected void tearDown() throws Exception {
         try {
+            if (jenkins!=null) {
+                for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                    tl.onTearDown();
+            }
+
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
                 timeoutTimer = null;
@@ -400,15 +398,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 client.closeAllWindows();
             }
             clients.clear();
-
-            synchronized(channels) {
-                for (Channel c : channels)
-                    c.close();
-                for (Channel c : channels)
-                    c.join();
-                channels.clear();
-            }
-
         } finally {
             if (server!=null)
                 server.stop();
@@ -543,22 +532,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         return realm;
     }
 
-    @TestExtension
-    public static class ComputerListenerImpl extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-            VirtualChannel ch = c.getChannel();
-            if (ch instanceof Channel)
-            TestEnvironment.get().testCase.addChannel((Channel)ch);
-        }
-    }
-
-    private void addChannel(Channel ch) {
-        synchronized (channels) {
-            channels.add(ch);
-        }
-    }
-    
     /**
      * Returns the older default Maven, while still allowing specification of other bundled Mavens.
      */

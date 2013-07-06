@@ -42,6 +42,7 @@ import hudson.util.DescribableList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
@@ -68,22 +69,32 @@ public class MavenTestDataPublisher extends Recorder {
 	public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 
-		SurefireReport report = build.getAction(SurefireReport.class);
-		if (report == null) {
-			return true;
-		}
-		
-		List<Data> data = new ArrayList<Data>();
-		if (testDataPublishers != null) {
-			for (TestDataPublisher tdp : testDataPublishers) {
-				Data d = tdp.getTestData(build, launcher, listener, report.getResult());
-				if (d != null) {
-					data.add(d);
-				}
-			}
-		}
-		
-		report.setData(data);
+	    MavenModuleSetBuild msb = (MavenModuleSetBuild) build;
+        
+        Map<MavenModule, MavenBuild> moduleLastBuilds = msb.getModuleLastBuilds();
+        
+        for (MavenBuild moduleBuild : moduleLastBuilds.values()) {
+        
+            SurefireReport report = moduleBuild.getAction(SurefireReport.class);
+            if (report == null) {
+                continue;
+            }
+            
+            List<Data> data = new ArrayList<Data>();
+            if (getTestDataPublishers() != null) {
+                for (TestDataPublisher tdp : getTestDataPublishers()) {
+                    Data d = tdp.getTestData(build, launcher, listener, report.getResult());
+                    if (d != null) {
+                        data.add(d);
+                    }
+                }
+            }
+            
+            if (!data.isEmpty()) {
+                report.setData(data);
+                moduleBuild.save();
+            }
+        }
 
 		return true;
 	}

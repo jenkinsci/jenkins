@@ -27,6 +27,8 @@ import jenkins.model.DependencyDeclarer;
 import hudson.security.ACL;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -127,4 +129,45 @@ public class DependencyGraphTest extends HudsonTestCase {
         }
     }
 
+    @Bug(17247)
+    public void testTopologicalSort() throws Exception {
+        /*
+            A-B---C-E
+               \ /
+                D           A->B->C->D->B  and C->E
+         */
+        FreeStyleProject e = createFreeStyleProject("e");
+        FreeStyleProject d = createFreeStyleProject("d");
+        FreeStyleProject c = createFreeStyleProject("c");
+        FreeStyleProject b = createFreeStyleProject("b");
+        FreeStyleProject a = createFreeStyleProject("a");
+
+        depends(a,b);
+        depends(b,c);
+        depends(c,d,e);
+        depends(d,b);
+
+        jenkins.rebuildDependencyGraph();
+
+        DependencyGraph g = jenkins.getDependencyGraph();
+        List<AbstractProject<?, ?>> sorted = g.getTopologicallySorted();
+        StringBuilder buf = new StringBuilder();
+        for (AbstractProject<?, ?> p : sorted) {
+            buf.append(p.getName());
+        }
+        String r = buf.toString();
+        assertTrue(r.startsWith("a"));
+        assertTrue(r.endsWith("e"));
+        assertEquals(5,r.length());
+
+        assertTrue(g.compare(a,b)<0);
+        assertTrue(g.compare(a,e)<0);
+        assertTrue(g.compare(b,e)<0);
+        assertTrue(g.compare(c,e)<0);
+
+    }
+
+    private void depends(FreeStyleProject a, FreeStyleProject... downstreams) {
+        a.getPublishersList().add(new BuildTrigger(Arrays.asList(downstreams), Result.SUCCESS));
+    }
 }

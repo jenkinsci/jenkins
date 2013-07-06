@@ -34,6 +34,7 @@ import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
+import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import jenkins.model.Jenkins;
 import jenkins.util.TimeDuration;
@@ -47,6 +48,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import hudson.Extension;
+import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.export.Flavor;
 
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
@@ -105,6 +107,8 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
         return (AbstractProject<?, ?>) owner;
     }
 
+    /** @deprecated use {@link #_doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
     public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
     }
@@ -137,18 +141,23 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
                 owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-        if (item!=null)
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
-        else
+        if (item!=null) {
+            String url = formData.optString("redirectTo");
+            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+                url = req.getContextPath()+'/'+item.getUrl();
+            rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
+        } else
             // send the user back to the job top page.
             rsp.sendRedirect(".");
     }
 
+    /** @deprecated use {@link #buildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
+    @Deprecated
     public void buildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         buildWithParameters(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
     }
 
-    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, TimeDuration delay) throws IOException, ServletException {
+    public void buildWithParameters(StaplerRequest req, StaplerResponse rsp, @CheckForNull TimeDuration delay) throws IOException, ServletException {
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (ParameterDefinition d: parameterDefinitions) {
         	ParameterValue value = d.createValue(req);

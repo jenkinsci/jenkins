@@ -707,9 +707,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
             ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener, maven3orLater
                 ? new Maven3ProcessFactory(
-                        getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null )
+                        getParent().getParent(), MavenBuild.this, launcher, envVars, getMavenOpts(listener, envVars), null )
                 : new MavenProcessFactory(
-                        getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null ));
+                        getParent().getParent(), MavenBuild.this, launcher, envVars, getMavenOpts(listener, envVars), null ));
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             FilePath localRepo = mms.getLocalRepository().locate(MavenBuild.this);

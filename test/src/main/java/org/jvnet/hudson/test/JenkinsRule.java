@@ -88,13 +88,10 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
-import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerConnector;
@@ -135,6 +132,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -173,6 +171,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -217,9 +216,9 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * JUnit 4.10+ style rule to allow test cases to fire up a Jenkins instance
+ * JUnit rule to allow test cases to fire up a Jenkins instance.
  *
- * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test+JUnit4">Wiki article about unit testing in Jenkins</a>
+ * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Jenkins</a>
  * @author Stephen Connolly
  * @since 1.436
  */
@@ -228,8 +227,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     private TestEnvironment env;
 
     private Description testDescription;
-
-    private static JenkinsRule CURRENT = null;
 
     /**
      * Points to the same object as {@link #jenkins} does.
@@ -250,7 +247,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * <p>
      * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
      */
-    protected String contextPath = "";
+    protected String contextPath = "/jenkins";
 
     /**
      * {@link Runnable}s to be invoked at {@link #after()} .
@@ -263,11 +260,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Remember {@link WebClient}s that are created, to release them properly.
      */
     private List<WebClient> clients = new ArrayList<WebClient>();
-
-    /**
-     * Remember channels that are created, to release them at the end.
-     */
-    private List<Channel> channels = new ArrayList<Channel>();
 
     /**
      * JavaScript "debugger" that provides you information about the JavaScript call stack
@@ -392,8 +384,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Override to tear down your specific external resource.
      */
-    protected void after() {
+    protected void after() throws Exception {
         try {
+            for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                tl.onTearDown();
+
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
                 timeoutTimer = null;
@@ -410,20 +405,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 client.closeAllWindows();
             }
             clients.clear();
-
-            for (Channel c : channels)
-                try {
-                    c.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            for (Channel c : channels)
-                try {
-                    c.join();
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            channels.clear();
 
         } finally {
             try {
@@ -476,7 +457,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 Thread t = Thread.currentThread();
                 String o = t.getName();
                 t.setName("Executing "+ testDescription.getDisplayName());
-                CURRENT = JenkinsRule.this;
                 before();
                 try {
                     System.out.println("=== Starting " + testDescription.getDisplayName());
@@ -503,7 +483,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     after();
                     testDescription = null;
                     t.setName(o);
-                    CURRENT = null;
                 }
             }
         };
@@ -613,16 +592,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         realm.addUserToRole("charlie","male");
 
         return realm;
-    }
-
-    @TestExtension
-    public static class ComputerListenerImpl extends ComputerListener {
-        @Override
-        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-            VirtualChannel ch = c.getChannel();
-            if (ch instanceof Channel)
-                CURRENT.channels.add((Channel)ch);
-        }
     }
 
 
@@ -1033,7 +1002,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     public <N extends Node> N configRoundtrip(N node) throws Exception {
-        submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
+        submit(createWebClient().goTo("computer/" + node.getNodeName() + "/configure").getFormByName("config"));
         return (N)jenkins.getNode(node.getNodeName());
     }
 
@@ -1767,7 +1736,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * Logs in to Hudson.
          */
         public WebClient login(String username, String password) throws Exception {
-            HtmlPage page = goTo("/login");
+            HtmlPage page = goTo("login");
 //            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
@@ -1913,6 +1882,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+            assert !relative.startsWith("/");
             Page p = super.getPage(getContextPath() + relative);
             assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
             return p;
@@ -1940,6 +1910,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * @since 1.504
          */
         public void assertFails(String url, int statusCode) throws Exception {
+            assert !url.startsWith("/");
             try {
                 fail(url + " should have been rejected but produced: " + super.getPage(getContextPath() + url).getWebResponse().getContentAsString());
             } catch (FailingHttpStatusCodeException x) {

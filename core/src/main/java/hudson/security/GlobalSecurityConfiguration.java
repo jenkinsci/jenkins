@@ -50,6 +50,8 @@ import org.kohsuke.stapler.StaplerResponse;
 /**
  * Security configuration.
  *
+ * For historical reasons, most of the actual configuration values are stored in {@link Jenkins}.
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = Integer.MAX_VALUE - 210)

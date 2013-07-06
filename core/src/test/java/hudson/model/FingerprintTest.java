@@ -123,6 +123,91 @@ public class FingerprintTest {
         assertEquals("[1,2),[3,4),[5,6),[7,8)",x.toString());
     }
 
+    @Test
+    public void retainAll1() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3, 10,11,       20);
+        y.addAll(  2,      11,12, 19,20,21);
+
+        assertTrue(x.retainAll(y));
+
+        RangeSet z = new RangeSet();
+        z.addAll(2,11,20);
+
+        assertEquals(x,z);
+    }
+
+    @Test
+    public void retainAll2() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3,4,5,6,7,8,9,10,      13,14,15,16,17,18,19,20);
+        y.addAll(  2,3,  5,6,    9,10,11,12,13,   15,16,   18,19);
+
+        assertTrue(x.retainAll(y));
+
+        RangeSet z = new RangeSet();
+        z.addAll(2,3,5,6,9,10,13,15,16,18,19);
+
+        assertEquals(x,z);
+    }
+
+    @Test
+    public void retainAll3() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3,4,5);
+
+        assertTrue(x.retainAll(y));
+        assertTrue(x.isEmpty());
+    }
+
+    @Test
+    public void removeAll1() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3, 10,11,       20);
+        y.addAll(  2,      11,12, 19,20,21);
+
+        assertTrue(x.removeAll(y));
+
+        RangeSet z = new RangeSet();
+        z.addAll(1,3,10);
+
+        assertEquals(x,z);
+    }
+
+    @Test
+    public void removeAll2() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3,4,5,6,7,8,9,10,      13,14,15,16,17,18,19,20);
+        y.addAll(  2,3,  5,6,    9,10,11,12,13,   15,16,   18,19);
+
+        assertTrue(x.removeAll(y));
+
+        RangeSet z = new RangeSet();
+        z.addAll(1,4,7,8,14,17,20);
+
+        assertEquals(x,z);
+    }
+
+    @Test
+    public void removeAll3() {
+        RangeSet x = new RangeSet();
+        RangeSet y = new RangeSet();
+
+        x.addAll(1,2,3,4,5);
+
+        assertFalse(x.removeAll(y));
+    }
+
     @Test public void deserialize() throws Exception {
         assertEquals("Fingerprint["
                 + "original=stapler/org.kohsuke.stapler:stapler-jelly #123,"

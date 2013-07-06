@@ -93,6 +93,7 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -175,6 +176,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
+
+    /**
+     * Gets all the items recursively contained in this collection in a read-only view.
+     * <p>
+     * The default implementation recursively adds the items of all contained Views
+     * in case this view implements {@link ViewGroup}, which should be enough for most cases.
+     *
+     * @since 1.520
+     */
+    public Collection<TopLevelItem> getAllItems() {
+
+        if (this instanceof ViewGroup) {
+            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
+
+            for(View view: ((ViewGroup) this).getViews()) {
+                items.addAll(view.getAllItems());
+            }
+            return Collections.unmodifiableCollection(items);
+        } else {
+            return getItems();
+        }
+    }
 
     /**
      * Gets the {@link TopLevelItem} of the given name.
@@ -939,7 +962,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         save();
 
-        FormApply.success("../"+name).generateResponse(req,rsp,this);
+        FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
     }
 
     /**

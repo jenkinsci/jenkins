@@ -73,7 +73,7 @@ public class TriggerStartTest {
     @Test public void updateByXmlCallsStartTrue() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         String xml = p.getConfigFile().asString();
-        xml = xml.replace("  <triggers class=\"vector\"/>\n", triggersSection());
+        xml = xml.replace("  <triggers/>\n", triggersSection());
         Source newXML = new StreamSource(new StringReader(xml));
         p.updateByXml(newXML);
         MockTrigger t = p.getTrigger(MockTrigger.class);

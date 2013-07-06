@@ -683,22 +683,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         if ( maven3orLater )
                         {
                             LOGGER.fine( "using maven 3 " + mavenVersion );
-                            process =
-                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener, envVars),
-                                                                                            pom.getParent() ) );
+                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
+                                  new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                            pom.getParent() ) );
                         }
                         else
                         {
                             LOGGER.fine( "using maven 2 " + mavenVersion );
-                            process =
-                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
-                                                                                           pom.getParent() ) );
+                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
+                                  new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
+                                                           pom.getParent() ) );
                         }
-
-                        PlexusModuleContributor.apply(process);
-
 
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
@@ -1048,9 +1043,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         String rootPOMRelPrefix;
 
-        private final PlexusModuleContributor plexusContributors = PlexusModuleContributor.aggregate();
+        private final PlexusModuleContributor plexusContributors;
         
-        PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
+        PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) throws IOException, InterruptedException {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             MavenModuleSet project = build.getProject();
             this.listener = listener;
@@ -1098,6 +1093,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 project.getScm().getModuleRoot( build.getWorkspace(), project.getLastBuild() ).getRemote();
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
+            plexusContributors = PlexusModuleContributorFactory.aggregate(build);
         }
 
         private boolean isUpdateSnapshots(String goals) {

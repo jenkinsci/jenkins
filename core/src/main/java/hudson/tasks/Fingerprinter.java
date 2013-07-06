@@ -136,7 +136,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             build.getActions().add(new FingerprintAction(build,record));
 
             if (enableFingerprintsInDependencyGraph) {
-                Jenkins.getInstance().rebuildDependencyGraph();
+                Jenkins.getInstance().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
             e.printStackTrace(listener.error(Messages.Fingerprinter_Failed()));
@@ -158,10 +158,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
                 Run build = (Run) iter.next();
-                List<FingerprintAction> fingerprints = build.getActions(FingerprintAction.class);
-                for (FingerprintAction action : fingerprints) {
-                    Map<AbstractProject,Integer> deps = action.getDependencies();
-                    for (AbstractProject key : deps.keySet()) {
+                for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
+                    for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
                             continue;   // Avoid self references
                         }

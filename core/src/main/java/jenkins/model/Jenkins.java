@@ -66,6 +66,7 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -125,6 +126,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -1959,6 +1961,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return ClockDifference.ZERO;
     }
 
+    @Override
+    public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
+        return new Callable<ClockDifference, IOException>() {
+            public ClockDifference call() throws IOException {
+                return new ClockDifference(0);
+            }
+        };
+    }
+
     /**
      * For binding {@link LogRecorderManager} to "/log".
      * Everything below here is admin-only, so do the check here.
@@ -2065,7 +2076,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Gets the dependency injection container that hosts all the extension implementations and other
      * components in Jenkins.
      *
-     * @since 1.GUICE
+     * @since 1.433
      */
     public Injector getInjector() {
         return lookup(Injector.class);
@@ -3590,6 +3601,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         dependencyGraph = graph;
     }
 
+    /**
+     * Rebuilds the dependency map asynchronously.
+     *
+     * <p>
+     * This would keep the UI thread more responsive and helps avoid the deadlocks,
+     * as dependency graph recomputation tends to touch a lot of other things.
+     *
+     * @since 1.522
+     */
+    public Future<DependencyGraph> rebuildDependencyGraphAsync() {
+        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+            @Override
+            public DependencyGraph call() throws Exception {
+                rebuildDependencyGraph();
+                return dependencyGraph;
+            }
+        });
+    }
+
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }
@@ -3629,6 +3659,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
+            || rest.startsWith("/oops")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
             // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access

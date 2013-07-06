@@ -24,10 +24,14 @@
 package hudson.cli;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+
 import java.util.Collections;
+
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
+import hudson.model.ViewGroup;
 import hudson.model.View;
 import hudson.Extension;
 import jenkins.model.Jenkins;
@@ -57,7 +61,7 @@ public class ListJobsCommand extends CLICommand {
             View view = h.getView(name);
 
             if (view != null) {
-                jobs = view.getItems();
+                jobs = view.getAllItems();
             }
             // If no view was found, try with an item group.
             else {
@@ -71,7 +75,7 @@ public class ListJobsCommand extends CLICommand {
                 // No view and no item group with the given name found.
                 else {
                     stderr.println("No view or item group with the given name found");
-                    jobs = Collections.emptyList();
+                    return -1;
                 }
             }
         }

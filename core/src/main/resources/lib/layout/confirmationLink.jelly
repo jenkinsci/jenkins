@@ -38,13 +38,17 @@ THE SOFTWARE.
             A confirmation dialog message.
         </st:attribute>
     </st:documentation>
-    <a href="#" onclick="confirmPOST(${post ?: 'false'}, '${attrs.href}', '${h.jsStringEscape(message)}')"><d:invokeBody/></a>
+    <j:set var="id" value="${h.generateId()}"/>
+    <a href="#" onclick="confirmPOST_${id}(${post ?: 'false'}, '${attrs.href}', '${h.jsStringEscape(message)}')"><d:invokeBody/></a>
     <script>
-        function confirmPOST(post, href, message) {
+        function confirmPOST_${id}(post, href, message) {
             if (confirm(message)) {
                 var form = document.createElement('form');
                 form.setAttribute('method', post ? 'POST' : 'GET');
                 form.setAttribute('action', href);
+                if (post) {
+                    crumb.appendToForm(form);
+                }
                 document.body.appendChild(form);
                 form.submit();
             }
