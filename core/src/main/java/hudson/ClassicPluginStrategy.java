@@ -536,7 +536,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         List<PluginWrapper> dep = new ArrayList<PluginWrapper>();
                         for (Dependency d : pw.getDependencies()) {
                             PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                            if (p!=null)
+                            if (p!=null && p.isActive())
                                 dep.add(p);
                         }
                         return dep;
@@ -546,7 +546,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 try {
                     for (Dependency d : dependencies) {
                         PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                        if (p!=null)
+                        if (p!=null && p.isActive())
                             cgd.run(Collections.singleton(p));
                     }
                 } catch (CycleDetectedException e) {
