@@ -222,7 +222,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public TagCloud<LabelAtom> getLabelCloud() {
         return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
             public float weight(LabelAtom item) {
-                return item.getTiedJobs().size();
+                return item.getTiedJobCount();
             }
         });
     }
