@@ -24,6 +24,7 @@
  */
 package hudson;
 
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -71,8 +72,10 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
 
     /**
      * Test finding resources via DependencyClassLoader.
+     * Check transitive dependency exclude disabled plugins
      */
     @LocalData
+    @Bug(18654)
     public void testDisabledDependencyClassLoader() throws Exception {
         PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
 
@@ -82,7 +85,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
             if (i == 0)
                 assertTrue("expected foo4, found "+res , res.contains("/foo4/"));
             else
-                fail("disabled dependency should be included");
+                fail("disabled dependency should not be included");
         }
     }
 }
