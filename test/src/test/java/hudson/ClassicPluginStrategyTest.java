@@ -68,4 +68,21 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
         assertTrue("In current impl, " + res + " should be foo1 or foo2",
                    res.contains("/foo1/") || res.contains("/foo2/"));
     }
+
+    /**
+     * Test finding resources via DependencyClassLoader.
+     */
+    @LocalData
+    public void testDisabledDependencyClassLoader() throws Exception {
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
+
+        Enumeration<URL> en = p.classLoader.getResources("index.jelly");
+        for (int i = 0; en.hasMoreElements(); i++) {
+            String res = en.nextElement().toString();
+            if (i == 0)
+                assertTrue("expected foo4, found "+res , res.contains("/foo4/"));
+            else
+                fail("disabled dependency should be included");
+        }
+    }
 }
