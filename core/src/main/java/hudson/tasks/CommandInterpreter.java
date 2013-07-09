@@ -111,9 +111,9 @@ public abstract class CommandInterpreter extends Builder {
     
     protected void setBuildResult(AbstractBuild<?,?> build, int scriptResult) {
         if (scriptResult == 0)
-            build.setResult(Result.SUCCESS);
+            build.setResult(hudson.model.Result.SUCCESS);
         else
-            build.setResult(Result.FAILURE);
+            build.setResult(hudson.model.Result.FAILURE);
     }
 
     /**
