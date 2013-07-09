@@ -338,5 +338,11 @@ public class UtilTest {
         Properties p = Util.loadProperties("k.e.y=va.l.ue");
         assertEquals(p.toString(), "va.l.ue", p.get("k.e.y"));
         assertEquals(p.toString(), 1, p.size());
+
+        p = Util.loadProperties("path=C:\\Windows");
+        assertEquals("Single backslash should be preserved", "C:\\Windows", p.get("path"));
+
+        p = Util.loadProperties("prop=escaped\\\\slashes");
+        assertEquals("Double backslash should collaps to one", "escaped\\slashes", p.get("prop"));
     }
 }

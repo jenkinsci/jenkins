@@ -1346,14 +1346,16 @@ public class Util {
      */
     @IgnoreJRERequirement
     public static Properties loadProperties(String properties) throws IOException {
+        // Replace single backslashes with double ones so they won't be removed by Property.load()
+        String escapedProperties = properties.replaceAll("(?<=[^\\\\])\\\\(?=[^\\\\])", "\\\\\\\\");
         Properties p = new Properties();
         try {
-            p.load(new StringReader(properties));
+            p.load(new StringReader(escapedProperties));
         } catch (NoSuchMethodError e) {
             // load(Reader) method is only available on JDK6.
             // this fall back version doesn't work correctly with non-ASCII characters,
             // but there's no other easy ways out it seems.
-            p.load(new ByteArrayInputStream(properties.getBytes()));
+            p.load(new ByteArrayInputStream(escapedProperties.getBytes()));
         }
         return p;
     }

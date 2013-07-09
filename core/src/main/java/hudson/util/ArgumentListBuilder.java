@@ -195,12 +195,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * @since 1.262
      */
     public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr) throws IOException {
-        if(properties==null)    return this;
-
-        for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), false);
-        }
-        return this;
+        return addKeyValuePairsFromPropertyString(prefix, properties, vr, null);
     }
 
     /**
@@ -222,7 +217,9 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         if(properties==null)    return this;
 
         for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), (propsToMask == null) ? false : propsToMask.contains((String)entry.getKey()));
+            String value = Util.replaceMacro(entry.getValue().toString(), vr);
+            boolean propertyMask = (propsToMask == null) ? false : propsToMask.contains(entry.getKey());
+            addKeyValuePair(prefix, (String)entry.getKey(), value, propertyMask);
         }
         return this;
     }
