@@ -109,7 +109,7 @@ public abstract class CommandInterpreter extends Builder {
         }
     }
     
-    public void setBuildResult(AbstractBuild<?,?> build, int scriptResult) {
+    protected void setBuildResult(AbstractBuild<?,?> build, int scriptResult) {
         if (scriptResult == 0)
             build.setResult(Result.SUCCESS);
         else
