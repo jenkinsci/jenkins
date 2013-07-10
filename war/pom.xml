@@ -282,7 +282,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-credentials</artifactId>
-                  <version>0.2</version>
+                  <version>0.3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
