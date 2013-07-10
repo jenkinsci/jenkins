@@ -98,16 +98,14 @@ public class MavenArtifactArchiver extends MavenReporter {
 
         if (pom.getFile() != null) {// goals like 'clean' runs without loading POM, apparently.
             // record POM
-            final MavenArtifact pomArtifact = new MavenArtifact(
-                    pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName(), Util.getDigestOf(new FileInputStream(pom.getFile())));
-
+            final MavenArtifact pomArtifact = MavenArtifact.create(pom);
             final String repositoryUrl = pom.getDistributionManagementArtifactRepository() == null ? null : Util.fixEmptyAndTrim(pom.getDistributionManagementArtifactRepository().getUrl());
             final String repositoryId = pom.getDistributionManagementArtifactRepository() == null ? null : Util.fixEmptyAndTrim(pom.getDistributionManagementArtifactRepository().getId());
 
             mavenArtifacts.add(pom.getFile());
             pomArtifact.archive(build, pom.getFile(), listener);
 
-            // record main artifact (if packaging is POM, this doesn't exist)
+            // record main artifact (if packaging is POM, this might not exist, Note: in maven3 it does)
             final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
             if (mainArtifact != null) {
                 File f = pom.getArtifact().getFile();

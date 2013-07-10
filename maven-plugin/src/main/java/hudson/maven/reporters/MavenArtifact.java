@@ -40,6 +40,7 @@ import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.project.MavenProject;
 
 import com.google.common.collect.Maps;
 import org.kohsuke.stapler.AncestorInPath;
@@ -112,32 +113,22 @@ public final class MavenArtifact implements Serializable {
     @Exported
     public final String md5sum;
 
-    public MavenArtifact(Artifact a) throws IOException {
-        this.groupId = a.getGroupId();
-        this.artifactId = a.getArtifactId();
-        this.version = a.getVersion();
-        this.classifier = a.getClassifier();
-        this.type = a.getType();
-        this.fileName = a.getFile().getName();
-        this.md5sum = Util.getDigestOf(new FileInputStream(a.getFile()));
-        String extension;
-        if(a.getArtifactHandler()!=null) // don't know if this can be null, but just to be defensive.
-            extension = a.getArtifactHandler().getExtension();
-        else
-            extension = a.getType();
+    /**
+     * The parent pom artifact or null.
+     */
+    @Exported
+    public MavenArtifact parent;
 
-        canonicalName = getSeed(extension);
-    }
-
-    public MavenArtifact(String groupId, String artifactId, String version, String classifier, String type, String fileName, String md5sum) {
+    public MavenArtifact(String groupId, String artifactId, String version, String classifier, String type, String fileName, String extension, String md5sum, MavenArtifact parent) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
         this.classifier = classifier;
         this.type = type;
         this.fileName = fileName;
-        this.canonicalName = getSeed(type);
+        this.canonicalName = getSeed(extension);
         this.md5sum = md5sum;
+        this.parent = parent;
     }
 
     /**
@@ -145,12 +136,49 @@ public final class MavenArtifact implements Serializable {
      * enough information suitable for recording, and if so, create {@link MavenArtifact}.
      */
     public static MavenArtifact create(Artifact a) throws IOException {
+        if(a == null) {
+            return null;
+        }
         File file = a.getFile();
-        if(file==null)
-            return null; // perhaps build failed and didn't leave an artifact
-        if(!file.isFile())
-            return null; // file doesn't exist or artifact points to a directory
-        return new MavenArtifact(a);
+        if (file == null || !file.isFile() || file.isDirectory()) {
+            return null; /* perhaps build failed and didn't leave an artifact
+                          * or file doesn't exist or artifact points to a directory
+                          */
+        }
+        return new MavenArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier(), a.getType(), 
+            file.getName(), getExtension(a), Util.getDigestOf(new FileInputStream(file)), null);
+    }
+
+    public static MavenArtifact createParent(Artifact a) throws IOException {
+        if(a == null) {
+            return null;
+        }
+        return new MavenArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, a.getType(), null, "pom", null, null);
+    }
+    
+    public static MavenArtifact create(MavenProject pom) throws IOException {
+        if(pom == null) {
+            return null;
+        }
+        File file = pom.getFile();
+        if (file == null || !file.isFile() || file.isDirectory()) {
+            return null; /* perhaps build failed and didn't leave an artifact
+                          * or file doesn't exist or artifact points to a directory
+                          */
+        }
+        return new MavenArtifact(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, 
+            pom.getPackaging(), file.getName(), "pom", Util.getDigestOf(new FileInputStream(file)), 
+            createParent(pom.getParentArtifact()));
+    }
+
+    private static String getExtension(Artifact a) {
+        String result = "";
+        if(a.getArtifactHandler()!=null) { // don't know if this can be null, but just to be defensive.
+            result = a.getArtifactHandler().getExtension();
+        } else {
+            result = a.getType();
+        }
+        return result;
     }
 
     public boolean isPOM() {
