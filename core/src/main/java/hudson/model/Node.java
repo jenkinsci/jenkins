@@ -343,6 +343,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
         }
 
+        /**
+         * check if requested JDK is available on this node.
+         */
+        if(item.task instanceof Project) {
+            CauseOfBlockage c = ((Project)item.task).canRunOnNode(this);
+            if(c!=null) return c;
+        }
+
         // Check each NodeProperty to see whether they object to this node
         // taking the task
         for (NodeProperty prop: getNodeProperties()) {

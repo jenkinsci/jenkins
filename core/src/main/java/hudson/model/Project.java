@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -189,6 +190,17 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     public MavenInstallation inferMavenInstallation() {
         Maven m = getBuildersList().get(Maven.class);
         if (m!=null)    return m.getMaven();
+        return null;
+    }
+
+    /**
+     * checks if this very project can run on the given node
+     * 
+     * @param node
+     * @return null if the project can run. A {@link CauseOfBlockage}
+     * object is returned if not.
+     */
+    public CauseOfBlockage canRunOnNode(Node node) {
         return null;
     }
 
