@@ -239,6 +239,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
             }
         }
 
+        if (lb == null) {
+            throw new IOException("cannot start a build of " + getFullName() + " since its parent has no builds at all");
+        }
+
         // for every MatrixRun there should be a parent MatrixBuild
         MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
 

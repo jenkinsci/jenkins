@@ -135,6 +135,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.scm.PollingResult.*;
+import javax.annotation.CheckForNull;
 import static javax.servlet.http.HttpServletResponse.*;
 
 /**
@@ -1061,7 +1062,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public R getLastBuild() {
+    public @CheckForNull R getLastBuild() {
         return builds.newestBuild();
     }
 
