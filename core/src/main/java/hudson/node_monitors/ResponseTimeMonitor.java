@@ -113,7 +113,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
     private static final class Step2 implements Callable<Step3,IOException> {
         private final Data cur;
-        private final long start = System.nanoTime();
+        private final long start = System.currentTimeMillis();
 
         public Step2(Data cur) {
             this.cur = cur;
@@ -137,8 +137,8 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         private Object readResolve() {
-            long end = System.nanoTime();
-            return new Data(cur,TimeUnit2.NANOSECONDS.toMillis(end-start));
+            long end = System.currentTimeMillis();
+            return new Data(cur,(end-start));
         }
 
         private static final long serialVersionUID = 1L;
