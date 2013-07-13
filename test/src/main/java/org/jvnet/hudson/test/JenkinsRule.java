@@ -877,7 +877,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     /**
-     * Create a new slave on the local host and wait for it to come onilne
+     * Create a new slave on the local host and wait for it to come online
      * before returning.
      */
     public DumbSlave createOnlineSlave() throws Exception {
@@ -885,7 +885,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     /**
-     * Create a new slave on the local host and wait for it to come onilne
+     * Create a new slave on the local host and wait for it to come online
      * before returning.
      */
     public DumbSlave createOnlineSlave(Label l) throws Exception {
