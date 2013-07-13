@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -255,6 +256,17 @@ public class SearchTest {
         assertFalse(j.jenkins.getPrimaryView().contains(p));
 
         assertTrue(suggest(j.jenkins.getSearchIndex(),"foo").contains(p));
+    }
+    
+    @Test
+    public void testSearchWithinFolders() throws Exception {
+        MockFolder folder1 = j.createFolder("folder1");
+        FreeStyleProject p1 = folder1.createProject(FreeStyleProject.class, "myjob");
+        MockFolder folder2 = j.createFolder("folder2");
+        FreeStyleProject p2 = folder2.createProject(FreeStyleProject.class, "myjob");
+        List<SearchItem> suggest = suggest(j.jenkins.getSearchIndex(), "myjob");
+        assertTrue(suggest.contains(p1));
+        assertTrue(suggest.contains(p2));
     }
 
     private List<SearchItem> suggest(SearchIndex index, String term) {
