@@ -189,6 +189,9 @@ public class Functions {
         return o instanceof ModelObjectWithChildren;
     }
     
+    /**
+     * @since 1.524
+     */
     public static boolean isMatrixProject(Object o) {
         return o instanceof MatrixProject;
     }
