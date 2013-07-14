@@ -159,6 +159,7 @@ import com.google.common.base.Predicates;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class Functions {
     private static volatile int globalIota = 0;
     private int iota;

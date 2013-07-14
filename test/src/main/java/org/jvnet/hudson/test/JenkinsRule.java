@@ -40,6 +40,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -115,6 +116,7 @@ import jenkins.model.JenkinsAdaptor;
 import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
+
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
@@ -160,6 +162,7 @@ import org.xml.sax.SAXException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+
 import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
@@ -203,7 +206,9 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
 import jenkins.model.JenkinsLocationConfiguration;
+
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 
@@ -213,6 +218,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.containsString;
+
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -222,6 +228,7 @@ import org.junit.rules.TemporaryFolder;
  * @author Stephen Connolly
  * @since 1.436
  */
+@SuppressWarnings({"deprecation","rawtypes"})
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     private TestEnvironment env;
