@@ -38,6 +38,7 @@ import org.codehaus.plexus.logging.console.ConsoleLogger;
  * 
  * @author Kohsuke Kawaguchi
  */
+// TODO this is gone in 3.1.0, replaced by SLF4J
 public final class EmbedderLoggerImpl extends MavenLoggerManager {
     private final PrintStream logger;
 

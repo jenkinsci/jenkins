@@ -42,9 +42,9 @@ THE SOFTWARE.
 
   <properties>
     <mavenInterceptorsVersion>1.3</mavenInterceptorsVersion>
-    <mavenVersion>3.0.5</mavenVersion>
+    <mavenVersion>3.1.0</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>1.13.1</aetherVersion>
+    <aetherVersion>0.9.0.M2</aetherVersion>
     <sisuInjectVersion>2.3.0</sisuInjectVersion>
     <wagonVersion>2.4</wagonVersion>
   </properties>
@@ -147,27 +147,27 @@ THE SOFTWARE.
     
     
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-api</artifactId>
       <version>${aetherVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-impl</artifactId>
       <version>${aetherVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-spi</artifactId>
       <version>${aetherVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-util</artifactId>
       <version>${aetherVersion}</version>
     </dependency>                                   
     <dependency>
-      <groupId>org.sonatype.aether</groupId>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
       <version>${aetherVersion}</version>
       <exclusions>
@@ -281,7 +281,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>
       <artifactId>lib-jenkins-maven-embedder</artifactId>
-      <version>3.9</version>
+      <version>3.10-SNAPSHOT</version>
       <exclusions>
         <exclusion><!-- we'll add our own patched version. see https://issues.jenkins-ci.org/browse/JENKINS-1680 -->
           <groupId>jtidy</groupId>
