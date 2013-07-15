@@ -129,18 +129,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
 			// manage of Maven error are moved to ExecutionEventLogger, they are
 			// threaded as in MavenCli
-            if (!mavenExecutionResult.getThrowables().isEmpty() && isDebug()) {
-                logger.println( "mavenExecutionResult exceptions not empty");
-                for(Throwable throwable : mavenExecutionResult.getThrowables()) {
-                    logger.println("message : " + throwable.getMessage());
-                    if (throwable.getCause()!=null) {
-                        logger.println("cause : " + throwable.getCause().getMessage());
-                    }
-                    logger.println("Stack trace : ");
-                    throwable.printStackTrace( logger );
-                }
-                
-            }
 
             if(markAsSuccess) {
                 logger.println(Messages.MavenBuilder_Failed());
@@ -200,7 +188,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             // TODO: we should think about reusing the code in org.apache.maven.cli.DefaultMavenExecutionRequestBuilder#logging?
             // E.g. there's also the option to redirect logging to a file which is handled there, but not here.
-            PrintStreamLogger logger = new PrintStreamLogger( maven3Builder.listener.getLogger() );
+            PrintStreamLogger logger = new PrintStreamLogger( /* maven3Builder.listener.getLogger() */ System.out );
             if (maven3Builder.isDebug()) {
                 logger.setThreshold(PrintStreamLogger.LEVEL_DEBUG);
             } else if (maven3Builder.isQuiet()) {
