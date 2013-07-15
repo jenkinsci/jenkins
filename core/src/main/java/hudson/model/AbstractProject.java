@@ -299,7 +299,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (currentBuilds==null && parent!=null) {
             // are we overwriting what currently exist?
             // this is primarily when Jenkins is getting reloaded
-            Item current = parent.getItem(name);
+            Item current;
+            try {
+                current = parent.getItem(name);
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, "failed to look up " + name + " in " + parent, x);
+                current = null;
+            }
             if (current!=null && current.getClass()==getClass()) {
                 currentBuilds = ((AbstractProject)current).builds;
             }
