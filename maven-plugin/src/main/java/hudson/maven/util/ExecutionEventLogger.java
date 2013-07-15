@@ -146,7 +146,7 @@ public class ExecutionEventLogger
 
             logger.info( chars( '-', LINE_LENGTH ) );
         }
-        
+
         logErrors( event.getSession() );
     }
 
@@ -196,60 +196,71 @@ public class ExecutionEventLogger
         }
     }
 
-    private void logErrors( MavenSession session ) {
+    private void logErrors( MavenSession session )
+    {
     	MavenExecutionResult result = session.getResult();
 
         // show all errors and them references as in MavenCli
-        if (!result.getExceptions().isEmpty()) {
+        if ( !result.getExceptions().isEmpty() )
+        {
             ExceptionHandler handler = new DefaultExceptionHandler();
 
             Map<String, String> references = new LinkedHashMap<String, String>();
 
-			for (Throwable exception : result.getExceptions()) {
-				ExceptionSummary summary = handler.handleException(exception);
+			for ( Throwable exception : result.getExceptions() )
+			{
+				ExceptionSummary summary = handler.handleException( exception );
 
-				logErrorSummary(summary, references, "", logger.isDebugEnabled());
+				logErrorSummary( summary, references, "", logger.isDebugEnabled() );
 			}
 
-			if (!references.isEmpty()) {
-				logger.error("For more information about the errors and possible solutions"
+			if ( !references.isEmpty() )
+			{
+				logger.error( "For more information about the errors and possible solutions"
 						+ ", please read the following articles:");
 
-				for (Map.Entry<String, String> entry : references.entrySet()) {
-					logger.error(entry.getValue() + " " + entry.getKey());
+				for ( Map.Entry<String, String> entry : references.entrySet() ) {
+					logger.error( entry.getValue() + " " + entry.getKey() );
 				}
 			}
         }
     }
 
-	private void logErrorSummary(ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors) {
+	private void logErrorSummary(ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors)
+	{
 		String referenceKey = "";
 
-		if (StringUtils.isNotEmpty(summary.getReference())) {
-			referenceKey = references.get(summary.getReference());
+		if ( StringUtils.isNotEmpty( summary.getReference() ) )
+		{
+			referenceKey = references.get( summary.getReference() );
 			if (referenceKey == null) {
-				referenceKey = "[Help " + (references.size() + 1) + "]";
-				references.put(summary.getReference(), referenceKey);
+				referenceKey = "[Help " + ( references.size() + 1 ) + "]";
+				references.put( summary.getReference(), referenceKey );
 			}
 		}
 
 		String msg = summary.getMessage();
 
-		if (StringUtils.isNotEmpty(referenceKey)) {
-			if (msg.indexOf('\n') < 0) {
+		if (StringUtils.isNotEmpty( referenceKey ))
+		{
+			if (msg.indexOf('\n') < 0)
+			{
 				msg += " -> " + referenceKey;
-			} else {
+			}
+			else
+			{
 				msg += "\n-> " + referenceKey;
 			}
 		}
 
 		String[] lines = msg.split("(\r\n)|(\r)|(\n)");
 
-		for (int i = 0; i < lines.length; i++) {
+		for ( int i = 0; i < lines.length; i++ )
+		{
 			String line = indent + lines[i].trim();
 
-			if (i == lines.length - 1 && (showErrors || (summary.getException() instanceof InternalErrorException))) {
-				logger.error(line, summary.getException());
+			if ( i == lines.length - 1 && ( showErrors || ( summary.getException() instanceof InternalErrorException ) ) ) {
+				logger.error( line, summary.getException() );
 			} else {
 				logger.error(line);
 			}
@@ -257,8 +268,8 @@ public class ExecutionEventLogger
 
 		indent += "  ";
 
-		for (ExceptionSummary child : summary.getChildren()) {
-			logErrorSummary(child, references, indent, showErrors);
+		for ( ExceptionSummary child : summary.getChildren() ) {
+			logErrorSummary( child, references, indent, showErrors );
 		}
 	}
 
