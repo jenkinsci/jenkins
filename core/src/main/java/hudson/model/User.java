@@ -606,8 +606,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
-                        || base.hasPermission(a, permission);
+            	//Make sure we aren't changing Jenkins aministrator settings. (see: JENKINS-18633) 
+            	if(permission.group.equals(Jenkins.PERMISSIONS))
+            	{
+            		return base.hasPermission(a, permission);
+            	}
+            	else
+            	{
+            		return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
+            				|| base.hasPermission(a, permission);
+            	}
             }
         };
     }
