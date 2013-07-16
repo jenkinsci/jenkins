@@ -55,6 +55,28 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Provided maven settings.xml in maven builder is lost.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15976">issue 15976</a>)
+  <li class=bug>
+    Fixed a regression that broke some plugins' form validation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18776">issue 18776</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.524>What's new in 1.524</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Clock Difference broken on Manage Nodes page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18671">issue 18671</a>)
+  <li class=bug>
+    Fixed another possible cause of an NPE from MatrixConfiguration.newBuild.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17728">issue 17728</a>)
+  <li class=bug>
+    NPE in MavenFingerprinter.getArtifactRepositoryMaven21.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18441">issue 18441</a>)
   <li class=rfe>
     Can't build using maven 3.1.0
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15935">issue 15935</a>)
