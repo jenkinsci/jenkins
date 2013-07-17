@@ -56,6 +56,101 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Fixed Winstone+mod_proxy_ajp+SSL combo issue.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5753">issue 5753</a>)
+  <li class=bug>
+    Provided maven settings.xml in maven builder is lost.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15976">issue 15976</a>)
+  <li class=bug>
+    Fixed a regression that broke some plugins' form validation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18776">issue 18776</a>)
+  <li class=bug>
+    People View does Not Populate if JQuery plugin enabled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18641">issue 18641</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.524>What's new in 1.524</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Clock Difference broken on Manage Nodes page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18671">issue 18671</a>)
+  <li class=bug>
+    Fixed another possible cause of an NPE from MatrixConfiguration.newBuild.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17728">issue 17728</a>)
+  <li class=bug>
+    NPE in MavenFingerprinter.getArtifactRepositoryMaven21.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18441">issue 18441</a>)
+  <li class=rfe>
+    More reliability improvement in remote slave reconnection.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.523>What's new in 1.523</a> (2013/07/14)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed: claiming of tests doesn't work in Maven jobs (claim-plugin)
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14585">issue 14585</a>)
+</ul>
+<h3><a name=v1.522>What's new in 1.522</a> (2013/07/06)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a regression in the config form with some plugins
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18585">issue 18585</a>)
+  <li class=bug>
+    Fixed a dead lock in the <tt>Project</tt> class and improved the signature of the persisted XML form a bit.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18589">issue 18589</a>)
+  <li class=bug>
+    Improved memory efficiency in parsing test reports with large stdio output files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15382">issue 15382</a>)
+  <li class=rfe>
+    Node monitoring now happens concurrently across all the slaves, so it'll be affected less by problematic slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18438">issue 18438</a>)
+  <li class=bug>
+    Deadlock during Maven builds Parsing POM step
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15846">issue 15846</a>)
+  <li class=bug>
+    If every node is restricted to tied jobs only, Matrix build jobs can never start.
+</ul>
+<h3><a name=v1.521>What's new in 1.521</a> (2013/07/02)</h3>
+<ul class=image>
+  <li class=bug>
+    Build with parameters returns empty web page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18425">issue 18425</a>)
+  <li class=bug>
+    Access denied error results in ERR_CONTENT_DECODING_FAILED on most browsers, masking the root cause.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15437">issue 15437</a>)
+  <li class=bug>
+    Fixed the master/slave handshake problem when a slave runs on non-ASCII compatible encoding (such as EBCDIC.)
+  <li class=rfe>
+    Added a diagnosis for <tt>StreamCorruptedException</tt> problem
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8856">issue 8856</a>)
+  <li class=rfe>
+    Matrix project's parent can be now tied to labels/slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7825">issue 7825</a>)
+  <li class=bug>
+    Clean up fingerprint records that correspond to the deleted build recods
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18417">issue 18417</a>)
+  <li class=bug>
+    Fixed "Comparison method violates its general contract" error in BuildTrigger.execute
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17247">issue 17247</a>)
+  <li class=bug>
+    Edited description wasn't reflected when pressing the "Apply" button.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18436">issue 18436</a>)
+  <li class=bug>
+    Fixed a regression in remoting since 1.519 that caused FindBugs plugins to break.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18349">issue 18349</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-18405">issue 18405</a>)
+  <li class=rfe>
+    Revisited the extension point added in 1.519 that adds custom plexus components.
+</ul>
+<h3><a name=v1.520>What's new in 1.520</a> (2013/06/25)</h3>
+<ul class=image>
+  <li class=bug>
+    Slave launch thread should have the background activity credential.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15578">issue 15578</a>)
+  <li class=bug>
     “Build Now” link did not work for multijobs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16974">issue 16974</a>)
 
