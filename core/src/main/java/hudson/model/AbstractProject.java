@@ -467,7 +467,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, isParameterized() ? Messages.AbstractProject_build_with_parameters() : Messages.AbstractProject_BuildNow());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, isParameterized() ? Messages.AbstractProject_Build() : Messages.AbstractProject_BuildNow());
     }
 
     /**
