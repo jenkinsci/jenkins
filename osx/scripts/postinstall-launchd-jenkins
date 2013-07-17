@@ -1,6 +1,7 @@
 #!/bin/bash
 
 JENKINS_PLIST="/Library/LaunchDaemons/org.jenkins-ci.plist"
+DEFAULTS_PLIST="/Library/Preferences/org.jenkins-ci.plist"
 
 # Because PackageMaker just copies the components, we need to fix the permissions
 chown root:wheel ${JENKINS_PLIST}
@@ -44,6 +45,21 @@ else
 fi
 
 find "$JENKINS_HOMEDIR" \( -not -user jenkins -or -not -group jenkins \) -print0 | xargs -0 chown jenkins:jenkins
+
+# Add defaults for heap sizing
+arch=$(uname -m)
+if [ $arch = 'x86_64' ]; then
+    defaults write $DEFAULTS_PLIST heapSize 512m
+    defaults write $DEFAULTS_PLIST permGen 512m
+    defaults write $DEFAULTS_PLIST minHeapSize 256m
+    defaults write $DEFAULTS_PLIST minPermGen 256m
+else
+    # i386
+    defaults write $DEFAULTS_PLIST heapSize 128m
+    defaults write $DEFAULTS_PLIST permGen 128m
+    defaults write $DEFAULTS_PLIST minHeapSize 64m
+    defaults write $DEFAULTS_PLIST minPermGen 64m    
+fi
 
 # Create log directory, which can be written by Jenkins daemon
 mkdir -p /var/log/jenkins
