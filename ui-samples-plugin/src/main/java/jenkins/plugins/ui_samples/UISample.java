@@ -101,19 +101,17 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
     public static List<UISample> getOtherSamples() {
       ExtensionList<UISample> list = Jenkins.getInstance().getExtensionList(UISample.class);
       List<UISample> r = new ArrayList<UISample>();
+      OUTER:
       for (Iterator<UISample> ite = list.iterator(); ite.hasNext();) {
         UISample uiSample = ite.next();
         List<SourceFile> sourceFiles = uiSample.getSourceFiles();
-        boolean returnSample = true;
         for (Iterator<SourceFile> srcFileITe = sourceFiles.iterator(); srcFileITe.hasNext();) {
           SourceFile src = (SourceFile) srcFileITe.next();
           if (src.name.contains("groovy")) {
-            returnSample = false;
-            break;
+              r.add(uiSample);
+              continue OUTER;
           }
         }
-        if (returnSample)
-          r.add(uiSample);
       }
       return r;
     }
