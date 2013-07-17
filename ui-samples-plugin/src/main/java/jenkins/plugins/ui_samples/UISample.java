@@ -82,38 +82,38 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
     }
 
     public static List<UISample> getGroovySamples() {
-      ExtensionList<UISample> list = Jenkins.getInstance().getExtensionList(UISample.class);
-      List<UISample> r = new ArrayList<UISample>();
-      for (Iterator<UISample> ite = list.iterator(); ite.hasNext();) {
-        UISample uiSample = ite.next();
-        List<SourceFile> sourceFiles = uiSample.getSourceFiles();
-        for (Iterator<SourceFile> srcFileITe = sourceFiles.iterator(); srcFileITe.hasNext();) {
-          SourceFile src = (SourceFile) srcFileITe.next();
-          if (src.name.contains("groovy")) {
-            r.add(uiSample);
-            break;
-          }
+        ExtensionList<UISample> list = Jenkins.getInstance().getExtensionList(UISample.class);
+        List<UISample> r = new ArrayList<UISample>();
+        for (Iterator<UISample> ite = list.iterator(); ite.hasNext(); ) {
+            UISample uiSample = ite.next();
+            List<SourceFile> sourceFiles = uiSample.getSourceFiles();
+            for (Iterator<SourceFile> srcFileITe = sourceFiles.iterator(); srcFileITe.hasNext(); ) {
+                SourceFile src = (SourceFile) srcFileITe.next();
+                if (src.name.contains("groovy")) {
+                    r.add(uiSample);
+                    break;
+                }
+            }
         }
-      }
-      return r;
+        return r;
     }
-    
+
     public static List<UISample> getOtherSamples() {
-      ExtensionList<UISample> list = Jenkins.getInstance().getExtensionList(UISample.class);
-      List<UISample> r = new ArrayList<UISample>();
-      OUTER:
-      for (Iterator<UISample> ite = list.iterator(); ite.hasNext();) {
-        UISample uiSample = ite.next();
-        List<SourceFile> sourceFiles = uiSample.getSourceFiles();
-        for (Iterator<SourceFile> srcFileITe = sourceFiles.iterator(); srcFileITe.hasNext();) {
-          SourceFile src = (SourceFile) srcFileITe.next();
-          if (src.name.contains("groovy")) {
-              r.add(uiSample);
-              continue OUTER;
-          }
+        ExtensionList<UISample> list = Jenkins.getInstance().getExtensionList(UISample.class);
+        List<UISample> r = new ArrayList<UISample>();
+        OUTER:
+        for (Iterator<UISample> ite = list.iterator(); ite.hasNext(); ) {
+            UISample uiSample = ite.next();
+            List<SourceFile> sourceFiles = uiSample.getSourceFiles();
+            for (Iterator<SourceFile> srcFileITe = sourceFiles.iterator(); srcFileITe.hasNext(); ) {
+                SourceFile src = (SourceFile) srcFileITe.next();
+                if (src.name.contains("groovy")) {
+                    r.add(uiSample);
+                    continue OUTER;
+                }
+            }
         }
-      }
-      return r;
+        return r;
     }
 
     /**
