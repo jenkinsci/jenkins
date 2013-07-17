@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import hudson.Functions;
 import jenkins.model.Jenkins;
 import hudson.TcpSlaveAgentListener;
 
@@ -84,14 +85,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
 
-            // advertise the CLI TCP port
-            TcpSlaveAgentListener tal = Jenkins.getInstance().getTcpSlaveAgentListener();
-            if (tal!=null) {
-                rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
+            Functions.advertiseHeaders(rsp);
 
             AccessDeniedException2 cause = null;
             // report the diagnosis information if possible
