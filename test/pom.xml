@@ -196,30 +196,16 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>1.5-jenkins-1</version>
         <executions>
           <execution>
-            <id>test-in-groovy</id>
+            <id>default</id>
             <!-- compile and process annotations in Groovy test code -->
             <goals>
               <goal>generateTestStubs</goal>
               <goal>testCompile</goal>
             </goals>
           </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.6.5</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
           <execution>
             <id>preset-packager</id>
             <phase>process-resources</phase>
@@ -243,7 +229,16 @@ THE SOFTWARE.
             <artifactId>ant-launcher</artifactId>
             <version>1.8.0</version>
           </dependency>
+
+          <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-2.0</artifactId>
+            <version>1.5-jenkins-1</version>
+          </dependency>
         </dependencies>
+        <configuration>
+          <providerSelection>2.0</providerSelection>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -263,9 +258,9 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.kohsuke.gmaven</groupId>
+            <groupId>org.codehaus.gmaven</groupId>
             <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
+            <version>1.5-jenkins-1</version>
             <executions>
               <!-- run unit test -->
               <execution>
