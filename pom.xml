@@ -98,6 +98,9 @@ THE SOFTWARE.
     <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+
+    <mcompiler.source>1.5</mcompiler.source>
+    <mcompiler.target>${mcompiler.source}</mcompiler.target>
   </properties>
 
 
@@ -629,10 +632,20 @@ THE SOFTWARE.
                 <requireMavenVersion>
                   <version>3.0</version>
                 </requireMavenVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${mcompiler.target}</maxJdkVersion>
+                </enforceBytecodeVersion>
               </rules>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.0-alpha-4</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>
