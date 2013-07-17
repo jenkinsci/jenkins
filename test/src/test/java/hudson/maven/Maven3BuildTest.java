@@ -179,6 +179,24 @@ public class Maven3BuildTest extends HudsonTestCase {
         assertFalse( content.contains( "${maven.build.timestamp}") );
     }
 
+    @Bug(9693)
+    public void testBuildTimeStampPropertyParsing() throws Exception {
+        MavenInstallation mavenInstallation = configureMaven3();
+        MavenModuleSet m = createMavenProject();
+        m.setMaven( mavenInstallation.getName() );
+        m.getReporters().add(new TestReporter());
+        m.setScm(new ExtractResourceSCM(getClass().getResource("JENKINS-9693.zip")));
+        m.setGoals( "process-resources" );
+        buildAndAssertSuccess(m);
+        String content = m.getLastBuild().getWorkspace().child( "target/classes/test.properties" ).readToString();
+        
+        System.out.println( "content " + content );
+        
+        //Match timestamp format: yyyy-MM-dd'T'HH:mm:ssZ specified in test case pom
+        String regex = "Build-Timestamp: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{4}";
+        assertTrue(content.matches(regex));
+    }
+
     @Bug(1557)
     public void testDuplicateTestResults() throws Exception {
         MavenInstallation mavenInstallation = configureMaven3();
