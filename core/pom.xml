@@ -555,8 +555,7 @@ THE SOFTWARE.
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <!--  NOTE: 1.7 requires Java 6, so don't use it! -->
-      <version>1.6</version>
+      <version>1.8</version>
     </dependency>
 
     <dependency>
