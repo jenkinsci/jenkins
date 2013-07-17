@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.524-SNAPSHOT</version>
+    <version>1.525-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.213</stapler.version>
+    <stapler.version>1.214</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
   </properties>
 
@@ -198,7 +198,7 @@ THE SOFTWARE.
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.4-jenkins-1</version>
+      <version>2.4-jenkins-2</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -555,8 +555,7 @@ THE SOFTWARE.
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <!--  NOTE: 1.7 requires Java 6, so don't use it! -->
-      <version>1.6</version>
+      <version>1.8</version>
     </dependency>
 
     <dependency>

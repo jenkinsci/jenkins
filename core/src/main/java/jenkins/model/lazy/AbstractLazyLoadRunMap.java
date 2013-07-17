@@ -46,6 +46,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
@@ -353,7 +354,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If ASC, finds the closest #M that satisfies M>=N.
      *      If DESC, finds the closest #M that satisfies M&lt;=N.
      */
-    public R search(final int n, final Direction d) {
+    public @CheckForNull R search(final int n, final Direction d) {
         Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
         if (c!=null && c.getKey()== n) {
             R r = c.getValue().get();

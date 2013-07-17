@@ -28,6 +28,7 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -158,6 +159,7 @@ import com.google.common.base.Predicates;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class Functions {
     private static volatile int globalIota = 0;
     private int iota;
@@ -186,6 +188,13 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+    
+    /**
+     * @since 1.524
+     */
+    public static boolean isMatrixProject(Object o) {
+        return o instanceof MatrixProject;
     }
 
     public static String xsDate(Calendar cal) {
@@ -1320,15 +1329,23 @@ public class Functions {
     public static String toCCStatus(Item i) {
         if (i instanceof Job) {
             Job j = (Job) i;
-            switch (j.getIconColor().noAnime()) {
+            switch (j.getIconColor()) {
             case ABORTED:
+            case ABORTED_ANIME:
             case RED:
+            case RED_ANIME:
             case YELLOW:
+            case YELLOW_ANIME:
                 return "Failure";
             case BLUE:
+            case BLUE_ANIME:
                 return "Success";
             case DISABLED:
+            case DISABLED_ANIME:
             case GREY:
+            case GREY_ANIME:
+            case NOTBUILT:
+            case NOTBUILT_ANIME:
                 return "Unknown";
             }
         }
@@ -1747,5 +1764,25 @@ public class Functions {
         return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
                 .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
         ;
+    }
+
+    /**
+     * Advertises the minimum set of HTTP headers that assist programmatic
+     * discovery of Jenkins.
+     */
+    public static void advertiseHeaders(HttpServletResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+
+        rsp.setHeader("X-Hudson","1.395");
+        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+
+        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+        if (tal !=null) {
+            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+        }
     }
 }

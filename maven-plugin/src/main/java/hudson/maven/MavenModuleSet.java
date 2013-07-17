@@ -1112,6 +1112,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     public String getUserConfiguredGoals() {
         return goals;
     }
+    
+    @Override
+    protected List<MavenModuleSetBuild> getEstimatedDurationCandidates() {
+        return super.getEstimatedDurationCandidates();
+    }
 
     /*package*/ void reconfigure(PomInfo rootPom) throws IOException {
         if(this.rootModule!=null && this.rootModule.equals(rootPom.name))

@@ -425,7 +425,7 @@ public class QueueTest extends HudsonTestCase {
         final FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         // scheduling algorithm would prefer running the same job on the same node
-        assertSame(b1.getBuiltOn(),b2.getBuiltOn());
+        // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
         // ACL that allow anyone to do anything except Alice can't build.
         final SparseACL aliceCantBuild = new SparseACL(null);

@@ -47,8 +47,6 @@ THE SOFTWARE.
             ${%description(it.name, newName)}
             <input type="hidden" name="newName" value="${newName}" />
             <f:submit value="${%Yes}" />
-            <input type="button" value="${%No}"
-                   onclick="javascript:history.back()" class="yui-button" />
           </form>
         </j:otherwise>
       </j:choose>

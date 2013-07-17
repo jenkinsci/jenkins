@@ -135,6 +135,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.scm.PollingResult.*;
+import javax.annotation.CheckForNull;
 import static javax.servlet.http.HttpServletResponse.*;
 
 /**
@@ -298,7 +299,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (currentBuilds==null && parent!=null) {
             // are we overwriting what currently exist?
             // this is primarily when Jenkins is getting reloaded
-            Item current = parent.getItem(name);
+            Item current;
+            try {
+                current = parent.getItem(name);
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, "failed to look up " + name + " in " + parent, x);
+                current = null;
+            }
             if (current!=null && current.getClass()==getClass()) {
                 currentBuilds = ((AbstractProject)current).builds;
             }
@@ -559,6 +566,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
             FilePath ws = b.getWorkspace();
             if (ws!=null)   return b;
+        }
+        return null;
+    }
+    
+    private R getSomeBuildWithExistingWorkspace() throws IOException, InterruptedException {
+        int cnt=0;
+        for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
+            FilePath ws = b.getWorkspace();
+            if (ws!=null && ws.exists())   return b;
         }
         return null;
     }
@@ -1061,7 +1077,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
-    public R getLastBuild() {
+    public @CheckForNull R getLastBuild() {
         return builds.newestBuild();
     }
 
@@ -1463,7 +1479,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         try {
             SCMPollListener.fireBeforePolling(this, listener);
-            PollingResult r = _poll(listener, scm, lb);
+            PollingResult r = _poll(listener, scm);
             SCMPollListener.firePollingSuccess(this,listener, r);
             return r;
         } catch (AbortException e) {
@@ -1492,18 +1508,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * {@link #poll(TaskListener)} method without the try/catch block that does listener notification and .
      */
-    private PollingResult _poll(TaskListener listener, SCM scm, R lb) throws IOException, InterruptedException {
+    private PollingResult _poll(TaskListener listener, SCM scm) throws IOException, InterruptedException {
         if (scm.requiresWorkspaceForPolling()) {
-            // lock the workspace of the last build
-            FilePath ws=lb.getWorkspace();
+            R b = getSomeBuildWithExistingWorkspace();
+            if (b == null) b = getLastBuild();
+            // lock the workspace for the given build
+            FilePath ws=b.getWorkspace();
 
-            WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( lb );
+            WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( b );
             if ( workspaceOfflineReason != null ) {
                 // workspace offline
                 for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
                     ws = browser.getWorkspace(this);
                     if (ws != null) {
-                        return pollWithWorkspace(listener, scm, lb, ws, browser.getWorkspaceList());
+                        return pollWithWorkspace(listener, scm, b, ws, browser.getWorkspaceList());
                     }
                 }
 
@@ -1528,8 +1546,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return BUILD_NOW;
                 }
             } else {
-                WorkspaceList l = lb.getBuiltOn().toComputer().getWorkspaceList();
-                return pollWithWorkspace(listener, scm, lb, ws, l);
+                WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
+                return pollWithWorkspace(listener, scm, b, ws, l);
 
             }
         } else {
@@ -1537,7 +1555,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             LOGGER.fine("Polling SCM changes of " + getName());
 
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                calcPollingBaseline(lb,null,listener);
+                calcPollingBaseline(getLastBuild(),null,listener);
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
             pollingBaseline = r.remote;
             return r;
@@ -1552,8 +1570,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
         // by having multiple workspaces
         WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
-        Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(lb.getBuiltOn(),listener));
+        Node node = lb.getBuiltOn();
+        Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
         try {
+            listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
             LOGGER.fine("Polling SCM changes of " + getName());
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(lb,launcher,listener);

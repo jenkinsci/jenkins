@@ -180,6 +180,9 @@ public class MavenFingerprinter extends MavenReporter {
             // this maven 2 object via reflection
             Method method = MavenProject.class.getMethod("getProjectBuilderConfiguration");
             projectBuilderConfiguration = (ProjectBuilderConfiguration) method.invoke(pom);
+            if (projectBuilderConfiguration == null) {
+                return null;
+            }
             return projectBuilderConfiguration.getLocalRepository();
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Could not retrieve BuilderConfigration", e);
