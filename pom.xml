@@ -747,7 +747,6 @@ THE SOFTWARE.
               <!--&lt;!&ndash;rulesets>-->
                   <!--<ruleset>ruleset.xml</ruleset>-->
                   <!--</rulesets&ndash;&gt;-->
-              <!--<targetJdk>1.5</targetJdk>-->
             <!--</configuration>-->
           <!--</plugin>-->
           <!--<plugin>-->
