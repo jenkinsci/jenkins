@@ -105,6 +105,10 @@ public final class ProcessCache {
             this.parent = parent;
             this.mavenOpts = mavenOpts;
             this.channel = np.channel;
+            /* Probably not currently useful for testing; could add if we did not want plugins accidentally loading 7+ bytecode into Maven JVM:
+            short javaLevel = 6; // cf. jenkins/pom.xml#java.level
+            channel.setMaximumBytecodeLevel(javaLevel);
+            */
             this.proc = np.proc;
             this.installation = installation;
             this.jdk = jdk;
