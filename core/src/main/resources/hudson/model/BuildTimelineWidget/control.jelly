@@ -39,7 +39,7 @@ THE SOFTWARE.
   
   <script>
     <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
-    var tz = ${tz.rawOffset / 3600000};
+    var tz = ${(tz.rawOffset + tz.DSTSavings) / 3600000};
     var tl = null;
     <![CDATA[
     function doLoad() {
