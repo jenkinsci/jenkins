@@ -99,8 +99,7 @@ THE SOFTWARE.
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <mcompiler.source>1.5</mcompiler.source>
-    <mcompiler.target>${mcompiler.source}</mcompiler.target>
+    <java.level>1.6</java.level>
   </properties>
 
 
@@ -605,9 +604,9 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
-          <source>1.6</source>
-          <target>1.6</target>
+        <configuration>
+          <source>${java.level}</source>
+          <target>${java.level}</target>
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -625,7 +624,6 @@ THE SOFTWARE.
             </goals>
             <configuration>
               <rules>
-                <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
                 <requireJavaVersion>
                   <version>1.6.0-18</version>
                 </requireJavaVersion>
@@ -633,7 +631,7 @@ THE SOFTWARE.
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>${mcompiler.target}</maxJdkVersion>
+                  <maxJdkVersion>${java.level}</maxJdkVersion>
                 </enforceBytecodeVersion>
               </rules>
             </configuration>
@@ -643,7 +641,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-alpha-4</version>
+            <version>1.0-alpha-5</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -841,15 +839,6 @@ THE SOFTWARE.
       <build>
         <directory>${m2BuildDirectory}</directory>
         <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <!-- Otherwise m2e is unhappy because of @Override annotations -->
-              <source>1.6</source>
-              <target>1.6</target>
-            </configuration>
-          </plugin>
-
           <plugin>
             <groupId>org.maven.ide.eclipse</groupId>
             <artifactId>lifecycle-mapping</artifactId>
