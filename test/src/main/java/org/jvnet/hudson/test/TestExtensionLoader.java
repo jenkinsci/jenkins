@@ -72,6 +72,11 @@ public class TestExtensionLoader extends GuiceExtensionAnnotation<TestExtension>
                     return true;      // enclosed
                 }
             }
+
+            // Groovy compiler doesn't seem to put the enclosing class information in the class file,
+            // so this fallback rule would catch those cases.
+            if (((Class)e).getName().startsWith(className+"$"))
+                return true;
             return false;
         }
         if (e instanceof Field) {
