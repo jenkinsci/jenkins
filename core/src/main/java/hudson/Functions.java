@@ -1765,4 +1765,24 @@ public class Functions {
                 .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
         ;
     }
+
+    /**
+     * Advertises the minimum set of HTTP headers that assist programmatic
+     * discovery of Jenkins.
+     */
+    public static void advertiseHeaders(HttpServletResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+
+        rsp.setHeader("X-Hudson","1.395");
+        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+
+        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+        if (tal !=null) {
+            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+        }
+    }
 }

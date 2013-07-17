@@ -23,6 +23,10 @@
  */
 package hudson.security;
 
+import hudson.Functions;
+import jenkins.model.Jenkins;
+import hudson.TcpSlaveAgentListener;
+
 import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.InsufficientAuthenticationException;
@@ -80,6 +84,8 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
 
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
+
+            Functions.advertiseHeaders(rsp);
 
             AccessDeniedException2 cause = null;
             // report the diagnosis information if possible
