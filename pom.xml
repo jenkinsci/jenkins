@@ -583,7 +583,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <executions>
@@ -596,6 +595,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
+            <!-- Currently held back to java15. After next (>1.509) LTS, switch to java16 ~ ${java.level}. -->
             <artifactId>java15</artifactId>
             <version>1.0</version>
           </signature>
