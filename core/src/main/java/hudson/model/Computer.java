@@ -77,6 +77,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -1194,9 +1195,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            Node result = (Node)Jenkins.XSTREAM2.fromXML(req.getReader());
-
-            replaceBy(result);
+            updateByXml(req.getInputStream());
             return;
         }
 
@@ -1221,6 +1220,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             nodes.set(i, newNode);
             app.setNodes(nodes);
         }
+    }
+
+    /**
+     * Updates Job by its XML definition.
+     *
+     * @since XXX
+     */
+    public void updateByXml(final InputStream source) throws IOException, ServletException {
+        checkPermission(Jenkins.ADMINISTER);
+        Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
+        replaceBy(result);
     }
 
     /**
