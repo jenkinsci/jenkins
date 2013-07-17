@@ -94,8 +94,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             registerSystemProperties();
 
-            listener.getLogger().println(formatArgs(goals));
+            PrintStream logger = listener.getLogger();
 
+            logger.println(formatArgs(goals));
 
             int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
 
@@ -111,7 +112,6 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             if(profile) {
                 NumberFormat n = NumberFormat.getInstance();
-                PrintStream logger = listener.getLogger();
                 logger.println("Total overhead was "+format(n,mavenExecutionListener.overheadTime)+"ms");
                 Channel ch = Channel.current();
                 logger.println("Class loading "   +format(n,ch.classLoadingTime.get())   +"ms, "+ch.classLoadingCount+" classes");
@@ -120,30 +120,18 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
             
-            PrintStream logger = listener.getLogger();
-            
             if(r==0 && mavenExecutionResult.getThrowables().isEmpty()) {
                 if(mavenExecutionListener.hasTestFailures()){
                     return Result.UNSTABLE;    
                 }
                 return Result.SUCCESS;
             }
-            
-            if (!mavenExecutionResult.getThrowables().isEmpty()) {
-                logger.println( "mavenExecutionResult exceptions not empty");
-                for(Throwable throwable : mavenExecutionResult.getThrowables()) {
-                    logger.println("message : " + throwable.getMessage());
-                    if (throwable.getCause()!=null) {
-                        logger.println("cause : " + throwable.getCause().getMessage());
-                    }
-                    logger.println("Stack trace : ");
-                    throwable.printStackTrace( logger );
-                }
-                
-            }
+
+			// manage of Maven error are moved to ExecutionEventLogger, they are
+			// threaded as in MavenCli
 
             if(markAsSuccess) {
-                listener.getLogger().println(Messages.MavenBuilder_Failed());
+                logger.println(Messages.MavenBuilder_Failed());
                 if(mavenExecutionListener.hasTestFailures()){
                     return Result.UNSTABLE;    
                 }
@@ -200,7 +188,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             
             // TODO: we should think about reusing the code in org.apache.maven.cli.DefaultMavenExecutionRequestBuilder#logging?
             // E.g. there's also the option to redirect logging to a file which is handled there, but not here.
-            PrintStreamLogger logger = new PrintStreamLogger( maven3Builder.listener.getLogger() );
+            PrintStreamLogger logger = new PrintStreamLogger( /* maven3Builder.listener.getLogger() */ System.out );
             if (maven3Builder.isDebug()) {
                 logger.setThreshold(PrintStreamLogger.LEVEL_DEBUG);
             } else if (maven3Builder.isQuiet()) {
