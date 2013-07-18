@@ -196,7 +196,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <version>1.5-jenkins-1</version>
+        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <id>default</id>
@@ -260,7 +260,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.gmaven</groupId>
             <artifactId>gmaven-plugin</artifactId>
-            <version>1.5-jenkins-1</version>
+            <!-- version specified in grandparent pom -->
             <executions>
               <!-- run unit test -->
               <execution>
