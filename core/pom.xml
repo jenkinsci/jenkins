@@ -776,7 +776,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin><!-- run unit test in src/test/java -->
-        <groupId>org.kohsuke.gmaven</groupId>
+        <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
@@ -784,16 +784,6 @@ THE SOFTWARE.
             <goals>
               <goal>testCompile</goal>
             </goals>
-            <configuration>
-              <sources>
-                <fileset>
-                  <directory>${project.basedir}/src/test/java</directory>
-                  <includes>
-                    <include>**/*.groovy</include>
-                  </includes>
-                </fileset>
-              </sources>
-            </configuration>
           </execution>
         </executions>
         <dependencies>
@@ -903,7 +893,7 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.kohsuke.gmaven</groupId>
+            <groupId>org.codehaus.gmaven</groupId>
             <artifactId>gmaven-plugin</artifactId>
             <!-- version specified in grandparent pom -->
             <executions>
