@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.30</version>
+    <version>1.32</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
@@ -278,9 +278,9 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.kohsuke.gmaven</groupId>
+          <groupId>org.codehaus.gmaven</groupId>
           <artifactId>gmaven-plugin</artifactId>
-          <version>1.0-rc-5-patch-2</version>
+          <version>1.5-jenkins-1</version>
           <dependencies>
             <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
               <groupId>org.apache.ant</groupId>
@@ -504,9 +504,9 @@ THE SOFTWARE.
         			<pluginExecutions>
         				<pluginExecution>
         					<pluginExecutionFilter>
-        						<groupId>org.kohsuke.gmaven</groupId>
+        						<groupId>org.codehaus.gmaven</groupId>
         						<artifactId>gmaven-plugin</artifactId>
-        						<versionRange>[1.0-rc-5-patch-2,)</versionRange>
+        						<versionRange>1.5-jenkins-1</versionRange>
         						<goals>
         							<goal>execute</goal>
         							<goal>testCompile</goal>
