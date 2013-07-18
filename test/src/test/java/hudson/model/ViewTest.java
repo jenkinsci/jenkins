@@ -26,14 +26,18 @@ package hudson.model;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
+import hudson.XmlFile;
 import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import java.io.File;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -170,6 +174,23 @@ public class ViewTest {
         View view = j.jenkins.getView(name);
         assertNotNull(view);
         j.submit(j.createWebClient().getPage(view, "configure").getFormByName("viewConfig"));
+    }
+
+    @Bug(17302)
+    @Test public void doConfigDotXml() throws Exception {
+        ListView view = new ListView("v", j.jenkins);
+        view.description = "one";
+        j.jenkins.addView(view);
+        WebClient wc = j.createWebClient();
+        String xml = wc.goToXml("view/v/config.xml").getContent();
+        assertTrue(xml, xml.contains("<description>one</description>"));
+        xml = xml.replace("<description>one</description>", "<description>two</description>");
+        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        req.setRequestBody(xml);
+        wc.getPage(req);
+        assertEquals("two", view.getDescription());
+        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        assertTrue(xml, xml.contains("<description>two</description>"));
     }
 
 }
