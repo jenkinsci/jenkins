@@ -52,14 +52,14 @@ THE SOFTWARE.
       toggles the checkbox.
     </st:attribute>
     <st:attribute name="tooltip">
-      Used as tooltip of the checkbox, or, if a title is specified, of the title
+      Used as tooltip of the checkbox, and, if a title is specified, of the title
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
   <input type="checkbox"
          name="${attrs.name?:'_.'+attrs.field}"
          value="${attrs.value}"
-         title="${attrs.tooltip != null ? attrs.tooltip : null}"
+         title="${attrs.tooltip}"
          onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" json="${attrs.json}"
          checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
