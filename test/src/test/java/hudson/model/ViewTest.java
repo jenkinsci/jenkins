@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,14 +26,18 @@ package hudson.model;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Bug;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
+import hudson.XmlFile;
 import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import java.io.File;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -156,5 +160,22 @@ public class ViewTest {
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(400, e.getStatusCode());
         }
+    }
+
+    @Bug(17302)
+    @Test public void doConfigDotXml() throws Exception {
+        ListView view = new ListView("v", j.jenkins);
+        view.description = "one";
+        j.jenkins.addView(view);
+        WebClient wc = j.createWebClient();
+        String xml = wc.goToXml("view/v/config.xml").getContent();
+        assertTrue(xml, xml.contains("<description>one</description>"));
+        xml = xml.replace("<description>one</description>", "<description>two</description>");
+        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
+        req.setRequestBody(xml);
+        wc.getPage(req);
+        assertEquals("two", view.getDescription());
+        xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
+        assertTrue(xml, xml.contains("<description>two</description>"));
     }
 }
