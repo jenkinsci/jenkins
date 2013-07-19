@@ -23,23 +23,26 @@
  */
 package hudson.maven;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.util.MaskingClassLoader;
-import jenkins.model.Jenkins;
-import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
+import jenkins.model.Jenkins;
+import jenkins.mvn.SettingsProvider;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.cli.logging.Slf4jLoggerManager;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,14 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -191,10 +186,8 @@ public class MavenUtil {
             }
             mavenRequest.setTransferListener( mer.getTransferListener() );
         }
-        EmbedderLoggerImpl logger =
-            new EmbedderLoggerImpl( mer.getListener(), debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
-                            : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
-        mavenRequest.setMavenLoggerManager( logger );
+
+        mavenRequest.setMavenLoggerManager( new Slf4jLoggerManager() );
         
         ClassLoader mavenEmbedderClassLoader = mer.getClassLoader();
 
