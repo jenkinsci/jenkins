@@ -50,7 +50,7 @@ public abstract class TestBuilder extends Builder {
         // throw new UnsupportedOperationException();
         return new BuildStepDescriptor<Builder>() {
             @Override
-            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
                 return true;
             }
 
