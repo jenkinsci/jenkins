@@ -37,7 +37,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * forged by a third party.
  *
  * @author dty
- * @see http://en.wikipedia.org/wiki/XSRF
+ * @see <a href="http://en.wikipedia.org/wiki/XSRF">Wikipedia: Cross site request forgery</a>
  */
 @ExportedBean
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
