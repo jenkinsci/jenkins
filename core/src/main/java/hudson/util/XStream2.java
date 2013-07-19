@@ -343,7 +343,7 @@ public class XStream2 extends XStream {
      * callback code just after a type is unmarshalled by RobustReflectionConverter.
      * Example: <pre> public static class ConverterImpl extends XStream2.PassthruConverter&lt;MyType&gt; {
      *   public ConverterImpl(XStream2 xstream) { super(xstream); }
-     *   @Override protected void callback(MyType obj, UnmarshallingContext context) {
+     *   {literal @}Override protected void callback(MyType obj, UnmarshallingContext context) {
      *     ...
      * </pre>
      */
