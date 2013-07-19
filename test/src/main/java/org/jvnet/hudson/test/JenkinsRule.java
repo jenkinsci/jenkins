@@ -720,7 +720,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @see #configureDefaultMaven()
      */
     public MavenModuleSet createMavenProject(String name) throws IOException {
-        return jenkins.createProject(MavenModuleSet.class,name);
+        MavenModuleSet mavenModuleSet = jenkins.createProject(MavenModuleSet.class,name);
+        mavenModuleSet.setRunHeadless( true );
+        return mavenModuleSet;
     }
 
     /**
