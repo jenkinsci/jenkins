@@ -467,7 +467,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @return
      *      always non-null.
-     * @sine 1.522
+     * @since 1.522
      */
     public abstract Callable<ClockDifference,IOException> getClockDifferenceCallable();
 

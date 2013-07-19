@@ -38,7 +38,7 @@ import java.util.List;
  * some fails, etc.
  * 
  * @author Kohsuke Kawaguchi
- * @sicne 1.456
+ * @since 1.456
  */
 public abstract class MatrixExecutionStrategy extends AbstractDescribableImpl<MatrixExecutionStrategy> implements ExtensionPoint {
     public Result run(MatrixBuildExecution execution) throws InterruptedException, IOException {

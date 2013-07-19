@@ -779,7 +779,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private final String iconSize;
         public final ModelObject parent;
 
-        /** @see Jenkins#getAsynchPeople} */
+        /** @see Jenkins#getAsynchPeople */
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
