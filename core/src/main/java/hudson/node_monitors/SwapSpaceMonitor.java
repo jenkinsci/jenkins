@@ -41,7 +41,7 @@ import java.io.IOException;
  * Checks the swap space availability.
  *
  * @author Kohsuke Kawaguchi
- * @sine 1.233
+ * @since 1.233
  */
 public class SwapSpaceMonitor extends NodeMonitor {
     /**
