@@ -223,7 +223,7 @@ public class ArtifactArchiver extends Recorder {
             return req.bindJSON(ArtifactArchiver.class,formData);
         }
 
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;
         }
     }

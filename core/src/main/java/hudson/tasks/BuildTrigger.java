@@ -307,7 +307,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;
         }
 

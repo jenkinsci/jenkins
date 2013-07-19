@@ -317,7 +317,7 @@ public class AggregatedTestResultPublisher extends Recorder {
 
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;    // for all types
         }
 

@@ -63,14 +63,14 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
      *      true to allow user to configure this post-promotion task for the given project.
      * @see AbstractProjectDescriptor#isApplicable(Descriptor) 
      */
-    public abstract boolean isApplicable(Class<? extends AbstractProject> jobType);
+    public abstract boolean isApplicable(Class<? extends AbstractProject<?, ?>> jobType);
 
 
     /**
      * Filters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
      */
     public static <T extends BuildStep&Describable<T>>
-    List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
+    List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject<?, ?>> type) {
         // descriptor of the project
         Descriptor pd = Jenkins.getInstance().getDescriptor((Class) type);
 

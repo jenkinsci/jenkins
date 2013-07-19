@@ -759,11 +759,11 @@ public class Functions {
     }
 
     public static List<Descriptor<Builder>> getBuilderDescriptors(AbstractProject<?,?> project) {
-        return BuildStepDescriptor.filter(Builder.all(), project.getClass());
+        return BuildStepDescriptor.filter(Builder.all(), (Class<AbstractProject<?, ?>>)project.getClass());
     }
 
     public static List<Descriptor<Publisher>> getPublisherDescriptors(AbstractProject<?,?> project) {
-        return BuildStepDescriptor.filter(Publisher.all(), project.getClass());
+        return BuildStepDescriptor.filter(Publisher.all(), (Class<AbstractProject<?, ?>>)project.getClass());
     }
 
     public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {

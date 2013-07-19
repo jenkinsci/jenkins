@@ -267,7 +267,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 			return FilePath.validateFileMask(project.getSomeWorkspace(), value);
 		}
 
-		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+		public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
 			return true;
 		}
     }

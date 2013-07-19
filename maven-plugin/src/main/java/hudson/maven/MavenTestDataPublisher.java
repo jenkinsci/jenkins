@@ -112,7 +112,7 @@ public class MavenTestDataPublisher extends Recorder {
 		}
 
 		@Override
-		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+		public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
 			return MavenModuleSet.class.isAssignableFrom(jobType) && !TestDataPublisher.all().isEmpty();
 		}
 		

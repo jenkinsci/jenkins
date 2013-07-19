@@ -392,7 +392,7 @@ public class Maven extends Builder {
             load();
         }
 
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;
         }
 
