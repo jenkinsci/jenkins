@@ -38,7 +38,7 @@ import static java.util.Collections.emptyList;
  * language or implementation specifics.
  * Subclasses must add @Exported annotation to the fields they want to export.
  *
- * @sine 1.343
+ * @since 1.343
  */
 public abstract class TestResult extends TestObject {
 
