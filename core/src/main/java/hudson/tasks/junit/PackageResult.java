@@ -173,7 +173,6 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     /**
      * Returns a list of the failed cases, in no particular
      * sort order
-     * @return
      */
     public List<CaseResult> getFailedTests() {
         List<CaseResult> r = new ArrayList<CaseResult>();
@@ -189,7 +188,6 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
 
     /**
      * Returns a list of the failed cases, sorted by age.
-     * @return
      */
     public List<CaseResult> getFailedTestsSortedByAge() {
         List<CaseResult> failedTests = getFailedTests();

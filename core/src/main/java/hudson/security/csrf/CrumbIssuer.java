@@ -56,7 +56,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     /**
      * Get a crumb value based on user specific information in the current request.
      * Intended for use only by the remote API.
-     * @return
      */
     @Exported
     public String getCrumb() {
@@ -66,7 +65,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     /**
      * Get a crumb value based on user specific information in the request.
      * @param request
-     * @return
      */
     public String getCrumb(ServletRequest request) {
         String crumb = null;
@@ -98,7 +96,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      *
      * @param request
      * @param salt
-     * @return
      */
     protected abstract String issueCrumb(ServletRequest request, String salt);
 
@@ -108,7 +105,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * defined by the current configuration.
      *
      * @param request
-     * @return
      */
     public boolean validateCrumb(ServletRequest request) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -125,7 +121,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      *
      * @param request
      * @param parser
-     * @return
      */
     public boolean validateCrumb(ServletRequest request, MultipartFormDataParser parser) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -141,7 +136,6 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * @param request
      * @param salt
      * @param crumb The previously generated crumb to validate against information in the current request
-     * @return
      */
     public abstract boolean validateCrumb(ServletRequest request, String salt, String crumb);
 

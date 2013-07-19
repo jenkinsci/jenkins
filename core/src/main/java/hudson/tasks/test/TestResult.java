@@ -53,8 +53,6 @@ public abstract class TestResult extends TestObject {
     /**
      * Returns the action that points to the top level test result includes
      * this test result.
-     * 
-     * @return
      */
     public AbstractTestResultAction getParentAction() {
         return getOwner().getTestResultAction();
@@ -254,7 +252,6 @@ public abstract class TestResult extends TestObject {
     /**
      * Annotate some text -- what does this do? 
      * @param text
-     * @return
      */
     public String annotate(String text) {
         if (text == null)

@@ -18,7 +18,6 @@ public abstract class TransientViewActionFactory implements ExtensionPoint {
 	 * returns a list of (transient) actions never null, may be empty
 	 * 
 	 * @param v
-	 * @return
 	 */
 	public abstract List<Action> createFor(View v);
 	
