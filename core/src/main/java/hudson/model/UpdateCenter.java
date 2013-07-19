@@ -1193,8 +1193,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Indicates that the installation was successful but a restart is needed.
-         *
-         * @see
          */
         public class SuccessButRequiresRestart extends Success {
             private final Localizable message;
