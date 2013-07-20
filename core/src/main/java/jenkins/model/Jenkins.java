@@ -3713,7 +3713,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * if the user sets the displayName to what it currently is.
      * @param displayName
      * @param currentJobName
-     * @return
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
@@ -3739,7 +3738,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * True if there is no item in Jenkins that has this name
      * @param name The name to test
      * @param currentJobName The name of the job that the user is configuring
-     * @return
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
@@ -3764,7 +3762,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
-     * @return
      */
     public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
             @QueryParameter String jobName) {
