@@ -269,7 +269,50 @@ public class MavenUtil {
         if (StringUtils.isBlank( mavenVersion )) {
             return false;
         }
-        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+    }
+
+    public static MavenVersion getMavenVersion(String mavenVersion){
+        // we don't know so return maven 2
+        if(StringUtils.isBlank( mavenVersion )){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_0 = new ComparableVersion("3.0");
+
+        ComparableVersion maven2_0 = new ComparableVersion("2.0");
+
+        ComparableVersion mavenCurrent = new ComparableVersion( mavenVersion );
+
+        if (mavenCurrent.compareTo( maven2_0 ) >= 0 && mavenCurrent.compareTo( maven3_0 ) < 0){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_1_0 = new ComparableVersion("3.1.0");
+
+        if (mavenCurrent.compareTo( maven3_0 ) >= 0 && mavenCurrent.compareTo( maven3_1_0 ) < 0){
+            return MavenVersion.MAVEN_3_0_X;
+        }
+
+        return MavenVersion.MAVEN_3_1;
+
+    }
+
+    /**
+     * support of {@link org.apache.maven.eventspy.EventSpy} only since 3.0.2
+     * @param mavenVersion
+     * @return
+     */
+    public static boolean supportEventSpy(String mavenVersion){
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0.2") ) >= 0;
+    }
+
+    public enum MavenVersion {
+        MAVEN_2,MAVEN_3_0_X,MAVEN_3_1;
     }
     
 

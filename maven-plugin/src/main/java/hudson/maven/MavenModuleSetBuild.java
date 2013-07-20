@@ -757,7 +757,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
                             builder =
-                                new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
+                                new Maven3Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
                         } else {
                             builder = 
                                 new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
