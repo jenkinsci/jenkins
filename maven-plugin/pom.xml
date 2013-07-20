@@ -120,6 +120,11 @@ THE SOFTWARE.
       <version>${mavenInterceptorsVersion}</version>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main.maven</groupId>
+      <artifactId>maven3-interceptor-commons</artifactId>
+      <version>${mavenInterceptorsVersion}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
     </dependency>    

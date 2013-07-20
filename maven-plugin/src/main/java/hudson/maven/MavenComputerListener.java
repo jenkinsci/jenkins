@@ -43,6 +43,7 @@ import org.apache.tools.ant.taskdefs.Zip;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
  * When a slave is connected, copy <tt>maven-agent.jar</tt> and <tt>maven-intercepter.jar</tt>
@@ -58,6 +59,7 @@ public class MavenComputerListener extends ComputerListener {
         copyJar(logger, root, Maven3Main.class, "maven3-agent");
         copyJar(logger, root, Maven3Launcher.class, "maven3-interceptor");
         copyJar(logger, root, AbortException.class, "maven-interceptor");
+        copyJar(logger, root, HudsonMavenExecutionResult.class, "maven3-interceptor-commons" );
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
         copyJar(logger, root, ClassWorld.class, "plexus-classworld");
         

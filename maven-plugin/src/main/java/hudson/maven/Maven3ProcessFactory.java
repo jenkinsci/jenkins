@@ -41,6 +41,7 @@ import java.net.URL;
 
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
  * {@link AbstractMavenProcessFactory} for Maven 3.
@@ -72,6 +73,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
         return isMaster?
                 Which.jarFile(Maven3Launcher.class).getAbsolutePath():
                 slaveRoot.child("maven3-interceptor.jar").getRemote();
+    }
+
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+        return isMaster?
+            Which.jarFile(HudsonMavenExecutionResult.class).getAbsolutePath():
+            slaveRoot.child("maven3-interceptor-commons.jar").getRemote();
     }
 
     @Override
