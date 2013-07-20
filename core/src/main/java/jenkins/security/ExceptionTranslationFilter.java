@@ -53,13 +53,13 @@ import java.io.IOException;
  * <p>
  * If an {@link AuthenticationException} is detected, the filter will launch the <code>authenticationEntryPoint</code>.
  * This allows common handling of authentication failures originating from any subclass of
- * {@link org.acegisecurity.intercept.AbstractSecurityInterceptor}.
+ * <tt>AbstractSecurityInterceptor</tt>.
  * </p>
  * <p>
  * If an {@link AccessDeniedException} is detected, the filter will determine whether or not the user is an anonymous
  * user. If they are an anonymous user, the <code>authenticationEntryPoint</code> will be launched. If they are not
- * an anonymous user, the filter will delegate to the {@link org.acegisecurity.ui.AccessDeniedHandler}.
- * By default the filter will use {@link org.acegisecurity.ui.AccessDeniedHandlerImpl}.
+ * an anonymous user, the filter will delegate to the <tt>AccessDeniedHandler</tt>.
+ * By default the filter will use <tt>AccessDeniedHandlerImpl</tt>.
  * </p>
  * <p>
  * To use this filter, it is necessary to specify the following properties:
@@ -74,8 +74,7 @@ import java.io.IOException;
  * </ul>
  * <P>
  * <B>Do not use this class directly.</B> Instead configure
- * <code>web.xml</code> to use the {@link
- * org.acegisecurity.util.FilterToBeanProxy}.
+ * <code>web.xml</code> to use the <tt>FilterToBeanProxy</tt>.
  * </p>
  *
  * @author Ben Alex

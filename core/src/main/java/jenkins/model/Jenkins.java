@@ -590,7 +590,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Load statistics of the free roaming jobs and slaves.
      * 
-     * This includes all executors on {@link Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
+     * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
      * @since 1.467
      */
