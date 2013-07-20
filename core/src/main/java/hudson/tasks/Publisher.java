@@ -126,7 +126,7 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
     /**
      * {@link Publisher} has a special sort semantics that requires a subtype.
      *
-     * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class
+     * @see DescriptorExtensionList#createDescriptorList(hudson.model.Hudson, Class)
      */
     public static final class DescriptorExtensionListImpl extends DescriptorExtensionList<Publisher,Descriptor<Publisher>>
             implements Comparator<ExtensionComponent<Descriptor<Publisher>>> {
