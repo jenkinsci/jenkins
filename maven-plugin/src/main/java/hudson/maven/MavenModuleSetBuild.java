@@ -679,21 +679,26 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         final ProcessCache.MavenProcess process;
                         
-                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
-                        if ( maven3orLater )
-                        {
-                            LOGGER.fine( "using maven 3 " + mavenVersion );
-                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                  new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
-                                                            pom.getParent() ) );
+                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater();
+
+                        MavenUtil.MavenVersion mavenVersionType = MavenUtil.getMavenVersion( mavenVersion );
+
+                        ProcessCache.Factory factory = null;
+
+                        switch ( mavenVersionType ){
+                            case MAVEN_2:
+                                LOGGER.fine( "using maven 2 " + mavenVersion );
+                                factory = new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
+                                                                  pom.getParent() );
+                                break;
+                            default:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                                                      pom.getParent() );
                         }
-                        else
-                        {
-                            LOGGER.fine( "using maven 2 " + mavenVersion );
-                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                  new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
-                                                           pom.getParent() ) );
-                        }
+
+                        process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener, factory);
+
 
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
