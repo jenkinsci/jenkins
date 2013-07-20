@@ -1725,7 +1725,7 @@ public class Functions {
     /**
      * Returns human readable information about file size
      * 
-     * @param file size in bytes
+     * @param size file size in bytes
      * @return file size in appropriate unit
      */
     public static String humanReadableByteSize(long size){
