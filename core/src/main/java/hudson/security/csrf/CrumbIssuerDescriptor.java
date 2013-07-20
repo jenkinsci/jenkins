@@ -32,7 +32,6 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
 
     /**
      * Get the salt value.
-     * @return
      */
     public String getCrumbSalt() {
         return crumbSalt;
@@ -53,8 +52,6 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
     /**
      * Gets the request parameter name that contains the crumb generated from a
      * previous response.
-     *
-     * @return
      */
     public String getCrumbRequestField() {
         return crumbRequestField;
