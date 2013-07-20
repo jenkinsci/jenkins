@@ -89,7 +89,7 @@ public class WorkspaceSnapshotSCM extends SCM {
     }
     /**
      * Obtains the {@link WorkspaceSnapshot} object that this {@link SCM} points to,
-     * or throws {@link ResolvedFailedException} upon failing.
+     * or throws {@link hudson.fsp.WorkspaceSnapshotSCM.ResolvedFailedException} upon failing.
      *
      * @return never null.
      */

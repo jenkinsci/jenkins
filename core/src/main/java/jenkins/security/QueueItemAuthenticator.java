@@ -14,7 +14,7 @@ import org.acegisecurity.Authentication;
 import javax.annotation.CheckForNull;
 
 /**
- * Extension point to run {@link Queue.Executable}s under a specific identity for better access control.
+ * Extension point to run {@link hudson.model.Queue.Executable}s under a specific identity for better access control.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.520
@@ -24,11 +24,11 @@ import javax.annotation.CheckForNull;
  */
 public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<QueueItemAuthenticator> implements ExtensionPoint {
     /**
-     * Determines the identity in which the {@link Queue.Executable} will run as.
+     * Determines the identity in which the {@link hudson.model.Queue.Executable} will run as.
      *
      * @param item
      *      The contextual information to assist the authentication.
-     *      The primary interest is likely {@link Queue.Item#task}, which is often {@link AbstractProject}.
+     *      The primary interest is likely {@link hudson.model.Queue.Item#task}, which is often {@link AbstractProject}.
      *      {@link Action}s associated with the item is also likely of interest, such as {@link CauseAction}.
      *
      * @return

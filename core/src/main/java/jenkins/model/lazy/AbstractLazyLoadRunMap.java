@@ -95,7 +95,7 @@ import static jenkins.model.lazy.Boundary.*;
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link Index#byNumber} and {@link Index#byId}.
+ * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber} and {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byId}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.485
