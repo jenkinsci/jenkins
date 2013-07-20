@@ -102,7 +102,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
     }
 
     /**
-     * Called whenever {@link Queue} is considering if {@link Queue.Item} is ready to execute immediately
+     * Called whenever {@link Queue} is considering if {@link hudson.model.Queue.Item} is ready to execute immediately
      * (which doesn't necessarily mean that it gets executed right away &mdash; it's still subject to
      * executor availability), or if it should be considered blocked.
      *
