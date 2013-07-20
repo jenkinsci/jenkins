@@ -112,7 +112,6 @@ public abstract class Publisher extends BuildStepCompatibilityLayer implements B
      * When {@link Publisher} behaves this way, note that they can no longer
      * change the build status anymore.
      *
-     * @author Kohsuke Kawaguchi
      * @since 1.153
      */
     public boolean needsToRunAfterFinalized() {
