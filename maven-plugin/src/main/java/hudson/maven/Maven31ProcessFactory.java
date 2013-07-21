@@ -27,27 +27,21 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-import hudson.remoting.Callable;
-import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.maven3.agent.Maven31Main;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * {@link hudson.maven.AbstractMavenProcessFactory} for Maven 3.
  *
  * @author Olivier Lamy
  */
-public class Maven31ProcessFactory extends Maven3ProcessFactory // extends AbstractMavenProcessFactory implements ProcessCache.Factory
+public class Maven31ProcessFactory extends Maven3ProcessFactory
 {
 
     Maven31ProcessFactory( MavenModuleSet mms, AbstractMavenBuild<?, ?> build, Launcher launcher, EnvVars envVars,
@@ -58,7 +52,7 @@ public class Maven31ProcessFactory extends Maven3ProcessFactory // extends Abstr
     @Override
     protected String getMainClassName()
     {
-        return Maven3Main.class.getName();
+        return Maven31Main.class.getName();
     }
 
     @Override
