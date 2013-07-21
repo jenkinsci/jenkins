@@ -36,7 +36,7 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Kohsuke Kawaguchi
  * @see Jenkins#overallLoad
- * @see UnlabeldLoadStatistics
+ * @see jenkins.model.UnlabeledLoadStatistics
  */
 public class OverallLoadStatistics extends LoadStatistics {
     /**

@@ -576,7 +576,7 @@ public class Executor extends Thread implements ModelObject {
      * was compiled against Hudson < 1.383
      *
      * @deprecated as of 1.388
-     *      Use {@link Executables#getEstimatedDurationFor(Executable)}
+     *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}
      */
     public static long getEstimatedDurationFor(Executable e) {
         return Executables.getEstimatedDurationFor(e);
