@@ -84,7 +84,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private int number;
     /**
-     * {@link Queue.Executable} being executed right now, or null if the executor is idle.
+     * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
     private volatile Queue.Executable executable;
 
@@ -299,7 +299,7 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the current {@link Queue.Task} this executor is running.
+     * Returns the current {@link hudson.model.Queue.Task} this executor is running.
      *
      * @return
      *      null if the executor is idle.

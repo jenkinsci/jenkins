@@ -142,7 +142,7 @@ public class QueueTest extends HudsonTestCase {
     }
 
     /**
-     * {@link Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
+     * {@link hudson.model.Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
      */
     public void testPersistenceBlockedItem() throws Exception {
         Queue q = jenkins.getQueue();

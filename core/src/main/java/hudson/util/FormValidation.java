@@ -63,7 +63,7 @@ import java.util.Locale;
  * that you may be able to reuse.
  *
  * <p>
- * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ * Also see <tt>doCheckCvsRoot</tt> in <tt>CVSSCM</tt> as an example.
  *
  * <p>
  * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
