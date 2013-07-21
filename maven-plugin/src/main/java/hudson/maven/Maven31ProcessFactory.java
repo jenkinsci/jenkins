@@ -47,7 +47,7 @@ import java.net.URL;
  *
  * @author Olivier Lamy
  */
-public class Maven31ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
+public class Maven31ProcessFactory extends Maven3ProcessFactory // extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
 
     Maven31ProcessFactory( MavenModuleSet mms, AbstractMavenBuild<?, ?> build, Launcher launcher, EnvVars envVars,
@@ -88,82 +88,6 @@ public class Maven31ProcessFactory extends AbstractMavenProcessFactory implement
 
         return path;
     }
-
-    @Override
-    protected String getMavenInterceptorOverride(MavenInstallation mvn,
-                                                 boolean isMaster, FilePath slaveRoot) throws IOException,
-        InterruptedException {
-        return null;
-    }
-
-    @Override
-    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
-        channel.call(new InstallPlexusModulesTask(context));
-    }
-
-    private static final class InstallPlexusModulesTask implements Callable<Void,IOException>
-    {
-        PlexusModuleContributor c;
-
-        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
-            c = PlexusModuleContributorFactory.aggregate(context);
-        }
-
-        public Void call() throws IOException {
-            org.jvnet.hudson.maven3.agent.Maven3Main.addPlexusComponents(
-                c.getPlexusComponentJars().toArray( new URL[0] ) );
-            return null;
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
-
-    /**
-     * Finds classworlds.jar
-     */
-    protected static final class GetClassWorldsJar implements Callable<String,IOException> {
-        private static final long serialVersionUID = -2599434124883557137L;
-        private final String mvnHome;
-        private final TaskListener listener;
-
-        protected GetClassWorldsJar(String mvnHome, TaskListener listener) {
-            this.mvnHome = mvnHome;
-            this.listener = listener;
-        }
-
-        public String call() throws IOException {
-            File home = new File(mvnHome);
-            if (MavenProcessFactory.debug)
-                listener.getLogger().println("Using mvnHome: "+ mvnHome);
-            File bootDir = new File(home, "boot");
-            File[] classworlds = bootDir.listFiles(CLASSWORLDS_FILTER);
-            if(classworlds==null || classworlds.length==0) {
-                listener.error(Messages.MavenProcessFactory_ClassWorldsNotFound(home));
-                throw new Run.RunnerAbortedException();
-            }
-            return classworlds[0].getAbsolutePath();
-        }
-    }
-    /**
-     * Locates classworlds jar file.
-     *
-     * Note that Maven 3.0 changed the name to plexus-classworlds
-     *
-     * <pre>
-     * $ find tools/ -name "plexus-classworlds*.jar"
-     * tools/maven-3.0-alpha-2/boot/plexus-classworlds-1.3.jar
-     * tools/maven-3.0-alpha-3/boot/plexus-classworlds-2.2.2.jar
-     * tools/maven-3.0-alpha-4/boot/plexus-classworlds-2.2.2.jar
-     * tools/maven-3.0-alpha-5/boot/plexus-classworlds-2.2.2.jar
-     * tools/maven-3.0-alpha-6/boot/plexus-classworlds-2.2.2.jar
-     * </pre>
-     */
-    private static final FilenameFilter CLASSWORLDS_FILTER = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            return name.contains("plexus-classworlds") && name.endsWith(".jar");
-        }
-    };
 
 
 }
