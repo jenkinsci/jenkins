@@ -306,7 +306,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Code that gets executed on the machine where the {@link OSProcess} is local.
      * Used to act on {@link OSProcess}.
      *
-     * @see OSProcess#act(ProcessCallable)
+     * @see ProcessTree.OSProcess#act(ProcessTree.ProcessCallable)
      */
     public interface ProcessCallable<T> extends Serializable {
         /**

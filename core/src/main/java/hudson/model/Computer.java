@@ -1278,7 +1278,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
-     * {@link Publisher}, {@link BuildWrapper}, etc.
+     * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
      */
     public static Computer currentComputer() {
         Executor e = Executor.currentExecutor();

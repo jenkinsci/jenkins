@@ -188,7 +188,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The build result.
-     * This value may change while the state is in {@link State#BUILDING}.
+     * This value may change while the state is in {@link Run.State#BUILDING}.
      */
     protected volatile Result result;
 
@@ -464,7 +464,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
      * an executor holds on to {@link Run} some more time even after the build is finished (for example to
-     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
+     * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
