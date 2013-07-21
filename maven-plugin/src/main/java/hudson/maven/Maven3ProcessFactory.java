@@ -33,15 +33,14 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
-import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 /**
  * {@link AbstractMavenProcessFactory} for Maven 3.
