@@ -683,7 +683,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         MavenUtil.MavenVersion mavenVersionType = MavenUtil.getMavenVersion( mavenVersion );
 
-                        ProcessCache.Factory factory = null;
+                        final ProcessCache.Factory factory;
 
                         switch ( mavenVersionType ){
                             case MAVEN_2:
@@ -691,10 +691,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 factory = new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
                                                                   pom.getParent() );
                                 break;
-                            default:
+                            case MAVEN_3_0_X:
                                 LOGGER.fine( "using maven 3 " + mavenVersion );
                                 factory = new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
-                                                                                                      pom.getParent() );
+                                                                    pom.getParent() );
+                                break;
+                            default:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven31ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                    pom.getParent() );
+
                         }
 
                         process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener, factory);

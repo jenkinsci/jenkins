@@ -46,7 +46,7 @@ import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 /**
  * {@link AbstractMavenProcessFactory} for Maven 3.
  *
- * @author Olivier Lam
+ * @author Olivier Lamy
  */
 public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
@@ -112,12 +112,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     /**
      * Finds classworlds.jar
      */
-    private static final class GetClassWorldsJar implements Callable<String,IOException> {
+    protected static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = -2599434124883557137L;
         private final String mvnHome;
         private final TaskListener listener;
 
-        private GetClassWorldsJar(String mvnHome, TaskListener listener) {
+        protected GetClassWorldsJar(String mvnHome, TaskListener listener) {
             this.mvnHome = mvnHome;
             this.listener = listener;
         }

@@ -40,6 +40,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.cli.logging.Slf4jLoggerManager;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.PlexusConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -188,7 +189,11 @@ public class MavenUtil {
         }
 
         mavenRequest.setMavenLoggerManager( new Slf4jLoggerManager() );
-        
+
+        //mavenRequest.setContainerClassPathScanning( PlexusConstants.SCANNING_OFF );
+
+        //mavenRequest.setContainerComponentVisibility( PlexusConstants.GLOBAL_VISIBILITY );
+
         ClassLoader mavenEmbedderClassLoader = mer.getClassLoader();
 
         {// are we loading the right components.xml? (and not from Maven that's running Jetty, if we are running in "mvn hudson-dev:run" or "mvn hpi:run"?

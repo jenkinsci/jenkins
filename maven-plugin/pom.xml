@@ -45,7 +45,7 @@ THE SOFTWARE.
     <mavenVersion>3.1.0</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
     <aetherVersion>0.9.0.M2</aetherVersion>
-    <sisuInjectVersion>0.0.0.M2a</sisuInjectVersion>
+    <sisuInjectVersion>0.0.0.M4</sisuInjectVersion>
     <wagonVersion>2.4</wagonVersion>
   </properties>
 
@@ -112,11 +112,41 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.main.maven</groupId>
       <artifactId>maven3-agent</artifactId>
       <version>${mavenInterceptorsVersion}</version>
-    </dependency>    
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-inject-plexus</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-inject-bean</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main.maven</groupId>
+      <artifactId>maven31-agent</artifactId>
+      <version>${mavenInterceptorsVersion}</version>
+    </dependency>
     
     <dependency>
       <groupId>org.jenkins-ci.main.maven</groupId>
       <artifactId>maven3-interceptor</artifactId>
+      <version>${mavenInterceptorsVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-inject-plexus</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-inject-bean</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main.maven</groupId>
+      <artifactId>maven31-interceptor</artifactId>
       <version>${mavenInterceptorsVersion}</version>
     </dependency>
     <dependency>
@@ -187,7 +217,20 @@ THE SOFTWARE.
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.plexus</artifactId>
       <version>${sisuInjectVersion}</version>
-    </dependency> 
+    </dependency>
+
+    <!--
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-bean</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    -->
 
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
@@ -412,6 +455,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>

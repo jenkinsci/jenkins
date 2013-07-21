@@ -41,7 +41,9 @@ import java.io.PrintStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.jvnet.hudson.maven3.agent.Maven31Agent;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
@@ -57,7 +59,9 @@ public class MavenComputerListener extends ComputerListener {
         PrintStream logger = listener.getLogger();
         copyJar(logger, root, Main.class, "maven-agent");
         copyJar(logger, root, Maven3Main.class, "maven3-agent");
+        copyJar(logger, root, Maven31Agent.class, "maven31-agent");
         copyJar(logger, root, Maven3Launcher.class, "maven3-interceptor");
+        copyJar(logger, root, Maven31Interceptor.class, "maven31-interceptor");
         copyJar(logger, root, AbortException.class, "maven-interceptor");
         copyJar(logger, root, HudsonMavenExecutionResult.class, "maven3-interceptor-commons" );
         copyJar(logger, root, Maven21Interceptor.class, "maven2.1-interceptor");
