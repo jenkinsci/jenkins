@@ -30,7 +30,6 @@ import hudson.model.BuildListener;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.maven3.agent.Maven31Main;
-import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
@@ -58,7 +57,7 @@ public class Maven31ProcessFactory extends Maven3ProcessFactory
     @Override
     protected String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException {
         String classWorldsJar = getLauncher().getChannel().call(new Maven3ProcessFactory.GetClassWorldsJar(mvn.getHome(),listener));
-        String path = (isMaster? Which.jarFile(Maven3Main.class).getAbsolutePath():slaveRoot.child("maven31-agent.jar").getRemote())+
+        String path = (isMaster? Which.jarFile(Maven31Main.class).getAbsolutePath():slaveRoot.child("maven31-agent.jar").getRemote())+
             (getLauncher().isUnix()?":":";")+classWorldsJar;
 
         return path;

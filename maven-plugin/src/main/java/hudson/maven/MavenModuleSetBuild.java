@@ -97,6 +97,10 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import org.jvnet.hudson.maven3.agent.Maven31Main;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven31Launcher;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -685,6 +689,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         final ProcessCache.Factory factory;
 
+                        Class<?> maven3MainClass = null;
+
+                        Class<?> maven3LauncherClass = null;
+
                         switch ( mavenVersionType ){
                             case MAVEN_2:
                                 LOGGER.fine( "using maven 2 " + mavenVersion );
@@ -695,12 +703,15 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                                 LOGGER.fine( "using maven 3 " + mavenVersion );
                                 factory = new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
                                                                     pom.getParent() );
+                                maven3MainClass = Maven3Main.class;
+                                maven3LauncherClass = Maven3Launcher.class;
                                 break;
                             default:
                                 LOGGER.fine( "using maven 3 " + mavenVersion );
                                 factory = new Maven31ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
                                                                     pom.getParent() );
-
+                                maven3MainClass = Maven31Main.class;
+                                maven3LauncherClass = Maven31Launcher.class;
                         }
 
                         process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener, factory);
@@ -768,7 +779,8 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
                             builder =
-                                new Maven3Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
+                                new Maven3Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars,
+                                                  mavenBuildInformation, maven3MainClass, maven3LauncherClass);
                         } else {
                             builder = 
                                 new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);

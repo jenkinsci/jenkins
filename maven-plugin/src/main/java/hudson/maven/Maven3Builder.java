@@ -37,8 +37,6 @@ import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +44,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import static hudson.Util.*;
+import static hudson.Util.fixNull;
 
 /**
  * @author Olivier Lamy
@@ -71,15 +70,23 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
      */
     private final boolean profile = MavenProcessFactory.profile;
     
-    HudsonMavenExecutionResult mavenExecutionResult;    
+    HudsonMavenExecutionResult mavenExecutionResult;
+
+    Class<?> maven3MainClass;
+
+    Class<?> maven3LauncherClass;
     
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
+    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules,
+                            List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation,
+                            Class<?> maven3MainClass, Class<?> maven3LauncherClass) {
         super( listener, modules, goals, systemProps );
         this.sourceProxies.putAll(proxies);
         this.proxies = new HashMap<ModuleName, FilterImpl>();
         for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
             this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
         }
+        this.maven3MainClass = maven3MainClass;
+        this.maven3LauncherClass = maven3LauncherClass;
     }    
     
     public Result call() throws IOException {
@@ -88,7 +95,12 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             initializeAsynchronousExecutions();
         
             MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
-            Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
+
+            Method setMavenExecutionListenerMethod = maven3LauncherClass.getMethod( "setMavenExecutionListener", ExecutionListener.class );
+
+            setMavenExecutionListenerMethod.invoke( null, mavenExecutionListener );
+
+            //Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
             
             markAsSuccess = false;
 
@@ -96,8 +108,13 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
             listener.getLogger().println(formatArgs(goals));
 
+            Method launchMethod = maven3MainClass.getMethod( "launch", String[].class );
 
-            int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
+            Integer res = (Integer) launchMethod.invoke(null, new Object[] {goals.toArray(new String[goals.size()])} );
+
+            //int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
+
+            int r = res.intValue();
 
             // now check the completion status of async ops
             long startTime = System.nanoTime();
@@ -118,7 +135,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
             }
 
-            mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
+            Method mavenExecutionResultGetMethod = maven3LauncherClass.getMethod( "getMavenExecutionResult", null );
+
+            mavenExecutionResult = (HudsonMavenExecutionResult) mavenExecutionResultGetMethod.invoke( null, null );
+
+            //mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
             
             PrintStream logger = listener.getLogger();
             
@@ -156,8 +177,8 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             throw new IOException2(e);
         } catch (InvocationTargetException e) {
             throw new IOException2(e);
-        } catch (ClassNotFoundException e) {
-            throw new IOException2(e);
+        //} catch (ClassNotFoundException e) {
+        //    throw new IOException2(e);
         } catch (Exception e) {
             throw new IOException2(e);
         } finally {
