@@ -149,6 +149,8 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Utility functions used in views.
@@ -444,6 +446,51 @@ public class Functions {
 
     public static String printLogRecord(LogRecord r) {
         return formatter.format(r);
+    }
+
+    @Restricted(DoNotUse.class)
+    public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
+        String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
+        String[] newParts = logRecordPreformat(r);
+        for (int i = 0; i < /* not 4 */3; i++) {
+            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+        }
+        return newParts;
+    }
+    /**
+     * Partially formats a log record.
+     * @return date, source, level, message+thrown
+     * @see SimpleFormatter#format(LogRecord)
+     */
+    private static String[] logRecordPreformat(LogRecord r) {
+        String source;
+        if (r.getSourceClassName() == null) {
+            source = r.getLoggerName();
+        } else {
+            if (r.getSourceMethodName() == null) {
+                source = r.getSourceClassName();
+            } else {
+                source = r.getSourceClassName() + " " + r.getSourceMethodName();
+            }
+        }
+        String message = new SimpleFormatter().formatMessage(r) + "\n";
+        Throwable x = r.getThrown();
+        return new String[] {
+            String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
+            source,
+            r.getLevel().getLocalizedName(),
+            x == null ? message : message + printThrowable(x) + "\n"
+        };
+    }
+
+    /**
+     * Reverses a collection so that it can be easily walked in reverse order.
+     * @since 1.525
+     */
+    public static <T> Iterable<T> reverse(Collection<T> collection) {
+        List<T> list = new ArrayList<T>(collection);
+        Collections.reverse(list);
+        return list;
     }
 
     public static Cookie getCookie(HttpServletRequest req,String name) {

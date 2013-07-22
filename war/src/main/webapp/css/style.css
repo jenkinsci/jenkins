@@ -1083,6 +1083,20 @@ table.progress-bar.red td.progress-bar-done {
     padding: 0.5em;
 }
 
+/* ========================= logRecords.jelly ================== */
+
+.logrecord-metadata {
+    // TODO does not work: font-size: 70%;
+}
+
+.logrecord-metadata-new {
+    color: #8A8;
+}
+
+.logrecord-metadata-old {
+    color: #AAA;
+}
+
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
 	border: 1px #BBBBBB solid;

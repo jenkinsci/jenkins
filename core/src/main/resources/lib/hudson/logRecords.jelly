@@ -30,7 +30,11 @@ THE SOFTWARE.
             Records to be displayed (assumed to be in reverse chronologic order).
         </st:attribute>
     </st:documentation>
-    <j:forEach var="logRecord" items="${logRecords}">
-        <pre>${h.printLogRecord(logRecord)}</pre>
+    <j:set var="prior" value="${null}"/>
+    <j:forEach var="logRecord" items="${h.reverse(logRecords)}">
+        <j:set var="parts" value="${h.printLogRecordHtml(logRecord, prior)}"/>
+        <pre class="logrecord-metadata"><j:out value="${parts[0]}"/><st:nbsp/><j:out value="${parts[2]}"/><st:nbsp/><j:out value="${parts[1]}"/></pre>
+        <pre><j:out value="${parts[3]}"/></pre>
+        <j:set var="prior" value="${logRecord}"/>
     </j:forEach>
 </j:jelly>
