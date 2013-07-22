@@ -305,6 +305,7 @@ public class MavenUtil {
 
     /**
      * support of {@link org.apache.maven.eventspy.EventSpy} only since 3.0.2
+     * due to the current implementation will be supported only for maven 3.1.0
      * @param mavenVersion
      * @return
      */
@@ -313,7 +314,7 @@ public class MavenUtil {
         if (StringUtils.isBlank( mavenVersion )) {
             return false;
         }
-        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0.2") ) >= 0;
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.1.0") ) >= 0;
     }
 
     public enum MavenVersion {
