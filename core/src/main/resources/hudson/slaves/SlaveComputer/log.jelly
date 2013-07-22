@@ -37,9 +37,7 @@ THE SOFTWARE.
         <j:set var="logRecords" value="${it.logRecords}"/>
         <j:if test="${!logRecords.isEmpty()}">
           <h1>${%Log Records}</h1>
-          <j:forEach var="log" items="${logRecords}">
-              <pre>${h.printLogRecord(log)}</pre>
-          </j:forEach>
+          <t:logRecords logRecords="${logRecords}"/>
         </j:if>
         -->
       </l:hasPermission>

@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright 2013 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +22,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Log view
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.ADMINISTER}">
-  <st:include page="sidepanel.jelly" />
-  <l:main-panel>
-    <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${it.displayName}</h1>
-    <t:logRecords logRecords="${it.logRecords}"/>
-    <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
-      <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
-      <t:logRecords logRecords="${entry.value}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:documentation>
+        Displays a list of log records.
+        <st:attribute name="logRecords" type="java.util.Collection&lt;java.util.logging.LogRecord>" use="required">
+            Records to be displayed (assumed to be in reverse chronologic order).
+        </st:attribute>
+    </st:documentation>
+    <j:forEach var="logRecord" items="${logRecords}">
+        <pre>${h.printLogRecord(logRecord)}</pre>
     </j:forEach>
-
-    <st:include it="${it.parent}" page="feeds.jelly" />    
-  </l:main-panel>
-</l:layout>
 </j:jelly>
