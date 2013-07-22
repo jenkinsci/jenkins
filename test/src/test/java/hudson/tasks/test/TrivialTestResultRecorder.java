@@ -70,7 +70,7 @@ public class TrivialTestResultRecorder extends Recorder implements Serializable 
          * @see hudson.model.AbstractProject.AbstractProjectDescriptor#isApplicable(hudson.model.Descriptor)
          */
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;
         }
 
