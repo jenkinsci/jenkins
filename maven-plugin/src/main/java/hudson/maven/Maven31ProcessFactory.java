@@ -27,6 +27,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.maven3.agent.Maven31Main;
@@ -34,6 +36,7 @@ import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * {@link hudson.maven.AbstractMavenProcessFactory} for Maven 3.
@@ -62,8 +65,27 @@ public class Maven31ProcessFactory extends Maven3ProcessFactory
 
         return path;
     }
-    
 
+    @Override
+    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask(context));
+    }
+
+    private static final class InstallPlexusModulesTask implements Callable<Void,IOException>
+    {
+        PlexusModuleContributor c;
+
+        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
+            c = PlexusModuleContributorFactory.aggregate(context);
+        }
+
+        public Void call() throws IOException {
+            Maven31Main.addPlexusComponents( c.getPlexusComponentJars().toArray( new URL[0] ) );
+            return null;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
     
     @Override
     protected String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
