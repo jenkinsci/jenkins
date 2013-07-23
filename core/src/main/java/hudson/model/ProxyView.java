@@ -38,6 +38,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A view that delegates to another.
@@ -105,6 +106,7 @@ public class ProxyView extends View implements StaplerFallback {
         this.proxiedViewName = proxiedViewName;
     }
 
+    @RequirePOST
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return getProxiedView().doCreateItem(req, rsp);

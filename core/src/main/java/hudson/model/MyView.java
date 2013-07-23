@@ -37,6 +37,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor.FormException;
 import hudson.Extension;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link View} that only contains projects for which the current user has access to.
@@ -60,6 +61,7 @@ public class MyView extends View {
         return item.hasPermission(Job.CONFIGURE);
     }
 
+    @RequirePOST
     @Override
     public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {

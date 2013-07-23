@@ -35,6 +35,7 @@ import java.util.Collection;
 
 import hudson.model.Descriptor.FormException;
 import hudson.Extension;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link View} that contains everything.
@@ -68,6 +69,7 @@ public class AllView extends View {
         return true;
     }
 
+    @RequirePOST
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {

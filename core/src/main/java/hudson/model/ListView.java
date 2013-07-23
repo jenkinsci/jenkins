@@ -256,6 +256,7 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
+    @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
         if (ig instanceof ModifiableItemGroup) {

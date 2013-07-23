@@ -87,6 +87,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.compression.FilterServletOutputStream;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -527,6 +528,7 @@ public class SlaveComputer extends Computer {
             return channel.call(new SlaveLogFetcher());
     }
 
+    @RequirePOST
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
@@ -554,6 +556,7 @@ public class SlaveComputer extends Computer {
         });
     }
 
+    @RequirePOST
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(channel!=null) {
             req.getView(this,"already-launched.jelly").forward(req, rsp);
