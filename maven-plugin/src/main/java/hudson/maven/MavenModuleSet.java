@@ -33,7 +33,6 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Plugin;
 import hudson.Util;
-import hudson.matrix.MatrixConfiguration;
 import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
 import hudson.maven.local_repo.LocalRepositoryLocator;
 import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
@@ -107,6 +106,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import hudson.tasks.Mailer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -1040,7 +1041,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             return mavenOpts.replaceAll("[\t\r\n]+"," ");
         }
         else {
-            String globalOpts = DESCRIPTOR.getGlobalMavenOpts();
+            String globalOpts = getDescriptor().getGlobalMavenOpts();
             if (globalOpts!=null) {
                 return globalOpts.replaceAll("[\t\r\n]+"," ");
             }
@@ -1062,7 +1063,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * If null, we pick any random Maven installation.
      */
     public MavenInstallation getMaven() {
-        MavenInstallation[] installations = DESCRIPTOR.getMavenDescriptor().getInstallations();
+        MavenInstallation[] installations = getDescriptor().getMavenDescriptor().getInstallations();
         for( MavenInstallation i : installations) {
             if(mavenName==null || i.getName().equals(mavenName))
                 return i;
@@ -1201,9 +1202,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
+        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
+    /**
+     * Descriptor is instantiated as a field purely for backward compatibility.
+     * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     */
+    @Restricted(NoExternalUse.class)
     @Extension(ordinal=900)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
