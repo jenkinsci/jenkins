@@ -57,7 +57,7 @@ public class MavenUtilTest
 
     @Test
     public void eventSpy302(){
-        Assert.assertTrue( MavenUtil.supportEventSpy( "3.0.2" ) );
+        Assert.assertFalse( MavenUtil.supportEventSpy( "3.0.2" ) );
     }
 
     @Test
