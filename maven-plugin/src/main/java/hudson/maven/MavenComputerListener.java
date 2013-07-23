@@ -41,7 +41,7 @@ import java.io.PrintStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.jvnet.hudson.maven3.agent.Maven31Agent;
+import jenkins.maven3.agent.Maven31Agent;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;

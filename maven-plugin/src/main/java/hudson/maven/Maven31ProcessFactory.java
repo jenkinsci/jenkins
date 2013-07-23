@@ -31,7 +31,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
-import org.jvnet.hudson.maven3.agent.Maven31Main;
+import jenkins.maven3.agent.Maven31Main;
 import org.jvnet.hudson.maven3.launcher.Maven31Interceptor;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
