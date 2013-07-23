@@ -2805,7 +2805,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         getPrimaryView().doSubmitDescription(req, rsp);
     }
 
-    @RequirePOST
+    @RequirePOST // TODO does not seem to work on _either_ overload!
     public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
@@ -2835,7 +2835,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     @CLIMethod(name="cancel-quiet-down")
-    @RequirePOST
+    @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
