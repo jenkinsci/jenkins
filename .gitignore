@@ -36,3 +36,5 @@ jenkins_*.build
 jenkins_*.changes
 *.deb
 push-build.sh
+war/node_modules/
+.java-version

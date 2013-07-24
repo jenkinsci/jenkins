@@ -25,29 +25,30 @@ package hudson.maven;
 
 import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.TestFailureDetector;
-import hudson.maven.util.ExecutionEventLogger;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.util.IOException2;
-import org.apache.maven.cli.PrintStreamLogger;
+import org.apache.maven.cli.event.ExecutionEventLogger;
+import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import static hudson.Util.*;
+import static hudson.Util.fixNull;
 
 /**
  * @author Olivier Lamy
@@ -71,33 +72,65 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
      */
     private final boolean profile = MavenProcessFactory.profile;
     
-    HudsonMavenExecutionResult mavenExecutionResult;    
-    
-    protected Maven3Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<MavenModule> modules, List<String> goals, Map<String, String> systemProps, MavenBuildInformation mavenBuildInformation) {
-        super( listener, modules, goals, systemProps );
-        this.sourceProxies.putAll(proxies);
+    HudsonMavenExecutionResult mavenExecutionResult;
+
+    Class<?> maven3MainClass;
+    Class<?> maven3LauncherClass;
+    boolean supportEventSpy = false;
+
+    protected Maven3Builder(Maven3BuilderRequest maven3BuilderRequest) {
+        super( maven3BuilderRequest.listener, maven3BuilderRequest.modules, maven3BuilderRequest.goals, maven3BuilderRequest.systemProps );
+        this.sourceProxies.putAll(maven3BuilderRequest.proxies);
         this.proxies = new HashMap<ModuleName, FilterImpl>();
         for (Entry<ModuleName,ProxyImpl2> e : this.sourceProxies.entrySet()) {
-            this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), mavenBuildInformation));
+            this.proxies.put(e.getKey(), new FilterImpl(e.getValue(), maven3BuilderRequest.mavenBuildInformation));
         }
-    }    
+        this.maven3LauncherClass = maven3BuilderRequest.maven3LauncherClass;
+        this.maven3MainClass = maven3BuilderRequest.maven3MainClass;
+        this.supportEventSpy = maven3BuilderRequest.supportEventSpy;
+    }
+
+    protected static class Maven3BuilderRequest {
+        BuildListener listener;
+        Map<ModuleName,ProxyImpl2> proxies;
+        Collection<MavenModule> modules;
+        List<String> goals;
+        Map<String, String> systemProps;
+        MavenBuildInformation mavenBuildInformation;
+        Class<?> maven3MainClass;
+        Class<?> maven3LauncherClass;
+        boolean supportEventSpy = false;
+    }
     
     public Result call() throws IOException {
 
         try {
             initializeAsynchronousExecutions();
-        
-            MavenExecutionListener mavenExecutionListener = new MavenExecutionListener( this );
-            Maven3Launcher.setMavenExecutionListener( mavenExecutionListener );
-            
+
+            MavenExecutionListener mavenExecutionListener = supportEventSpy ? new JenkinsEventSpy(this) : new MavenExecutionListener( this );
+            if (supportEventSpy)
+            {
+                Method setEventSpiesMethod = maven3LauncherClass.getMethod( "setEventSpies", List.class );
+                setEventSpiesMethod.invoke( null, Collections.singletonList(mavenExecutionListener) );
+
+            } else {
+                Method setMavenExecutionListenerMethod = maven3LauncherClass.getMethod( "setMavenExecutionListener", ExecutionListener.class );
+
+                setMavenExecutionListenerMethod.invoke( null, mavenExecutionListener );
+            }
             markAsSuccess = false;
 
             registerSystemProperties();
 
             listener.getLogger().println(formatArgs(goals));
 
+            Method launchMethod = maven3MainClass.getMethod( "launch", String[].class );
 
-            int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
+            Integer res = (Integer) launchMethod.invoke(null, new Object[] {goals.toArray(new String[goals.size()])} );
+
+            //int r = Maven3Main.launch( goals.toArray(new String[goals.size()]));
+
+            int r = res.intValue();
 
             // now check the completion status of async ops
             long startTime = System.nanoTime();
@@ -118,7 +151,11 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
                 logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");                
             }
 
-            mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
+            Method mavenExecutionResultGetMethod = maven3LauncherClass.getMethod( "getMavenExecutionResult", null );
+
+            mavenExecutionResult = (HudsonMavenExecutionResult) mavenExecutionResultGetMethod.invoke( null, null );
+
+            //mavenExecutionResult = Maven3Launcher.getMavenExecutionResult();
             
             PrintStream logger = listener.getLogger();
             
@@ -156,20 +193,111 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             throw new IOException2(e);
         } catch (InvocationTargetException e) {
             throw new IOException2(e);
-        } catch (ClassNotFoundException e) {
-            throw new IOException2(e);
+        //} catch (ClassNotFoundException e) {
+        //    throw new IOException2(e);
         } catch (Exception e) {
             throw new IOException2(e);
         }
     }
 
-    private static final class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
+    private static final class JenkinsEventSpy extends MavenExecutionListener implements EventSpy,Serializable{
+        private static final long serialVersionUID = 4942789836756366117L;
+
+        public JenkinsEventSpy(AbstractMavenBuilder maven3Builder) {
+           super(maven3Builder);
+        }
+
+        @Override
+        public void init( Context context )
+            throws Exception
+        {
+            //no op
+        }
+
+        @Override
+        public void onEvent( Object event )
+            throws Exception
+        {
+            if (event instanceof ExecutionEvent){
+                ExecutionEvent.Type eventType = ( (ExecutionEvent) event ).getType();
+
+                switch ( eventType )
+                {
+                    case ProjectDiscoveryStarted:
+                        super.projectDiscoveryStarted( (ExecutionEvent) event );
+                        break;
+                    case SessionStarted:
+                        super.sessionStarted( (ExecutionEvent) event );
+                        break;
+                    case SessionEnded:
+                        super.sessionEnded( (ExecutionEvent) event );
+                        break;
+                    case ProjectSkipped:
+                        super.projectSkipped( (ExecutionEvent) event );
+                        break;
+                    case ProjectStarted:
+                        super.projectStarted( (ExecutionEvent) event );
+                        break;
+                    case ProjectSucceeded:
+                        super.projectSucceeded( (ExecutionEvent) event );
+                        break;
+                    case ProjectFailed:
+                        super.projectFailed( (ExecutionEvent) event );
+                        break;
+                    case MojoSkipped:
+                        super.mojoSkipped( (ExecutionEvent) event );
+                        break;
+                    case MojoStarted:
+                        super.mojoStarted( (ExecutionEvent) event );
+                        break;
+                    case MojoSucceeded:
+                        super.mojoSucceeded( (ExecutionEvent) event );
+                        break;
+                    case MojoFailed:
+                        super.mojoFailed( (ExecutionEvent) event );
+                        break;
+                    case ForkStarted:
+                        super.forkedProjectStarted( (ExecutionEvent) event );
+                        break;
+                    case ForkSucceeded:
+                        super.forkSucceeded( (ExecutionEvent) event );
+                        break;
+                    case ForkFailed:
+                        super.forkFailed( (ExecutionEvent) event );
+                        break;
+                    case ForkedProjectStarted:
+                        super.forkedProjectStarted( (ExecutionEvent) event );
+                        break;
+                    case ForkedProjectSucceeded:
+                        super.forkedProjectSucceeded( (ExecutionEvent) event );
+                        break;
+                    case ForkedProjectFailed:
+                        super.forkFailed( (ExecutionEvent) event );
+                        break;
+                    default:
+                        LOGGER.fine( "event not managed" );
+                }
+
+            }
+        }
+
+        @Override
+        public void close()
+            throws Exception
+        {
+            //no op
+        }
+    }
+
+    private static class MavenExecutionListener extends AbstractExecutionListener implements Serializable, ExecutionListener {
 
         private static final long serialVersionUID = 4942789836756366116L;
 
         private final AbstractMavenBuilder maven3Builder;
         
         private AtomicBoolean hasTestFailures = new AtomicBoolean();
+
+        private org.slf4j.Logger logger = LoggerFactory.getLogger( MavenExecutionListener.class );
        
         /**
          * Number of total nanoseconds {@link Maven3Builder} spent.
@@ -195,15 +323,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             }
             this.reporters = new ConcurrentHashMap<ModuleName, List<MavenReporter>>(maven3Builder.reporters);
             
-            // TODO: we should think about reusing the code in org.apache.maven.cli.DefaultMavenExecutionRequestBuilder#logging?
+
             // E.g. there's also the option to redirect logging to a file which is handled there, but not here.
-            PrintStreamLogger logger = new PrintStreamLogger( maven3Builder.listener.getLogger() );
-            if (maven3Builder.isDebug()) {
-                logger.setThreshold(PrintStreamLogger.LEVEL_DEBUG);
-            } else if (maven3Builder.isQuiet()) {
-                logger.setThreshold(PrintStreamLogger.LEVEL_ERROR);
-            }
-            
+
             this.eventLogger = new ExecutionEventLogger( logger );
         }
         

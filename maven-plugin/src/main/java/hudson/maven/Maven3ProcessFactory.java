@@ -33,19 +33,19 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
-
 /**
  * {@link AbstractMavenProcessFactory} for Maven 3.
  *
- * @author Olivier Lam
+ * @author Olivier Lamy
  */
 public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
@@ -72,6 +72,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
         return isMaster?
                 Which.jarFile(Maven3Launcher.class).getAbsolutePath():
                 slaveRoot.child("maven3-interceptor.jar").getRemote();
+    }
+
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+        return isMaster?
+            Which.jarFile(HudsonMavenExecutionResult.class).getAbsolutePath():
+            slaveRoot.child("maven3-interceptor-commons.jar").getRemote();
     }
 
     @Override
@@ -105,12 +111,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     /**
      * Finds classworlds.jar
      */
-    private static final class GetClassWorldsJar implements Callable<String,IOException> {
+    protected static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = -2599434124883557137L;
         private final String mvnHome;
         private final TaskListener listener;
 
-        private GetClassWorldsJar(String mvnHome, TaskListener listener) {
+        protected GetClassWorldsJar(String mvnHome, TaskListener listener) {
             this.mvnHome = mvnHome;
             this.listener = listener;
         }

@@ -201,7 +201,7 @@ public class MavenTest extends HudsonTestCase {
         @SuppressWarnings("deprecation")
         String buildLog = build.getLog();
         assertNotNull(buildLog);
-	System.out.println(buildLog);
+	    System.out.println(buildLog);
         assertFalse(buildLog.contains("-Dpassword=12345"));
     }
     
