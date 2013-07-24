@@ -556,7 +556,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
     
     /**
-     * Locates Maven2 and configure that as the only Maven in the system.
+     * Locates Maven and configures that as the only Maven in the system.
      */
     protected MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
         // Does it exists in the buildDirectory - i.e. already extracted from previous test?
