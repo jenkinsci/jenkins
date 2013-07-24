@@ -64,8 +64,10 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestExtension;
@@ -237,4 +239,12 @@ public class MavenTest extends HudsonTestCase {
             assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
         }
     }
+
+    @Bug(18898)
+    public void testNullHome() throws Exception {
+        EnvVars env = new EnvVars();
+        new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
+        assertEquals("{}", env.toString());
+    }
+
 }

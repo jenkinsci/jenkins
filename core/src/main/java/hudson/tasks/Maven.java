@@ -486,6 +486,9 @@ public class Maven extends Builder {
         @Override
         public void buildEnvVars(EnvVars env) {
             String home = getHome();
+            if (home == null) {
+                return;
+            }
             env.put("M2_HOME", home);
             env.put("MAVEN_HOME", home);
             env.put("PATH+MAVEN", home + "/bin");

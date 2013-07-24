@@ -176,7 +176,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         Computer computer = Computer.currentComputer();
         if (computer != null) { // just in case were not in a build
-            Node node = computer.getNode();
+            Node node = computer.getNode(); // TODO should this rather be getBuiltOn()? Cf. JENKINS-18898
             if (node != null) {
                 mvn = mvn.forNode(node, log);
                 mvn.buildEnvVars(envs);
