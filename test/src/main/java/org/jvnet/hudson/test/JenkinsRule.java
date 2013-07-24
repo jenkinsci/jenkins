@@ -624,7 +624,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
         // does it exists in the buildDirectory see maven-junit-plugin systemProperties
         // buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
-        String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
+        String buildDirectory = System.getProperty( "buildDirectory", "./target/maven_install/" );
         File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
         if (mavenAlreadyInstalled.exists()) {
             Maven.MavenInstallation
