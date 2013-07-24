@@ -97,12 +97,16 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import jenkins.maven3.agent.Maven31Main;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven31Launcher;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferListener;
+import org.eclipse.aether.transfer.TransferCancelledException;
+import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferListener;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -679,21 +683,39 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         final ProcessCache.MavenProcess process;
                         
-                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
-                        if ( maven3orLater )
-                        {
-                            LOGGER.fine( "using maven 3 " + mavenVersion );
-                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                  new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
-                                                            pom.getParent() ) );
+                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater();
+
+                        MavenUtil.MavenVersion mavenVersionType = MavenUtil.getMavenVersion( mavenVersion );
+
+                        final ProcessCache.Factory factory;
+
+                        Class<?> maven3MainClass = null;
+
+                        Class<?> maven3LauncherClass = null;
+
+                        switch ( mavenVersionType ){
+                            case MAVEN_2:
+                                LOGGER.fine( "using maven 2 " + mavenVersion );
+                                factory = new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
+                                                                  pom.getParent() );
+                                break;
+                            case MAVEN_3_0_X:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                    pom.getParent() );
+                                maven3MainClass = Maven3Main.class;
+                                maven3LauncherClass = Maven3Launcher.class;
+                                break;
+                            default:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven31ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                    pom.getParent() );
+                                maven3MainClass = Maven31Main.class;
+                                maven3LauncherClass = Maven31Launcher.class;
                         }
-                        else
-                        {
-                            LOGGER.fine( "using maven 2 " + mavenVersion );
-                            process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                  new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
-                                                           pom.getParent() ) );
-                        }
+
+                        process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener, factory);
+
 
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
@@ -756,8 +778,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
-                            builder =
-                                new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
+                            Maven3Builder.Maven3BuilderRequest maven3BuilderRequest = new Maven3Builder.Maven3BuilderRequest();
+                            maven3BuilderRequest.listener=slistener;
+                            maven3BuilderRequest.proxies=proxies;
+                            maven3BuilderRequest.modules=project.sortedActiveModules;
+                            maven3BuilderRequest.goals=margs.toList();
+                            maven3BuilderRequest.systemProps=envVars;
+                            maven3BuilderRequest.mavenBuildInformation=mavenBuildInformation;
+                            maven3BuilderRequest.maven3MainClass=maven3MainClass;
+                            maven3BuilderRequest.maven3LauncherClass=maven3LauncherClass;
+                            maven3BuilderRequest.supportEventSpy = MavenUtil.supportEventSpy( mavenVersion );
+                            builder = new Maven3Builder(maven3BuilderRequest);
                         } else {
                             builder = 
                                 new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);

@@ -374,6 +374,12 @@ public abstract class AbstractMavenProcessFactory
         // interceptor.jar
         args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
 
+        String mavenInterceptorCommonClasspath = getMavenInterceptorCommonClassPath( mvn, isMaster, slaveRoot );
+
+        if (mavenInterceptorCommonClasspath!=null){
+            args.add( mavenInterceptorCommonClasspath );
+        }
+
         // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
         
@@ -394,6 +400,14 @@ public abstract class AbstractMavenProcessFactory
      * Returns the classpath string for the maven-interceptor jar
      */
     protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+
+    /**
+     * Returns the classpath string for the maven-interceptor jar
+     * @since 1.525
+     */
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+      return null;
+    }
     
     /**
      * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 
