@@ -589,6 +589,22 @@ public class Util {
     }
 
     /**
+     * Computes the MD5 digest of a file.
+     * @param file a file
+     * @return a 32-character string
+     * @throws IOException in case reading fails
+     * @since 1.525
+     */
+    public static String getDigestOf(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            return getDigestOf(new BufferedInputStream(is));
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
      * Converts a string into 128-bit AES key.
      * @since 1.308
      */
