@@ -1043,7 +1043,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public void removeRun(R run) {
-        this.builds.remove(run);
+        if (!this.builds.remove(run)) {
+            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});
+        }
     }
 
     /**

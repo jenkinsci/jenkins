@@ -1364,6 +1364,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         link.delete();
 
         File rootDir = getRootDir();
+        if (!rootDir.isDirectory()) {
+            throw new IOException(rootDir + " looks to have already been deleted");
+        }
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
