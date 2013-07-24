@@ -1659,12 +1659,13 @@ public final class FilePath implements Serializable {
 
     /**
      * Computes the MD5 digest of the file in hex string.
+     * @see Util#getDigestOf(File)
      */
     public String digest() throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1L;
             public String invoke(File f, VirtualChannel channel) throws IOException {
-                return Util.getDigestOf(new BufferedInputStream(new FileInputStream(f)));
+                return Util.getDigestOf(f);
             }
         });
     }
