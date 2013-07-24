@@ -561,7 +561,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
         // Does it exists in the buildDirectory - i.e. already extracted from previous test?
         // see maven-junit-plugin systemProperties: buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
-        String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
+        String buildDirectory = System.getProperty( "buildDirectory", "./target/maven_installs/" );
         File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
         if (mavenAlreadyInstalled.exists()) {
             MavenInstallation mavenInstallation = new MavenInstallation("default",mavenAlreadyInstalled.getAbsolutePath(), NO_PROPERTIES);
