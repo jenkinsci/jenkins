@@ -122,6 +122,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1644,15 +1645,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     protected final synchronized <T extends Describable<T>>
     void addToList( T item, List<T> collection ) throws IOException {
-        for( int i=0; i<collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item.getDescriptor()) {
-                // replace
-                collection.set(i,item);
-                save();
-                return;
-            }
-        }
-        // add
+        //No support to replace item in position, remove then add
+        removeFromList(item.getDescriptor(), collection);
         collection.add(item);
         save();
         updateTransientActions();
@@ -1660,10 +1654,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     protected final synchronized <T extends Describable<T>>
     void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
-        for( int i=0; i< collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item) {
+        final Iterator<T> iCollection = collection.iterator();
+        while(iCollection.hasNext()) {
+            final T next = iCollection.next();
+            if(next.getDescriptor()==item) {
                 // found it
-                collection.remove(i);
+                iCollection.remove();
                 save();
                 updateTransientActions();
                 return;
