@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
+import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
@@ -72,6 +73,7 @@ import java.util.regex.Pattern;
 import hudson.util.jna.Kernel32Utils;
 
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import java.security.DigestInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -555,10 +557,27 @@ public class Util {
      */
     public static String getDigestOf(InputStream source) throws IOException {
         try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+
+            byte[] buffer = new byte[1024];
+            DigestInputStream in =new DigestInputStream(source,md5);
+            try {
+                while(in.read(buffer)>=0)
+                    ; // simply discard the input
+            } finally {
+                in.close();
+            }
+            return toHexString(md5.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException2("MD5 not installed",e);    // impossible
+        }
+        /* JENKINS-18178: confuses Maven 2 runner
+        try {
             return DigestUtils.md5Hex(source);
         } finally {
             source.close();
         }
+        */
     }
 
     public static String getDigestOf(String text) {

@@ -67,6 +67,9 @@ Upcoming changes</a>
   <li class='major bug'>
     Since 1.520, Jenkins requires Java 6 or later, breaking Maven builds set to use JDK 5. Now falls back to JVM of slave agent but sets compile/test flags to use defined JDK.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18403">issue 18403</a>)
+  <li class='major bug'>
+    Since 1.517, Maven projects using Maven 2 could not build projects using extensions depending on Apache Commons Codec.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18178">issue 18178</a>)
   <li class=bug>
     Provided maven settings.xml in maven builder is lost.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15976">issue 15976</a>)
