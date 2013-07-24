@@ -622,13 +622,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      */
     public Maven.MavenInstallation configureDefaultMaven(String mavenVersion, int mavenReqVersion) throws Exception {
         // first if we are running inside Maven, pick that Maven, if it meets the criteria we require..
-        // does it exists in the buildDirectory see maven-junit-plugin systemProperties
-        // buildDirectory -> ${project.build.directory} (so no reason to be null ;-) )
-        String buildDirectory = System.getProperty( "buildDirectory", "./target/classes/" );
-        File mavenAlreadyInstalled = new File(buildDirectory, mavenVersion);
-        if (mavenAlreadyInstalled.exists()) {
-            Maven.MavenInstallation
-                    mavenInstallation = new Maven.MavenInstallation("default",mavenAlreadyInstalled.getAbsolutePath(), NO_PROPERTIES);
+        File buildDirectory = new File(System.getProperty("buildDirectory", "target")); // TODO relative path
+        File mvnHome = new File(buildDirectory, mavenVersion);
+        if (mvnHome.exists()) {
+            Maven.MavenInstallation mavenInstallation = new Maven.MavenInstallation("default", mvnHome.getAbsolutePath(), NO_PROPERTIES);
             jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
@@ -645,18 +642,17 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
         // otherwise extract the copy we have.
         // this happens when a test is invoked from an IDE, for example.
-        LOGGER.warning("Extracting a copy of Maven bundled in the test harness. " +
+        LOGGER.warning("Extracting a copy of Maven bundled in the test harness into " + mvnHome + ". " +
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = jenkins.getRootPath().createTempFile("maven", "zip");
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
-        File mvnHome =  new File(buildDirectory);//createTmpDir();
-        mvn.unzip(new FilePath(mvnHome));
+        mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Functions.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(mvnHome,mavenVersion+"/bin/mvn").getPath(),0755);
+            GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
 
         Maven.MavenInstallation mavenInstallation = new Maven.MavenInstallation("default",
-                new File(mvnHome,mavenVersion).getAbsolutePath(), NO_PROPERTIES);
+                mvnHome.getAbsolutePath(), NO_PROPERTIES);
 		jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
 		return mavenInstallation;
     }
