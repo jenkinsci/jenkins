@@ -551,7 +551,7 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
-     * @see DigestUtils#md5(InputStream)
+     * @see DigestUtils#md5Hex(InputStream)
      */
     public static String getDigestOf(InputStream source) throws IOException {
         try {
