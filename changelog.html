@@ -55,6 +55,35 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Can't build using maven 3.1.0
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15935">issue 15935</a>)
+  <li class=bug>
+    Fixed Winstone+mod_proxy_ajp+SSL combo issue.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5753">issue 5753</a>)
+  <li class=bug>
+    <code>JENKINS_DEBUG_LEVEL</code> misinterpreted by Winstone, causing excessive logging.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18701">issue 18701</a>)
+  <li class='major bug'>
+    Since 1.520, Jenkins requires Java 6 or later, breaking Maven builds set to use JDK 5. Now falls back to JVM of slave agent but sets compile/test flags to use defined JDK.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18403">issue 18403</a>)
+  <li class='major bug'>
+    Since 1.517, Maven projects using Maven 2 could not build projects using extensions depending on Apache Commons Codec.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18178">issue 18178</a>)
+  <li class=bug>
+    Provided maven settings.xml in maven builder is lost.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15976">issue 15976</a>)
+  <li class=bug>
+    Exception when running polling with a Maven installation not defined on master.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18898">issue 18898</a>)
+  <li class=bug>
+    Since 1.477 GET on <code>/view/…/config.xml</code> included a spurious wrapper element.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17302">issue 17302</a>)
+  <li class=rfe>
+    Clearer display of log messages: chronological order, and coloration of repeated vs. fresh metadata (date, log level, log source).
+  <li class=bug>
+    Fixed a regression that broke some plugins' form validation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18776">issue 18776</a>
   <li class=bug>
     Display Name is not shown.
      (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17715">issue 17715</a>)
