@@ -22,7 +22,7 @@ import java.util.logging.Level;
  */
 public abstract class AsyncPeriodicWork extends PeriodicWork {
     /**
-     * Name of the work.
+     * Human readable name of the work.
      */
     public final String name;
 
