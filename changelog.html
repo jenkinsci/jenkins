@@ -85,6 +85,9 @@ Upcoming changes</a>
   <li class=rfe>
     Clearer display of log messages: chronological order, and coloration of repeated vs. fresh metadata (date, log level, log source).
   <li class=bug>
+    Ensuring <code>/log/all</code> shows only <code>INFO</code> and above messages, even if custom loggers display <code>FINE</code> or below.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18959">issue 18959</a>)
+  <li class=bug>
     Fixed a regression that broke some plugins' form validation
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18776">issue 18776</a>)
   <li class=bug>
