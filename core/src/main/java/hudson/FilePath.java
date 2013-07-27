@@ -1235,8 +1235,11 @@ public final class FilePath implements Serializable {
                     }
 
                     Writer w = new FileWriter(f);
-                    w.write(contents);
-                    w.close();
+                    try {
+                        w.write(contents);
+                    } finally {
+                        w.close();
+                    }
 
                     return f.getAbsolutePath();
                 }
