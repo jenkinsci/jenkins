@@ -976,6 +976,13 @@ public class Queue extends ResourceController implements Saveable {
             if (offer != null && offer.workUnit != null) {
                 // we are already assigned a project, but now we can't handle it.
                 offer.workUnit.context.abort(new AbortException());
+                if(offer.workUnit.context.item!=null && pendings.contains(offer.workUnit.context.item)){
+                    //we are already assigned a project and moved it into pendings, but something wrong had happened before an executor could take it. 
+                    pendings.remove(offer.workUnit.context.item);
+                    //return it into queue, it does not have to cause this problem, it can be caused by another item.
+                    buildables.add(offer.workUnit.context.item);
+                }
+                    
             }
 
             // since this executor might have been chosen for
