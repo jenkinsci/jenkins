@@ -352,6 +352,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public ViewDescriptor getDescriptor() {
         return (ViewDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
+    
+    /**
+     * Returns the full display name of the owner item group, followed by the name of the view
+     * @since XXX
+     */
+    public String getFullDisplayName() {
+        return getOwnerItemGroup().getFullDisplayName() + " : " + getDisplayName();
+    }
 
     public String getDisplayName() {
         return getViewName();
