@@ -25,6 +25,8 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.maven.reporters.TestFailureDetector;
@@ -75,6 +77,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import jenkins.model.ArtifactManager;
 
 import jenkins.mvn.SettingsProvider;
 
@@ -399,6 +402,12 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      */
     class ProxyImpl implements MavenBuildProxy, Serializable {
         private static final long serialVersionUID = 8865133776526671879L;
+        final SplittableBuildListener listener;
+        private final Launcher launcher;
+        ProxyImpl(SplittableBuildListener listener, Launcher launcher) {
+            this.listener = listener;
+            this.launcher = launcher;
+        }
 
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
@@ -427,8 +436,28 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getParent().getParent().getRootDir());
         }
 
+        /**
+         * @deprecated Does not work with {@link ArtifactManager}.
+         */
+        @Deprecated
         public FilePath getArtifactsDir() {
-            return new FilePath(MavenBuild.this.getArtifactsDir());//TODO
+            return new FilePath(MavenBuild.this.getArtifactsDir());
+        }
+
+        @Override public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
+            ArtifactManager am = pickArtifactManager();
+            try {
+                if (Util.getDigestOf(am.loadArtifact(MavenBuild.this, target)).equals(source.digest())) {
+                    LOGGER.fine("Not actually archiving " + source + " due to digest match");
+                    listener.getLogger().println("Not actually archiving " + target + " due to digest match");
+                    return;
+                } else {
+                    listener.getLogger().println("[JENKINS] Re-archiving " + source);
+                }
+            } catch (FileNotFoundException x) {
+                listener.getLogger().println("[JENKINS] Archiving " + source + " to " + target);
+            }
+            am.archiveSingle(MavenBuild.this, launcher, listener, source, target);
         }
 
         public void setResult(Result result) {
@@ -477,14 +506,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     public class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
         private static final long serialVersionUID = -3377221864644014218L;
         
-        private final SplittableBuildListener listener;
         long startTime;
         private final OutputStream log;
         private final MavenModuleSetBuild parentBuild;
 
-        ProxyImpl2(MavenModuleSetBuild parentBuild,SplittableBuildListener listener) throws FileNotFoundException {
+        ProxyImpl2(MavenModuleSetBuild parentBuild, SplittableBuildListener listener, Launcher launcher) throws FileNotFoundException {
+            super(listener, launcher);
             this.parentBuild = parentBuild;
-            this.listener = listener;
             log = new FileOutputStream(getLogFile()); // no buffering so that AJAX clients can see the log live
         }
 
@@ -753,7 +781,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 boolean normalExit = false;
                 try {
                     Result r = process.call(new Builder(
-                        listener,new ProxyImpl(),
+                        listener,new ProxyImpl(new SplittableBuildListener(getListener()), getLauncher()),
                         getProject(), margs.toList(), systemProps));
                     normalExit = true;
                     return r;

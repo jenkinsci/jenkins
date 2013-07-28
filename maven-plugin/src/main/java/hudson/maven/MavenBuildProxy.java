@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
+import jenkins.model.ArtifactManager;
 
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
@@ -93,9 +94,16 @@ public interface MavenBuildProxy {
     FilePath getModuleSetRootDir();
 
     /**
-     * @see MavenBuild#getArtifactsDir()
+     * @deprecated Does not work with {@link ArtifactManager}.
      */
+    @Deprecated
     FilePath getArtifactsDir();
+
+    /**
+     * @see ArtifactManager#archiveSingle
+     * @since TODO
+     */
+    void archiveSingle(FilePath source, String target) throws IOException, InterruptedException;
 
     /**
      * @see MavenBuild#setResult(Result)
@@ -207,8 +215,12 @@ public interface MavenBuildProxy {
             return core.getModuleSetRootDir();
         }
 
-        public FilePath getArtifactsDir() { // TODO
+        public FilePath getArtifactsDir() {
             return core.getArtifactsDir();
+        }
+
+        @Override public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
+            core.archiveSingle(source, target);
         }
 
         public void setResult(Result result) {

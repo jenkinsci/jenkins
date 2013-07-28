@@ -28,6 +28,7 @@ import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.TaskListener;
+import java.io.File;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -169,9 +170,11 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
             ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion(true);
         }
         Artifact main = mainArtifact.toArtifact(handlerManager, artifactFactory, parent);
-        if (!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent))); // TODO
-
+        File pomFile = null;
+        if (!isPOM()) {
+            pomFile = pomArtifact.getFile(parent);
+            main.addMetadata(new ProjectArtifactMetadata(main, pomFile));
+        }
         if (main.getType().equals("maven-plugin")) {
             GroupRepositoryMetadata metadata = new GroupRepositoryMetadata(main.getGroupId());
             String goalPrefix = PluginDescriptor.getGoalPrefixFromArtifactId(main.getArtifactId());
@@ -186,11 +189,16 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
         deployer.deploy(main.getFile(), main, deploymentRepository, embedder.getLocalRepository());
+        main.getFile().delete();
+        if (pomFile != null) {
+            pomFile.delete();
+        }
 
         for (MavenArtifact aa : attachedArtifacts) {
             Artifact a = aa.toArtifact(handlerManager, artifactFactory, parent);
             logger.println(Messages.MavenArtifact_DeployingMainArtifact(a.getFile().getName()));
             deployer.deploy(a.getFile(), a, deploymentRepository, embedder.getLocalRepository());
+            a.getFile().delete();
         }
     }
 

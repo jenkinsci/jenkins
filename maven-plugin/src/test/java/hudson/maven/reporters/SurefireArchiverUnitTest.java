@@ -247,6 +247,10 @@ public class SurefireArchiverUnitTest {
         }
 
         @Override
+        public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
+        }
+
+        @Override
         public void setResult(Result result) {
         }
 

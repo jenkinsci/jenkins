@@ -158,9 +158,9 @@ public class MavenArtifactArchiver extends MavenReporter {
             for (File assembly : assemblies) {
                 if(mavenArtifacts.contains(assembly))
                     continue;   // looks like this is already archived
-                FilePath target = build.getArtifactsDir().child(assembly.getName()); // TODO
+                String target = assembly.getName();
                 listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                new FilePath(assembly).copyTo(target);
+                build.archiveSingle(new FilePath(assembly), target);
                 // TODO: fingerprint
             }
         }
