@@ -44,8 +44,14 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         return staticResource(f.toURI().toURL());
     }
 
-    public static void _throw(final HttpResponse hr) {
-        throw new HttpResponseException() {
+    /**
+     * Wraps a response as an exception for easier control flow.
+     * @param hr a response to render
+     * @return a corresponding exception (does not itself throw it)
+     * @since TODO
+     */
+    public static HttpResponseException _throw(final HttpResponse hr) {
+        return new HttpResponseException() {
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
                 hr.generateResponse(req,rsp,o);
             }

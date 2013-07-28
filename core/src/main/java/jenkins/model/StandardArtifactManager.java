@@ -75,9 +75,8 @@ public class StandardArtifactManager extends ArtifactManager {
     }
 
     @Override public Object browseArtifacts(final Run<?,?> build) {
-        HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir(build)),
+        throw HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir(build)),
                 build.getParent().getDisplayName() + ' ' + build.getDisplayName(), "package.png", true));
-        throw new AssertionError(); // never get here
     }
 
     @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
