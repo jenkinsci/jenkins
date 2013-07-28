@@ -41,7 +41,6 @@ import javax.annotation.CheckForNull;
 
 import hudson.util.HttpResponses;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
