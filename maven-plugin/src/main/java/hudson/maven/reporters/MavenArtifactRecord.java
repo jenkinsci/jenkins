@@ -39,8 +39,6 @@ import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.metadata.GroupRepositoryMetadata;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -194,23 +192,6 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
             logger.println(Messages.MavenArtifact_DeployingMainArtifact(a.getFile().getName()));
             deployer.deploy(a.getFile(), a, deploymentRepository, embedder.getLocalRepository());
         }
-    }
-    
-    /**
-     * Installs the artifact to the local Maven repository.
-     */
-    public void install(MavenEmbedder embedder) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
-        ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
-        ArtifactInstaller installer = embedder.lookup(ArtifactInstaller.class);
-        ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
-
-        Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
-        if(!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent))); // TODO
-        installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository()); // TODO
-
-        for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository()); // TODO
     }
 
     public void recordFingerprints() throws IOException {
