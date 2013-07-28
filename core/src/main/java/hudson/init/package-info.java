@@ -27,13 +27,13 @@
  *
  * <p>
  * Hudson's start up is based on the same idea as the modern Unix init mechanism like initng/upstart/SMF.
- * It first builds a set of {@link Task}s that are units of the initialization work, and have them declare
+ * It first builds a set of {@link org.jvnet.hudson.reactor.Task}s that are units of the initialization work, and have them declare
  * dependencies among themselves. For example, jobs are only loaded after all the plugins are initialized,
  * and restoring the build queue requires all the jobs to be loaded.
  *
  * <p>
  * Such micro-scopic dependencies are organized into a bigger directed acyclic graph, which is then executed
- * via {@link Session}. During execution of the reactor, additional tasks can be discovred and added to
+ * via <tt>Session</tt>. During execution of the reactor, additional tasks can be discovred and added to
  * the DAG. We use this additional indirection to:
  *
  * <ol>

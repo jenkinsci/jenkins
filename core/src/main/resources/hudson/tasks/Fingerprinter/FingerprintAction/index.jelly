@@ -30,7 +30,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
-    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <st:include it="${it.build}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>

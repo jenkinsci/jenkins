@@ -82,15 +82,16 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     @Override
     public TestResult findCorrespondingResult(String id) {
         String myID = safe(getName());
+
         int base = id.indexOf(myID);
-        String className;
-        String subId = null;
+        String className = id; // fall back value
         if (base > 0) {
             int classNameStart = base + myID.length() + 1;
-            className = id.substring(classNameStart);
-        } else {
-            className = id;
-    }
+            if (classNameStart<id.length())
+                className = id.substring(classNameStart);
+        }
+
+        String subId = null;
         int classNameEnd = className.indexOf('/');
         if (classNameEnd > 0) {
             subId = className.substring(classNameEnd + 1);
@@ -101,20 +102,15 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
         }
 
         ClassResult child = getClassResult(className);
-        if (child != null) {
-            if (subId != null) {
-                return child.findCorrespondingResult(subId);
-            } else {
-                return child;
-    }
-        }
+        if (child != null && subId != null)
+            return child.findCorrespondingResult(subId);
 
-        return null;
+        return child;
     }
 
     @Override
     public String getTitle() {
-        return Messages.PackageResult_getTitle(getName());
+        return Messages.PackageResult_getTitle(getDisplayName());
     }
 
     @Override
@@ -177,13 +173,12 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     /**
      * Returns a list of the failed cases, in no particular
      * sort order
-     * @return
      */
     public List<CaseResult> getFailedTests() {
         List<CaseResult> r = new ArrayList<CaseResult>();
         for (ClassResult clr : classes.values()) {
             for (CaseResult cr : clr.getChildren()) {
-                if (!cr.isPassed() && !cr.isSkipped()) {
+                if (cr.isFailed()) {
                     r.add(cr);
             }
         }
@@ -193,7 +188,6 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
 
     /**
      * Returns a list of the failed cases, sorted by age.
-     * @return
      */
     public List<CaseResult> getFailedTestsSortedByAge() {
         List<CaseResult> failedTests = getFailedTests();
@@ -307,6 +301,6 @@ public final class PackageResult extends MetaTabulatedResult implements Comparab
     }
 
     public String getDisplayName() {
-        return packageName;
+        return TestNameTransformer.getTransformedName(packageName);
     }
 }

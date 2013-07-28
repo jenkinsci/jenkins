@@ -23,6 +23,7 @@
  */
 package hudson.node_monitors;
 
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -33,6 +34,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.slaves.OfflineCause;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,25 +47,39 @@ import java.util.logging.Logger;
  * where the "monitoring" consists of executing something periodically on every node
  * and taking some action based on its result.
  *
- * <p>
- * "T" represents the the result of the monitoring. 
- *
+ * @param <T>
+ *     represents the the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
-public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(long interval) {
         schedule(interval);
-
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
         this(clazz,HOUR);
     }
 
+    /**
+     * @deprecated as of 1.522
+     *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
+     */
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz, long interval) {
         super(clazz);
 
@@ -82,14 +98,16 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
     }
 
     /**
-     * Represents the last record of the update
+     * Represents the last record of the update.
+     *
+     * Once set to non-null, never be null.
      */
-    private volatile Record record = null;
+    private transient volatile Record record = null;
 
     /**
      * Represents the update activity in progress.
      */
-    private volatile Record inProgress = null;
+    private transient volatile Record inProgress = null;
 
     /**
      * Performs monitoring of the given computer object.
@@ -106,23 +124,73 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
     protected abstract T monitor(Computer c) throws IOException,InterruptedException;
 
     /**
+     * Performs monitoring across the board.
+     *
+     * @return
+     *      For all the computers, report the monitored values.
+     */
+    protected Map<Computer,T> monitor() throws InterruptedException {
+        Map<Computer,T> data = new HashMap<Computer,T>();
+        for( Computer c : Jenkins.getInstance().getComputers() ) {
+            try {
+                Thread.currentThread().setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+
+                if(c.getChannel()==null)
+                    data.put(c,null);
+                else
+                    data.put(c,monitor(c));
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+            } catch (InterruptedException e) {
+                throw (InterruptedException)new InterruptedException("Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.").initCause(e);
+            }
+        }
+        return data;
+    }
+
+    /**
      * Obtains the monitoring result currently available, or null if no data is available.
      *
      * <p>
      * If no data is available, a background task to collect data will be started.
      */
     public T get(Computer c) {
-        if(record==null) {
-            // if this is the first time, schedule the check now
-            if(inProgress==null) {
+        if(record==null || !record.data.containsKey(c)) {
+            // if we don't have the data, schedule the check now
+            if(!isInProgress()) {
                 synchronized(this) {
-                    if(inProgress==null)
+                    if(!isInProgress())
                         new Record().start();
                 }
             }
             return null;
         }
         return record.data.get(c);
+    }
+
+    /**
+     * Is the monitoring activity currently in progress?
+     */
+    private boolean isInProgress() {
+        Record r = inProgress;  // capture for atomicity
+        return r!=null && r.isAlive();
+    }
+
+    /**
+     * The timestamp that indicates when the last round of the monitoring has completed.
+     */
+    public long getTimestamp() {
+        return record==null ? 0L : record.timestamp;
+    }
+
+    public String getTimestampString() {
+        if (record==null)
+            return Messages.AbstractNodeMonitorDescriptor_NoDataYet();
+//        return Messages.AbstractNodeMonitorDescriptor_DataObtainedSometimeAgo(
+//                Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp));
+        return Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp);
     }
 
     /**
@@ -190,7 +258,9 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
         /**
          * Last computed monitoring result.
          */
-        private final Map<Computer,T> data = new HashMap<Computer,T>();
+        private /*final*/ Map<Computer,T> data = Collections.emptyMap();
+
+        private long timestamp;
 
         public Record() {
             super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
@@ -206,36 +276,28 @@ public abstract class   AbstractNodeMonitorDescriptor<T> extends Descriptor<Node
 
         @Override
         public void run() {
-            long startTime = System.currentTimeMillis();
-            String oldName = getName();
+            try {
+                long startTime = System.currentTimeMillis();
+                String oldName = getName();
+                data=monitor();
+                setName(oldName);
 
-            for( Computer c : Jenkins.getInstance().getComputers() ) {
-                try {
-                    setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+                timestamp = System.currentTimeMillis();
+                record = this;
 
-                    if(c.getChannel()==null)
-                        data.put(c,null);
-                    else
-                        data.put(c,monitor(c));
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING,"Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.",e);
+                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: "+getDisplayName(),t);
+            } finally {
+                synchronized(AbstractNodeMonitorDescriptor.this) {
+                    if (inProgress==this)
+                        inProgress = null;
                 }
             }
-            setName(oldName);
-
-            synchronized(AbstractNodeMonitorDescriptor.this) {
-                assert inProgress==this;
-                inProgress = null;
-                record = this;
-            }
-
-            LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
         }
     }
 
-    private final Logger LOGGER = Logger.getLogger(getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractNodeMonitorDescriptor.class.getName());
 
     private static final long HOUR = 1000*60*60L;
 }

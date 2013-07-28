@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<l:ajax>
+<div>
+    <p>
+  適用以 Maven 建置的專案，讓 Jenkins 使用指定的 Goal 及選項叫用 Maven。
+  Jenkins 會將 Maven 任何非 0 的結束代碼都視為建置失敗。
+  某些版本的 Maven 有 Bug，不會回傳正確的結束代碼。
+    </p>
+    <p>
+  Jenkins 傳送<a href="../../env-vars.html" target="_new">多個環境變數</a>給
+  Maven，您可以在 Maven 裡用 "${env.VARIABLENAME}" 來取得變數值。
+    </p>
+    <p>
+  同樣的變數也可以用在命令列參數裡 (假設您是從 Shell 叫用)。
+  例如: <code>-DresultsFile=${WORKSPACE}/${BUILD_TAG}.results.txt</code>。
+    </p>
+</div>
+</l:ajax>
+</j:jelly>

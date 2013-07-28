@@ -31,8 +31,10 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${it.displayName}</h1>
-    <j:forEach var="log" items="${it.logRecords}">
-      <pre>${h.printLogRecord(log)}</pre>
+    <t:logRecords logRecords="${it.logRecords}"/>
+    <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
+      <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
+      <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
 
     <st:include it="${it.parent}" page="feeds.jelly" />    

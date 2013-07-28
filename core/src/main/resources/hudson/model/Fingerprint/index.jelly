@@ -73,7 +73,7 @@ THE SOFTWARE.
                 <td class="fingerprint-summary-header">
                   <j:choose>
                     <j:when test="${job!=null}">
-                      <a href="${rootURL}/${job.url}" class="model-link">${j}</a>
+                      <a href="${rootURL}/${job.url}" class="model-link inside">${j}</a>
                     </j:when>
                     <j:otherwise>
                       ${j}

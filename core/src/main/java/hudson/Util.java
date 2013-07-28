@@ -33,9 +33,7 @@ import hudson.os.PosixAPI;
 import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.Kernel32;
 import hudson.util.jna.WinIOException;
-import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -43,10 +41,9 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
-import org.jruby.ext.posix.FileStat;
-import org.jruby.ext.posix.POSIX;
+import jnr.posix.FileStat;
+import jnr.posix.POSIX;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
-import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -62,7 +59,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -77,6 +73,8 @@ import java.util.regex.Pattern;
 import hudson.util.jna.Kernel32Utils;
 
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import java.security.DigestInputStream;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -114,9 +112,9 @@ public class Util {
     }
 
     /**
-     * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
+     * Pattern for capturing variables. Either $xyz, ${xyz} or ${a.b} but not $a.b, while ignoring "$$"
       */
-    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\}|\\$)");
+    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
@@ -237,6 +235,18 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
+                try {
+                    Class.forName("java.nio.file.Files").getMethod("delete", Class.forName("java.nio.file.Path")).invoke(null, File.class.getMethod("toPath").invoke(f));
+                } catch (InvocationTargetException x) {
+                    Throwable x2 = x.getCause();
+                    if (x2 instanceof IOException) {
+                        // may have a specific exception message
+                        throw (IOException) x2;
+                    }
+                    // else suppress
+                } catch (Throwable x) {
+                    // linkage errors, etc.; suppress
+                }
                 // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
@@ -252,6 +262,15 @@ public class Util {
      */
     @IgnoreJRERequirement
     private static void makeWritable(File f) {
+        // try JDK6-way of doing it.
+        try {
+            if (f.setWritable(true)) {
+                return;
+            }
+        } catch (NoSuchMethodError e) {
+            // not JDK6
+        }
+
         // try chmod. this becomes no-op if this is not Unix.
         try {
             Chmod chmod = new Chmod();
@@ -263,15 +282,8 @@ public class Util {
             LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
         }
 
-        // also try JDK6-way of doing it.
-        try {
-            f.setWritable(true);
-        } catch (NoSuchMethodError e) {
-            // not JDK6
-        }
-
         try {// try libc chmod
-            POSIX posix = PosixAPI.get();
+            POSIX posix = PosixAPI.jnr();
             String path = f.getAbsolutePath();
             FileStat stat = posix.stat(path);
             posix.chmod(path, stat.mode()|0200); // u+w
@@ -438,7 +450,7 @@ public class Util {
     public static void copyStream(InputStream in,OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
-        while((len=in.read(buf))>0)
+        while((len=in.read(buf))>=0)
             out.write(buf,0,len);
     }
 
@@ -541,6 +553,7 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
+     * @see DigestUtils#md5Hex(InputStream)
      */
     public static String getDigestOf(InputStream source) throws IOException {
         try {
@@ -549,7 +562,7 @@ public class Util {
             byte[] buffer = new byte[1024];
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(buffer)>0)
+                while(in.read(buffer)>=0)
                     ; // simply discard the input
             } finally {
                 in.close();
@@ -558,6 +571,13 @@ public class Util {
         } catch (NoSuchAlgorithmException e) {
             throw new IOException2("MD5 not installed",e);    // impossible
         }
+        /* JENKINS-18178: confuses Maven 2 runner
+        try {
+            return DigestUtils.md5Hex(source);
+        } finally {
+            source.close();
+        }
+        */
     }
 
     public static String getDigestOf(String text) {
@@ -565,6 +585,22 @@ public class Util {
             return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
         } catch (IOException e) {
             throw new Error(e);
+        }
+    }
+
+    /**
+     * Computes the MD5 digest of a file.
+     * @param file a file
+     * @return a 32-character string
+     * @throws IOException in case reading fails
+     * @since 1.525
+     */
+    public static String getDigestOf(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            return getDigestOf(new BufferedInputStream(is));
+        } finally {
+            is.close();
         }
     }
 
@@ -769,10 +805,10 @@ public class Util {
 
     /**
      * Encode a single path component for use in an HTTP URL.
-     * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
-     * and HTTP special characters (/;:?) as specified in RFC1738.
-     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
-     * Note that slash(/) is encoded, so the given string should be a
+     * Escapes all non-ASCII, general unsafe (space and {@code "#%<>[\]^`{|}~})
+     * and HTTP special characters ({@code /;:?}) as specified in RFC1738.
+     * (so alphanumeric and {@code !@$&*()-_=+',.} are not encoded)
+     * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
      * Method name inspired by PHP's rawurlencode.
      */
@@ -1052,6 +1088,9 @@ public class Util {
                         return;
                     }
                     throw e;
+                } catch (UnsatisfiedLinkError e) {
+                    // not available on this Windows
+                    return;
                 }
             } else {
                 String errmsg = "";
@@ -1073,13 +1112,16 @@ public class Util {
                     } catch (LinkageError e) {
                         // if JNA is unavailable, fall back.
                         // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        if (PosixAPI.supportsNative()) {
-                            r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+                        POSIX posix = PosixAPI.jnr();
+                        if (posix.isNative()) {
+                            // TODO should we rethrow PosixException as IOException here?
+                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
                         }
                     }
                 }
                 if (r==null) {
                     // if all else fail, fall back to the most expensive approach of forking a process
+                    // TODO is this really necessary? JavaPOSIX should do this automatically
                     r = new LocalProc(new String[]{
                         "ln","-s", targetPath, symlinkPath},
                         new String[0],listener.getLogger(), baseDir).join();
@@ -1184,6 +1226,10 @@ public class Util {
             } catch (ClassNotFoundException x3) {
                 assert false : x3; // should be Java 7+ here
             }
+            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
+                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
+                return null;
+            }
             if (x2 instanceof IOException) {
                 throw (IOException) x2;
             }
@@ -1217,7 +1263,7 @@ public class Util {
         } catch (LinkageError e) {
             // if JNA is unavailable, fall back.
             // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.get().readlink(filename);
+            return PosixAPI.jnr().readlink(filename);
         }
     }
 
@@ -1248,9 +1294,7 @@ public class Util {
      * @since 1.173
      */
     public static String wrapToErrorSpan(String s) {
-        s = "<span class=error><img src='"+
-            Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+
-            "/images/none.gif' height=16 width=1>"+s+"</span>";
+        s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
     

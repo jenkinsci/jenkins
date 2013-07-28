@@ -665,6 +665,11 @@ public abstract class Launcher {
         final Launcher outer = this;
         return new Launcher(outer) {
             @Override
+            public boolean isUnix() {
+                return outer.isUnix();
+            }
+ 
+            @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
                 if (starter.masks != null) {
@@ -711,6 +716,11 @@ public abstract class Launcher {
         final EnvVars env = new EnvVars(_env);
         final Launcher outer = this;
         return new Launcher(outer) {
+            @Override
+            public boolean isUnix() {
+                return outer.isUnix();
+            }
+
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 EnvVars e = new EnvVars(env);

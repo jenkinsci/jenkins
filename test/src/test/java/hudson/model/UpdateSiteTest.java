@@ -27,22 +27,86 @@ package hudson.model;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import static org.junit.Assert.*;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.mortbay.jetty.HttpConnection;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.bio.SocketConnector;
+import org.mortbay.jetty.handler.AbstractHandler;
 
 public class UpdateSiteTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
+    private final String RELATIVE_BASE = "/_relative/";
+    private Server server;
+    private URL baseUrl;
+
+    private String getResource(String resourceName) throws IOException {
+        try {
+            URL url = UpdateSiteTest.class.getResource(resourceName);
+            return (url != null)?FileUtils.readFileToString(new File(url.toURI())):null;
+        } catch(URISyntaxException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Startup a web server to access resources via HTTP.
+     * @throws Exception 
+     */
+    @Before
+    public void setUpWebServer() throws Exception {
+        server = new Server();
+        SocketConnector connector = new SocketConnector();
+        server.addConnector(connector);
+        server.setHandler(new AbstractHandler() {
+            public void handle(String target, HttpServletRequest request,
+                    HttpServletResponse response, int dispatch) throws IOException,
+                    ServletException {
+                if (target.startsWith(RELATIVE_BASE)) {
+                    target = target.substring(RELATIVE_BASE.length());
+                }
+                String responseBody = getResource(target);
+                if (responseBody != null) {
+                    HttpConnection.getCurrentConnection().getRequest().setHandled(true);
+                    response.setContentType("text/plain; charset=utf-8");
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getOutputStream().write(responseBody.getBytes());
+                }
+            }
+        });
+        server.start();
+        baseUrl = new URL("http", "localhost", connector.getLocalPort(), RELATIVE_BASE);
+    }
+
+    @After
+    public void shutdownWebserver() throws Exception {
+        server.stop();
+    }
+    
     @Test public void relativeURLs() throws Exception {
         PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
         sites.clear();
-        URL url = UpdateSiteTest.class.getResource("/plugins/tasks-update-center.json");
+        URL url = new URL(baseUrl, "/plugins/tasks-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
@@ -55,14 +119,14 @@ public class UpdateSiteTest {
     }
 
     @Test public void updateDirectlyWithJson() throws Exception {
-        UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json").toExternalForm());
+        UpdateSite us = new UpdateSite("default", new URL(baseUrl, "update-center.json").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         assertEquals(FormValidation.ok(), us.updateDirectly(true).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
     
     @Test public void updateDirectlyWithHtml() throws Exception {
-        UpdateSite us = new UpdateSite("default", UpdateSiteTest.class.getResource("update-center.json.html").toExternalForm());
+        UpdateSite us = new UpdateSite("default", new URL(baseUrl, "update-center.json.html").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         assertEquals(FormValidation.ok(), us.updateDirectly(true).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));

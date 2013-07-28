@@ -16,7 +16,7 @@ public abstract class WorkspaceListener implements ExtensionPoint {
 
     /**
      * Called before a build uses a workspace. IE, before any SCM checkout.
-     * @param r
+     * @param b
      * @param workspace
      * @param listener 
      */

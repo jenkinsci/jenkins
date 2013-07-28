@@ -39,11 +39,17 @@ import hudson.model.labels.LabelExpressionLexer;
 import hudson.model.labels.LabelExpressionParser;
 import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.model.labels.LabelVisitor;
+import hudson.security.ACL;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -54,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Collection;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import com.thoughtworks.xstream.converters.Converter;
@@ -70,7 +77,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
  * @see Jenkins#getLabel(String)
  */
 @ExportedBean
-public abstract class Label extends Actionable implements Comparable<Label>, ModelObject {
+public abstract class Label extends Actionable implements Comparable<Label>, ModelObjectWithChildren {
     /**
      * Display name of this label.
      */
@@ -336,10 +343,60 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-            if(this.equals(p.getAssignedLabel()))
+            if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
         return r;
+    }
+
+    /**
+     * Returns a count of projects that are tied on this node. In a system without security this should be the same
+     * as {@code getTiedJobs().size()} but significantly faster as it involves fewer temporary objects and avoids
+     * sorting the intermediary list. In a system with security, this will likely return a higher value as it counts
+     * all jobs (mostly) irrespective of access.
+     * @return a count of projects that are tied on this node.
+     */
+    public int getTiedJobCount() {
+        // denormalize for performance
+        // we don't need to respect security as much when returning a simple count
+        SecurityContext context = ACL.impersonate(ACL.SYSTEM);
+        try {
+            int result = 0;
+            // top level gives the map without checking security of items in the map
+            // therefore best performance
+            for (TopLevelItem topLevelItem : Jenkins.getInstance().getItemMap().values()) {
+                if (topLevelItem instanceof AbstractProject) {
+                    final AbstractProject project = (AbstractProject) topLevelItem;
+                    if (this.equals(project.getAssignedLabel())) {
+                        result++;
+                    }
+                }
+                if (topLevelItem instanceof ItemGroup) {
+                    Stack<ItemGroup> q = new Stack<ItemGroup>();
+                    q.push((ItemGroup) topLevelItem);
+
+                    while (!q.isEmpty()) {
+                        ItemGroup<?> parent = q.pop();
+                        // we run the risk of permissions checks in ItemGroup#getItems()
+                        // not much we can do here though
+                        for (Item i : parent.getItems()) {
+                            if (i instanceof AbstractProject) {
+                                final AbstractProject project = (AbstractProject) i;
+                                if (this.equals(project.getAssignedLabel())) {
+                                    result++;
+                                }
+                            }
+                            if (i instanceof ItemGroup) {
+                                q.push((ItemGroup) i);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        } finally {
+            SecurityContextHolder.setContext(context);
+        }
     }
 
     public boolean contains(Node node) {
@@ -453,6 +510,14 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Override
     public String toString() {
         return name;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (Node node : getNodes()) {
+            menu.add(node);
+        }
+        return menu;
     }
 
     public static final class ConverterImpl implements Converter {

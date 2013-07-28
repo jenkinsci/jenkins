@@ -80,25 +80,23 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     @Override
     public hudson.tasks.test.TestResult findCorrespondingResult(String id) {
         String myID = safe(getName());
+        String caseName = id;
         int base = id.indexOf(myID);
-        String caseName;
         if (base > 0) {
             int caseNameStart = base + myID.length() + 1;
-            caseName = id.substring(caseNameStart);
-        } else {
-            caseName = id;
-    }
-
+			if (id.length() > caseNameStart) {
+            	caseName = id.substring(caseNameStart);
+            }
+        } 
         CaseResult child = getCaseResult(caseName);
         if (child != null) {
             return child;
         }
-
         return null;
     }
 
     public String getTitle() {
-        return Messages.ClassResult_getTitle(getName());
+        return Messages.ClassResult_getTitle(getDisplayName());
     }
 
     @Override
@@ -223,11 +221,18 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     public String getDisplayName() {
-        return getName();
+        return TestNameTransformer.getTransformedName(getName());
     }
     
+    /**
+     * @since 1.515
+     */
     public String getFullName() {
-    	return getParent().getDisplayName() + "." + className;
+    	return getParent().getName() + "." + className;
+    }
+    
+    public String getFullDisplayName() {
+    	return getParent().getDisplayName() + "." + TestNameTransformer.getTransformedName(className);
     }
 
     /**

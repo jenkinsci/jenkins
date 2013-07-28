@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
@@ -36,11 +35,21 @@ import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.PatternSet;
+import org.apache.tools.ant.types.Resource;
+import org.apache.tools.ant.types.ZipFileSet;
+import org.apache.tools.ant.types.resources.MappedResourceCollection;
+import org.apache.tools.ant.util.GlobPatternMapper;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipExtraField;
+import org.apache.tools.zip.ZipOutputStream;
 
 import java.io.Closeable;
 import java.io.File;
@@ -57,7 +66,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
@@ -413,11 +421,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Explodes the plugin into a directory, if necessary.
      */
     private static void explode(File archive, File destDir) throws IOException {
-        if(!destDir.exists())
-            destDir.mkdirs();
+        destDir.mkdirs();
 
         // timestamp check
-        File explodeTime = new File(destDir,".timestamp");
+        File explodeTime = new File(destDir,".timestamp2");
         if(explodeTime.exists() && explodeTime.lastModified()==archive.lastModified())
             return; // no need to expand
 
@@ -425,12 +432,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         Util.deleteRecursive(destDir);
 
         try {
-            Expand e = new Expand();
-            e.setProject(new Project());
-            e.setTaskType("unzip");
-            e.setSrc(archive);
-            e.setDest(destDir);
-            e.execute();
+            Project prj = new Project();
+            unzipExceptClasses(archive, destDir, prj);
+            createClassJarFromWebInfClasses(archive, destDir, prj);
         } catch (BuildException x) {
             throw new IOException2("Failed to expand " + archive,x);
         }
@@ -440,6 +444,66 @@ public class ClassicPluginStrategy implements PluginStrategy {
         } catch (InterruptedException e) {
             throw new AssertionError(e); // impossible
         }
+    }
+
+    /**
+     * Repackage classes directory into a jar file to make it remoting friendly.
+     * The remoting layer can cache jar files but not class files.
+     */
+    private static void createClassJarFromWebInfClasses(File archive, File destDir, Project prj) {
+        File classesJar = new File(destDir, "WEB-INF/lib/classes.jar");
+
+        ZipFileSet zfs = new ZipFileSet();
+        zfs.setProject(prj);
+        zfs.setSrc(archive);
+        zfs.setIncludes("WEB-INF/classes/");
+
+        MappedResourceCollection mapper = new MappedResourceCollection();
+        mapper.add(zfs);
+
+        GlobPatternMapper gm = new GlobPatternMapper();
+        gm.setFrom("WEB-INF/classes/*");
+        gm.setTo("*");
+        mapper.add(gm);
+
+        final long dirTime = archive.lastModified();
+        Zip z = new Zip() {
+            /**
+             * Forces the fixed timestamp for directories to make sure
+             * classes.jar always get a consistent checksum.
+             */
+            protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
+                                  int mode, ZipExtraField[] extra)
+                throws IOException {
+
+                ZipOutputStream wrapped = new ZipOutputStream(new NullOutputStream()) {
+                    @Override
+                    public void putNextEntry(ZipEntry ze) throws IOException {
+                        ze.setTime(dirTime+1999);   // roundup
+                        super.putNextEntry(ze);
+                    }
+                };
+                super.zipDir(dir,wrapped,vPath,mode,extra);
+            }
+        };
+        z.setProject(prj);
+        z.setTaskType("zip");
+        classesJar.getParentFile().mkdirs();
+        z.setDestFile(classesJar);
+        z.add(mapper);
+        z.execute();
+    }
+
+    private static void unzipExceptClasses(File archive, File destDir, Project prj) {
+        Expand e = new Expand();
+        e.setProject(prj);
+        e.setTaskType("unzip");
+        e.setSrc(archive);
+        e.setDest(destDir);
+        PatternSet p = new PatternSet();
+        p.setExcludes("WEB-INF/classes/");
+        e.addPatternset(p);
+        e.execute();
     }
 
     /**
@@ -472,7 +536,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         List<PluginWrapper> dep = new ArrayList<PluginWrapper>();
                         for (Dependency d : pw.getDependencies()) {
                             PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                            if (p!=null)
+                            if (p!=null && p.isActive())
                                 dep.add(p);
                         }
                         return dep;
@@ -482,7 +546,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 try {
                     for (Dependency d : dependencies) {
                         PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                        if (p!=null)
+                        if (p!=null && p.isActive())
                             cgd.run(Collections.singleton(p));
                     }
                 } catch (CycleDetectedException e) {

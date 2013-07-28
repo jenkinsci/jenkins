@@ -98,7 +98,14 @@ public final class TestResult extends MetaTabulatedResult {
      * Creates an empty result.
      */
     public TestResult() {
-        keepLongStdio = false;
+        this(false);
+    }
+
+    /**
+     * @since 1.522
+     */
+    public TestResult(boolean keepLongStdio) {
+        this.keepLongStdio = keepLongStdio;
     }
 
     @Deprecated
@@ -376,6 +383,15 @@ public final class TestResult extends MetaTabulatedResult {
     @Override
     public int getSkipCount() {
         return skippedTests;
+    }
+    
+    /**
+     * Returns <tt>true</tt> if this doesn't have any any test results. 
+     * @since 1.511
+     */
+    @Exported(visibility=999)
+    public boolean isEmpty() {
+        return getTotalCount() == 0;
     }
 
     @Override

@@ -51,7 +51,7 @@ typedef struct _SHELLEXECUTEINFO {
 } SHELLEXECUTEINFO, *LPSHELLEXECUTEINFO;
  * </pre>
  * @author Kohsuke Kawaguchi
- * @see MSDN: http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx
+ * @see <a href="http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx">MSDN: SHELLEXECUTEINFO</a>
  */
 public class SHELLEXECUTEINFO extends Structure {
     public int cbSize = size();

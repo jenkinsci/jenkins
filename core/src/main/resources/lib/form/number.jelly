@@ -28,10 +28,10 @@ THE SOFTWARE.
     Generates an input field <tt>&lt;input type="number" ... /></tt> to be
     used inside &lt;f:entry/>
 
-    <st:attribute name="field">
+    <st:attribute name="field" type="java.lang.String">
       Used for databinding. TBD.
     </st:attribute>
-    <st:attribute name="name">
+    <st:attribute name="name" type="java.lang.String">
       This becomes @name of the &lt;input> tag.
       If @field is specified, this value is inferred from it.
     </st:attribute>

@@ -223,7 +223,22 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * @see #getHelpFile(String) 
      */
-    private transient final Map<String,String> helpRedirect = new HashMap<String, String>();
+    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<String,HelpRedirect>();
+
+    private static class HelpRedirect {
+        private final Class<? extends Describable> owner;
+        private final String fieldNameToRedirectTo;
+
+        private HelpRedirect(Class<? extends Describable> owner, String fieldNameToRedirectTo) {
+            this.owner = owner;
+            this.fieldNameToRedirectTo = fieldNameToRedirectTo;
+        }
+
+        private String resolve() {
+            // the resolution has to be deferred to avoid ordering issue among descriptor registrations.
+            return Jenkins.getInstance().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo);
+        }
+    }
 
     /**
      *
@@ -477,7 +492,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Akin to {@link #getPropertyType(Object,String) but never returns null.
+     * Akin to {@link #getPropertyType(Object,String)} but never returns null.
      * @throws AssertionError in case the field cannot be found
      * @since 1.492
      */
@@ -657,8 +672,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public String getHelpFile(Klass<?> clazz, String fieldName) {
-        String v = helpRedirect.get(fieldName);
-        if (v!=null)    return v;
+        HelpRedirect r = helpRedirect.get(fieldName);
+        if (r!=null)    return r.resolve();
 
         for (Klass<?> c : clazz.getAncestors()) {
             String page = "/descriptor/" + getId() + "/help";
@@ -688,8 +703,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * @since 1.425
      */
     protected void addHelpFileRedirect(String fieldName, Class<? extends Describable> owner, String fieldNameToRedirectTo) {
-        helpRedirect.put(fieldName,
-            Jenkins.getInstance().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo));
+        helpRedirect.put(fieldName, new HelpRedirect(owner,fieldNameToRedirectTo));
     }
 
     /**

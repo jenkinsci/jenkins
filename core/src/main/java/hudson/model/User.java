@@ -37,6 +37,7 @@ import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithContextMenu;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -100,7 +101,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User> {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu {
     
     private transient final String id;
 
@@ -693,6 +694,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             actions.addAll(factory.createFor(this));
         }
         return Collections.unmodifiableList(actions);
+    }
+
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        return new ContextMenu().from(this,request,response);
     }
 
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements Comparable<CanonicalIdResolver> {

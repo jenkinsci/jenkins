@@ -40,7 +40,7 @@ function updateListBox(listBox,url,config) {
     new Ajax.Request(url, config);
 }
 
-Behaviour.specify("SELECT.select", 'select', 0, function(e) {
+Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
         // controls that this SELECT box depends on
         refillOnChange(e,function(params) {
             var value = e.value;

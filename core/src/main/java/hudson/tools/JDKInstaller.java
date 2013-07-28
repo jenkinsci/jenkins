@@ -227,10 +227,10 @@ public class JDKInstaller extends ToolInstaller {
             ArgumentListBuilder args = new ArgumentListBuilder();
             args.add(jdkBundle);
             if (isJava15() || isJava14()) {
-                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\""+ expectedLocation +"\" /L \""+logFile+"\"");
             } else {
                 // modern version supports arguments in more sane format.
-                args.add("/s","/v","/qn","/L","\\\""+logFile+"\\\"","REBOOT=ReallySuppress","INSTALLDIR=\\\""+ expectedLocation+"\\\"");
+                args.add("/s","/v","/qn","/L","\""+logFile+"\"","REBOOT=ReallySuppress","INSTALLDIR=\""+ expectedLocation+"\"");
             }
             // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
             // Oh Windows, oh windows, why do you have to be so difficult?
@@ -264,7 +264,7 @@ public class JDKInstaller extends ToolInstaller {
 
     /**
      * Abstraction of the file system to perform JDK installation.
-     * Consider {@link FilePathFileSystem} as the canonical documentation of the contract.
+     * Consider {@link JDKInstaller.FilePathFileSystem} as the canonical documentation of the contract.
      */
     public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;

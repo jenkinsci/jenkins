@@ -18,7 +18,6 @@ public abstract class TransientViewActionFactory implements ExtensionPoint {
 	 * returns a list of (transient) actions never null, may be empty
 	 * 
 	 * @param v
-	 * @return
 	 */
 	public abstract List<Action> createFor(View v);
 	
@@ -30,7 +29,7 @@ public abstract class TransientViewActionFactory implements ExtensionPoint {
 	}
 	
     /**
-     * Creates {@link Action)s for a view, using all registered {@link TransientViewActionFactory}s.
+     * Creates {@link Action}s for a view, using all registered {@link TransientViewActionFactory}s.
      */
 	public static List<Action> createAllFor(View v) {
 		List<Action> result = new ArrayList<Action>();

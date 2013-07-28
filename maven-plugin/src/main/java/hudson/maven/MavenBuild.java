@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import jenkins.mvn.SettingsProvider;
 
@@ -153,7 +154,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      *      is manually triggered.
      * @see #getModuleSetBuild()
      */
-    public MavenModuleSetBuild getParentBuild() {
+    public @CheckForNull MavenModuleSetBuild getParentBuild() {
         return getParent().getParent().getBuildByNumber(getNumber());
     }
 
@@ -174,7 +175,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      *      is manually removed.
      * @see #getParentBuild()
      */
-    public MavenModuleSetBuild getModuleSetBuild() {
+    public @CheckForNull MavenModuleSetBuild getModuleSetBuild() {
         return getParent().getParent().getNearestOldBuild(getNumber());
     }
 
@@ -702,13 +703,26 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             LOGGER.fine(getFullDisplayName()+" is building with mavenVersion " + mavenVersion + " from file " + mavenInformation.getVersionResourcePath());
             
 
-            boolean maven3orLater = MavenUtil.maven3orLater(mavenVersion);
+            MavenUtil.MavenVersion mavenVersionType = MavenUtil.getMavenVersion( mavenVersion );
 
-            ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener, maven3orLater
-                ? new Maven3ProcessFactory(
-                        getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null )
-                : new MavenProcessFactory(
-                        getParent().getParent(), launcher, envVars, getMavenOpts(listener, envVars), null ));
+            final ProcessCache.Factory factory;
+
+            switch ( mavenVersionType ){
+                case MAVEN_2:
+                    LOGGER.fine( "using maven 2 " + mavenVersion );
+                    factory = new MavenProcessFactory( getParent().getParent(), MavenBuild.this, launcher, envVars, getMavenOpts(listener, envVars), null );
+                    break;
+                case MAVEN_3_0_X:
+                    LOGGER.fine( "using maven 3 " + mavenVersion );
+                    factory = new Maven3ProcessFactory( getParent().getParent(), MavenBuild.this, launcher, envVars, getMavenOpts(listener, envVars), null );
+                    break;
+                default:
+                    LOGGER.fine( "using maven 3 " + mavenVersion );
+                    factory = new Maven31ProcessFactory( getParent().getParent(), MavenBuild.this, launcher, envVars, getMavenOpts(listener, envVars), null );
+
+            }
+
+            ProcessCache.MavenProcess process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), listener, factory);
 
             ArgumentListBuilder margs = new ArgumentListBuilder("-N","-B");
             FilePath localRepo = mms.getLocalRepository().locate(MavenBuild.this);
@@ -728,7 +742,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             // backward compatibility
             systemProps.put("hudson.build.number",String.valueOf(getNumber()));
 
-            if (maven3orLater)
+            if (mavenVersionType == MavenUtil.MavenVersion.MAVEN_3_0_X || mavenVersionType == MavenUtil.MavenVersion.MAVEN_3_1)
             { 
                 // FIXME here for maven 3 builds
                 listener.getLogger().println("Building single Maven modules is not implemented for Maven 3, yet!");

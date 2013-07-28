@@ -36,8 +36,7 @@ THE SOFTWARE.
         <j:forEach var="p" items="${it.children}" varStatus="status">
           <tr>
             <td class="pane">
-              <a href="${p.safeName}" class="model-link"><span style="${p.previousResult==null?'font-weight:bold':''}"><st:out value="${p.name}" /></span></a>
-              <st:nbsp/>
+              <a href="${p.safeName}" class="model-link inside"><span style="${p.previousResult==null?'font-weight:bold':''}"><st:out value="${p.displayName}" /></span></a>
               <j:forEach var="badge" items="${p.testActions}">
                 <st:include it="${badge}" page="badge.jelly" optional="true"/>
               </j:forEach>

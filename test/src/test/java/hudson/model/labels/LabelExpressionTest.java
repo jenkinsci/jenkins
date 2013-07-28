@@ -30,6 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.FreeStyleProject.DescriptorImpl;
 import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
@@ -196,6 +197,10 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testQuote() {
         Label l = jenkins.getLabel("\"abc\\\\\\\"def\"");
         assertEquals("abc\\\"def",l.getName());
+        
+        l = jenkins.getLabel("label1||label2"); // create label expression
+        l = jenkins.getLabel("\"label1||label2\"");
+        assertEquals("label1||label2",l.getName());
     }
 
     /**
@@ -224,13 +229,15 @@ public class LabelExpressionTest extends HudsonTestCase {
     public void testFormValidation() throws Exception {
         executeOnServer(new Callable<Object>() {
             public Object call() throws Exception {
+                DescriptorImpl d = jenkins.getDescriptorByType(DescriptorImpl.class);
+
                 Label l = jenkins.getLabel("foo");
                 DumbSlave s = createSlave(l);
-                String msg = FreeStyleProject.DESCRIPTOR.doCheckAssignedLabelString("goo").renderHtml();
+                String msg = d.doCheckAssignedLabelString("goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = FreeStyleProject.DESCRIPTOR.doCheckAssignedLabelString("master && goo").renderHtml();
+                msg = d.doCheckAssignedLabelString("master && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

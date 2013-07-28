@@ -54,7 +54,6 @@ public class RedeployPublisherTest {
     @Test
     public void testBug2593() throws Exception {
         Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.39/maven-antrun-extended-plugin-1.39.pom", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
-        System.err.println(System.getenv("JOB_URL")); // XXX in case the above does not work
         j.configureDefaultMaven();
         MavenModuleSet m2 = j.createMavenProject();
         File repo = tmp.getRoot();

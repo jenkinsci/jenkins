@@ -4,9 +4,10 @@ import org.apache.commons.beanutils.Converter;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.util.concurrent.TimeUnit;
+import javax.annotation.CheckForNull;
 
 /**
- * Represents a length of something, like "3 seconds"
+ * Represents a length of something, like {@code 3sec}.
  *
  * This supports parameter injection, such as via {@link QueryParameter}.
  *
@@ -32,7 +33,7 @@ public class TimeDuration {
         return t.convert(millis,TimeUnit.MILLISECONDS);
     }
 
-    public static TimeDuration fromString(String delay) {
+    public static @CheckForNull TimeDuration fromString(@CheckForNull String delay) {
         if (delay==null)
             return null;
 

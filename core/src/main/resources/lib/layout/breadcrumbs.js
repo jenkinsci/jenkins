@@ -14,44 +14,27 @@ var breadcrumbs = (function() {
     var xhr;
 
     /**
-     * When mouse hovers over the anchor that has context menu, we capture its region here.
-     * This is used to to avoid showing menu when the mouse slides over to other elements after a delay.
-     *
-     * @type {YAHOO.util.Region}
-     */
-    var hitTest;
-
-    /**
      * Current mouse cursor position in the page coordinate.
      *
      * @type {YAHOO.util.Point}
      */
     var mouse;
 
-    /**
-     * Timer ID for lazy menu display.
-     */
-    var menuDelay;
+    var logger = function() {};
+    // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
     function makeMenuHtml(icon,displayName) {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
 
     Event.observe(window,"load",function(){
-      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000});
+      menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000, zIndex:2001});
     });
 
 
     Event.observe(document,"mousemove",function (ev){
         mouse = new YAHOO.util.Point(ev.pageX,ev.pageY);
     });
-
-    function cancelMenu() {
-        if (menuDelay) {
-            window.clearTimeout(menuDelay);
-            menuDelay = null;
-        }
-    }
 
     function combinePath(a,b) {
         var qs;
@@ -73,35 +56,108 @@ var breadcrumbs = (function() {
         }
     }
 
+    function requireConfirmation(action, event, cfg) {
+        if (confirm(cfg.displayName + ': are you sure?')) { // TODO I18N
+            var form = document.createElement('form');
+            form.setAttribute('method', cfg.post ? 'POST' : 'GET');
+            form.setAttribute('action', cfg.url);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
     /**
-     * Called when the mouse cursor comes into the context menu hot spot.
+     * Wraps a delayed action and its cancellation.
+     */
+    function Delayed(action, timeout) {
+        this.schedule = function () {
+            this.cancel();
+            this.token = window.setTimeout(function () {
+                this.token = null;
+                action();
+            }.bind(this), timeout);
+            logger("Scheduled %s",this.token)
+        };
+        this.cancel = function () {
+            if (this.token != null) {
+                logger("Cancelling %s",this.token);
+                window.clearTimeout(this.token);
+            }
+            this.token = null;
+        };
+    }
+
+    /**
+     * '>' control used to launch context menu.
+     */
+    var menuSelector = (function() {
+        var menuSelector = $(document.createElement("div"));
+        document.body.appendChild(menuSelector);
+        menuSelector.id = 'menuSelector';
+
+        /**
+         * @param target
+         *      DOM node to attach this selector to.
+         */
+        menuSelector.show = function(target) {
+            var xy = Dom.getXY(target);
+            if ($(target).hasClassName("inside"))
+                xy[0] -= this.offsetWidth;  // show the menu selector inside the text
+            xy[0] += target.offsetWidth;
+            xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
+            Dom.setXY(this, xy);
+            this.target = target;
+
+            this.style.visibility = "visible";
+        };
+        menuSelector.hide = function() {
+            this.style.visibility = "hidden";
+        };
+        menuSelector.observe("click",function () {
+            invokeContextMenu(this.target);
+        });
+
+        // if the mouse leaves the selector, hide it
+        canceller = new Delayed(function () {
+            logger("hiding 'v'");
+            menuSelector.hide();
+        }.bind(menuSelector), 750);
+
+        menuSelector.observe("mouseover",function () {
+            logger("mouse entered 'v'");
+            canceller.cancel();
+        });
+        menuSelector.observe("mouseout",function () {
+            logger("mouse left 'v'");
+            canceller.schedule();
+        });
+        menuSelector.canceller = canceller;
+
+        return menuSelector;
+    })();
+
+    /**
+     * Called when the user clicks a mouse to show a context menu.
      *
      * If the mouse stays there for a while, a context menu gets displayed.
      *
      * @param {HTMLElement} e
      *      anchor tag
-     * @param {Number} delay
-     *      Number of milliseconds to wait before the menu is displayed.
-     *      The mouse needs to be on the same anchor tag after this delay.
+     * @param {String} contextMenuUrl
+     *      The URL that renders JSON for context menu. Optional.
      */
-    function handleHover(e,delay) {
+    function invokeContextMenu(e,contextMenuUrl) {
+        contextMenuUrl = contextMenuUrl || "contextMenu";
+
         function showMenu(items) {
-            cancelMenu();
-            hitTest = Dom.getRegion(e);
-            menuDelay = window.setTimeout(function() {
-                if (hitTest.contains(mouse)) {
-                    menu.hide();
-                    var pos = [e, "tl", "bl"];
-                    if ($(e).hasClassName("tl-tr"))  pos = [e,"tl","tr"]
-                    menu.cfg.setProperty("context", pos);
-                    menu.clearContent();
-                    menu.addItems(items);
-                    menu.render("breadcrumb-menu-target");
-                    menu.show();
-                    $(menu.getItem(0).element).addClassName("yui-menuitem-tooltip")
-                }
-                menuDelay = null;
-            },delay);
+            menu.hide();
+            var pos = [e, "tl", "bl"];
+            if ($(e).hasClassName("tl-tr"))  pos = [e,"tl","tr"];
+            menu.cfg.setProperty("context", pos);
+            menu.clearContent();
+            menu.addItems(items);
+            menu.render("breadcrumb-menu-target");
+            menu.show();
         }
 
         if (xhr)
@@ -111,25 +167,22 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {// fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
                         e.text = makeMenuHtml(e.icon, e.displayName);
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
-                        if (e.post) {
+                        if (e.requiresConfirmation) {
+                            e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
+                            delete e.url;
+                        } else if (e.post) {
                             e.onclick = {fn: postRequest, obj: e.url};
                             delete e.url;
                         }
                     }
                     a.each(fillMenuItem);
-
-                    var tooltip = e.getAttribute('tooltip');
-                    if (tooltip) {
-                        // join the tooltip into the context menu. color #000 to cancel out the text effect on disabled menu items
-                        a.unshift({text:"<div class='yui-menu-tooltip'>"+tooltip+"</div>", disabled:true})
-                    }
 
                     e.items = function() { return a };
                     showMenu(a);
@@ -140,16 +193,34 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-        // when the mouse hovers over LI, activate the menu
-        e = $(e);
-        if (e.hasClassName("no-context-menu"))  return;
-        e.observe("mouseover", function () { handleHover(e.firstChild,0) });
-    });
+//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
+//        // when the mouse hovers over LI, activate the menu
+//        if (e.hasClassName("no-context-menu"))  return;
+//        e.observe("mouseover", function () { handleHover(e.firstChild) });
+//    });
 
     Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
-        $(a).observe("mouseover", function () { handleHover(a,500); });
+        // $(a).observe("mouseover", function () { handleHover(a,500); });
+
+        a.observe("mouseover",function () {
+            logger("mouse entered model-link %s",this.href);
+            menuSelector.canceller.cancel();
+            menuSelector.show(this);
+        });
+        a.observe("mouseout",function () {
+            logger("mouse left model-link %s",this.href);
+            menuSelector.canceller.schedule();
+        });
+    });
+
+    Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
+        a.observe("mouseover",function() {
+            menuSelector.hide();
+        });
+        a.observe("click",function() {
+            invokeContextMenu(this,"childrenContextMenu");
+        })
     });
 
     /**

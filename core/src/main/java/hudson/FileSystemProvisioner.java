@@ -126,7 +126,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *
      * <p>
      * This method can prepare the underlying file system in preparation
-     * for the later {@link #snapshot(AbstractBuild, FilePath, TaskListener)}.
+     * for the later {@link FileSystemProvisioner.Default#snapshot(AbstractBuild, FilePath, TaskListener)}.
      *
      * TODO : the method needs to be able to see the snapshot would
      * be later needed. In fact, perhaps we should only call this method

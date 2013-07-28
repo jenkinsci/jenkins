@@ -51,4 +51,9 @@ public class ReloadLink extends ManagementLink {
     public String getUrlName() {
         return "reload";
     }
+
+    @Override public boolean getRequiresConfirmation() {
+        return true;
+    }
+    
 }

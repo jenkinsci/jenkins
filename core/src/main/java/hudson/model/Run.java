@@ -87,7 +87,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
+import com.jcraft.jzlib.GZIPInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -114,11 +114,13 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import java.io.StringWriter;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ArtifactManager;
 import jenkins.model.StandardArtifactManager;
+import jenkins.model.RunAction2;
 
 /**
  * A particular execution of {@link Job}.
@@ -186,7 +188,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The build result.
-     * This value may change while the state is in {@link State#BUILDING}.
+     * This value may change while the state is in {@link Run.State#BUILDING}.
      */
     protected volatile Result result;
 
@@ -319,10 +321,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Called after the build is loaded and the object is added to the build list.
      */
+    @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getActions())
-            if (a instanceof RunAction)
+        for (Action a : getActions()) {
+            if (a instanceof RunAction2) {
+                ((RunAction2) a).onLoad(this);
+            } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
+            }
+        }
     }
     
     /**
@@ -334,18 +341,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         List<Action> actions = new ArrayList<Action>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
             actions.addAll(factory.createFor(this));
+            assert !actions.contains(null) : "null action added by " + factory;
         }
         return Collections.unmodifiableList(actions);
     }
    
+    @SuppressWarnings("deprecation")
     @Override
     public void addAction(Action a) {
         super.addAction(a);
-        if (a instanceof RunAction)
+        if (a instanceof RunAction2) {
+            ((RunAction2) a).onAttached(this);
+        } else if (a instanceof RunAction) {
             ((RunAction) a).onAttached(this);
+        }
     }
 
-    /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
+    static class InvalidDirectoryNameException extends IOException {
+        InvalidDirectoryNameException(File buildDir) {
+            super("Invalid directory name " + buildDir);
+        }
+    }
+
+    /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException, InvalidDirectoryNameException {
         try {
             if(Util.isSymlink(buildDir)) {
                 // "Util.resolveSymlink(file)" resolves NTFS symlinks. 
@@ -355,11 +373,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks
-            return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
+            // (just in case the symlink check above did not work)
+            buildDir = buildDir.getCanonicalFile();
+            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
-        } catch (NumberFormatException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
+            throw new InvalidDirectoryNameException(buildDir);
         } catch (InterruptedException e) {
             throw new IOException2("Interrupted while resolving symlink directory "+buildDir,e);
         }
@@ -451,8 +469,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * 
      * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
-     * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
-     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
+     * an executor holds on to {@link Run} some more time even after the build is finished (for example to
+     * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
@@ -534,8 +552,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * If {@link #isKeepLog()} returns true, returns a human readable
-     * one-line string that explains why it's being kept.
+     * If {@link #isKeepLog()} returns true, returns a short, human-readable
+     * sentence that explains why it's being kept.
      */
     public String getWhyKeepLog() {
         if(keepLog)
@@ -693,7 +711,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         BallColor baseColor;
         RunT pb = getPreviousBuild();
         if(pb==null)
-            baseColor = BallColor.GREY;
+            baseColor = BallColor.NOTBUILT;
         else
             baseColor = pb.getIconColor();
 
@@ -1366,12 +1384,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         link.delete();
 
         File rootDir = getRootDir();
+        if (!rootDir.isDirectory()) {
+            throw new IOException(rootDir + " looks to have already been deleted");
+        }
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
             Util.deleteRecursive(tmp);
         }
-        // XXX on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
+        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
         // some user reported that they see some left-over .xyz files in the workspace,
@@ -1525,7 +1546,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Used in {@link RunExecution#run} to indicates that a fatal error in a build
+     * Used in {@link Run.RunExecution#run} to indicates that a fatal error in a build
      * is reported to {@link BuildListener} and the build should be simply aborted
      * without further recording a stack trace.
      */
@@ -1946,6 +1967,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getLogText().doProgressText(req,rsp);
     }
 
+    /**
+     * Checks whether keep status can be toggled.
+     * Normally it can, but if there is a complex reason (from subclasses) why this build must be kept, the toggle is meaningless.
+     * @return true if {@link #doToggleLogKeep} and {@link #keepLog(boolean)} and {@link #keepLog()} are options
+     * @since 1.510
+     */
+    public boolean canToggleLogKeep() {
+        if (!keepLog && isKeepLog()) {
+            // Definitely prevented.
+            return false;
+        }
+        // TODO may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
+        // In such a case this will incorrectly return true and logKeep.jelly will allow the toggle.
+        // However at least then (after redirecting to the same page) the toggle button will correctly disappear.
+        return true;
+    }
+
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
@@ -1981,7 +2019,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return;
         }
 
-        delete();
+        try{
+            delete();
+        }
+        catch(IOException ex){
+            StringWriter writer = new StringWriter();
+            ex.printStackTrace(new PrintWriter(writer));
+            req.setAttribute("stackTraces", writer);
+            req.getView(this, "delete-retry.jelly").forward(req, rsp);  
+            return;
+        } 
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 
@@ -2213,8 +2260,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (result == null){
             //check transient actions too
             for(Action action: getTransientActions()){
-                if(action.getUrlName().equals(token))
+                String urlName = action.getUrlName();
+                if (urlName == null) {
+                    continue;
+                }
+                if (urlName.equals(token)) {
                     return action;
+                }
             }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds

@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true" permission="${it.CONFIGURE}" title="${%title(it.displayName)}">
+  <l:layout norefresh="true" permission="${it.CONFIGURE}" title="${it.displayName}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
@@ -49,7 +49,7 @@ THE SOFTWARE.
           <f:textbox />
         </f:entry>
 
-        <f:slave-mode name="master.mode" node="${it}" />
+        <f:slave-mode name="master.mode" node="${it.node}"/>
 
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 

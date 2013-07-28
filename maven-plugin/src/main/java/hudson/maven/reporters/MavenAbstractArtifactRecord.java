@@ -65,6 +65,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * UI to redeploy artifacts after the fact.
@@ -168,7 +169,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     }
 
     public final String getIconFileName() {
-        return "redo.gif";
+        return "redo.png";
     }
 
     public final String getDisplayName() {
@@ -208,6 +209,7 @@ public abstract class MavenAbstractArtifactRecord<T extends AbstractBuild<?,?>> 
     /**
      * Performs a redeployment.
      */
+    @RequirePOST
     public final HttpResponse doRedeploy(
             @QueryParameter("_.id") final String id,
             @QueryParameter("_.url") final String repositoryUrl,

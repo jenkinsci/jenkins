@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 
+import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import hudson.model.Node;
@@ -98,7 +99,8 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public ClockDifference getClockDifference() throws IOException, InterruptedException {
+        @Override
+        public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
             throw new UnsupportedOperationException();
         }
 

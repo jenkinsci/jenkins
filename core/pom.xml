@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.508-SNAPSHOT</version>
+    <version>1.525-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.207</stapler.version>
+    <stapler.version>1.214</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
   </properties>
 
@@ -112,10 +112,15 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
 
-    <dependency>
+    <dependency> <!-- for compatibility only; all new code should use JNR -->
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
       <version>1.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jnr</groupId>
+      <artifactId>jnr-posix</artifactId>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -125,7 +130,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-1</version>
+      <version>build214-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -164,7 +169,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.0.7-2</version>
+      <version>1.1.7-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -187,19 +192,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.4</version>
-      <exclusions> <!-- https://github.com/infradna/bridge-method-injector/issues/1 -->
-        <exclusion>
-          <artifactId>annotation-indexer</artifactId>
-          <groupId>org.jvnet.hudson</groupId>
-        </exclusion>
-      </exclusions>
+      <version>1.8</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.4-jenkins-1</version>
+      <version>2.4-jenkins-2</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -233,7 +232,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-2</version>
+      <version>1.4.4-jenkins-3</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -469,7 +468,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -500,14 +498,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>jmdns</artifactId>
       <version>3.4.0-jenkins-3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.winsw</groupId>
-      <artifactId>winsw</artifactId>
-      <version>1.10</version>
-      <classifier>bin</classifier>
-      <type>exe</type>
-      <scope>provided</scope><!-- this isn't really a dependency that Maven should care about, so putting 'provided' -->
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -565,8 +555,7 @@ THE SOFTWARE.
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <!--  NOTE: 1.7 requires Java 6, so don't use it! -->
-      <version>1.6</version>
+      <version>1.8</version>
     </dependency>
 
     <dependency>
@@ -658,7 +647,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>1.8</version>
         <executions>
           <execution>
             <goals>
@@ -746,7 +735,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.10</version>
+                  <version>1.13</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -756,6 +745,14 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkCount>0.5C</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>-XX:MaxPermSize=128m</argLine>
+        </configuration>
       </plugin>
       <plugin><!-- set main class -->
         <artifactId>maven-jar-plugin</artifactId>
@@ -771,7 +768,7 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin><!-- run unit test in src/test/java -->
-        <groupId>org.kohsuke.gmaven</groupId>
+        <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
@@ -779,16 +776,6 @@ THE SOFTWARE.
             <goals>
               <goal>testCompile</goal>
             </goals>
-            <configuration>
-              <sources>
-                <fileset>
-                  <directory>${project.basedir}/src/test/java</directory>
-                  <includes>
-                    <include>**/*.groovy</include>
-                  </includes>
-                </fileset>
-              </sources>
-            </configuration>
           </execution>
         </executions>
         <dependencies>
@@ -898,7 +885,7 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.kohsuke.gmaven</groupId>
+            <groupId>org.codehaus.gmaven</groupId>
             <artifactId>gmaven-plugin</artifactId>
             <!-- version specified in grandparent pom -->
             <executions>

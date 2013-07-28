@@ -36,6 +36,7 @@ import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -75,7 +76,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      *      null to not render a column. The convention is to use capitalization like "Foo Bar Zot".
      */
     @Exported
-    public String getColumnCaption() {
+    public @CheckForNull String getColumnCaption() {
         return getDescriptor().getDisplayName();
     }
 

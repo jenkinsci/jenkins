@@ -1,17 +1,16 @@
 package jenkins.plugins.ui_samples;
 
 import hudson.Extension;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class NavigationContextMenu extends UISample implements ModelObjectWithContextMenu {
+public class NavigationContextMenu extends UISample implements ModelObjectWithContextMenu, ModelObjectWithChildren {
     @Override
     public String getDescription() {
         return "Integrate with navigational context menu to provider quick access around object graph";
@@ -31,8 +30,16 @@ public class NavigationContextMenu extends UISample implements ModelObjectWithCo
             return new ContextMenu()
                     .add("http://jenkins-ci.org/","Jenkins project")
                     .add("http://www.cloudbees.com/","CloudBees")
-                    .add(request.getContextPath(),"/images/24x24/gear.png","top-page");
+                    .add(new MenuItem().withContextRelativeUrl("/").withStockIcon("gear.png").withDisplayName("top page"));
         }
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        // You implement this method in much the same way you do doContextMenu
+        return new ContextMenu()
+                .add("http://yahoo.com/","Yahoo")
+                .add("http://google.com/","Google")
+                .add("http://microsoft.com/","Microsoft");
     }
 
     @Extension

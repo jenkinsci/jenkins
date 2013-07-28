@@ -29,6 +29,7 @@ import hudson.tasks._maven.MavenConsoleAnnotator;
 import hudson.util.ArgumentListBuilder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,12 +70,18 @@ import org.kohsuke.stapler.framework.io.IOException2;
  */
 
 /**
+ * Launches the maven process.
+ *
+ * This class captures the common part, and {@link MavenProcessFactory} and {@link Maven3ProcessFactory}
+ * adds Maven2/Maven3 flavors to it to make it concrete.
+ *
  * @author Olivier Lamy
  */
 public abstract class AbstractMavenProcessFactory
 {
 
     private final MavenModuleSet mms;
+    private final AbstractMavenBuild<?,?> build;
     private final Launcher launcher;
     /**
      * Environment variables to be set to the maven process.
@@ -94,7 +101,8 @@ public abstract class AbstractMavenProcessFactory
 
     private final String mavenOpts;
 
-    AbstractMavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+    AbstractMavenProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        this.build = build;
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
@@ -204,7 +212,6 @@ public abstract class AbstractMavenProcessFactory
             listener.getLogger().println("Using env variables: "+ envVars);
         try {
             //launcher.getChannel().export( type, instance )
-            final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
             Charset charset;
             try {
                 charset = Charset.forName(launcher.getChannel().call(new GetCharset()));
@@ -218,7 +225,11 @@ public abstract class AbstractMavenProcessFactory
             if ( mavenRemoteUseInet ) {
                 envVars.put(MAVEN_REMOTE_USEINET_ENV_VAR_NAME , "true" );
             }
-            final ArgumentListBuilder cmdLine = buildMavenAgentCmdLine( listener,acceptor.getPort());
+            JDK jdk = getJava(listener);
+            JDK originalJdk = null;
+            JDK: while (true) {
+            final Acceptor acceptor = launcher.getChannel().call(new SocketHandler());
+            final ArgumentListBuilder cmdLine = buildMavenAgentCmdLine(listener, acceptor.getPort(), jdk);
             String[] cmds = cmdLine.toCommandArray();
             final Proc proc = launcher.launch().cmds(cmds).envs(envVars).stdout(mca).pwd(workDir).start();
 
@@ -234,11 +245,30 @@ public abstract class AbstractMavenProcessFactory
                 throw e;
             }
 
-            return new NewProcess(
-                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+            Channel ch = Channels.forProcess("Channel to Maven " + Arrays.toString(cmds),
                     Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
-                    listener.getLogger(), proc),
-                proc);
+                    listener.getLogger(), proc);
+            try {
+                ch.call(new ConfigureOriginalJDK(originalJdk));
+            } catch (IOException x) {
+                if (originalJdk == null) { // so we only try this once
+                    for (Throwable t = x; t != null; t = t.getCause()) {
+                        if (t instanceof UnsupportedClassVersionError) {
+                            listener.error("[JENKINS-18403] JDK 5 not supported to run Maven; retrying with slave Java and setting compile/test properties to point to " + jdk.getHome());
+                            originalJdk = jdk;
+                            jdk = launcher.getChannel().call(new FindJavaHome());
+                            continue JDK;
+                        }
+                    }
+                }
+                throw x;
+            }
+
+            if (!PlexusModuleContributorFactory.all().isEmpty())
+                applyPlexusModuleContributor(ch,build);
+
+            return new NewProcess(ch,proc);
+            }
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659
@@ -250,10 +280,53 @@ public abstract class AbstractMavenProcessFactory
         }
     }
 
+    /** Verifies that the channel is open and functioning, and (if the second time around) sets properties for the original JDK. */
+    private static final class ConfigureOriginalJDK implements Callable<Void,Error> {
+        private static final long serialVersionUID = 1;
+        private final JDK jdk;
+        ConfigureOriginalJDK(JDK jdk) {
+            this.jdk = jdk;
+        }
+        @Override public Void call() throws Error {
+            if (jdk != null) {
+                System.setProperty("maven.compiler.fork", "true");
+                System.setProperty("maven.compiler.executable", new File(jdk.getBinDir(), File.separatorChar == '\\' ? "javac.exe" : "javac").getAbsolutePath());
+                // For Surefire, in case it is set to fork (we cannot unconditionally override forkMode):
+                System.setProperty("jvm", new File(jdk.getBinDir(), File.separatorChar == '\\' ? "java.exe" : "java").getAbsolutePath());
+            }
+            return null;
+        }
+    }
+
+    /** Locates JRE this slave agent is running on, or null. */
+    private static final class FindJavaHome implements Callable<JDK,Error> {
+        private static final long serialVersionUID = 1;
+        @Override public JDK call() throws Error {
+            JDK jdk = new JDK("this", System.getProperty("java.home"));
+            return jdk.getExists() ? jdk : /* i.e. just run "java" and hope for the best */null;
+        }
+    }
+
+    /**
+     * Apply extension plexus modules to the newly launched Maven process.
+     *
+     *
+     * @param channel
+     *      Channel to the Maven process.
+     * @param context
+     *      Context that {@link PlexusModuleContributor} needs to figure out what it needs to do.
+     * @since 1.519
+     */
+    protected abstract void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException;
+
     /**
      * Builds the command line argument list to launch the maven process.
      */
     protected ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener,int tcpPort) throws IOException, InterruptedException {
+        return buildMavenAgentCmdLine(listener, tcpPort, getJava(listener));
+    }
+
+    private ArgumentListBuilder buildMavenAgentCmdLine(BuildListener listener, int tcpPort, JDK jdk) throws IOException, InterruptedException {
         MavenInstallation mvn = getMavenInstallation(listener);
         if(mvn==null) {
             listener.error("Maven version is not configured for this project. Can't determine which Maven to run");
@@ -270,7 +343,6 @@ public abstract class AbstractMavenProcessFactory
             slaveRoot = getCurrentNode().getRootPath();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
-        JDK jdk = getJava(listener);
         if(jdk==null) {
             args.add("java");
         } else {
@@ -302,6 +374,12 @@ public abstract class AbstractMavenProcessFactory
         // interceptor.jar
         args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
 
+        String mavenInterceptorCommonClasspath = getMavenInterceptorCommonClassPath( mvn, isMaster, slaveRoot );
+
+        if (mavenInterceptorCommonClasspath!=null){
+            args.add( mavenInterceptorCommonClasspath );
+        }
+
         // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
         
@@ -322,6 +400,14 @@ public abstract class AbstractMavenProcessFactory
      * Returns the classpath string for the maven-interceptor jar
      */
     protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+
+    /**
+     * Returns the classpath string for the maven-interceptor jar
+     * @since 1.525
+     */
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+      return null;
+    }
     
     /**
      * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 

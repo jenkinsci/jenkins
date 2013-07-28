@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.Indenter;
@@ -55,6 +56,7 @@ import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -91,6 +93,7 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,7 +126,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
 
     /**
      * Container of this view. Set right after the construction
@@ -173,6 +176,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
+
+    /**
+     * Gets all the items recursively contained in this collection in a read-only view.
+     * <p>
+     * The default implementation recursively adds the items of all contained Views
+     * in case this view implements {@link ViewGroup}, which should be enough for most cases.
+     *
+     * @since 1.520
+     */
+    public Collection<TopLevelItem> getAllItems() {
+
+        if (this instanceof ViewGroup) {
+            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
+
+            for(View view: ((ViewGroup) this).getViews()) {
+                items.addAll(view.getAllItems());
+            }
+            return Collections.unmodifiableCollection(items);
+        } else {
+            return getItems();
+        }
+    }
 
     /**
      * Gets the {@link TopLevelItem} of the given name.
@@ -475,6 +500,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return (owner!=null ? owner.getUrl() : "") + "view/" + Util.rawEncode(getViewName()) + '/';
     }
 
+    @Override public String toString() {
+        return super.toString() + "[" + getViewUrl() + "]";
+    }
+
     public String getSearchUrl() {
         return getUrl();
     }
@@ -750,7 +779,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private final String iconSize;
         public final ModelObject parent;
 
-        /** @see Jenkins#getAsynchPeople} */
+        /** @see Jenkins#getAsynchPeople */
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
@@ -786,7 +815,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                 UserInfo info = users.get(user);
                                 if (info == null) {
                                     UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolve(user, iconSize);
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
                                     synchronized (this) {
                                         users.put(user, userInfo);
                                         modified.add(user);
@@ -799,7 +828,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                     }
                                 }
                             }
-                            // XXX consider also adding the user of the UserCause when applicable
+                            // TODO consider also adding the user of the UserCause when applicable
                             buildCount++;
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
@@ -812,13 +841,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if (canceled()) {
                     return;
                 }
-                for (User u : User.getAll()) { // XXX nice to have a method to iterate these lazily
+                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
                     if (u == unknown) {
                         continue;
                     }
                     if (!users.containsKey(u)) {
                         UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolve(u, iconSize);
+                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
                         synchronized (this) {
                             users.put(u, userInfo);
                             modified.add(u);
@@ -836,7 +865,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).
                         accumulate("url", u.getUrl()).
-                        accumulate("avatar", i.avatar).
+                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
                 AbstractProject<?,?> p = i.getProject();
@@ -933,7 +962,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         save();
 
-        FormApply.success("../"+name).generateResponse(req,rsp,this);
+        FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
     }
 
     /**
@@ -1016,7 +1045,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
                     XStream2 xStream2 = new XStream2();
                     xStream2.omitField(View.class, "owner");
-                    xStream2.toXMLUTF8(this,  rsp.getOutputStream());
+                    xStream2.toXMLUTF8(View.this,  rsp.getOutputStream());
                 }
             };
         }
@@ -1062,8 +1091,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } finally {
             in.close();
         }
+        save();
     }
 
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu m = new ContextMenu();
+        for (TopLevelItem i : getItems())
+            m.add(i.getShortUrl(),i.getDisplayName());
+        return m;
+    }
 
     /**
      * A list of available view types.

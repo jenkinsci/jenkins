@@ -41,6 +41,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Node;
 import hudson.slaves.WorkspaceList;
+import hudson.util.AlternativeUiTextProvider;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -48,6 +49,8 @@ import hudson.model.Items;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Result;
 import hudson.model.SCMedItem;
@@ -65,6 +68,8 @@ import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -88,6 +93,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link Job} that allows you to run multiple different configurations
@@ -187,6 +194,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
 
     public MatrixProject(ItemGroup parent, String name) {
         super(parent, name);
+    }
+
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MatrixProject_Pronoun());
     }
 
     /**
@@ -418,7 +430,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             r.addAll(step.getProjectActions(this));
         for (BuildWrapper step : buildWrappers)
             r.addAll(step.getProjectActions(this));
-        for (Trigger<?> trigger : triggers)
+        for (Trigger<?> trigger : triggers())
             r.addAll(trigger.getProjectActions());
 
         return r;
@@ -602,9 +614,11 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         }
 
         // find all active configurations
-        Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
+        final Set<MatrixConfiguration> active = new LinkedHashSet<MatrixConfiguration>();
+        final boolean isDynamicFilter = isDynamicFilter(getCombinationFilter());
+
         for (Combination c : activeCombinations) {
-            if(c.evalGroovyExpression(axes,combinationFilter)) {
+            if(isDynamicFilter || c.evalGroovyExpression(axes,getCombinationFilter())) {
         		LOGGER.fine("Adding configuration: " + c);
 	            MatrixConfiguration config = configurations.get(c);
 	            if(config==null) {
@@ -619,6 +633,27 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         this.activeConfigurations = active;
 
         return active;
+    }
+
+    private boolean isDynamicFilter(final String filter) {
+
+        if (!isParameterized() || filter == null) return false;
+
+        final ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
+
+        for (final ParameterDefinition definition : paramDefProp.getParameterDefinitions()) {
+
+            final String name = definition.getName();
+
+            final Matcher matcher = Pattern
+                    .compile("\\b" + name + "\\b")
+                    .matcher(filter)
+            ;
+
+            if (matcher.find()) return true;
+        }
+
+        return false;
     }
 
     private File getConfigurationsDir() {
@@ -666,6 +701,9 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public MatrixConfiguration getItem(Combination c) {
+        if (configurations == null) {
+            return null;
+        }
         return configurations.get(c);
     }
 
@@ -850,11 +888,24 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         return rsp;
     }
 
-
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (MatrixConfiguration c : getActiveConfigurations()) {
+            menu.add(c);
+        }
+        return menu;
     }
 
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
+    }
+
+    /**
+     * Descriptor is instantiated as a field purely for backward compatibility.
+     * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     */
+    @Restricted(NoExternalUse.class)
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 

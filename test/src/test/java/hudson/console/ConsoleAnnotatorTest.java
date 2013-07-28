@@ -66,7 +66,8 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
         assertTrue(raw.getContent().contains(nl+"---"+nl+"ooo"+nl+"ooo"+nl));
 
         // there should be two 'ooo's
-        assertEquals(3,rsp.asXml().split("ooo").length);
+        String xml = rsp.asXml();
+        assertEquals(xml, 3, xml.split("ooo").length);
     }
 
     /**
@@ -80,9 +81,10 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
     };
 
     public static class DemoAnnotator extends ConsoleAnnotator<Object> {
+        private static final String ANNOTATE_TEXT = "ooo" + System.getProperty("line.separator");
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
-            if (text.getText().equals("ooo\n")) {
+            if (text.getText().equals(ANNOTATE_TEXT)) {
                 text.addMarkup(0,3,"<b class=demo>","</b>");
                 return null;
             }

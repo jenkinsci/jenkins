@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout title="${it.name}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Project} ${it.displayName}</h1>
+      <h1>${%Project} <l:breakable value="${it.displayName}"/></h1>
       <j:if test="${it.name!=it.displayName}">
         ${%Project name}: ${it.fullName}
       </j:if>
@@ -43,8 +43,7 @@ THE SOFTWARE.
       <j:set var="atr" value="${it.lastCompletedBuild.aggregatedTestResultAction}"/>
       <j:if test="${atr!=null}">
         <t:summary icon="clipboard.png">
-          <a href="lastCompletedBuild/testReport/" class="model-link">${%Latest Test Result}</a>
-          <st:nbsp/>
+          <a href="lastCompletedBuild/testReport/" class="model-link inside">${%Latest Test Result}</a>
           <t:test-result it="${atr}" />
         </t:summary>
       </j:if>

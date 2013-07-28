@@ -118,15 +118,15 @@ public class LogRotator extends BuildDiscarder {
             List<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : copy(builds.subList(Math.min(builds.size(), numToKeep), builds.size()))) {
                 if (r.isKeepLog()) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s marked as a keeper", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s marked as a keeper", r);
                     continue;
                 }
                 if (r==lsb) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s the last successful build", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s the last successful build", r);
                     continue;
                 }
                 if (r==lstb) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s the last stable build", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s the last stable build", r);
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
@@ -139,19 +139,19 @@ public class LogRotator extends BuildDiscarder {
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
             for( Run r : copy(job.getBuilds()) ) {
                 if (r.isKeepLog()) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s marked as a keeper", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s marked as a keeper", r);
                     continue;
                 }
                 if (r==lsb) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s the last successful build", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s the last successful build", r);
                     continue;
                 }
                 if (r==lstb) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s the last stable build", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s the last stable build", r);
                     continue;
                 }
                 if (!r.getTimestamp().before(cal)) {
-                    LOGGER.log(FINER, "{0} is not GC-ed because it''s still new", r);
+                    LOGGER.log(FINER, "{0} is not GC-ed because it’s still new", r);
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
@@ -163,15 +163,15 @@ public class LogRotator extends BuildDiscarder {
             List<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : copy(builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size()))) {
                 if (r.isKeepLog()) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s marked as a keeper", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s marked as a keeper", r);
                     continue;
                 }
                 if (r==lsb) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s the last successful build", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s the last successful build", r);
                     continue;
                 }
                 if (r==lstb) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s the last stable build", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s the last stable build", r);
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
@@ -184,19 +184,19 @@ public class LogRotator extends BuildDiscarder {
             cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
             for( Run r : copy(job.getBuilds())) {
                 if (r.isKeepLog()) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s marked as a keeper", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s marked as a keeper", r);
                     continue;
                 }
                 if (r==lsb) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s the last successful build", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s the last successful build", r);
                     continue;
                 }
                 if (r==lstb) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s the last stable build", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s the last stable build", r);
                     continue;
                 }
                 if (!r.getTimestamp().before(cal)) {
-                    LOGGER.log(FINER, "{0} is not purged of artifacts because it''s still new", r);
+                    LOGGER.log(FINER, "{0} is not purged of artifacts because it’s still new", r);
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);

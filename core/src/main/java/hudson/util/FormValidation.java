@@ -63,7 +63,7 @@ import java.util.Locale;
  * that you may be able to reuse.
  *
  * <p>
- * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ * Also see <tt>doCheckCvsRoot</tt> in <tt>CVSSCM</tt> as an example.
  *
  * <p>
  * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
@@ -417,7 +417,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
-            if (con == null) { // XXX is this even permitted by URL.openConnection?
+            if (con == null) { // TODO is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }
             return new BufferedReader(

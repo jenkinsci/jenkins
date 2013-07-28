@@ -23,26 +23,35 @@
  */
 package hudson.tasks.junit;
 
+import hudson.util.TextFile;
+import org.apache.commons.io.FileUtils;
 import org.jvnet.localizer.Localizable;
+
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
+
 import org.dom4j.Element;
 import org.kohsuke.stapler.export.Exported;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 /**
  * One test result.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class CaseResult extends TestResult implements Comparable<CaseResult> {
+public class CaseResult extends TestResult implements Comparable<CaseResult> {
     private static final Logger LOGGER = Logger.getLogger(CaseResult.class.getName());
     private final float duration;
     /**
@@ -134,30 +143,66 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     }
 
     private static final int HALF_MAX_SIZE = 500;
-    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, CharSequence stdio) { // HUDSON-6516
+    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, String stdio) { // HUDSON-6516
         if (stdio == null) {
             return null;
         }
-        if (keepLongStdio) {
-            return stdio.toString();
-        }
-        for (CaseResult result : results) {
-            if (result.errorStackTrace != null) {
-                return stdio.toString();
-            }
+        if (!isTrimming(results, keepLongStdio)) {
+            return stdio;
         }
         int len = stdio.length();
         int middle = len - HALF_MAX_SIZE * 2;
         if (middle <= 0) {
-            return stdio.toString();
+            return stdio;
         }
         return stdio.subSequence(0, HALF_MAX_SIZE) + "\n...[truncated " + middle + " chars]...\n" + stdio.subSequence(len - HALF_MAX_SIZE, len);
     }
 
     /**
+     * Flavor of {@link #possiblyTrimStdio(Collection, boolean, String)} that doesn't try to read the whole thing into memory.
+     */
+    static String possiblyTrimStdio(Collection<CaseResult> results, boolean keepLongStdio, File stdio) throws IOException {
+        if (!isTrimming(results, keepLongStdio) && stdio.length()<1024*1024) {
+            return FileUtils.readFileToString(stdio);
+        }
+
+        long len = stdio.length();
+        long middle = len - HALF_MAX_SIZE * 2;
+        if (middle <= 0) {
+            return FileUtils.readFileToString(stdio);
+        }
+
+        TextFile tx = new TextFile(stdio);
+        String head = tx.head(HALF_MAX_SIZE);
+        String tail = tx.fastTail(HALF_MAX_SIZE);
+
+        int headBytes = head.getBytes().length;
+        int tailBytes = tail.getBytes().length;
+
+        middle = len - (headBytes+tailBytes);
+        if (middle<=0) {
+            // if it turns out that we didn't have any middle section, just return the whole thing
+            return FileUtils.readFileToString(stdio);
+        }
+
+        return head + "\n...[truncated " + middle + " bytes]...\n" + tail;
+    }
+
+    private static boolean isTrimming(Collection<CaseResult> results, boolean keepLongStdio) {
+        if (keepLongStdio)      return false;
+        for (CaseResult result : results) {
+            // if there's a failure, do not trim and keep the whole thing
+            if (result.errorStackTrace != null)
+                return false;
+        }
+        return true;
+    }
+
+
+    /**
      * Used to create a fake failure, when Hudson fails to load data from XML files.
      */
-    CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
+    public CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
         this.className = parent == null ? "unnamed" : parent.getName();
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
@@ -214,7 +259,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     }
 
     public String getDisplayName() {
-        return testName;
+        return TestNameTransformer.getTransformedName(testName);
     }
 
     /**
@@ -233,7 +278,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public String getTitle() {
-        return "Case Result: " + getName();
+        return "Case Result: " + getDisplayName();
     }
 
     /**
@@ -285,15 +330,21 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
         if(idx<0)       return "(root)";
         else            return className.substring(0,idx);
     }
-
+    
     public String getFullName() {
-        return className+'.'+getName();
+    	return className+'.'+getName();
     }
-
+    
+    /**
+     * @since 1.515
+     */
+    public String getFullDisplayName() {
+    	return TestNameTransformer.getTransformedName(getFullName());
+    }
 
     @Override
     public int getFailCount() {
-        if (!isPassed() && !isSkipped()) return 1; else return 0;
+        if (isFailed()) return 1; else return 0;
     }
 
     @Override
@@ -410,7 +461,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getFailedTests() {
-        return singletonListOrEmpty(!isPassed());
+        return singletonListOfThisOrEmptyList(isFailed());
     }
 
     /**
@@ -420,7 +471,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getPassedTests() {
-        return singletonListOrEmpty(isPassed());
+        return singletonListOfThisOrEmptyList(isPassed());
     }
 
     /**
@@ -430,12 +481,12 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
      */
     @Override
     public Collection<? extends TestResult> getSkippedTests() {
-        return singletonListOrEmpty(isSkipped());
+        return singletonListOfThisOrEmptyList(isSkipped());
     }
 
-    private Collection<? extends hudson.tasks.test.TestResult> singletonListOrEmpty(boolean f) {
+    private Collection<? extends hudson.tasks.test.TestResult> singletonListOfThisOrEmptyList(boolean f) {
         if (f)
-            return Collections.singletonList(this);
+            return singletonList(this);
         else
             return emptyList();
     }
@@ -472,6 +523,14 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     @Exported(visibility=9)
     public boolean isSkipped() {
         return skipped;
+    }
+    
+    /**
+     * @return true if the test was not skipped and did not pass, false otherwise.
+     * @since 1.520
+     */
+    public boolean isFailed() {
+        return !isPassed() && !isSkipped();
     }
 
     /**

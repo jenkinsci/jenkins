@@ -39,8 +39,8 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
-    <li id="${attrs.id}">
-      <a href="${attrs.href}">
+    <li id="${attrs.id}" class="item">
+      <a href="${attrs.href}" class="model-link inside">
         ${attrs.title}
       </a>
     </li>

@@ -100,12 +100,12 @@ var crumb = {
     wrap: function(headers) {
         if (this.fieldName!=null) {
             if (headers instanceof Array)
-                // XXX prototype.js only seems to interpret object
+                // TODO prototype.js only seems to interpret object
                 headers.push(this.fieldName, this.value);
             else
                 headers[this.fieldName]=this.value;
         }
-        // XXX return value unused
+        // TODO return value unused
         return headers;
     },
 
@@ -470,6 +470,8 @@ function registerRegexpValidator(e,regexp,message) {
  *      button element
  * @param onclick
  *      onclick handler
+ * @return
+ *      YUI Button widget.
  */
 function makeButton(e,onclick) {
     var h = e.onclick;
@@ -576,13 +578,13 @@ function sequencer(fs) {
 
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = {
-// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
+// TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
 
     "TABLE.sortable" : function(e) {// sortable table
-        ts_makeSortable(e);
+        e.sortable = new Sortable.Sortable(e);
     },
 
     "TABLE.progress-bar" : function(e) { // progressBar.jelly
@@ -1187,8 +1189,6 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
-        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
-
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -1430,14 +1430,12 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
-                    var next = hist.next();
-                    p.removeChild(hist);
 
                     var div = document.createElement('div');
                     div.innerHTML = rsp.responseText;
 
                     var node = $(div).firstDescendant();
-                    p.insertBefore(node, next);
+                    p.replaceChild(node, hist);
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
@@ -1726,7 +1724,7 @@ function shortenName(name) {
 //   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
 function buildFormTree(form) {
     try {
-        // I initially tried to use an associative array with DOM elemnets as keys
+        // I initially tried to use an associative array with DOM elements as keys
         // but that doesn't seem to work neither on IE nor Firefox.
         // so I switch back to adding a dynamic property on DOM.
         form.formDom = {}; // root object

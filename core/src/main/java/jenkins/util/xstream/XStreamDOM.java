@@ -235,7 +235,7 @@ public class XStreamDOM {
 
     /**
      * Returns a new {@link HierarchicalStreamWriter} for marshalling objects into {@link XStreamDOM}.
-     * After the writer receives the calls, call {@Link WriterImpl#getOutput()} to obtain the populated tree.
+     * After the writer receives the calls, call {@link WriterImpl#getOutput()} to obtain the populated tree.
      */
     public static WriterImpl newWriter() {
         return new WriterImpl();

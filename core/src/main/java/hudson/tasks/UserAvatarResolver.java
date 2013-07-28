@@ -33,6 +33,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.model.User;
+import javax.annotation.CheckForNull;
 
 /**
  * Infers avatar image URLs for users
@@ -78,13 +79,22 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
     public abstract String findAvatarFor(User u, int width, int height);
     
     /**
-     * Resolve an avatar image URL string for the user
+     * Resolve an avatar image URL string for the user.
+     * Note that this method must be called from an HTTP request to be reliable; else use {@link #resolveOrNull}.
      * @param u user
      * @param avatarSize the preferred image size, "[width]x[height]"
      * @return a URL string for a user Avatar image.
      */
     public static String resolve(User u, String avatarSize) {
+        String avatar = resolveOrNull(u, avatarSize);
+        return avatar != null ? avatar : Jenkins.getInstance().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
+    }
 
+    /**
+     * Like {@link #resolve} but returns null rather than a fallback URL in case there is no special avatar.
+     * @since 1.518
+     */
+    public static @CheckForNull String resolveOrNull(User u, String avatarSize) {
         Matcher matcher = iconSizeRegex.matcher(avatarSize);
         if (matcher.matches() && matcher.groupCount() == 2) {
             int width = Integer.parseInt(matcher.group(1));
@@ -97,7 +107,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
             LOGGER.warning(String.format("Could not split up the avatar size (%s) into a width and height.", avatarSize));
         }
 
-        return Jenkins.getInstance().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
+        return null;
     }
 
     /**

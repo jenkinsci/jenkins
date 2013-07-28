@@ -449,7 +449,7 @@ public class FilePathTest extends ChannelTestCase {
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d, "**/*.js");
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
-            // XXX lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
+            // TODO lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
         } finally {
             Util.deleteRecursive(tmp);
         }

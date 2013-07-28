@@ -198,7 +198,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /**
      * Creates an account and associates that with the given identity. Used in conjunction
-     * with {@link #commenceSignup(FederatedIdentity)}.
+     * with {@link #commenceSignup}.
      */
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
@@ -233,6 +233,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Lets the current user silently login as the given user and report back accordingly.
      */
+    @SuppressWarnings("ACL.impersonate")
     private void loginAndTakeBack(StaplerRequest req, StaplerResponse rsp, User u) throws ServletException, IOException {
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
@@ -296,27 +297,27 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         SignupInfo si = new SignupInfo(req);
 
         if(selfRegistration && !validateCaptcha(si.captcha))
-            si.errorMessage = "Text didn't match the word shown in the image";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
 
         if(si.password1 != null && !si.password1.equals(si.password2))
-            si.errorMessage = "Password didn't match";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
 
         if(!(si.password1 != null && si.password1.length() != 0))
-            si.errorMessage = "Password is required";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
 
         if(si.username==null || si.username.length()==0)
-            si.errorMessage = "User name is required";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
         else {
             User user = User.get(si.username, false);
             if (null != user)
-                si.errorMessage = "User name is already taken";
+                si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
         }
 
         if(si.fullname==null || si.fullname.length()==0)
             si.fullname = si.username;
 
         if(si.email==null || !si.email.contains("@"))
-            si.errorMessage = "Invalid e-mail address";
+            si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
 
         if(si.errorMessage!=null) {
             // failed. ask the user to try again.

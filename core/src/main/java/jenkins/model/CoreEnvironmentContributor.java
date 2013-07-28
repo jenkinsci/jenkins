@@ -29,6 +29,8 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             env.putAll(compEnv);
         }
 
+        env.put("BUILD_DISPLAY_NAME",r.getDisplayName());
+
         Jenkins j = Jenkins.getInstance();
         String rootUrl = j.getRootUrl();
         if(rootUrl!=null) {

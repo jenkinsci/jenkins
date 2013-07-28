@@ -66,6 +66,8 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
+import hudson.model.Queue.BuildableItem;
+import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Slave;
@@ -124,6 +126,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -260,6 +263,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.BindException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
@@ -306,7 +310,9 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner, ModelObjectWithContextMenu {
+public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
+        ViewGroup, AccessControlled, DescriptorByNameOwner,
+        ModelObjectWithContextMenu, ModelObjectWithChildren {
     private transient final Queue queue;
 
     /**
@@ -584,7 +590,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Load statistics of the free roaming jobs and slaves.
      * 
-     * This includes all executors on {@link Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
+     * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
      * @since 1.467
      */
@@ -817,11 +823,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             } else
                 tcpSlaveAgentListener = null;
 
-            try {
-                udpBroadcastThread = new UDPBroadcastThread(this);
-                udpBroadcastThread.start();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP",e);
+            if (UDPBroadcastThread.PORT != -1) {
+                try {
+                    udpBroadcastThread = new UDPBroadcastThread(this);
+                    udpBroadcastThread.start();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
+                }
             }
             dnsMultiCast = new DNSMultiCast(this);
 
@@ -1384,24 +1392,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * and filter them by the given type.
      */
     public <T extends Item> List<T> getAllItems(Class<T> type) {
-        List<T> r = new ArrayList<T>();
-
-        Stack<ItemGroup> q = new Stack<ItemGroup>();
-        q.push(this);
-
-        while(!q.isEmpty()) {
-            ItemGroup<?> parent = q.pop();
-            for (Item i : parent.getItems()) {
-                if(type.isInstance(i)) {
-                    if (i.hasPermission(Item.READ))
-                        r.add(type.cast(i));
-                }
-                if(i instanceof ItemGroup)
-                    q.push((ItemGroup)i);
-            }
-        }
-
-        return r;
+        return Items.getAllItems(this, type);
     }
 
     /**
@@ -1570,6 +1561,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Label getLabel(String expr) {
         if(expr==null)  return null;
+        expr = hudson.util.QuotedStringTokenizer.unquote(expr);
         while(true) {
             Label l = labels.get(expr);
             if(l!=null)
@@ -1776,9 +1768,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
                     return FormValidation.error(value + " does not exist and probably cannot be created");
                 }
-                // XXX failure to use either ITEM_* variable might be an error too?
+                // TODO failure to use either ITEM_* variable might be an error too?
             }
-            return FormValidation.ok(); // XXX assumes it will be OK after substitution, but can we be sure?
+            return FormValidation.ok(); // TODO assumes it will be OK after substitution, but can we be sure?
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
@@ -1969,6 +1961,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return ClockDifference.ZERO;
     }
 
+    @Override
+    public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
+        return new Callable<ClockDifference, IOException>() {
+            public ClockDifference call() throws IOException {
+                return new ClockDifference(0);
+            }
+        };
+    }
+
     /**
      * For binding {@link LogRecorderManager} to "/log".
      * Everything below here is admin-only, so do the check here.
@@ -2075,7 +2076,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Gets the dependency injection container that hosts all the extension implementations and other
      * components in Jenkins.
      *
-     * @since 1.GUICE
+     * @since 1.433
      */
     public Injector getInjector() {
         return lookup(Injector.class);
@@ -2281,7 +2282,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             if (ctx instanceof ItemGroup) {
                 ItemGroup g = (ItemGroup) ctx;
                 Item i = g.getItem(s);
-                if (i==null || !i.hasPermission(Item.READ)) { // XXX consider DISCOVER
+                if (i==null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx=null;    // can't go up further
                     break;
                 }
@@ -2349,7 +2350,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 return null;    // this item can't have any children
 
             if (!item.hasPermission(Item.READ))
-                return null; // XXX consider DISCOVER
+                return null; // TODO consider DISCOVER
 
             parent = (ItemGroup) item;
         }
@@ -2790,6 +2791,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             bc.commit();
         }
 
+        updateComputerList();
+
         rsp.sendRedirect(req.getContextPath()+'/'+toComputer().getUrl());  // back to the computer page
     }
 
@@ -2921,6 +2924,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(name==null || name.length()==0)
             throw new Failure(Messages.Hudson_NoName());
 
+        if("..".equals(name.trim())) 
+            throw new Failure(Messages.Jenkins_NotAllowedName(".."));
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
             if(Character.isISOControl(ch)) {
@@ -3028,6 +3033,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Reloads the configuration.
      */
     @CLIMethod(name="reload-configuration")
+    @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
 
@@ -3102,6 +3108,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 // add "Manage Jenkins" subitems
                 i.subMenu = new ContextMenu().from(this, request, response, "manage");
             }
+        }
+        return menu;
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (View view : getViews()) {
+            menu.add(view.getViewUrl(),view.getDisplayName());
         }
         return menu;
     }
@@ -3357,25 +3371,31 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_script.jelly"));
+        _doScript(req, rsp, req.getView(this, "_script.jelly"), MasterComputer.localChannel, getACL());
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        doScript(req, rsp, req.getView(this, "_scriptText.jelly"));
+        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), MasterComputer.localChannel, getACL());
     }
 
-    private void doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view) throws IOException, ServletException {
+    /**
+     * @since 1.509.1
+     */
+    public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        checkPermission(RUN_SCRIPTS);
+        acl.checkPermission(RUN_SCRIPTS);
 
         String text = req.getParameter("script");
         if (text != null) {
+            if (!"POST".equals(req.getMethod())) {
+                throw HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "requires POST");
+            }
             try {
                 req.setAttribute("output",
-                        RemotingDiagnostics.executeGroovy(text, MasterComputer.localChannel));
+                        RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
                 throw new ServletException(e);
             }
@@ -3391,7 +3411,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(ADMINISTER);
+        checkPermission(RUN_SCRIPTS);
 
         try {
             MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
@@ -3474,7 +3494,33 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
+     * Checks if a top-level view with the given name exists and 
+     * make sure that the name is good as a view name.
+     */
+    public FormValidation doCheckViewName(@QueryParameter String value) {
+        checkPermission(View.CREATE);
+        
+        String name = fixEmpty(value);
+        if (name == null) 
+            return FormValidation.ok();
+        
+        // already exists?
+        if (getView(name) != null) 
+            return FormValidation.error(Messages.Hudson_ViewAlreadyExists(name));
+        
+        // good view name?
+        try {
+            checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        return FormValidation.ok();
+    }
+    
+    /**
      * Checks if a top-level view with the given name exists.
+     * @deprecated 1.512
      */
     public FormValidation doViewExistsCheck(@QueryParameter String value) {
         checkPermission(View.CREATE);
@@ -3555,6 +3601,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         dependencyGraph = graph;
     }
 
+    /**
+     * Rebuilds the dependency map asynchronously.
+     *
+     * <p>
+     * This would keep the UI thread more responsive and helps avoid the deadlocks,
+     * as dependency graph recomputation tends to touch a lot of other things.
+     *
+     * @since 1.522
+     */
+    public Future<DependencyGraph> rebuildDependencyGraphAsync() {
+        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+            @Override
+            public DependencyGraph call() throws Exception {
+                rebuildDependencyGraph();
+                return dependencyGraph;
+            }
+        });
+    }
+
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }
@@ -3594,9 +3659,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
+            || rest.startsWith("/oops")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
-            // XXX SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
             || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
             || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
@@ -3623,8 +3689,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Collection<String> getUnprotectedRootActions() {
         Set<String> names = new TreeSet<String>();
-        names.add("jnlpJars"); // XXX cleaner to refactor doJnlpJars into a URA
-        // XXX consider caching (expiring cache when actions changes)
+        names.add("jnlpJars"); // TODO cleaner to refactor doJnlpJars into a URA
+        // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
                 names.add(a.getUrlName());
@@ -3647,7 +3713,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * if the user sets the displayName to what it currently is.
      * @param displayName
      * @param currentJobName
-     * @return
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
@@ -3673,7 +3738,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * True if there is no item in Jenkins that has this name
      * @param name The name to test
      * @param currentJobName The name of the job that the user is configuring
-     * @return
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
@@ -3698,7 +3762,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
-     * @return
      */
     public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
             @QueryParameter String jobName) {
@@ -3754,6 +3817,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
         public RetentionStrategy getRetentionStrategy() {
             return RetentionStrategy.NOOP;
+        }
+
+        /**
+         * Will always keep this guy alive so that it can function as a fallback to
+         * execute {@link FlyweightTask}s. See JENKINS-7291.
+         */
+        @Override
+        protected boolean isAlive() {
+            return true;
         }
 
         /**
@@ -3915,7 +3987,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Prefix to static resources like images and javascripts in the war file.
-     * Either "" or strings like "/static/VERSION", which avoids Hudson to pick up
+     * Either "" or strings like "/static/VERSION", which avoids Jenkins to pick up
      * stale cache when the user upgrades to a different version.
      * <p>
      * Value computed in {@link WebAppMain}.

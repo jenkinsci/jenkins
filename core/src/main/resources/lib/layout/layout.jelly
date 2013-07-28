@@ -53,9 +53,9 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
   </st:documentation>
-<st:header name="Expires" value="0" />
-<st:header name="Cache-Control" value="no-cache,must-revalidate" />
-<st:header name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Expires" value="0" />
+<st:setHeader name="Cache-Control" value="no-cache,must-revalidate" />
+<st:setHeader name="X-Hudson-Theme" value="default" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -71,16 +71,7 @@ ${h.initPageVariables(context)}
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
 
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-    <st:header name="X-Hudson" value="1.395"/>
-    <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
-    <st:header name="X-Jenkins-Session" value="${app.SESSION_HASH}"/>
-    <j:if test="${app.tcpSlaveAgentListener!=null}">
-      <!-- advertise the CLI TCP port -->
-      <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI2-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}"/>
-    </j:if>
+    ${h.advertiseHeaders(response)}
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
     </j:forEach>
@@ -159,7 +150,7 @@ ${h.initPageVariables(context)}
         <td id="top-panel" colspan="2">
           <table cellpadding="0" cellspacing="0" width="100%" border="0">
             <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
+              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" width="139" height="34" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
 
               <!-- search box -->
@@ -170,7 +161,7 @@ ${h.initPageVariables(context)}
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                  <input name="q" value="${%search}" id="search-box" class="has-default-text defaulted" />
+                  <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" />
                   <st:nbsp />
                   <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
                   <div id="search-box-completion" />
@@ -184,7 +175,7 @@ ${h.initPageVariables(context)}
                 <j:choose>
                   <j:when test="${!h.isAnonymous()}">
                     <span style="white-space:nowrap">
-                      <a href="${rootURL}/user/${app.authentication.name}" class="model-link"><b>${app.authentication.name}</b></a>
+                      <a href="${rootURL}/user/${app.authentication.name}" class="model-link inside"><b>${app.authentication.name}</b></a>
                       <j:if test="${app.securityRealm.canLogOut()}">
                         |
                         <a href="${rootURL}/logout"><b>${%logout}</b></a>

@@ -32,6 +32,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
@@ -50,8 +51,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.Publisher;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -78,6 +77,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -111,7 +111,9 @@ import static javax.servlet.http.HttpServletResponse.*;
  * This object is related to {@link Node} but they have some significant difference.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it.
+ * you won't have a {@link Computer} object for it (except for the master node,
+ * which always get its {@link Computer} in case we have no static executors and
+ * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
  * Also, even if you remove a {@link Node}, it takes time for the corresponding
  * {@link Computer} to be removed, if some builds are already in progress on that
@@ -164,7 +166,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected final Object statusChangeLock = new Object();
 
     public Computer(Node node) {
-        assert node.getNumExecutors()!=0 : "Computer created with 0 executors";
         setNode(node);
     }
 
@@ -620,7 +621,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "computer/"+getDisplayName()+"/";
+        return "computer/" + Util.rawEncode(getDisplayName()) + "/";
     }
 
     /**
@@ -661,23 +662,46 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * @see #onRemoved()
      */
     protected void kill() {
         setNumExecutors(0);
     }
 
+    /**
+     * Called by {@link Jenkins} when this computer is removed.
+     *
+     * <p>
+     * This happens when list of nodes are updated (for example by {@link Jenkins#setNodes(List)} and
+     * the computer becomes redundant. Such {@link Computer}s get {@linkplain #kill() killed}, then
+     * after all its executors are finished, this method is called.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * @see #kill()
+     * @since 1.510
+     */
+    protected void onRemoved(){
+    }
+
     private synchronized void setNumExecutors(int n) {
-        if(numExecutors==n) return; // no-op
-
-        int diff = n-numExecutors;
         this.numExecutors = n;
+        int diff = executors.size()-n;
 
-        if(diff<0) {
+        if (diff>0) {
+            // we have too many executors
             // send signal to all idle executors to potentially kill them off
             for( Executor e : executors )
                 if(e.isIdle())
                     e.interrupt();
-        } else {
+        }
+
+        if (diff<0) {
             // if the number is increased, add new ones
             addNewExecutorIfNecessary();
         }
@@ -817,8 +841,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * Note that if an executor dies, we'll leave it in {@link #executors} until
      * the administrator yanks it out, so that we can see why it died.
+     *
+     * @since 1.509
      */
-    private boolean isAlive() {
+    protected boolean isAlive() {
         for (Executor e : executors)
             if (e.isAlive())
                 return true;
@@ -1072,8 +1098,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
                 OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                    Jenkins.getAuthentication().getName(),
-                    offlineMessage!=null ? " : " + offlineMessage : "")));
+                        Jenkins.getAuthentication().getName(),
+                        offlineMessage != null ? " : " + offlineMessage : "")));
         return HttpResponses.redirectToDot();
     }
 
@@ -1130,20 +1156,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
-        // ability to run arbitrary script is dangerous
-        checkPermission(Jenkins.RUN_SCRIPTS);
-
-        String text = req.getParameter("script");
-        if(text!=null) {
-            try {
-                req.setAttribute("output",
-                RemotingDiagnostics.executeGroovy(text,getChannel()));
-            } catch (InterruptedException e) {
-                throw new ServletException(e);
-            }
-        }
-
-        req.getView(this,view).forward(req, rsp);
+        Jenkins._doScript(req, rsp, req.getView(this, view), getChannel(), getACL());
     }
 
     /**
@@ -1182,9 +1195,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            Node result = (Node)Jenkins.XSTREAM2.fromXML(req.getReader());
-
-            replaceBy(result);
+            updateByXml(req.getInputStream());
             return;
         }
 
@@ -1209,6 +1220,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             nodes.set(i, newNode);
             app.setNodes(nodes);
         }
+    }
+
+    /**
+     * Updates Job by its XML definition.
+     *
+     * @since XXX
+     */
+    public void updateByXml(final InputStream source) throws IOException, ServletException {
+        checkPermission(Jenkins.ADMINISTER);
+        Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
+        replaceBy(result);
     }
 
     /**
@@ -1256,7 +1278,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
-     * {@link Publisher}, {@link BuildWrapper}, etc.
+     * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
      */
     public static Computer currentComputer() {
         Executor e = Executor.currentExecutor();
@@ -1335,6 +1357,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.COMPUTER);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
+    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

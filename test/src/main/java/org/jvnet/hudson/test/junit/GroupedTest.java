@@ -25,6 +25,9 @@ package org.jvnet.hudson.test.junit;
 
 import junit.framework.TestSuite;
 import junit.framework.TestResult;
+import org.junit.runner.manipulation.Filter;
+import org.junit.runner.manipulation.Filterable;
+import org.junit.runner.manipulation.NoTestsRemainException;
 
 /**
  * {@link TestSuite} that requires some set up and tear down for executing nested tests.
@@ -34,7 +37,7 @@ import junit.framework.TestResult;
  *
  * @author Kohsuke Kawaguchi
  */
-public class GroupedTest extends TestSuite {
+public class GroupedTest extends TestSuite implements Filterable {
     @Override
     public int countTestCases() {
         return super.countTestCases()+1;
@@ -68,4 +71,7 @@ public class GroupedTest extends TestSuite {
     }
     protected void tearDown() throws Exception {
     }
+
+    public void filter(Filter filter) throws NoTestsRemainException {} // SUREFIRE-974
+
 }

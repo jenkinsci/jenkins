@@ -57,7 +57,7 @@ THE SOFTWARE.
               <tr>
                 <td>
                   <a href="${m.getPluginLink(cache)}">
-                    <img src="${imagesURL}/24x24/gear.gif" alt="" height="24" width="24"/>
+                    <img src="${imagesURL}/24x24/gear.png" alt="" height="24" width="24"/>
                     ${m.groupId}:${m.artifactId}
                   </a>
                 </td>
@@ -70,7 +70,7 @@ THE SOFTWARE.
                 <td align="center">${m.readableExecutionId}</td>
                 <td data="${m.duration}">${m.durationString}</td>
                 <td align="center">
-                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.gif" alt="${%fingerprint}" height="16" width="16" /></a>
+                  <a href="${rootURL}/fingerprint/${m.digest}/"><img src="${imagesURL}/16x16/fingerprint.png" alt="${%fingerprint}" height="16" width="16" /></a>
                 </td>
               </tr>
             </j:forEach>

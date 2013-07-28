@@ -90,4 +90,9 @@ public class BooleanParameterValue extends ParameterValue {
     public String toString() {
     	return "(BooleanParameterValue) " + getName() + "='" + value + "'";
     }
+
+    @Override public String getShortDescription() {
+        return name + '=' + value;
+    }
+
 }

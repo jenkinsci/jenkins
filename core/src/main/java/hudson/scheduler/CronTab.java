@@ -29,8 +29,11 @@ import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Calendar.*;
+import javax.annotation.CheckForNull;
 
 /**
  * Table for driving scheduled tasks.
@@ -412,22 +415,58 @@ public final class CronTab {
      * but semantically suspicious combinations, like
      * "* 0 * * *"
      */
-    public String checkSanity() {
-        for( int i=0; i<5; i++ ) {
+    public @CheckForNull String checkSanity() {
+        OUTER: for (int i = 0; i < 5; i++) {
             long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
             for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
                 if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.
                     // if we have a sparse rank, one of them better be the left-most.
                     if(i>0)
-                        return "Do you really mean \"every minute\" when you say \""+spec+"\"? "+
-                                "Perhaps you meant \"0 "+spec.substring(spec.indexOf(' ')+1)+"\"";
+                        return Messages.CronTab_do_you_really_mean_every_minute_when_you(spec, "H " + spec.substring(spec.indexOf(' ') + 1));
                     // once we find a sparse rank, upper ranks don't matter
-                    return null;
+                    break OUTER;
                 }
             }
         }
 
+        String hashified = hashify(spec);
+        if (hashified != null) {
+            return Messages.CronTab_spread_load_evenly_by_using_rather_than_(hashified, spec);
+        }
+
         return null;
+    }
+
+    /**
+     * Checks a prospective crontab specification to see if it could benefit from balanced hashes.
+     * @param spec a (legal) spec
+     * @return a similar spec that uses a hash, if such a transformation is necessary; null if it is OK as is
+     * @since 1.510
+     */
+    public static @CheckForNull String hashify(String spec) {
+        if (spec.contains("H")) {
+            // if someone is already using H, presumably he knows what it is, so a warning is likely false positive
+            return null;
+        } else if (spec.startsWith("*/")) {// "*/15 ...." (every N minutes) to hash
+            return "H" + spec.substring(1);
+        } else if (spec.matches("\\d+ .+")) {// "0 ..." (certain minute) to hash
+            return "H " + spec.substring(spec.indexOf(' ') + 1);
+        } else {
+            Matcher m = Pattern.compile("0(,(\\d+)(,\\d+)*)( .+)").matcher(spec);
+            if (m.matches()) { // 0,15,30,45 to H/15
+                int period = Integer.parseInt(m.group(2));
+                if (period > 0) {
+                    StringBuilder b = new StringBuilder();
+                    for (int i = period; i < 60; i += period) {
+                        b.append(',').append(i);
+                    }
+                    if (b.toString().equals(m.group(1))) {
+                        return "H/" + period + m.group(4);
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

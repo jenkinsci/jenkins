@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${it.pronoun} ${it.displayName}</h1>
+      <h1>${it.pronoun} <l:breakable value="${it.displayName}"/></h1>
       <j:if test="${(it.name!=it.displayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}">
         ${%Project name}: ${it.fullName}
       </j:if>

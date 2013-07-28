@@ -34,7 +34,7 @@ THE SOFTWARE.
       </h1>
       <p>
         <span style="font-weight:bold">
-          <st:out value="${it.fullName}"/>
+          <st:out value="${it.fullDisplayName}"/>
         </span>
         <j:if test="${it.suiteResult != null &amp;&amp; it.className != it.suiteResult.name}">
           (from <st:out value="${it.suiteResult.name}"/>)

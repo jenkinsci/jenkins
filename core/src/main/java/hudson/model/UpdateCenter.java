@@ -39,6 +39,7 @@ import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
@@ -89,6 +90,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -119,12 +122,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.483
      */
     public static final String ID_DEFAULT = "default";
+
+    @Restricted(NoExternalUse.class)
+    public static final String ID_UPLOAD = "_upload";
 	
     /**
      * {@link ExecutorService} that performs installation.
      * @since 1.501
      */
-    private final ExecutorService installerService = Executors.newSingleThreadExecutor(
+    private final ExecutorService installerService = new AtmostOneThreadExecutor(
         new DaemonThreadFactory(new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
@@ -1012,6 +1018,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         public void run() {
+            if (ID_UPLOAD.equals(site.getId())) {
+                return;
+            }
             LOGGER.fine("Doing a connectivity check");
             try {
                 String connectionCheckUrl = site.getConnectionCheckUrl();
@@ -1184,8 +1193,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Indicates that the installation was successful but a restart is needed.
-         *
-         * @see
          */
         public class SuccessButRequiresRestart extends Success {
             private final Localizable message;

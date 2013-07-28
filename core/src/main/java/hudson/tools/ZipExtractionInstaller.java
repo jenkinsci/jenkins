@@ -137,7 +137,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
                     } catch (LinkageError e) {
                         // if JNA is unavailable, fall back.
                         // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        PosixAPI.get().chmod(f.getAbsolutePath(),0755);
+                        PosixAPI.jnr().chmod(f.getAbsolutePath(),0755);
                     }
                 }
             } else {

@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <!-- XXX t:label? -->
+  <!-- TODO t:label? -->
   <f:entry title="${%Version}" field="id">
     <j:choose>
       <j:set var="jdks" value="${descriptor.installableJDKs}"/>

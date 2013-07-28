@@ -300,14 +300,14 @@ public class CLI {
         byte[] buf = new byte[1024];
         try {
             InputStream is = conn.getInputStream();
-            while (is.read(buf) > 0) {
+            while (is.read(buf) >= 0) {
                 // Ignore
             }
             is.close();
         } catch (IOException e) {
             try {
                 InputStream es = ((HttpURLConnection)conn).getErrorStream();
-                while (es.read(buf) > 0) {
+                while (es.read(buf) >= 0) {
                     // Ignore
                 }
                 es.close();
@@ -488,7 +488,7 @@ public class CLI {
                         LOGGER.log(FINE,e.getMessage(),e);
                         return -1;
                     }
-                    System.err.println("Failed to authenticate with your SSH keys.");
+                    System.err.println("[WARN] Failed to authenticate with your SSH keys. Proceeding as anonymous");
                     LOGGER.log(FINE,"Failed to authenticate with your SSH keys.",e);
                 }
             }

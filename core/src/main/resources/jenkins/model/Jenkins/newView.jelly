@@ -33,7 +33,7 @@ THE SOFTWARE.
     <l:main-panel>
       <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
       <n:form nameTitle="${%View name}" action="createView"
-              descriptors="${views}" checkUrl="viewExistsCheck" xmlns:n="/lib/hudson/newFromList" />
+              descriptors="${views}" checkUrl="checkViewName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -65,7 +65,7 @@ THE SOFTWARE.
                 <p>
                   ${%Run from slave command line:}
                 </p>
-                <!-- XXX conceal secret w/ JS if possible -->
+                <!-- TODO conceal secret w/ JS if possible -->
                 <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}</pre>
               </li>
             </j:otherwise>

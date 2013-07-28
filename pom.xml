@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.30</version>
+    <version>1.32</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.508-SNAPSHOT</version>
+  <version>1.525-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -95,13 +95,12 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+
+    <java.version>6</java.version>
   </properties>
-
-
-
 
   <repositories>
     <repository>
@@ -175,7 +174,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.22</version>
+        <version>2.30</version>
       </dependency>
 
       <dependency>
@@ -212,6 +211,11 @@ THE SOFTWARE.
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
         <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -278,9 +282,9 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.kohsuke.gmaven</groupId>
+          <groupId>org.codehaus.gmaven</groupId>
           <artifactId>gmaven-plugin</artifactId>
-          <version>1.0-rc-5-patch-2</version>
+          <version>1.5-jenkins-1</version>
           <dependencies>
             <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
               <groupId>org.apache.ant</groupId>
@@ -304,6 +308,11 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -340,7 +349,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.14</version> <!-- ignoring ${maven-surefire-plugin.version} -->
+          <version>2.15</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
@@ -348,11 +357,6 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -504,9 +508,9 @@ THE SOFTWARE.
         			<pluginExecutions>
         				<pluginExecution>
         					<pluginExecutionFilter>
-        						<groupId>org.kohsuke.gmaven</groupId>
+        						<groupId>org.codehaus.gmaven</groupId>
         						<artifactId>gmaven-plugin</artifactId>
-        						<versionRange>[1.0-rc-5-patch-2,)</versionRange>
+        						<versionRange>1.5-jenkins-1</versionRange>
         						<goals>
         							<goal>execute</goal>
         							<goal>testCompile</goal>
@@ -576,7 +580,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
         <executions>
@@ -589,6 +592,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
+            <!-- Currently held back to java15. After Sep 30 2013 (perhaps?), switch to java1${java.version}. -->
             <artifactId>java15</artifactId>
             <version>1.0</version>
           </signature>
@@ -597,9 +601,9 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration><!-- we specify this in the parent POM, so this is redundant, but otherwise IntelliJ is unhappy -->
-          <source>1.5</source>
-          <target>1.5</target>
+        <configuration>
+          <source>1.${java.version}</source>
+          <target>1.${java.version}</target>
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -617,17 +621,26 @@ THE SOFTWARE.
             </goals>
             <configuration>
               <rules>
-                <!-- There is a bug in JDK 1.5's compiler therefore need to compile with 1.6 -->
                 <requireJavaVersion>
                   <version>1.6.0-18</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
                 </requireMavenVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.${java.version}</maxJdkVersion>
+                </enforceBytecodeVersion>
               </rules>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.0-alpha-5</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>
@@ -731,7 +744,6 @@ THE SOFTWARE.
               <!--&lt;!&ndash;rulesets>-->
                   <!--<ruleset>ruleset.xml</ruleset>-->
                   <!--</rulesets&ndash;&gt;-->
-              <!--<targetJdk>1.5</targetJdk>-->
             <!--</configuration>-->
           <!--</plugin>-->
           <!--<plugin>-->
@@ -823,15 +835,6 @@ THE SOFTWARE.
       <build>
         <directory>${m2BuildDirectory}</directory>
         <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <!-- Otherwise m2e is unhappy because of @Override annotations -->
-              <source>1.6</source>
-              <target>1.6</target>
-            </configuration>
-          </plugin>
-
           <plugin>
             <groupId>org.maven.ide.eclipse</groupId>
             <artifactId>lifecycle-mapping</artifactId>

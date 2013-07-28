@@ -23,6 +23,8 @@
  */
 package hudson.maven;
 
+import hudson.maven.local_repo.DefaultLocalRepositoryLocator;
+import hudson.maven.local_repo.PerJobLocalRepositoryLocator;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Result;
@@ -32,6 +34,11 @@ import hudson.tasks.Shell;
 import java.io.File;
 
 import jenkins.model.Jenkins;
+import jenkins.mvn.DefaultGlobalSettingsProvider;
+import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.FilePathGlobalSettingsProvider;
+import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
@@ -74,6 +81,7 @@ public class MavenProjectTest extends HudsonTestCase {
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 scmResource)));
         project.setMaven(mi.getName());
+        project.setLocalRepository(new PerJobLocalRepositoryLocator());
         return project;
     }
 
@@ -144,7 +152,8 @@ public class MavenProjectTest extends HudsonTestCase {
     @Bug(6779)
     public void testDeleteSetBuildDeletesModuleBuilds() throws Exception {
         MavenModuleSet project = createProject("maven-multimod.zip");
-        project.setGoals("package");
+        project.setLocalRepository(new DefaultLocalRepositoryLocator());
+        project.setGoals("install");
         buildAndAssertSuccess(project);
         buildAndAssertSuccess(project.getModule("org.jvnet.hudson.main.test.multimod:moduleB"));
         buildAndAssertSuccess(project);
@@ -205,6 +214,29 @@ public class MavenProjectTest extends HudsonTestCase {
             m.setRunPostStepsIfResult(r);
             configRoundtrip((Item)m);
             assertEquals(r,m.getRunPostStepsIfResult());
+        }
+    }
+    
+    
+    public void testDefaultSettingsProvider() throws Exception {
+        {
+            MavenModuleSet m = createMavenProject();
+    
+            assertNotNull(m);
+            assertEquals(DefaultSettingsProvider.class, m.getSettings().getClass());
+            assertEquals(DefaultGlobalSettingsProvider.class, m.getGlobalSettings().getClass());
+        }
+        
+        {
+            GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
+            assertNotNull("No global Maven Config available", globalMavenConfig);
+            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settigns.xml"));
+            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settigns.xml"));
+            
+            MavenModuleSet m = createMavenProject();
+            assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
+            assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
+            assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
         }
     }
 }

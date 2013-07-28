@@ -35,7 +35,7 @@ THE SOFTWARE.
           <img src="${imagesURL}/24x24/grey.png" tooltip="${%Not run}" alt="${%Not run}" height="24" width="24"/>
         </j:when>
         <j:otherwise>
-          <a href="${p.nearestRunUrl}" class="model-link">
+          <a href="${p.nearestRunUrl}" class="model-link inside">
             <img src="${imagesURL}/24x24/${b.buildStatusUrl}" tooltip="${p.tooltip} ${it.number!=b.number?(it.isBuilding()?'- pending' : '- skipped'):''}" alt="${p.tooltip}" style="${it.number!=b.number?'opacity:0.5':''}" height="24" width="24"/>
             <j:if test="${empty(o.x) and empty(o.y)}">
               ${p.combination.toString(o.z)}

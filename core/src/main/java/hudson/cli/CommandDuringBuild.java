@@ -39,17 +39,27 @@ import java.io.IOException;
  */
 public abstract class CommandDuringBuild extends CLICommand {
     /**
-     * This method makes sense only when called from within the build kicked by Hudson.
-     * We use the environment variables that Hudson sets to determine the build that is being run.
+     * This method makes sense only when called from within the build kicked by Jenkins.
+     * We use the environment variables that Jenkins sets to determine the build that is being run.
      */
     protected Run getCurrentlyBuilding() throws CmdLineException {
+        Run r = optCurrentlyBuilding();
+        if (r==null)
+            throw new CmdLineException("This CLI command works only when invoked from inside a build");
+        return r;
+    }
+
+    /**
+     * If the command is currently running inside a build, return it. Otherwise null.
+     */
+    protected Run optCurrentlyBuilding() throws CmdLineException {
         try {
             CLICommand c = CLICommand.getCurrent();
             if (c==null)    throw new IllegalStateException("Not executing a CLI command");
             String[] envs = c.checkChannel().call(new GetCharacteristicEnvironmentVariables());
 
             if (envs[0]==null || envs[1]==null)
-                throw new CmdLineException("This CLI command works only when invoked from inside a build");
+                return null;
 
             Job j = Jenkins.getInstance().getItemByFullName(envs[0],Job.class);
             if (j==null)    throw new CmdLineException("No such job: "+envs[0]);

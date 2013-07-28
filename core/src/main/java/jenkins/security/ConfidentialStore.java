@@ -63,7 +63,11 @@ public abstract class ConfidentialStore {
     public static @Nonnull ConfidentialStore get() {
         if (TEST!=null) return TEST.get();
 
-        Lookup lookup = Jenkins.getInstance().lookup;
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            throw new IllegalStateException("cannot initialize confidential key store until Jenkins has started");
+        }
+        Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
         if (cs==null) {
             try {

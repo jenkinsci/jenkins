@@ -24,6 +24,7 @@
 
 package hudson;
 
+import jenkins.model.Jenkins;
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
 import hudson.util.ProcessTree;
@@ -90,6 +91,30 @@ public class LauncherTest extends ChannelTestCase {
         String log = baos.toString();
         assertEquals(log, 0, res);
         assertTrue(log, log.contains("val1 val2"));
+    }
+
+    @Bug(18368)
+    public void testDecoratedByEnvMaintainsIsUnix() throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        TaskListener listener = new StreamBuildListener(output);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
+        assertEquals(false, decorated.isUnix());
+        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        decorated = remoteLauncher.decorateByEnv(new EnvVars());
+        assertEquals(true, decorated.isUnix());
+    }
+
+    @Bug(18368)
+    public void testDecoratedByPrefixMaintainsIsUnix() throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        TaskListener listener = new StreamBuildListener(output);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher decorated = remoteLauncher.decorateByPrefix("test");
+        assertEquals(false, decorated.isUnix());
+        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        decorated = remoteLauncher.decorateByPrefix("test");
+        assertEquals(true, decorated.isUnix());
     }
 
 }

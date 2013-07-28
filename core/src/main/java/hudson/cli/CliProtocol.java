@@ -9,7 +9,9 @@ import jenkins.model.Jenkins;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -39,7 +41,7 @@ public class CliProtocol extends AgentProtocol {
         }
 
         public void run() throws IOException, InterruptedException {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true);
             out.println("Welcome");
             runCli(new Connection(socket));
         }

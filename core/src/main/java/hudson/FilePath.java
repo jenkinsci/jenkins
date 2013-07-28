@@ -70,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -92,11 +93,12 @@ import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 
 import com.sun.jna.Native;
 import hudson.os.PosixException;
+import java.io.BufferedInputStream;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -493,9 +495,10 @@ public final class FilePath implements Serializable {
         });
     }
 
-    private void unzip(File dir, InputStream in) throws IOException {
+    private static void unzip(File dir, InputStream in) throws IOException {
         File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
         try {
+            // TODO why does this not simply use ZipInputStream?
             IOUtils.copy(in, tmpFile);
             unzip(dir,tmpFile);
         }
@@ -504,7 +507,7 @@ public final class FilePath implements Serializable {
         }
     }
 
-    private void unzip(File dir, File zipFile) throws IOException {
+    static private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
         @SuppressWarnings("unchecked")
@@ -618,7 +621,7 @@ public final class FilePath implements Serializable {
             public InputStream extract(InputStream _in) throws IOException {
                 HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
                 try {
-                    return new GZIPInputStream(in,8192);
+                    return new GZIPInputStream(in, 8192, true);
                 } catch (IOException e) {
                     // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
                     in.fillSide();
@@ -724,6 +727,19 @@ public final class FilePath implements Serializable {
             if(listener!=null)
                 listener.getLogger().println(message);
 
+            if (isRemote()) {
+                // First try to download from the slave machine.
+                try {
+                    act(new Unpack(archive));
+                    timestamp.touch(sourceTimestamp);
+                    return true;
+                } catch (IOException x) {
+                    if (listener != null) {
+                        x.printStackTrace(listener.error("Failed to download " + archive + " from slave; will retry from master"));
+                    }
+                }
+            }
+
             // for HTTP downloads, enable automatic retry for added resilience
             InputStream in = archive.getProtocol().startsWith("http") ? ProxyConfiguration.getInputStream(archive) : con.getInputStream();
             CountingInputStream cis = new CountingInputStream(in);
@@ -740,6 +756,31 @@ public final class FilePath implements Serializable {
             return true;
         } catch (IOException e) {
             throw new IOException2("Failed to install "+archive+" to "+remote,e);
+        }
+    }
+
+    private static final class Unpack implements FileCallable<Void> {
+        private final URL archive;
+        Unpack(URL archive) {
+            this.archive = archive;
+        }
+        @Override public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+            InputStream in = archive.openStream();
+            try {
+                CountingInputStream cis = new CountingInputStream(in);
+                try {
+                    if (archive.toExternalForm().endsWith(".zip")) {
+                        unzip(dir, cis);
+                    } else {
+                        readFromTar("input stream", dir, GZIP.extract(cis));
+                    }
+                } catch (IOException x) {
+                    throw new IOException2(String.format("Failed to unpack %s (%d bytes read)", archive, cis.getByteCount()), x);
+                }
+            } finally {
+                in.close();
+            }
+            return null;
         }
     }
 
@@ -959,6 +1000,27 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
+     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * on this {@link FilePath}.
+     *
+     * @since 1.522
+     */
+    public <V> Callable<V,IOException> asCallableWith(final FileCallable<V> task) {
+        return new Callable<V,IOException>() {
+            @Override
+            public V call() throws IOException {
+                try {
+                    return act(task);
+                } catch (InterruptedException e) {
+                    throw (IOException)new InterruptedIOException().initCause(e);
+                }
+            }
+            private static final long serialVersionUID = 1L;
+        };
+    }
+
+    /**
      * Converts this file to the URI, relative to the machine
      * on which this file is available.
      */
@@ -1173,8 +1235,11 @@ public final class FilePath implements Serializable {
                     }
 
                     Writer w = new FileWriter(f);
-                    w.write(contents);
-                    w.close();
+                    try {
+                        w.write(contents);
+                    } finally {
+                        w.close();
+                    }
 
                     return f.getAbsolutePath();
                 }
@@ -1619,12 +1684,13 @@ public final class FilePath implements Serializable {
 
     /**
      * Computes the MD5 digest of the file in hex string.
+     * @see Util#getDigestOf(File)
      */
     public String digest() throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1L;
             public String invoke(File f, VirtualChannel channel) throws IOException {
-                return Util.getDigestOf(new FileInputStream(f));
+                return Util.getDigestOf(f);
             }
         });
     }
@@ -2386,5 +2452,17 @@ public final class FilePath implements Serializable {
         } catch (NoSuchFieldException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Gets the {@link FilePath} representation of the "~" directory
+     * (User's home directory in the Unix sense) of the given channel.
+     */
+    public static FilePath getHomeDirectory(VirtualChannel ch) throws InterruptedException, IOException {
+        return ch.call(new Callable<FilePath,IOException>() {
+            public FilePath call() throws IOException {
+                return new FilePath(new File(System.getProperty("user.home")));
+            }
+        });
     }
 }
