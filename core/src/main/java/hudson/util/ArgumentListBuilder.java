@@ -24,7 +24,7 @@
  */
 package hudson.util;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 
@@ -368,9 +368,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * Add a masked argument
      * @param string the argument
      */
-    @WithBridgeMethods(void.class)
-    public ArgumentListBuilder addMasked(String string) {
-        return add(string, true);
+    public void addMasked(String string) {
+        add(string, true);
     }
 
     public ArgumentListBuilder addMasked(Secret s) {
