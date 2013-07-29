@@ -193,6 +193,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     @Override
     public Result getResult() {
+        if (isBuilding()) {
+            return super.getResult();
+        }
         synchronized (notifyModuleBuildLock) {
             if (effectiveResult != null) {
                 return effectiveResult;
