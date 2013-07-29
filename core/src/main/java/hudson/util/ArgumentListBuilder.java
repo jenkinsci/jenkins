@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 
@@ -369,6 +370,10 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public void addMasked(String string) {
         add(string, true);
+    }
+
+    public ArgumentListBuilder addMasked(Secret s) {
+        return add(Secret.toString(s),true);
     }
 
     /**

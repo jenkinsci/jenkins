@@ -117,6 +117,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import java.io.StringWriter;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -1999,7 +2000,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return;
         }
 
-        delete();
+        try{
+            delete();
+        }
+        catch(IOException ex){
+            StringWriter writer = new StringWriter();
+            ex.printStackTrace(new PrintWriter(writer));
+            req.setAttribute("stackTraces", writer);
+            req.getView(this, "delete-retry.jelly").forward(req, rsp);  
+            return;
+        } 
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 

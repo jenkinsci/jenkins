@@ -112,9 +112,9 @@ public class Util {
     }
 
     /**
-     * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
+     * Pattern for capturing variables. Either $xyz, ${xyz} or ${a.b} but not $a.b, while ignoring "$$"
       */
-    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\}|\\$)");
+    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.

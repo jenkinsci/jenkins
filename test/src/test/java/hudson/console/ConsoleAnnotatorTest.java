@@ -81,9 +81,10 @@ public class ConsoleAnnotatorTest extends HudsonTestCase {
     };
 
     public static class DemoAnnotator extends ConsoleAnnotator<Object> {
+        private static final String ANNOTATE_TEXT = "ooo" + System.getProperty("line.separator");
         @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
-            if (text.getText().equals("ooo\n")) {
+            if (text.getText().equals(ANNOTATE_TEXT)) {
                 text.addMarkup(0,3,"<b class=demo>","</b>");
                 return null;
             }

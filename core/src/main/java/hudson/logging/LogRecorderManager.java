@@ -116,8 +116,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all","All Jenkins Logs");
-        for (Entry<String, LogRecorder> e : logRecorders.entrySet()) {
-            menu.add(e.getKey(),e.getKey());
+        for (LogRecorder lr : logRecorders.values()) {
+            menu.add(lr.getSearchUrl(), lr.getDisplayName());
         }
         return menu;
     }

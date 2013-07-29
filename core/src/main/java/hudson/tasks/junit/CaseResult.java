@@ -51,7 +51,7 @@ import static java.util.Collections.singletonList;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class CaseResult extends TestResult implements Comparable<CaseResult> {
+public class CaseResult extends TestResult implements Comparable<CaseResult> {
     private static final Logger LOGGER = Logger.getLogger(CaseResult.class.getName());
     private final float duration;
     /**
@@ -202,7 +202,7 @@ public final class CaseResult extends TestResult implements Comparable<CaseResul
     /**
      * Used to create a fake failure, when Hudson fails to load data from XML files.
      */
-    CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
+    public CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
         this.className = parent == null ? "unnamed" : parent.getName();
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
