@@ -493,16 +493,16 @@ public class Queue extends ResourceController implements Saveable {
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
-     *      {@link ScheduleResult.Refused} if Jenkins refused to add this task into the queue (for example because the system
+     *      {@link hudson.model.queue.ScheduleResult.Refused} if Jenkins refused to add this task into the queue (for example because the system
      *      is about to shutdown.) Otherwise the task is either merged into existing items in the queue
-     *      (in which case you get {@link ScheduleResult.Existing} instance back), or a new item
+     *      (in which case you get {@link hudson.model.queue.ScheduleResult.Existing} instance back), or a new item
      *      gets created in the queue (in which case you get {@link Created}.
      *
      *      Note the nature of the queue
      *      is that such {@link Item} only captures the state of the item at a particular moment,
      *      and by the time you inspect the object, some of its information can be already stale.
      *
-     *      That said, one can still look at {@link Item#future}, {@link Item#id}, etc.
+     *      That said, one can still look at {@link Queue.Item#future}, {@link Queue.Item#id}, etc.
      */
     public synchronized @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
         // remove nulls
@@ -1046,7 +1046,7 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * Jenkins internally invokes this method by itself whenever there's a change that can affect
      * the scheduling (such as new node becoming online, # of executors change, a task completes execution, etc.),
-     * and it also gets invoked periodically (see {@link MaintainTask}.)
+     * and it also gets invoked periodically (see {@link Queue.MaintainTask}.)
      */
     public synchronized void maintain() {
         LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
@@ -1298,7 +1298,7 @@ public class Queue extends ResourceController implements Saveable {
          *
          * <p>
          * Since this is a newly added method, the invocation may results in {@link AbstractMethodError}.
-         * Use {@link Tasks#getSubTasksOf(Task)} that avoids this.
+         * Use {@link Tasks#getSubTasksOf(Queue.Task)} that avoids this.
          *
          * @since 1.377
          */
@@ -1314,12 +1314,12 @@ public class Queue extends ResourceController implements Saveable {
          *
          * <p>
          * This method was added to an interface after it was created, so plugins built against
-         * older versions of Jenkins may not have this method implemented. Called {@link Tasks#_getDefaultAuthenticationOf(Task)}
+         * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
          * to avoid {@link AbstractMethodError}.
          *
          * @since 1.520
          * @see QueueItemAuthenticator
-         * @see Tasks#getDefaultAuthenticationOf(Task)
+         * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
         @Nonnull Authentication getDefaultAuthentication();
     }
@@ -1340,7 +1340,7 @@ public class Queue extends ResourceController implements Saveable {
          * <p>
          * Since this method went through a signature change in 1.377, the invocation may results in
          * {@link AbstractMethodError}.
-         * Use {@link Executables#getParentOf(Executable)} that avoids this.
+         * Use {@link Executables#getParentOf(Queue.Executable)} that avoids this.
          */
         SubTask getParent();
 
@@ -1353,7 +1353,7 @@ public class Queue extends ResourceController implements Saveable {
          * Estimate of how long will it take to execute this executable.
          * Measured in milliseconds.
          * 
-         * Please, consider using {@link Executables#getEstimatedDurationFor(Executable)}
+         * Please, consider using {@link Executables#getEstimatedDurationFor(Queue.Executable)}
          * to protected against AbstractMethodErrors!
          *
          * @return -1 if it's impossible to estimate.
