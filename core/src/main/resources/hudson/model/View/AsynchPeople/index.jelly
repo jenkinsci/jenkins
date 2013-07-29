@@ -93,9 +93,7 @@ THE SOFTWARE.
                   }
                   r.appendChild(d);
 
-                  if (p.sortable != null) {
-                      p.sortable.refresh();
-                  }
+                  ts_refresh(p);
               }
           }
       </script>
