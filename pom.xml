@@ -99,7 +99,7 @@ THE SOFTWARE.
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.version>6</java.version>
+    <java.level>6</java.level>
   </properties>
 
   <repositories>
@@ -592,7 +592,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
-            <!-- Currently held back to java15. After Sep 30 2013 (perhaps?), switch to java1${java.version}. -->
+            <!-- Currently held back to java15. After Sep 30 2013 (perhaps?), switch to java1${java.level}. -->
             <artifactId>java15</artifactId>
             <version>1.0</version>
           </signature>
@@ -602,8 +602,8 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.${java.version}</source>
-          <target>1.${java.version}</target>
+          <source>1.${java.level}</source>
+          <target>1.${java.level}</target>
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -628,7 +628,7 @@ THE SOFTWARE.
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.${java.version}</maxJdkVersion>
+                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
                 </enforceBytecodeVersion>
               </rules>
             </configuration>

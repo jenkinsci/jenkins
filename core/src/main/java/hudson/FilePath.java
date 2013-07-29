@@ -1235,8 +1235,11 @@ public final class FilePath implements Serializable {
                     }
 
                     Writer w = new FileWriter(f);
-                    w.write(contents);
-                    w.close();
+                    try {
+                        w.write(contents);
+                    } finally {
+                        w.close();
+                    }
 
                     return f.getAbsolutePath();
                 }
@@ -2456,7 +2459,7 @@ public final class FilePath implements Serializable {
      * (User's home directory in the Unix sense) of the given channel.
      */
     public static FilePath getHomeDirectory(VirtualChannel ch) throws InterruptedException, IOException {
-        ch.call(new Callable<FilePath,IOException>() {
+        return ch.call(new Callable<FilePath,IOException>() {
             public FilePath call() throws IOException {
                 return new FilePath(new File(System.getProperty("user.home")));
             }
