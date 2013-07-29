@@ -55,7 +55,18 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=rfe>
+    Report an user friendly error page if a deletion of a build fails.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/827">pull request 827</a>)
+  <li class=bug>
+    Maven build failure wasn't describing errors like Maven CLI does.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15025">issue 15025</a>)
+  <li class=bug>
+    Revisited fix to be compatible for plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18119">issue 18119</a>)
+  <li class=bug>
+    Ensuring <code>/log/all</code> shows only <code>INFO</code> and above messages, even if custom loggers display <code>FINE</code> or below.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18959">issue 18959</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
