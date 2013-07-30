@@ -187,13 +187,17 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     @Override
     public Result getResult() {
         if (isBuilding()) {
-            return super.getResult();
+            return computeResult();
         }
         synchronized (notifyModuleBuildLock) {
-            if (effectiveResult != null) {
-                return effectiveResult;
+            if (effectiveResult == null) {
+                effectiveResult = computeResult();
             }
+            return effectiveResult;
         }
+    }
+
+    private Result computeResult() {
         Result r = super.getResult();
 
         for (MavenBuild b : getModuleLastBuilds().values()) {
@@ -208,11 +212,6 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 r = r.combine(br);
         }
 
-        synchronized (notifyModuleBuildLock) {
-            if (effectiveResult == null) {
-                effectiveResult = r;
-            }
-        }
         return r;
     }
 
