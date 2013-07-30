@@ -220,6 +220,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     public void purgeCache() {
         index = new Index();
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {

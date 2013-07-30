@@ -257,7 +257,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private volatile transient RunExecution runner;
 
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
+    public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
     private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
                 @Override
                 protected SimpleDateFormat initialValue() {

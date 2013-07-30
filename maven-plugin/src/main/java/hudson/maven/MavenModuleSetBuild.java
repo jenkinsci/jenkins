@@ -53,7 +53,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStep;
@@ -93,7 +92,6 @@ import jenkins.mvn.SettingsProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
@@ -136,6 +134,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     private String mavenVersionUsed;
 
     private transient Object notifyModuleBuildLock = new Object();
+    private transient Result effectiveResult;
 
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
@@ -194,6 +193,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     @Override
     public Result getResult() {
+        if (isBuilding()) {
+            return super.getResult();
+        }
+        synchronized (notifyModuleBuildLock) {
+            if (effectiveResult != null) {
+                return effectiveResult;
+            }
+        }
         Result r = super.getResult();
 
         for (MavenBuild b : getModuleLastBuilds().values()) {
@@ -208,6 +215,11 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 r = r.combine(br);
         }
 
+        synchronized (notifyModuleBuildLock) {
+            if (effectiveResult == null) {
+                effectiveResult = r;
+            }
+        }
         return r;
     }
 
@@ -522,6 +534,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // use a separate lock object since this synchronized block calls into plugins,
             // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
             synchronized(notifyModuleBuildLock) {
+                effectiveResult = null;
                 boolean modified = false;
 
                 List<Action> actions = getActions();

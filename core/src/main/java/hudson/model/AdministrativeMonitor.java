@@ -61,7 +61,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <dl>
  * <dt>message.jelly</dt>
  * <dd>
- * If {@link #isActivated()} returns true, Hudson will use the <tt>message.jelly</tt>
+ * If {@link #isActivated()} returns true, Jenkins will use the <tt>message.jelly</tt>
  * view of this object to render the warning text. This happens in the
  * <tt>http://SERVER/jenkins/manage</tt> page. This view should typically render
  * a DIV box with class='error' or class='warning' with a human-readable text
