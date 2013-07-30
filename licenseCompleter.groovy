@@ -32,10 +32,12 @@ complete {
             dependency.licenses=[cddl]
     }
     
+/* TODO
     // according to JSR-250 1.0-20050927.133100 POM, it came from JAX-WS, which is under CDDL.
     match("javax.annotation:jsr250-api") {
         rewriteLicense([], cddl)
     }
+*/
 
     match("antlr:*") {
         rewriteLicense([], license("BSD License","http://www.antlr.org/license.html"))
