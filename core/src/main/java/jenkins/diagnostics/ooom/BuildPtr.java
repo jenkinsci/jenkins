@@ -1,21 +1,28 @@
 package jenkins.diagnostics.ooom;
 
+import hudson.FilePath;
+import hudson.model.Job;
+import hudson.model.TaskListener;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Comparator;
 
 /**
  * ID and build number of one build.
  */
-final class BuildPtr {
+public final class BuildPtr implements Comparable<BuildPtr> {
+    final Job job;
+
     final File buildDir;
     /**
      * Timestamp build ID.
      */
-    final String id;
+    public final String id;
     /**
      * Build number found from the disk.
      */
-    final int n;
+    public final int n;
 
     /**
      * Position of this build according to the ordering induced by {@link #n}
@@ -28,7 +35,8 @@ final class BuildPtr {
     int posByID;
 
 
-    BuildPtr(File buildDir, int n) {
+    BuildPtr(Job job, File buildDir, int n) {
+        this.job = job;
         this.n = n;
         this.id = buildDir.getName();
         this.buildDir = buildDir;
@@ -69,5 +77,32 @@ final class BuildPtr {
         if (a>b)    return 1;
         if (a<b)    return -1;
         return 0;
+    }
+
+    /**
+     * Fix the problem by moving the out of order builds into a place that Jenkins won't look at.
+     *
+     * TODO: another way to fix this is by adjusting the ID and pretend that the build happened
+     * at a different timestamp.
+     */
+    public void fix(TaskListener listener) throws IOException, InterruptedException {
+        File dir = new File(job.getRootDir(), "outOfOrderBuilds");
+        dir.mkdirs();
+        File dst = new File(dir, buildDir.getName());
+        listener.getLogger().println("Renaming "+dir);
+        listener.getLogger().println("  -> "+dst);
+        if (!buildDir.renameTo(dst)) {
+            FilePath bd = new FilePath(buildDir);
+            bd.copyRecursiveTo(new FilePath(dst));
+            bd.deleteRecursive();
+        }
+
+        // if there's a symlink delete it
+        new File(buildDir.getParentFile(),String.valueOf(n)).delete();
+    }
+
+    @Override
+    public int compareTo(BuildPtr that) {
+        return this.n - that.n;
     }
 }

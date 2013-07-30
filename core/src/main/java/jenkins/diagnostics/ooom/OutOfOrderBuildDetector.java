@@ -22,8 +22,8 @@ public class OutOfOrderBuildDetector extends AsyncPeriodicWork {
     private OutOfOrderBuildMonitor monitor;
 
 
-    public OutOfOrderBuildDetector(String name) {
-        super(name);
+    public OutOfOrderBuildDetector() {
+        super("Out of order build detection");
     }
 
     @Override
