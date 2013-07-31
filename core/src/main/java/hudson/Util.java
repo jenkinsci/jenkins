@@ -34,6 +34,7 @@ import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -44,6 +45,7 @@ import org.apache.tools.ant.types.FileSet;
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
