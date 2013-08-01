@@ -56,8 +56,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.apache.maven.settings.building.FileSettingsSource;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -67,6 +65,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
+import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.SingleFileSCM;
