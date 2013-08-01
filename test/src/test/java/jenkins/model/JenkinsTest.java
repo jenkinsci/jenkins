@@ -33,13 +33,13 @@ import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.HttpResponses;
-import junit.framework.Assert;
 import hudson.model.FreeStyleProject;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
 import hudson.util.FormValidation;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
