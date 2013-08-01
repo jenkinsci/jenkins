@@ -134,6 +134,11 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         cache.getParentFile().mkdirs();
 
         try {
+            String target = String.valueOf(n);
+            if (b != null && !new File(job.getBuildDir(), target).exists()) {
+                // (re)create the build Number->Id symlink
+                Util.createSymlink(job.getBuildDir(),b.getId(),target,TaskListener.NULL);
+            }
             writeSymlink(cache, String.valueOf(n));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
