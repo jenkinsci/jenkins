@@ -215,6 +215,11 @@ THE SOFTWARE.
       <version>1.4</version>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>bytecode-compatibility-transformer</artifactId>
+      <version>1.3</version>
+    </dependency>
+    <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>task-reactor</artifactId>
       <version>1.2</version>
