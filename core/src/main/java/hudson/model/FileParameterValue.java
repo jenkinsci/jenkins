@@ -144,36 +144,41 @@ public class FileParameterValue extends ParameterValue {
             }
         };
     }
+ 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result
+                + ((location == null) ? 0 : location.hashCode());
+        return result;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((location == null) ? 0 : location.hashCode());
-		return result;
-	}
+    /**
+     * Compares file parameters (existing files will be considered as different). 
+     * Function has been modified in order to avoid 
+     * <a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">JENKINS-19017</a>
+     * issue (wrong merge of builds in the queue).
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FileParameterValue other = (FileParameterValue) obj;
 
-	/**
-	 * Compares file parameters (existing files will be considered as different).
-         * Function has been modified in order to avoid <a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FileParameterValue other = (FileParameterValue) obj;
-		
-                if (location == null && other.location == null) 
-                        return true; // Consider null parameters as equal
-                       
-                // Return false even if files are equal
-                return false;            
-	}
+        if (location == null && other.location == null) {
+            return true; // Consider null parameters as equal
+        }
+        // Return false even if files are equal
+        return false;
+    }
 
     @Override
     public String toString() {
