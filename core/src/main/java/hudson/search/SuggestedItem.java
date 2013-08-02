@@ -90,10 +90,8 @@ public class SuggestedItem {
     
     /**
      * Given a SearchItem, builds a SuggestedItem hierarchy by looking up parent items (if applicable).
-     * This allows search results for items not contained within the same ItemGroup to be distinguished.
-     * @param si
-     * @return 
-     * @since XXX
+     * This allows search results for items not contained within the same {@link ItemGroup} to be distinguished.
+     * @since 1.527
      */
     public static SuggestedItem build(SearchItem si) {
         if (si instanceof Item) {
