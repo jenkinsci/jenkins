@@ -215,6 +215,34 @@ public class MavenTest {
     }
     
     @Test
+    public void parametersReferencedFromPropertiesShouldRetainBackslashes() throws Exception {
+        final String properties = "global.path=$GLOBAL_PATH\nmy.path=$PATH\\\\Dir";
+        final StringParameterDefinition parameter = new StringParameterDefinition("PATH", "C:\\Windows");
+        final Entry envVar = new Entry("GLOBAL_PATH", "D:\\Jenkins");
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getBuildersList().add(new Maven("--help",null,null,properties,null));
+        project.addProperty(new ParametersDefinitionProperty(parameter));
+        j.jenkins.getNodeProperties().replaceBy(Collections.singleton(
+                new EnvironmentVariablesNodeProperty(envVar)
+        ));
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        @SuppressWarnings("deprecation")
+        String buildLog = build.getLog();
+
+        assertNotNull(buildLog);
+        assertTrue(
+                "Parameter my.path should preserve backslashes in:\n" + buildLog,
+                buildLog.contains("-Dmy.path=C:\\Windows\\Dir")
+        );
+        assertTrue(
+                "Parameter global.path should preserve backslashes in:\n" + buildLog,
+                buildLog.contains("-Dglobal.path=D:\\Jenkins")
+        );
+    }
+
+    @Test
     public void testDefaultSettingsProvider() throws Exception {
         {
             FreeStyleProject p = j.createFreeStyleProject();
