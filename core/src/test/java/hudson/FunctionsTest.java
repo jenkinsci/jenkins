@@ -23,31 +23,18 @@
  */
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import hudson.model.Action;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
-import jenkins.model.Jenkins;
-
+import hudson.model.Action;
+import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Bug;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 public class FunctionsTest {
@@ -113,118 +100,6 @@ public class FunctionsTest {
             String result = Functions.getActionUrl(itUrl, createMockAction(path));
             assertEquals(contextPath + "/" + itUrl + path, result);
         }
-    }
-    
-    @Test
-    @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobContainedInView() throws Exception{
-        Jenkins j = createMockJenkins();
-        ItemGroup parent = j;
-        String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
-        createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
-        TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("job/i/", result);
-    }
-
-    @Test
-    @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobNotContainedInView() throws Exception{
-        Jenkins j = createMockJenkins();
-        ItemGroup parent = j;
-        String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
-        createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
-        TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("/jenkins/job/i/", result);
-    }
-    
-    private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T> {}
-    
-    @Test
-    @PrepareForTest({Stapler.class,Jenkins.class})
-    public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() throws Exception{
-        Jenkins j = createMockJenkins();
-        TopLevelItemAndItemGroup parent = mock(TopLevelItemAndItemGroup.class);
-        when(parent.getShortUrl()).thenReturn("parent/");
-        String contextPath = "/jenkins";
-        StaplerRequest req = createMockRequest(contextPath);
-        mockStatic(Stapler.class);
-        when(Stapler.getCurrentRequest()).thenReturn(req);
-        View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
-        createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
-        TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
-        String result = Functions.getRelativeLinkTo(i);
-        assertEquals("job/i/", result);
-    }
-    
-    @Test
-    public void testGetRelativeDisplayName() {
-        Item i = mock(Item.class);
-        when(i.getName()).thenReturn("jobName");
-        when(i.getFullDisplayName()).thenReturn("displayName");
-        assertEquals("displayName",Functions.getRelativeDisplayNameFrom(i, null));
-    }
-    
-    @Test
-    public void testGetRelativeDisplayNameInsideItemGroup() {
-        Item i = mock(Item.class);
-        when(i.getName()).thenReturn("jobName");
-        when(i.getDisplayName()).thenReturn("displayName");
-        TopLevelItemAndItemGroup ig = mock(TopLevelItemAndItemGroup.class);
-        Jenkins j = mock(Jenkins.class);
-        when(ig.getName()).thenReturn("parent");
-        when(ig.getDisplayName()).thenReturn("parentDisplay");
-        when(ig.getParent()).thenReturn((ItemGroup) j);
-        when(i.getParent()).thenReturn(ig);
-        
-        assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, ig));
-        assertEquals("parentDisplay » displayName", Functions.getRelativeDisplayNameFrom(i, j));
-    }
-    
-    private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
-        List<Ancestor> ancestorsList = Arrays.asList(ancestors);
-        when(req.getAncestors()).thenReturn(ancestorsList);
-    }
-    
-    private TopLevelItem createMockItem(ItemGroup p, String shortUrl) {
-        return createMockItem(p, shortUrl, shortUrl);
-    }
-
-    private TopLevelItem createMockItem(ItemGroup p, String shortUrl, String url) {
-        TopLevelItem i = mock(TopLevelItem.class);
-        when(i.getShortUrl()).thenReturn(shortUrl);
-        when(i.getUrl()).thenReturn(url);
-        when(i.getParent()).thenReturn(p);
-        return i;
-    }
-
-    private Jenkins createMockJenkins() {
-        mockStatic(Jenkins.class);
-        Jenkins j = mock(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(j);
-        return j;
-    }
-    
-    private static Ancestor createAncestor(Object o, String relativePath) {
-        Ancestor a = mock(Ancestor.class);
-        when(a.getObject()).thenReturn(o);
-        when(a.getRelativePath()).thenReturn(relativePath);
-        return a;
     }
 
     @Test

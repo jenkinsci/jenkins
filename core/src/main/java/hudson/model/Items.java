@@ -235,31 +235,6 @@ public class Items {
     public static XmlFile getConfigFile(Item item) {
         return getConfigFile(item.getRootDir());
     }
-    
-    /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     */
-    public static <T extends Item> List<T> getAllItems(ItemGroup root, Class<T> type) {
-        List<T> r = new ArrayList<T>();
-
-        Stack<ItemGroup> q = new Stack<ItemGroup>();
-        q.push(root);
-
-        while(!q.isEmpty()) {
-            ItemGroup<?> parent = q.pop();
-            for (Item i : parent.getItems()) {
-                if(type.isInstance(i)) {
-                    if (i.hasPermission(Item.READ))
-                        r.add(type.cast(i));
-                }
-                if(i instanceof ItemGroup)
-                    q.push((ItemGroup)i);
-            }
-        }
-
-        return r;
-    }
 
     /**
      * Used to load/save job configuration.

@@ -895,129 +895,31 @@ public class Functions {
         }
 
         String path = ancestors.get(p);
-        if(path!=null) {
-            return normalizeURI(path + '/');
-        }
+        if(path!=null)  return path;
 
         Item i=p;
         String url = "";
-        Collection<TopLevelItem> viewItems;
-        if (view != null) {
-            viewItems = view.getItems();
-        } else {
-            viewItems = Collections.emptyList();
-        }
         while(true) {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
+            if(ig== Jenkins.getInstance()) {
                 assert i instanceof TopLevelItem;
-                if(viewItems.contains((TopLevelItem)i)) {
+                if(view!=null && view.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
-                    return normalizeURI(ancestors.get(view)+'/'+url);
+                    return ancestors.get(view)+'/'+url;
                 } else {
                     // otherwise return a path from the root Hudson
-                    return normalizeURI(request.getContextPath()+'/'+p.getUrl());
+                    return request.getContextPath()+'/'+p.getUrl();
                 }
             }
 
             path = ancestors.get(ig);
-            if(path!=null) {
-                return normalizeURI(path+'/'+url);
-            }
+            if(path!=null)  return path+'/'+url;
 
             assert ig instanceof Item; // if not, ig must have been the Hudson instance
             i = (Item) ig;
         }
-    }
-    
-    private static String normalizeURI(String uri) {
-        return URI.create(uri).normalize().toString();
-    }
-    
-    /**
-     * Gets all the {@link TopLevelItem}s recursively in the {@link ItemGroup} tree.
-     * 
-     * @since XXX
-     */
-    public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
-      return Items.getAllItems(root, TopLevelItem.class);
-    }
-    
-    /**
-     * Gets the relative name or display name to the given item from the specified group.
-     *
-     * @since 1.515
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
-     * @param useDisplayName if true, returns a display name, otherwise returns a name
-     * @return
-     *      String like "foo » bar"
-     */
-    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
-        if (p == null) return null;
-        if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
-        String separationString = useDisplayName ? " » " : "/";
-        
-        // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
-        int depth=0;
-        while (g!=null) {
-            parents.put(g, depth++);
-            if (g instanceof Item)
-                g = ((Item)g).getParent();
-            else
-                g = null;
-        }
-
-        StringBuilder buf = new StringBuilder();
-        Item i=p;
-        while (true) {
-            if (buf.length()>0) buf.insert(0,separationString);
-            buf.insert(0,useDisplayName ? i.getDisplayName() : i.getName());
-            ItemGroup gr = i.getParent();
-
-            Integer d = parents.get(gr);
-            if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+=".." + separationString;
-                return s+buf;
-            }
-
-            if (gr instanceof Item)
-                i = (Item)gr;
-            else
-                return null;
-        }
-    }
-    
-    /**
-     * Gets the name to the given item relative to given group.
-     *
-     * @since 1.515
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
-     * @return
-     *      String like "foo » bar"
-     */
-    public static String getRelativeNameFrom(Item p, ItemGroup g) {
-        return getRelativeNameFrom(p, g, false);
-    }    
-    
-    
-    /**
-     * Gets the relative display name to the given item from the specified group.
-     *
-     * @since XXX
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
-     * @return
-     *      String like "foo » bar"
-     */
-    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
-        return getRelativeNameFrom(p, g, true);
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
