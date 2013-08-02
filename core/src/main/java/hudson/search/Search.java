@@ -25,9 +25,9 @@
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
 import hudson.Util;
 import hudson.util.EditDistance;
+
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -340,7 +341,7 @@ public class Search {
             items.clear();
             m.find(index,token,items);
             for (SearchItem si : items) {
-                paths[w].add(new SuggestedItem(si));
+                paths[w].add(SuggestedItem.build(si));
                 LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
