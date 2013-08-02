@@ -23,6 +23,9 @@
  */
 package hudson.search;
 
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+
 /**
  * One item of a search result.
  *
@@ -74,6 +77,29 @@ public class SuggestedItem {
         StringBuilder buf = new StringBuilder();
         getUrl(buf);
         return buf.toString();
+    }
+    
+    private static SuggestedItem build(Item top) {
+        ItemGroup<? extends Item> parent = top.getParent();
+        if (parent instanceof Item) {
+            Item parentItem = (Item)parent;
+                return new SuggestedItem(build(parentItem), top);
+        }
+        return new SuggestedItem(top);
+    }
+    
+    /**
+     * Given a SearchItem, builds a SuggestedItem hierarchy by looking up parent items (if applicable).
+     * This allows search results for items not contained within the same ItemGroup to be distinguished.
+     * @param si
+     * @return 
+     * @since XXX
+     */
+    public static SuggestedItem build(SearchItem si) {
+        if (si instanceof Item) {
+            return build((Item)si);
+        }
+        return new SuggestedItem(si);
     }
 
     private void getUrl(StringBuilder buf) {
