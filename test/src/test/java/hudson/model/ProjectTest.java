@@ -75,7 +75,6 @@ import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
 import java.util.Map;
 import hudson.Functions;
-import org.junit.Ignore;
 
 /**
  *
@@ -97,9 +96,7 @@ public class ProjectTest {
         p.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
-            Thread.sleep(500);
-        } 
+        reload(); 
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
         assertEquals("All persistent data should be saved", true, p.disabled);
@@ -112,8 +109,8 @@ public class ProjectTest {
         p.removeRun(p.getLastBuild());
         createAction = true;
         p.onCreatedFromScratch();
-        assertTrue("Project should have last build.", p.getLastBuild()!=null);
-        assertTrue("Project should have transient action TransientAction.", p.getAction(TransientAction.class)!=null);
+        assertNotNull("Project should have last build.", p.getLastBuild());
+        assertNotNull("Project should have transient action TransientAction.", p.getAction(TransientAction.class));
         createAction = false;
     }
     
@@ -137,7 +134,7 @@ public class ProjectTest {
         EnvironmentVariablesNodeProperty.Entry entry = new EnvironmentVariablesNodeProperty.Entry("jdk","some_java");
         slave.getNodeProperties().add(new EnvironmentVariablesNodeProperty(entry));
         EnvVars var = p.getEnvironment(slave, TaskListener.NULL);
-        assertEquals("Environment should have set jdk.", var.get("jdk"), "some_java");
+        assertEquals("Environment should have set jdk.", "some_java", var.get("jdk"));
     }
     
     @Test
@@ -153,11 +150,11 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getSelfLabel());
         Slave slave = j.createOnlineSlave();
-        assertEquals("Project should have Jenkins's self label.", p.getAssignedLabel(), j.jenkins.getSelfLabel());
+        assertEquals("Project should have Jenkins's self label.", j.jenkins.getSelfLabel(), p.getAssignedLabel());
         p.setAssignedLabel(null);
         assertNull("Project should not have any label.", p.getAssignedLabel());
         p.setAssignedLabel(slave.getSelfLabel());
-        assertEquals("Project should have self label of slave", p.getAssignedLabel(), slave.getSelfLabel());
+        assertEquals("Project should have self label of slave", slave.getSelfLabel(), p.getAssignedLabel());
     }
     
     @Test
@@ -168,7 +165,7 @@ public class ProjectTest {
         p.setAssignedLabel(j.jenkins.getSelfLabel());
         assertNull("Project should return null, because assigned label is Jenkins.", p.getAssignedLabelString());
         p.setAssignedLabel(slave.getSelfLabel());
-        assertEquals("Project should return name of slave.", p.getAssignedLabelString(), slave.getSelfLabel().name);
+        assertEquals("Project should return name of slave.", slave.getSelfLabel().name, p.getAssignedLabelString());
     }
 
     
@@ -228,8 +225,7 @@ public class ProjectTest {
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
     }
-
-    @Ignore("TODO currently fails: Project should be buildable after save.")
+    
     @Test
     public void isBuildable() throws IOException{
         FreeStyleProject p = j.createFreeStyleProject("project");
@@ -238,7 +234,6 @@ public class ProjectTest {
         assertFalse("Project should not be buildable if it is disabled.", p.isBuildable());
         p.enable();
         AbstractProject p2 = (AbstractProject) j.jenkins.copy(j.jenkins.getItem("project"), "project2");
-        p2.onCopiedFrom(p);
         assertFalse("Project should not be buildable until is saved.", p2.isBuildable());
         p2.save();
         assertTrue("Project should be buildable after save.", p2.isBuildable());
@@ -291,9 +286,9 @@ public class ProjectTest {
         SCMTrigger trigger = new SCMTrigger("0 0 * * *");
         p.addTrigger(trigger);
         trigger.start(p, true);
-        assertTrue("Project should schedule pulling.", p.schedulePolling());
+        assertTrue("Project should schedule polling.", p.schedulePolling());
         p.disable();
-        assertFalse("Project should not schedule pulling because project is disabled.", p.schedulePolling());
+        assertFalse("Project should not schedule polling because project is disabled.", p.schedulePolling());
     }
     
     @Test
@@ -446,7 +441,6 @@ public class ProjectTest {
         assertTrue("Project should have participant.", project.hasParticipant(user));
     }
     
-    @Ignore("TODO currently fails: Relationship should contains build 4 of project project")
     @Test
     public void testGetRelationship() throws Exception{
         FreeStyleProject project = j.createFreeStyleProject("project");
@@ -464,14 +458,17 @@ public class ProjectTest {
         j.buildAndAssertSuccess(project2);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project2);
-        assertFalse("Project " + project.getDisplayName() + " should have relationship with " + project2.getDisplayName(), project.getRelationship(project2).isEmpty());
-        Map<Integer,Fingerprint.RangeSet> ralationship = project.getRelationship(project2);       
+        project.getBuildersList().add(new Shell("echo helloWorld > change.log"));
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project2);
+        Map<Integer,Fingerprint.RangeSet> ralationship = project.getRelationship(project2);
+        assertFalse("Project " + project.getDisplayName() + " should have relationship with " + project2.getDisplayName(), ralationship.isEmpty());      
         assertTrue("Relationship should contains build 3 of project " + project.getDisplayName(), ralationship.keySet().contains(3));
-        assertTrue("Relationship should contains build 4 of project " + project.getDisplayName(), ralationship.keySet().contains(4));
-        assertEquals("Build 2 of project " + project2.getDisplayName() + " should depend on build 3 of project " + project.getDisplayName(), 2, ralationship.get(3).min());
-        assertEquals("Build 3 of project " + project2.getDisplayName() + " should depend on build 3 of project " + project.getDisplayName(), 3, ralationship.get(3).max()-1);
-        assertEquals("Build 2 of project " + project2.getDisplayName() + " should depend on build 4 of project " + project.getDisplayName(), 2, ralationship.get(4).min());
-        assertEquals("Build 3 of project " + project2.getDisplayName() + " should depend on build 4 of project " + project.getDisplayName(), 3, ralationship.get(4).max()-1);
+        assertFalse("Relationship should not contains build 4 of project " + project.getDisplayName() + " because previous fingerprinted file was not change since build 3", ralationship.keySet().contains(4));
+        assertEquals("Build 2 of project " + project2.getDisplayName() + " should be the first build which depends on build 3 of project " + project.getDisplayName(), 2, ralationship.get(3).min());
+        assertEquals("Build 3 of project " + project2.getDisplayName() + " should be the last build which depends on build 3 of project " + project.getDisplayName(), 3, ralationship.get(3).max()-1);
+        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).min());
+        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).max()-1);
     }
     
     @Test
