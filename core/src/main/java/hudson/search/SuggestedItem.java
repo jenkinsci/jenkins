@@ -89,19 +89,10 @@ public class SuggestedItem {
     }
     
     /**
-     * @since 1.527
-     * @deprecated Use {@link SuggestedItem#build(SearchableModelObject, SearchItem) instead.}
-     */
-    @Deprecated
-    public static SuggestedItem build(SearchItem si) {
-        return build(null, si);
-    }
-    
-    /**
      * Given a SearchItem, builds a SuggestedItem hierarchy by looking up parent items (if applicable).
      * This allows search results for items not contained within the same {@link ItemGroup} to be distinguished.
      * If provided searchContext is null, results will be interpreted from the root {@link jenkins.model.Jenkins} object
-     * @since XXX
+     * @since 1.527
      */
     public static SuggestedItem build(SearchableModelObject searchContext, SearchItem si) {
         if (si instanceof Item) {

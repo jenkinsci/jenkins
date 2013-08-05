@@ -247,7 +247,7 @@ public class Search {
     /**
      * Performs a search and returns the match, or null if no match was found
      * or more than one match was found.
-     * @since XXX
+     * @since 1.527
      */
     public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
         List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
@@ -274,7 +274,7 @@ public class Search {
     }
 
     /**
-     * @since XXX
+     * @since 1.527
      */
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
 
