@@ -79,23 +79,33 @@ public class SuggestedItem {
         return buf.toString();
     }
     
-    private static SuggestedItem build(Item top) {
+    private static SuggestedItem build(SearchableModelObject searchContext, Item top) {
         ItemGroup<? extends Item> parent = top.getParent();
-        if (parent instanceof Item) {
+        if (parent instanceof Item && parent != searchContext) {
             Item parentItem = (Item)parent;
-                return new SuggestedItem(build(parentItem), top);
+            return new SuggestedItem(build(searchContext, parentItem), top);
         }
         return new SuggestedItem(top);
     }
     
     /**
+     * @since 1.527
+     * @deprecated Use {@link SuggestedItem#build(SearchableModelObject, SearchItem) instead.}
+     */
+    @Deprecated
+    public static SuggestedItem build(SearchItem si) {
+        return build(null, si);
+    }
+    
+    /**
      * Given a SearchItem, builds a SuggestedItem hierarchy by looking up parent items (if applicable).
      * This allows search results for items not contained within the same {@link ItemGroup} to be distinguished.
-     * @since 1.527
+     * If provided searchContext is null, results will be interpreted from the root {@link jenkins.model.Jenkins} object
+     * @since XXX
      */
-    public static SuggestedItem build(SearchItem si) {
+    public static SuggestedItem build(SearchableModelObject searchContext, SearchItem si) {
         if (si instanceof Item) {
-            return build((Item)si);
+            return build(searchContext, (Item)si);
         }
         return new SuggestedItem(si);
     }
