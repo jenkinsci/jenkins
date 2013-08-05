@@ -433,7 +433,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.14</version>
+          <version>1.15</version>
+          <configuration>
+            <outputEncoding>UTF-8</outputEncoding>
+          </configuration>
          </plugin>
         <plugin>
           <groupId>org.jvnet.hudson.tools</groupId>
