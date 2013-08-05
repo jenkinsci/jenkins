@@ -487,7 +487,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.93</version>
+          <version>1.96</version> <!-- TODO 1.97 needed to correct encoding on Windows -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
