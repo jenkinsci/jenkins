@@ -24,30 +24,39 @@
 
 package hudson.tasks;
 
+import hudson.model.AbstractProject;
+import org.junit.Test;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.model.StreamBuildListener;
 import hudson.tasks.LogRotatorTest.TestsFail;
 import java.io.File;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
+import org.junit.Rule;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import static org.junit.Assert.*;
 
 /**
  * Verifies that artifacts from the last successful and stable builds of a job will be kept if requested.
  */
-public class ArtifactArchiverTest extends HudsonTestCase {
+public class ArtifactArchiverTest {
+    
+    @Rule public JenkinsRule j = new JenkinsRule();
 
+    @Test
     public void testSuccessVsFailure() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
         assertEquals("(no artifacts)", Result.FAILURE, build(project)); // #1
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
@@ -83,9 +92,10 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
     }
 
+    @Test
     @Bug(2417)
     public void testStableVsUnstable() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         Publisher artifactArchiver = new ArtifactArchiver("f", "", true, false);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifact()));
@@ -120,9 +130,10 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
     }
 
+    @Test
     @Bug(3227)
     public void testEmptyDirectories() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         Publisher artifactArchiver = new ArtifactArchiver("dir/", "", false, false);
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
@@ -148,12 +159,56 @@ public class ArtifactArchiverTest extends HudsonTestCase {
         assertEquals("file", kids[0].getName());
     }
 
+    @Test
     @Bug(10502)
     public void testAllowEmptyArchive() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, true)));
         assertEquals("(no artifacts)", Result.SUCCESS, build(project));
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+    }
+    
+    private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
+        int buildNumber = project.getNextBuildNumber();
+        project.scheduleBuild2(0);
+        int count = 0;
+        while(project.getBuildByNumber(buildNumber)==null && count<30){
+            Thread.sleep(100);
+            count ++;
+        }
+        if(project.getBuildByNumber(buildNumber)==null)
+            fail("Build " + buildNumber + " did not created.");
+    }
+    
+    @Test
+    public void testPrebuildWithConcurrentBuilds() throws IOException, Exception{
+        FreeStyleProject project = j.createFreeStyleProject();
+        j.jenkins.setNumExecutors(4);
+        //logest build
+        project.getBuildersList().add(new Shell("sleep 100"));
+        project.setConcurrentBuild(true);
+        Publisher artifactArchiver = new ArtifactArchiver("dir/", "", true, false);
+        runNewBuildAndStartUnitlIsCreated(project);
+        //shortest build
+        project.getBuildersList().clear();
+        j.buildAndAssertSuccess(project);
+        //longest build
+        project.getBuildersList().add(new Shell("sleep 100"));
+        runNewBuildAndStartUnitlIsCreated(project);
+        AbstractBuild build = project.getLastBuild();
+        BuildListener listner = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
+        try{
+            System.out.println("last build is " + project.getLastBuild());
+            for(AbstractBuild b: project.getBuilds()){
+                System.out.println(" build " + b + " sttus " + b.getResult());
+            }
+            boolean ok = artifactArchiver.prebuild(build, listner);
+            assertTrue("Artefact archiver should not have any problem.", ok);
+        }
+        catch(Exception e){
+            fail("Artefact archiver should not throw exception " + e + " for concurrent builds");
+        }
+                
     }
 
     static class CreateArtifact extends TestBuilder {
