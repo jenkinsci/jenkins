@@ -60,7 +60,7 @@ import java.util.Comparator;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Publisher extends BuildStepCompatibilityLayer implements BuildStep, Describable<Publisher> {
+public abstract class Publisher extends BuildStepCompatibilityLayer implements Describable<Publisher> {
     /**
      * @deprecated
      *      Don't extend from {@link Publisher} directly. Instead, choose {@link Recorder} or {@link Notifier}
