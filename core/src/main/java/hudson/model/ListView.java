@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Seiji Sogabe, Martin Eigenbrodt, Alan Harder
  *
@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -69,7 +69,7 @@ public class ListView extends View implements Saveable {
      */
     @GuardedBy("this")
     /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
-    
+
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
     private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns;
@@ -78,12 +78,12 @@ public class ListView extends View implements Saveable {
      * Include regex string.
      */
     private String includeRegex;
-    
+
     /**
      * Whether to recurse in ItemGroups
      */
     private boolean recurse;
-    
+
     /**
      * Compiled include pattern from the includeRegex string.
      */
@@ -148,7 +148,7 @@ public class ListView extends View implements Saveable {
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
-    
+
     /**
      * Returns a read-only view of all {@link Job}s in this view.
      *
@@ -184,19 +184,19 @@ public class ListView extends View implements Saveable {
     	}
         // for sanity, trim off duplicates
         items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
-        
+
         return items;
     }
-    
+
     @Override
     public boolean contains(TopLevelItem item) {
       return getItems().contains(item);
     }
-    
+
     private void includeItems(ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
         includeItems(parent, parent, names);
     }
-    
+
     private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<?> parent, SortedSet<String> names) {
         if (includePattern != null) {
             for (Item item : parent.getItems()) {
@@ -213,13 +213,13 @@ public class ListView extends View implements Saveable {
             }
         }
     }
-    
+
     public synchronized boolean jobNamesContains(TopLevelItem item) {
         if (item == null) return false;
         return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
     }
 
-    
+
 
     /**
      * Adds the given item to this view.
@@ -236,11 +236,11 @@ public class ListView extends View implements Saveable {
     public String getIncludeRegex() {
         return includeRegex;
     }
-    
+
     public boolean isRecurse() {
         return recurse;
     }
-    
+
     /*
      * For testing purposes
      */
@@ -329,13 +329,13 @@ public class ListView extends View implements Saveable {
             }
         }
 
-        setIncludeRegex(req.getParameter("useincluderegex"));
+        setIncludeRegex(req.getParameter("useincluderegex"), req.getParameter("includeRegex"));
 
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
         }
         columns.rebuildHetero(req, json, ListViewColumn.all(), "columns");
-        
+
         if (jobFilters == null) {
         	jobFilters = new DescribableList<ViewJobFilter,Descriptor<ViewJobFilter>>(this);
         }
@@ -344,9 +344,9 @@ public class ListView extends View implements Saveable {
         String filter = Util.fixEmpty(req.getParameter("statusFilter"));
         statusFilter = filter != null ? "1".equals(filter) : null;
     }
-    
-    public void setIncludeRegex(String includeRegex) {
-        if (includeRegex != null) {
+
+    public void setIncludeRegex(String useIncludeRegex, String includeRegex) {
+        if (useIncludeRegex != null) {
             this.includeRegex = Util.nullify(includeRegex);
             if (this.includeRegex == null)
                 this.includePattern = null;
