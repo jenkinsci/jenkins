@@ -28,6 +28,7 @@ import hudson.tasks.Recorder;
 import hudson.tasks.Builder;
 import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.scm.SCM;
+import javax.annotation.Nonnull;
 
 /**
  * Provides a mechanism for synchronizing build executions in the face of concurrent builds.
@@ -141,7 +142,18 @@ public final class CheckPoint {
      *      If the build (represented by the calling executor thread) is aborted while it's waiting.  
      */
     public void block() throws InterruptedException {
-        Run.waitForCheckpoint(this);
+        Run.waitForCheckpoint(this, null, null);
+    }
+
+    /**
+     * Like {@link #block()} but allows for richer logging.
+     * @param listener an optional listener to which
+     * @param waiter a description of what component is requesting the wait, such as {@link Descriptor#getDisplayName}
+     * @throws InterruptedException if the build is aborted while waiting
+     * @since 1.528
+     */
+    public void block(@Nonnull BuildListener listener, @Nonnull String waiter) throws InterruptedException {
+        Run.waitForCheckpoint(this, listener, waiter);
     }
 
     /**
