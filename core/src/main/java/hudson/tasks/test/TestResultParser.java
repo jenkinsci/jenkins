@@ -34,6 +34,8 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.NotImplementedException;
+
 /**
  * Parses test result files and builds in-memory representation of it as {@link TestResult}.
  *
@@ -95,9 +97,11 @@ public abstract class TestResultParser implements ExtensionPoint {
      * difference in the master/slave into account.
      * </ul>
      *
-     * @param testResultLocations
+     * @param includes
      *      GLOB pattern relative to the {@linkplain AbstractBuild#getWorkspace() workspace} that
      *      specifies the locations of the test result files. Never null.
+     * @param excludes
+     *      GLOB excluding paths not to parse. null when there is nothing to exclude.
      * @param build
      *      Build for which these tests are parsed. Never null.
      * @param launcher
@@ -114,9 +118,29 @@ public abstract class TestResultParser implements ExtensionPoint {
      * @throws AbortException
      *      If you encounter an error that you handled gracefully, throw this exception and Hudson
      *      will not show a stack trace.
+     *
+     * @since XXX
      */
-    public abstract TestResult parse(String testResultLocations,
-                                       AbstractBuild build, Launcher launcher,
-                                       TaskListener listener)
-            throws InterruptedException, IOException;
+    public TestResult parse(
+            String includes, String excludes, AbstractBuild build, Launcher launcher, TaskListener listener
+    ) throws InterruptedException, IOException {
+        throw new NotImplementedException(
+                "User is supposed to implement at least ono of " +
+                "parse(String, String, AbstractBuild, Launcher, Listener) or " +
+                "parse(String, AbstractBuild, Launcher, Listener)"
+        );
+    }
+
+    /**
+     * @param testResultLocations
+     *      GLOB pattern relative to the {@linkplain AbstractBuild#getWorkspace() workspace} that
+     *      specifies the locations of the test result files. Never null.
+     * @see #parse(String, String, AbstractBuild, Launcher, Listener)
+     */
+    public TestResult parse(
+            String testResultLocations, AbstractBuild build, Launcher launcher, TaskListener listener
+    ) throws InterruptedException, IOException {
+
+        return parse(testResultLocations, null, build, launcher, listener);
+    }
 }

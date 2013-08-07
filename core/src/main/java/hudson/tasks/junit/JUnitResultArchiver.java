@@ -125,15 +125,16 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 	public boolean perform(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
-		TestResultAction action;
-		
+		TestResultAction action = build.getAction(TestResultAction.class);
+		assert action != null: "Action is supposed to be attached in TestResultAction.Attcher#onStarted()";
+
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
 		try {
 			TestResult result = parse(testResults, build, launcher, listener);
 
 			try {
-				action = new TestResultAction(build, result, listener);
+				action.setResult(result, listener);
 			} catch (NullPointerException npe) {
 				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
 			}
@@ -173,7 +174,6 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 			return true;
 		}
 
-		build.getActions().add(action);
 		CHECKPOINT.report();
 
 		if (action.getResult().getFailCount() > 0)

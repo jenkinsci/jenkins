@@ -293,6 +293,16 @@ public final class TestResult extends MetaTabulatedResult {
         }
     }
 
+    public void include(final TestResult result) {
+
+        for(SuiteResult testSuite: result.getSuites()) {
+
+            add(testSuite);
+        }
+
+        tally();
+    }
+
     public String getDisplayName() {
         return Messages.TestResult_getDisplayName();
     }

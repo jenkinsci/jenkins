@@ -138,7 +138,7 @@ public final class SuiteResult implements Serializable {
     private static void parseSuite(File xmlReport, boolean keepLongStdio, List<SuiteResult> r, Element root) throws DocumentException, IOException {
         // nested test suites
         @SuppressWarnings("unchecked")
-        List<Element> testSuites = (List<Element>)root.elements("testsuite");
+        List<Element> testSuites = root.elements("testsuite");
         for (Element suite : testSuites)
             parseSuite(xmlReport, keepLongStdio, r, suite);
 
@@ -176,7 +176,7 @@ public final class SuiteResult implements Serializable {
         }
         
         @SuppressWarnings("unchecked")
-        List<Element> testCases = (List<Element>)suite.elements("testcase");
+        List<Element> testCases = suite.elements("testcase");
         for (Element e : testCases) {
             // https://issues.jenkins-ci.org/browse/JENKINS-1233 indicates that
             // when <testsuites> is present, we are better off using @classname on the
@@ -226,6 +226,10 @@ public final class SuiteResult implements Serializable {
         cases.add(cr);
         casesByName().put(cr.getName(), cr);
         duration += cr.getDuration();
+    }
+
+    public String toString() {
+        return getName();
     }
 
     @Exported(visibility=9)
