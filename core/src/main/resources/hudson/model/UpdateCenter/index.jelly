@@ -36,6 +36,7 @@ THE SOFTWARE.
       function submitScheduleForm(el) {
           var form = document.getElementById("scheduleRestart");
           form.action = el.checked ? "safeRestart" : "cancelRestart";
+          crumb.appendToForm(form);
           form.submit();
       }
     ]]></script>
