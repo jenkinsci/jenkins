@@ -43,12 +43,13 @@
 <p>Additionally, you can set also these:
 
 <ul>
-  <li>war (Full path name to jenkins.war file.)
-  <li>heapSize (Passed to java command-line -Xmx parameter.)
-  <li>JENKINS_HOME (Full path to JENKINS_HOME directory where Jenkins
-  keeps its files)
+  <li>war (Full path name to jenkins.war file. Defaults to <tt>/Applications/Jenkins/jenkins.war</tt>)
+  <li>JENKINS_HOME (Full path to JENKINS_HOME directory where Jenkins keeps its files. Defaults to <tt>/Users/Shared/Jenkins</tt>)
+  <li>minHeapSize (Passed to java command-line <tt>-Xms</tt> parameter. Defaults to 256m on 64bit architectures and 64m on 32bit)
+  <li>heapSize (Passed to java command-line <tt>-Xmx</tt> parameter. Defaults to 512m on 64bit architectures and 128m on 32bit)
+  <li>minPermGen (Passed to java command-line <tt>-XX:PermSize</tt> parameter. Defaults to 256m on 64bit architectures and 64m on 32bit)
+  <li>permGen (Passed to java command-line <tt>-XX:MaxPermSize</tt> parameter. Defaults to 512m on 64bit architectures and 128m on 32bit)
 </ul>
-  
 
 </body>
 </html>

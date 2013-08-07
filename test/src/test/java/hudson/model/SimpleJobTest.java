@@ -4,15 +4,21 @@ import java.io.IOException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import junit.framework.Assert;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Unit test for {@link Job}.
  */
 @SuppressWarnings("rawtypes")
-public class SimpleJobTest extends HudsonTestCase {
+public class SimpleJobTest {
 
+    @Rule
+    public JenkinsRule rule = new JenkinsRule();
+    
+    @Test
     public void testGetEstimatedDuration() throws IOException {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
@@ -28,12 +34,13 @@ public class SimpleJobTest extends HudsonTestCase {
         TestBuild lastBuild = new TestBuild(project, Result.SUCCESS, 42, previousBuild);
         runs.put(1, lastBuild);
 
-        // without assuming to know to much about the internal calculation
+        // without assuming to know too much about the internal calculation
         // we can only assume that the result is between the maximum and the minimum
-        Assert.assertTrue(project.getEstimatedDuration() < 42);
-        Assert.assertTrue(project.getEstimatedDuration() > 15);
+        Assert.assertTrue("Expected < 42, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
+        Assert.assertTrue("Expected > 15, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
     }
     
+    @Test
     public void testGetEstimatedDurationWithOneRun() throws IOException {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
@@ -58,6 +65,7 @@ public class SimpleJobTest extends HudsonTestCase {
         Assert.assertEquals(-1, project.getEstimatedDuration());
     }
     
+    @Test
     public void testGetEstimatedDurationWithNoRuns() throws IOException {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
@@ -67,13 +75,17 @@ public class SimpleJobTest extends HudsonTestCase {
         Assert.assertEquals(-1, project.getEstimatedDuration());
     }
     
+    @Test
     public void testGetEstimatedDurationIfPrevious3BuildsFailed() throws IOException {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
         
         Job project = createMockProject(runs);
         
-        TestBuild prev4Build = new TestBuild(project, Result.SUCCESS, 1, null);
+        TestBuild prev5Build = new TestBuild(project, Result.UNSTABLE, 1, null);
+        runs.put(6, prev5Build);
+        
+        TestBuild prev4Build = new TestBuild(project, Result.SUCCESS, 1, prev5Build);
         runs.put(5, prev4Build);
         
         TestBuild prev3Build = new TestBuild(project, Result.SUCCESS, 1, prev4Build);
@@ -88,9 +100,21 @@ public class SimpleJobTest extends HudsonTestCase {
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, previousBuild);
         runs.put(1, lastBuild);
 
-        // failed builds must not be used. Instead the last successful builds before them
-        // must be used
-        Assert.assertEquals(project.getEstimatedDuration(), 1);
+        // failed builds must not be used, if there are succesfulBuilds available.
+        Assert.assertEquals(1, project.getEstimatedDuration());
+    }
+    
+    @Test
+    public void testGetEstimatedDurationIfNoSuccessfulBuildTakeDurationOfFailedBuild() throws IOException {
+        
+        final SortedMap<Integer, TestBuild> runs = new TreeMap<Integer, TestBuild>();
+        
+        Job project = createMockProject(runs);
+        
+        TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, null);
+        runs.put(1, lastBuild);
+
+        Assert.assertEquals(50, project.getEstimatedDuration());
     }
 
     private Job createMockProject(final SortedMap<Integer, TestBuild> runs) {
@@ -124,13 +148,14 @@ public class SimpleJobTest extends HudsonTestCase {
         
     }
 
+    @SuppressWarnings("unchecked")
     private class TestJob extends Job implements TopLevelItem {
 
         int i;
         private final SortedMap<Integer, TestBuild> runs;
 
         public TestJob(SortedMap<Integer, TestBuild> runs) {
-            super(SimpleJobTest.this.jenkins, "name");
+            super(rule.jenkins, "name");
             this.runs = runs;
             i = 1;
         }

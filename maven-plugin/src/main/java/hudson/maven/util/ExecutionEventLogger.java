@@ -23,7 +23,13 @@ import hudson.tasks._maven.Maven3MojoNote;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.apache.maven.InternalErrorException;
+import org.apache.maven.exception.DefaultExceptionHandler;
+import org.apache.maven.exception.ExceptionHandler;
+import org.apache.maven.exception.ExceptionSummary;
 import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.BuildFailure;
 import org.apache.maven.execution.BuildSuccess;
@@ -34,13 +40,14 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Logs execution events to a user-supplied logger.
  *
  * @author Benjamin Bentmann
  */
-// Note: copied from package org.apache.maven.cli with just one minor adaption for Maven3MojoNote
+// Note: copied from package org.apache.maven.cli with just one minor adaption for Maven3Mojo
 public class ExecutionEventLogger
     extends AbstractExecutionListener
 {
@@ -139,6 +146,8 @@ public class ExecutionEventLogger
 
             logger.info( chars( '-', LINE_LENGTH ) );
         }
+
+        logErrors( event.getSession() );
     }
 
     private void logReactorSummary( MavenSession session )
@@ -186,6 +195,83 @@ public class ExecutionEventLogger
             logger.info( buffer.toString() );
         }
     }
+
+    private void logErrors( MavenSession session )
+    {
+    	MavenExecutionResult result = session.getResult();
+
+        // show all errors and them references as in MavenCli
+        if ( !result.getExceptions().isEmpty() )
+        {
+            ExceptionHandler handler = new DefaultExceptionHandler();
+
+            Map<String, String> references = new LinkedHashMap<String, String>();
+
+			for ( Throwable exception : result.getExceptions() )
+			{
+				ExceptionSummary summary = handler.handleException( exception );
+
+				logErrorSummary( summary, references, "", logger.isDebugEnabled() );
+			}
+
+			if ( !references.isEmpty() )
+			{
+				logger.error( "For more information about the errors and possible solutions"
+						+ ", please read the following articles:");
+
+				for ( Map.Entry<String, String> entry : references.entrySet() ) {
+					logger.error( entry.getValue() + " " + entry.getKey() );
+				}
+			}
+        }
+    }
+
+	private void logErrorSummary(ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors)
+	{
+		String referenceKey = "";
+
+		if ( StringUtils.isNotEmpty( summary.getReference() ) )
+		{
+			referenceKey = references.get( summary.getReference() );
+			if (referenceKey == null) {
+				referenceKey = "[Help " + ( references.size() + 1 ) + "]";
+				references.put( summary.getReference(), referenceKey );
+			}
+		}
+
+		String msg = summary.getMessage();
+
+		if (StringUtils.isNotEmpty( referenceKey ))
+		{
+			if (msg.indexOf('\n') < 0)
+			{
+				msg += " -> " + referenceKey;
+			}
+			else
+			{
+				msg += "\n-> " + referenceKey;
+			}
+		}
+
+		String[] lines = msg.split("(\r\n)|(\r)|(\n)");
+
+		for ( int i = 0; i < lines.length; i++ )
+		{
+			String line = indent + lines[i].trim();
+
+			if ( i == lines.length - 1 && ( showErrors || ( summary.getException() instanceof InternalErrorException ) ) ) {
+				logger.error( line, summary.getException() );
+			} else {
+				logger.error(line);
+			}
+		}
+
+		indent += "  ";
+
+		for ( ExceptionSummary child : summary.getChildren() ) {
+			logErrorSummary( child, references, indent, showErrors );
+		}
+	}
 
     private void logResult( MavenSession session )
     {

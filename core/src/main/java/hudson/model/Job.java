@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -67,6 +68,7 @@ import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -87,6 +89,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
+
 import java.awt.*;
 import java.io.*;
 import java.net.URLEncoder;
@@ -365,6 +368,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
         env.put("CLASSPATH","");
+
+        // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
+            ec.buildEnvironmentFor(this,env,listener);
+
 
         return env;
     }
@@ -898,8 +906,52 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return result;
     }
     
+    /**
+     * Returns candidate build for calculating the estimated duration of the current run.
+     * 
+     * Returns the 3 last successful (stable or unstable) builds, if there are any.
+     * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
+     * 
+     * In any case it will not go more than 6 builds into the past to avoid costly build loading.
+     */
+    @SuppressWarnings("unchecked")
+    protected List<RunT> getEstimatedDurationCandidates() {
+        List<RunT> candidates = new ArrayList<RunT>(3);
+        RunT lastSuccessful = (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        int lastSuccessfulNumber = -1;
+        if (lastSuccessful != null) {
+            candidates.add(lastSuccessful);
+            lastSuccessfulNumber = lastSuccessful.getNumber();
+        }
+
+        int i = 0;
+        RunT r = (RunT) Permalink.LAST_BUILD.resolve(this);
+        List<RunT> fallbackCandidates = new ArrayList<RunT>(3);
+        while (r != null && candidates.size() < 3 && i < 6) {
+            if (!r.isBuilding() && r.getResult() != null && r.getNumber() != lastSuccessfulNumber) {
+                Result result = r.getResult();
+                if (result.isBetterOrEqualTo(Result.UNSTABLE)) {
+                    candidates.add(r);
+                } else if (result.isCompleteBuild()) {
+                    fallbackCandidates.add(r);
+                }
+            }
+            i++;
+            r = r.getPreviousBuild();
+        }
+        
+        while (candidates.size() < 3) {
+            if (fallbackCandidates.isEmpty())
+                break;
+            RunT run = fallbackCandidates.remove(0);
+            candidates.add(run);
+        }
+        
+        return candidates;
+    }
+    
     public long getEstimatedDuration() {
-        List<RunT> builds = getLastBuildsOverThreshold(3, Result.UNSTABLE);
+        List<RunT> builds = getEstimatedDurationCandidates();
         
         if(builds.isEmpty())     return -1;
 

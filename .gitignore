@@ -35,4 +35,8 @@ debian/configure-stamp
 jenkins_*.build
 jenkins_*.changes
 *.deb
+*.pkg
+*.zip
 push-build.sh
+war/node_modules/
+.java-version

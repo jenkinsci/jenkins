@@ -42,7 +42,7 @@ import jenkins.model.Jenkins;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Builder extends BuildStepCompatibilityLayer implements BuildStep, Describable<Builder>, ExtensionPoint {
+public abstract class Builder extends BuildStepCompatibilityLayer implements Describable<Builder>, ExtensionPoint {
     
 
 //

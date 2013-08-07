@@ -590,7 +590,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Load statistics of the free roaming jobs and slaves.
      * 
-     * This includes all executors on {@link Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
+     * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
      * @since 1.467
      */
@@ -1821,8 +1821,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             .add("manage")
             .add("log")
             .add(new CollectionSearchIndex<TopLevelItem>() {
-                protected SearchItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
+                protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
             })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
@@ -3713,7 +3713,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * if the user sets the displayName to what it currently is.
      * @param displayName
      * @param currentJobName
-     * @return
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
@@ -3739,7 +3738,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * True if there is no item in Jenkins that has this name
      * @param name The name to test
      * @param currentJobName The name of the job that the user is configuring
-     * @return
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
@@ -3764,7 +3762,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
-     * @return
      */
     public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
             @QueryParameter String jobName) {

@@ -95,7 +95,6 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      *
      * @deprecated This method returns a JUnit specific class. Use
      * {@link #getTopLevelTestResult()} instead for a more general interface.
-     * @return
      */
     @Override
     public hudson.tasks.junit.TestResult getTestResult() {
@@ -106,8 +105,6 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
 
     /**
      * Returns the top level test result data.
-     * 
-     * @return
      */    
     public TestResult getTopLevelTestResult() {
         TestObject parent = getParent();
@@ -215,7 +212,6 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
 
     /**
      * Get a list of all TestActions associated with this TestObject. 
-     * @return
      */
     @Override
     public List<TestAction> getTestActions() {
@@ -232,7 +228,6 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      * Gets a test action of the class passed in. 
      * @param klazz
      * @param <T> an instance of the class passed in
-     * @return
      */
     @Override
     public <T> T getTestAction(Class<T> klazz) {

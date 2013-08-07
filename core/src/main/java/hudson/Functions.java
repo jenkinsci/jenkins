@@ -28,6 +28,7 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -148,6 +149,8 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Utility functions used in views.
@@ -158,6 +161,7 @@ import com.google.common.base.Predicates;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class Functions {
     private static volatile int globalIota = 0;
     private int iota;
@@ -186,6 +190,13 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+    
+    /**
+     * @since 1.524
+     */
+    public static boolean isMatrixProject(Object o) {
+        return o instanceof MatrixProject;
     }
 
     public static String xsDate(Calendar cal) {
@@ -435,6 +446,51 @@ public class Functions {
 
     public static String printLogRecord(LogRecord r) {
         return formatter.format(r);
+    }
+
+    @Restricted(DoNotUse.class)
+    public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
+        String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
+        String[] newParts = logRecordPreformat(r);
+        for (int i = 0; i < /* not 4 */3; i++) {
+            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+        }
+        return newParts;
+    }
+    /**
+     * Partially formats a log record.
+     * @return date, source, level, message+thrown
+     * @see SimpleFormatter#format(LogRecord)
+     */
+    private static String[] logRecordPreformat(LogRecord r) {
+        String source;
+        if (r.getSourceClassName() == null) {
+            source = r.getLoggerName();
+        } else {
+            if (r.getSourceMethodName() == null) {
+                source = r.getSourceClassName();
+            } else {
+                source = r.getSourceClassName() + " " + r.getSourceMethodName();
+            }
+        }
+        String message = new SimpleFormatter().formatMessage(r) + "\n";
+        Throwable x = r.getThrown();
+        return new String[] {
+            String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
+            source,
+            r.getLevel().getLocalizedName(),
+            x == null ? message : message + printThrowable(x) + "\n"
+        };
+    }
+
+    /**
+     * Reverses a collection so that it can be easily walked in reverse order.
+     * @since 1.525
+     */
+    public static <T> Iterable<T> reverse(Collection<T> collection) {
+        List<T> list = new ArrayList<T>(collection);
+        Collections.reverse(list);
+        return list;
     }
 
     public static Cookie getCookie(HttpServletRequest req,String name) {
@@ -1320,15 +1376,23 @@ public class Functions {
     public static String toCCStatus(Item i) {
         if (i instanceof Job) {
             Job j = (Job) i;
-            switch (j.getIconColor().noAnime()) {
+            switch (j.getIconColor()) {
             case ABORTED:
+            case ABORTED_ANIME:
             case RED:
+            case RED_ANIME:
             case YELLOW:
+            case YELLOW_ANIME:
                 return "Failure";
             case BLUE:
+            case BLUE_ANIME:
                 return "Success";
             case DISABLED:
+            case DISABLED_ANIME:
             case GREY:
+            case GREY_ANIME:
+            case NOTBUILT:
+            case NOTBUILT_ANIME:
                 return "Unknown";
             }
         }
@@ -1708,7 +1772,7 @@ public class Functions {
     /**
      * Returns human readable information about file size
      * 
-     * @param file size in bytes
+     * @param size file size in bytes
      * @return file size in appropriate unit
      */
     public static String humanReadableByteSize(long size){
@@ -1747,5 +1811,25 @@ public class Functions {
         return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
                 .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
         ;
+    }
+
+    /**
+     * Advertises the minimum set of HTTP headers that assist programmatic
+     * discovery of Jenkins.
+     */
+    public static void advertiseHeaders(HttpServletResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+
+        rsp.setHeader("X-Hudson","1.395");
+        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+
+        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+        if (tal !=null) {
+            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+        }
     }
 }

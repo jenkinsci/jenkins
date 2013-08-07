@@ -39,6 +39,7 @@ import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.UpdateSite.Data;
 import hudson.model.UpdateSite.Plugin;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.AtmostOneThreadExecutor;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
@@ -129,7 +130,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * {@link ExecutorService} that performs installation.
      * @since 1.501
      */
-    private final ExecutorService installerService = Executors.newSingleThreadExecutor(
+    private final ExecutorService installerService = new AtmostOneThreadExecutor(
         new DaemonThreadFactory(new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
@@ -1192,8 +1193,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Indicates that the installation was successful but a restart is needed.
-         *
-         * @see
          */
         public class SuccessButRequiresRestart extends Success {
             private final Localizable message;

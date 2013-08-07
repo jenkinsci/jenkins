@@ -520,7 +520,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         /**
          * @deprecated
-         *      Use {@link #SCMTriggerCause(String)}.
+         *      Use {@link #SCMTrigger.SCMTriggerCause(String)}.
          */
         public SCMTriggerCause() {
             this("");

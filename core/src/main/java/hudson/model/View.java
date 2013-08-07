@@ -779,7 +779,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private final String iconSize;
         public final ModelObject parent;
 
-        /** @see Jenkins#getAsynchPeople} */
+        /** @see Jenkins#getAsynchPeople */
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
@@ -1045,7 +1045,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
                     XStream2 xStream2 = new XStream2();
                     xStream2.omitField(View.class, "owner");
-                    xStream2.toXMLUTF8(this,  rsp.getOutputStream());
+                    xStream2.toXMLUTF8(View.this,  rsp.getOutputStream());
                 }
             };
         }
@@ -1091,6 +1091,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } finally {
             in.close();
         }
+        save();
     }
 
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {

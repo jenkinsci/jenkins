@@ -492,7 +492,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Akin to {@link #getPropertyType(Object,String) but never returns null.
+     * Akin to {@link #getPropertyType(Object,String)} but never returns null.
      * @throws AssertionError in case the field cannot be found
      * @since 1.492
      */

@@ -20,6 +20,7 @@ import java.util.logging.Logger;
  * Stores the location of Jenkins (e-mail address and the HTTP URL.)
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.494
  */
 @Extension
 public class JenkinsLocationConfiguration extends GlobalConfiguration {

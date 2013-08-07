@@ -82,7 +82,7 @@ import static java.lang.Math.*;
  * to assist various algorithms that produce the solution of this mapping problem,
  * which is represented as {@link Mapping}.
  *
- * @see LoadBalancer#map(Task, MappingWorksheet)
+ * @see LoadBalancer#map(Queue.Task, MappingWorksheet)
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {

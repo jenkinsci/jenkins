@@ -23,23 +23,27 @@
  */
 package hudson.maven;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.util.MaskingClassLoader;
-import jenkins.model.Jenkins;
-import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
+import jenkins.model.Jenkins;
+import jenkins.mvn.SettingsProvider;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.cli.logging.Slf4jLoggerManager;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.PlexusConstants;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,14 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -191,11 +187,13 @@ public class MavenUtil {
             }
             mavenRequest.setTransferListener( mer.getTransferListener() );
         }
-        EmbedderLoggerImpl logger =
-            new EmbedderLoggerImpl( mer.getListener(), debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
-                            : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
-        mavenRequest.setMavenLoggerManager( logger );
-        
+
+        mavenRequest.setMavenLoggerManager( new Slf4jLoggerManager() );
+
+        //mavenRequest.setContainerClassPathScanning( PlexusConstants.SCANNING_OFF );
+
+        //mavenRequest.setContainerComponentVisibility( PlexusConstants.GLOBAL_VISIBILITY );
+
         ClassLoader mavenEmbedderClassLoader = mer.getClassLoader();
 
         {// are we loading the right components.xml? (and not from Maven that's running Jetty, if we are running in "mvn hudson-dev:run" or "mvn hpi:run"?
@@ -276,7 +274,51 @@ public class MavenUtil {
         if (StringUtils.isBlank( mavenVersion )) {
             return false;
         }
-        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+    }
+
+    public static MavenVersion getMavenVersion(String mavenVersion){
+        // we don't know so return maven 2
+        if(StringUtils.isBlank( mavenVersion )){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_0 = new ComparableVersion("3.0");
+
+        ComparableVersion maven2_0 = new ComparableVersion("2.0");
+
+        ComparableVersion mavenCurrent = new ComparableVersion( mavenVersion );
+
+        if (mavenCurrent.compareTo( maven2_0 ) >= 0 && mavenCurrent.compareTo( maven3_0 ) < 0){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_1_0 = new ComparableVersion("3.1.0");
+
+        if (mavenCurrent.compareTo( maven3_0 ) >= 0 && mavenCurrent.compareTo( maven3_1_0 ) < 0){
+            return MavenVersion.MAVEN_3_0_X;
+        }
+
+        return MavenVersion.MAVEN_3_1;
+
+    }
+
+    /**
+     * support of {@link org.apache.maven.eventspy.EventSpy} only since 3.0.2
+     * due to the current implementation will be supported only for maven 3.1.0
+     * @param mavenVersion
+     * @return
+     */
+    public static boolean supportEventSpy(String mavenVersion){
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.1.0") ) >= 0;
+    }
+
+    public enum MavenVersion {
+        MAVEN_2,MAVEN_3_0_X,MAVEN_3_1;
     }
     
 

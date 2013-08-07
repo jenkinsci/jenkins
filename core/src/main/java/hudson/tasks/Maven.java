@@ -55,6 +55,8 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
+import hudson.util.VariableResolver.ByMap;
+import hudson.util.VariableResolver.Union;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
@@ -264,7 +266,6 @@ public class Maven extends Builder {
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
-        String properties = env.expand(this.properties);
 
         int startIndex = 0;
         int endIndex;
@@ -314,7 +315,8 @@ public class Maven extends Builder {
             Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
             args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-            args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
@@ -435,10 +437,7 @@ public class Maven extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            Maven m = req.bindJSON(Maven.class,formData);
-            m.setSettings(GlobalMavenConfig.get().getSettingsProvider());
-            m.setGlobalSettings(GlobalMavenConfig.get().getGlobalSettingsProvider());
-            return m;
+            return req.bindJSON(Maven.class,formData);
         }
     }
 
@@ -462,7 +461,7 @@ public class Maven extends Builder {
 
         /**
          * @deprecated as of 1.308.
-         *      Use {@link #MavenInstallation(String, String, List)}
+         *      Use {@link #Maven.MavenInstallation(String, String, List)}
          */
         public MavenInstallation(String name, String home) {
             super(name, home);
@@ -489,6 +488,9 @@ public class Maven extends Builder {
         @Override
         public void buildEnvVars(EnvVars env) {
             String home = getHome();
+            if (home == null) {
+                return;
+            }
             env.put("M2_HOME", home);
             env.put("MAVEN_HOME", home);
             env.put("PATH+MAVEN", home + "/bin");

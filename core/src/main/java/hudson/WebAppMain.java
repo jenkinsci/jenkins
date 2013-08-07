@@ -59,6 +59,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Security;
+import java.util.logging.LogRecord;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -66,7 +67,13 @@ import java.security.Security;
  * @author Kohsuke Kawaguchi
  */
 public final class WebAppMain implements ServletContextListener {
-    private final RingBufferLogHandler handler = new RingBufferLogHandler();
+    private final RingBufferLogHandler handler = new RingBufferLogHandler() {
+        @Override public synchronized void publish(LogRecord record) {
+            if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+                super.publish(record);
+            }
+        }
+    };
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;

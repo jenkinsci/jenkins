@@ -31,9 +31,7 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${%Jenkins Log}</h1>
-    <j:forEach var="log" items="${h.logRecords}">
-      <pre>${h.printLogRecord(log)}</pre>
-    </j:forEach>
+    <t:logRecords logRecords="${h.logRecords}"/>
 
     <st:include page="feeds.jelly" />
   </l:main-panel>

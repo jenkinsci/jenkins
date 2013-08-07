@@ -31,7 +31,7 @@ if (!my.isDone()) {
     }
 }
 
-if (my.isRewriterActive()) {
+if (my.isFixingActive()) {
     div(class:"info") {
         raw _("rekeyInProgress",my.url)
     }

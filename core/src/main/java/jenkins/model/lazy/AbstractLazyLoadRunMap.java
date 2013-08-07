@@ -46,6 +46,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
@@ -94,7 +95,7 @@ import static jenkins.model.lazy.Boundary.*;
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link Index#byNumber} and {@link Index#byId}.
+ * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber} and {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byId}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.485
@@ -219,6 +220,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     public void purgeCache() {
         index = new Index();
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
@@ -353,7 +355,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If ASC, finds the closest #M that satisfies M>=N.
      *      If DESC, finds the closest #M that satisfies M&lt;=N.
      */
-    public R search(final int n, final Direction d) {
+    public @CheckForNull R search(final int n, final Direction d) {
         Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
         if (c!=null && c.getKey()== n) {
             R r = c.getValue().get();

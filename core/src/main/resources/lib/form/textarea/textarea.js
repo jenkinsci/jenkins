@@ -15,9 +15,11 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
         scroller.style.height = h+"px";
 
         // the form needs to be populated before the "Apply" button
-        YAHOO.util.Event.on(e.up('form'), "jenkins:apply", function() {
-            e.value = codemirror.getValue()
-        })
+        if(e.up('form')) { // Protect against undefined element
+    		Element.on(e.up('form'),"jenkins:apply", function() {
+			e.value = codemirror.getValue()
+		})
+	}
     });
 
 Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e) {

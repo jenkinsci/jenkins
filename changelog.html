@@ -55,14 +55,116 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=rfe>
+    Command line now supports "--sessionTimeout" option for controlling session timeout
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.522>What's new in 1.522</a> <!--=DATE=--></h3>
+<h3><a name=v1.527>What's new in 1.527</a> <!--=DATE=--></h3>
 <ul class=image>
+  <li class=bug>
+    Fixed <tt>NoSuchFieldError: triggers</tt> with older Maven plugin
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18677">issue 18677</a>)
+  <li class=rfe>
+    Added bytecode transformation driven compatibility ensurance mechanism
+    (<a href="https://groups.google.com/forum/#!topic/jenkinsci-dev/7qCClb36njo">discussion</a>)
+  <li class=rfe>
+    Improve search to locate items inside folders.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/848">pull request 848</a>)
+    (<a href="https://github.com/jenkinsci/jenkins/pull/893">pull request 893</a>)
+  <li class=bug>
+    Windows path separators not correctly escaped in Maven properties configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10539">issue 10539</a>)
+  <li class=rfe>
+    Improved <tt>EnvironmentContributor</tt> to support project-level insertion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19042">issue 19042</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.526>What's new in 1.526</a> (2013/08/05)</h3>
+<ul class=image>
+  <li class=rfe>
+    Report an user friendly error page if a deletion of a build fails.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/827">pull request 827</a>)
+  <li class=bug>
+    Maven build failure wasn't describing errors like Maven CLI does.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15025">issue 15025</a>)
+  <li class=bug>
+    <code>MavenModuleSetBuild.getResult</code> is expensive.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18895">issue 18895</a>)
+  <li class=bug>
+    Revisited fix to be compatible for plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18119">issue 18119</a>)
+  <li class=bug>
+    Ensuring <code>/log/all</code> shows only <code>INFO</code> and above messages, even if custom loggers display <code>FINE</code> or below.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18959">issue 18959</a>)
+  <li class=rfe>
+    Added a new monitor that detects and fixse out-of-order builds records.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18289">issue 18289</a>)
+  <li class=rfe>
+    Can't build using maven 3.1.0
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15935">issue 15935</a>)
+  <li class=bug>
+    Fixed Winstone+mod_proxy_ajp+SSL combo issue.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5753">issue 5753</a>)
+  <li class=bug>
+    <code>JENKINS_DEBUG_LEVEL</code> misinterpreted by Winstone, causing excessive logging.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18701">issue 18701</a>)
+  <li class='major bug'>
+    Since 1.520, Jenkins requires Java 6 or later, breaking Maven builds set to use JDK 5. Now falls back to JVM of slave agent but sets compile/test flags to use defined JDK.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18403">issue 18403</a>)
+  <li class='major bug'>
+    Since 1.517, Maven projects using Maven 2 could not build projects using extensions depending on Apache Commons Codec.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18178">issue 18178</a>)
+  <li class=bug>
+    Test harness was packing copies of Maven into plugin archives under some conditions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18918">issue 18918</a>)
+  <li class=bug>
+    Provided maven settings.xml in maven builder is lost.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15976">issue 15976</a>)
+  <li class=bug>
+    Exception when running polling with a Maven installation not defined on master.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18898">issue 18898</a>)
+  <li class=bug>
+    Since 1.477 GET on <code>/view/…/config.xml</code> included a spurious wrapper element.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17302">issue 17302</a>)
+  <li class=rfe>
+    Clearer display of log messages: chronological order, and coloration of repeated vs. fresh metadata (date, log level, log source).
+  <li class=bug>
+    Fixed a regression that broke some plugins' form validation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18776">issue 18776</a>)
+  <li class=bug>
+    People View does Not Populate if JQuery plugin enabled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18641">issue 18641</a>)
+</ul>
+<h3><a name=v1.525>What's new in 1.525</a> (2013/07/29)</h3>
+<p>Same as 1.524; botched release.</p>
+<h3><a name=v1.524>What's new in 1.524</a> (2013/07/23)</h3>
+<ul class=image>
+  <li class=bug>
+    Clock Difference broken on Manage Nodes page
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18671">issue 18671</a>)
+  <li class=bug>
+    Fixed another possible cause of an NPE from MatrixConfiguration.newBuild.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17728">issue 17728</a>)
+  <li class=bug>
+    NPE in MavenFingerprinter.getArtifactRepositoryMaven21.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18441">issue 18441</a>)
+  <li class=rfe>
+    More reliability improvement in remote slave reconnection.
+</ul>
+<h3><a name=v1.523>What's new in 1.523</a> (2013/07/14)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed: claiming of tests doesn't work in Maven jobs (claim-plugin)
+     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14585">issue 14585</a>)
+</ul>
+<h3><a name=v1.522>What's new in 1.522</a> (2013/07/06)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed a regression in the config form with some plugins
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18585">issue 18585</a>)
   <li class=bug>
     Fixed a dead lock in the <tt>Project</tt> class and improved the signature of the persisted XML form a bit.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18589">issue 18589</a>)
@@ -78,7 +180,6 @@ Upcoming changes</a>
   <li class=bug>
     If every node is restricted to tied jobs only, Matrix build jobs can never start.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.521>What's new in 1.521</a> (2013/07/02)</h3>
 <ul class=image>
   <li class=bug>

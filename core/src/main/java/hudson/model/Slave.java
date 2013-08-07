@@ -457,7 +457,7 @@ public abstract class Slave extends Node implements Serializable {
          * Capture the time on the master when this object is sent to remote, which is when
          * {@link GetClockDifference1#writeReplace()} is run.
          */
-        private final long startTime = System.nanoTime();
+        private final long startTime = System.currentTimeMillis();
 
         public GetClockDifference3 call() {
             return new GetClockDifference3(startTime);
@@ -467,7 +467,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     private static final class GetClockDifference3 implements Serializable {
-        private final long remoteTime = System.nanoTime();
+        private final long remoteTime = System.currentTimeMillis();
         private final long startTime;
 
         public GetClockDifference3(long startTime) {
@@ -475,8 +475,8 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         private Object readResolve() {
-            long endTime = System.nanoTime();
-            return new ClockDifference(TimeUnit2.NANOSECONDS.toMillis((startTime + endTime)/2-remoteTime));
+            long endTime = System.currentTimeMillis();
+            return new ClockDifference((startTime + endTime)/2-remoteTime);
         }
     }
 

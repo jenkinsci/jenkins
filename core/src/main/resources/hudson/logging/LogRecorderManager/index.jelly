@@ -57,8 +57,8 @@ THE SOFTWARE.
       </tr>
       <local:row href="all" name="${%All Jenkins Logs}" />
       <j:forEach var="lr" items="${it.logRecorders.values()}">
-        <local:row name="${lr.name}" href="${lr.name}/">
-          <a href="${lr.name}/configure">
+        <local:row name="${lr.name}" href="${lr.searchUrl}/">
+          <a href="${lr.searchUrl}/configure">
             <img src="${imagesURL}/32x32/setting.png" width="32" height="32" alt="[configure]" title="Configure"/>
           </a>
         </local:row>
