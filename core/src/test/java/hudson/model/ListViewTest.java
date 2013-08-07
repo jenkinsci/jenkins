@@ -21,7 +21,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 public class ListViewTest {
-    
+
     private interface ItemGroupOfNonTopLevelItem extends TopLevelItem, ItemGroup<Item> {}
 
     @Test
@@ -42,7 +42,7 @@ public class ListViewTest {
         lv.add(ig);
         assertEquals(1, lv.getItems().size());
     }
-    
+
     @Test
     @PrepareForTest({ListViewColumn.class,Items.class})
     public void includeRegexProgrammatic() {
@@ -54,7 +54,7 @@ public class ListViewTest {
         ItemGroup ig = mock(ItemGroup.class);
         when(owner.getItemGroup()).thenReturn(ig);
         ListView view = new ListView("test", owner);
-        view.setIncludeRegex(".*");
+        view.setIncludeRegex("on", ".*");
         TopLevelItem it = Mockito.mock(TopLevelItem.class);
         List<TopLevelItem> igContent = Arrays.asList((TopLevelItem) it);
         when(Items.getAllItems(eq(ig), eq(TopLevelItem.class))).thenReturn(igContent);
