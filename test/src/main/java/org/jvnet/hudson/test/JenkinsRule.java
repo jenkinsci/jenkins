@@ -567,6 +567,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
         SocketConnector connector = new SocketConnector();
         connector.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+        if (System.getProperty("port")!=null)
+            connector.setPort(Integer.parseInt(System.getProperty("port")));
 
         server.setThreadPool(new ThreadPoolImpl(new ThreadPoolExecutor(10, 10, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
             public Thread newThread(Runnable r) {

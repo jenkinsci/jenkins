@@ -61,7 +61,7 @@ THE SOFTWARE.
          value="${attrs.value}"
          title="${attrs.tooltip}"
          onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
-         checkUrl="${attrs.checkUrl}" json="${attrs.json}"
+         checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          checked="${(attrs.checked ?: instance[attrs.field] ?: attrs.default) ? 'true' : null}"/>
   <j:if test="${attrs.title!=null}">
     <label class="attach-previous"
