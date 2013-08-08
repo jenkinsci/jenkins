@@ -73,14 +73,19 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
  *
+ * <p>
+ * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
+ * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
  * @see NodeDescriptor
+ * @see Computer
  */
 @ExportedBean
 public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster {
