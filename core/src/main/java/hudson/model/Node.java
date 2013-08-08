@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
@@ -397,7 +398,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
-    public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
