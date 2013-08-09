@@ -60,6 +60,9 @@ Upcoming changes</a>
   <li class=bug>
     Form validation methods weren't getting triggered when one of its dependency controls change.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19124">issue 19124</a>)
+  <li class=bug>
+    When POST is required for some HTTP operation but GET was used, the response should have status code 405.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16918">issue 16918</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 

@@ -31,6 +31,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponses;
@@ -84,6 +85,8 @@ public final class BuildAuthorizationToken {
             return;
         }
 
+        rsp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        rsp.addHeader("Allow", "POST");
         throw HttpResponses.forwardToView(project, "requirePOST.jelly");
     }
 
