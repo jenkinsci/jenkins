@@ -75,6 +75,7 @@ import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
 import java.util.Map;
 import hudson.Functions;
+import org.junit.Ignore;
 
 /**
  *
@@ -401,7 +402,8 @@ public class ProjectTest {
         p.setScm(scm);
         assertTrue("Project should perform checkout without problems.",p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
     }
-    
+
+    @Ignore("randomly failed: Project should have polling result no change expected:<NONE> but was:<INCOMPARABLE>")
     @Test
     public void testPoll() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
