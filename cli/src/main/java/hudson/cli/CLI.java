@@ -157,7 +157,7 @@ public class CLI {
     }
 
     private Channel connectViaHttp(String url) throws IOException {
-        LOGGER.fine("Trying to connect to "+url+" via HTTP");
+        LOGGER.log(FINE, "Trying to connect to {0} via HTTP", url);
         url+="cli";
         URL jenkins = new URL(url);
 
@@ -176,7 +176,7 @@ public class CLI {
     }
 
     private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
-        LOGGER.fine("Trying to connect directly via TCP/IP to "+clip.endpoint);
+        LOGGER.log(FINE, "Trying to connect directly via TCP/IP to {0}", clip.endpoint);
         final Socket s;
         OutputStream out;
 
@@ -188,12 +188,12 @@ public class CLI {
 
             // read the response from the proxy
             ByteArrayOutputStream rsp = new ByteArrayOutputStream();
-            while (!rsp.toString().endsWith("\r\n\r\n")) {
+            while (!rsp.toString("ISO-8859-1").endsWith("\r\n\r\n")) {
                 int ch = s.getInputStream().read();
                 if (ch<0)   throw new IOException("Failed to read the HTTP proxy response: "+rsp);
                 rsp.write(ch);
             }
-            String head = new BufferedReader(new StringReader(rsp.toString())).readLine();
+            String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
             if (!head.startsWith("HTTP/1.0 200 "))
                 throw new IOException("Failed to establish a connection through HTTP proxy: "+rsp);
 
@@ -506,8 +506,13 @@ public class CLI {
         Properties props = new Properties();
         try {
             InputStream is = CLI.class.getResourceAsStream("/jenkins/cli/jenkins-cli-version.properties");
-            if(is!=null)
-                props.load(is);
+            if(is!=null) {
+                try {
+                    props.load(is);
+                } finally {
+                    is.close();
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
         }
@@ -526,11 +531,16 @@ public class CLI {
     }
     
     private static String readPemFile(File f) throws IOException{
-        DataInputStream dis = new DataInputStream(new FileInputStream(f));
+        FileInputStream is = new FileInputStream(f);
+        try {
+        DataInputStream dis = new DataInputStream(is);
         byte[] bytes = new byte[(int) f.length()];
         dis.readFully(bytes);
         dis.close();
         return new String(bytes);
+        } finally {
+            is.close();
+        }
     }
     
     /**
