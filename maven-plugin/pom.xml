@@ -217,6 +217,12 @@ THE SOFTWARE.
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.plexus</artifactId>
       <version>${sisuInjectVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guice</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!--
@@ -233,19 +239,9 @@ THE SOFTWARE.
     -->
 
     <dependency>
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-guice</artifactId>
-      <exclusions>
-        <exclusion>
-          <!--
-             sisu-guice wants a patched version of guava, which is old.
-             but from what I can tell from changes, it's GWT related
-             and we don't care. So let's stick to the proper guava
-          -->
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>4.0-beta</version>
     </dependency>
 
     <!-- JENKINS-10819 : This wagon is safer and more configurable to provide http(s) support -->

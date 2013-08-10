@@ -87,29 +87,9 @@ THE SOFTWARE.
       <optional>true</optional>
     </dependency>
 
-    <!--
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>3.0</version>
-    </dependency>
-    -->
-    <dependency>
-      <!-- we'd like to use stock Guice, but that breaks Maven embedder
-           because it uses a modified Guice called Sisu -->
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-guice</artifactId>
-      <exclusions>
-        <!--
-             sisu-guice wants a patched version of guava, which is old.
-             but from what I can tell from changes, it's GWT related
-             and we don't care. So let's stick to the proper guava
-        -->
-        <exclusion>
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->

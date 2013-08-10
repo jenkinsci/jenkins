@@ -182,13 +182,11 @@ THE SOFTWARE.
         <artifactId>guava</artifactId>
         <version>11.0.1</version>
       </dependency>
-      
+
       <dependency>
-        <!-- we'd like to use stock Guice, but that breaks Maven embedder
-               because it uses a modified Guice called Sisu -->
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-guice</artifactId>
-        <version>3.1.0</version>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>4.0-beta</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -633,6 +631,21 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.${java.level}</maxJdkVersion>
                 </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                  </excludes>
+                </bannedDependencies>
               </rules>
             </configuration>
           </execution>
