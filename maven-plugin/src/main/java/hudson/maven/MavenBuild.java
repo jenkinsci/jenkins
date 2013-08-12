@@ -26,7 +26,6 @@ package hudson.maven;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.maven.reporters.TestFailureDetector;
@@ -444,20 +443,10 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getArtifactsDir());
         }
 
-        @Override public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
-            ArtifactManager am = pickArtifactManager();
-            try {
-                if (Util.getDigestOf(am.loadArtifact(MavenBuild.this, target)).equals(source.digest())) {
-                    LOGGER.fine("Not actually archiving " + source + " due to digest match");
-                    listener.getLogger().println("Not actually archiving " + target + " due to digest match");
-                    return;
-                } else {
-                    listener.getLogger().println("[JENKINS] Re-archiving " + source);
-                }
-            } catch (FileNotFoundException x) {
-                listener.getLogger().println("[JENKINS] Archiving " + source + " to " + target);
-            }
-            am.archiveSingle(MavenBuild.this, launcher, listener, source, target);
+        @Override public void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException {
+            listener.getLogger().println("[JENKINS] Archiving " + artifacts);
+            // TODO queue this up till the end of the build
+            pickArtifactManager().archive(MavenBuild.this, basedir, launcher, listener, artifacts);
         }
 
         public void setResult(Result result) {

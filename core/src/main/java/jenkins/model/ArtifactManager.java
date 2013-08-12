@@ -30,16 +30,15 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
-import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.tasks.ArtifactArchiver;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.annotation.CheckForNull;
 
 import hudson.util.HttpResponses;
+import java.util.Map;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -69,7 +68,8 @@ public abstract class ArtifactManager implements ExtensionPoint {
 
     /**
      * Archive all configured artifacts from a build.
-     * (If called multiple times for the same build, do not delete the old artifacts but keep them all, unless overwritten.)
+     * <p>If called multiple times for the same build, do not delete the old artifacts but keep them all, unless overwritten.
+     * For example, the XVNC plugin could use this to save {@code screenshot.jpg} if so configured.
      *
      * <p>
      * This method should only be invoked on a running build.
@@ -78,30 +78,11 @@ public abstract class ArtifactManager implements ExtensionPoint {
      * @param workspace the workspace from which to copy files
      * @param launcher a launcher to use if external processes need to be forked
      * @param listener a way to print messages about progress or problems
-     * @param artifacts comma- or space-separated list of patterns of files/directories to be archived relative to the workspace (Ant format, any variables already substituted)
-     * @param excludes patterns of files to be excluded from the artifact list (Ant format, may be null for no excludes)
-     * @return the number of files actually archived (may be zero)
+     * @param artifacts map from paths in the archive area to paths in the workspace (all paths {@code /}-separated)
      * @throws IOException if transfer or copying failed in any way
      * @see ArtifactArchiver#perform(AbstractBuild, Launcher, BuildListener)
      */
-    public abstract int archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, String artifacts, @CheckForNull String excludes) throws IOException, InterruptedException;
-
-    /**
-     * Add a single file to the list of archives for a build.
-     * For example, the XVNC plugin could use this to save {@code screenshot.jpg} if so configured.
-     * If called on a target path which was already recorded, the old artifact is overwritten.
-     *
-     * <p>
-     * This method should only be invoked on a running build.
-     *
-     * @param build a build which may or may not already have archives
-     * @param launcher a launcher to use if external processes need to be forked
-     * @param listener a way to print messages about progress or problems
-     * @param source a file to copy
-     * @param target the full relative path to which this file should be archived, e.g. {@code subdir/something.jar}
-     * @throws IOException if transfer or copying failed in any way
-     */
-    public abstract void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException;
+    public abstract void archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException;
 
     /**
      * Delete all artifacts associated with an earlier build (if any).

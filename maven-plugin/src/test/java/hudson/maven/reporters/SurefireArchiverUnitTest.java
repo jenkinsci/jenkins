@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
@@ -246,9 +247,7 @@ public class SurefireArchiverUnitTest {
             return null;
         }
 
-        @Override
-        public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
-        }
+        @Override public void archive(FilePath basedir, Map<String, String> artifacts) throws IOException, InterruptedException {}
 
         @Override
         public void setResult(Result result) {

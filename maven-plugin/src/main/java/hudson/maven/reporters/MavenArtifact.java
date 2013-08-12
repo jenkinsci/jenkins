@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -243,7 +244,7 @@ public final class MavenArtifact implements Serializable {
         else {
             String target = groupId + '/' + artifactId + '/' + version + '/' + canonicalName;
             FilePath origin = new FilePath(file);
-            build.archiveSingle(origin, target);
+            build.archive(origin.getParent(), Collections.singletonMap(target, origin.getName()));
         }
     }
 

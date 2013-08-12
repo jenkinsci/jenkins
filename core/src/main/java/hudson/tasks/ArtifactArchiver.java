@@ -31,13 +31,17 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
+import java.io.File;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
@@ -131,22 +135,25 @@ public class ArtifactArchiver extends Recorder {
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            if (build.pickArtifactManager().archive(build, ws, launcher, listener, artifacts, excludes) == 0) {
+            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes));
+            if (!files.isEmpty()) {
+                build.pickArtifactManager().archive(build, ws, launcher, listener, files);
+            } else {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                    	msg = ws.validateAntFileMask(artifacts);
+                        msg = ws.validateAntFileMask(artifacts);
                     } catch (Exception e) {
-                    	listenerWarnOrError(listener, e.getMessage());
+                        listenerWarnOrError(listener, e.getMessage());
                     }
                     if(msg!=null)
                         listenerWarnOrError(listener, msg);
                 }
                 if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
+                    build.setResult(Result.FAILURE);
                 }
                 return true;
             }
@@ -159,6 +166,23 @@ public class ArtifactArchiver extends Recorder {
         }
 
         return true;
+    }
+
+    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+        private static final long serialVersionUID = 1;
+        private final String includes, excludes;
+        ListFiles(String includes, String excludes) {
+            this.includes = includes;
+            this.excludes = excludes;
+        }
+        @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
+            Map<String,String> r = new HashMap<String,String>();
+            for (String f : Util.createFileSet(basedir, includes, excludes).getDirectoryScanner().getIncludedFiles()) {
+                f = f.replace(File.separatorChar, '/');
+                r.put(f, f);
+            }
+            return r;
+        }
     }
 
     @Override

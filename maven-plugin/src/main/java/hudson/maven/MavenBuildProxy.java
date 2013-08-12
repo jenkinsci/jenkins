@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.ArtifactManager;
 
 /**
@@ -100,10 +101,10 @@ public interface MavenBuildProxy {
     FilePath getArtifactsDir();
 
     /**
-     * @see ArtifactManager#archiveSingle
+     * @see ArtifactManager#archive
      * @since TODO
      */
-    void archiveSingle(FilePath source, String target) throws IOException, InterruptedException;
+    void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException;
 
     /**
      * @see MavenBuild#setResult(Result)
@@ -219,8 +220,8 @@ public interface MavenBuildProxy {
             return core.getArtifactsDir();
         }
 
-        @Override public void archiveSingle(FilePath source, String target) throws IOException, InterruptedException {
-            core.archiveSingle(source, target);
+        @Override public void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException {
+            core.archive(basedir, artifacts);
         }
 
         public void setResult(Result result) {

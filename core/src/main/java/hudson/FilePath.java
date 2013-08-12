@@ -53,10 +53,8 @@ import static hudson.FilePath.TarCompression.GZIP;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.commons.io.input.CountingInputStream;
@@ -98,8 +96,9 @@ import com.jcraft.jzlib.GZIPOutputStream;
 
 import com.sun.jna.Native;
 import hudson.os.PosixException;
-import java.io.BufferedInputStream;
+import hudson.util.FileVisitor;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
 
@@ -1875,6 +1874,18 @@ public final class FilePath implements Serializable {
      *      the number of files copied.
      */
     public int copyRecursiveTo(final String fileMask, final String excludes, final FilePath target) throws IOException, InterruptedException {
+        return copyRecursiveTo(new DirScanner.Glob(fileMask, excludes), target, fileMask);
+    }
+
+    /**
+     * Copies files according to a specified scanner to a target node.
+     * @param scanner a way of enumerating some files
+     * @param target the destination basedir
+     * @param description a description of the fileset, for logging purposes
+     * @return the number of files copied
+     * @since TODO
+     */
+    public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
             // local to local copy.
             return act(new FileCallable<Integer>() {
@@ -1882,37 +1893,30 @@ public final class FilePath implements Serializable {
                 public Integer invoke(File base, VirtualChannel channel) throws IOException {
                     if(!base.exists())  return 0;
                     assert target.channel==null;
-
-                    try {
-                        class CopyImpl extends Copy {
-                            private int copySize;
-
-                            public CopyImpl() {
-                                setProject(new org.apache.tools.ant.Project());
-                            }
-
-                            @Override
-                            protected void doFileOperations() {
-                                copySize = super.fileCopyMap.size();
-                                super.doFileOperations();
-                            }
-
-                            public int getNumCopied() {
-                                return copySize;
+                    final File dest = new File(target.remote);
+                    final AtomicInteger count = new AtomicInteger();
+                    scanner.scan(base, new FileVisitor() {
+                        @Override public void visit(File f, String relativePath) throws IOException {
+                            if (f.isFile()) {
+                                File target = new File(dest, relativePath);
+                                target.getParentFile().mkdirs();
+                                Util.copyFile(f, target);
+                                count.incrementAndGet();
                             }
                         }
-
-                        CopyImpl copyTask = new CopyImpl();
-                        copyTask.setTodir(new File(target.remote));
-                        copyTask.addFileset(Util.createFileSet(base,fileMask,excludes));
-                        copyTask.setOverwrite(true);
-                        copyTask.setIncludeEmptyDirs(false);
-
-                        copyTask.execute();
-                        return copyTask.getNumCopied();
-                    } catch (BuildException e) {
-                        throw new IOException2("Failed to copy "+base+"/"+fileMask+" to "+target,e);
-                    }
+                        @Override public boolean understandsSymlink() {
+                            return true;
+                        }
+                        @Override public void visitSymlink(File link, String target, String relativePath) throws IOException {
+                            try {
+                                Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
+                            } catch (InterruptedException x) {
+                                throw new IOException(x);
+                            }
+                            count.incrementAndGet();
+                        }
+                    });
+                    return count.get();
                 }
             });
         } else
@@ -1924,14 +1928,14 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        readFromTar(remote+'/'+fileMask, f,TarCompression.GZIP.extract(pipe.getIn()));
+                        readFromTar(remote + '/' + description, f,TarCompression.GZIP.extract(pipe.getIn()));
                         return null;
                     } finally {
                         pipe.getIn().close();
                     }
                 }
             });
-            int r = writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+            int r = writeToTar(new File(remote), scanner, TarCompression.GZIP.compress(pipe.getOut()));
             try {
                 future.get();
             } catch (ExecutionException e) {
@@ -1946,14 +1950,14 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
                 public Integer invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        return writeToTar(f,fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+                        return writeToTar(f, scanner, TarCompression.GZIP.compress(pipe.getOut()));
                     } finally {
                         pipe.getOut().close();
                     }
                 }
             });
             try {
-                readFromTar(remote+'/'+fileMask,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
+                readFromTar(remote + '/' + description,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
             } catch (IOException e) {// BuildException or IOException
                 try {
                     future.get(3,TimeUnit.SECONDS);
@@ -2002,10 +2006,10 @@ public final class FilePath implements Serializable {
      * @return
      *      number of files/directories that are written.
      */
-    private static Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
+    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
-            new DirScanner.Glob(fileMask,excludes).scan(baseDir,tw);
+            scanner.scan(baseDir,tw);
         } finally {
             tw.close();
         }

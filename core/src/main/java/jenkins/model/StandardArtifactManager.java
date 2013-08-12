@@ -31,6 +31,8 @@ import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,12 +41,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import hudson.util.HttpResponses;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses.HttpResponseException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
+import java.util.Map;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
@@ -53,16 +50,20 @@ import javax.servlet.ServletException;
  */
 public class StandardArtifactManager extends ArtifactManager {
 
-    @Override public int archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, String artifacts, String excludes) throws IOException, InterruptedException {
+    @Override public void archive(Run<?, ?> build, FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
         File dir = getArtifactsDir(build);
-        dir.mkdirs();
-        return workspace.copyRecursiveTo(artifacts, excludes, new FilePath(dir));
-    }
-
-    @Override public void archiveSingle(Run<?,?> build, Launcher launcher, BuildListener listener, FilePath source, String target) throws IOException, InterruptedException {
-        FilePath dest = new FilePath(getArtifactsDir(build)).child(target);
-        dest.getParent().mkdirs();
-        source.copyTo(dest);
+        String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
+        workspace.copyRecursiveTo(new DirScanner() {
+            @Override public void scan(File dir, FileVisitor visitor) throws IOException {
+                for (Map.Entry<String,String> entry : artifacts.entrySet()) {
+                    String archivedPath = entry.getKey();
+                    assert archivedPath.indexOf('\\') == -1;
+                    String workspacePath = entry.getValue();
+                    assert workspacePath.indexOf('\\') == -1;
+                    scanSingle(new File(dir, workspacePath), archivedPath, visitor);
+                }
+            }
+        }, new FilePath(dir), description);
     }
 
     @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
