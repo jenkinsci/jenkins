@@ -1911,7 +1911,7 @@ public final class FilePath implements Serializable {
                             try {
                                 Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
                             } catch (InterruptedException x) {
-                                throw new IOException(x);
+                                throw (IOException) new IOException(x.toString()).initCause(x);
                             }
                             count.incrementAndGet();
                         }
