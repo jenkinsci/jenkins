@@ -1,6 +1,5 @@
 package hudson.matrix;
 
-import groovy.lang.Binding;
 import groovy.lang.GroovyRuntimeException;
 import hudson.AbortException;
 import hudson.Extension;
@@ -10,8 +9,6 @@ import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.ResourceController;
 import hudson.model.Result;
@@ -177,8 +174,8 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
 
         final MatrixBuild build = execution.getBuild();
 
-        final String combinationFilter = execution.getProject().getCombinationFilter();
-        final String touchStoneFilter = getTouchStoneCombinationFilter();
+        final FilterScript combinationFilter = FilterScript.parse(execution.getProject().getCombinationFilter());
+        final FilterScript touchStoneFilter = FilterScript.parse(getTouchStoneCombinationFilter());
 
         try {
 
@@ -188,9 +185,9 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
 
                 final Combination combination = c.getCombination();
 
-                if (touchStoneFilter != null && satisfies(execution, combination, touchStoneFilter)) {
+                if (touchStoneFilter != null && touchStoneFilter.apply(execution, combination)) {
                     touchStoneConfigurations.add(c);
-                } else if (satisfies(execution, combination, combinationFilter)) {
+                } else if (combinationFilter.apply(execution, combination)) {
                     delayedConfigurations.add(c);
                 }
             }
@@ -201,37 +198,6 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             ex.printStackTrace(logger);
             throw new AbortException("Failed executing combination filter");
         }
-    }
-
-    private boolean satisfies(
-            final MatrixBuildExecution execution,
-            final Combination combination,
-            final String filter
-    ) {
-
-        return combination.evalGroovyExpression(
-                execution.getProject().getAxes(),
-                filter,
-                getConfiguredBinding(execution)
-        );
-    }
-
-    private Binding getConfiguredBinding(final MatrixBuildExecution execution) {
-
-        final Binding binding = new Binding();
-        final ParametersAction parameters = execution.getBuild().getAction(ParametersAction.class);
-
-        if (parameters == null) return binding;
-
-        for (final ParameterValue pv: parameters) {
-
-            if (pv == null) continue;
-            final String name = pv.getName();
-            final String value = pv.createVariableResolver(null).resolve(name);;
-            binding.setVariable(name, value);
-        }
-
-        return binding;
     }
 
     private Result getResult(@Nullable MatrixRun run) {
