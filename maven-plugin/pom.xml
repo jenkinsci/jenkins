@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.525-SNAPSHOT</version>
+    <version>1.528-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -44,7 +44,7 @@ THE SOFTWARE.
     <mavenInterceptorsVersion>1.4</mavenInterceptorsVersion>
     <mavenVersion>3.1.0</mavenVersion>
     <maven.version>${mavenVersion}</maven.version>
-    <aetherVersion>0.9.0.M2</aetherVersion>
+    <aetherVersion>0.9.0.M3</aetherVersion>
     <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>
     <wagonVersion>2.4</wagonVersion>
   </properties>
@@ -203,7 +203,7 @@ THE SOFTWARE.
     </dependency>                                   
     <dependency>
       <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-connector-wagon</artifactId>
+      <artifactId>aether-transport-wagon</artifactId>
       <version>${aetherVersion}</version>
       <exclusions>
         <exclusion>
@@ -217,6 +217,12 @@ THE SOFTWARE.
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.plexus</artifactId>
       <version>${sisuInjectVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guice</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!--
@@ -233,19 +239,9 @@ THE SOFTWARE.
     -->
 
     <dependency>
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-guice</artifactId>
-      <exclusions>
-        <exclusion>
-          <!--
-             sisu-guice wants a patched version of guava, which is old.
-             but from what I can tell from changes, it's GWT related
-             and we don't care. So let's stick to the proper guava
-          -->
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>4.0-beta</version>
     </dependency>
 
     <!-- JENKINS-10819 : This wagon is safer and more configurable to provide http(s) support -->

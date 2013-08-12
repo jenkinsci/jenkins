@@ -220,6 +220,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     public void purgeCache() {
         index = new Index();
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
@@ -230,7 +231,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         }
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
-        idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
+        idOnDisk = new SortedList<String>(new ArrayList<String>(Arrays.asList(buildDirs)));
 
         // TODO: should we check that shortcuts is a symlink?
         String[] shortcuts = dir.list();

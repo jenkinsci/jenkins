@@ -21,16 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package jenkins.security.RekeySecretAdminMonitor;
+package jenkins.management.AsynchronousAdministrativeMonitor;
 
 def l = namespace(lib.LayoutTagLib)
 def t = namespace(lib.JenkinsTagLib)
 
 l.layout {
     l.main_panel() {
-        h1 _("Re-keying log")
+        h1 _("Log: ${my.displayName}")
 
-        if (my.isRewriterActive()) {
+        if (my.isFixingActive()) {
             pre(id: "out")
             div(id: "spinner") {
                 img(src: "${imagesURL}/spinner.gif", alt: "")

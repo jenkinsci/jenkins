@@ -167,18 +167,20 @@ public class ArtifactArchiver extends Recorder {
             AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
             Result bestResultSoFar = Result.NOT_BUILT;
             while(b!=null) {
-                if (b.getResult().isBetterThan(bestResultSoFar)) {
-                    bestResultSoFar = b.getResult();
-                } else {
-                    // remove old artifacts
-                    try {
-                        if (b.getArtifactManager().deleteArtifacts(b)) {
-                            listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
+                if(b.getResult()!=null){
+                    if (b.getResult().isBetterThan(bestResultSoFar)) {
+                        bestResultSoFar = b.getResult();
+                    } else {
+                        // remove old artifacts
+                        try {
+                            if (b.getArtifactManager().deleteArtifacts(b)) {
+                                listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace(listener.error(e.getMessage()));
+                        } catch (InterruptedException x) {
+                            x.printStackTrace(listener.error(x.getMessage()));
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace(listener.error(e.getMessage()));
-                    } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error(x.getMessage()));
                     }
                 }
                 b = b.getPreviousBuild();

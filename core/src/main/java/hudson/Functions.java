@@ -73,6 +73,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormValidation.CheckMethod;
 import hudson.util.Iterators;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
@@ -1531,6 +1532,9 @@ public class Functions {
 
     /**
      * Determines the form validation check URL. See textbox.jelly
+     *
+     * @deprecated
+     *      Use {@link #calcCheckUrl}
      */
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return userDefined;
@@ -1539,6 +1543,23 @@ public class Functions {
             return d.getCheckUrl(field);
         }
         return null;
+    }
+
+    /**
+     * Determines the parameters that client-side needs for a form validation check. See prepareDatabinding.jelly
+     *
+     * @deprecated
+     *      Use {@link #calcCheckUrl}
+     */
+    public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
+        if(userDefined!=null || field==null)   return;
+
+        if (descriptor instanceof Descriptor) {
+            Descriptor d = (Descriptor) descriptor;
+            CheckMethod m = d.getCheckMethod(field);
+            attributes.put("checkUrl",m.toStemUrl());
+            attributes.put("checkDependsOn",m.getDependsOn());
+        }
     }
 
     /**

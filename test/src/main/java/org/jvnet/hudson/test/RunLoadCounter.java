@@ -50,12 +50,16 @@ public final class RunLoadCounter {
 
     /**
      * Prepares a new project to be measured.
-     * Call this <em>before</em> starting builds.
+     * Usually called before starting builds, but may also be called retroactively.
      * @param project a project of any kind
      * @throws IOException if preparations fail
      */
     public static void prepare(AbstractProject<?,?> project) throws IOException {
         project.getPublishersList().add(new MarkerAdder());
+        for (AbstractBuild<?,?> build : project._getRuns()) {
+            Marker.add(build);
+            build.save();
+        }
     }
 
     /**
@@ -97,6 +101,10 @@ public final class RunLoadCounter {
     @Restricted(NoExternalUse.class)
     public static final class Marker implements RunAction {
 
+        static void add(AbstractBuild<?,?> build) {
+            build.addAction(new Marker(build.getParent().getFullName(), build.getNumber()));
+        }
+
         private final String project;
         private final int build;
 
@@ -137,7 +145,7 @@ public final class RunLoadCounter {
     public static final class MarkerAdder extends Notifier {
 
         @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            build.addAction(new Marker(build.getParent().getFullName(), build.getNumber()));
+            Marker.add(build);
             return true;
         }
 

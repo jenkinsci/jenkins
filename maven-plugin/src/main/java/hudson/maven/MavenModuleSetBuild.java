@@ -134,6 +134,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     private String mavenVersionUsed;
 
     private transient Object notifyModuleBuildLock = new Object();
+    private transient Result effectiveResult;
 
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
@@ -192,6 +193,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     @Override
     public Result getResult() {
+        if (isBuilding()) {
+            return computeResult();
+        }
+        synchronized (notifyModuleBuildLock) {
+            if (effectiveResult == null) {
+                effectiveResult = computeResult();
+            }
+            return effectiveResult;
+        }
+    }
+
+    private Result computeResult() {
         Result r = super.getResult();
 
         for (MavenBuild b : getModuleLastBuilds().values()) {
@@ -520,6 +533,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // use a separate lock object since this synchronized block calls into plugins,
             // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
             synchronized(notifyModuleBuildLock) {
+                effectiveResult = null;
                 boolean modified = false;
 
                 List<Action> actions = getActions();

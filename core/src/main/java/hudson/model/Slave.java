@@ -230,6 +230,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+        assert nodeProperties != null;
     	return nodeProperties;
     }
     

@@ -82,7 +82,7 @@ THE SOFTWARE.
   <textarea id="${attrs.id}" style="${attrs.style}"
             name ="${attrs.name ?: '_.'+attrs.field}"
             class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
-            checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
+            checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
             rows="${h.determineRows(value)}"
             readonly="${attrs.readonly}"
             codemirror-mode="${attrs['codemirror-mode']}"
