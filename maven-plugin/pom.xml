@@ -203,7 +203,7 @@ THE SOFTWARE.
     </dependency>                                   
     <dependency>
       <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-connector-wagon</artifactId>
+      <artifactId>aether-transport-wagon</artifactId>
       <version>${aetherVersion}</version>
       <exclusions>
         <exclusion>
