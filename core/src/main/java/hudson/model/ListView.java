@@ -329,7 +329,7 @@ public class ListView extends View implements Saveable {
             }
         }
 
-        setIncludeRegex(req.getParameter("useincluderegex"));
+        setIncludeRegex(req.getParameter("useincluderegex") != null ? req.getParameter("includeRegex") : null);
 
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
@@ -346,16 +346,11 @@ public class ListView extends View implements Saveable {
     }
     
     public void setIncludeRegex(String includeRegex) {
-        if (includeRegex != null) {
-            this.includeRegex = Util.nullify(includeRegex);
-            if (this.includeRegex == null)
-                this.includePattern = null;
-            else
-                this.includePattern = Pattern.compile(includeRegex);
-        } else {
-            this.includeRegex = null;
+        this.includeRegex = Util.nullify(includeRegex);
+        if (this.includeRegex == null)
             this.includePattern = null;
-        }
+        else
+            this.includePattern = Pattern.compile(includeRegex);
     }
 
     @Extension
