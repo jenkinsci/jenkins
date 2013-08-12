@@ -830,6 +830,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             }
                             // TODO consider also adding the user of the UserCause when applicable
                             buildCount++;
+                            // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
+                            // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
                             progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
                     }
