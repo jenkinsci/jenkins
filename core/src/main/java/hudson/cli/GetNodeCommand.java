@@ -52,7 +52,7 @@ public class GetNodeCommand extends CLICommand {
     @Override
     protected int run() throws IOException {
 
-        node.checkPermission(Computer.READ);
+        node.checkPermission(Computer.EXTENDED_READ);
 
         Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
 

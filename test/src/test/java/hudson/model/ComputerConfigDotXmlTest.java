@@ -107,7 +107,7 @@ public class ComputerConfigDotXmlTest {
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
-        auth.add(Computer.READ, "user");
+        auth.add(Computer.EXTENDED_READ, "user");
 
         final OutputStream outputStream = captureOutput();
 

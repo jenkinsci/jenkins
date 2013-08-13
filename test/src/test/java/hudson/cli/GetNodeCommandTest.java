@@ -57,7 +57,7 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Read permission"));
+        assertThat(result.stderr(), containsString("user is missing the Slave/ExtendedRead permission"));
         assertThat("No output expected", result.stdout(), isEmptyString());
         assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
@@ -67,7 +67,7 @@ public class GetNodeCommandTest {
         j.createSlave("MySlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.READ, Jenkins.READ)
+                .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 
@@ -80,7 +80,7 @@ public class GetNodeCommandTest {
     @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.READ, Jenkins.READ)
+                .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)
                 .invokeWithArgs("MySlave")
         ;
 
