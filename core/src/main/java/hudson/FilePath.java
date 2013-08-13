@@ -1879,7 +1879,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Copies files according to a specified scanner to a target node.
-     * @param scanner a way of enumerating some files
+     * @param scanner a way of enumerating some files (must be serializable for possible delivery to remote side)
      * @param target the destination basedir
      * @param description a description of the fileset, for logging purposes
      * @return the number of files copied

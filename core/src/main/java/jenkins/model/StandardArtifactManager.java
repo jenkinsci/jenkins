@@ -53,17 +53,23 @@ public class StandardArtifactManager extends ArtifactManager {
     @Override public void archive(Run<?, ?> build, FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
         File dir = getArtifactsDir(build);
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
-        workspace.copyRecursiveTo(new DirScanner() {
-            @Override public void scan(File dir, FileVisitor visitor) throws IOException {
-                for (Map.Entry<String,String> entry : artifacts.entrySet()) {
-                    String archivedPath = entry.getKey();
-                    assert archivedPath.indexOf('\\') == -1;
-                    String workspacePath = entry.getValue();
-                    assert workspacePath.indexOf('\\') == -1;
-                    scanSingle(new File(dir, workspacePath), archivedPath, visitor);
-                }
+        workspace.copyRecursiveTo(new ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description);
+    }
+    private static class ExplicitlySpecifiedDirScanner extends DirScanner {
+        private static final long serialVersionUID = 1;
+        private final Map<String,String> artifacts;
+        ExplicitlySpecifiedDirScanner(Map<String,String> artifacts) {
+            this.artifacts = artifacts;
+        }
+        @Override public void scan(File dir, FileVisitor visitor) throws IOException {
+            for (Map.Entry<String,String> entry : artifacts.entrySet()) {
+                String archivedPath = entry.getKey();
+                assert archivedPath.indexOf('\\') == -1;
+                String workspacePath = entry.getValue();
+                assert workspacePath.indexOf('\\') == -1;
+                scanSingle(new File(dir, workspacePath), archivedPath, visitor);
             }
-        }, new FilePath(dir), description);
+        }
     }
 
     @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
