@@ -76,10 +76,11 @@ public class Axis extends AbstractDescribableImpl<Axis> implements Comparable<Ax
     public final List<String> values;
 
     public Axis(String name, List<String> values) {
+        if (values == null || values.isEmpty()) {
+            values = Collections.emptyList();
+        }
         this.name = name;
         this.values = new ArrayList<String>(values);
-        if(values.isEmpty())
-            throw new IllegalArgumentException(); // bug in the code
     }
 
     public Axis(String name, String... values) {

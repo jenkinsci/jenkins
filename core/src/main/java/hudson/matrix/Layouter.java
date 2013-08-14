@@ -201,8 +201,11 @@ public abstract class Layouter<T> {
             buildMap(xp,x);
             buildMap(yp,y);
             buildMap(zp,z);
-            for (Axis a : trivial)
-                m.put(a.name,a.value(0));
+            for (Axis a : trivial) {
+                if (a.size() > 0) {
+                    m.put(a.name, a.value(0));
+                }
+            }
             return getT(new Combination(m));
         }
 
