@@ -33,9 +33,8 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
 import hudson.tasks.MailAddressResolver;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -48,6 +47,8 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.*;
+import org.xml.sax.SAXException;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
@@ -496,6 +497,91 @@ public class UserTest {
         assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
         user3.save();
         assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
+    }
+
+    @Test
+    @Issue("JENKINS-11205")
+    public void testCanDisable() throws IOException {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(realm);
+        User user = realm.createAccount("John Smith","password");
+        String password2 = "password2";
+        User user2 = realm.createAccount("John Smith2",password2);
+        user2.save();
+        auth.add(Jenkins.ADMINISTER, user.getId());
+        auth.add(Jenkins.READ, user2.getId());
+        auth.add(Jenkins.READ,"anonymous");
+
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        HudsonPrivateSecurityRealm.Details property = user.getProperty(HudsonPrivateSecurityRealm.Details.class);
+        HudsonPrivateSecurityRealm.Details property2 = user2.getProperty(HudsonPrivateSecurityRealm.Details.class);
+
+        assertTrue("User should be enabled by default", property.isEnabled());
+        assertTrue("User2 should be enabled by default", property2.isEnabled());
+
+        //checking that may login before
+        try {
+            j.createWebClient().login(user2.getId(), password2);
+        } catch (Exception e) {
+            fail("We should be able to login user2: " + user2.getId());
+        }
+        // update simulation
+        File user2File = user2.getConfigFile().getFile();
+        FileReader fileReader = new FileReader(user2File);
+        BufferedReader br = new BufferedReader(fileReader);
+        File otherUserF = new File(user2.getConfigFile().toString() + ".tmp");
+        FileWriter fw = new FileWriter(otherUserF);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        String line;
+        boolean mark = false;
+        while ((line = br.readLine()) != null) {
+            if (line.matches("(.*)<hudson.security.HudsonPrivateSecurityRealm_-Details>(.*)"))
+                mark = true;
+            if (!(line.matches("(.*)<enabled>true</enabled>(.*)")) || !mark){
+               bw.write(line);
+               bw.newLine();
+            }
+        }
+        br.close();
+        bw.close();
+        assertTrue("renaming config", otherUserF.renameTo(user2File));
+
+        User.reload();
+        JenkinsRule.WebClient login2 = null;
+        try {
+             login2 = j.createWebClient().login(user2.getId(), password2);
+        } catch (Exception e) {
+            fail("We should be able to login user2 from old config");
+        }
+        assertNotNull(login2);
+        try {
+            login2.goTo("logout");
+        } catch (SAXException e) {
+            fail("Can't logout user2: "+ user2.getId());
+        }
+
+        //disable user2
+        try {
+            HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+            form.getInputByName("user.enabled").setChecked(false);
+            j.submit(form);
+        } catch (Exception e) {
+            fail("Can't disable user2");
+        }
+        assertFalse("User should have perm to disable user2", user2.getProperty(HudsonPrivateSecurityRealm.Details.class).isEnabled());
+
+        // now fail on login user2
+        boolean fail = false;
+        try {
+            login2 = j.createWebClient().login(user2.getId(), password2);
+        } catch (Exception e) {
+            fail = true;
+        }
+        assertTrue("We shouldn't login with user2", fail);
     }
 
      public static class SomeUserProperty extends UserProperty {

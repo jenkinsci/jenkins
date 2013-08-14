@@ -455,6 +455,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private /*almost final*/ String passwordHash;
 
         /**
+         * Enable/disable user.
+         * Boolean because parameter existence should be checked during deserialization.
+         */
+        private Boolean enabled;
+
+        /**
          * @deprecated Scrambled password.
          * Field kept here to load old (pre 1.283) user records,
          * but now marked transient so field is no longer saved.
@@ -463,6 +469,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private Details(String passwordHash) {
             this.passwordHash = passwordHash;
+            this.enabled = true;
+        }
+
+        private Object readResolve() throws IOException {
+            //check that enabled field exist
+            if (this.enabled == null) this.enabled = true;
+            return this;
         }
 
         static Details fromHashedPassword(String hashed) {
@@ -512,11 +525,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isEnabled() {
-            return true;
+            return enabled;
         }
 
         public boolean isInvalid() {
-            return user==null;
+            return user == null || !isEnabled();
+        }
+
+        private void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
@@ -548,13 +565,23 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
                     throw new FormException("Please confirm the password by typing it twice","user.password2");
 
+                boolean enabled = req.hasParameter("user.enabled") && req.getParameter("user.enabled").equals("on");
+
                 String data = Protector.unprotect(pwd);
                 if(data!=null) {
                     String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                    if(data.startsWith(prefix))
-                        return Details.fromHashedPassword(data.substring(prefix.length()));
+                    if(data.startsWith(prefix)){
+                        Details details = Details.fromHashedPassword(data.substring(prefix.length()));
+                        if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))  // or use default enabled
+                            details.setEnabled(enabled);
+                        return details;
+                    }
                 }
-                return Details.fromPlainPassword(Util.fixNull(pwd));
+
+                Details details = Details.fromPlainPassword(Util.fixNull(pwd));
+                if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))  // or use default enabled
+                    details.setEnabled(enabled);
+                return details;
             }
 
             @Override
