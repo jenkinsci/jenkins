@@ -44,6 +44,7 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <stapler.version>1.217</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
+    <groovy.version>1.8.9</groovy.version>
   </properties>
 
   <dependencies>
@@ -388,7 +389,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.8.5</version>
+      <version>${groovy.version}</version>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>jline</groupId>
@@ -767,7 +768,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.8.5</version>
+            <version>${groovy.version}</version>
           </dependency>
         </dependencies>
       </plugin>
