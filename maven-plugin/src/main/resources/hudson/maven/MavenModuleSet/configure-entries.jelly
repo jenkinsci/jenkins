@@ -38,6 +38,8 @@ THE SOFTWARE.
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 
+  <p:config-buildWrappers />
+  
   <f:section title="${%Pre Steps}">
     <f:block>
       <f:hetero-list name="prebuilder" hasHeader="true"
@@ -145,7 +147,5 @@ THE SOFTWARE.
                       instances="${it.reporters.toMap()}" />
   </j:if>
 
-
-  <p:config-buildWrappers />
   <p:config-publishers2 />
 </j:jelly>
