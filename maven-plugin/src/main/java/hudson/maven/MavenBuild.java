@@ -467,7 +467,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             }
             // Now handle other files outside the workspace, if any.
             for (Map.Entry<String,File> e : artifacts.entrySet()) {
-                am.archive(_this(), new FilePath(ws.getChannel(), e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
+                am.archive(_this(), new FilePath(ws, e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
             }
         }
 
