@@ -412,16 +412,26 @@ function registerValidator(e) {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
 
-        if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
-            return eval(url); // need access to 'this', so no 'geval'
-        } else {
-            var q = qs(this).addThis();
-            if (depends.length>0)
-                depends.split(" ").each(function (n) {
-                    q.nearBy(n);
-                });
-            return url+ q.toString();
+        if (depends==null) { // legacy behaviour where checkUrl is a JavaScript
+
+            // HACK: In some cases url is NOT valid javascript and is in fact a URL.
+            try {
+              return eval(url); // need access to 'this', so no 'geval'
+            } catch (e) {
+
+              // Fall through and set depends to an empty array.
+              depends = [];
+            }
         }
+
+        var q = qs(this).addThis();
+
+        if (depends.length>0)
+            depends.split(" ").each(function (n) {
+                q.nearBy(n);
+            });
+
+        return url+ q.toString();
     };
     var method = e.getAttribute("checkMethod") || "get";
 
