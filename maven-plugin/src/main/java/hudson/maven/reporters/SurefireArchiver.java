@@ -39,6 +39,7 @@ import hudson.maven.MojoInfo;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.tasks.junit.TestResultUpdater;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.test.TestResultProjectAction;
 
@@ -49,9 +50,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nonnull;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -70,7 +74,6 @@ import com.google.common.collect.Iterators;
  * @author Christoph Kutzinski
  */
 public class SurefireArchiver extends TestFailureDetector {
-    private transient TestResult result;
     private final AtomicBoolean hasTestFailures = new AtomicBoolean();
     
     /**
@@ -79,12 +82,14 @@ public class SurefireArchiver extends TestFailureDetector {
      */
     private transient ConcurrentMap<File, File> parsedFiles = new ConcurrentHashMap<File,File>();
     
+    private transient TestResultUpdater reportWatcher;
+
     @Override
     public boolean hasTestFailures() {
         return hasTestFailures.get();
     }
 
-    public boolean preExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, BuildListener listener) throws InterruptedException, IOException {
+    public boolean preExecute(final MavenBuildProxy build, final MavenProject pom, final MojoInfo mojo, final BuildListener listener) throws InterruptedException, IOException {
         if (isTestMojo(mojo)) {
             // tell test mojo to keep going even if there was a failure,
             // so that we can record this as yellow.
@@ -109,6 +114,17 @@ public class SurefireArchiver extends TestFailureDetector {
                     c.setValue(Boolean.TRUE.toString());
                 }
             }
+
+            // Is there a way to avoid this call?
+            final String name = build.execute(new BuildCallable<String, IOException>() {
+                public String call(MavenBuild build) throws IOException, InterruptedException {
+                    return build.getFullDisplayName();
+                }
+            });
+            reportWatcher = new SurefireUpdaterThread(
+                    mojo, listener, build, pom, name + " - " + mojo.getGoal()
+            );
+            reportWatcher.start();
         }
         return true;
     }
@@ -118,67 +134,26 @@ public class SurefireArchiver extends TestFailureDetector {
         if (testMojo == null) return true;
 
         listener.getLogger().println(Messages.SurefireArchiver_Recording());
-
-        Iterable<File> fileSet;
+        reportWatcher.terminate();
         
-        try {
-            fileSet = testMojo.getReportFiles(pom, mojo);
-        } catch (ComponentConfigurationException e) {
-            e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
-            build.setResult(Result.FAILURE);
-            return true;
-        }
-        
-        if(fileSet != null) {
-            synchronized (build) {
-            	
-                if(result==null)    result = new TestResult();
-                
-                // filter all the already parsed files:
-                fileSet = Iterables.filter(fileSet, new Predicate<File>() {
-                    @Override
-                    public boolean apply(File input) {
-                        return !parsedFiles.containsKey(input);
-                    }
-                });
-                
-                if (!fileSet.iterator().hasNext())
-                    return true;
-                
-                result.parse(System.currentTimeMillis() - build.getMilliSecsSinceBuildStart(), fileSet);
-                // TODO kutzi: the following is a 'more correct' way to get the reports associated to a mojo,
-                // but needs more testing
-//                Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
-//                result.parse(reportFilesFiltered);
-                
-                
-                rememberCheckedFiles(fileSet);
-                
-                // final reference in order to serialize it:
-                final TestResult r = result;
-                
-                int failCount = build.execute(new BuildCallable<Integer, IOException>() {
-                        private static final long serialVersionUID = -1023888330720922136L;
+        synchronized (build) {
 
-                        public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                            SurefireReport sr = build.getAction(SurefireReport.class);
-                            if(sr==null)
-                                build.getActions().add(new SurefireReport(build, r, listener));
-                            else
-                                sr.setResult(r,listener);
-                            if(r.getFailCount()>0)
-                                build.setResult(Result.UNSTABLE);
-                            build.registerAsProjectAction(new FactoryImpl());
-                            return r.getFailCount();
-                        }
-                    });
-                
-                // if surefire plugin is going to kill maven because of a test failure,
-                // intercept that (or otherwise build will be marked as failure)
-                if(failCount>0) {
-                    markBuildAsSuccess(error,build.getMavenBuildInformation());
-                    hasTestFailures.set(true);
+            int failCount = build.execute(new BuildCallable<Integer, IOException>() {
+                private static final long serialVersionUID = -1023888330720922136L;
+
+                public Integer call(MavenBuild build) throws IOException, InterruptedException {
+                    final int failCount = build.getAction(SurefireReport.class).getFailCount();
+                    if(failCount>0)
+                        build.setResult(Result.UNSTABLE);
+                    return failCount;
                 }
+            });
+
+            // if surefire plugin is going to kill maven because of a test failure,
+            // intercept that (or otherwise build will be marked as failure)
+            if(failCount>0) {
+                markBuildAsSuccess(error,build.getMavenBuildInformation());
+                hasTestFailures.set(true);
             }
         }
 
@@ -191,8 +166,8 @@ public class SurefireArchiver extends TestFailureDetector {
         for(MavenReporter reporter: build.getProject().getReporters()) {
             if(reporter instanceof SurefireArchiver) {
                 SurefireArchiver surefireReporter = (SurefireArchiver) reporter;
-                if(surefireReporter.result != null) {
-                    surefireReporter.result = null;
+                if(surefireReporter.reportWatcher != null) {
+                    surefireReporter.reportWatcher = null;
                 }
             }
         }    
@@ -205,15 +180,6 @@ public class SurefireArchiver extends TestFailureDetector {
            || mojoError instanceof MojoFailureException) {
             MavenBuilder.markAsSuccess = true;
             Maven3Builder.markAsSuccess = true;
-        }
-    }
-    
-    /**
-     * Add checked files to the exclude list of the fileSet
-     */
-    private void rememberCheckedFiles(Iterable<File> fileSet) {
-        for (File f : fileSet) {
-            this.parsedFiles.put(f, f);
         }
     }
 
@@ -230,6 +196,93 @@ public class SurefireArchiver extends TestFailureDetector {
             MavenProjectActionBuilder b =  itr.next();
             if (b instanceof SurefireArchiver)
                 itr.set(new FactoryImpl());
+        }
+    }
+
+    private static final class SurefireUpdaterThread extends TestResultUpdater {
+        private static final long serialVersionUID = 5711499157558414668L;
+
+        private final @Nonnull MojoInfo mojo;
+        private final @Nonnull MavenBuildProxy build;
+        private final @Nonnull MavenProject pom;
+
+        private SurefireUpdaterThread(
+                @Nonnull MojoInfo mojo,
+                @Nonnull BuildListener listener,
+                @Nonnull MavenBuildProxy build,
+                @Nonnull MavenProject pom,
+                @Nonnull String name
+        ) {
+            super(listener, name);
+            this.mojo = mojo;
+            this.build = build;
+            this.pom = pom;
+        }
+
+        @Override
+        protected @Nonnull Iterable<File> reportFiles() {
+
+            try {
+
+                final Iterable<File> files = getTestMojo(mojo).getReportFiles(pom, mojo);
+                if (files == null) return Collections.emptyList();
+                return files;
+            } catch (ComponentConfigurationException e) {
+
+                e.printStackTrace(listener.fatalError(Messages.SurefireArchiver_NoReportsDir()));
+                build.setResult(Result.FAILURE);
+            }
+
+            // TODO kutzi: the following is a 'more correct' way to get the reports associated to a mojo,
+            // but needs more testing
+            // Iterable<File> reportFilesFiltered = getFilesBetween(reportsDir, reportFiles, mojo.getStartTime(), System.currentTimeMillis());
+            // result.parse(reportFilesFiltered);
+
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected long buildTime() {
+            return System.currentTimeMillis() - build.getMilliSecsSinceBuildStart();
+        }
+
+        @Override
+        protected void update(final TestResult testResult) {
+
+            try {
+                build.execute(new RemoteUpdaterCall(listener, testResult));
+
+            } catch (IOException ex) {
+
+                ex.printStackTrace(listener.error("Unable to update test results"));
+            } catch (InterruptedException ex) {
+
+                ex.printStackTrace(listener.error("Unable to update test results"));
+            }
+        }
+
+        private static final class RemoteUpdaterCall implements BuildCallable<Void, IOException> {
+            private final BuildListener listener;
+            private final TestResult testResult;
+            private static final long serialVersionUID = -3976778790949241778L;
+
+            private RemoteUpdaterCall(BuildListener listener, TestResult testResult) {
+                this.listener = listener;
+                this.testResult = testResult;
+            }
+
+            public Void call(MavenBuild build) throws IOException, InterruptedException {
+
+                final SurefireReport sr = build.getAction(SurefireReport.class);
+                if(sr==null) {
+                    build.getActions().add(new SurefireReport(build, testResult, listener));
+                    build.registerAsProjectAction(new FactoryImpl());
+                } else {
+                    sr.setResult(testResult, listener);
+                }
+
+                return null;
+            }
         }
     }
 
@@ -305,7 +358,7 @@ public class SurefireArchiver extends TestFailureDetector {
         return getTestMojo(mojo) != null;
     }
     
-    private TestMojo getTestMojo(MojoInfo mojo) {
+    private static TestMojo getTestMojo(MojoInfo mojo) {
         TestMojo testMojo = TestMojo.lookup(mojo);
 
         if (testMojo == null)
@@ -325,13 +378,6 @@ public class SurefireArchiver extends TestFailureDetector {
         }
 
         return testMojo;
-    }
-    
-    // I'm not sure if SurefireArchiver is actually ever (de-)serialized,
-    // but just to be sure, set fileSets here
-    protected Object readResolve() {
-        parsedFiles = new ConcurrentHashMap<File,File>();
-        return this;
     }
 
     @Extension

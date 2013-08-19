@@ -25,14 +25,10 @@ package hudson.tasks.junit;
 
 import com.thoughtworks.xstream.XStream;
 
-import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-import hudson.model.listeners.RunListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestObject;
 import hudson.util.HeapSpaceStringConverter;
@@ -60,7 +56,6 @@ import java.util.logging.Logger;
  */
 public class TestResultAction extends AbstractTestResultAction<TestResultAction> implements StaplerProxy {
     private transient WeakReference<TestResult> result;
-    private transient TestResultUpdater updater;
 
     // Hudson < 1.25 didn't set these fields, so use Integer
     // so that we can distinguish between 0 tests vs not-computed-yet.
@@ -72,7 +67,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
         setResult(result, listener);
-        updater = new TestResultUpdater(owner);
     }
 
     /**
@@ -163,12 +157,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 
     public Object getTarget() {
 
-        if (updater != null) {
-
-            updater.update(this, getResult());
-            totalCount = null;
-        }
-
         return getResult();
     }
     
@@ -187,15 +175,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         this.testData = testData;
     }
 
-    @Override
-    public String getDisplayName() {
-        // Get the generic display name or a specific in case of realtime results.
-        return updater == null
-                ? super.getDisplayName()
-                : Messages.TestResultAction_RealtimeDisplayName()
-        ;
-    }
-
     /**
      * Resolves {@link TestAction}s for the given {@link TestObject}.
      *
@@ -212,27 +191,6 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
          *      Can be empty but never null. The caller must assume that the returned list is read-only.
     	 */
     	public abstract List<? extends TestAction> getTestAction(hudson.tasks.junit.TestObject testObject);
-    }
-
-    /**
-     * Create Test Result action as soon as the build starts to display realtime test results.
-     */
-    @Extension
-    public static class Attcher extends RunListener<Run<?, ?>> {
-
-        @Override
-        public void onStarted(Run<?, ?> run, TaskListener l) {
-
-            if (!(run instanceof AbstractBuild) || !(l instanceof BuildListener)) return;
-
-            final AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
-
-            if (build.getProject().getPublishersList().get(JUnitResultArchiver.class) == null) return;
-
-            build.addAction(new TestResultAction(
-                    build, new TestResult(), (BuildListener) l
-            ));
-        }
     }
 
     public Object readResolve() {

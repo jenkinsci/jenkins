@@ -1,83 +1,166 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2013 Red Hat, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package hudson.tasks.junit;
 
 import hudson.AbortException;
-import hudson.Util;
-import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
-public class TestResultUpdater {
+import javax.annotation.Nonnull;
 
-    private static final Logger LOGGER = Logger.getLogger(TestResultUpdater.class.getName());
+/**
+ * Parse report files as they arrive.
+ *
+ * Build is supposed to start this thread on slave before tests starts in order
+ * to watch for a new test report files. Once new reports are discovered
+ * {@link #update(TestResult)} method is called. The implementation
+ *
+ * The task can be adapted for different kinds of jobs overriding not-final methods.
+ *
+ * @author ogondza
+ * @since TODO
+ */
+public abstract class TestResultUpdater extends Thread {
 
-    private final AbstractBuild<?, ?> owner;
+    protected static final Logger LOGGER = Logger.getLogger(TestResultUpdater.class.getName());
 
-    public TestResultUpdater(final AbstractBuild<?, ?> owner) {
+    private final @Nonnull TestResult testResult = new TestResult();
+    protected final @Nonnull BuildListener listener;
 
-        this.owner = owner;
+    private volatile boolean terminated = false;
+
+    public TestResultUpdater(@Nonnull BuildListener listener, @Nonnull String name) {
+        super("Test result report watcher for " + name);
+        this.listener = listener;
+        LOGGER.fine("Creating " + getName());
     }
 
-    public void update(final TestResultAction action, final TestResult result) {
+    /**
+     * Determine whether to keep full stdio.
+     */
+    protected boolean keepLongStdio() {
 
-        final TestResult newResult = parseNew(result);
-
-        if (newResult == null || newResult.getSuites().isEmpty()) return;
-
-        LOGGER.info("Updating suits: " + newResult.getSuites());
-
-        result.include(newResult);
-
-        action.setResult(result, null);
+        return false;
     }
 
-    private TestResult parseNew(final TestResult result) {
+    /**
+     * Get files to be included in report.
+     */
+    abstract protected @Nonnull Iterable<File> reportFiles();
 
-        final JUnitParser parser = new JUnitParser(getArchiver().isKeepLongStdio());
+    /**
+     * Get the time of the build according to slave's clock.
+     */
+    abstract protected long buildTime();
 
-        final long started = System.currentTimeMillis();
+    /**
+     * Update test result.
+     */
+    abstract protected void update(@Nonnull TestResult testResult);
+
+    /**
+     * Stop the thread.
+     */
+    public final void terminate() {
+        LOGGER.fine("Terminating thread");
+        this.terminated = true;
+        parse();
+        try {
+            join();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace(listener.error("Unable to terminate " + getName()));
+        }
+    }
+
+    @Override
+    public final void run() {
+
+        try {
+            while(!terminated) {
+                Thread.sleep(5000);
+                parse();
+            }
+        } catch (InterruptedException ex) {
+
+            ex.printStackTrace(listener.error("Unable to parse the result"));
+        }
+    }
+
+    /**
+     * Perform parsing cycle manually.
+     */
+    public final void parse() {
+        LOGGER.fine("Parsing realtime test results");
         try {
 
-            return parser.parse(getArchiver().getTestResults(), excludeAlreadyParsed(result), owner, null, null);
+            final long started = System.currentTimeMillis();
+
+            final long buildTime = buildTime();
+            final Iterable<File> reportFiles = reportFiles();
+
+            // Overloaded methods might have terminated the thread.
+            if (terminated) return;
+
+            if (reportFiles == null || !reportFiles.iterator().hasNext()) {
+                LOGGER.fine("No reports files to parse");
+                return;
+            }
+
+            testResult.parse(buildTime, reportFiles);
+            LOGGER.fine(String.format("Parsing took %d ms", System.currentTimeMillis() - started));
+            update(testResult);
         } catch (AbortException ex) {
             // Thrown when there are no reports or no workspace witch is normal
             // at the beginning the build. This is also a signal that there are
             // no reports to update (already parsed was excluded and no new have
             // arrived so far).
-            LOGGER.info("No new reports found.");
-        } catch (InterruptedException ex) {
-
-            System.out.println(ex.getMessage());
         } catch (IOException ex) {
 
-            System.out.println(ex.getMessage());
-        } finally {
-            LOGGER.info(String.format("Parsing took %d ms", System.currentTimeMillis() - started));
+            ex.printStackTrace(listener.error("Unable to parse the result"));
         }
-
-        return null;
     }
 
-    private String excludeAlreadyParsed(final TestResult result) {
+    public final RemoteHandler handler() {
 
-        if (result.getSuites().isEmpty()) return null;
-
-        final String workspacePrefix = owner.getWorkspace().getRemote();
-
-        final List<String> excludes = new ArrayList<String>(result.getSuites().size());
-        for(final SuiteResult suite: result.getSuites()) {
-
-            if (!suite.getFile().startsWith(workspacePrefix)) throw new AssertionError();
-            excludes.add(suite.getFile().substring(workspacePrefix.length() + 1));
-        }
-
-        return Util.join(excludes, ", ");
+        return new RemoteHandler() {
+            public void terminate() {
+                TestResultUpdater.this.terminate();
+            }
+        };
     }
 
-    private JUnitResultArchiver getArchiver() {
-
-        return owner.getProject().getPublishersList().get(JUnitResultArchiver.class);
+    /**
+     * And interface exposed for purposes of {@link Channel.export}.
+     *
+     * @author ogondza
+     */
+    public interface RemoteHandler {
+        void terminate();
     }
 }
