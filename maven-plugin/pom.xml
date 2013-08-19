@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.529-SNAPSHOT</version>
+    <version>1.530-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -298,7 +298,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-classworlds</artifactId>
-      <version>2.3</version>
+      <version>2.5.1</version>
     </dependency>  
     <dependency>
       <groupId>org.jenkins-ci.lib</groupId>

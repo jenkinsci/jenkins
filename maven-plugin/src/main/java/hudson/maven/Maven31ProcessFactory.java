@@ -63,6 +63,9 @@ public class Maven31ProcessFactory extends Maven3ProcessFactory
         String path = (isMaster? Which.jarFile(Maven31Main.class).getAbsolutePath():slaveRoot.child("maven31-agent.jar").getRemote())+
             (getLauncher().isUnix()?":":";")+classWorldsJar;
 
+        // TODO this configurable??
+        path += (getLauncher().isUnix()?":":";")+mvn.getHomeDir().getPath()+"/conf/logging";
+
         return path;
     }
 

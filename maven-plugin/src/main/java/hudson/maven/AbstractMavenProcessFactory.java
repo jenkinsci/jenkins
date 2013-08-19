@@ -358,6 +358,8 @@ public abstract class AbstractMavenProcessFactory
         
         args.add( "-cp" );
         args.add(getMavenAgentClassPath(mvn,isMaster,slaveRoot,listener));
+
+
         args.add(getMainClassName());
 
         // M2_HOME
@@ -390,7 +392,7 @@ public abstract class AbstractMavenProcessFactory
 
         return args;
     }
-    
+
     /**
      * Returns the classpath string for the maven-agent jar including classworlds
      */

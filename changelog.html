@@ -61,7 +61,29 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.528>What's new in 1.528</a> <!--=DATE=--></h3>
+<h3><a name=v1.529>What's new in 1.529</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+      With Apache Maven 3.1 build, logging configuration from the Apache Maven distribution is not used.
+  <li class=rfe>
+      Avoid log duplication with Apache Maven 3.1 builds
+  <li class=bug>
+    Ungraceful handling of empty matrix project axes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19135">issue 19135</a>)
+  <li class=bug>
+    Updated Groovy to 1.8.9 to avoid <a href="http://jira.codehaus.org/browse/GROOVY-4292">GROOVY-4292</a>.
+  <li class='major bug'>
+    CLI login command broken on Windows since 1.518.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19192">issue 19192</a>)
+  <li class=bug>
+    A malformed JUnit result file should mark that test suite as a failure, but not interrupt archiving of other tests.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19186">issue 19186</a>)
+  <li class=rfe>
+    Build for $username now shows also build scheduled by user
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16178">issue 16178</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.528>What's new in 1.528</a> (2013/08/18)</h3>
 <ul class=image>
   <li class=rfe>
     Command line now supports "--sessionTimeout" option for controlling session timeout
@@ -80,7 +102,6 @@ Upcoming changes</a>
     Jenkins does not invoke ProcessKillers for Windows
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19156">issue 19156</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.527>What's new in 1.527</a> (2013/08/12)</h3>
 <ul class=image>
   <li class=bug>
