@@ -196,7 +196,7 @@ public final class FilePath implements Serializable {
      *      that's connected to that machine. If null, that means the local file path.
      */
     public FilePath(VirtualChannel channel, String remote) {
-        this.channel = channel;
+        this.channel = channel == Jenkins.MasterComputer.localChannel ? null : channel;
         this.remote = normalize(remote);
     }
 
