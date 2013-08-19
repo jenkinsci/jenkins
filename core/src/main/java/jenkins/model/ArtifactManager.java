@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -75,10 +76,10 @@ public abstract class ArtifactManager implements ExtensionPoint {
      * This method should only be invoked on a running build.
      *
      * @param build the build which may have produced archivable files
-     * @param workspace the workspace from which to copy files
+     * @param workspace the root directory from which to copy files (typically {@link AbstractBuild#getWorkspace} but not necessarily)
      * @param launcher a launcher to use if external processes need to be forked
      * @param listener a way to print messages about progress or problems
-     * @param artifacts map from paths in the archive area to paths in the workspace (all paths {@code /}-separated)
+     * @param artifacts map from paths in the archive area to paths relative to {@code workspace} (all paths {@code /}-separated)
      * @throws IOException if transfer or copying failed in any way
      * @see ArtifactArchiver#perform(AbstractBuild, Launcher, BuildListener)
      */
@@ -131,5 +132,10 @@ public abstract class ArtifactManager implements ExtensionPoint {
      * @throws IOException in case of some other problem
      */
     public abstract InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException;
+
+    /** All registered managers. */
+    public static ExtensionList<ArtifactManager> all() {
+        return Jenkins.getInstance().getExtensionList(ArtifactManager.class);
+    }
 
 }

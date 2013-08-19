@@ -1,6 +1,7 @@
 package hudson.maven;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.FilePath;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -12,11 +13,18 @@ import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Job;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import jenkins.model.ArtifactManager;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -424,6 +432,79 @@ public class MavenMultiModuleTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage modulesPage = wc.getPage(ms, "modules");
         modulesPage.getAnchorByText(m.getDisplayName()).openLinkInNewWindow();
+    }
+
+    @Bug(17236)
+    @SuppressWarnings("deprecation") // ExtensionList.add useful during tests
+    @Test public void artifactArchiving() throws Exception {
+        TestAM am = new TestAM();
+        ArtifactManager.all().add(am);
+        j.configureDefaultMaven(); // using Maven 2 so we can test single-module builds
+        MavenModuleSet mms = j.createMavenProject();
+        mms.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+        mms.setAssignedNode(j.createOnlineSlave());
+        j.buildAndAssertSuccess(mms);
+        // We want all the artifacts in a given module to be archived in one operation. But modules are archived separately.
+        Map<String,Map<String,FilePath>> expected = new TreeMap<String,Map<String,FilePath>>();
+        FilePath ws = mms.getModule("org.jvnet.hudson.main.test.multimod$multimod-top").getBuildByNumber(1).getWorkspace();
+        expected.put("org.jvnet.hudson.main.test.multimod:multimod-top", Collections.singletonMap("org.jvnet.hudson.main.test.multimod/multimod-top/1.0-SNAPSHOT/multimod-top-1.0-SNAPSHOT.pom", new FilePath(ws.getChannel(), "…/org/jvnet/hudson/main/test/multimod/multimod-top/1.0-SNAPSHOT/multimod-top-1.0-SNAPSHOT.pom")));
+        for (String module : new String[] {"moduleA", "moduleB", "moduleC"}) {
+            Map<String,FilePath> m = new TreeMap<String,FilePath>();
+            ws = mms.getModule("org.jvnet.hudson.main.test.multimod$" + module).getBuildByNumber(1).getWorkspace();
+            m.put("org.jvnet.hudson.main.test.multimod/" + module + "/1.0-SNAPSHOT/" + module + "-1.0-SNAPSHOT.pom", ws.child("pom.xml"));
+            m.put("org.jvnet.hudson.main.test.multimod/" + module + "/1.0-SNAPSHOT/" + module + "-1.0-SNAPSHOT.jar", ws.child("target/" + module + "-1.0-SNAPSHOT.jar"));
+            expected.put("org.jvnet.hudson.main.test.multimod:" + module, m);
+        }
+        assertEquals(expected.toString(), am.archivings.toString()); // easy to read
+        assertEquals(expected, am.archivings); // compares also FileChannel
+        // Also check single-module build.
+        expected.clear();
+        am.archivings.clear();
+        MavenBuild isolated = j.buildAndAssertSuccess(mms.getModule("org.jvnet.hudson.main.test.multimod$moduleA"));
+        assertEquals(2, isolated.number);
+        Map<String,FilePath> m = new TreeMap<String,FilePath>();
+        ws = isolated.getWorkspace();
+        m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.pom", ws.child("pom.xml"));
+        m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.jar", ws.child("target/moduleA-1.0-SNAPSHOT.jar"));
+        expected.put("org.jvnet.hudson.main.test.multimod:moduleA", m);
+        assertEquals(expected, am.archivings);
+    }
+
+    public static final class TestAM extends ArtifactManager {
+        final Map</* module name */String,Map</* archive path */String,/* file in workspace */FilePath>> archivings = new TreeMap<String,Map<String,FilePath>>();
+        @Override public void archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
+            String name = build.getParent().getName();
+            if (archivings.containsKey(name)) {
+                // Would be legitimate only if some archived files for a given module were outside workspace, such as repository parent POM, *and* others were inside, which is not the case in this test.
+                throw new IOException("repeated archiving to " + name);
+            }
+            Map<String,FilePath> m = new TreeMap<String,FilePath>();
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
+                FilePath f = workspace.child(e.getValue());
+                if (f.exists()) {
+                    if (f.getRemote().replace('\\', '/').contains("/org/jvnet/hudson/main/test/")) {
+                        // Inside the local repository. Hard to know exactly what that path might be, so just mask it out.
+                        f = new FilePath(f.getChannel(), f.getRemote().replaceFirst("^.+(?=[/\\\\]org[/\\\\]jvnet[/\\\\]hudson[/\\\\]main[/\\\\]test[/\\\\])", "…"));
+                    }
+                    m.put(e.getKey(), f);
+                } else {
+                    throw new IOException("no such file " + f);
+                }
+            }
+            archivings.put(name, m);
+        }
+        @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
+            throw new IOException();
+        }
+        @Override public Object browseArtifacts(Run<?,?> build) {
+            throw new UnsupportedOperationException();
+        }
+        @Override public <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
+            throw new UnsupportedOperationException();
+        }
+        @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
+            throw new IOException();
+        }
     }
 
     /*

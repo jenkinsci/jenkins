@@ -71,6 +71,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -401,12 +403,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
      */
     class ProxyImpl implements MavenBuildProxy, Serializable {
         private static final long serialVersionUID = 8865133776526671879L;
-        final SplittableBuildListener listener;
-        private final Launcher launcher;
-        ProxyImpl(SplittableBuildListener listener, Launcher launcher) {
-            this.listener = listener;
-            this.launcher = launcher;
-        }
+
+        private final Map<String,File> artifacts = new LinkedHashMap<String,File>();
 
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
@@ -443,10 +441,34 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getArtifactsDir());
         }
 
-        @Override public void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException {
+        @Override public void queueArchiving(String artifactPath, File artifact) {
+            artifacts.put(artifactPath, artifact);
+        }
+
+        void performArchiving(Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             listener.getLogger().println("[JENKINS] Archiving " + artifacts);
-            // TODO queue this up till the end of the build
-            pickArtifactManager().archive(MavenBuild.this, basedir, launcher, listener, artifacts);
+            ArtifactManager am = pickArtifactManager();
+            FilePath ws = getWorkspace();
+            Map<String,String> artifactsInsideWorkspace = new LinkedHashMap<String,String>();
+            String prefix = ws.getRemote().replace('\\', '/') + '/'; // try to relativize paths to workspace
+            Iterator<Map.Entry<String,File>> it = artifacts.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String,File> e = it.next();
+                File f = e.getValue();
+                String p = f.getAbsolutePath().replace('\\', '/');
+                if (!p.startsWith(prefix)) {
+                    continue;
+                }
+                artifactsInsideWorkspace.put(e.getKey(), p.substring(prefix.length()));
+                it.remove();
+            }
+            if (!artifactsInsideWorkspace.isEmpty()) {
+                am.archive(_this(), ws, launcher, listener, artifactsInsideWorkspace);
+            }
+            // Now handle other files outside the workspace, if any.
+            for (Map.Entry<String,File> e : artifacts.entrySet()) {
+                am.archive(_this(), new FilePath(ws.getChannel(), e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
+            }
         }
 
         public void setResult(Result result) {
@@ -495,13 +517,14 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     public class ProxyImpl2 extends ProxyImpl implements MavenBuildProxy2 {
         private static final long serialVersionUID = -3377221864644014218L;
         
+        private final SplittableBuildListener listener;
         long startTime;
         private final OutputStream log;
         private final MavenModuleSetBuild parentBuild;
 
-        ProxyImpl2(MavenModuleSetBuild parentBuild, SplittableBuildListener listener, Launcher launcher) throws FileNotFoundException {
-            super(listener, launcher);
+        ProxyImpl2(MavenModuleSetBuild parentBuild,SplittableBuildListener listener) throws FileNotFoundException {
             this.parentBuild = parentBuild;
+            this.listener = listener;
             log = new FileOutputStream(getLogFile()); // no buffering so that AJAX clients can see the log live
         }
 
@@ -769,9 +792,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             {
                 boolean normalExit = false;
                 try {
+                    ProxyImpl proxy = new ProxyImpl();
                     Result r = process.call(new Builder(
-                        listener,new ProxyImpl(new SplittableBuildListener(getListener()), getLauncher()),
+                        listener, proxy,
                         getProject(), margs.toList(), systemProps));
+                    proxy.performArchiving(launcher, listener);
                     normalExit = true;
                     return r;
                 } finally {

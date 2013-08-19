@@ -27,12 +27,12 @@ import hudson.FilePath;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
+import java.io.File;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import jenkins.model.ArtifactManager;
 
 /**
@@ -104,7 +104,7 @@ public interface MavenBuildProxy {
      * @see ArtifactManager#archive
      * @since TODO
      */
-    void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException;
+    void queueArchiving(String artifactPath, File artifact);
 
     /**
      * @see MavenBuild#setResult(Result)
@@ -220,8 +220,8 @@ public interface MavenBuildProxy {
             return core.getArtifactsDir();
         }
 
-        @Override public void archive(FilePath basedir, Map<String,String> artifacts) throws IOException, InterruptedException {
-            core.archive(basedir, artifacts);
+        @Override public void queueArchiving(String artifactPath, File artifact) {
+            core.queueArchiving(artifactPath, artifact);
         }
 
         public void setResult(Result result) {

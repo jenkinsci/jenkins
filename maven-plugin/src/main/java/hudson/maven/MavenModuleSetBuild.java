@@ -677,7 +677,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             }
 
                             mb.setWorkspace(getModuleRoot().child(m.getRelativePath()));
-                            proxies.put(m.getModuleName(), mb.new ProxyImpl2(MavenModuleSetBuild.this,slistener, getLauncher()));
+                            proxies.put(m.getModuleName(), mb.new ProxyImpl2(MavenModuleSetBuild.this,slistener));
                         }
 
                         // run the complete build here
@@ -811,6 +811,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
                             r = process.call(builder);
+                            for (ProxyImpl2 proxy : proxies.values()) {
+                                proxy.performArchiving(launcher, listener);
+                            }
                             return r;
                         } finally {
                             builder.end(launcher);

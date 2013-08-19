@@ -106,7 +106,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
-import hudson.ExtensionList;
 import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -979,7 +978,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final @Nonnull ArtifactManager getArtifactManager() {
         if (artifactManager != null) {
-            for (ArtifactManager mgr : Jenkins.getInstance().getExtensionList(ArtifactManager.class)) {
+            for (ArtifactManager mgr : ArtifactManager.all()) {
                 if (mgr.id().equals(artifactManager)) {
                     return mgr;
                 }
@@ -1001,11 +1000,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since TODO
      */
     public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
-        ExtensionList<ArtifactManager> managers = Jenkins.getInstance().getExtensionList(ArtifactManager.class);
         if (artifactManager != null) {
             return getArtifactManager();
         } else {
-            for (ArtifactManager mgr : managers) {
+            for (ArtifactManager mgr : ArtifactManager.all()) {
                 if (mgr.appliesTo(this)) {
                     artifactManager = mgr.id();
                     save();

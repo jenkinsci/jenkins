@@ -24,7 +24,6 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.*;
 import hudson.model.BuildListener;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -161,8 +159,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                     continue;   // looks like this is already archived
                 String target = assembly.getName();
                 listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                FilePath origin = new FilePath(assembly);
-                build.archive(origin.getParent(), Collections.singletonMap(target, origin.getName()));
+                build.queueArchiving(target, assembly);
                 // TODO: fingerprint
             }
         }
