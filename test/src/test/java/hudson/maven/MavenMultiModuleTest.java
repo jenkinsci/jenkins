@@ -2,6 +2,7 @@ package hudson.maven;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
+import hudson.Functions;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -9,15 +10,18 @@ import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
 import org.jvnet.hudson.test.ExtractChangeLogSet;
 
 import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Job;
+import hudson.model.PermalinkProjectAction;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
+import java.io.File;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +29,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import jenkins.model.ArtifactManager;
+import java.util.Set;
+import java.util.TreeSet;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,6 +56,36 @@ public class MavenMultiModuleTest {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
 	    assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
         j.buildAndAssertSuccess(m);
+    }
+
+    @Bug(18846)
+    @Test public void symlinksUpdated() throws Exception {
+        Assume.assumeFalse(Functions.isWindows());
+        j.configureDefaultMaven();
+        MavenModuleSet mms = j.createMavenProject();
+        mms.setScm(new ExtractResourceSCM(MavenMultiModuleTest.class.getResource("maven-multimod.zip")));
+        j.buildAndAssertSuccess(mms);
+        MavenModule mm = mms.getModule("org.jvnet.hudson.main.test.multimod:moduleA");
+        j.buildAndAssertSuccess(mms);
+        assertEquals(2, mms.getLastStableBuild().number);
+        assertEquals(mms.getLastBuild().getId(), Util.resolveSymlink(new File(mms.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mms.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mms.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mms).toString());
+        assertEquals(2, mm.getLastStableBuild().number);
+        assertEquals(mm.getLastBuild().getId(), Util.resolveSymlink(new File(mm.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mm.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mm.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mm).toString());
+    }
+    private static Set<String> permalinks(Job<?,?> j) {
+        Set<String> r = new TreeSet<String>();
+        for (PermalinkProjectAction.Permalink l : j.getPermalinks()) {
+            if (l.resolve(j) != null) {
+                r.add(l.getId());
+            }
+        }
+        return r;
     }
 
     @Test public void incrementalMultiModMaven() throws Exception {

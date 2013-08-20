@@ -118,6 +118,7 @@ import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ArtifactManager;
+import jenkins.model.PeepholePermalink;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.RunAction2;
 
@@ -1614,8 +1615,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    // create a symlink from build number to ID.
-                    Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    updateSymlinks(listener);
 
                     setResult(job.run(listener));
 
@@ -1689,6 +1689,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } finally {
             onEndBuilding();
         }
+    }
+
+    /**
+     * Creates a symlink from build number to ID.
+     * Also makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
+     * Normally you do not need to call this explicitly, since {@link #execute} does so,
+     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
+     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
+     * @param listener probably unused
+     * @throws InterruptedException probably not thrown
+     * @since 1.530
+     */
+    public final void updateSymlinks(TaskListener listener) throws InterruptedException {
+        Util.createSymlink(getParent().getBuildDir(), getId(), String.valueOf(getNumber()), listener);
+        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
+        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
+    }
+    /**
+     * Backward compatibility.
+     *
+     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
+     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
+     * resolves to the symlink created by {@link PeepholePermalink}.
+     */
+    private void createSymlink(TaskListener listener, String name, PermalinkProjectAction.Permalink target) throws InterruptedException {
+        File buildDir = getParent().getBuildDir();
+        File rootDir = getParent().getRootDir();
+        String targetDir;
+        if (buildDir.equals(new File(rootDir, "builds"))) {
+            targetDir = "builds" + File.separator + target.getId();
+        } else {
+            targetDir = buildDir + File.separator + target.getId();
+        }
+        Util.createSymlink(rootDir, targetDir, name, listener);
     }
 
     /**
