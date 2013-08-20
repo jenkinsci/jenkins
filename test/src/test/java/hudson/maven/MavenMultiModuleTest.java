@@ -31,6 +31,8 @@ import java.util.TreeMap;
 import jenkins.model.ArtifactManager;
 import java.util.Set;
 import java.util.TreeSet;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.Ignore;
@@ -472,10 +474,8 @@ public class MavenMultiModuleTest {
     }
 
     @Bug(17236)
-    @SuppressWarnings("deprecation") // ExtensionList.add useful during tests
     @Test public void artifactArchiving() throws Exception {
-        TestAM am = new TestAM();
-        ArtifactManager.all().add(am);
+        ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new TestAMF());
         j.configureDefaultMaven(); // using Maven 2 so we can test single-module builds
         MavenModuleSet mms = j.createMavenProject();
         mms.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
@@ -492,11 +492,11 @@ public class MavenMultiModuleTest {
             m.put("org.jvnet.hudson.main.test.multimod/" + module + "/1.0-SNAPSHOT/" + module + "-1.0-SNAPSHOT.jar", ws.child("target/" + module + "-1.0-SNAPSHOT.jar"));
             expected.put("org.jvnet.hudson.main.test.multimod:" + module, m);
         }
-        assertEquals(expected.toString(), am.archivings.toString()); // easy to read
-        assertEquals(expected, am.archivings); // compares also FileChannel
+        assertEquals(expected.toString(), TestAM.archivings.toString()); // easy to read
+        assertEquals(expected, TestAM.archivings); // compares also FileChannel
         // Also check single-module build.
         expected.clear();
-        am.archivings.clear();
+        TestAM.archivings.clear();
         MavenBuild isolated = j.buildAndAssertSuccess(mms.getModule("org.jvnet.hudson.main.test.multimod$moduleA"));
         assertEquals(2, isolated.number);
         Map<String,FilePath> m = new TreeMap<String,FilePath>();
@@ -504,12 +504,24 @@ public class MavenMultiModuleTest {
         m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.pom", ws.child("pom.xml"));
         m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.jar", ws.child("target/moduleA-1.0-SNAPSHOT.jar"));
         expected.put("org.jvnet.hudson.main.test.multimod:moduleA", m);
-        assertEquals(expected, am.archivings);
+        assertEquals(expected, TestAM.archivings);
     }
 
+    public static final class TestAMF extends ArtifactManagerFactory {
+        @Override public ArtifactManager managerFor(Run<?,?> build) {
+            return new TestAM(build);
+        }
+    }
     public static final class TestAM extends ArtifactManager {
-        final Map</* module name */String,Map</* archive path */String,/* file in workspace */FilePath>> archivings = new TreeMap<String,Map<String,FilePath>>();
-        @Override public void archive(Run<?,?> build, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
+        static final Map</* module name */String,Map</* archive path */String,/* file in workspace */FilePath>> archivings = new TreeMap<String,Map<String,FilePath>>();
+        transient Run<?,?> build;
+        TestAM(Run<?,?> build) {
+            onLoad(build);
+        }
+        @Override public void onLoad(Run<?, ?> build) {
+            this.build = build;
+        }
+        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
             String name = build.getParent().getName();
             if (archivings.containsKey(name)) {
                 // Would be legitimate only if some archived files for a given module were outside workspace, such as repository parent POM, *and* others were inside, which is not the case in this test.
@@ -530,16 +542,16 @@ public class MavenMultiModuleTest {
             }
             archivings.put(name, m);
         }
-        @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
+        @Override public boolean deleteArtifacts() throws IOException, InterruptedException {
             throw new IOException();
         }
-        @Override public Object browseArtifacts(Run<?,?> build) {
+        @Override public Object browseArtifacts() {
             throw new UnsupportedOperationException();
         }
-        @Override public <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
+        @Override public Run.ArtifactList getArtifactsUpTo(int n) {
             throw new UnsupportedOperationException();
         }
-        @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
+        @Override public InputStream loadArtifact(String artifact) throws IOException {
             throw new IOException();
         }
     }

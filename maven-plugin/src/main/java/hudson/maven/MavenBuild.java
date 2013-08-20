@@ -467,11 +467,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 it.remove();
             }
             if (!artifactsInsideWorkspace.isEmpty()) {
-                am.archive(_this(), ws, launcher, listener, artifactsInsideWorkspace);
+                am.archive(ws, launcher, listener, artifactsInsideWorkspace);
             }
             // Now handle other files outside the workspace, if any.
             for (Map.Entry<String,File> e : artifacts.entrySet()) {
-                am.archive(_this(), new FilePath(ws, e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
+                am.archive(new FilePath(ws, e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
             }
         }
 

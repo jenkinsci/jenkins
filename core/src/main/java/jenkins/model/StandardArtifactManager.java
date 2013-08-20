@@ -29,7 +29,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.DirectoryBrowserSupport;
-import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
@@ -50,8 +49,18 @@ import java.util.Map;
  */
 public class StandardArtifactManager extends ArtifactManager {
 
-    @Override public void archive(Run<?, ?> build, FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
-        File dir = getArtifactsDir(build);
+    protected transient Run<?,?> build;
+
+    public StandardArtifactManager(Run<?,?> build) {
+        onLoad(build);
+    }
+
+    @Override public final void onLoad(Run<?,?> build) {
+        this.build = build;
+    }
+
+    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
+        File dir = getArtifactsDir();
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
         workspace.copyRecursiveTo(new ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description);
     }
@@ -72,8 +81,8 @@ public class StandardArtifactManager extends ArtifactManager {
         }
     }
 
-    @Override public boolean deleteArtifacts(Run<?,?> build) throws IOException, InterruptedException {
-        File ad = getArtifactsDir(build);
+    @Override public boolean deleteArtifacts() throws IOException, InterruptedException {
+        File ad = getArtifactsDir();
         if (!ad.exists()) {
             return false;
         }
@@ -81,19 +90,21 @@ public class StandardArtifactManager extends ArtifactManager {
         return true;
     }
 
-    @Override public Object browseArtifacts(final Run<?,?> build) {
-        throw HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir(build)),
+    @Override public Object browseArtifacts() {
+        throw HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir()),
                 build.getParent().getDisplayName() + ' ' + build.getDisplayName(), "package.png", true));
     }
 
-    @Override public <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> Run<JobT,RunT>.ArtifactList getArtifactsUpTo(Run<JobT,RunT> build, int n) {
-        Run<JobT,RunT>.ArtifactList r = build.new ArtifactList();
-        addArtifacts(build, getArtifactsDir(build), "", "", r, null, n, new AtomicInteger());
+    @SuppressWarnings("rawtypes") // super told me to
+    @Override public Run.ArtifactList getArtifactsUpTo(int n) {
+        Run.ArtifactList r = build.new ArtifactList();
+        addArtifacts(build, getArtifactsDir(), "", "", r, null, n, new AtomicInteger());
         r.computeDisplayName();
         return r;
     }
 
-    private static <JobT extends Job<JobT,RunT>, RunT extends Run<JobT,RunT>> int addArtifacts(Run<JobT,RunT> build, File dir, String path, String pathHref, Run<JobT,RunT>.ArtifactList r, Run<JobT,RunT>.Artifact parent, int upTo, AtomicInteger idSeq) {
+    @SuppressWarnings({"rawtypes", "unchecked"}) // trying to type-check this mess just seems hopeless
+    private static int addArtifacts(Run build, File dir, String path, String pathHref, Run.ArtifactList r, Run.Artifact parent, int upTo, AtomicInteger idSeq) {
         String[] children = dir.list();
         if(children==null)  return 0;
         Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
@@ -105,7 +116,7 @@ public class StandardArtifactManager extends ArtifactManager {
             File sub = new File(dir, child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
             boolean collapsed = (children.length==1 && parent!=null);
-            Run<JobT,RunT>.Artifact a;
+            Run.Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
                 a = build.new Artifact(parent.getFileName() + '/' + child, childPath,
@@ -131,12 +142,12 @@ public class StandardArtifactManager extends ArtifactManager {
         return n;
     }
 
-    @Override public InputStream loadArtifact(Run<?,?> build, String artifact) throws IOException {
-        return new FileInputStream(new File(getArtifactsDir(build), artifact));
+    @Override public InputStream loadArtifact(String artifact) throws IOException {
+        return new FileInputStream(new File(getArtifactsDir(), artifact));
     }
 
     @SuppressWarnings("deprecation")
-    private static File getArtifactsDir(Run<?,?> build) {
+    private File getArtifactsDir() {
         return build.getArtifactsDir();
     }
 

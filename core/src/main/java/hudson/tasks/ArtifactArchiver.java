@@ -137,7 +137,7 @@ public class ArtifactArchiver extends Recorder {
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(build, ws, launcher, listener, files);
+                build.pickArtifactManager().archive(ws, launcher, listener, files);
             } else {
                 if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
@@ -197,7 +197,7 @@ public class ArtifactArchiver extends Recorder {
                     } else {
                         // remove old artifacts
                         try {
-                            if (b.getArtifactManager().deleteArtifacts(b)) {
+                            if (b.getArtifactManager().deleteArtifacts()) {
                                 listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
                             }
                         } catch (IOException e) {

@@ -118,6 +118,8 @@ import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.RunAction2;
@@ -256,10 +258,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private volatile transient RunExecution runner;
 
     /**
-     * {@link ArtifactManager#id} of the artifact manager associated with this build, if any.
+     * Artifact manager associated with this build, if any.
      * @since TODO
      */
-    private @CheckForNull String artifactManager;
+    private @CheckForNull ArtifactManager artifactManager;
 
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
@@ -329,6 +331,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
             }
+        }
+        if (artifactManager != null) {
+            artifactManager.onLoad(this);
         }
     }
     
@@ -978,21 +983,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since TODO
      */
     public final @Nonnull ArtifactManager getArtifactManager() {
-        if (artifactManager != null) {
-            for (ArtifactManager mgr : ArtifactManager.all()) {
-                if (mgr.id().equals(artifactManager)) {
-                    return mgr;
-                }
-            }
-        }
-        return new StandardArtifactManager();
+        return artifactManager != null ? artifactManager : new StandardArtifactManager(this);
     }
 
     /**
      * Selects an object responsible for storing and retrieving build artifacts.
-     * The first time this is called on a running build, a list of all registered custom managers is checked
+     * The first time this is called on a running build, {@link ArtifactManagerConfiguration} is checked
      * to see if one will handle this build.
-     * If so, the identity of that manager is saved in the build and it will be used henceforth.
+     * If so, that manager is saved in the build and it will be used henceforth.
      * If no manager claimed the build, {@link StandardArtifactManager} is used.
      * <p>This method should be used when a build step expects to archive some artifacts.
      * If only displaying existing artifacts, use {@link #getArtifactManager} instead.
@@ -1002,16 +1000,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
         if (artifactManager != null) {
-            return getArtifactManager();
+            return artifactManager;
         } else {
-            for (ArtifactManager mgr : ArtifactManager.all()) {
-                if (mgr.appliesTo(this)) {
-                    artifactManager = mgr.id();
+            for (ArtifactManagerFactory f : ArtifactManagerConfiguration.get().getArtifactManagerFactories()) {
+                ArtifactManager mgr = f.managerFor(this);
+                if (mgr != null) {
+                    artifactManager = mgr;
                     save();
                     return mgr;
                 }
             }
-            return new StandardArtifactManager();
+            return new StandardArtifactManager(this);
         }
     }
 
@@ -1036,7 +1035,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the first N artifacts.
      */
     public List<Artifact> getArtifactsUpTo(int n) {
-        return getArtifactManager().getArtifactsUpTo(this, n);
+        return getArtifactManager().getArtifactsUpTo(n);
     }
 
     /**
@@ -1949,7 +1948,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        return getArtifactManager().browseArtifacts(this);
+        return getArtifactManager().browseArtifacts();
     }
 
     /**
