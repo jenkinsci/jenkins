@@ -48,6 +48,11 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration {
         load();
     }
 
+    private Object readResolve() {
+        artifactManagerFactories.setOwner(this);
+        return this;
+    }
+
     public DescribableList<ArtifactManagerFactory, Descriptor<ArtifactManagerFactory>> getArtifactManagerFactories() {
         return artifactManagerFactories;
     }
