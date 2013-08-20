@@ -41,6 +41,7 @@ import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -73,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
@@ -497,6 +499,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            RunListener.fireStarted(MavenBuild.this, listener);
         }
 
         public void end() {
@@ -512,6 +515,12 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            try {
+                updateSymlinks(listener);
+            } catch (InterruptedException x) {
+                Logger.getLogger(MavenBuild.class.getName()).log(Level.WARNING, null, x);
+            }
+            RunListener.fireCompleted(MavenBuild.this, listener);
         }
 
         /**

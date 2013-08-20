@@ -1,5 +1,7 @@
 package hudson.maven;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Functions;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -7,16 +9,23 @@ import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
 import org.jvnet.hudson.test.ExtractChangeLogSet;
 
 import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Job;
+import hudson.model.PermalinkProjectAction;
 import hudson.model.Result;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
+import java.io.File;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +51,36 @@ public class MavenMultiModuleTest {
         j.buildAndAssertSuccess(m);
     }
 
+    @Bug(18846)
+    @Test public void symlinksUpdated() throws Exception {
+        Assume.assumeFalse(Functions.isWindows());
+        j.configureDefaultMaven();
+        MavenModuleSet mms = j.createMavenProject();
+        mms.setScm(new ExtractResourceSCM(MavenMultiModuleTest.class.getResource("maven-multimod.zip")));
+        j.buildAndAssertSuccess(mms);
+        MavenModule mm = mms.getModule("org.jvnet.hudson.main.test.multimod:moduleA");
+        j.buildAndAssertSuccess(mms);
+        assertEquals(2, mms.getLastStableBuild().number);
+        assertEquals(mms.getLastBuild().getId(), Util.resolveSymlink(new File(mms.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mms.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mms.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mms).toString());
+        assertEquals(2, mm.getLastStableBuild().number);
+        assertEquals(mm.getLastBuild().getId(), Util.resolveSymlink(new File(mm.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mm.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mm.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mm).toString());
+    }
+    private static Set<String> permalinks(Job<?,?> j) {
+        Set<String> r = new TreeSet<String>();
+        for (PermalinkProjectAction.Permalink l : j.getPermalinks()) {
+            if (l.resolve(j) != null) {
+                r.add(l.getId());
+            }
+        }
+        return r;
+    }
+
     @Test public void incrementalMultiModMaven() throws Exception {
         j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
         MavenModuleSet m = j.createMavenProject();
@@ -49,16 +88,16 @@ public class MavenMultiModuleTest {
         m.getReporters().add(new MavenFingerprinter());
     	m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod.zip"),
     						   getClass().getResource("maven-multimod-changes.zip")));
-    
+
     	j.buildAndAssertSuccess(m);
-    
+
     	// Now run a second build with the changes.
     	m.setIncrementalBuild(true);
         j.buildAndAssertSuccess(m);
-    
+
     	MavenModuleSetBuild pBuild = m.getLastBuild();
     	ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
-    
+
     	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
 
     	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
@@ -72,15 +111,15 @@ public class MavenMultiModuleTest {
     	    else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
     	        assertEquals("moduleC should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
     	    }
-    	}	
-	
+    	}
+
 	    long summedModuleDuration = 0;
 	    for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
 	        summedModuleDuration += modBuild.getDuration();
 	    }
 	    assertTrue("duration of moduleset build should be greater-equal than sum of the module builds",
 	            pBuild.getDuration() >= summedModuleDuration);
-	    
+
 	    assertFingerprintWereRecorded(pBuild);
     }
 
@@ -92,7 +131,7 @@ public class MavenMultiModuleTest {
                 mustHaveFingerprints = true;
             }
         }
-        
+
         if (mustHaveFingerprints) {
             FingerprintAction action = modulesetBuild.getAction(FingerprintAction.class);
             Assert.assertNotNull(action);
@@ -104,14 +143,14 @@ public class MavenMultiModuleTest {
         FingerprintAction action = moduleBuild.getAction(FingerprintAction.class);
         Assert.assertNotNull(action);
         Assert.assertFalse(action.getFingerprints().isEmpty());
-        
+
         MavenArtifactRecord artifactRecord = moduleBuild.getAction(MavenArtifactRecord.class);
         Assert.assertNotNull(artifactRecord);
         String fingerprintName = artifactRecord.mainArtifact.groupId + ":" + artifactRecord.mainArtifact.fileName;
-        
+
         Assert.assertTrue("Expected fingerprint " + fingerprintName + " in module build " + moduleBuild,
               action.getFingerprints().containsKey(fingerprintName));
-        
+
         // we should assert more - i.e. that all dependencies are fingerprinted, too,
         // but it's complicated to find out the dependencies of the build
     }
@@ -124,16 +163,16 @@ public class MavenMultiModuleTest {
         m.getReporters().add(new TestReporter());
         m.setScm(new ExtractResourceWithChangesSCM(getClass().getResource("maven-multimod-rel-base.zip"),
 						   getClass().getResource("maven-multimod-changes.zip")));
-        
+
         j.buildAndAssertSuccess(m);
-        
+
         // Now run a second build with the changes.
         m.setIncrementalBuild(true);
         j.buildAndAssertSuccess(m);
-        
+
         MavenModuleSetBuild pBuild = m.getLastBuild();
         ExtractChangeLogSet changeSet = (ExtractChangeLogSet) pBuild.getChangeSet();
-        
+
         assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
 
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
@@ -147,8 +186,8 @@ public class MavenMultiModuleTest {
             else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
                 assertEquals("moduleC should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
             }
-        }	
-	
+        }
+
         long summedModuleDuration = 0;
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
             summedModuleDuration += modBuild.getDuration();
@@ -157,7 +196,7 @@ public class MavenMultiModuleTest {
         pBuild.getDuration() >= summedModuleDuration);
     }
 
-        
+
     @Bug(6544)
     @Ignore("kutzi 10/10/11 ignore test until I can figure out why it fails sometimes")
     @Test public void estimatedDurationForIncrementalMultiModMaven()
@@ -178,7 +217,7 @@ public class MavenMultiModuleTest {
         MavenModuleSetBuild lastBuild = m.getLastBuild();
         MavenModuleSetBuild previousBuild = lastBuild.getPreviousBuild();
         assertNull("There should be only one previous build", previousBuild.getPreviousBuild());
-        
+
         // Since the estimated duration is calculated based on the previous builds
         // and there was only one previous build (which built all modules) and this build
         // did only build one module, the estimated duration of this build must be
@@ -189,7 +228,7 @@ public class MavenMultiModuleTest {
                 + ", but is " + lastBuild.getEstimatedDuration(),
                 lastBuild.getEstimatedDuration() <= previousBuild.getDuration());
     }
-    
+
     /**
      * NPE in {@code getChangeSetFor(m)} in {@link MavenModuleSetBuild} when incremental build is
      * enabled and a new module is added.
@@ -234,9 +273,9 @@ public class MavenMultiModuleTest {
             else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod:moduleC")) {
                 assertEquals("moduleC should have Result.NOT_BUILT", Result.NOT_BUILT, modBuild.getResult());
             }
-	    
-        }	
-	
+
+        }
+
     }
 
     /**
@@ -254,7 +293,7 @@ public class MavenMultiModuleTest {
 
         j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
         MavenModuleSetBuild pBuild = m.getLastBuild();
-        
+
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
             String parentModuleName = modBuild.getParent().getModuleName().toString();
             if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
@@ -269,7 +308,7 @@ public class MavenMultiModuleTest {
             else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
                 assertEquals("moduleD should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
             }
-        }   
+        }
 
         // Now run a second build with the changes.
         j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
@@ -280,7 +319,7 @@ public class MavenMultiModuleTest {
     	assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
     	// changelog contains a change for module B
     	assertEquals("Parent build should have Result.UNSTABLE", Result.UNSTABLE, pBuild.getResult());
-	
+
     	for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
     	    String parentModuleName = modBuild.getParent().getModuleName().toString();
     	    // A must be build again, because it was UNSTABLE before
@@ -301,7 +340,7 @@ public class MavenMultiModuleTest {
     	    }
     	}
     }
-    
+
     /**
      * If "deploy modules" is checked and aggregator build failed
      * then all modules build this time, have to be build next time, again.
@@ -318,7 +357,7 @@ public class MavenMultiModuleTest {
 
         j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
         MavenModuleSetBuild pBuild = m.getLastBuild();
-        
+
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
             String parentModuleName = modBuild.getParent().getModuleName().toString();
             if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
@@ -333,7 +372,7 @@ public class MavenMultiModuleTest {
             else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
                 assertEquals("moduleD should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
             }
-        }   
+        }
 
         // Now run a second build.
         j.assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
@@ -344,7 +383,7 @@ public class MavenMultiModuleTest {
         assertFalse("ExtractChangeLogSet should not be empty.", changeSet.isEmptySet());
         // changelog contains a change for module B
         assertEquals("Parent build should have Result.UNSTABLE", Result.UNSTABLE, pBuild.getResult());
-    
+
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
             String parentModuleName = modBuild.getParent().getModuleName().toString();
             // A must be build again, because it was UNSTABLE before
@@ -365,7 +404,7 @@ public class MavenMultiModuleTest {
             }
         }
     }
-    
+
     /**
      * Test failures in a child module should lead to the parent being marked as unstable.
      */
@@ -381,7 +420,7 @@ public class MavenMultiModuleTest {
         MavenModuleSetBuild pBuild = m.getLastBuild();
 
         assertEquals("Parent build should have Result.UNSTABLE", Result.UNSTABLE, pBuild.getResult());
-	
+
         for (MavenBuild modBuild : pBuild.getModuleLastBuilds().values()) {
             String parentModuleName = modBuild.getParent().getModuleName().toString();
             if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleA")) {
@@ -396,9 +435,9 @@ public class MavenMultiModuleTest {
             else if (parentModuleName.equals("org.jvnet.hudson.main.test.multimod.incr:moduleD")) {
                 assertEquals("moduleD should have Result.SUCCESS", Result.SUCCESS, modBuild.getResult());
             }
-        }	
+        }
     }
-    
+
     @Bug(8484)
     @Test public void multiModMavenNonRecursive() throws Exception {
         j.configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_21);
@@ -409,7 +448,7 @@ public class MavenMultiModuleTest {
         assertTrue("MavenModuleSet.isNonRecursive() should be true", m.isNonRecursive());
         j.buildAndAssertSuccess(m);
         assertEquals("not only one module", 1, m.getModules().size());
-    }    
+    }
 
     /*
     @Test public void parallelMultiModMavenWsExists() throws Exception {
@@ -431,11 +470,11 @@ public class MavenMultiModuleTest {
 
 	    assertBuildStatusSuccess(mod.getLastBuild());
 	}
-	
 
-	
+
+
     }
-    
+
     @Test public void privateRepoParallelMultiModMavenWsExists() throws Exception {
         configureDefaultMaven();
         MavenModuleSet m = createMavenProject();
@@ -449,7 +488,7 @@ public class MavenMultiModuleTest {
 	    while (mod.getLastBuild() == null) {
 		Thread.sleep(500);
 	    }
-	    
+
 	    while (mod.getLastBuild().isBuilding()) {
 		Thread.sleep(500);
 	    }
@@ -467,7 +506,7 @@ public class MavenMultiModuleTest {
             return true;
         }
     }
-    
+
     private static class DummyRedeployPublisher extends RedeployPublisher {
         public DummyRedeployPublisher() {
             super("", "", false, false);
