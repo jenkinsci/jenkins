@@ -448,7 +448,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
         }
 
         void performArchiving(Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            listener.getLogger().println("[JENKINS] Archiving " + artifacts);
+            for (Map.Entry<String,File> e : artifacts.entrySet()) {
+                listener.getLogger().println("[JENKINS] Archiving " + e.getValue() + " to " + e.getKey());
+            }
             ArtifactManager am = pickArtifactManager();
             FilePath ws = getWorkspace();
             Map<String,String> artifactsInsideWorkspace = new LinkedHashMap<String,String>();
