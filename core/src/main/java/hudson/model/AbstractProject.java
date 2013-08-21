@@ -703,8 +703,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
-        ItemListener.fireOnUpdated(this);
+        
         save();
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
