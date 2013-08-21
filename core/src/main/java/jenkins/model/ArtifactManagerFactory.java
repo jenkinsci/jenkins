@@ -30,10 +30,12 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import javax.annotation.CheckForNull;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Pluggable ability to manage transfer and/or storage of build artifacts.
  * The descriptor should specify at least a display name, and optionally a {@code config} view.
+ * Since the user can configure this class, you must have a {@link DataBoundConstructor}.
  * @see ArtifactManagerConfiguration
  * @since TODO
  */
