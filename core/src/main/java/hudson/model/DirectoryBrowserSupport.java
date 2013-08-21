@@ -340,7 +340,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(outputStream);
-        for (String n : dir.list(glob.isEmpty() ? "**" : glob)) {
+        for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
             ZipEntry e = new ZipEntry(n);
             VirtualFile f = dir.child(n);
             e.setTime(f.lastModified());
