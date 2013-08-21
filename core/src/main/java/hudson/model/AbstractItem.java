@@ -182,9 +182,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public void setDescription(String description) throws IOException {
         this.description = description;
-        ItemListener.fireOnUpdated(this);
         save();
-        
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
