@@ -98,6 +98,7 @@ import com.sun.jna.Native;
 import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
@@ -2472,4 +2473,35 @@ public final class FilePath implements Serializable {
             }
         });
     }
+
+    /**
+     * Helper class to make it easy to send an explicit list of files using {@link FilePath} methods.
+     * @since TODO
+     */
+    public static final class ExplicitlySpecifiedDirScanner extends DirScanner {
+
+        private static final long serialVersionUID = 1;
+
+        private final Map<String,String> files;
+
+        /**
+         * Create a “scanner” (it actually does no scanning).
+         * @param files a map from logical relative paths as per {@link FileVisitor#visit}, to actual relative paths within the scanned directory
+         */
+        public ExplicitlySpecifiedDirScanner(Map<String,String> files) {
+            this.files = files;
+        }
+
+        @Override public void scan(File dir, FileVisitor visitor) throws IOException {
+            for (Map.Entry<String,String> entry : files.entrySet()) {
+                String archivedPath = entry.getKey();
+                assert archivedPath.indexOf('\\') == -1;
+                String workspacePath = entry.getValue();
+                assert workspacePath.indexOf('\\') == -1;
+                scanSingle(new File(dir, workspacePath), archivedPath, visitor);
+            }
+        }
+
+    }
+
 }
