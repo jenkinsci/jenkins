@@ -30,18 +30,16 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.tasks.ArtifactArchiver;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Map;
+import jenkins.util.VirtualFile;
 
 /**
  * Manager of artifacts for one build.
  * @see ArtifactManagerFactory
  * @since TODO
  */
-public abstract class ArtifactManager implements Iterable<Map.Entry<String,Long>> {
+public abstract class ArtifactManager {
 
     /**
      * Called when this manager is loaded from disk.
@@ -76,23 +74,9 @@ public abstract class ArtifactManager implements Iterable<Map.Entry<String,Long>
     public abstract boolean delete() throws IOException, InterruptedException;
 
     /**
-     * Lists all artifacts currently archived.
-     * Does now throw {@link IOException} since implementations are encouraged to be lazy:
-     * in case there is a large number of artifacts, the caller may not actually ask about all of them.
-     * Only files should be returned, not directories.
-     * No particular order is required, though it is recommended to sort by {@link String#CASE_INSENSITIVE_ORDER} within a directory.
-     * @return a map from artifact relative path (as in {@link #load}) to file length
+     * Returns a representation of the root directory of archived artifacts.
+     * @return the archive root
      */
-    @Override public abstract Iterator<Map.Entry<String,Long>> iterator();
-
-    /**
-     * Load the contents of an artifact as a stream.
-     * Useful especially in conjunction with {@link #archiveSingle} to serve previously stored content.
-     * @param artifact the relative path of the artifact, e.g. {@code subdir/something.jar}
-     * @return the contents of the artifact
-     * @throws FileNotFoundException if no such artifact exists in this build
-     * @throws IOException in case of some other problem
-     */
-    public abstract InputStream load(String artifact) throws IOException;
+    public abstract VirtualFile root();
 
 }

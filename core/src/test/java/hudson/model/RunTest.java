@@ -31,7 +31,6 @@ import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -145,40 +144,6 @@ public class RunTest {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
         assertEquals(a.get(0).getDisplayPath(), "a.xml");
         assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
-    }
-
-    @Test public void addArtifact() {
-        Run.ArtifactList list = new Run(new StubJob(), 0) {}.new ArtifactList();
-        assertEquals("[]", showTree(list));
-        list.addArtifact("README", 0);
-        assertEquals("[README]; README[n1]→null", showTree(list));
-        list.addArtifact("dist/bin/x", 0);
-        list.addArtifact("dist/bin/Mac OS X/x.app", 0);
-        list.addArtifact("dist/doc/man/x.1", 0);
-        list.addArtifact("dist/doc/man/x.8", 0);
-        assertEquals("[README, dist/bin/x, dist/bin/Mac OS X/x.app, dist/doc/man/x.1, dist/doc/man/x.8]; "
-                + "README[n1]→null; "
-                + "dist[n2]→null; "
-                + "dist/bin[n3]→n2; "
-                + "dist/bin/x[n4]→n3; "
-                + "dist/bin/Mac OS X[n5]→n3; "
-                + "dist/bin/Mac%20OS%20X/x.app[n6]→n5; "
-                + "dist/doc[n7]→n2; "
-                + "dist/doc/man[n8]→n7; "
-                + "dist/doc/man/x.1[n9]→n8; "
-                + "dist/doc/man/x.8[n10]→n8", showTree(list));
-        // TODO collapseNodes (doc/man)
-    }
-    private static String showTree(Run.ArtifactList list) {
-        StringBuilder b = new StringBuilder();
-        b.append(list);
-        Map<Run.Artifact,String> tree = list.getTree();
-        for (Map.Entry<Run.Artifact,String> entry : tree.entrySet()) {
-            b.append("; ");
-            Artifact a = entry.getKey();
-            b.append(a.getHref() != null ? a.getHref() : a.relativePath).append('[').append(a.getTreeNodeId()).append(']').append('→').append(entry.getValue());
-        }
-        return b.toString();
     }
 
 }

@@ -24,22 +24,15 @@
 
 package jenkins.model;
 
-import com.google.common.collect.AbstractIterator;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.Run;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
+import jenkins.util.VirtualFile;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
@@ -73,36 +66,8 @@ public class StandardArtifactManager extends ArtifactManager {
         return true;
     }
 
-    @Override public final Iterator<Map.Entry<String,Long>> iterator() {
-        final File base = getArtifactsDir();
-        return new AbstractIterator<Map.Entry<String,Long>>() {
-            Queue<String> paths = new LinkedList<String>(Collections.singleton("/"));
-            @Override protected Map.Entry<String,Long> computeNext() {
-                while (true) {
-                    String path = paths.poll();
-                    if (path == null) {
-                        return endOfData();
-                    }
-                    File f = new File(base, path);
-                    if (f.isDirectory()) {
-                        String[] kids = f.list();
-                        if (kids != null) {
-                            Arrays.sort(kids, String.CASE_INSENSITIVE_ORDER);
-                            for (String kid : kids) {
-                                paths.add(path + '/' + kid);
-                            }
-                        }
-                    } else {
-                        // TODO Java 6: AbstractMap.SimpleImmutableEntry
-                        return Collections.singletonMap(path, f.length()).entrySet().iterator().next();
-                    }
-                }
-            }
-        };
-    }
-
-    @Override public final InputStream load(String artifact) throws IOException {
-        return new FileInputStream(new File(getArtifactsDir(), artifact));
+    @Override public VirtualFile root() {
+        return VirtualFile.forFile(getArtifactsDir());
     }
 
     @SuppressWarnings("deprecation")

@@ -73,6 +73,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -124,6 +125,7 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.RunAction2;
+import jenkins.util.VirtualFile;
 
 /**
  * A particular execution of {@link Job}.
@@ -1037,13 +1039,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public List<Artifact> getArtifactsUpTo(int n) {
         ArtifactList r = new ArtifactList();
-        for (Map.Entry<String,Long> art : getArtifactManager()) {
-            r.addArtifact(art.getKey(), art.getValue());
-            if (--n == 0) {
-                break;
-            }
+        try {
+            addArtifacts(getArtifactManager().root(), "", "", r, null, n);
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, null, x);
         }
-        r.collapseNodes();
         r.computeDisplayName();
         return r;
     }
@@ -1056,6 +1056,43 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public boolean getHasArtifacts() {
         return !getArtifactsUpTo(1).isEmpty();
+    }
+
+    private int addArtifacts(VirtualFile dir, String path, String pathHref, ArtifactList r, Artifact parent, int upTo) throws IOException {
+        VirtualFile[] kids = dir.list();
+        Arrays.sort(kids);
+
+        int n = 0;
+        for (VirtualFile sub : kids) {
+            String child = sub.getName();
+            String childPath = path + child;
+            String childHref = pathHref + Util.rawEncode(child);
+            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
+            boolean collapsed = (kids.length==1 && parent!=null);
+            Artifact a;
+            if (collapsed) {
+                // Collapse single items into parent node where possible:
+                a = new Artifact(parent.getFileName() + '/' + child, childPath,
+                                 sub.isDirectory() ? null : childHref, length,
+                                 parent.getTreeNodeId());
+                r.tree.put(a, r.tree.remove(parent));
+            } else {
+                // Use null href for a directory:
+                a = new Artifact(child, childPath,
+                                 sub.isDirectory() ? null : childHref, length,
+                                 "n" + ++r.idSeq);
+                r.tree.put(a, parent!=null ? parent.getTreeNodeId() : null);
+            }
+            if (sub.isDirectory()) {
+                n += addArtifacts(sub, childPath + '/', childHref + '/', r, a, upTo-n);
+                if (n>=upTo) break;
+            } else {
+                // Don't store collapsed path in ArrayList (for correct data in external API)
+                r.add(collapsed ? new Artifact(child, a.relativePath, a.href, length, a.treeNodeId) : a);
+                if (++n>=upTo) break;
+            }
+        }
+        return n;
     }
 
     /**
@@ -1077,48 +1114,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
         private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
-        private final Map<String,Artifact> directoryNodes = new HashMap<String,Artifact>();
         private int idSeq = 0;
 
         public Map<Artifact,String> getTree() {
             return tree;
-        }
-
-        void addArtifact(String path, long length) {
-            StringBuilder href = new StringBuilder();
-            String parentId = null;
-            int from = 0;
-            int to;
-            while (true) {
-                to = path.indexOf('/', from);
-                boolean end = to == -1;
-                String segment = end ? path.substring(from) : path.substring(from, to);
-                if (from > 0) {
-                    href.append('/');
-                }
-                href.append(Util.rawEncode(segment));
-                if (end) {
-                    break;
-                } else {
-                    String d = path.substring(0, to);
-                    Artifact p = directoryNodes.get(d);
-                    if (p == null) {
-                        String newParentId = "n" + ++idSeq;
-                        p = new Artifact(segment, d, null, "", newParentId);
-                        directoryNodes.put(d, p);
-                        tree.put(p, parentId);
-                    }
-                    parentId = p.treeNodeId;
-                    from = to + 1;
-                }
-            }
-            Artifact a = new Artifact(path.replaceFirst("^.+/", ""), path, href.toString(), Long.toString(length), "n" + ++idSeq);
-            add(a);
-            tree.put(a, parentId);
-        }
-
-        void collapseNodes() {
-            // TODO
         }
 
         public void computeDisplayName() {
@@ -1994,8 +1993,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        // TODO will only work for StandardArtifactManager
-        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.png", true);
+        return new DirectoryBrowserSupport(this, getArtifactManager().root(), project.getDisplayName() + ' ' + getDisplayName(), "package.png", true);
     }
 
     /**

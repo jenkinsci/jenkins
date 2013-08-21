@@ -24,7 +24,6 @@ import hudson.tasks.Maven.MavenInstallation;
 import java.io.File;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
+import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.Ignore;
@@ -545,14 +545,8 @@ public class MavenMultiModuleTest {
         @Override public boolean delete() throws IOException, InterruptedException {
             throw new IOException();
         }
-        @Override public Object browseArtifacts() {
+        @Override public VirtualFile root() {
             throw new UnsupportedOperationException();
-        }
-        @Override public Run.ArtifactList getArtifactsUpTo(int n) {
-            throw new UnsupportedOperationException();
-        }
-        @Override public InputStream load(String artifact) throws IOException {
-            throw new IOException();
         }
     }
 
