@@ -145,15 +145,15 @@ public class ArtifactArchiver extends Recorder {
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                        msg = ws.validateAntFileMask(artifacts);
+                    	msg = ws.validateAntFileMask(artifacts);
                     } catch (Exception e) {
-                        listenerWarnOrError(listener, e.getMessage());
+                    	listenerWarnOrError(listener, e.getMessage());
                     }
                     if(msg!=null)
                         listenerWarnOrError(listener, msg);
                 }
                 if (!allowEmptyArchive) {
-                    build.setResult(Result.FAILURE);
+                	build.setResult(Result.FAILURE);
                 }
                 return true;
             }
@@ -197,7 +197,7 @@ public class ArtifactArchiver extends Recorder {
                     } else {
                         // remove old artifacts
                         try {
-                            if (b.getArtifactManager().deleteArtifacts()) {
+                            if (b.getArtifactManager().delete()) {
                                 listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
                             }
                         } catch (IOException e) {

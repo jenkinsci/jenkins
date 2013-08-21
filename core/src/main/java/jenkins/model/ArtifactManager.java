@@ -28,23 +28,20 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Run;
 import hudson.tasks.ArtifactArchiver;
-import hudson.util.HttpResponses;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Manager of artifacts for one build.
  * @see ArtifactManagerFactory
  * @since TODO
  */
-public abstract class ArtifactManager {
+public abstract class ArtifactManager implements Iterable<Map.Entry<String,Long>> {
 
     /**
      * Called when this manager is loaded from disk.
@@ -76,35 +73,17 @@ public abstract class ArtifactManager {
      * @throws IOException if deletion could not be completed
      * @throws InterruptedException if deletion was interrupted
      */
-    public abstract boolean deleteArtifacts() throws IOException, InterruptedException;
+    public abstract boolean delete() throws IOException, InterruptedException;
 
     /**
-     * Returns an object that gets bound to URL under "job/JOB/15/artifact".
-     *
-     * <p>
-     * This object should displays all artifacts of a build in a web display.
-     * (The caller is responsible for checking {@link Run#ARTIFACTS} permission.)
-     *
-     * <p>
-     * The response should also be capable of handling display of individual artifacts or subdirectories as per {@link StaplerRequest#getRestOfPath},
-     * and serving {@code *fingerprint*} URLs as {@link DirectoryBrowserSupport} does.
-     *
-     * @return
-     *      the stapler-bound object to render the page.
-     * @throws HttpResponse
-     *      if the implementation wants to redirect to elsewhere, throw any exception that implements
-     *      {@link HttpResponse} to have Jenkins return a redirect (or any other HTTP request.)
-     *      See {@link HttpResponses#redirectTo(String)} for example.
+     * Lists all artifacts currently archived.
+     * Does now throw {@link IOException} since implementations are encouraged to be lazy:
+     * in case there is a large number of artifacts, the caller may not actually ask about all of them.
+     * Only files should be returned, not directories.
+     * No particular order is required, though it is recommended to sort by {@link String#CASE_INSENSITIVE_ORDER} within a directory.
+     * @return a map from artifact relative path (as in {@link #load}) to file length
      */
-    public abstract Object browseArtifacts();
-
-    /**
-     * Loads a manifest of some or all artifact records.
-     * @param n a maximum number of items to return
-     * @return a list of artifact records
-     */
-    @SuppressWarnings("rawtypes") // managers can apply to different kinds of builds, so this is not feasible to type check
-    public abstract Run.ArtifactList getArtifactsUpTo(int n);
+    @Override public abstract Iterator<Map.Entry<String,Long>> iterator();
 
     /**
      * Load the contents of an artifact as a stream.
@@ -114,6 +93,6 @@ public abstract class ArtifactManager {
      * @throws FileNotFoundException if no such artifact exists in this build
      * @throws IOException in case of some other problem
      */
-    public abstract InputStream loadArtifact(String artifact) throws IOException;
+    public abstract InputStream load(String artifact) throws IOException;
 
 }

@@ -24,21 +24,22 @@
 
 package jenkins.model;
 
+import com.google.common.collect.AbstractIterator;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
-import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Run;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import hudson.util.HttpResponses;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
@@ -63,7 +64,7 @@ public class StandardArtifactManager extends ArtifactManager {
         workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description);
     }
 
-    @Override public boolean deleteArtifacts() throws IOException, InterruptedException {
+    @Override public final boolean delete() throws IOException, InterruptedException {
         File ad = getArtifactsDir();
         if (!ad.exists()) {
             return false;
@@ -72,59 +73,35 @@ public class StandardArtifactManager extends ArtifactManager {
         return true;
     }
 
-    @Override public Object browseArtifacts() {
-        throw HttpResponses._throw(new DirectoryBrowserSupport(build, new FilePath(getArtifactsDir()),
-                build.getParent().getDisplayName() + ' ' + build.getDisplayName(), "package.png", true));
-    }
-
-    @SuppressWarnings("rawtypes") // super told me to
-    @Override public Run.ArtifactList getArtifactsUpTo(int n) {
-        Run.ArtifactList r = build.new ArtifactList();
-        addArtifacts(build, getArtifactsDir(), "", "", r, null, n, new AtomicInteger());
-        r.computeDisplayName();
-        return r;
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"}) // trying to type-check this mess just seems hopeless
-    private static int addArtifacts(Run build, File dir, String path, String pathHref, Run.ArtifactList r, Run.Artifact parent, int upTo, AtomicInteger idSeq) {
-        String[] children = dir.list();
-        if(children==null)  return 0;
-        Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
-
-        int n = 0;
-        for (String child : children) {
-            String childPath = path + child;
-            String childHref = pathHref + Util.rawEncode(child);
-            File sub = new File(dir, child);
-            String length = sub.isFile() ? String.valueOf(sub.length()) : "";
-            boolean collapsed = (children.length==1 && parent!=null);
-            Run.Artifact a;
-            if (collapsed) {
-                // Collapse single items into parent node where possible:
-                a = build.new Artifact(parent.getFileName() + '/' + child, childPath,
-                                 sub.isDirectory() ? null : childHref, length,
-                                 parent.getTreeNodeId());
-                r.getTree().put(a, r.getTree().remove(parent));
-            } else {
-                // Use null href for a directory:
-                a = build.new Artifact(child, childPath,
-                                 sub.isDirectory() ? null : childHref, length,
-                                 "n" + idSeq.incrementAndGet());
-                r.getTree().put(a, parent!=null ? parent.getTreeNodeId() : null);
+    @Override public final Iterator<Map.Entry<String,Long>> iterator() {
+        final File base = getArtifactsDir();
+        return new AbstractIterator<Map.Entry<String,Long>>() {
+            Queue<String> paths = new LinkedList<String>(Collections.singleton("/"));
+            @Override protected Map.Entry<String,Long> computeNext() {
+                while (true) {
+                    String path = paths.poll();
+                    if (path == null) {
+                        return endOfData();
+                    }
+                    File f = new File(base, path);
+                    if (f.isDirectory()) {
+                        String[] kids = f.list();
+                        if (kids != null) {
+                            Arrays.sort(kids, String.CASE_INSENSITIVE_ORDER);
+                            for (String kid : kids) {
+                                paths.add(path + '/' + kid);
+                            }
+                        }
+                    } else {
+                        // TODO Java 6: AbstractMap.SimpleImmutableEntry
+                        return Collections.singletonMap(path, f.length()).entrySet().iterator().next();
+                    }
+                }
             }
-            if (sub.isDirectory()) {
-                n += addArtifacts(build, sub, childPath + '/', childHref + '/', r, a, upTo-n, idSeq);
-                if (n>=upTo) break;
-            } else {
-                // Don't store collapsed path in ArrayList (for correct data in external API)
-                r.add(collapsed ? build.new Artifact(child, a.relativePath, a.getHref(), length, a.getTreeNodeId()) : a);
-                if (++n>=upTo) break;
-            }
-        }
-        return n;
+        };
     }
 
-    @Override public InputStream loadArtifact(String artifact) throws IOException {
+    @Override public final InputStream load(String artifact) throws IOException {
         return new FileInputStream(new File(getArtifactsDir(), artifact));
     }
 

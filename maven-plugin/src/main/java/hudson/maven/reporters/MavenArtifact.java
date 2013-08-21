@@ -207,7 +207,7 @@ public final class MavenArtifact implements Serializable {
         f.deleteOnExit();
         OutputStream os = new FileOutputStream(f);
         try {
-            Util.copyStreamAndClose(build.getArtifactManager().loadArtifact(artifactPath()), os);
+            Util.copyStreamAndClose(build.getArtifactManager().load(artifactPath()), os);
         } finally {
             os.close();
         }
@@ -223,7 +223,7 @@ public final class MavenArtifact implements Serializable {
         return new HttpResponse() {
             @Override public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 rsp.setContentType("application/octet-stream");
-                Util.copyStreamAndClose(parent.parent.getArtifactManager().loadArtifact(artifactPath()), rsp.getCompressedOutputStream(req));
+                Util.copyStreamAndClose(parent.parent.getArtifactManager().load(artifactPath()), rsp.getCompressedOutputStream(req));
             }
         };
     }

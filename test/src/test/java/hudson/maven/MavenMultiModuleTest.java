@@ -542,7 +542,7 @@ public class MavenMultiModuleTest {
             }
             archivings.put(name, m);
         }
-        @Override public boolean deleteArtifacts() throws IOException, InterruptedException {
+        @Override public boolean delete() throws IOException, InterruptedException {
             throw new IOException();
         }
         @Override public Object browseArtifacts() {
@@ -551,7 +551,7 @@ public class MavenMultiModuleTest {
         @Override public Run.ArtifactList getArtifactsUpTo(int n) {
             throw new UnsupportedOperationException();
         }
-        @Override public InputStream loadArtifact(String artifact) throws IOException {
+        @Override public InputStream load(String artifact) throws IOException {
             throw new IOException();
         }
     }

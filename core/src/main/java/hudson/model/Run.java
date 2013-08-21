@@ -34,6 +34,7 @@ import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
@@ -1035,7 +1036,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the first N artifacts.
      */
     public List<Artifact> getArtifactsUpTo(int n) {
-        return getArtifactManager().getArtifactsUpTo(n);
+        ArtifactList r = new ArtifactList();
+        for (Map.Entry<String,Long> art : getArtifactManager()) {
+            r.addArtifact(art.getKey(), art.getValue());
+            if (--n == 0) {
+                break;
+            }
+        }
+        r.collapseNodes();
+        r.computeDisplayName();
+        return r;
     }
 
     /**
@@ -1067,9 +1077,48 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          * Contains Artifact objects for directories and files (the ArrayList contains only files).
          */
         private LinkedHashMap<Artifact,String> tree = new LinkedHashMap<Artifact,String>();
+        private final Map<String,Artifact> directoryNodes = new HashMap<String,Artifact>();
+        private int idSeq = 0;
 
         public Map<Artifact,String> getTree() {
             return tree;
+        }
+
+        void addArtifact(String path, long length) {
+            StringBuilder href = new StringBuilder();
+            String parentId = null;
+            int from = 0;
+            int to;
+            while (true) {
+                to = path.indexOf('/', from);
+                boolean end = to == -1;
+                String segment = end ? path.substring(from) : path.substring(from, to);
+                if (from > 0) {
+                    href.append('/');
+                }
+                href.append(Util.rawEncode(segment));
+                if (end) {
+                    break;
+                } else {
+                    String d = path.substring(0, to);
+                    Artifact p = directoryNodes.get(d);
+                    if (p == null) {
+                        String newParentId = "n" + ++idSeq;
+                        p = new Artifact(segment, d, null, "", newParentId);
+                        directoryNodes.put(d, p);
+                        tree.put(p, parentId);
+                    }
+                    parentId = p.treeNodeId;
+                    from = to + 1;
+                }
+            }
+            Artifact a = new Artifact(path.replaceFirst("^.+/", ""), path, href.toString(), Long.toString(length), "n" + ++idSeq);
+            add(a);
+            tree.put(a, parentId);
+        }
+
+        void collapseNodes() {
+            // TODO
         }
 
         public void computeDisplayName() {
@@ -1146,7 +1195,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * A build artifact.
      */
     @ExportedBean
-    public final class Artifact {
+    public class Artifact {
         /**
          * Relative path name from artifacts root.
          */
@@ -1181,10 +1230,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
          */
         private String length;
 
-        /**
-         * @since TODO
-         */
-        public Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
+        /*package for test*/ Artifact(String name, String relativePath, String href, String len, String treeNodeId) {
             this.name = name;
             this.relativePath = relativePath;
             this.href = href;
@@ -1194,7 +1240,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Gets the artifact file.
-         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#loadArtifact} with {@link #relativePath} instead.
+         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#load} with {@link #relativePath} instead.
          */
         @Deprecated
         public File getFile() {
@@ -1944,11 +1990,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Serves the artifacts.
      */
-    public Object getArtifact() {
+    public DirectoryBrowserSupport doArtifact() {
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        return getArtifactManager().browseArtifacts();
+        // TODO will only work for StandardArtifactManager
+        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.png", true);
     }
 
     /**
