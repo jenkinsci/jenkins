@@ -25,6 +25,7 @@
 package jenkins.util;
 
 import hudson.FilePath;
+import hudson.model.DirectoryBrowserSupport;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
@@ -40,6 +41,7 @@ import javax.annotation.Nonnull;
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
  * Assumed to be read-only and makes very limited assumptions, just enough to display content and traverse directories.
+ * @see DirectoryBrowserSupport
  * @since TODO
  */
 public abstract class VirtualFile implements Comparable<VirtualFile> {
@@ -51,14 +53,39 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
      */
     public abstract @Nonnull String getName();
 
+    /**
+     * Gets a URI.
+     * Should at least uniquely identify this virtual file within its root, but not necessarily globally.
+     * @return a URI (need not be absolute)
+     */
     public abstract URI toURI();
 
+    /**
+     * Gets the parent file.
+     * Need only operate within the originally given root.
+     * @return the parent
+     */
     public abstract VirtualFile getParent();
 
+    /**
+     * Checks whether this file exists and is a directory.
+     * @return true if it is a directory, false if a file or nonexistent
+     * @throws IOException in case checking status failed
+     */
     public abstract boolean isDirectory() throws IOException;
 
+    /**
+     * Checks whether this file exists and is a plain file.
+     * @return true if it is a file, false if a directory or nonexistent
+     * @throws IOException in case checking status failed
+     */
     public abstract boolean isFile() throws IOException;
 
+    /**
+     * Checks whether this file exists.
+     * @return true if it is a plain file or directory, false if nonexistent
+     * @throws IOException in case checking status failed
+     */
     public abstract boolean exists() throws IOException;
 
     /**
@@ -83,12 +110,32 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
      */
     public abstract @Nonnull VirtualFile child(@Nonnull String name);
 
+    /**
+     * Gets the file length.
+     * @return a length, or 0 if inapplicable (e.g. a directory)
+     * @throws IOException if checking the length failed
+     */
     public abstract long length() throws IOException;
 
+    /**
+     * Gets the file timestamp.
+     * @return a length, or 0 if inapplicable
+     * @throws IOException if checking the timestamp failed
+     */
     public abstract long lastModified() throws IOException;
 
+    /**
+     * Checks whether this file can be read.
+     * @return true normally
+     * @throws IOException if checking status failed
+     */
     public abstract boolean canRead() throws IOException;
 
+    /**
+     * Opens an input stream on the file so its contents can be read.
+     * @return an open stream
+     * @throws IOException if it could not be opened
+     */
     public abstract InputStream open() throws IOException;
 
     /**
@@ -99,18 +146,35 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
         return getName().compareToIgnoreCase(o.getName());
     }
 
+    /**
+     * Compares according to {@link #toURI}.
+     * @inheritDoc
+     */
     @Override public final boolean equals(Object obj) {
         return obj instanceof VirtualFile && toURI().equals(((VirtualFile) obj).toURI());
     }
 
+    /**
+     * Hashes according to {@link #toURI}.
+     * @inheritDoc
+     */
     @Override public final int hashCode() {
         return toURI().hashCode();
     }
 
+    /**
+     * Displays {@link #toURI}.
+     * @inheritDoc
+     */
     @Override public final String toString() {
         return toURI().toString();
     }
 
+    /**
+     * Creates a virtual file wrapper for a local file.
+     * @param f a disk file (need not exist)
+     * @return a wrapper
+     */
     public static VirtualFile forFile(final File f) {
         return new VirtualFile() {
             @Override public String getName() {
@@ -163,6 +227,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
         };
     }
 
+    /**
+     * Creates a virtual file wrapper for a remotable file.
+     * @param f a local or remote file (need not exist)
+     * @return a wrapper
+     */
     public static VirtualFile forFilePath(final FilePath f) {
         return new VirtualFile() {
             @Override public String getName() {
