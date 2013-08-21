@@ -24,10 +24,7 @@
 package hudson.util;
 
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 
@@ -42,19 +39,5 @@ import java.io.IOException;
 public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     public static HttpResponse staticResource(File f) throws IOException {
         return staticResource(f.toURI().toURL());
-    }
-
-    /**
-     * Wraps a response as an exception for easier control flow.
-     * @param hr a response to render
-     * @return a corresponding exception (does not itself throw it)
-     * @since TODO
-     */
-    public static HttpResponseException _throw(final HttpResponse hr) {
-        return new HttpResponseException() {
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
-                hr.generateResponse(req,rsp,o);
-            }
-        };
     }
 }
