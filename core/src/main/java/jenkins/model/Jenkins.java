@@ -3096,6 +3096,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * End point that intentionally throws an exception to test the error behaviour.
+     * @since 1.467
      */
     public void doException() {
         throw new RuntimeException();
