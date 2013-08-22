@@ -44,6 +44,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildWrapper;
@@ -406,7 +407,7 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     class ProxyImpl implements MavenBuildProxy, Serializable {
         private static final long serialVersionUID = 8865133776526671879L;
 
-        private final Map<String,File> artifacts = new LinkedHashMap<String,File>();
+        private final Map<String,String> artifacts = new LinkedHashMap<String,String>();
 
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
@@ -443,24 +444,24 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getArtifactsDir());
         }
 
-        @Override public void queueArchiving(String artifactPath, File artifact) {
+        @Override public void queueArchiving(String artifactPath, String artifact) {
             artifacts.put(artifactPath, artifact);
         }
 
         void performArchiving(Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            for (Map.Entry<String,File> e : artifacts.entrySet()) {
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
                 listener.getLogger().println("[JENKINS] Archiving " + e.getValue() + " to " + e.getKey());
             }
             ArtifactManager am = pickArtifactManager();
             FilePath ws = getWorkspace();
             Map<String,String> artifactsInsideWorkspace = new LinkedHashMap<String,String>();
-            String prefix = ws.getRemote().replace('\\', '/') + '/'; // try to relativize paths to workspace
-            Iterator<Map.Entry<String,File>> it = artifacts.entrySet().iterator();
+            String prefix = ws.act(new CanonicalPath()) + '/'; // try to relativize paths to workspace
+            Iterator<Map.Entry<String,String>> it = artifacts.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<String,File> e = it.next();
-                File f = e.getValue();
-                String p = f.getAbsolutePath().replace('\\', '/');
+                Map.Entry<String,String> e = it.next();
+                String p = new FilePath(ws, e.getValue()).act(new CanonicalPath());
                 if (!p.startsWith(prefix)) {
+                    listener.getLogger().println(p + " is not inside " + prefix + "; will archive in a separate pass");
                     continue;
                 }
                 artifactsInsideWorkspace.put(e.getKey(), p.substring(prefix.length()));
@@ -470,8 +471,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 am.archive(ws, launcher, listener, artifactsInsideWorkspace);
             }
             // Now handle other files outside the workspace, if any.
-            for (Map.Entry<String,File> e : artifacts.entrySet()) {
-                am.archive(new FilePath(ws, e.getValue().getParent()), launcher, listener, Collections.singletonMap(e.getKey(), e.getValue().getName()));
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
+                FilePath f = new FilePath(ws, e.getValue());
+                am.archive(f.getParent(), launcher, listener, Collections.singletonMap(e.getKey(), f.getName()));
             }
         }
 
@@ -515,6 +517,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         public MavenBuildInformation getMavenBuildInformation() {
             return new MavenBuildInformation( MavenBuild.this.getModuleSetBuild().getMavenVersionUsed());
+        }
+    }
+
+    private static final class CanonicalPath implements FilePath.FileCallable<String> {
+        private static final long serialVersionUID = 1;
+        @Override public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            return f.getCanonicalPath().replace(File.separatorChar, '/');
         }
     }
 

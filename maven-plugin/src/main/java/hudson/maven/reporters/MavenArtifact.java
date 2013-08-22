@@ -240,7 +240,7 @@ public final class MavenArtifact implements Serializable {
             LOGGER.fine("Archiving disabled - not archiving " + file);
         }
         else {
-            build.queueArchiving(artifactPath(), file);
+            build.queueArchiving(artifactPath(), file.getAbsolutePath());
         }
     }
 

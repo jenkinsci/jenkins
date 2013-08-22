@@ -246,7 +246,7 @@ public class SurefireArchiverUnitTest {
             return null;
         }
 
-        @Override public void queueArchiving(String artifactPath, File artifact) {}
+        @Override public void queueArchiving(String artifactPath, String artifact) {}
 
         @Override
         public void setResult(Result result) {

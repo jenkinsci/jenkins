@@ -27,7 +27,6 @@ import hudson.FilePath;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
-import java.io.File;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -101,10 +100,12 @@ public interface MavenBuildProxy {
     FilePath getArtifactsDir();
 
     /**
+     * @param artifactPath a relative {@code /}-separated path
+     * @param artifact absolute path name on the slave in the workspace
      * @see ArtifactManager#archive
      * @since TODO
      */
-    void queueArchiving(String artifactPath, File artifact);
+    void queueArchiving(String artifactPath, String artifact);
 
     /**
      * @see MavenBuild#setResult(Result)
@@ -220,7 +221,7 @@ public interface MavenBuildProxy {
             return core.getArtifactsDir();
         }
 
-        @Override public void queueArchiving(String artifactPath, File artifact) {
+        @Override public void queueArchiving(String artifactPath, String artifact) {
             core.queueArchiving(artifactPath, artifact);
         }
 

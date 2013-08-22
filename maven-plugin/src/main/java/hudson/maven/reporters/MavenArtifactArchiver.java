@@ -159,7 +159,7 @@ public class MavenArtifactArchiver extends MavenReporter {
                     continue;   // looks like this is already archived
                 String target = assembly.getName();
                 listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                build.queueArchiving(target, assembly);
+                build.queueArchiving(target, assembly.getAbsolutePath());
                 // TODO: fingerprint
             }
         }
