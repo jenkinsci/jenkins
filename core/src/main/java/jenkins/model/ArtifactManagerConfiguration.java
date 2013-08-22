@@ -25,7 +25,6 @@
 package jenkins.model;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
@@ -42,7 +41,7 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration {
         return Jenkins.getInstance().getInjector().getInstance(ArtifactManagerConfiguration.class);
     }
 
-    private final DescribableList<ArtifactManagerFactory,Descriptor<ArtifactManagerFactory>> artifactManagerFactories = new DescribableList<ArtifactManagerFactory,Descriptor<ArtifactManagerFactory>>(this);
+    private final DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor>(this);
 
     public ArtifactManagerConfiguration() {
         load();
@@ -53,13 +52,13 @@ public class ArtifactManagerConfiguration extends GlobalConfiguration {
         return this;
     }
 
-    public DescribableList<ArtifactManagerFactory, Descriptor<ArtifactManagerFactory>> getArtifactManagerFactories() {
+    public DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
         return artifactManagerFactories;
     }
 
     @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
-            artifactManagerFactories.rebuildHetero(req, json, ArtifactManagerFactory.all(), "artifactManagerFactories");
+            artifactManagerFactories.rebuildHetero(req, json, ArtifactManagerFactoryDescriptor.all(), "artifactManagerFactories");
             return true;
         } catch (IOException x) {
             throw new FormException(x, "artifactManagerFactories");

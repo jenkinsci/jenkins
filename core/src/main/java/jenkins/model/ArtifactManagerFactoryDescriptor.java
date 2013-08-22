@@ -22,14 +22,20 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.ArtifactManagerConfiguration;
+package jenkins.model;
 
-f = namespace(lib.FormTagLib);
+import hudson.DescriptorExtensionList;
+import hudson.model.Descriptor;
 
-if (!jenkins.model.ArtifactManagerFactoryDescriptor.all().isEmpty()) {
-    f.section(title: _("Artifact Management for Builds")) {
-        f.block() {
-            f.repeatableHeteroProperty(field: "artifactManagerFactories", hasHeader: true)
-        }
+/**
+ * Definition of a kind of artifact manager.
+ * @see ArtifactManagerFactory
+ * @since TODO
+ */
+public abstract class ArtifactManagerFactoryDescriptor extends Descriptor<ArtifactManagerFactory> {
+
+    public static DescriptorExtensionList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> all() {
+        return Jenkins.getInstance().getDescriptorList(ArtifactManagerFactory.class);
     }
+
 }

@@ -24,10 +24,8 @@
 
 package jenkins.model;
 
-import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
 import hudson.model.Run;
 import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -37,6 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * The descriptor should specify at least a display name, and optionally a {@code config} view.
  * Since the user can configure this class, you must have a {@link DataBoundConstructor}.
  * @see ArtifactManagerConfiguration
+ * @see ArtifactManagerFactoryDescriptor
  * @since TODO
  */
 public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<ArtifactManagerFactory> implements ExtensionPoint {
@@ -50,8 +49,8 @@ public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<Art
      */
     public abstract @CheckForNull ArtifactManager managerFor(Run<?,?> build);
 
-    public static DescriptorExtensionList<ArtifactManagerFactory,Descriptor<ArtifactManagerFactory>> all() {
-        return Jenkins.getInstance().getDescriptorList(ArtifactManagerFactory.class);
+    @Override public ArtifactManagerFactoryDescriptor getDescriptor() {
+        return (ArtifactManagerFactoryDescriptor) super.getDescriptor();
     }
 
 }
