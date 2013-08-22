@@ -90,8 +90,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
 
     /**
      * Lists children of this directory.
-     * @return a list of children (files and subdirectories)
-     * @throws IOException if this is not a directory, or listing was not possible for some other reason
+     * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
+     * @throws IOException if this directory exists but listing was not possible for some other reason
      */
     public abstract @Nonnull VirtualFile[] list() throws IOException;
 
@@ -198,7 +198,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
             @Override public VirtualFile[] list() throws IOException {
                 File[] kids = f.listFiles();
                 if (kids == null) {
-                    throw new IOException();
+                    return new VirtualFile[0];
                 }
                 VirtualFile[] vfs = new VirtualFile[kids.length];
                 for (int i = 0; i < kids.length; i++) {
@@ -268,6 +268,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
             @Override public VirtualFile[] list() throws IOException {
                 try {
                     List<FilePath> kids = f.list();
+                    if (kids == null) {
+                        return new VirtualFile[0];
+                    }
                     VirtualFile[] vfs = new VirtualFile[kids.size()];
                     for (int i = 0; i < vfs.length; i++) {
                         vfs[i] = forFilePath(kids.get(i));
