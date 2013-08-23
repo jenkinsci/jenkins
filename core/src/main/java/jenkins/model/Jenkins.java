@@ -1821,8 +1821,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             .add("manage")
             .add("log")
             .add(new CollectionSearchIndex<TopLevelItem>() {
-                protected SearchItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
+                protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
             })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
@@ -3096,6 +3096,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * End point that intentionally throws an exception to test the error behaviour.
+     * @since 1.467
      */
     public void doException() {
         throw new RuntimeException();

@@ -35,9 +35,9 @@ import com.thoughtworks.xstream.XStream;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.WARNING;
 
 /**
  * {@link CollectionConverter} that ignores {@link CannotResolveClassException}.
@@ -85,10 +85,10 @@ public class RobustCollectionConverter extends CollectionConverter {
                 Object item = readItem(reader, context, collection);
                 collection.add(item);
             } catch (CannotResolveClassException e) {
-                LOGGER.log(WARNING,"Failed to resolve class",e);
+                LOGGER.log(FINE, "Failed to resolve class", e);
                 RobustReflectionConverter.addErrorInContext(context, e);
             } catch (LinkageError e) {
-                LOGGER.log(WARNING,"Failed to resolve class",e);
+                LOGGER.log(FINE, "Failed to resolve class", e);
                 RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();

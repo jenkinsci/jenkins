@@ -55,13 +55,75 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Build number symlinks and permalinks not updated for Maven module builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18846">issue 18846</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.526>What's new in 1.526</a> <!--=DATE=--></h3>
+<h3><a name=v1.529>What's new in 1.529</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+      With Apache Maven 3.1 build, logging configuration from the Apache Maven distribution is not used.
+  <li class=rfe>
+      Avoid log duplication with Apache Maven 3.1 builds
+  <li class=bug>
+    Ungraceful handling of empty matrix project axes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19135">issue 19135</a>)
+  <li class=bug>
+    Updated Groovy to 1.8.9 to avoid <a href="http://jira.codehaus.org/browse/GROOVY-4292">GROOVY-4292</a>.
+  <li class='major bug'>
+    CLI login command broken on Windows since 1.518.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19192">issue 19192</a>)
+  <li class=bug>
+    A malformed JUnit result file should mark that test suite as a failure, but not interrupt archiving of other tests.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19186">issue 19186</a>)
+  <li class=rfe>
+    Build for $username now shows also build scheduled by user
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16178">issue 16178</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.528>What's new in 1.528</a> (2013/08/18)</h3>
+<ul class=image>
+  <li class=rfe>
+    Command line now supports "--sessionTimeout" option for controlling session timeout
+  <li class=bug>
+    Form validation methods weren't getting triggered when one of its dependency controls change.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19124">issue 19124</a>)
+  <li class=bug>
+    When POST is required for some HTTP operation but GET was used, the response should have status code 405.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16918">issue 16918</a>)
+  <li class=bug>
+    Correct help text of Label field in automatic installation of tools in global configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19091">issue 19091</a>)
+  <li class=rfe>
+    Use Guice from Google rather than a fork
+  <li class=bug>
+    Jenkins does not invoke ProcessKillers for Windows
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19156">issue 19156</a>)
+</ul>
+<h3><a name=v1.527>What's new in 1.527</a> (2013/08/12)</h3>
+<ul class=image>
+  <li class=bug>
+    Fixed <tt>NoSuchFieldError: triggers</tt> with older Maven plugin
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18677">issue 18677</a>)
+  <li class=rfe>
+    Added bytecode transformation driven compatibility ensurance mechanism
+    (<a href="https://groups.google.com/forum/#!topic/jenkinsci-dev/7qCClb36njo">discussion</a>)
+  <li class=rfe>
+    Improve search to locate items inside folders.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/848">pull request 848</a>)
+    (<a href="https://github.com/jenkinsci/jenkins/pull/893">pull request 893</a>)
+  <li class=bug>
+    Windows path separators not correctly escaped in Maven properties configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10539">issue 10539</a>)
+  <li class=rfe>
+    Improved <tt>EnvironmentContributor</tt> to support project-level insertion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19042">issue 19042</a>)
+</ul>
+<h3><a name=v1.526>What's new in 1.526</a> (2013/08/05)</h3>
 <ul class=image>
   <li class=rfe>
     Report an user friendly error page if a deletion of a build fails.
@@ -81,10 +143,6 @@ Upcoming changes</a>
   <li class=rfe>
     Added a new monitor that detects and fixse out-of-order builds records.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18289">issue 18289</a>)
-</ul>
-</div><!--=END=-->
-<h3><a name=v1.525>What's new in 1.525</a> (2013/07/29)</h3>
-<ul class=image>
   <li class=rfe>
     Can't build using maven 3.1.0
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15935">issue 15935</a>)
@@ -121,6 +179,8 @@ Upcoming changes</a>
     People View does Not Populate if JQuery plugin enabled.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18641">issue 18641</a>)
 </ul>
+<h3><a name=v1.525>What's new in 1.525</a> (2013/07/29)</h3>
+<p>Same as 1.524; botched release.</p>
 <h3><a name=v1.524>What's new in 1.524</a> (2013/07/23)</h3>
 <ul class=image>
   <li class=bug>

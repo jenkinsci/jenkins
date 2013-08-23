@@ -55,6 +55,8 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
+import hudson.util.VariableResolver.ByMap;
+import hudson.util.VariableResolver.Union;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
@@ -264,7 +266,6 @@ public class Maven extends Builder {
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
-        String properties = env.expand(this.properties);
 
         int startIndex = 0;
         int endIndex;
@@ -314,7 +315,8 @@ public class Maven extends Builder {
             Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
             args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-            args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);

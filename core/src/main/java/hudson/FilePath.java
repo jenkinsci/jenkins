@@ -140,18 +140,21 @@ import org.apache.tools.zip.ZipEntry;
  * The following code shows the example:
  *
  * <pre>
- * FilePath file = ...;
- *
- * // make 'file' a fresh empty directory.
- * file.act(new FileCallable&lt;Void>() {
- *   // if 'file' is on a different node, this FileCallable will
- *   // be transfered to that node and executed there.
- *   public Void invoke(File f,VirtualChannel channel) {
- *     // f and file represents the same thing
- *     f.deleteContents();
- *     f.mkdirs();
- *   }
- * });
+ * void someMethod(FilePath file) {
+ *     // make 'file' a fresh empty directory.
+ *     file.act(new Freshen());
+ * }
+ * // if 'file' is on a different node, this FileCallable will
+ * // be transferred to that node and executed there.
+ * private static final class Freshen implements FileCallable&lt;Void> {
+ *     private static final long serialVersionUID = 1;
+ *     &#64;Override public Void invoke(File f, VirtualChannel channel) {
+ *         // f and file represent the same thing
+ *         f.deleteContents();
+ *         f.mkdirs();
+ *         return null;
+ *     }
+ * }
  * </pre>
  *
  * <p>
@@ -852,7 +855,7 @@ public final class FilePath implements Serializable {
     /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
-     *
+     * <strong>Warning:</code> implementations must be serializable, so prefer a static nested class to an inner class.
      * @see FilePath#act(FileCallable)
      */
     public interface FileCallable<T> extends Serializable {

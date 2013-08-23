@@ -60,7 +60,6 @@ THE SOFTWARE.
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 ${h.initPageVariables(context)}
-${h.initPageVariables(context)}
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
   but it's too late because the headers are already committed. so ensure we always have a session.
