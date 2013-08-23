@@ -748,25 +748,11 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.5.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>
           </plugin>
-          <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-pmd-plugin</artifactId>-->
-            <!--<version>2.5</version>-->
-            <!--<configuration>-->
-              <!--&lt;!&ndash;rulesets>-->
-                  <!--<ruleset>ruleset.xml</ruleset>-->
-                  <!--</rulesets&ndash;&gt;-->
-            <!--</configuration>-->
-          <!--</plugin>-->
-          <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
-            <!--<version>2.6</version>-->
-          <!--</plugin>-->
         </plugins>
       </reporting>
     </profile>
