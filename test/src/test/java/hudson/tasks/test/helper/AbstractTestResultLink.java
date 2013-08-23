@@ -21,17 +21,22 @@ public class AbstractTestResultLink<T extends AbstractTestResultLink<T>> {
     }
     public T assertNoTests() {
         assertThat(getResultText(), containsString("no tests"));
-        return (T) this;
+        return castToConcreteType();
     }
 
     public T assertHasTests() {
         // Text is either "(no failures)" or "<n> failure(s)"
         assertThat(getResultText(), containsString("failure"));
-        return (T) this;
+        return castToConcreteType();
     }
 
     public TestResultsPage follow() throws Exception {
         return new TestResultsPage((HtmlPage) testResultLink.openLinkInNewWindow());
+    }
+
+    @SuppressWarnings("unchecked")
+    private T castToConcreteType() {
+        return (T) this;
     }
 
 }
