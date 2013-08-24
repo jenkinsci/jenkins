@@ -567,7 +567,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (backup.exists()) {
             try {
                 JarFile backupPlugin = new JarFile(backup);
-                return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+                try {
+                    return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+                } finally {
+                    backupPlugin.close();
+                }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version ", e);
                 return null;
