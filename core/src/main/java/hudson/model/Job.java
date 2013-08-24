@@ -254,7 +254,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
 
-    protected synchronized boolean isHoldOffBuildUntilSave() {
+    public synchronized boolean isHoldOffBuildUntilSave() {
         return holdOffBuildUntilSave;
     }
 

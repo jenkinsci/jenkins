@@ -131,8 +131,19 @@ public class BuildCommand extends CLICommand {
             }
         }
 
-        QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
+        if (!job.isBuildable()) {
+        	String reason = " for unknown reasons";
+            if (job.isDisabled()) {
+            	reason = "because it is disabled";
+            } else if (job.isHoldOffBuildUntilSave()){
+            	reason = "because its configuration has not been saved";
+            }
+        	stderr.println("Cannot build "+job.getFullDisplayName()+" " + reason + ".");
+            return 0;
+        }
 
+        QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
+        
         if (wait || sync) {
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
