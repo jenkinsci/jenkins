@@ -132,13 +132,13 @@ public class BuildCommand extends CLICommand {
         }
 
         if (!job.isBuildable()) {
-        	String reason = " for unknown reasons";
+        	String msg = Messages.BuildCommand_CLICause_CannotBuildUnknownReasons(job.getFullDisplayName());
             if (job.isDisabled()) {
-            	reason = "because it is disabled";
+            	msg = Messages.BuildCommand_CLICause_CannotBuildDisabled(job.getFullDisplayName());
             } else if (job.isHoldOffBuildUntilSave()){
-            	reason = "because its configuration has not been saved";
+            	msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
             }
-        	stderr.println("Cannot build "+job.getFullDisplayName()+" " + reason + ".");
+        	stderr.println(msg);
             return 0;
         }
 
