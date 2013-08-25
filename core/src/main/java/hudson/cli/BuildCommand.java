@@ -139,7 +139,7 @@ public class BuildCommand extends CLICommand {
             	msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
             }
         	stderr.println(msg);
-            return 0;
+            return -1;
         }
 
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
