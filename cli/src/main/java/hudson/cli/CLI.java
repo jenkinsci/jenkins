@@ -23,7 +23,13 @@
  */
 package hudson.cli;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+
+import com.jcraft.jsch.agentproxy.TrileadAgentProxy;
+import com.trilead.ssh2.auth.AgentIdentity;
 import com.trilead.ssh2.crypto.PEMDecoder;
+import hudson.cli.agent.AgentProxyFactory;
 import hudson.cli.client.Messages;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
@@ -77,12 +83,9 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import java.io.Console;
-
-import static java.util.logging.Level.*;
-
 /**
  * CLI entry point to Jenkins.
  * 
@@ -133,7 +136,7 @@ public class CLI {
         try {
             _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
         } catch (IOException e) {
-            LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+            LOGGER.log(FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
             try {
                 _channel = connectViaHttp(url);
             } catch (IOException e2) {
@@ -142,7 +145,7 @@ public class CLI {
                 } catch (NoSuchMethodException _ignore) {
                     // Java 6
                 } catch (Exception _huh) {
-                    LOGGER.log(Level.SEVERE, null, _huh);
+                    LOGGER.log(SEVERE, null, _huh);
                 }
                 throw e;
             }
@@ -389,6 +392,7 @@ public class CLI {
         List<KeyPair> candidateKeys = new ArrayList<KeyPair>();
         boolean sshAuthRequestedExplicitly = false;
         String httpProxy=null;
+        List<AgentIdentity> agentIdentities = new ArrayList<AgentIdentity>();
 
         String url = System.getenv("JENKINS_URL");
 
@@ -431,7 +435,7 @@ public class CLI {
                     kp = loadKey(f);
                 } catch (IOException e) {
                     //if the PEM file is encrypted, IOException is thrown
-                    kp = tryEncryptedFile(f);                    
+                    kp = tryEncryptedFile(f);
                 } catch (GeneralSecurityException e) {
                     throw new Exception("Failed to load key: "+f,e);
                 }
@@ -460,6 +464,14 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
+        final TrileadAgentProxy agent = AgentProxyFactory.getAgentProxy();
+        if (agent != null) {
+            LOGGER.log(FINE, "SSH agent detected, loading known identities");
+            for (Object o: agent.getIdentities()) {
+                agentIdentities.add((AgentIdentity) o);
+            }
+        }
+
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
         String userInfo = new URL(url).getUserInfo();
         if (userInfo != null) {
@@ -467,11 +479,20 @@ public class CLI {
         }
 
         CLI cli = factory.connect();
+
+        PublicKey serverIdentity = null;
+
         try {
-            if (!candidateKeys.isEmpty()) {
+            if (!agentIdentities.isEmpty()) {
+
+                serverIdentity = cli.authenticate(agentIdentities);
+            }
+            if (serverIdentity == null && !candidateKeys.isEmpty()) {
                 try {
                     // TODO: server verification
-                    cli.authenticate(candidateKeys);
+                    serverIdentity = cli.authenticate(candidateKeys);
+                    if (serverIdentity != null)
+                        LOGGER.log(FINE, "SSH agent authentication successful");
                 } catch (IllegalStateException e) {
                     if (sshAuthRequestedExplicitly) {
                         System.err.println("The server doesn't support public key authentication");
@@ -640,7 +661,7 @@ public class CLI {
 
             // try all the public keys
             for (KeyPair key : privateKeys) {
-                c.proveIdentity(sharedSecret,key);
+                c.proveIdentity(sharedSecret, key);
                 if (c.readBoolean())
                     return serverIdentity;  // succeeded
             }
@@ -656,6 +677,30 @@ public class CLI {
     public PublicKey authenticate(KeyPair key) throws IOException, GeneralSecurityException {
         return authenticate(Collections.singleton(key));
     }
+
+    public PublicKey authenticate(final List<AgentIdentity> agentIdentities) throws IOException, GeneralSecurityException {
+        Pipe c2s = Pipe.createLocalToRemote();
+        Pipe s2c = Pipe.createRemoteToLocal();
+        entryPoint.authenticate("ssh",c2s, s2c);
+        Connection c = new Connection(s2c.getIn(), c2s.getOut());
+
+        try {
+            byte[] sharedSecret = c.diffieHellman(false).generateSecret();
+            PublicKey serverIdentity = c.verifyIdentity(sharedSecret);
+
+            // try all the known agent keys
+            for (AgentIdentity id: agentIdentities) {
+                c.proveIdentity(sharedSecret, id);
+                if (c.readBoolean())
+                    return serverIdentity;  // succeeded
+            }
+
+            return null;
+        } finally {
+            c.close();
+        }
+    }
+
 
     private static void printUsage(String msg) {
         if(msg!=null)   System.out.println(msg);

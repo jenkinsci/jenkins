@@ -23,6 +23,8 @@
  */
 package hudson.cli;
 
+import com.trilead.ssh2.auth.AgentIdentity;
+import hudson.cli.agent.AgentIdentityUtils;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
 import org.apache.commons.codec.binary.Base64;
@@ -35,7 +37,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -232,6 +233,17 @@ public class Connection {
         sig.update(key.getPublic().getEncoded());
         sig.update(sharedSecret);
         writeObject(sig.sign());
+    }
+
+    public void proveIdentity(final byte[] sharedSecret, final AgentIdentity identity)
+            throws IOException, GeneralSecurityException {
+        final PublicKey publicKey = AgentIdentityUtils.getPublicKey(identity);
+        final String algorithm = detectKeyAlgorithm(publicKey);
+
+        writeUTF(algorithm);
+        writeKey(publicKey);
+
+        writeObject(identity.sign(sharedSecret));
     }
 
     /**
