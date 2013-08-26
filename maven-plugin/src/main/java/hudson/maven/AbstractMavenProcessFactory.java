@@ -539,6 +539,8 @@ public abstract class AbstractMavenProcessFactory
             return copiedJar;
         }
 
+        // Theoretically could be a race condition on a multi-executor Windows slave; symptom would be an IOException during the build.
+        // Could perhaps be solved by synchronizing on dst.getChannel() or similar.
         new FilePath(jar).copyTo(copiedJar);
         log.println("Copied " + seedName + ".jar");
         return copiedJar;
