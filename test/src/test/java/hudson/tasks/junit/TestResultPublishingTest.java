@@ -27,11 +27,16 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Project;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.slaves.DumbSlave;
+import hudson.tasks.Builder;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TouchBuilder;
@@ -275,7 +280,19 @@ public class TestResultPublishingTest extends HudsonTestCase {
                 tableText.contains("4 ms"));
     }
 
-
+    @Bug(19186)
+    public void testBrokenResultFile() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder());
+        p.getPublishersList().add(new JUnitResultArchiver("TEST-foo.xml", false, null));
+        assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+    }
+    private static final class TestBuilder extends Builder {
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            build.getWorkspace().child("TEST-foo.xml").write("<bogus>", null);
+            return true;
+        }
+    }
   
     void assertStringEmptyOrNull(String msg, String str) {
         if (str==null)
@@ -286,7 +303,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
     }
 
     void assertPaneDiffText(String msg, int expectedValue, Object paneObj) { 
-        assertTrue( "paneObj should be an HtmlElement", paneObj instanceof HtmlElement );
+        assertTrue( "paneObj should be an HtmlElement, it was " + paneObj.getClass(), paneObj instanceof HtmlElement );
         String paneText = ((HtmlElement) paneObj).asText();
         if (expectedValue==0) {
             assertStringEmptyOrNull(msg, paneText);

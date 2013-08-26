@@ -77,7 +77,7 @@ public abstract class LoadStatistics {
     public final MultiStageTimeSeries totalExecutors;
 
     /**
-     * Number of {@link Queue.BuildableItem}s that can run on any node in this node set but blocked.
+     * Number of {@link hudson.model.Queue.BuildableItem}s that can run on any node in this node set but blocked.
      */
     @Exported
     public final MultiStageTimeSeries queueLength;

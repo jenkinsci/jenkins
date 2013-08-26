@@ -34,7 +34,7 @@ import hudson.tasks.Publisher;
  * in the dependency graph computation process.
  *
  * <p>
- * {@link Publisher}s, {@link Builder}s, and {@link JobProperty}s
+ * {@link Publisher}s, {@link Builder}s, and {@link hudson.model.JobProperty}s
  * can additional implement this method to add additional edges
  * to the dependency graph computation.
  *

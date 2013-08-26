@@ -401,7 +401,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public String getShortUrl() {
-        return getParent().getUrlChildPrefix()+'/'+Util.rawEncode(getName())+'/';
+        String prefix = getParent().getUrlChildPrefix();
+        String subdir = Util.rawEncode(getName());
+        return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
     public String getSearchUrl() {
@@ -511,7 +513,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // ignore
         }
 
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -590,7 +592,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             } finally {
                 Items.updatingByXml.set(false);
             }
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
             out.commit();

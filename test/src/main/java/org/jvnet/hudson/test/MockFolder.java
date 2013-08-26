@@ -136,6 +136,17 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
         return mixin().copy(src, name);
     }
 
+    @Override public void onCopiedFrom(Item src) {
+        super.onCopiedFrom(src);
+        for (TopLevelItem item : ((MockFolder) src).getItems()) {
+            try {
+                copy(item, item.getName());
+            } catch (IOException x) {
+                assert false : x;
+            }
+        }
+    }
+
     @Override public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         return mixin().createProjectFromXML(name, xml);
     }
@@ -215,7 +226,7 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
     }
 
     @Override public List<Action> getViewActions() {
-        // XXX what should the default be? View.getOwnerViewActions uses Jenkins.actions; Jenkins.viewActions would make more sense as a default;
+        // TODO what should the default be? View.getOwnerViewActions uses Jenkins.actions; Jenkins.viewActions would make more sense as a default;
         // or should it be empty by default since non-top-level folders probably do not need the same actions as root?
         return Collections.emptyList();
     }

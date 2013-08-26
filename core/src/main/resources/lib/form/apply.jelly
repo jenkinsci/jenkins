@@ -28,6 +28,10 @@ THE SOFTWARE.
   <s:documentation>
     "Apply" button that submits the form but without a page transition.
     See hudson.util.FormApply for the server-side code.
+
+    When this button is pressed, the FORM element fires the "jenkins:apply" event
+    that allows interested parties to write back whatever states back into the INPUT
+    elements.
   </s:documentation>
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />

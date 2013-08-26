@@ -10,7 +10,7 @@ import jenkins.model.Jenkins;
  * A plugin may remove this from {@link Jenkins#getWidgets()} and swap in their own.
  *
  * @author Kohsuke Kawaguchi
- * @sine 1.514
+ * @since 1.514
  */
 @Extension(ordinal=200) // historically this was the top most widget
 public class BuildQueueWidget extends Widget {

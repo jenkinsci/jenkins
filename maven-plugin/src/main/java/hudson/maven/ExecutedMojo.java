@@ -30,7 +30,6 @@ import hudson.remoting.Which;
 import hudson.util.ReflectionUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -101,7 +100,7 @@ public final class ExecutedMojo implements Serializable {
             if (clazz!=null) {
                 File jarFile = Which.jarFile(clazz);
                 if (jarFile.isFile()) {
-                    digest = Util.getDigestOf(new FileInputStream(jarFile));
+                    digest = Util.getDigestOf(jarFile);
                 } else {
                     // Maybe mojo was loaded from a classes dir instead of from a jar (JENKINS-5044)
                     LOGGER.log(Level.WARNING, "Cannot calculate digest of mojo class, because mojo wasn't loaded from a jar, but from: "

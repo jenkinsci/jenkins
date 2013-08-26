@@ -25,6 +25,8 @@
 package hudson.maven;
 
 import static hudson.model.Result.FAILURE;
+import static org.apache.maven.model.building.ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -66,6 +68,8 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,16 +92,19 @@ import jenkins.mvn.SettingsProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import jenkins.maven3.agent.Maven31Main;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven31Launcher;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.sonatype.aether.transfer.TransferCancelledException;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferListener;
+import org.eclipse.aether.transfer.TransferCancelledException;
+import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferListener;
 
 /**
  * {@link Build} for {@link MavenModuleSet}.
@@ -127,6 +134,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
     private String mavenVersionUsed;
 
     private transient Object notifyModuleBuildLock = new Object();
+    private transient Result effectiveResult;
 
     public MavenModuleSetBuild(MavenModuleSet job) throws IOException {
         super(job);
@@ -167,7 +175,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         
         Computer computer = Computer.currentComputer();
         if (computer != null) { // just in case were not in a build
-            Node node = computer.getNode();
+            Node node = computer.getNode(); // TODO should this rather be getBuiltOn()? Cf. JENKINS-18898
             if (node != null) {
                 mvn = mvn.forNode(node, log);
                 mvn.buildEnvVars(envs);
@@ -185,6 +193,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     @Override
     public Result getResult() {
+        if (isBuilding()) {
+            return computeResult();
+        }
+        synchronized (notifyModuleBuildLock) {
+            if (effectiveResult == null) {
+                effectiveResult = computeResult();
+            }
+            return effectiveResult;
+        }
+    }
+
+    private Result computeResult() {
         Result r = super.getResult();
 
         for (MavenBuild b : getModuleLastBuilds().values()) {
@@ -328,7 +348,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      * to the sum of durations of the module builds.
      */
     private long estimateModuleSetBuildDurationOverhead(int numberOfBuilds) {
-        List<MavenModuleSetBuild> moduleSetBuilds = getPreviousBuildsOverThreshold(numberOfBuilds, Result.UNSTABLE);
+        List<MavenModuleSetBuild> moduleSetBuilds = getParent().getEstimatedDurationCandidates();
         
         if (moduleSetBuilds.isEmpty()) {
             return 0;
@@ -398,6 +418,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 build.delete();
     }
 
+    @Override
+    public synchronized void deleteArtifacts() throws IOException {
+    	super.deleteArtifacts();
+    	for (List<MavenBuild> list : getModuleBuilds().values())
+            for (MavenBuild build : list)
+                build.deleteArtifacts();
+    }
+    
     @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         // map corresponding module build under this object
@@ -505,6 +533,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             // use a separate lock object since this synchronized block calls into plugins,
             // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
             synchronized(notifyModuleBuildLock) {
+                effectiveResult = null;
                 boolean modified = false;
 
                 List<Action> actions = getActions();
@@ -666,23 +695,40 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         
                         final ProcessCache.MavenProcess process;
                         
-                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater(); 
-                        if ( maven3orLater )
-                        {
-                            LOGGER.fine( "using maven 3 " + mavenVersion );
-                            process =
-                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new Maven3ProcessFactory( project, launcher, envVars, getMavenOpts(listener, envVars),
-                                                                                            pom.getParent() ) );
+                        boolean maven3orLater = mavenBuildInformation.isMaven3OrLater();
+
+                        MavenUtil.MavenVersion mavenVersionType = MavenUtil.getMavenVersion( mavenVersion );
+
+                        final ProcessCache.Factory factory;
+
+                        Class<?> maven3MainClass = null;
+
+                        Class<?> maven3LauncherClass = null;
+
+                        switch ( mavenVersionType ){
+                            case MAVEN_2:
+                                LOGGER.fine( "using maven 2 " + mavenVersion );
+                                factory = new MavenProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars,getMavenOpts(listener, envVars),
+                                                                  pom.getParent() );
+                                break;
+                            case MAVEN_3_0_X:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven3ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                    pom.getParent() );
+                                maven3MainClass = Maven3Main.class;
+                                maven3LauncherClass = Maven3Launcher.class;
+                                break;
+                            default:
+                                LOGGER.fine( "using maven 3 " + mavenVersion );
+                                factory = new Maven31ProcessFactory( project, MavenModuleSetBuild.this, launcher, envVars, getMavenOpts(listener, envVars),
+                                                                    pom.getParent() );
+                                maven3MainClass = Maven31Main.class;
+                                maven3LauncherClass = Maven31Launcher.class;
                         }
-                        else
-                        {
-                            LOGGER.fine( "using maven 2 " + mavenVersion );
-                            process =
-                                MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener,
-                                                                  new MavenProcessFactory( project, launcher, envVars,getMavenOpts(listener, envVars),
-                                                                                           pom.getParent() ) );
-                        }
+
+                        process = MavenBuild.mavenProcessCache.get( launcher.getChannel(), slistener, factory);
+
+
                         ArgumentListBuilder margs = new ArgumentListBuilder().add("-B").add("-f", pom.getRemote());
                         FilePath localRepo = project.getLocalRepository().locate(MavenModuleSetBuild.this);
                         if(localRepo!=null)
@@ -740,12 +786,21 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 							if (newMargs != null) {
 								margs = newMargs;
 							}
-						}                        
+						}
                         
                         final AbstractMavenBuilder builder;
                         if (maven3orLater) {
-                            builder =
-                                new Maven3Builder( slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation );
+                            Maven3Builder.Maven3BuilderRequest maven3BuilderRequest = new Maven3Builder.Maven3BuilderRequest();
+                            maven3BuilderRequest.listener=slistener;
+                            maven3BuilderRequest.proxies=proxies;
+                            maven3BuilderRequest.modules=project.sortedActiveModules;
+                            maven3BuilderRequest.goals=margs.toList();
+                            maven3BuilderRequest.systemProps=envVars;
+                            maven3BuilderRequest.mavenBuildInformation=mavenBuildInformation;
+                            maven3BuilderRequest.maven3MainClass=maven3MainClass;
+                            maven3BuilderRequest.maven3LauncherClass=maven3LauncherClass;
+                            maven3BuilderRequest.supportEventSpy = MavenUtil.supportEventSpy( mavenVersion );
+                            builder = new Maven3Builder(maven3BuilderRequest);
                         } else {
                             builder = 
                                 new Maven2Builder(slistener, proxies, project.sortedActiveModules, margs.toList(), envVars, mavenBuildInformation);
@@ -1030,8 +1085,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         private boolean updateSnapshots = false;
         
         String rootPOMRelPrefix;
+
+        private final PlexusModuleContributor plexusContributors;
         
-        PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) {
+        PomParser(BuildListener listener, MavenInstallation mavenHome, String mavenVersion, EnvVars envVars, MavenModuleSetBuild build) throws IOException, InterruptedException {
             // project cannot be shipped to the remote JVM, so all the relevant properties need to be captured now.
             MavenModuleSet project = build.getProject();
             this.listener = listener;
@@ -1079,6 +1136,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 project.getScm().getModuleRoot( build.getWorkspace(), project.getLastBuild() ).getRemote();
             
             this.mavenValidationLevel = project.getMavenValidationLevel();
+            plexusContributors = PlexusModuleContributorFactory.aggregate(build);
         }
 
         private boolean isUpdateSnapshots(String goals) {
@@ -1155,16 +1213,16 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             }
 
             try {
-                MavenEmbedderRequest mavenEmbedderRequest = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
+                MavenEmbedderRequest mer = new MavenEmbedderRequest( listener, mavenHome.getHomeDir(),
                                                                                       profiles, properties,
                                                                                       privateRepository, settingsLoc );
-                mavenEmbedderRequest.setTransferListener( new SimpleTransferListener(listener) );
-                mavenEmbedderRequest.setUpdateSnapshots( this.updateSnapshots );
+                mer.setTransferListener(new SimpleTransferListener(listener));
+                mer.setUpdateSnapshots(this.updateSnapshots);
                 
-                mavenEmbedderRequest.setProcessPlugins( this.processPlugins );
-                mavenEmbedderRequest.setResolveDependencies( this.resolveDependencies );
+                mer.setProcessPlugins(this.processPlugins);
+                mer.setResolveDependencies(this.resolveDependencies);
                 if (globalSettings != null) {
-                    mavenEmbedderRequest.setGlobalSettings( new File(globalSettings) );
+                    mer.setGlobalSettings(new File(globalSettings));
                 }
                 
                 // FIXME handle 3.1 level when version will be here : no rush :-)
@@ -1172,20 +1230,28 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                 ReactorReader reactorReader = null;
                 boolean maven3OrLater = MavenUtil.maven3orLater(mavenVersion);
                 if (maven3OrLater) {
-                    mavenEmbedderRequest.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0 );
+                    mer.setValidationLevel(VALIDATION_LEVEL_MAVEN_3_0);
                 } else {
                     reactorReader = new ReactorReader( new HashMap<String, MavenProject>(), new File(workspaceProper) );
-                    mavenEmbedderRequest.setWorkspaceReader( reactorReader );
+                    mer.setWorkspaceReader(reactorReader);
+                }
+
+                {// create a classloader that loads extensions
+                    List<URL> urls = plexusContributors.getPlexusComponentJars();
+                    if (!urls.isEmpty()) {
+                        mer.setClassLoader(
+                                new URLClassLoader(urls.toArray(new URL[urls.size()]),
+                                        mer.getClassLoader()));
+                    }
                 }
                 
-                
                 if (this.mavenValidationLevel >= 0) {
-                    mavenEmbedderRequest.setValidationLevel( this.mavenValidationLevel );
+                    mer.setValidationLevel(this.mavenValidationLevel);
                 }
                 
                 //mavenEmbedderRequest.setClassLoader( MavenEmbedderUtils.buildClassRealm( mavenHome.getHomeDir(), null, null ) );
                 
-                MavenEmbedder embedder = MavenUtil.createEmbedder( mavenEmbedderRequest );
+                MavenEmbedder embedder = MavenUtil.createEmbedder( mer );
                 
                 MavenProject rootProject = null;
                 

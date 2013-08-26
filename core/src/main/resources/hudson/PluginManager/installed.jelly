@@ -63,9 +63,22 @@ THE SOFTWARE.
                   </div>
                   <div class="excerpt">
                     <j:set var="indexPage" value="${p.indexPage.toString()}" />
-                    <j:if test="${!empty(indexPage)}">
-                      <j:include uri="${indexPage}" />
-                    </j:if>
+                    <j:set var="excerpt" value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
+                    <j:set var="description" value="${p.manifest.mainAttributes.getValue('Specification-Title')}"/>
+                    <j:choose>
+                      <j:when test="${!empty(indexPage)}"> <!-- src/main/resources/index.jelly, preferred -->
+                        <j:include uri="${indexPage}"/>
+                      </j:when>
+                      <j:when test="${excerpt != null}"> <!-- HTML from {excerpt} in wiki page -->
+                        <j:out value="${excerpt}"/>
+                      </j:when>
+                      <j:when test="${description != null}"> <!-- last resort, from POM -->
+                        ${description}
+                      </j:when>
+                      <j:otherwise>
+                        ${%No description available.}
+                      </j:otherwise>
+                    </j:choose>
                   </div>
                 </td>
                 <td class="center pane" style="white-space:normal">

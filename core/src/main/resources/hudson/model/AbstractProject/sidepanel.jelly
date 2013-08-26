@@ -45,10 +45,11 @@ THE SOFTWARE.
       </l:task>
       <j:if test="${it.configurable}">
         <j:if test="${it.buildable}">
+          <j:set var="id" value="${h.generateId()}"/>
           <l:task icon="images/24x24/clock.png" href="${url}/build?delay=0sec" title="${it.buildNowText}"
-                  onclick="${it.parameterized?null:'return build(this)'}" post="${!it.parameterized}" permission="${it.BUILD}"/>
+                  onclick="${it.parameterized?null:'return build_' + id + '(this)'}" post="${!it.parameterized}" permission="${it.BUILD}"/>
           <script>
-            function build(a) {
+            function build_${id}(a) {
               new Ajax.Request(a.href);
               
               hoverNotification('${%Build scheduled}',a.parentNode);

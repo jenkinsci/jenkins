@@ -1,0 +1,28 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.fullDisplayName}" norefresh="true">
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <table>
+        <tr><td>
+          <form method="post" action="doDelete">
+            <div class="error">
+              ${%Not successful}
+            </div>
+            <f:submit name="now" value="${%Retry delete}" />
+          </form>
+        </td></tr>
+        <tr><td>
+          <a onclick="document.getElementById('delete-error').style.display='block';return false" href="">${%Show reason}</a>
+        </td></tr>
+        <tr><td>
+          <div id="delete-error" style="display: none">
+            <pre>
+              ${request.getAttribute('stackTraces')}
+            </pre>
+          </div>
+        </td></tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

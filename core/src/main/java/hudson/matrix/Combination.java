@@ -111,10 +111,18 @@ public final class Combination extends TreeMap<String,String> implements Compara
      * true.
      */
     public boolean evalGroovyExpression(AxisList axes, String expression) {
+
+        return evalGroovyExpression(axes, expression, new Binding());
+    }
+
+    /**
+     * @see #evalGroovyExpression(AxisList, String)
+     * @since 1.515
+     */
+    public boolean evalGroovyExpression(AxisList axes, String expression, Binding binding) {
         if(Util.fixEmptyAndTrim(expression)==null)
             return true;
 
-        Binding binding = new Binding();
         for (Map.Entry<String, String> e : entrySet())
             binding.setVariable(e.getKey(),e.getValue());
 

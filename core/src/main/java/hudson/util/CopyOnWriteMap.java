@@ -148,6 +148,19 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         return view.entrySet();
     }
 
+    @Override public int hashCode() {
+        return copy().hashCode();
+    }
+
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override public boolean equals(Object obj) {
+        return copy().equals(obj);
+    }
+
+    @Override public String toString() {
+        return copy().toString();
+    }
+
     /**
      * {@link CopyOnWriteMap} backed by {@link HashMap}.
      */

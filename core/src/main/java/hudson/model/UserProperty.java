@@ -45,7 +45,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Configuration screen should be defined in <tt>config.jelly</tt>.
  * Within this page, the {@link UserProperty} instance is available
  * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
- * See {@link UserSearchProperty.UserProperty}'s <tt>config.jelly</tt> for an example.
+ * See {@link hudson.search.UserSearchProperty}'s <tt>config.jelly</tt> for an example.
  *
  *
  * @author Kohsuke Kawaguchi

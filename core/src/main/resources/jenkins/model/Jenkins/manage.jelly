@@ -33,7 +33,7 @@ THE SOFTWARE.
     <d:tag name="feature">
       <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"/>
       ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,requiresConfirmation,requiresConfirmation) : null}
-      <!-- XXX summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
+      <!-- TODO summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
       <j:set var="_href" value="${href}"/>
       <t:summary icon="${icon}"
                  href="${requiresConfirmation ? null : href}" iconOnly="true">

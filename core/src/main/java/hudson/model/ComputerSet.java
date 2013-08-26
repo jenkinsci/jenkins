@@ -214,7 +214,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
-            t.setName(nodeMonitor.getColumnCaption());
+            String columnCaption = nodeMonitor.getColumnCaption();
+            if (columnCaption != null) {
+                t.setName(columnCaption);
+            }
         }
         rsp.forwardToPreviousPage(req);
     }
@@ -426,8 +429,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                         r.add(i);
                 }
             monitors.replaceBy(r.toList());
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to instanciate NodeMonitors",e);
+        } catch (Throwable x) {
+            LOGGER.log(Level.WARNING, "Failed to instantiate NodeMonitors", x);
         }
     }
 

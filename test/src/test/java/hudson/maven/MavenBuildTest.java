@@ -8,17 +8,16 @@ import hudson.model.StringParameterDefinition;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
-import hudson.tasks.test.TestResultProjectAction;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -177,7 +176,20 @@ public class MavenBuildTest extends HudsonTestCase {
          AbstractTestResultAction<?> testResultAction = moduleBuild.getTestResultAction();
         assertNotNull(testResultAction);
         assertEquals(1, testResultAction.getTotalCount());
-    }    
+    }
+
+    @Bug(18178)
+    public void testExtensionsConflictingWithCore() throws Exception {
+        MavenModuleSet m = createMavenProject();
+        m.setMaven(configureDefaultMaven().getName());
+        m.setScm(new SingleFileSCM("pom.xml",
+                "<project><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><artifactId>a</artifactId><version>0</version>" +
+                "<build><extensions>" +
+                "<extension><groupId>org.springframework.build.aws</groupId><artifactId>org.springframework.build.aws.maven</artifactId><version>3.0.0.RELEASE</version></extension>" +
+                "</extensions></build></project>"));
+        buildAndAssertSuccess(m);
+    }
     
     private static class TestReporter extends MavenReporter {
         private static final long serialVersionUID = 1L;

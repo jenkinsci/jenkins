@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<slave>
+  <name>SlaveFromXML</name>
+  <description>XML slave description</description>
+  <remoteFS>/user/hudson/wokspace</remoteFS>
+  <numExecutors>42</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$1">
+    <DESCRIPTOR>
+      <outer-class reference="../.."/>
+    </DESCRIPTOR>
+  </retentionStrategy>
+  <launcher class="hudson.slaves.CommandLauncher">
+    <agentCommand>&quot;/opt/java6/jre/bin/java&quot;  -jar &quot;slave.jar&quot;</agentCommand>
+  </launcher>
+  <label></label>
+  <nodeProperties/>
+  <userId>SYSTEM</userId>
+</slave>

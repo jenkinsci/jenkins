@@ -224,9 +224,20 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
+                if (LOGGER.isLoggable(FINEST))
+                    LOGGER.log(FINEST,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
                 return b;
+            } catch (Run.InvalidDirectoryNameException x) {
+                Level lvl;
+                try {
+                    Integer.parseInt(d.getName());
+                    // JENKINS-15587: just an mangled symlink
+                    lvl = Level.FINE;
+                } catch (NumberFormatException x2) {
+                    // potentially a real build dir, maybe a bug
+                    lvl = Level.WARNING;
+                }
+                LOGGER.log(lvl, "skipping non-build directory {0}", d);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             } catch (InstantiationError e) {

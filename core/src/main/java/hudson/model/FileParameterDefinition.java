@@ -86,11 +86,20 @@ public class FileParameterDefinition extends ParameterDefinition {
             // the requested file parameter wasn't uploaded
             return null;
         }
-        FileParameterValue p = new FileParameterValue(getName(), src);
+        FileParameterValue p = new FileParameterValue(getName(), src, getFileName(src.getName()));
         p.setDescription(getDescription());
         p.setLocation(getName());
         return p;
 	}
+
+    /**
+     * Strip off the path portion if the given path contains it.
+     */
+    private String getFileName(String possiblyPathName) {
+        possiblyPathName = possiblyPathName.substring(possiblyPathName.lastIndexOf('/')+1);
+        possiblyPathName = possiblyPathName.substring(possiblyPathName.lastIndexOf('\\')+1);
+        return possiblyPathName;
+    }
 
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {

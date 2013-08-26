@@ -649,7 +649,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         goals = Util.fixEmpty(req.getParameter("goals").trim());
 
         // dependency setting might have been changed by the user, so rebuild.
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     @Override

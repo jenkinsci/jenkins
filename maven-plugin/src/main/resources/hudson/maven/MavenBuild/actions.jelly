@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:task icon="images/24x24/gear.gif" href="${buildUrl.baseUrl}/executedMojos" title="${%Executed Mojos}" />
+  <l:task icon="images/24x24/gear.png" href="${buildUrl.baseUrl}/executedMojos" title="${%Executed Mojos}" />
   <!-- include super class definition -->
   <st:include page="/hudson/model/Actionable/actions.jelly" />
 </j:jelly>

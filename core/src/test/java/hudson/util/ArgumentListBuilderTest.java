@@ -23,6 +23,9 @@
  */
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.*;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -182,5 +185,46 @@ public class ArgumentListBuilderTest extends Assert {
         boolean[] array = builder.toMaskArray();
         assertNotNull("The mask array should not be null", array);
         assertArrayEquals("The mask array was incorrect", new boolean[]{false,false,false}, array);
+    }
+
+    @Test
+    public void addKeyValuePairsFromPropertyString() throws IOException {
+        final Map<String, String> map = new HashMap<String, String>();
+        map.put("PATH", "C:\\Windows");
+        final VariableResolver<String> resolver = new VariableResolver.ByMap<String>(map);
+
+        final String properties = "my.path=$PATH";
+
+        ArgumentListBuilder builder = new ArgumentListBuilder();
+        builder.addKeyValuePairsFromPropertyString("", properties, resolver);
+        assertEquals("my.path=C:\\Windows", builder.toString());
+
+        builder = new ArgumentListBuilder();
+        builder.addKeyValuePairsFromPropertyString("", properties, resolver, null);
+        assertEquals("my.path=C:\\Windows", builder.toString());
+    }
+
+    @Test
+    public void numberOfBackslashesInPropertiesShouldBePreservedAfterMacroExpansion() throws IOException {
+        final Map<String, String> map = new HashMap<String, String>();
+        map.put("ONE", "one\\backslash");
+        map.put("TWO", "two\\\\backslashes");
+        map.put("FOUR", "four\\\\\\\\backslashes");
+
+        final String properties = new StringBuilder()
+                .append("one=$ONE\n")
+                .append("two=$TWO\n")
+                .append("four=$FOUR\n")
+                .toString()
+        ;
+
+        final String args = new ArgumentListBuilder()
+                .addKeyValuePairsFromPropertyString("", properties, new VariableResolver.ByMap<String>(map))
+                .toString()
+        ;
+
+        assertThat(args, containsString("one=one\\backslash"));
+        assertThat(args, containsString("two=two\\\\backslashes"));
+        assertThat(args, containsString("four=four\\\\\\\\backslashes"));
     }
 }

@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.Util;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
@@ -36,6 +37,7 @@ import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
@@ -106,8 +108,14 @@ public class ListView extends View implements Saveable {
     }
 
     private Object readResolve() {
-        if(includeRegex!=null)
-            includePattern = Pattern.compile(includeRegex);
+        if(includeRegex!=null) {
+            try {
+                includePattern = Pattern.compile(includeRegex);
+            } catch (PatternSyntaxException x) {
+                includeRegex = null;
+                OldDataMonitor.report(this, Collections.<Throwable>singleton(x));
+            }
+        }
         if (jobNames == null) {
             jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
         }
@@ -189,15 +197,18 @@ public class ListView extends View implements Saveable {
         includeItems(parent, parent, names);
     }
     
-    private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
+    private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<?> parent, SortedSet<String> names) {
         if (includePattern != null) {
             for (Item item : parent.getItems()) {
                 if (recurse && item instanceof ItemGroup) {
-                    includeItems(root, (ItemGroup<? extends TopLevelItem>)item, names);
+                    ItemGroup<?> ig = (ItemGroup<?>) item;
+                    includeItems(root, ig, names);
                 }
-                String itemName = item.getRelativeNameFrom(root);
-                if (includePattern.matcher(itemName).matches()) {
-                    names.add(itemName);
+                if (item instanceof TopLevelItem) {
+                    String itemName = item.getRelativeNameFrom(root);
+                    if (includePattern.matcher(itemName).matches()) {
+                        names.add(itemName);
+                    }
                 }
             }
         }
@@ -228,6 +239,13 @@ public class ListView extends View implements Saveable {
     
     public boolean isRecurse() {
         return recurse;
+    }
+    
+    /*
+     * For testing purposes
+     */
+    void setRecurse(boolean recurse) {
+        this.recurse = recurse;
     }
 
     /**
@@ -311,16 +329,7 @@ public class ListView extends View implements Saveable {
             }
         }
 
-        if (req.getParameter("useincluderegex") != null) {
-            includeRegex = Util.nullify(req.getParameter("includeRegex"));
-            if (includeRegex == null)
-                includePattern = null;
-            else
-                includePattern = Pattern.compile(includeRegex);
-        } else {
-            includeRegex = null;
-            includePattern = null;
-        }
+        setIncludeRegex(req.getParameter("useincluderegex") != null ? req.getParameter("includeRegex") : null);
 
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
@@ -334,6 +343,14 @@ public class ListView extends View implements Saveable {
 
         String filter = Util.fixEmpty(req.getParameter("statusFilter"));
         statusFilter = filter != null ? "1".equals(filter) : null;
+    }
+    
+    public void setIncludeRegex(String includeRegex) {
+        this.includeRegex = Util.nullify(includeRegex);
+        if (this.includeRegex == null)
+            this.includePattern = null;
+        else
+            this.includePattern = Pattern.compile(includeRegex);
     }
 
     @Extension

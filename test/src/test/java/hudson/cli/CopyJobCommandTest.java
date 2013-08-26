@@ -53,7 +53,7 @@ public class CopyJobCommandTest {
         assertEquals(out.toString(), 0, result);
         assertEquals("", out.toString());
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
-        // XXX test copying from/to root, or into nonexistent folder
+        // TODO test copying from/to root, or into nonexistent folder
     }
 
 }

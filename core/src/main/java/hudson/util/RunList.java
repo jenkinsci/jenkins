@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -221,6 +221,13 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return this;
     }
 
+    /**
+     * Return only the most recent builds.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @param n a count
+     * @return the n most recent builds
+     * @since 1.507
+     */
     public RunList<R> limit(final int n) {
         return limit(new CountingPredicate<R>() {
             public boolean apply(int index, R input) {
@@ -231,6 +238,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     /**
      * Filter the list to non-successful builds only.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> failureOnly() {
         return filter(new Predicate<R>() {
@@ -241,7 +249,21 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * Filter the list to builds above threshold.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.517
+     */
+    public RunList<R> overThresholdOnly(final Result threshold) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
+            }
+        });
+    }
+
+    /**
      * Filter the list to builds on a single node only
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> node(final Node node) {
         return filter(new Predicate<R>() {
@@ -253,6 +275,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     /**
      * Filter the list to regression builds only.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> regressionOnly() {
         return filter(new Predicate<R>() {
@@ -266,6 +289,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * Filter the list by timestamp.
      *
      * {@code s&lt=;e}.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> byTimestamp(final long start, final long end) {
         return
@@ -284,6 +308,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * Reduce the size of the list by only leaving relatively new ones.
      * This also removes on-going builds, as RSS cannot be used to publish information
      * if it changes.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> newBuilds() {
         GregorianCalendar cal = new GregorianCalendar();

@@ -48,7 +48,7 @@ THE SOFTWARE.
       </j:choose>
       <p>${%plugin.dependencies}</p>
       <ul>
-          <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- XXX sort -->
+          <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
               <li>
                   <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
                       <j:choose>

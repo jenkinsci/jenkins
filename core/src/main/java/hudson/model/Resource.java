@@ -24,11 +24,11 @@
 package hudson.model;
 
 /**
- * Represents things that {@link Queue.Executable} uses while running.
+ * Represents things that {@link hudson.model.Queue.Executable} uses while running.
  *
  * <p>
  * This is used in {@link Queue} to support basic mutual exclusion/locks. If two
- * {@link Queue.Task}s require the same {@link Resource}, they will not
+ * {@link hudson.model.Queue.Task}s require the same {@link Resource}, they will not
  * be run at the same time.
  *
  * <p>

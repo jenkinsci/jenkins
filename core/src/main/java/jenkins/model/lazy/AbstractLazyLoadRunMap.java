@@ -46,6 +46,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
@@ -94,7 +95,7 @@ import static jenkins.model.lazy.Boundary.*;
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link Index#byNumber} and {@link Index#byId}.
+ * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber} and {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byId}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.485
@@ -215,9 +216,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *
      * This is a bit more sophisticated version of forcing GC.
      * Primarily for debugging and testing lazy loading behaviour.
+     * @since 1.507
      */
     public void purgeCache() {
         index = new Index();
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
@@ -228,7 +231,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         }
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
-        idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
+        idOnDisk = new SortedList<String>(new ArrayList<String>(Arrays.asList(buildDirs)));
 
         // TODO: should we check that shortcuts is a symlink?
         String[] shortcuts = dir.list();
@@ -350,9 +353,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      defines what we mean by "nearby" above.
      *      If EXACT, find #N or return null.
      *      If ASC, finds the closest #M that satisfies M>=N.
-     *      If DESC, finds the closest #M that satisfies M<=N.
+     *      If DESC, finds the closest #M that satisfies M&lt;=N.
      */
-    public R search(final int n, final Direction d) {
+    public @CheckForNull R search(final int n, final Direction d) {
         Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
         if (c!=null && c.getKey()== n) {
             R r = c.getValue().get();
@@ -436,10 +439,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             // assertion error, but we are so far unable to get to the bottom of this bug.
             // but don't let this kill the loading the hard way
             String msg = String.format(
-                    "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d,size2=%d",
-                    n, d, lo, hi, idOnDisk.size(), initialSize);
-            LOGGER.log(Level.WARNING, msg,new Exception());
-            throw new ArrayIndexOutOfBoundsException(msg);
+                    "JENKINS-15652 Assertion error #1: failing to load %s #%d %s: lo=%d,hi=%d,size=%d,size2=%d",
+                    dir, n, d, lo, hi, idOnDisk.size(), initialSize);
+            LOGGER.log(Level.WARNING, msg);
+            return null;
         }
 
         while (lo<hi) {
@@ -448,10 +451,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
                 // assertion error, but we are so far unable to get to the bottom of this bug.
                 // but don't let this kill the loading the hard way
                 String msg = String.format(
-                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
-                        n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi, initialSize);
-                LOGGER.log(Level.WARNING, msg,new Exception());
-                throw new ArrayIndexOutOfBoundsException(msg);
+                        "JENKINS-15652 Assertion error #2: failing to load %s #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        dir, n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi, initialSize);
+                LOGGER.log(Level.WARNING, msg);
+                return null;
             }
             R r = load(idOnDisk.get(pivot), null);
             if (r==null) {
@@ -489,8 +492,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
                 // assertion error, but we are so far unable to get to the bottom of this bug.
                 // but don't let this kill the loading the hard way
                 LOGGER.log(Level.WARNING, String.format(
-                        "Assertion error: failing to load #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
-                        n,d,lo,hi,idOnDisk.size(), initialLo,initialHi,initialSize),new Exception());
+                        "JENKINS-15652 Assertion error #3: failing to load %s #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
+                        dir, n,d,lo,hi,idOnDisk.size(), initialLo,initialHi,initialSize));
                 return null;
             }
             return getById(idOnDisk.get(lo-1));

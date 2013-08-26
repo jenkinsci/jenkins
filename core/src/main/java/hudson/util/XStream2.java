@@ -122,7 +122,7 @@ public class XStream2 extends XStream {
     }
 
     static String trimVersion(String version) {
-        // XXX seems like there should be some trick with VersionNumber to do this
+        // TODO seems like there should be some trick with VersionNumber to do this
         return version.replaceFirst(" .+$", "");
     }
 
@@ -343,7 +343,7 @@ public class XStream2 extends XStream {
      * callback code just after a type is unmarshalled by RobustReflectionConverter.
      * Example: <pre> public static class ConverterImpl extends XStream2.PassthruConverter&lt;MyType&gt; {
      *   public ConverterImpl(XStream2 xstream) { super(xstream); }
-     *   @Override protected void callback(MyType obj, UnmarshallingContext context) {
+     *   {@literal @}Override protected void callback(MyType obj, UnmarshallingContext context) {
      *     ...
      * </pre>
      */

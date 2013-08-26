@@ -51,9 +51,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.Publisher;
-import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
@@ -79,6 +76,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -87,6 +85,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1061,7 +1061,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(
+            new ThreadFactory() {
+                
+                private final AtomicInteger threadNumber = new AtomicInteger(1);
+                
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("Jenkins-Remoting-Thread-"+threadNumber.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                }
+            }));
 
 //
 //
@@ -1157,20 +1169,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
-        // ability to run arbitrary script is dangerous
-        checkPermission(Jenkins.RUN_SCRIPTS);
-
-        String text = req.getParameter("script");
-        if(text!=null) {
-            try {
-                req.setAttribute("output",
-                RemotingDiagnostics.executeGroovy(text,getChannel()));
-            } catch (InterruptedException e) {
-                throw new ServletException(e);
-            }
-        }
-
-        req.getView(this,view).forward(req, rsp);
+        Jenkins._doScript(req, rsp, req.getView(this, view), getChannel(), getACL());
     }
 
     /**
@@ -1209,9 +1208,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            Node result = (Node)Jenkins.XSTREAM2.fromXML(req.getReader());
-
-            replaceBy(result);
+            updateByXml(req.getInputStream());
             return;
         }
 
@@ -1236,6 +1233,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             nodes.set(i, newNode);
             app.setNodes(nodes);
         }
+    }
+
+    /**
+     * Updates Job by its XML definition.
+     *
+     * @since XXX
+     */
+    public void updateByXml(final InputStream source) throws IOException, ServletException {
+        checkPermission(Jenkins.ADMINISTER);
+        Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
+        replaceBy(result);
     }
 
     /**
@@ -1283,7 +1291,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
-     * {@link Publisher}, {@link BuildWrapper}, etc.
+     * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
      */
     public static Computer currentComputer() {
         Executor e = Executor.currentExecutor();
@@ -1362,6 +1370,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.COMPUTER);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
+    public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

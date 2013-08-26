@@ -7,10 +7,10 @@ import hudson.cli.LoginCommand;
 import hudson.cli.LogoutCommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
+import org.junit.Assert;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
-import junit.framework.Assert;
 
 /**
  * @author Kohsuke Kawaguchi

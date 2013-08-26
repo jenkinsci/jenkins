@@ -25,9 +25,9 @@
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
 import hudson.Util;
 import hudson.util.EditDistance;
+
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -72,7 +73,7 @@ public class Search {
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
                 if(query!=null) {
-                    SuggestedItem target = find(index, query);
+                    SuggestedItem target = find(index, query, smo);
                     if(target!=null) {
                         // found
                         rsp.sendRedirect2(a.getUrl()+target.getUrl());
@@ -131,7 +132,8 @@ public class Search {
         Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
         int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 20;
-        for (SuggestedItem i : suggest(makeSuggestIndex(req), query)) {
+        SearchableModelObject smo = findClosestSearchableModelObject(req);
+        for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
             if(r.size()>=max) {
                 r.hasMoreResults = true;
                 break;
@@ -140,6 +142,17 @@ public class Search {
                 r.add(i);
         }
         return r;
+    }
+
+    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+        List<Ancestor> l = req.getAncestors();
+        for( int i=l.size()-1; i>=0; i-- ) {
+            Ancestor a = l.get(i);
+            if (a.getObject() instanceof SearchableModelObject) {
+                return (SearchableModelObject)a.getObject();
+            }
+        }
+        return null;
     }
 
     /**
@@ -224,11 +237,20 @@ public class Search {
     }
     
     /**
-     * Performs a search and returns the match, or null if no match was found
-     * or more than one match was found
+     * @deprecated Use {@link Search#find(SearchIndex, String, SearchableModelObject)} instead.
      */
+    @Deprecated
     public static SuggestedItem find(SearchIndex index, String query) {
-        List<SuggestedItem> r = find(Mode.FIND, index, query);
+        return find(index, query, null);
+    }
+    
+    /**
+     * Performs a search and returns the match, or null if no match was found
+     * or more than one match was found.
+     * @since 1.527
+     */
+    public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
+        List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
         if(r.isEmpty()){ 
             return null;
         }
@@ -243,7 +265,18 @@ public class Search {
                     
     }
 
+    /**
+     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead. 
+     */
+    @Deprecated
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList) {
+        return suggest(index, tokenList, null);
+    }
+
+    /**
+     * @since 1.527
+     */
+    public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
 
         class Tag implements Comparable<Tag>{
             final SuggestedItem item;
@@ -265,7 +298,7 @@ public class Search {
         }
 
         List<Tag> buf = new ArrayList<Tag>();
-        List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList);
+        List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
         for( SuggestedItem i : items)
@@ -322,7 +355,7 @@ public class Search {
         }
     }
 
-    private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList) {
+    private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList, SearchableModelObject searchContext) {
         TokenList tokens = new TokenList(tokenList);
         if(tokens.length()==0) return Collections.emptyList();   // no tokens given
 
@@ -332,9 +365,7 @@ public class Search {
 
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-        if(LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("tokens="+tokens.toString());
-        }
+        LOGGER.log(Level.FINE, "tokens={0}", tokens);
         
         // first token
         int w=1;    // width of token
@@ -342,8 +373,8 @@ public class Search {
             items.clear();
             m.find(index,token,items);
             for (SearchItem si : items) {
-                paths[w].add(new SuggestedItem(si));
-                LOGGER.info("found search item:" + si.getSearchName());
+                paths[w].add(SuggestedItem.build(searchContext ,si));
+                LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
             }
             w++;
         }

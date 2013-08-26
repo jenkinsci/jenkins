@@ -91,7 +91,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
+import com.jcraft.jzlib.GZIPInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -110,15 +110,19 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
+import hudson.model.Run.RunExecution;
 import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import java.io.StringWriter;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.PeepholePermalink;
+import jenkins.model.RunAction2;
 
 /**
  * A particular execution of {@link Job}.
@@ -186,7 +190,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The build result.
-     * This value may change while the state is in {@link State#BUILDING}.
+     * This value may change while the state is in {@link Run.State#BUILDING}.
      */
     protected volatile Result result;
 
@@ -254,7 +258,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private volatile transient RunExecution runner;
 
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
+    public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
     private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
                 @Override
                 protected SimpleDateFormat initialValue() {
@@ -313,10 +317,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Called after the build is loaded and the object is added to the build list.
      */
+    @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getActions())
-            if (a instanceof RunAction)
+        for (Action a : getActions()) {
+            if (a instanceof RunAction2) {
+                ((RunAction2) a).onLoad(this);
+            } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
+            }
+        }
     }
     
     /**
@@ -328,18 +337,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         List<Action> actions = new ArrayList<Action>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
             actions.addAll(factory.createFor(this));
+            assert !actions.contains(null) : "null action added by " + factory;
         }
         return Collections.unmodifiableList(actions);
     }
    
+    @SuppressWarnings("deprecation")
     @Override
     public void addAction(Action a) {
         super.addAction(a);
-        if (a instanceof RunAction)
+        if (a instanceof RunAction2) {
+            ((RunAction2) a).onAttached(this);
+        } else if (a instanceof RunAction) {
             ((RunAction) a).onAttached(this);
+        }
     }
 
-    /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException {
+    static class InvalidDirectoryNameException extends IOException {
+        InvalidDirectoryNameException(File buildDir) {
+            super("Invalid directory name " + buildDir);
+        }
+    }
+
+    /*package*/ static long parseTimestampFromBuildDir(File buildDir) throws IOException, InvalidDirectoryNameException {
         try {
             if(Util.isSymlink(buildDir)) {
                 // "Util.resolveSymlink(file)" resolves NTFS symlinks. 
@@ -349,11 +369,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
             // canonicalization to ensure we are looking at the ID in the directory name
             // as opposed to build numbers which are used in symlinks
-            return ID_FORMATTER.get().parse(buildDir.getCanonicalFile().getName()).getTime();
+            // (just in case the symlink check above did not work)
+            buildDir = buildDir.getCanonicalFile();
+            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
-        } catch (NumberFormatException e) {
-            throw new IOException2("Invalid directory name "+buildDir,e);
+            throw new InvalidDirectoryNameException(buildDir);
         } catch (InterruptedException e) {
             throw new IOException2("Interrupted while resolving symlink directory "+buildDir,e);
         }
@@ -445,8 +465,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * 
      * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
-     * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
-     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
+     * an executor holds on to {@link Run} some more time even after the build is finished (for example to
+     * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
@@ -687,7 +707,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         BallColor baseColor;
         RunT pb = getPreviousBuild();
         if(pb==null)
-            baseColor = BallColor.GREY;
+            baseColor = BallColor.NOTBUILT;
         else
             baseColor = pb.getIconColor();
 
@@ -1346,12 +1366,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         link.delete();
 
         File rootDir = getRootDir();
+        if (!rootDir.isDirectory()) {
+            throw new IOException(rootDir + " looks to have already been deleted");
+        }
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
             Util.deleteRecursive(tmp);
         }
-        // XXX on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
+        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
         boolean renamingSucceeded = rootDir.renameTo(tmp);
         Util.deleteRecursive(tmp);
         // some user reported that they see some left-over .xyz files in the workspace,
@@ -1381,7 +1404,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * @see CheckPoint#block()
      */
-    /*package*/ static void waitForCheckpoint(CheckPoint id) throws InterruptedException {
+    /*package*/ static void waitForCheckpoint(CheckPoint id, @CheckForNull BuildListener listener, @CheckForNull String waiter) throws InterruptedException {
         while(true) {
             Run b = RunnerStack.INSTANCE.peek().getBuild().getPreviousBuildInProgress();
             if(b==null)     return; // no pending earlier build
@@ -1391,7 +1414,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 Thread.sleep(0);
                 continue;
             }
-            if(runner.checkpoints.waitForCheckPoint(id))
+            if(runner.checkpoints.waitForCheckPoint(id, listener, waiter))
                 return; // confirmed that the previous build reached the check point
 
             // the previous build finished without ever reaching the check point. try again.
@@ -1427,13 +1450,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 notifyAll();
             }
 
-            protected synchronized boolean waitForCheckPoint(CheckPoint identifier) throws InterruptedException {
+            protected synchronized boolean waitForCheckPoint(CheckPoint identifier, @CheckForNull BuildListener listener, @CheckForNull String waiter) throws InterruptedException {
                 final Thread t = Thread.currentThread();
                 final String oldName = t.getName();
-                t.setName(oldName+" : waiting for "+identifier+" on "+getFullDisplayName());
+                t.setName(oldName + " : waiting for " + identifier + " on " + getFullDisplayName() + " from " + waiter);
                 try {
-                    while(!allDone && !checkpoints.contains(identifier))
+                    boolean first = true;
+                    while (!allDone && !checkpoints.contains(identifier)) {
+                        if (first && listener != null && waiter != null) {
+                            listener.getLogger().println(Messages.Run__is_waiting_for_a_checkpoint_on_(waiter, getFullDisplayName()));
+                        }
                         wait();
+                        first = false;
+                    }
                     return checkpoints.contains(identifier);
                 } finally {
                     t.setName(oldName);
@@ -1505,7 +1534,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Used in {@link RunExecution#run} to indicates that a fatal error in a build
+     * Used in {@link Run.RunExecution#run} to indicates that a fatal error in a build
      * is reported to {@link BuildListener} and the build should be simply aborted
      * without further recording a stack trace.
      */
@@ -1569,8 +1598,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    // create a symlink from build number to ID.
-                    Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    updateSymlinks(listener);
 
                     setResult(job.run(listener));
 
@@ -1644,6 +1672,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } finally {
             onEndBuilding();
         }
+    }
+
+    /**
+     * Creates a symlink from build number to ID.
+     * Also makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
+     * Normally you do not need to call this explicitly, since {@link #execute} does so,
+     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
+     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
+     * @param listener probably unused
+     * @throws InterruptedException probably not thrown
+     * @since 1.530
+     */
+    public final void updateSymlinks(TaskListener listener) throws InterruptedException {
+        Util.createSymlink(getParent().getBuildDir(), getId(), String.valueOf(getNumber()), listener);
+        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
+        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
+    }
+    /**
+     * Backward compatibility.
+     *
+     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
+     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
+     * resolves to the symlink created by {@link PeepholePermalink}.
+     */
+    private void createSymlink(TaskListener listener, String name, PermalinkProjectAction.Permalink target) throws InterruptedException {
+        File buildDir = getParent().getBuildDir();
+        File rootDir = getParent().getRootDir();
+        String targetDir;
+        if (buildDir.equals(new File(rootDir, "builds"))) {
+            targetDir = "builds" + File.separator + target.getId();
+        } else {
+            targetDir = buildDir + File.separator + target.getId();
+        }
+        Util.createSymlink(rootDir, targetDir, name, listener);
     }
 
     /**
@@ -1937,7 +1999,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // Definitely prevented.
             return false;
         }
-        // XXX may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
+        // TODO may be that keepLog is on (perhaps toggler earlier) yet isKeepLog() would be true anyway.
         // In such a case this will incorrectly return true and logKeep.jelly will allow the toggle.
         // However at least then (after redirecting to the same page) the toggle button will correctly disappear.
         return true;
@@ -1978,7 +2040,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return;
         }
 
-        delete();
+        try{
+            delete();
+        }
+        catch(IOException ex){
+            StringWriter writer = new StringWriter();
+            ex.printStackTrace(new PrintWriter(writer));
+            req.setAttribute("stackTraces", writer);
+            req.getView(this, "delete-retry.jelly").forward(req, rsp);  
+            return;
+        } 
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 
@@ -2210,8 +2281,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (result == null){
             //check transient actions too
             for(Action action: getTransientActions()){
-                if(action.getUrlName().equals(token))
+                String urlName = action.getUrlName();
+                if (urlName == null) {
+                    continue;
+                }
+                if (urlName.equals(token)) {
                     return action;
+                }
             }
             // Next/Previous Build links on an action page (like /job/Abc/123/testReport)
             // will also point to same action (/job/Abc/124/testReport), but other builds

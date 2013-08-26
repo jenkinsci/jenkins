@@ -32,28 +32,6 @@ THE SOFTWARE.
       <h1>${%Access Denied}</h1>
       <!-- TODO: message is not human readable. define a subclass -->
       <p class="error"><st:out value="${exception.message}"/></p>
-
-      <j:if test="${h.isAnonymous()}">
-        <div style="margin: 2em;">
-          <!-- login form -->
-          <form action="j_security_check" method="post" style="text-size:smaller">
-            <table>
-              <tr>
-                <td>${%User}:</td>
-                <td><input type="text" name="j_username" id="j_username" /></td>
-              </tr>
-              <tr>
-                <td>${%Password}:</td>
-                <td><input type="password" name="j_password" /></td>
-              </tr>
-            </table>
-            <f:submit value="${%login}" />
-            <script>
-              $('j_username').focus();
-            </script>
-          </form>
-        </div>
-      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

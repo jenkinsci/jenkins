@@ -78,7 +78,7 @@ public class CommandInstaller extends ToolInstaller {
 
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
-        // XXX support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
+        // TODO support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
         FilePath script = dir.createTextTempFile("hudson", ".sh", command);
         try {
             String[] cmd = {"sh", "-e", script.getRemote()};

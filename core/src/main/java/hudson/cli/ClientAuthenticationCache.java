@@ -1,13 +1,10 @@
 package hudson.cli;
 
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
-import hudson.os.PosixAPI;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
 import hudson.util.Secret;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -16,7 +13,6 @@ import org.acegisecurity.userdetails.UserDetails;
 import org.springframework.dao.DataAccessException;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -106,21 +102,13 @@ public class ClientAuthenticationCache implements Serializable {
     }
 
     private void save() throws IOException, InterruptedException {
-        store.act(new FileCallable<Void>() {
-            public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                f.getParentFile().mkdirs();
-
-                OutputStream os = new FileOutputStream(f);
-                try {
-                    props.store(os,"Credential store");
-                } finally {
-                    os.close();
-                }
-
-                // try to protect this file from other users, if we can.
-                PosixAPI.get().chmod(f.getAbsolutePath(),0600);
-                return null;
-            }
-        });
+        OutputStream os = store.write();
+        try {
+            props.store(os,"Credential store");
+        } finally {
+            os.close();
+        }
+        // try to protect this file from other users, if we can.
+        store.chmod(0600);
     }
 }

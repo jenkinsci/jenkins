@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Functions;
 import hudson.model.Computer;
+import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
@@ -66,11 +67,12 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
 
-        protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
+        @Override
+        protected Callable<DiskSpace,IOException> createCallable(Computer c) {
             FilePath p = c.getNode().getRootPath();
             if(p==null) return null;
 
-            return p.act(new GetTempSpace());
+            return p.asCallableWith(new GetTempSpace());
         }
     };
 

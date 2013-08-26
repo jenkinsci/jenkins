@@ -45,8 +45,9 @@ import org.kohsuke.stapler.export.Exported;
  * {@link AbstractNodeMonitorDescriptor} for {@link NodeMonitor} that checks a free disk space of some directory.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.520
 */
-/*package*/ abstract class DiskSpaceMonitorDescriptor extends AbstractNodeMonitorDescriptor<DiskSpace> {
+public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonitorDescriptor<DiskSpace> {
     /**
      * Value object that represents the disk space.
      */
@@ -58,13 +59,6 @@ import org.kohsuke.stapler.export.Exported;
         
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
-
-        /**
-         * @deprecated as of 1.467
-         */
-        public DiskSpace(long size) {
-            this(".",size);
-        }
 
         /**
          * @param path
@@ -165,16 +159,8 @@ import org.kohsuke.stapler.export.Exported;
         private static final long serialVersionUID = 2L;
     }
 
-    protected DiskSpace monitor(Computer c) throws IOException, InterruptedException {
-        return getFreeSpace(c);
-    }
-
-    /**
-     * Computes the free size.
-     */
-    protected abstract DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException;
-
     protected static final class GetUsableSpace implements FileCallable<DiskSpace> {
+        public GetUsableSpace() {}
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
             try {

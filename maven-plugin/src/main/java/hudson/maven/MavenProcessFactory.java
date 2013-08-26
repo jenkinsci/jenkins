@@ -32,34 +32,57 @@ import hudson.model.BuildListener;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.Which;
+import hudson.remoting.Channel;
 import hudson.tasks.Maven.MavenInstallation;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 
 /**
- * Launches the maven process.
+ * {@link AbstractMavenProcessFactory} for Maven 2.
  *
  * @author Kohsuke Kawaguchi
  */
 final class MavenProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory {
 
 
-    MavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
-        super( mms, launcher, envVars, mavenOpts, workDir );
+    MavenProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, build, launcher, envVars, mavenOpts, workDir );
     }
 
     @Override
-    protected String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException {
-        String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
+    protected String getMavenAgentClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
         String classPath =
-            ( isMaster ? Which.jarFile( Main.class ).getAbsolutePath()
-                            : slaveRoot.child( "maven-agent.jar" ).getRemote() )
-                + ( getLauncher().isUnix() ? ":" : ";" )
-                + ( isMaster ? classWorldsJar : slaveRoot.child( "classworlds.jar" ).getRemote() );
+            classPathEntry(slaveRoot, Main.class, "maven-agent", listener)
+                + ( getLauncher().isUnix() ? ":" : ";" );
+        if (slaveRoot == null) { // master
+            String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
+            classPath += classWorldsJar;
+        } else {
+            // copy classworlds 1.1 for maven2 builds
+            // if this line fails during the unit test from IDE, it means you need to "mvn compile" maven-plugin
+            // TODO why would we not pick it up using GetClassWorldsJar like we do for M2 on master or M3 anywhere?
+            FilePath jar = slaveRoot.child("classworlds.jar");
+            // copied to root of this JAR using dependency:generate-resources:
+            URLConnection conn = MavenProcessFactory.class.getClassLoader().getResource("classworlds.jar").openConnection();
+            if (jar.lastModified() > conn.getLastModified()) {
+                listener.getLogger().println("classworlds.jar already up to date");
+            } else {
+                InputStream in = conn.getInputStream();
+                try {
+                    jar.copyFrom(in);
+                } finally {
+                    in.close();
+                }
+                listener.getLogger().println("Copied classworlds.jar");
+            }
+            classPath += jar.getRemote();
+        }
         return classPath;
     }
     
@@ -68,22 +91,36 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
     }
 
     @Override
-    protected String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
-        return isMaster?
-            Which.jarFile(hudson.maven.agent.AbortException.class).getAbsolutePath():
-            slaveRoot.child("maven-interceptor.jar").getRemote();
+    protected String getMavenInterceptorClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
+        return classPathEntry(slaveRoot, hudson.maven.agent.AbortException.class, "maven-interceptor", listener);
     }
     
     @Override
     protected String getMavenInterceptorOverride(MavenInstallation mvn,
-            boolean isMaster, FilePath slaveRoot) throws IOException,
+            FilePath slaveRoot, BuildListener listener) throws IOException,
             InterruptedException {
         if(mvn.isMaven2_1(getLauncher())) {
-            return isMaster?
-                Which.jarFile(Maven21Interceptor.class).getAbsolutePath():
-                slaveRoot.child("maven2.1-interceptor.jar").getRemote();
+            return classPathEntry(slaveRoot, Maven21Interceptor.class, "maven2.1-interceptor", listener);
         }
         return null;
+    }
+
+    @Override
+    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask(context));
+    }
+
+    private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
+        PlexusModuleContributor c;
+
+        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
+            c = PlexusModuleContributorFactory.aggregate(context);
+        }
+
+        public Void call() throws IOException {
+            Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));
+            return null;
+        }
     }
 
     /**
