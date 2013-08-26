@@ -31,5 +31,5 @@ THE SOFTWARE.
       Unescaped value to output
     </st:attribute>
   </st:documentation>
-  ${h.breakableString(h.escape(value))}
-</j:jelly>
+  ${h.breakableString(h.escape(value))}</j:jelly>
+
