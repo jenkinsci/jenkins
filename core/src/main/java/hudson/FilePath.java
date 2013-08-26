@@ -527,7 +527,12 @@ public final class FilePath implements Serializable {
                     if (p != null) {
                         p.mkdirs();
                     }
-                    IOUtils.copy(zip.getInputStream(e), f);
+                    InputStream input = zip.getInputStream(e);
+                    try {
+                        IOUtils.copy(input, f);
+                    } finally {
+                        input.close();
+                    }
                     try {
                         FilePath target = new FilePath(f);
                         int mode = e.getUnixMode();
