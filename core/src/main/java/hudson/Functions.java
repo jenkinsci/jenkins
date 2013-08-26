@@ -1082,10 +1082,11 @@ public class Functions {
 
             Integer d = parents.get(gr);
             if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+=".." + separationString;
-                return s+buf;
+                for (int j=d; j>0; j--) {
+                    buf.insert(0,separationString);
+                    buf.insert(0,"..");
+                }
+                return buf.toString();
             }
 
             if (gr instanceof Item)
@@ -1227,21 +1228,21 @@ public class Functions {
         StackTraceElement[] stackTrace = ti.getStackTrace();
         for (int i=0; i < stackTrace.length; i++) {
             StackTraceElement ste = stackTrace[i];
-            sb.append("\tat " + ste.toString());
+            sb.append("\tat ").append(ste);
             sb.append('\n');
             if (i == 0 && ti.getLockInfo() != null) {
                 Thread.State ts = ti.getThreadState();
                 switch (ts) {
                     case BLOCKED:
-                        sb.append("\t-  blocked on " + ti.getLockInfo());
+                        sb.append("\t-  blocked on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case TIMED_WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     default:
@@ -1250,7 +1251,7 @@ public class Functions {
 
             for (MonitorInfo mi : ti.getLockedMonitors()) {
                 if (mi.getLockedStackDepth() == i) {
-                    sb.append("\t-  locked " + mi);
+                    sb.append("\t-  locked ").append(mi);
                     sb.append('\n');
                 }
             }
@@ -1261,7 +1262,7 @@ public class Functions {
            sb.append("\n\tNumber of locked synchronizers = " + locks.length);
            sb.append('\n');
            for (LockInfo li : locks) {
-               sb.append("\t- " + li);
+               sb.append("\t- ").append(li);
                sb.append('\n');
            }
        }
@@ -1644,16 +1645,16 @@ public class Functions {
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
             String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (d.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         return buf.toString();
     }
