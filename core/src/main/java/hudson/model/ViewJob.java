@@ -33,6 +33,8 @@ import java.util.LinkedHashSet;
 import java.util.SortedMap;
 
 import hudson.model.Descriptor.FormException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Job} that monitors activities that happen outside Hudson,
@@ -45,6 +47,8 @@ import hudson.model.Descriptor.FormException;
  */
 public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<JobT,RunT>>
     extends Job<JobT,RunT> {
+
+    private static final Logger LOGGER = Logger.getLogger(ViewJob.class.getName());
 
     /**
      * We occasionally update the list of {@link Run}s from a file system.
@@ -126,8 +130,9 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     }
 
     public void removeRun(RunT run) {
-        // reload the info next time
-        nextUpdate = 0;
+        if (runs != null && !runs.remove(run)) {
+            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});
+        }
     }
 
     private void _reload() {
