@@ -37,7 +37,9 @@ THE SOFTWARE.
       <a href="rssFailed">RSS ${%for failures}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>&#160;<a href="rssLatest">RSS ${%for just latest builds}</a>
+      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+      <st:nbsp/>
+      <a href="rssLatest">RSS ${%for just latest builds}</a>
     </span>
   </div>
 </j:jelly>
