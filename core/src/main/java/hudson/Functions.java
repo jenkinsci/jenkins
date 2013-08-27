@@ -1548,9 +1548,7 @@ public class Functions {
 
     /**
      * Determines the parameters that client-side needs for a form validation check. See prepareDatabinding.jelly
-     *
-     * @deprecated
-     *      Use {@link #calcCheckUrl}
+     * @since 1.528
      */
     public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return;
