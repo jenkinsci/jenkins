@@ -299,7 +299,7 @@ public abstract class Launcher {
         }
 
         public String[] envs() {
-            return envs.clone();
+            return (envs == null) ? null: envs.clone();
         }
 
         /**
