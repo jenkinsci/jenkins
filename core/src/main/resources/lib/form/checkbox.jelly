@@ -70,7 +70,7 @@ THE SOFTWARE.
     <label class="attach-previous"
            title="${attrs.tooltip}">${attrs.title}</label>
   </j:if>
-  <j:if test="${customizedFields != null and value != default}">
+  <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>
 </j:jelly>
