@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,7 +74,7 @@ import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
  *
  *
  * @author Kohsuke Kawaguchi
- * @see FilePath#createLauncher(TaskListener) 
+ * @see FilePath#createLauncher(TaskListener)
  */
 public abstract class Launcher {
 
@@ -128,7 +128,7 @@ public abstract class Launcher {
      * @deprecated since 2008-11-16.
      *      See the javadoc for why this is inherently unreliable. If you are trying to
      *      figure out the current {@link Computer} from within a build, use
-     *      {@link Computer#currentComputer()}  
+     *      {@link Computer#currentComputer()}
      */
     public Computer getComputer() {
         for( Computer c : Jenkins.getInstance().getComputers() )
@@ -299,7 +299,7 @@ public abstract class Launcher {
         }
 
         public String[] envs() {
-            return envs.clone();
+            return (envs==null )? null: envs.clone();
         }
 
         /**
@@ -629,7 +629,7 @@ public abstract class Launcher {
             printCommandLine(cmd.toArray(new String[cmd.size()]),workDir);
             return;
         }
-        
+
         assert mask.length == cmd.size();
         final String[] masked = new String[cmd.size()];
         for (int i = 0; i < cmd.size(); i++) {
@@ -668,7 +668,7 @@ public abstract class Launcher {
             public boolean isUnix() {
                 return outer.isUnix();
             }
- 
+
             @Override
             public Proc launch(ProcStarter starter) throws IOException {
                 starter.commands.addAll(0,Arrays.asList(prefix));
@@ -1087,11 +1087,11 @@ public abstract class Launcher {
      */
     private static EnvVars inherit(Map<String,String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
-        for (Map.Entry<String,String> o : overrides.entrySet()) 
+        for (Map.Entry<String,String> o : overrides.entrySet())
             m.override(o.getKey(),m.expand(o.getValue()));
         return m;
     }
-    
+
     /**
      * Debug option to display full current path instead of just the last token.
      */
