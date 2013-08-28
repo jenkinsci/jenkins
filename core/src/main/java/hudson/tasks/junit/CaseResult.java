@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Yahoo!, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,17 +23,6 @@
  */
 package hudson.tasks.junit;
 
-import hudson.util.TextFile;
-import org.apache.commons.io.FileUtils;
-import org.jvnet.localizer.Localizable;
-
-import hudson.model.AbstractBuild;
-import hudson.model.Run;
-import hudson.tasks.test.TestResult;
-
-import org.dom4j.Element;
-import org.kohsuke.stapler.export.Exported;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -43,11 +32,23 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Logger;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import hudson.tasks.test.TestResult;
+import hudson.util.TextFile;
+import org.apache.commons.io.FileUtils;
+import org.dom4j.Element;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 /**
  * One test result.
+ *
+ * Non-final class but should not be extended unless absolutely necessary. Might be necessary to
+ * extend if you need to implement {@link hudson.tasks.test.AbstractTestResultAction#getFailedTests()}
  *
  * @author Kohsuke Kawaguchi
  */
@@ -214,7 +215,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         this.skipped = false;
         this.skippedMessage = null;
     }
-    
+
     public ClassResult getParent() {
     	return classResult;
     }
@@ -330,11 +331,11 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         if(idx<0)       return "(root)";
         else            return className.substring(0,idx);
     }
-    
+
     public String getFullName() {
     	return className+'.'+getName();
     }
-    
+
     /**
      * @since 1.515
      */
@@ -373,12 +374,12 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
                 this.failedSince = getOwner().getNumber();
             } else {
                 LOGGER.warning("trouble calculating getFailedSince. We've got prev, but no owner.");
-                // failedSince will be 0, which isn't correct. 
+                // failedSince will be 0, which isn't correct.
             }
         }
         return failedSince;
     }
-    
+
     public Run<?,?> getFailedSinceRun() {
     	return getOwner().getParent().getBuildByNumber(getFailedSince());
     }
@@ -395,7 +396,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
             return getOwner().getNumber()-getFailedSince()+1;
         } else {
             LOGGER.fine("Trying to get age of a CaseResult without an owner");
-            return 0; 
+            return 0;
     }
     }
 
@@ -416,7 +417,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public String getStdout() {
         if(stdout!=null)    return stdout;
         SuiteResult sr = getSuiteResult();
-        if (sr==null) return "";         
+        if (sr==null) return "";
         return getSuiteResult().getStdout();
     }
 
@@ -441,7 +442,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         if(pr==null)    return null;
         return pr.getCase(getName());
     }
-    
+
     /**
      * Case results have no children
      * @return null
@@ -524,7 +525,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public boolean isSkipped() {
         return skipped;
     }
-    
+
     /**
      * @return true if the test was not skipped and did not pass, false otherwise.
      * @since 1.520
@@ -546,7 +547,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public SuiteResult getSuiteResult() {
         return parent;
     }
-    
+
     @Override
     public AbstractBuild<?,?> getOwner() {
         SuiteResult sr = getSuiteResult();
@@ -555,7 +556,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         hudson.tasks.junit.TestResult tr = sr.getParent();
         if (tr==null) {
             LOGGER.warning("In getOwner(), suiteResult.getParent() is null."); return null; }
-        return tr.getOwner(); 
+        return tr.getOwner();
     }
 
     public void setParentSuiteResult(SuiteResult parent) {
@@ -598,7 +599,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     /*package*/ void setClass(ClassResult classResult) {
         this.classResult = classResult;
     }
-    
+
     void replaceParent(SuiteResult parent) {
         this.parent = parent;
     }
