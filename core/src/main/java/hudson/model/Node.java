@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
@@ -72,14 +73,19 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
  *
+ * <p>
+ * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
+ * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
  * @see NodeDescriptor
+ * @see Computer
  */
 @ExportedBean
 public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster {
@@ -397,7 +403,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
-    public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {

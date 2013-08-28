@@ -38,6 +38,8 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.tasks.ArtifactArchiver
 import hudson.triggers.SCMTrigger;
+import hudson.triggers.TimerTrigger
+import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
 import jenkins.model.Jenkins;
@@ -446,5 +448,39 @@ public class AbstractProjectTest extends HudsonTestCase {
         def t = j.triggers()[0]
         assert t.class==SCMTrigger.class;
         assert t.spec=="*/10 * * * *"
+    }
+
+    @Bug(18813)
+    public void testRemoveTrigger() {
+        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+
+        TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(SCMTrigger.class)
+        j.removeTrigger(SCM_TRIGGER_DESCRIPTOR);
+        assert j.triggers().size()==0
+    }
+
+    @Bug(18813)
+    public void testAddTriggerSameType() {
+        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+
+        def newTrigger = new SCMTrigger("H/5 * * * *")
+        j.addTrigger(newTrigger);
+
+        assert j.triggers().size()==1
+        def t = j.triggers()[0]
+        assert t.class==SCMTrigger.class;
+        assert t.spec=="H/5 * * * *"
+    }
+
+    @Bug(18813)
+    public void testAddTriggerDifferentType() {
+        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+
+        def newTrigger = new TimerTrigger("20 * * * *")
+        j.addTrigger(newTrigger);
+
+        assert j.triggers().size()==2
+        def t = j.triggers()[1]
+        assert t == newTrigger
     }
 }

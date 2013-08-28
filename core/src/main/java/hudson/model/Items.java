@@ -166,7 +166,7 @@ public class Items {
         while(tokens.hasMoreTokens()) {
             String relativeName = tokens.nextToken().trim();
             String canonicalName = getCanonicalName(context, relativeName);
-            if (canonicalName.startsWith(oldFullName)) {
+            if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName+'/')) {
                 String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
                 // relative name points to the renamed item, let's compute the new relative name
                 newValue.add( computeRelativeNameAfterRenaming(canonicalName, newCanonicalName, relativeName) );

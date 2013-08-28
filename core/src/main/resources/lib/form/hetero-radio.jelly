@@ -53,4 +53,5 @@ THE SOFTWARE.
       </f:radioBlock>
     </j:forEach>
   </table>
+  <!-- TODO consider customizedFields -->
 </j:jelly>

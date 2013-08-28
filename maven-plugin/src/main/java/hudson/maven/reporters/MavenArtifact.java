@@ -48,7 +48,6 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
@@ -119,7 +118,7 @@ public final class MavenArtifact implements Serializable {
         this.classifier = a.getClassifier();
         this.type = a.getType();
         this.fileName = a.getFile().getName();
-        this.md5sum = Util.getDigestOf(new FileInputStream(a.getFile()));
+        this.md5sum = Util.getDigestOf(a.getFile());
         String extension;
         if(a.getArtifactHandler()!=null) // don't know if this can be null, but just to be defensive.
             extension = a.getArtifactHandler().getExtension();

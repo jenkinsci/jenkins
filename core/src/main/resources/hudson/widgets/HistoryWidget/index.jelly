@@ -88,9 +88,13 @@ THE SOFTWARE.
     -->
     <tr class="build-row">
       <td colspan="3" align="right">
-        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for all}</a>
+        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
         <st:nbsp/>
-        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for failures}</a>
+        <a href="${it.baseUrl}/rssAll">RSS ${%for all}</a>
+        <st:nbsp/>
+        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+        <st:nbsp/>
+        <a href="${it.baseUrl}/rssFailed">RSS ${%for failures}</a>
       </td>
     </tr>
   </l:pane>

@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.525-SNAPSHOT</version>
+  <version>1.531-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -95,15 +95,12 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <slf4jVersion>1.6.2</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.level>1.6</java.level>
+    <java.level>6</java.level>
   </properties>
-
-
-
 
   <repositories>
     <repository>
@@ -177,7 +174,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.30</version>
+        <version>2.32</version>
       </dependency>
 
       <dependency>
@@ -185,13 +182,11 @@ THE SOFTWARE.
         <artifactId>guava</artifactId>
         <version>11.0.1</version>
       </dependency>
-      
+
       <dependency>
-        <!-- we'd like to use stock Guice, but that breaks Maven embedder
-               because it uses a modified Guice called Sisu -->
-        <groupId>org.sonatype.sisu</groupId>
-        <artifactId>sisu-guice</artifactId>
-        <version>3.1.0</version>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>4.0-beta</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -314,6 +309,11 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.0</version>
           <configuration>
@@ -355,11 +355,6 @@ THE SOFTWARE.
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -436,7 +431,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.14</version>
+          <version>1.15</version>
+          <configuration>
+            <outputEncoding>UTF-8</outputEncoding>
+          </configuration>
          </plugin>
         <plugin>
           <groupId>org.jvnet.hudson.tools</groupId>
@@ -487,7 +485,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.93</version>
+          <version>1.97</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -595,7 +593,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
-            <!-- Currently held back to java15. After next (>1.509) LTS, switch to java16 ~ ${java.level}. -->
+            <!-- Currently held back to java15. After Sep 30 2013 (perhaps?), switch to java1${java.level}. -->
             <artifactId>java15</artifactId>
             <version>1.0</version>
           </signature>
@@ -605,8 +603,8 @@ THE SOFTWARE.
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.level}</source>
-          <target>${java.level}</target>
+          <source>1.${java.level}</source>
+          <target>1.${java.level}</target>
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -631,8 +629,23 @@ THE SOFTWARE.
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>${java.level}</maxJdkVersion>
+                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
                 </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                  </excludes>
+                </bannedDependencies>
               </rules>
             </configuration>
           </execution>

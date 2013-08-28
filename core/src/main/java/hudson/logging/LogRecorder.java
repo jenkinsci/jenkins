@@ -213,7 +213,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     public String getSearchUrl() {
-        return name;
+        return Util.rawEncode(name);
     }
 
     public String getName() {

@@ -50,6 +50,7 @@ public class UtilTest {
     public void testReplaceMacro() {
         Map<String,String> m = new HashMap<String,String>();
         m.put("A","a");
+        m.put("A.B","a-b");
         m.put("AA","aa");
         m.put("B","B");
         m.put("DOLLAR", "$");
@@ -68,6 +69,10 @@ public class UtilTest {
         assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
         assertEquals("$", Util.replaceMacro("$$",m));
         assertEquals("$$", Util.replaceMacro("$$$$",m));
+        
+        // dots
+        assertEquals("a.B", Util.replaceMacro("$A.B", m));
+        assertEquals("a-b", Util.replaceMacro("${A.B}", m));
 
     	// test that more complex scenarios work
         assertEquals("/a/B/aa", Util.replaceMacro("/$A/$B/$AA",m));

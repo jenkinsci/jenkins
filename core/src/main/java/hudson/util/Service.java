@@ -86,10 +86,9 @@ public class Service {
         try {
             Enumeration<URL> e = cl.getResources("META-INF/services/" + spi.getName());
             while(e.hasMoreElements()) {
-                BufferedReader r = null;
-                URL url = e.nextElement();
+                final URL url = e.nextElement();
+                final BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(),"UTF-8"));
                 try {
-                    r = new BufferedReader(new InputStreamReader(url.openStream(),"UTF-8"));
                     String line;
                     while((line=r.readLine())!=null) {
                         if(line.startsWith("#"))

@@ -95,6 +95,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -122,6 +123,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -241,6 +243,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of all {@link Trigger}s for this project.
      */
+    @AdaptField(was=List.class)
     protected volatile DescribableList<Trigger<?>,TriggerDescriptor> triggers = new DescribableList<Trigger<?>,TriggerDescriptor>(this);
     private static final AtomicReferenceFieldUpdater<AbstractProject,DescribableList> triggersUpdater
             = AtomicReferenceFieldUpdater.newUpdater(AbstractProject.class,DescribableList.class,"triggers");
@@ -1043,7 +1046,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public void removeRun(R run) {
-        this.builds.remove(run);
+        if (!this.builds.remove(run)) {
+            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});
+        }
     }
 
     /**
@@ -1644,15 +1649,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     protected final synchronized <T extends Describable<T>>
     void addToList( T item, List<T> collection ) throws IOException {
-        for( int i=0; i<collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item.getDescriptor()) {
-                // replace
-                collection.set(i,item);
-                save();
-                return;
-            }
-        }
-        // add
+        //No support to replace item in position, remove then add
+        removeFromList(item.getDescriptor(), collection);
         collection.add(item);
         save();
         updateTransientActions();
@@ -1660,10 +1658,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     protected final synchronized <T extends Describable<T>>
     void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
-        for( int i=0; i< collection.size(); i++ ) {
-            if(collection.get(i).getDescriptor()==item) {
+        final Iterator<T> iCollection = collection.iterator();
+        while(iCollection.hasNext()) {
+            final T next = iCollection.next();
+            if(next.getDescriptor()==item) {
                 // found it
-                collection.remove(i);
+                iCollection.remove();
                 save();
                 updateTransientActions();
                 return;

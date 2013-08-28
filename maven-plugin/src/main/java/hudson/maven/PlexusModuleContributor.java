@@ -2,15 +2,12 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.remoting.Channel;
-import org.apache.maven.AbstractMavenLifecycleParticipant;
-import sun.tools.jar.resources.jar;
 
 import java.io.File;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.asList;

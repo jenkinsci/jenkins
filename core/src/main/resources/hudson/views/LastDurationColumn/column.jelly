@@ -24,15 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <j:set var="lsBuild" value="${job.lastSuccessfulBuild}"/>
-      <j:set var="lfBuild" value="${job.lastFailedBuild}"/>
-      <td data="${lsBuild.duration ?: lfBuild.duration ?: '0'}">
+      <j:set var="lBuild" value="${job.lastSuccessfulBuild ?: job.lastFailedBuild}"/>
+      <td data="${lBuild.duration ?: '0'}">
           <j:choose>
-              <j:when test="${lsBuild!=null}">
-                  ${lsBuild.durationString}
-              </j:when>
-              <j:when test="${lfBuild!=null}">
-                  ${lfBuild.durationString}
+              <j:when test="${lBuild!=null}">
+                  ${lBuild.durationString}
               </j:when>
               <j:otherwise>
                   ${%N/A}

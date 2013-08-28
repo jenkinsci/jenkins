@@ -64,7 +64,7 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.Authentication;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
-import org.apache.maven.cli.BatchModeMavenTransferListener;
+import org.apache.maven.cli.transfer.BatchModeMavenTransferListener;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.kohsuke.stapler.DataBoundConstructor;

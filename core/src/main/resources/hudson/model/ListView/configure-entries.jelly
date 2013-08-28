@@ -51,7 +51,7 @@ THE SOFTWARE.
           <j:set var="spanStyle" value="${it.recurse?'':'display:none'}"/>
         </j:if>
         <span class="${spanClass}" style="${spanStyle}">
-          <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" />
+          <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" />
           <br/>
         </span>
       </j:forEach>

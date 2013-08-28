@@ -84,7 +84,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     /**
-     * Performs a variable subsitution to the given text and return it.
+     * Performs a variable substitution to the given text and return it.
      */
     public String substitute(AbstractBuild<?,?> build, String text) {
         return Util.replaceMacro(text,createVariableResolver(build));
