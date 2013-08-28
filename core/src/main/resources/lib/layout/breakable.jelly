@@ -30,6 +30,6 @@ THE SOFTWARE.
     <st:attribute name="value" use="required">
       Unescaped value to output
     </st:attribute>
-  </st:documentation>
-  ${h.breakableString(h.escape(value))}
-</j:jelly>
+  </st:documentation>${
+    h.breakableString(h.escape(value))
+}</j:jelly>
