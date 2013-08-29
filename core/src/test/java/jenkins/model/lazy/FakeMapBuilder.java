@@ -39,6 +39,10 @@ import java.io.IOException;
 public class FakeMapBuilder implements TestRule {
     private File dir;
 
+    protected File getDir() {
+        return dir;
+    }
+
     public FakeMapBuilder() {
     }
 
