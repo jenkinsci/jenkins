@@ -59,7 +59,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         @Override
         public FakeMap make() {
             assert getDir()!=null;
-            return new FakeMap(getDir()){
+            return new FakeMap(getDir()) {
                 @Override
                 protected BuildReference<Build> createReference(Build r) {
                     return new BuildReference<Build>(getIdOf(r), /* pretend referent expired */ null);
