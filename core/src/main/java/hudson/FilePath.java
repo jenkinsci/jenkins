@@ -1931,13 +1931,19 @@ public final class FilePath implements Serializable {
                     }
                 }
             });
-            int r = writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+            Future<Integer> future2 = actAsync(new FileCallable<Integer>() {
+                private static final long serialVersionUID = 1L;
+                @Override public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+                    return writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+                }
+            });
             try {
+                // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
+                return future2.get();
             } catch (ExecutionException e) {
                 throw new IOException2(e);
             }
-            return r;
         } else {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();
