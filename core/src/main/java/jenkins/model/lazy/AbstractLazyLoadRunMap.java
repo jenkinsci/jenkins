@@ -495,6 +495,15 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             }
             return getById(idOnDisk.get(lo-1));
         case EXACT:
+            if (hi<=0)                 return null;
+            R r = load(idOnDisk.get(hi-1), null);
+            if (r==null) {
+                return null;
+            }
+
+            int found = getNumberOf(r);
+            if (found==n)
+                return r;   // exact match
             return null;
         default:
             throw new AssertionError();
