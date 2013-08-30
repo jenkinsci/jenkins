@@ -29,6 +29,7 @@ import hudson.XmlFile;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.FormApply;
+import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -138,9 +139,9 @@ import org.kohsuke.stapler.StaplerRequest;
             @Override public String getDisplayName() {
                 return "Choice Entry";
             }
-            
-            public String[] getChoices() {
-                return new String[] {"good", "bad", "ugly"};
+
+            public ListBoxModel doFillChoiceItems() {
+                return new ListBoxModel().add("good").add("bad").add("ugly");
             }
 
         }
