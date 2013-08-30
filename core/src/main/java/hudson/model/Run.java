@@ -91,7 +91,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
+import com.jcraft.jzlib.GZIPInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -117,9 +117,11 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import java.io.StringWriter;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 
 /**
@@ -188,7 +190,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The build result.
-     * This value may change while the state is in {@link State#BUILDING}.
+     * This value may change while the state is in {@link Run.State#BUILDING}.
      */
     protected volatile Result result;
 
@@ -256,7 +258,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private volatile transient RunExecution runner;
 
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    protected static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
+    public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
     private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
                 @Override
                 protected SimpleDateFormat initialValue() {
@@ -463,8 +465,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * 
      * This method looks for {@link Executor} who's {@linkplain Executor#getCurrentExecutable() assigned to this build},
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
-     * an executor holds on to {@lnk Run} some more time even after the build is finished (for example to
-     * perform {@linkplain State#POST_PRODUCTION post-production processing}.)
+     * an executor holds on to {@link Run} some more time even after the build is finished (for example to
+     * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
@@ -1364,6 +1366,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         link.delete();
 
         File rootDir = getRootDir();
+        if (!rootDir.isDirectory()) {
+            throw new IOException(rootDir + " looks to have already been deleted");
+        }
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
@@ -1399,7 +1404,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * @see CheckPoint#block()
      */
-    /*package*/ static void waitForCheckpoint(CheckPoint id) throws InterruptedException {
+    /*package*/ static void waitForCheckpoint(CheckPoint id, @CheckForNull BuildListener listener, @CheckForNull String waiter) throws InterruptedException {
         while(true) {
             Run b = RunnerStack.INSTANCE.peek().getBuild().getPreviousBuildInProgress();
             if(b==null)     return; // no pending earlier build
@@ -1409,7 +1414,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 Thread.sleep(0);
                 continue;
             }
-            if(runner.checkpoints.waitForCheckPoint(id))
+            if(runner.checkpoints.waitForCheckPoint(id, listener, waiter))
                 return; // confirmed that the previous build reached the check point
 
             // the previous build finished without ever reaching the check point. try again.
@@ -1445,13 +1450,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 notifyAll();
             }
 
-            protected synchronized boolean waitForCheckPoint(CheckPoint identifier) throws InterruptedException {
+            protected synchronized boolean waitForCheckPoint(CheckPoint identifier, @CheckForNull BuildListener listener, @CheckForNull String waiter) throws InterruptedException {
                 final Thread t = Thread.currentThread();
                 final String oldName = t.getName();
-                t.setName(oldName+" : waiting for "+identifier+" on "+getFullDisplayName());
+                t.setName(oldName + " : waiting for " + identifier + " on " + getFullDisplayName() + " from " + waiter);
                 try {
-                    while(!allDone && !checkpoints.contains(identifier))
+                    boolean first = true;
+                    while (!allDone && !checkpoints.contains(identifier)) {
+                        if (first && listener != null && waiter != null) {
+                            listener.getLogger().println(Messages.Run__is_waiting_for_a_checkpoint_on_(waiter, getFullDisplayName()));
+                        }
                         wait();
+                        first = false;
+                    }
                     return checkpoints.contains(identifier);
                 } finally {
                     t.setName(oldName);
@@ -1587,8 +1598,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    // create a symlink from build number to ID.
-                    Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    updateSymlinks(listener);
 
                     setResult(job.run(listener));
 
@@ -1662,6 +1672,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } finally {
             onEndBuilding();
         }
+    }
+
+    /**
+     * Creates a symlink from build number to ID.
+     * Also makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
+     * Normally you do not need to call this explicitly, since {@link #execute} does so,
+     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
+     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
+     * @param listener probably unused
+     * @throws InterruptedException probably not thrown
+     * @since 1.530
+     */
+    public final void updateSymlinks(TaskListener listener) throws InterruptedException {
+        Util.createSymlink(getParent().getBuildDir(), getId(), String.valueOf(getNumber()), listener);
+        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
+        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
+    }
+    /**
+     * Backward compatibility.
+     *
+     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
+     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
+     * resolves to the symlink created by {@link PeepholePermalink}.
+     */
+    private void createSymlink(TaskListener listener, String name, PermalinkProjectAction.Permalink target) throws InterruptedException {
+        File buildDir = getParent().getBuildDir();
+        File rootDir = getParent().getRootDir();
+        String targetDir;
+        if (buildDir.equals(new File(rootDir, "builds"))) {
+            targetDir = "builds" + File.separator + target.getId();
+        } else {
+            targetDir = buildDir + File.separator + target.getId();
+        }
+        Util.createSymlink(rootDir, targetDir, name, listener);
     }
 
     /**
@@ -1996,7 +2040,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return;
         }
 
-        delete();
+        try{
+            delete();
+        }
+        catch(IOException ex){
+            StringWriter writer = new StringWriter();
+            ex.printStackTrace(new PrintWriter(writer));
+            req.setAttribute("stackTraces", writer);
+            req.getView(this, "delete-retry.jelly").forward(req, rsp);  
+            return;
+        } 
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 

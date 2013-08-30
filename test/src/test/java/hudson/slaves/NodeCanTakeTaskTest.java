@@ -39,8 +39,7 @@ import hudson.model.Queue.Task;
 import hudson.model.Slave;
 import hudson.model.queue.CauseOfBlockage;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 public class NodeCanTakeTaskTest extends HudsonTestCase {

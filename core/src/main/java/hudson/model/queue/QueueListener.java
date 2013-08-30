@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
  * {@link Computer#threadPoolForRemoting}.
  *
  * <p>
- * For the state transition of {@link Queue.Item} in {@link Queue}, please refer to the Queue javadoc.
+ * For the state transition of {@link hudson.model.Queue.Item} in {@link Queue}, please refer to the Queue javadoc.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.520

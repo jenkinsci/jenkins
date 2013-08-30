@@ -33,7 +33,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 
 /**
- * Buffered {@link FileWriter} that uses UTF-8.
+ * Buffered {@link FileWriter} that supports atomic operations.
  *
  * <p>
  * The write operation is atomic when used for overwriting;

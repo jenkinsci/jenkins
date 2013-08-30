@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * Created when {@link Queue.Item} is created so that the caller can track the progress of the task.
+ * Created when {@link hudson.model.Queue.Item} is created so that the caller can track the progress of the task.
  *
  * @author Kohsuke Kawaguchi
  */

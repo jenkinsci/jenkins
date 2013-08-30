@@ -37,7 +37,7 @@ import javax.servlet.http.HttpSession;
  * See <a href="http://jenkins.361315.n4.nabble.com/ActiveDirectory-Plugin-ClassNotFoundException-while-loading-persisted-sessions-tp376451.html">the problem report</a>.
  *
  * @author Kohsuke Kawaguchi
- * @see HttpSessionContextIntegrationFilter2
+ * @see hudson.security.HttpSessionContextIntegrationFilter2
  * @since 1.509
  */
 public class NonSerializableSecurityContext implements SecurityContext {

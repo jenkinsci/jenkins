@@ -26,11 +26,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/document.gif" href="systemProperties" title="${%System Properties}" />
-      <l:task icon="images/24x24/document.gif" href="envVars" title="${%Environment Variables}" />
-      <l:task icon="images/24x24/document.gif" href="threads" title="${%Thread Dump}" />
+      <l:task icon="images/24x24/document.png" href="systemProperties" title="${%System Properties}" />
+      <l:task icon="images/24x24/document.png" href="envVars" title="${%Environment Variables}" />
+      <l:task icon="images/24x24/document.png" href="threads" title="${%Thread Dump}" />
       <l:hasPermission permission="${app.RUN_SCRIPTS}">
-        <l:task icon="images/24x24/notepad.gif" href="script" title="${%Script Console}" />
+        <l:task icon="images/24x24/notepad.png" href="script" title="${%Script Console}" />
       </l:hasPermission>
     </l:tasks>
   </l:side-panel>

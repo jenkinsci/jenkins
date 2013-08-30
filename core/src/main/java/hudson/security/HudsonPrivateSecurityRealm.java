@@ -198,7 +198,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /**
      * Creates an account and associates that with the given identity. Used in conjunction
-     * with {@link #commenceSignup(FederatedIdentity)}.
+     * with {@link #commenceSignup}.
      */
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
@@ -310,7 +310,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         else {
             User user = User.get(si.username, false);
             if (null != user)
-                si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
+                // Allow sign up. SCM people has no such property.
+                if (user.getProperty(Details.class) != null)
+                    si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
         }
 
         if(si.fullname==null || si.fullname.length()==0)

@@ -25,6 +25,7 @@ package hudson.node_monitors;
 
 import hudson.model.Computer;
 import hudson.model.Node;
+import hudson.remoting.Callable;
 import hudson.util.ClockDifference;
 import hudson.Extension;
 import org.kohsuke.stapler.StaplerRequest;
@@ -46,11 +47,12 @@ public class ClockMonitor extends NodeMonitor {
     }
 
     @Extension
-    public static final AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR = new AbstractNodeMonitorDescriptor<ClockDifference>() {
-        protected ClockDifference monitor(Computer c) throws IOException, InterruptedException {
+    public static final AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<ClockDifference>() {
+        @Override
+        protected Callable<ClockDifference,IOException> createCallable(Computer c) {
             Node n = c.getNode();
             if(n==null) return null;
-            return n.getClockDifference();
+            return n.getClockDifferenceCallable();
         }
 
         public String getDisplayName() {

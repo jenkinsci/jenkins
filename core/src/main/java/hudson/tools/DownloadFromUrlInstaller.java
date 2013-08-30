@@ -5,7 +5,6 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,7 +25,6 @@ import java.net.URL;
 public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     public final String id;
 
-    @DataBoundConstructor
     protected DownloadFromUrlInstaller(String id) {
         // this installer implementation is designed for platform independent binary,
         // and as such we don't provide the label support

@@ -177,14 +177,22 @@ public class NodeProvisioner {
             PlannedNode f = itr.next();
             if(f.future.isDone()) {
                 try {
-                    hudson.addNode(f.future.get());
+                    Node node = f.future.get();
+                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                        cl.onComplete(f,node);
+
+                    hudson.addNode(node);
                     LOGGER.info(f.displayName+" provisioning successfully completed. We have now "+hudson.getComputers().length+" computer(s)");
                 } catch (InterruptedException e) {
                     throw new AssertionError(e); // since we confirmed that the future is already done
                 } catch (ExecutionException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e.getCause());
+                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                        cl.onFailure(f,e.getCause());
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
+                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                        cl.onFailure(f,e);
                 }
 
                 f.spent();
@@ -250,6 +258,8 @@ public class NodeProvisioner {
             float m = calcThresholdMargin(totalSnapshot);
             if(excessWorkload>1-m) {// and there's more work to do...
                 LOGGER.fine("Excess workload "+excessWorkload+" detected. (planned capacity="+plannedCapacity+",Qlen="+qlen+",idle="+idle+"&"+idleSnapshot+",total="+totalSnapshot+"m,="+m+")");
+
+            CLOUD:
                 for( Cloud c : hudson.clouds ) {
                     if(excessWorkload<0)    break;  // enough slaves allocated
 
@@ -260,8 +270,19 @@ public class NodeProvisioner {
                         // OTOH, because of the exponential decay, even when we need one slave, excess workload is always
                         // something like 0.95, in which case we want to allocate one node.
                         // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to handle this.
-                        
-                        Collection<PlannedNode> additionalCapacities = c.provision(label, (int)Math.round(Math.floor(excessWorkload+m)));
+
+                        int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
+
+                        for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                            // consider displaying reasons in a future cloud ux
+                            if (cl.canProvision(c,label,workloadToProvision) != null)
+                                break CLOUD;
+
+                        Collection<PlannedNode> additionalCapacities = c.provision(label, workloadToProvision);
+
+                        for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                            cl.onStarted(c, label, additionalCapacities);
+
                         for (PlannedNode ac : additionalCapacities) {
                             excessWorkload -= ac.numExecutors;
                             LOGGER.info("Started provisioning "+ac.displayName+" from "+c.name+" with "+ac.numExecutors+" executors. Remaining excess workload:"+excessWorkload);

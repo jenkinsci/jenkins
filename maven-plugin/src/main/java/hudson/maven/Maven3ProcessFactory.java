@@ -26,39 +26,38 @@ package hudson.maven;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.maven.agent.Main;
 import hudson.model.BuildListener;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
-import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
-
 /**
- * @author Olivier Lamy
+ * {@link AbstractMavenProcessFactory} for Maven 3.
  *
+ * @author Olivier Lamy
  */
 public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
 
-    Maven3ProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
-        super( mms, launcher, envVars, mavenOpts, workDir );
+    Maven3ProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, build, launcher, envVars, mavenOpts, workDir );
     }
 
     @Override
-    protected String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException {
+    protected String getMavenAgentClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
         String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
         
-        return (isMaster? Which.jarFile(Maven3Main.class).getAbsolutePath():slaveRoot.child("maven3-agent.jar").getRemote())+
+        return classPathEntry(slaveRoot, Maven3Main.class, "maven3-agent", listener) +
             (getLauncher().isUnix()?":":";")+classWorldsJar;
     }
     
@@ -68,26 +67,32 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     }
     
     @Override
-    protected String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
-        return isMaster?
-                Which.jarFile(Maven3Launcher.class).getAbsolutePath():
-                slaveRoot.child("maven3-interceptor.jar").getRemote();
+    protected String getMavenInterceptorClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
+        return classPathEntry(slaveRoot, Maven3Launcher.class, "maven3-interceptor", listener);
+    }
+
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
+        return classPathEntry(slaveRoot, HudsonMavenExecutionResult.class, "maven3-interceptor-commons", listener);
     }
 
     @Override
     protected String getMavenInterceptorOverride(MavenInstallation mvn,
-            boolean isMaster, FilePath slaveRoot) throws IOException,
+            FilePath slaveRoot, BuildListener listener) throws IOException,
             InterruptedException {
         return null;
     }
 
     @Override
-    protected void applyPlexusModuleContributor(Channel channel) throws InterruptedException, IOException {
-        channel.call(new InstallPlexusModulesTask());
+    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask(context));
     }
 
     private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
-        PlexusModuleContributor c = PlexusModuleContributor.aggregate();
+        PlexusModuleContributor c;
+
+        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
+            c = PlexusModuleContributorFactory.aggregate(context);
+        }
 
         public Void call() throws IOException {
             Maven3Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));
@@ -101,12 +106,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     /**
      * Finds classworlds.jar
      */
-    private static final class GetClassWorldsJar implements Callable<String,IOException> {
+    protected static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = -2599434124883557137L;
         private final String mvnHome;
         private final TaskListener listener;
 
-        private GetClassWorldsJar(String mvnHome, TaskListener listener) {
+        protected GetClassWorldsJar(String mvnHome, TaskListener listener) {
             this.mvnHome = mvnHome;
             this.listener = listener;
         }

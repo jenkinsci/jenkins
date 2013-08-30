@@ -51,7 +51,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
-import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
@@ -77,6 +76,7 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -85,6 +85,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1059,7 +1061,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(
+            new ThreadFactory() {
+                
+                private final AtomicInteger threadNumber = new AtomicInteger(1);
+                
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("Jenkins-Remoting-Thread-"+threadNumber.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                }
+            }));
 
 //
 //
@@ -1194,9 +1208,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            Node result = (Node)Jenkins.XSTREAM2.fromXML(req.getReader());
-
-            replaceBy(result);
+            updateByXml(req.getInputStream());
             return;
         }
 
@@ -1221,6 +1233,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             nodes.set(i, newNode);
             app.setNodes(nodes);
         }
+    }
+
+    /**
+     * Updates Job by its XML definition.
+     *
+     * @since XXX
+     */
+    public void updateByXml(final InputStream source) throws IOException, ServletException {
+        checkPermission(Jenkins.ADMINISTER);
+        Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
+        replaceBy(result);
     }
 
     /**
@@ -1268,7 +1291,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
-     * {@link Publisher}, {@link BuildWrapper}, etc.
+     * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
      */
     public static Computer currentComputer() {
         Executor e = Executor.currentExecutor();

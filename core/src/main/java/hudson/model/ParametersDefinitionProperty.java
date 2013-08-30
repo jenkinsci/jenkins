@@ -34,6 +34,7 @@ import java.util.AbstractList;
 
 import javax.servlet.ServletException;
 
+import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import jenkins.model.Jenkins;
 import jenkins.util.TimeDuration;
@@ -140,9 +141,12 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
                 owner, delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
-        if (item!=null)
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+item.getUrl());
-        else
+        if (item!=null) {
+            String url = formData.optString("redirectTo");
+            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+                url = req.getContextPath()+'/'+item.getUrl();
+            rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
+        } else
             // send the user back to the job top page.
             rsp.sendRedirect(".");
     }

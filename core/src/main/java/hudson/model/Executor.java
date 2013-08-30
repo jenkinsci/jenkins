@@ -40,7 +40,6 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -84,7 +83,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private int number;
     /**
-     * {@link Queue.Executable} being executed right now, or null if the executor is idle.
+     * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
     private volatile Queue.Executable executable;
 
@@ -125,7 +124,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public void interrupt(Result result) {
         Authentication a = Jenkins.getAuthentication();
-        if(a instanceof AnonymousAuthenticationToken || a==ACL.SYSTEM)
+        if (a == ACL.SYSTEM)
             interrupt(result, new CauseOfInterruption[0]);
         else {
             // worth recording who did it
@@ -299,7 +298,7 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the current {@link Queue.Task} this executor is running.
+     * Returns the current {@link hudson.model.Queue.Task} this executor is running.
      *
      * @return
      *      null if the executor is idle.
@@ -576,7 +575,7 @@ public class Executor extends Thread implements ModelObject {
      * was compiled against Hudson < 1.383
      *
      * @deprecated as of 1.388
-     *      Use {@link Executables#getEstimatedDurationFor(Executable)}
+     *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}
      */
     public static long getEstimatedDurationFor(Executable e) {
         return Executables.getEstimatedDurationFor(e);

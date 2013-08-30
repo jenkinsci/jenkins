@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.Extension;
 import hudson.model.Node;
 import hudson.tools.PropertyDescriptor;
+import jenkins.model.Jenkins;
 
 /**
  * Descriptor for {@link NodeProperty}.
@@ -42,5 +43,18 @@ public abstract class NodePropertyDescriptor extends PropertyDescriptor<NodeProp
     }
 
     protected NodePropertyDescriptor() {
+    }
+
+    /**
+     * Is this node property one where it makes sense to permit it as a global node property.
+     *
+     * @return {@code true} if and only if the node property can be listed as a global node property.
+     * @since 1.520
+     */
+    public boolean isApplicableAsGlobal() {
+        // preserve legacy behaviour, even if brain-dead stupid, where applying to Jenkins was the discriminator
+        // note that it would be a mistake to assume Jenkins.getInstance().getClass() == Jenkins.class
+        // the groovy code tested against app.class, so we replicate that exact logic.
+        return isApplicable(Jenkins.getInstance().getClass());
     }
 }

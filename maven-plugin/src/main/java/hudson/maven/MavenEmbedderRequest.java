@@ -34,8 +34,8 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.sonatype.aether.repository.WorkspaceReader;
-import org.sonatype.aether.transfer.TransferListener;
+import org.eclipse.aether.repository.WorkspaceReader;
+import org.eclipse.aether.transfer.TransferListener;
 
 /**
  * @author Olivier Lamy

@@ -28,6 +28,7 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -72,6 +73,7 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormValidation.CheckMethod;
 import hudson.util.Iterators;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
@@ -148,6 +150,8 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Utility functions used in views.
@@ -158,6 +162,7 @@ import com.google.common.base.Predicates;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class Functions {
     private static volatile int globalIota = 0;
     private int iota;
@@ -186,6 +191,13 @@ public class Functions {
 
     public static boolean isModelWithChildren(Object o) {
         return o instanceof ModelObjectWithChildren;
+    }
+    
+    /**
+     * @since 1.524
+     */
+    public static boolean isMatrixProject(Object o) {
+        return o instanceof MatrixProject;
     }
 
     public static String xsDate(Calendar cal) {
@@ -435,6 +447,51 @@ public class Functions {
 
     public static String printLogRecord(LogRecord r) {
         return formatter.format(r);
+    }
+
+    @Restricted(DoNotUse.class)
+    public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
+        String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
+        String[] newParts = logRecordPreformat(r);
+        for (int i = 0; i < /* not 4 */3; i++) {
+            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+        }
+        return newParts;
+    }
+    /**
+     * Partially formats a log record.
+     * @return date, source, level, message+thrown
+     * @see SimpleFormatter#format(LogRecord)
+     */
+    private static String[] logRecordPreformat(LogRecord r) {
+        String source;
+        if (r.getSourceClassName() == null) {
+            source = r.getLoggerName();
+        } else {
+            if (r.getSourceMethodName() == null) {
+                source = r.getSourceClassName();
+            } else {
+                source = r.getSourceClassName() + " " + r.getSourceMethodName();
+            }
+        }
+        String message = new SimpleFormatter().formatMessage(r) + "\n";
+        Throwable x = r.getThrown();
+        return new String[] {
+            String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
+            source,
+            r.getLevel().getLocalizedName(),
+            x == null ? message : message + printThrowable(x) + "\n"
+        };
+    }
+
+    /**
+     * Reverses a collection so that it can be easily walked in reverse order.
+     * @since 1.525
+     */
+    public static <T> Iterable<T> reverse(Collection<T> collection) {
+        List<T> list = new ArrayList<T>(collection);
+        Collections.reverse(list);
+        return list;
     }
 
     public static Cookie getCookie(HttpServletRequest req,String name) {
@@ -797,6 +854,22 @@ public class Functions {
     }
 
     /**
+     * Returns those node properties which can be configured as global node properties.
+     *
+     * @since 1.520
+     */
+    public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
+        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        for (NodePropertyDescriptor npd : list) {
+            if (npd.isApplicableAsGlobal()) {
+                result.add(npd);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
      * so that descriptors of similar types come nearby.
      *
@@ -1009,10 +1082,11 @@ public class Functions {
 
             Integer d = parents.get(gr);
             if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+=".." + separationString;
-                return s+buf;
+                for (int j=d; j>0; j--) {
+                    buf.insert(0,separationString);
+                    buf.insert(0,"..");
+                }
+                return buf.toString();
             }
 
             if (gr instanceof Item)
@@ -1154,21 +1228,21 @@ public class Functions {
         StackTraceElement[] stackTrace = ti.getStackTrace();
         for (int i=0; i < stackTrace.length; i++) {
             StackTraceElement ste = stackTrace[i];
-            sb.append("\tat " + ste.toString());
+            sb.append("\tat ").append(ste);
             sb.append('\n');
             if (i == 0 && ti.getLockInfo() != null) {
                 Thread.State ts = ti.getThreadState();
                 switch (ts) {
                     case BLOCKED:
-                        sb.append("\t-  blocked on " + ti.getLockInfo());
+                        sb.append("\t-  blocked on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case TIMED_WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     default:
@@ -1177,7 +1251,7 @@ public class Functions {
 
             for (MonitorInfo mi : ti.getLockedMonitors()) {
                 if (mi.getLockedStackDepth() == i) {
-                    sb.append("\t-  locked " + mi);
+                    sb.append("\t-  locked ").append(mi);
                     sb.append('\n');
                 }
             }
@@ -1188,7 +1262,7 @@ public class Functions {
            sb.append("\n\tNumber of locked synchronizers = " + locks.length);
            sb.append('\n');
            for (LockInfo li : locks) {
-               sb.append("\t- " + li);
+               sb.append("\t- ").append(li);
                sb.append('\n');
            }
        }
@@ -1304,15 +1378,23 @@ public class Functions {
     public static String toCCStatus(Item i) {
         if (i instanceof Job) {
             Job j = (Job) i;
-            switch (j.getIconColor().noAnime()) {
+            switch (j.getIconColor()) {
             case ABORTED:
+            case ABORTED_ANIME:
             case RED:
+            case RED_ANIME:
             case YELLOW:
+            case YELLOW_ANIME:
                 return "Failure";
             case BLUE:
+            case BLUE_ANIME:
                 return "Success";
             case DISABLED:
+            case DISABLED_ANIME:
             case GREY:
+            case GREY_ANIME:
+            case NOTBUILT:
+            case NOTBUILT_ANIME:
                 return "Unknown";
             }
         }
@@ -1451,6 +1533,9 @@ public class Functions {
 
     /**
      * Determines the form validation check URL. See textbox.jelly
+     *
+     * @deprecated
+     *      Use {@link #calcCheckUrl}
      */
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return userDefined;
@@ -1459,6 +1544,21 @@ public class Functions {
             return d.getCheckUrl(field);
         }
         return null;
+    }
+
+    /**
+     * Determines the parameters that client-side needs for a form validation check. See prepareDatabinding.jelly
+     * @since 1.528
+     */
+    public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
+        if(userDefined!=null || field==null)   return;
+
+        if (descriptor instanceof Descriptor) {
+            Descriptor d = (Descriptor) descriptor;
+            CheckMethod m = d.getCheckMethod(field);
+            attributes.put("checkUrl",m.toStemUrl());
+            attributes.put("checkDependsOn",m.getDependsOn());
+        }
     }
 
     /**
@@ -1543,16 +1643,16 @@ public class Functions {
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
             String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (d.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         return buf.toString();
     }
@@ -1692,7 +1792,7 @@ public class Functions {
     /**
      * Returns human readable information about file size
      * 
-     * @param file size in bytes
+     * @param size file size in bytes
      * @return file size in appropriate unit
      */
     public static String humanReadableByteSize(long size){
@@ -1731,5 +1831,25 @@ public class Functions {
         return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
                 .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
         ;
+    }
+
+    /**
+     * Advertises the minimum set of HTTP headers that assist programmatic
+     * discovery of Jenkins.
+     */
+    public static void advertiseHeaders(HttpServletResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+
+        rsp.setHeader("X-Hudson","1.395");
+        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+
+        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+        if (tal !=null) {
+            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+        }
     }
 }

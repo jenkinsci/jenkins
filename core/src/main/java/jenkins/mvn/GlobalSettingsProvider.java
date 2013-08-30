@@ -63,7 +63,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
     /**
      * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
      * 
-     * @param settings
+     * @param provider
      *            the provider to be used
      * @param build
      *            the active build

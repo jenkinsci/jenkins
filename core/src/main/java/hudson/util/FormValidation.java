@@ -27,26 +27,37 @@ import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.ProxyConfiguration;
+import hudson.RelativePath;
 import hudson.Util;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.tasks.Builder;
-import static hudson.Util.fixEmpty;
+
+import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
+import static hudson.Functions.jsStringEscape;
+import static hudson.Util.*;
 
 /**
  * Represents the result of the form field validation.
@@ -63,7 +74,7 @@ import java.util.Locale;
  * that you may be able to reuse.
  *
  * <p>
- * Also see {@link CVSSCM.DescriptorImpl#doCheckCvsRoot(String)} as an example.
+ * Also see <tt>doCheckCvsRoot</tt> in <tt>CVSSCM</tt> as an example.
  *
  * <p>
  * This class extends {@link IOException} so that it can be thrown from a method. This allows one to reuse
@@ -505,5 +516,112 @@ public abstract class FormValidation extends IOException implements HttpResponse
     protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         rsp.getWriter().print(html);
+    }
+
+    /**
+     * Builds up the check URL for the client-side JavaScript to call back.
+     */
+    public static class CheckMethod {
+        private final Descriptor descriptor;
+        private final Method method;
+        private final String capitalizedFieldName;
+
+        /**
+         * Names of the parameters to pass from the client.
+         */
+        private final List<String> names;
+
+        private volatile String checkUrl;    // cached once computed
+        private volatile String dependsOn;  //  cached once computed
+
+        public CheckMethod(Descriptor descriptor, String fieldName) {
+            this.descriptor = descriptor;
+            this.capitalizedFieldName = StringUtils.capitalize(fieldName);
+
+            method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
+            if(method !=null) {
+                names = new ArrayList<String>();
+                findParameters(method);
+            } else {
+                names = null;
+            }
+        }
+
+        /**
+         * Builds query parameter line by figuring out what should be submitted
+         */
+        private void findParameters(Method method) {
+            for (Parameter p : ReflectionUtils.getParameters(method)) {
+                QueryParameter qp = p.annotation(QueryParameter.class);
+                if (qp!=null) {
+                    String name = qp.value();
+                    if (name.length()==0) name = p.name();
+                    if (name==null || name.length()==0)
+                        continue;   // unknown parameter name. we'll report the error when the form is submitted.
+                    if (name.equals("value"))
+                        continue;   // 'value' parameter is implicit
+
+                    RelativePath rp = p.annotation(RelativePath.class);
+                    if (rp!=null)
+                        name = rp.value()+'/'+name;
+
+                    names.add(name);
+                    continue;
+                }
+
+                Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
+                if (m!=null)    findParameters(m);
+            }
+        }
+
+        /**
+         * Obtains the 1.526-compatible single string representation.
+         *
+         * This method computes JavaScript expression, which evaluates to the URL that the client should request
+         * the validation to.
+         * A modern version depends on {@link #toStemUrl()} and {@link #getDependsOn()}
+         */
+        public String toCheckUrl() {
+            if (names==null)    return null;
+
+            if (checkUrl==null) {
+                StringBuilder buf = new StringBuilder(singleQuote(relativePath()));
+                if (!names.isEmpty()) {
+                    buf.append("+qs(this).addThis()");
+
+                    for (String name : names) {
+                        buf.append(".nearBy('"+name+"')");
+                    }
+                    buf.append(".toString()");
+                }
+                checkUrl = buf.toString();
+            }
+
+            // put this under the right contextual umbrella.
+            // 'a' in getCurrentDescriptorByNameUrl is always non-null because we already have Hudson as the sentinel
+            return '\'' + jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + "/'+" + checkUrl;
+        }
+
+        /**
+         * Returns the URL that the JavaScript should hit to perform form validation, except
+         * the query string portion (which is built on the client side.)
+         */
+        public String toStemUrl() {
+            if (names==null)    return null;
+            return jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + '/' + relativePath();
+        }
+
+        public String getDependsOn() {
+            if (names==null)    return null;
+
+            if (dependsOn==null)
+                dependsOn = join(names," ");
+            return dependsOn;
+        }
+
+        private String relativePath() {
+            return descriptor.getDescriptorUrl() + "/check" + capitalizedFieldName;
+        }
+
     }
 }

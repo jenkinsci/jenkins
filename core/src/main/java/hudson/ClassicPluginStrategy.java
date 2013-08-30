@@ -59,7 +59,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -223,19 +222,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 return classLoader;
             }
         }
-        if(useAntClassLoader && !Closeable.class.isAssignableFrom(URLClassLoader.class)) {
-            // using AntClassLoader with Closeable so that we can predictably release jar files opened by URLClassLoader
-            AntClassLoader2 classLoader = new AntClassLoader2(parent);
-            classLoader.addPathFiles(paths);
-            return classLoader;
-        } else {
-            // Tom reported that AntClassLoader has a performance issue when Hudson keeps trying to load a class that doesn't exist,
-            // so providing a legacy URLClassLoader support, too
-            List<URL> urls = new ArrayList<URL>();
-            for (File path : paths)
-                urls.add(path.toURI().toURL());
-            return new URLClassLoader(urls.toArray(new URL[urls.size()]),parent);
-        }
+
+        AntClassLoader2 classLoader = new AntClassLoader2(parent);
+        classLoader.addPathFiles(paths);
+        return classLoader;
     }
 
     /**
@@ -536,7 +526,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         List<PluginWrapper> dep = new ArrayList<PluginWrapper>();
                         for (Dependency d : pw.getDependencies()) {
                             PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                            if (p!=null)
+                            if (p!=null && p.isActive())
                                 dep.add(p);
                         }
                         return dep;
@@ -546,7 +536,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 try {
                     for (Dependency d : dependencies) {
                         PluginWrapper p = pluginManager.getPlugin(d.shortName);
-                        if (p!=null)
+                        if (p!=null && p.isActive())
                             cgd.run(Collections.singleton(p));
                     }
                 } catch (CycleDetectedException e) {
@@ -652,7 +642,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
      * Deprecated as of Java 7, retained only for Java 5/6.
      */
-    private static final class AntClassLoader2 extends AntClassLoader implements Closeable {
+    private final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;
 
         private AntClassLoader2(ClassLoader parent) {
@@ -668,6 +658,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 throw new Error(e);
             }
         }
+
 
         public void addPathFiles(Collection<File> paths) throws IOException {
             for (File f : paths)
@@ -698,6 +689,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
 
             return url;
+        }
+
+        @Override
+        protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
+            return super.defineClassFromData(container, pluginManager.getCompatibilityTransformer().transform(classname,classData), classname);
         }
     }
 

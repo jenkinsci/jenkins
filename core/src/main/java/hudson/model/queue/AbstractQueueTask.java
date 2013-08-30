@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Abstract base class for {@link Queue.Task} to protect plugins
+ * Abstract base class for {@link hudson.model.Queue.Task} to protect plugins
  * from new additions to the interface.
  *
  * @author Kohsuke Kawaguchi

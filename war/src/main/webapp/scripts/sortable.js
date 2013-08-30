@@ -364,6 +364,10 @@ function ts_makeSortable(table) { // backward compatibility
     return new Sortable.Sortable(table);
 }
 
-function ts_refresh(table) { // backward compatibility
-    return table.sortable.refresh();
+/** Calls table.sortable.refresh() in case the sortable has been initialized; otherwise does nothing. */
+function ts_refresh(table) {
+    var s = table.sortable;
+    if (s != null) {
+        s.refresh();
+    }
 }

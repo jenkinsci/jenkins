@@ -487,7 +487,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * If the plugin has {@link #getUpdateInfo() an update},
-     * returns the {@link UpdateSite.Plugin} object.
+     * returns the {@link hudson.model.UpdateSite.Plugin} object.
      *
      * @return
      *      This method may return null &mdash; for example,
@@ -501,7 +501,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
     
     /**
-     * returns the {@link UpdateSite.Plugin} object, or null.
+     * returns the {@link hudson.model.UpdateSite.Plugin} object, or null.
      */
     public UpdateSite.Plugin getInfo() {
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
@@ -567,7 +567,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (backup.exists()) {
             try {
                 JarFile backupPlugin = new JarFile(backup);
-                return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+                try {
+                    return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
+                } finally {
+                    backupPlugin.close();
+                }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version ", e);
                 return null;

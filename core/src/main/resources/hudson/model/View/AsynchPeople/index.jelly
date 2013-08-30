@@ -41,11 +41,16 @@ THE SOFTWARE.
               var p = document.getElementById('people');
               for (var x = 0; data.length > x; x++) {
                   var e = data[x];
-                  var r = document.getElementById('person-' + e.id);
+                  var id = 'person-' + e.id;
+                  var r = document.getElementById(id);
                   if (r == null) {
                       r = document.createElement('tr');
-                      r.id = e.id;
+                      r.id = id;
                       p.appendChild(r);
+                  } else {
+                      while (r.firstChild) {
+                          r.removeChild(r.firstChild);
+                      }
                   }
 
                   var d = document.createElement('td');
@@ -88,9 +93,7 @@ THE SOFTWARE.
                   }
                   r.appendChild(d);
 
-                  if (p.sortable != null) {
-                      p.sortable.refresh();
-                  }
+                  ts_refresh(p);
               }
           }
       </script>

@@ -24,12 +24,14 @@
 
 package hudson.tasks;
 
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.model.Fingerprint;
+import hudson.model.FingerprintCleanupThread;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
@@ -38,9 +40,13 @@ import hudson.util.RunList;
 import java.io.File;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import static org.junit.Assert.*;
+
+import hudson.util.StreamTaskListener;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -275,6 +281,50 @@ public class FingerprinterTest {
         assertEquals(build, action.getBuild());
         assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
     }
+
+    @SuppressWarnings("unchecked")
+    @Bug(18417)
+    @Test
+    public void fingerprintCleanup() throws Exception {
+        // file names shouldn't matter
+        FreeStyleProject p1 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        FreeStyleProject p2 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles2);
+        FreeStyleProject p3 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+
+        j.assertBuildStatusSuccess(p1.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
+
+        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+"\n"));
+        assertEquals(3,f.getUsages().size());
+
+        assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
+        assertEquals(Arrays.asList(p1), p3.getUpstreamProjects());
+        assertEquals(new HashSet(Arrays.asList(p2,p3)), new HashSet(p1.getDownstreamProjects()));
+
+        // discard the p3 records
+        p3.delete();
+        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+
+        // records for p3 should have been deleted now
+        assertEquals(2,f.getUsages().size());
+        assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
+        assertEquals(Arrays.asList(p2), p1.getDownstreamProjects());
+
+
+        // do a new build in p2 #2 that points to a separate fingerprints
+        p2.getBuildersList().clear();
+        p2.getPublishersList().clear();
+        addFingerprinterToProject(p2,singleContents2,singleFiles2);
+        j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
+
+        // another garbage collection that gets rid of p2 records from the fingerprint
+        p2.getBuildByNumber(1).delete();
+        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+
+        assertEquals(1,f.getUsages().size());
+    }
+
     
     private FreeStyleProject createFreeStyleProjectWithFingerprints(String[] contents, String[] files) throws IOException, Exception {
         FreeStyleProject project = j.createFreeStyleProject();

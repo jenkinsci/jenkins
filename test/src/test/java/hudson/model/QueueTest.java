@@ -79,6 +79,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -142,7 +143,7 @@ public class QueueTest extends HudsonTestCase {
     }
 
     /**
-     * {@link Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
+     * {@link hudson.model.Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
      */
     public void testPersistenceBlockedItem() throws Exception {
         Queue q = jenkins.getQueue();
@@ -249,16 +250,16 @@ public class QueueTest extends HudsonTestCase {
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = project.scheduleBuild2(0, new UserIdCause());
         assertNotNull(fb);
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new UserIdCause()));
-        assertFalse(project.scheduleBuild(new TimerTriggerCause()));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertFalse(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
-        assertFalse(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
-        assertFalse(project.scheduleBuild(new SCMTriggerCause("")));
-        assertFalse(project.scheduleBuild(new TimerTriggerCause()));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new UserIdCause()));
+        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
+        assertTrue(project.scheduleBuild(new RemoteCause("4.3.2.1", "test")));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "test")));
+        assertTrue(project.scheduleBuild(new RemoteCause("1.2.3.4", "foo")));
+        assertTrue(project.scheduleBuild(new SCMTriggerCause("")));
+        assertTrue(project.scheduleBuild(new TimerTriggerCause()));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();
@@ -282,7 +283,8 @@ public class QueueTest extends HudsonTestCase {
 
         // View for build should group duplicates
         WebClient wc = new WebClient();
-        String buildPage = wc.getPage(build, "").asText().replace('\n',' ');
+        String nl = System.getProperty("line.separator");
+        String buildPage = wc.getPage(build, "").asText().replace(nl," ");
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
                    buildPage.contains("Started by user SYSTEM (2 times) "
                         + "Started by an SCM change (3 times) "
@@ -425,7 +427,7 @@ public class QueueTest extends HudsonTestCase {
         final FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         // scheduling algorithm would prefer running the same job on the same node
-        assertSame(b1.getBuiltOn(),b2.getBuiltOn());
+        // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
         // ACL that allow anyone to do anything except Alice can't build.
         final SparseACL aliceCantBuild = new SparseACL(null);
@@ -447,6 +449,62 @@ public class QueueTest extends HudsonTestCase {
         for (int i=0; i<3; i++) {
             FreeStyleBuild b3 = assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
+        }
+    }
+
+    public void testPendingsConsistenceAfterErrorDuringMaintain() throws IOException, ExecutionException, InterruptedException{
+        FreeStyleProject project1 = createFreeStyleProject();
+        FreeStyleProject project2 = createFreeStyleProject();
+        TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
+         @Override
+            public FreeStyleProject newInstance(ItemGroup parent, String name) {
+                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                     @Override
+                    public Label getAssignedLabel(){
+                        throw new IllegalArgumentException("Test exception"); //cause dead of executor
+                    }   
+                     
+                    @Override
+                     public void save(){
+                         //do not need save
+                     }
+            };
+        }
+
+            @Override
+            public String getDisplayName() {
+                return "simulate-error";
+            }
+        };
+        FreeStyleProject projectError = (FreeStyleProject) jenkins.createProject(descriptor, "throw-error");
+        project1.setAssignedLabel(jenkins.getSelfLabel());
+        project2.setAssignedLabel(jenkins.getSelfLabel());
+        project1.getBuildersList().add(new Shell("sleep 2"));
+        project1.scheduleBuild2(0);
+        QueueTaskFuture<FreeStyleBuild> v = project2.scheduleBuild2(0);
+        projectError.scheduleBuild2(0);
+        Executor e = jenkins.toComputer().getExecutors().get(0);
+        Thread.sleep(2000);
+        while(project2.getLastBuild()==null){
+             if(!e.isAlive()){
+                    break; // executor is dead due to exception
+             }
+             if(e.isIdle()){
+                 assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());   
+             }
+                Thread.sleep(1000);
+        }
+        if(project2.getLastBuild()!=null)
+            return;
+        Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
+        e.doYank(); //restart executor
+        while(!e.isIdle()){ //executor should take project2 from queue
+            Thread.sleep(1000); 
+        }
+        //project2 should not be in pendings
+        List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
+        for(Queue.BuildableItem item : items){
+            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName())); 
         }
     }
 }

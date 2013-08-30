@@ -74,7 +74,7 @@ public abstract class MatrixAggregator implements ExtensionPoint {
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
-     * @see BuildStep#prebuild(Build,BuildListener)
+     * @see BuildStep#prebuild(AbstractBuild,BuildListener)
      */
     public boolean startBuild() throws InterruptedException, IOException {
         return true;

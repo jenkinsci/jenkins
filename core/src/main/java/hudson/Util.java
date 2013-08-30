@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
+import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
@@ -72,6 +73,7 @@ import java.util.regex.Pattern;
 import hudson.util.jna.Kernel32Utils;
 
 import static hudson.util.jna.GNUCLibrary.LIBC;
+import java.security.DigestInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -110,9 +112,9 @@ public class Util {
     }
 
     /**
-     * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
+     * Pattern for capturing variables. Either $xyz, ${xyz} or ${a.b} but not $a.b, while ignoring "$$"
       */
-    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\}|\\$)");
+    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
@@ -551,14 +553,31 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
-     * @see DigestUtils#md5(InputStream)
+     * @see DigestUtils#md5Hex(InputStream)
      */
     public static String getDigestOf(InputStream source) throws IOException {
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+
+            byte[] buffer = new byte[1024];
+            DigestInputStream in =new DigestInputStream(source,md5);
+            try {
+                while(in.read(buffer)>=0)
+                    ; // simply discard the input
+            } finally {
+                in.close();
+            }
+            return toHexString(md5.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException2("MD5 not installed",e);    // impossible
+        }
+        /* JENKINS-18178: confuses Maven 2 runner
         try {
             return DigestUtils.md5Hex(source);
         } finally {
             source.close();
         }
+        */
     }
 
     public static String getDigestOf(String text) {
@@ -566,6 +585,22 @@ public class Util {
             return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
         } catch (IOException e) {
             throw new Error(e);
+        }
+    }
+
+    /**
+     * Computes the MD5 digest of a file.
+     * @param file a file
+     * @return a 32-character string
+     * @throws IOException in case reading fails
+     * @since 1.525
+     */
+    public static String getDigestOf(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            return getDigestOf(new BufferedInputStream(is));
+        } finally {
+            is.close();
         }
     }
 

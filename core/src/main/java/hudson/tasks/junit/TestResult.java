@@ -98,7 +98,14 @@ public final class TestResult extends MetaTabulatedResult {
      * Creates an empty result.
      */
     public TestResult() {
-        keepLongStdio = false;
+        this(false);
+    }
+
+    /**
+     * @since 1.522
+     */
+    public TestResult(boolean keepLongStdio) {
+        this.keepLongStdio = keepLongStdio;
     }
 
     @Deprecated
@@ -281,7 +288,6 @@ public final class TestResult extends MetaTabulatedResult {
                 String error = "Failed to read test report file "+reportFile.getAbsolutePath()+"\n"+writer.toString();
                 sr.addCase(new CaseResult(sr,"<init>",error));
                 add(sr);
-                throw new IOException2("Failed to read "+reportFile,e);
             }
         }
     }

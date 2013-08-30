@@ -159,6 +159,7 @@ public class XStream2 extends XStream {
             }
         });
         AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getConverterLookup(), getClassLoader(), getReflectionProvider(), getJvm());
+        // TODO acc. to XSTR-744 this means that an XStream2 instance is not thread-safe and we would need a pool:
         a.autodetectAnnotations(true);
 
         mapperInjectionPoint = new MapperInjectionPoint(a);
@@ -343,7 +344,7 @@ public class XStream2 extends XStream {
      * callback code just after a type is unmarshalled by RobustReflectionConverter.
      * Example: <pre> public static class ConverterImpl extends XStream2.PassthruConverter&lt;MyType&gt; {
      *   public ConverterImpl(XStream2 xstream) { super(xstream); }
-     *   @Override protected void callback(MyType obj, UnmarshallingContext context) {
+     *   {@literal @}Override protected void callback(MyType obj, UnmarshallingContext context) {
      *     ...
      * </pre>
      */

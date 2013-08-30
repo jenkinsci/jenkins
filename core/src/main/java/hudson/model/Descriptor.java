@@ -31,6 +31,7 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormApply;
+import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
@@ -44,7 +45,6 @@ import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
-import static hudson.Functions.*;
 import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
@@ -127,7 +127,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      */
     public transient final Class<? extends T> clazz;
 
-    private transient final Map<String,String> checkMethods = new ConcurrentHashMap<String,String>();
+    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<String,CheckMethod>();
 
     /**
      * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
@@ -362,68 +362,27 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
-     * return the form-field validation string. Otherwise null.
-     * <p>
-     * This method is used to hook up the form validation method to the corresponding HTML input element.
+     * @deprecated since 1.528
+     *      Use {@link #getCheckMethod(String)}
      */
     public String getCheckUrl(String fieldName) {
-        String method = checkMethods.get(fieldName);
-        if(method==null) {
-            method = calcCheckUrl(fieldName);
-            checkMethods.put(fieldName,method);
-        }
-
-        if (method.equals(NONE)) // == would do, but it makes IDE flag a warning
-            return null;
-
-        // put this under the right contextual umbrella.
-        // a is always non-null because we already have Hudson as the sentinel
-        return '\'' + jsStringEscape(getCurrentDescriptorByNameUrl()) + "/'+" + method;
-    }
-
-    private String calcCheckUrl(String fieldName) {
-        String capitalizedFieldName = StringUtils.capitalize(fieldName);
-
-        Method method = ReflectionUtils.getPublicMethodNamed(getClass(),"doCheck"+ capitalizedFieldName);
-
-        if(method==null)
-            return NONE;
-
-        return '\'' + getDescriptorUrl() + "/check" + capitalizedFieldName + '\'' + buildParameterList(method, new StringBuilder()).append(".toString()");
+        return getCheckMethod(fieldName).toCheckUrl();
     }
 
     /**
-     * Builds query parameter line by figuring out what should be submitted
+     * If the field "xyz" of a {@link Describable} has the corresponding "doCheckXyz" method,
+     * return the model of the check method.
+     * <p>
+     * This method is used to hook up the form validation method to the corresponding HTML input element.
      */
-    private StringBuilder buildParameterList(Method method, StringBuilder query) {
-        for (Parameter p : ReflectionUtils.getParameters(method)) {
-            QueryParameter qp = p.annotation(QueryParameter.class);
-            if (qp!=null) {
-                String name = qp.value();
-                if (name.length()==0) name = p.name();
-                if (name==null || name.length()==0)
-                    continue;   // unknown parameter name. we'll report the error when the form is submitted.
-
-                RelativePath rp = p.annotation(RelativePath.class);
-                if (rp!=null)
-                    name = rp.value()+'/'+name;
-
-                if (query.length()==0)  query.append("+qs(this)");
-
-                if (name.equals("value")) {
-                    // The special 'value' parameter binds to the the current field
-                    query.append(".addThis()");
-                } else {
-                    query.append(".nearBy('"+name+"')");
-                }
-                continue;
-            }
-
-            Method m = ReflectionUtils.getPublicMethodNamed(p.type(), "fromStapler");
-            if (m!=null)    buildParameterList(m,query);
+    public CheckMethod getCheckMethod(String fieldName) {
+        CheckMethod method = checkMethods.get(fieldName);
+        if(method==null) {
+            method = new CheckMethod(this,fieldName);
+            checkMethods.put(fieldName,method);
         }
-        return query;
+
+        return method;
     }
 
     /**
@@ -492,7 +451,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Akin to {@link #getPropertyType(Object,String) but never returns null.
+     * Akin to {@link #getPropertyType(Object,String)} but never returns null.
      * @throws AssertionError in case the field cannot be found
      * @since 1.492
      */
@@ -1018,11 +977,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Descriptor.class.getName());
-
-    /**
-     * Used in {@link #checkMethods} to indicate that there's no check method.
-     */
-    private static final String NONE = "\u0000";
 
     /**
      * Special type indicating that {@link Descriptor} describes itself.

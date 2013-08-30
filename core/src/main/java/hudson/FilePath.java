@@ -70,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -92,8 +93,8 @@ import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 
 import com.sun.jna.Native;
 import hudson.os.PosixException;
@@ -139,18 +140,21 @@ import org.apache.tools.zip.ZipEntry;
  * The following code shows the example:
  *
  * <pre>
- * FilePath file = ...;
- *
- * // make 'file' a fresh empty directory.
- * file.act(new FileCallable&lt;Void>() {
- *   // if 'file' is on a different node, this FileCallable will
- *   // be transfered to that node and executed there.
- *   public Void invoke(File f,VirtualChannel channel) {
- *     // f and file represents the same thing
- *     f.deleteContents();
- *     f.mkdirs();
- *   }
- * });
+ * void someMethod(FilePath file) {
+ *     // make 'file' a fresh empty directory.
+ *     file.act(new Freshen());
+ * }
+ * // if 'file' is on a different node, this FileCallable will
+ * // be transferred to that node and executed there.
+ * private static final class Freshen implements FileCallable&lt;Void> {
+ *     private static final long serialVersionUID = 1;
+ *     &#64;Override public Void invoke(File f, VirtualChannel channel) {
+ *         // f and file represent the same thing
+ *         f.deleteContents();
+ *         f.mkdirs();
+ *         return null;
+ *     }
+ * }
  * </pre>
  *
  * <p>
@@ -620,7 +624,7 @@ public final class FilePath implements Serializable {
             public InputStream extract(InputStream _in) throws IOException {
                 HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
                 try {
-                    return new GZIPInputStream(in,8192);
+                    return new GZIPInputStream(in, 8192, true);
                 } catch (IOException e) {
                     // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
                     in.fillSide();
@@ -851,7 +855,7 @@ public final class FilePath implements Serializable {
     /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
-     *
+     * <strong>Warning:</code> implementations must be serializable, so prefer a static nested class to an inner class.
      * @see FilePath#act(FileCallable)
      */
     public interface FileCallable<T> extends Serializable {
@@ -996,6 +1000,27 @@ public final class FilePath implements Serializable {
             // the file is on the local machine
             return callable.call();
         }
+    }
+
+    /**
+     * Takes a {@link FilePath}+{@link FileCallable} pair and returns the equivalent {@link Callable}.
+     * When executing the resulting {@link Callable}, it executes {@link FileCallable#act(FileCallable)}
+     * on this {@link FilePath}.
+     *
+     * @since 1.522
+     */
+    public <V> Callable<V,IOException> asCallableWith(final FileCallable<V> task) {
+        return new Callable<V,IOException>() {
+            @Override
+            public V call() throws IOException {
+                try {
+                    return act(task);
+                } catch (InterruptedException e) {
+                    throw (IOException)new InterruptedIOException().initCause(e);
+                }
+            }
+            private static final long serialVersionUID = 1L;
+        };
     }
 
     /**
@@ -1213,8 +1238,11 @@ public final class FilePath implements Serializable {
                     }
 
                     Writer w = new FileWriter(f);
-                    w.write(contents);
-                    w.close();
+                    try {
+                        w.write(contents);
+                    } finally {
+                        w.close();
+                    }
 
                     return f.getAbsolutePath();
                 }
@@ -1659,17 +1687,13 @@ public final class FilePath implements Serializable {
 
     /**
      * Computes the MD5 digest of the file in hex string.
+     * @see Util#getDigestOf(File)
      */
     public String digest() throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1L;
             public String invoke(File f, VirtualChannel channel) throws IOException {
-                FileInputStream is = new FileInputStream(f);
-                try {
-                    return Util.getDigestOf(new BufferedInputStream(is));
-                } finally {
-                    is.close();
-                }
+                return Util.getDigestOf(f);
             }
         });
     }
@@ -1907,13 +1931,19 @@ public final class FilePath implements Serializable {
                     }
                 }
             });
-            int r = writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+            Future<Integer> future2 = actAsync(new FileCallable<Integer>() {
+                private static final long serialVersionUID = 1L;
+                @Override public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+                    return writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+                }
+            });
             try {
+                // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
+                return future2.get();
             } catch (ExecutionException e) {
                 throw new IOException2(e);
             }
-            return r;
         } else {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();
@@ -2431,5 +2461,17 @@ public final class FilePath implements Serializable {
         } catch (NoSuchFieldException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Gets the {@link FilePath} representation of the "~" directory
+     * (User's home directory in the Unix sense) of the given channel.
+     */
+    public static FilePath getHomeDirectory(VirtualChannel ch) throws InterruptedException, IOException {
+        return ch.call(new Callable<FilePath,IOException>() {
+            public FilePath call() throws IOException {
+                return new FilePath(new File(System.getProperty("user.home")));
+            }
+        });
     }
 }

@@ -239,6 +239,10 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
             }
         }
 
+        if (lb == null) {
+            throw new IOException("cannot start a build of " + getFullName() + " since its parent has no builds at all");
+        }
+
         // for every MatrixRun there should be a parent MatrixBuild
         MatrixRun lastBuild = new MatrixRun(this, lb.getTimestamp());
 
@@ -393,17 +397,16 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
      * @param parameters
      *      Can be null.
      * @deprecated
-	 *    Use {@link #scheduleBuild(List<? extends Action>, Cause)}.  Since 1.480
+	 *    Use {@link #scheduleBuild(List, Cause)}.  Since 1.480
      */
     public boolean scheduleBuild(ParametersAction parameters, Cause c) {
-
         return scheduleBuild(Collections.singletonList(parameters), c);
     }
     /**
      * Starts the build with the actions that are passed in.
      *
      * @param actions   Can be null.
-     * @param cause     Reason for starting the build
+     * @param c     Reason for starting the build
      */
     public boolean scheduleBuild(List<? extends Action> actions, Cause c) {
         List<Action> allActions = new ArrayList<Action>();
@@ -414,7 +417,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         allActions.add(new ParentBuildAction());
         allActions.add(new CauseAction(c));
 
-        return Jenkins.getInstance().getQueue().schedule(this, getQuietPeriod(), allActions )!=null;
+        return Jenkins.getInstance().getQueue().schedule2(this, getQuietPeriod(), allActions ).isAccepted();
     }
 
     /**

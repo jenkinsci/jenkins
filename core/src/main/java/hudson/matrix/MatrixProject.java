@@ -66,9 +66,10 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import jenkins.model.ModelObjectWithChildren;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -429,7 +430,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
             r.addAll(step.getProjectActions(this));
         for (BuildWrapper step : buildWrappers)
             r.addAll(step.getProjectActions(this));
-        for (Trigger<?> trigger : triggers)
+        for (Trigger<?> trigger : triggers())
             r.addAll(trigger.getProjectActions());
 
         return r;
@@ -897,9 +898,14 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
     }
 
     public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
+        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
+    /**
+     * Descriptor is instantiated as a field purely for backward compatibility.
+     * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     */
+    @Restricted(NoExternalUse.class)
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 

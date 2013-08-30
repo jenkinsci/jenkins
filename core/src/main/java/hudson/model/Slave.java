@@ -30,7 +30,6 @@ import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
@@ -57,6 +56,7 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 import jenkins.slaves.WorkspaceLocator;
 
@@ -230,6 +230,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+        assert nodeProperties != null;
     	return nodeProperties;
     }
     
@@ -252,16 +253,9 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();
     }
 
-    public ClockDifference getClockDifference() throws IOException, InterruptedException {
-        VirtualChannel channel = getChannel();
-        if(channel==null)
-            throw new IOException(getNodeName()+" is offline");
-
-        long startTime = System.currentTimeMillis();
-        long slaveTime = channel.call(new GetSystemTime());
-        long endTime = System.currentTimeMillis();
-
-        return new ClockDifference((startTime+endTime)/2 - slaveTime);
+    @Override
+    public Callable<ClockDifference,IOException> getClockDifferenceCallable() {
+        return new GetClockDifference1();
     }
 
     public Computer createComputer() {
@@ -412,7 +406,9 @@ public abstract class Slave extends Node implements Serializable {
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
-            if (!value.startsWith("\\") && !value.startsWith("/")) {
+            if (!value.contains("\\") && !value.startsWith("/")) {
+                // Unix-looking path that doesn't start with '/'
+                // TODO: detect Windows-looking relative path
                 return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
             }
 
@@ -432,14 +428,57 @@ public abstract class Slave extends Node implements Serializable {
     private transient String agentCommand;
 
     /**
-     * Obtains the system clock.
+     * Obtains the clock difference between this side and that side of the channel.
+     *
+     * <p>
+     * This is a hack to wrap the whole thing into a simple {@link Callable}.
+     *
+     * <ol>
+     *     <li>When the callable is sent to remote, we capture the time (on this side) in {@link GetClockDifference2#startTime}
+     *     <li>When the other side receives the callable it is {@link GetClockDifference2}.
+     *     <li>We capture the time on the other side and {@link GetClockDifference3} gets sent from the other side
+     *     <li>When it's read on this side as a return value, it morphs itself into {@link ClockDifference}.
+     * </ol>
      */
-    private static final class GetSystemTime implements Callable<Long,RuntimeException> {
-        public Long call() {
-            return System.currentTimeMillis();
+    private static final class GetClockDifference1 implements Callable<ClockDifference,IOException> {
+        public ClockDifference call() {
+            // this method must be being invoked locally, which means the clock is in sync
+            return new ClockDifference(0);
+        }
+
+        private Object writeReplace() {
+            return new GetClockDifference2();
         }
 
         private static final long serialVersionUID = 1L;
+    }
+
+    private static final class GetClockDifference2 implements Callable<GetClockDifference3,IOException> {
+        /**
+         * Capture the time on the master when this object is sent to remote, which is when
+         * {@link GetClockDifference1#writeReplace()} is run.
+         */
+        private final long startTime = System.currentTimeMillis();
+
+        public GetClockDifference3 call() {
+            return new GetClockDifference3(startTime);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static final class GetClockDifference3 implements Serializable {
+        private final long remoteTime = System.currentTimeMillis();
+        private final long startTime;
+
+        public GetClockDifference3(long startTime) {
+            this.startTime = startTime;
+        }
+
+        private Object readResolve() {
+            long endTime = System.currentTimeMillis();
+            return new ClockDifference((startTime + endTime)/2-remoteTime);
+        }
     }
 
     /**

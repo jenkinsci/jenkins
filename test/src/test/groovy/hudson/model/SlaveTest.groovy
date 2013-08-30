@@ -24,9 +24,13 @@
 package hudson.model
 
 import hudson.slaves.DumbSlave
+import hudson.util.FormValidation
 import org.jvnet.hudson.test.GroovyHudsonTestCase
 import org.apache.commons.io.IOUtils
 import hudson.slaves.JNLPLauncher
+
+import static hudson.util.FormValidation.Kind.ERROR
+import static hudson.util.FormValidation.Kind.WARNING
 
 /**
  *
@@ -77,5 +81,14 @@ public class SlaveTest extends GroovyHudsonTestCase {
         con.outputStream.write(xml.getBytes("UTF-8"))
         con.outputStream.close();
         IOUtils.copy(con.inputStream,System.out)
+    }
+
+    public void testRemoteFsCheck() {
+        def d = jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class)
+        assert d.doCheckRemoteFS("c:\\")==FormValidation.ok();
+        assert d.doCheckRemoteFS("/tmp")==FormValidation.ok();
+        assert d.doCheckRemoteFS("relative/path").kind==ERROR;
+        assert d.doCheckRemoteFS("/net/foo/bar/zot").kind==WARNING;
+        assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind==WARNING;
     }
 }

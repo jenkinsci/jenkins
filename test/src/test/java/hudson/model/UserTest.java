@@ -24,10 +24,17 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -36,7 +43,9 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 public class UserTest {
 
@@ -134,6 +143,295 @@ public class UserTest {
             assertEquals("[]", User.get("bob").getAuthorities().toString());
         } finally {
             seccon.setAuthentication(orig);
+        }
+    }
+   
+    @Test
+    public void testGetUser() {
+        User user = User.get("John Smith");
+        User user2 = User.get("John Smith2");
+        user2.setFullName("John Smith");
+        assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
+        User.clear();
+        User user3 = User.get("John Smith");
+        user3.setFullName("Alice Smith");
+        assertEquals("Users should not have the same id.", user.getId(), user3.getId());
+        User user4 = User.get("Marie",false, Collections.EMPTY_MAP);
+        assertNull("User should not be created because Marie does not exists.", user4);
+    }
+    
+    @Test
+    public void testAddAndGetProperty() throws IOException {
+        User user = User.get("John Smith");  
+        UserProperty prop = new SomeUserProperty();
+        user.addProperty(prop);
+        assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
+        assertEquals("UserProperty1 should be assigned to its descriptor", prop, user.getProperties().get(prop.getDescriptor()));
+        assertTrue("User should should contains SomeUserProperty.", user.getAllProperties().contains(prop));
+        User.reload();
+        assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
+    }
+
+    @Test
+    public void testImpersonateAndCurrent() {
+        User user = User.get("John Smith"); 
+        assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
+        assertEquals("User John Smith should be the current user.", user.getId(), User.current().getId());
+    }
+
+    @Test
+    public void testGetUnknown() {
+        User user = User.get("John Smith"); 
+        assertNotNull("User should not be null.", user);
+    }
+
+    @Test
+    public void testGetAndGetAll() {
+        User user = User.get("John Smith", false, Collections.emptyMap());
+        assertNull("User John Smith should not be created.", user);
+        assertFalse("Jenkins should not contain user John Smith.", User.getAll().contains(user));
+        User user2 = User.get("John Smith2", true, Collections.emptyMap());
+        assertNotNull("User John Smith2 should be created.", user2);
+        assertTrue("Jenkins should contain user John Smith2.", User.getAll().contains(user2));
+        user = User.get("John Smith2", false, Collections.emptyMap());
+        assertNotNull("User John Smith should be created.", user);
+        assertTrue("Jenkins should contain user John Smith.", User.getAll().contains(user));
+    }
+    
+    @Test
+    public void testReload() throws IOException{
+        User user = User.get("John Smith", true, Collections.emptyMap());
+        user.save();
+        String config = user.getConfigFile().asString();
+        config = config.replace("John Smith", "Alice Smith");
+        PrintStream st = new PrintStream(user.getConfigFile().getFile());
+        st.print(config);
+        User.clear();
+        assertEquals("User should have full name John Smith.", "John Smith", user.getFullName());
+        User.reload();
+        user = User.get(user.getId(), false, Collections.emptyMap());
+        assertEquals("User should have full name Alice Smith.", "Alice Smith", user.getFullName());
+    }
+
+    @Test
+    public void testClear() {
+        User user = User.get("John Smith", true, Collections.emptyMap());
+        assertNotNull("User should not be null.", user);
+        user.clear();
+        user = User.get("John Smith", false, Collections.emptyMap());
+        assertNull("User shoudl be null", user);       
+    }
+
+    @Test
+    public void testGetBuildsAndGetProjects() throws IOException, InterruptedException {
+        User user = User.get("John Smith", true, Collections.emptyMap());
+        FreeStyleProject project = j.createFreeStyleProject("free");
+        FreeStyleProject project2 = j.createFreeStyleProject("free2");
+        project.save();
+        FakeChangeLogSCM scm = new FakeChangeLogSCM();
+        scm.addChange().withAuthor(user.getId());
+        project.setScm(scm);
+        Queue.getInstance().schedule(project,0);
+        Build build = project.getLastBuild();
+        while(build==null){
+            Thread.sleep(100);
+            build = project.getLastBuild();
+        }
+        Queue.getInstance().schedule(project2,0);
+        Build build2 = project2.getLastBuild();
+        while(build2==null){
+            Thread.sleep(100);
+            build2 = project2.getLastBuild();
+        }
+        assertTrue("User should participate in the last build of project free.", user.getBuilds().contains(build));
+        assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
+        assertTrue("User should participate in the project free.", user.getProjects().contains(project));
+        assertFalse("User should not participate in the project free2.", user.getProjects().contains(project2));
+        
+        //JENKINS-16178: build should include also builds scheduled by user
+        build2.addAction(new CauseAction(new Cause.UserIdCause()));
+        assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
+        assertFalse("Current user should not participate in the last build of project free.", User.current().getBuilds().contains(build));
+        assertTrue("Current user should participate in the last build of project free2.", User.current().getBuilds().contains(build2));
+    }
+
+    @Test
+    public void testSave() throws IOException {
+        User user = User.get("John Smith", true, Collections.emptyMap());
+        User.clear();
+        User.reload();
+        user = User.get("John Smith", false, Collections.emptyMap());
+        assertNull("User should be null.", user);
+        user = User.get("John Smithl", true, Collections.emptyMap());
+        user.addProperty(new SomeUserProperty());
+        user.save();
+        User.clear();
+        User.reload();
+        user = User.get("John Smithl", false, Collections.emptyMap());
+        assertNotNull("User should not be null.", user);
+        assertNotNull("User should be saved with all changes.", user.getProperty(SomeUserProperty.class));
+    }
+
+    @Test
+    public void testDelete() throws IOException {
+         User user = User.get("John Smith", true, Collections.emptyMap());
+         user.save();
+         user.delete();
+         assertFalse("User should be deleted with his persistent data.", user.getConfigFile().exists());
+         assertFalse("User should be deleted from memory.", User.getAll().contains(user));
+         user = User.get("John Smith", false, Collections.emptyMap());
+         assertNull("User should be deleted from memory.", user);
+         User.reload();
+         boolean contained = false;
+         for(User u: User.getAll()){
+             if(u.getId().equals(user.getId())){
+                 contained = true;
+                 break;
+             }
+         }
+         assertFalse("User should not be loaded.", contained);
+    }
+
+    @Test
+    public void testDoConfigSubmit() throws Exception {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
+        j.jenkins.setSecurityRealm(realm);
+        User user = realm.createAccount("John Smith", "password");
+        User user2 = realm.createAccount("John Smith2", "password");
+        user2.save();
+        auth.add(Jenkins.ADMINISTER, user.getId());
+        auth.add(Jenkins.READ, user2.getId());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+        form.getInputByName("fullName").setValueAttribute("Alice Smith");
+        j.submit(form);
+        assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        try{
+            user.doConfigSubmit(null, null);
+            fail("User should not have permission to configure antoher user.");
+        }
+        catch(Exception e){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+               fail("AccessDeniedException should be thrown.");
+            }
+        }
+        form = j.createWebClient().login(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
+        
+        form.getInputByName("fullName").setValueAttribute("John");
+        j.submit(form);
+        assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
+
+    }
+
+    @Test
+    public void testDoDoDelete() throws Exception {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
+        j.jenkins.setSecurityRealm(realm);
+        User user = realm.createAccount("John Smith", "password");
+        User user2 = realm.createAccount("John Smith2", "password");
+        user2.save();
+        auth.add(Jenkins.ADMINISTER, user.getId());
+        auth.add(Jenkins.READ, user2.getId());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/delete").getFormByName("delete");
+        j.submit(form);
+        assertFalse("User should be deleted from memory.", User.getAll().contains(user2));
+        assertFalse("User should be deleted with his persistent data.", user2.getConfigFile().exists());
+        User.reload();
+        assertNull("Deleted user should not be loaded.", User.get(user2.getId(),false, Collections.EMPTY_MAP));
+        user2 = realm.createAccount("John Smith2", "password");
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        try{
+            user.doDoDelete(null, null);
+            fail("User should not have permission to delete antoher user.");
+        }
+        catch(Exception e){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+               fail("AccessDeniedException should be thrown.");
+            }
+        }
+        user.save();
+        JenkinsRule.WebClient client = j.createWebClient();
+        form = client.login(user.getId(), "password").goTo(user.getUrl() + "/delete").getFormByName("delete");
+        try{
+            j.submit(form);
+            fail("User should not be able to delete himself");
+        }
+        catch(FailingHttpStatusCodeException e){
+            //ok exception should be thrown
+        }
+        assertTrue("User should not delete himself from memory.", User.getAll().contains(user));
+        assertTrue("User should not delete his persistent data.", user.getConfigFile().exists());
+        User.reload();
+        assertNotNull("Deleted user should be loaded.",User.get(user.getId(),false, Collections.EMPTY_MAP));     
+    }
+
+    @Test
+    public void testHasPermission() {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
+        j.jenkins.setSecurityRealm(realm);
+        User user = User.get("John Smith");
+        User user2 = User.get("John Smith2");
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
+        assertTrue("Current user should always have permission read to himself.", user.hasPermission(Permission.READ));
+        auth.add(Jenkins.ADMINISTER, user.getId());
+        assertTrue("Current user should have permission read, because he has permission administer.", user2.hasPermission(Permission.READ));
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        user2 = User.get("anonymous");
+        assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user2.hasPermission(Permission.READ));
+    }
+
+    @Test
+    public void testCanDelete() throws IOException {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setCrumbIssuer(null);
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
+        j.jenkins.setSecurityRealm(realm);
+        User user = User.get("John Smith");
+        User user2 = User.get("John Smith2");
+        user2.save();
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        assertFalse("User should not be able delete because he does not have administer permission.", user2.canDelete());
+        auth.add(Jenkins.ADMINISTER, user.getId());
+        assertTrue("User should be able to delete.", user2.canDelete());
+        assertFalse("User should not be able to delete because it is current user.", user.canDelete());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        auth.add(Jenkins.ADMINISTER, user2.getId());
+        assertFalse("User should not be able to delete because he is not saved.", user.canDelete());
+        user.save();
+        assertTrue("User should be able to delete.", user.canDelete());
+    }
+
+    @Test
+    public void testGetDynamic() {
+
+    }
+    
+     public static class SomeUserProperty extends UserProperty {
+         
+        @TestExtension
+        public static class DescriptorImpl extends UserPropertyDescriptor {
+            public String getDisplayName() {
+                return "UserProperty1";
+            }
+
+            @Override
+            public UserProperty newInstance(User user) {
+                return new SomeUserProperty();
+            }
         }
     }
 

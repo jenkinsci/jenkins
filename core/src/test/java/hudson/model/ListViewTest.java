@@ -42,4 +42,24 @@ public class ListViewTest {
         lv.add(ig);
         assertEquals(1, lv.getItems().size());
     }
+    
+    @Test
+    @PrepareForTest({ListViewColumn.class,Items.class})
+    public void includeRegexProgrammatic() {
+        mockStatic(Items.class);
+        mockStatic(ListViewColumn.class);
+        List<ListViewColumn> columns = Collections.emptyList();
+        when(ListViewColumn.createDefaultInitialColumnList()).thenReturn(columns);
+        ViewGroup owner = mock(ViewGroup.class);
+        ItemGroup ig = mock(ItemGroup.class);
+        when(owner.getItemGroup()).thenReturn(ig);
+        ListView view = new ListView("test", owner);
+        view.setIncludeRegex(".*");
+        TopLevelItem it = Mockito.mock(TopLevelItem.class);
+        List<TopLevelItem> igContent = Arrays.asList((TopLevelItem) it);
+        when(Items.getAllItems(eq(ig), eq(TopLevelItem.class))).thenReturn(igContent);
+        when(ig.getItems()).thenReturn(igContent);
+        when(it.getRelativeNameFrom(any(ItemGroup.class))).thenReturn("test-item");
+        assertEquals(1, view.getItems().size());
+    }
 }

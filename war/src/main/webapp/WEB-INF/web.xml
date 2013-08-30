@@ -207,4 +207,8 @@ THE SOFTWARE.
     <mime-type>video/webm</mime-type>
   </mime-mapping>
 
+  <error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/oops</location>
+  </error-page>
 </web-app>

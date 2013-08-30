@@ -154,7 +154,7 @@ public class MavenSiteArchiver extends MavenReporter {
 
         public String getIconFileName() {
             if(getSiteDir(project).exists())
-                return "help.gif";
+                return "help.png";
             else
                 // hide it since we don't have site yet.
                 return null;

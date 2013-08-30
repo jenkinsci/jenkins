@@ -40,8 +40,8 @@ import hudson.maven.MavenModuleSet;
 import java.io.IOException;
 
 import jenkins.model.Jenkins;
-import junit.framework.Assert;
 
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.ExtractResourceSCM;

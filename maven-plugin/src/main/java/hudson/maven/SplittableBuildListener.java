@@ -195,22 +195,22 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
 
     public PrintWriter error(String msg) {
         core.error(msg);
-        return new PrintWriter(logger);
+        return new PrintWriter(logger, true);
     }
 
     public PrintWriter error(String format, Object... args) {
         core.error(format,args);
-        return new PrintWriter(logger);
+        return new PrintWriter(logger, true);
     }
 
     public PrintWriter fatalError(String msg) {
         core.fatalError(msg);
-        return new PrintWriter(logger);
+        return new PrintWriter(logger, true);
     }
 
     public PrintWriter fatalError(String format, Object... args) {
         core.fatalError(format,args);
-        return new PrintWriter(logger);
+        return new PrintWriter(logger, true);
     }
 
     public void annotate(ConsoleNote ann) throws IOException {

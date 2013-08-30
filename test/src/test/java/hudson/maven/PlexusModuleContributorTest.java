@@ -1,6 +1,9 @@
 package hudson.maven;
 
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.remoting.Which;
+import hudson.slaves.DumbSlave;
 import hudson.tasks.Maven.MavenInstallation;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,10 +12,8 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestExtension;
 import test.BogusPlexusComponent;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -44,21 +45,29 @@ public class PlexusModuleContributorTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
+    @Test
+    public void testCustomPlexusComponent_Maven3_slave() throws Exception {
+        j.configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
+        DumbSlave s = j.createSlave();
+        s.toComputer().connect(false).get();
+
+        MavenModuleSet p = j.createMavenProject();
+        p.setAssignedLabel(s.getSelfLabel());
+
+        p.setScm(new SingleFileSCM("pom.xml",getClass().getResource("custom-plexus-component.pom")));
+        p.setGoals("clean");
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+    }
+
     @TestExtension
-    public static class PlexusLoader extends PlexusModuleContributor {
-        private URL bogusPlexusJar;
-
-        public PlexusLoader() {
-            try {
-                this.bogusPlexusJar = Which.jarFile(BogusPlexusComponent.class).toURL();
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-
+    public static class PlexusLoader extends PlexusModuleContributorFactory {
         @Override
-        public List<URL> getPlexusComponentJars() {
-            return Collections.singletonList(bogusPlexusJar);
+        public PlexusModuleContributor createFor(AbstractBuild<?, ?> context) throws IOException, InterruptedException {
+            File bogusPlexusJar = Which.jarFile(BogusPlexusComponent.class);
+            final FilePath localJar = context.getBuiltOn().getRootPath().child("cache/bogusPlexus.jar");
+            localJar.copyFrom(new FilePath(bogusPlexusJar));
+
+            return PlexusModuleContributor.of(localJar);
         }
     }
 }

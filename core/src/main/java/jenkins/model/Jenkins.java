@@ -66,6 +66,7 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
+import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -125,6 +126,7 @@ import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -588,7 +590,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     /**
      * Load statistics of the free roaming jobs and slaves.
      * 
-     * This includes all executors on {@link Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
+     * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
      * @since 1.467
      */
@@ -852,7 +854,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
             for (ItemListener l : ItemListener.all()) {
                 long itemListenerStart = System.currentTimeMillis();
-                l.onLoaded();
+                try {
+                    l.onLoaded();
+                } catch (RuntimeException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
                 if (LOG_STARTUP_PERFORMANCE)
                     LOGGER.info(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
@@ -1819,8 +1825,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             .add("manage")
             .add("log")
             .add(new CollectionSearchIndex<TopLevelItem>() {
-                protected SearchItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
+                protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
             })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
@@ -1957,6 +1963,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     public ClockDifference getClockDifference() {
         return ClockDifference.ZERO;
+    }
+
+    @Override
+    public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
+        return new Callable<ClockDifference, IOException>() {
+            public ClockDifference call() throws IOException {
+                return new ClockDifference(0);
+            }
+        };
     }
 
     /**
@@ -3085,6 +3100,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * End point that intentionally throws an exception to test the error behaviour.
+     * @since 1.467
      */
     public void doException() {
         throw new RuntimeException();
@@ -3590,6 +3606,25 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         dependencyGraph = graph;
     }
 
+    /**
+     * Rebuilds the dependency map asynchronously.
+     *
+     * <p>
+     * This would keep the UI thread more responsive and helps avoid the deadlocks,
+     * as dependency graph recomputation tends to touch a lot of other things.
+     *
+     * @since 1.522
+     */
+    public Future<DependencyGraph> rebuildDependencyGraphAsync() {
+        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+            @Override
+            public DependencyGraph call() throws Exception {
+                rebuildDependencyGraph();
+                return dependencyGraph;
+            }
+        });
+    }
+
     public DependencyGraph getDependencyGraph() {
         return dependencyGraph;
     }
@@ -3629,6 +3664,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
+            || rest.startsWith("/oops")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
             // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
@@ -3682,7 +3718,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * if the user sets the displayName to what it currently is.
      * @param displayName
      * @param currentJobName
-     * @return
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
@@ -3708,7 +3743,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * True if there is no item in Jenkins that has this name
      * @param name The name to test
      * @param currentJobName The name of the job that the user is configuring
-     * @return
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
@@ -3733,7 +3767,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
-     * @return
      */
     public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
             @QueryParameter String jobName) {
