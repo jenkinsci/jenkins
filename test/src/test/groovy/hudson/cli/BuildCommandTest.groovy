@@ -32,6 +32,7 @@ import hudson.tasks.Shell
 import hudson.util.OneShotEvent
 import org.jvnet.hudson.test.TestBuilder
 import hudson.model.AbstractBuild
+import hudson.model.FreeStyleProject;
 import hudson.Launcher
 import hudson.model.BuildListener
 import hudson.model.ParametersDefinitionProperty
@@ -149,5 +150,29 @@ public class BuildCommandTest {
         } finally {
             cli.close()
         }
+    }
+
+    @Test void refuseToBuildDisabledProject() {
+
+        def project = j.createFreeStyleProject("the-project");
+        project.disable();
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("the-project");
+
+        assertTrue("Error message missing", result.stderr().contains("Cannot build the-project because it is disabled."));
+        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertNull("Project should not be built", project.getBuildByNumber(1));
+    }
+
+    @Test void refuseToBuildNewlyCoppiedProject() {
+
+        def original = j.createFreeStyleProject("original");
+        def newOne = (FreeStyleProject) j.jenkins.copy(original, "new-one");
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("new-one");
+
+        assertTrue("Error message missing", result.stderr().contains("Cannot build new-one because its configuration has not been saved."));
+        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
 }
