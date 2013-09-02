@@ -187,6 +187,7 @@ THE SOFTWARE.
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>4.0-beta</version>
+        <classifier>no_aop</classifier>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->

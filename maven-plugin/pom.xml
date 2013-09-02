@@ -242,6 +242,7 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>4.0-beta</version>
+      <classifier>no_aop</classifier>
     </dependency>
 
     <!-- JENKINS-10819 : This wagon is safer and more configurable to provide http(s) support -->
