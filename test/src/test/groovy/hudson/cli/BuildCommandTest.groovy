@@ -175,4 +175,18 @@ public class BuildCommandTest {
         assertEquals("Command is expected to fail", -1, result.returnCode());
         assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
+
+    @Test void correctlyParseMapValuesContainingEqualsSign() {
+
+        def project = j.createFreeStyleProject("the-project");
+        project.addProperty(new ParametersDefinitionProperty([
+                new StringParameterDefinition("expr", null)
+        ]));
+
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("the-project", "-p", "expr=a=b", "-s");
+
+        assertEquals("Command is expected to succeed", 0, result.returnCode());
+        assertEquals("a=b", project.getBuildByNumber(1).getBuildVariables().get("expr"));
+    }
 }
