@@ -503,17 +503,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
-    public synchronized void delete() throws IOException, InterruptedException {
-        checkPermission(DELETE);
-        performDelete();
+    public void delete() throws IOException, InterruptedException {
+        // always synchronize from bigger objects first
+        // in case of Jenkins is parent deadlock is possible if not synchronize on parent
+        final ItemGroup parent = getParent();
+        synchronized (parent) {
+            synchronized (this) {
+                checkPermission(DELETE);
+                performDelete();
 
-        try {
-            invokeOnDeleted();
-        } catch (AbstractMethodError e) {
-            // ignore
+                try {
+                    invokeOnDeleted();
+                } catch (AbstractMethodError e) {
+                    // ignore
+                }
+
+                Jenkins.getInstance().rebuildDependencyGraphAsync();
+            }
         }
-
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
