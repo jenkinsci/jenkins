@@ -30,7 +30,7 @@ THE SOFTWARE.
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <img src="${imagesURL}/${subIconSize}/clock.png"
                        title="${%Schedule a build}" alt="${%Schedule a build}"
-                       onclick="${job.parameterized ? null : 'return build(this)'}"
+                       onclick="${job.parameterized ? null : 'return build_' + id + '(this)'}"
                        border="0"/>
               </a>
               <script>
