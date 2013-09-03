@@ -26,6 +26,7 @@ package jenkins.security;
 import hudson.model.User;
 import hudson.security.ACL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -33,7 +34,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -46,71 +46,69 @@ import org.jvnet.hudson.test.recipes.PresetData;
  * @author Patrick McKeown
  */
 public class SecurityContextExecutorServiceTest {
+
     final private int NUM_THREADS = 10;
-    final private int TIME_OUT = 1;
     private ExecutorService wrappedService = null;
     private SecurityContext systemContext = null;
     private SecurityContext userContext = null;
     private SecurityContext nullContext = null;
     private volatile SecurityContext runnableThreadContext;
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule j = new JenkinsRule() {
+        protected void before() throws Throwable {
+            setPluginManager(null);
+            super.before();
+
+            ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(NUM_THREADS);
+            // Create a system level context with ACL.SYSTEM
+            systemContext = ACL.impersonate(ACL.SYSTEM);
+
+            User u = User.get("bob");
+            // Create a sample user context
+            userContext = new NonSerializableSecurityContext(u.impersonate());
+
+            // Create a null context
+            SecurityContextHolder.clearContext();
+            nullContext = SecurityContextHolder.getContext();
+
+            // Create a wrapped service 
+            wrappedService = SecurityContextExecutorService.wrapExecutorWithSecurityContext(service);
+        }
+    };
 
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
-    public void testSecurityContextExecutorService() throws Exception {
-        ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(NUM_THREADS);
-        // Create a system level context with ACL.SYSTEM
-        systemContext = ACL.impersonate(ACL.SYSTEM);
-
-        User u = User.get("bob");
-        // Create a sample user context
-        ACL.impersonate(u.impersonate());
-        // TODO Figure out the proper way to get that user's context
-        userContext = ACL.impersonate(ACL.SYSTEM);
-
-        // Create a null context
-        SecurityContextHolder.clearContext();
-        nullContext = SecurityContextHolder.getContext();
-
-        // Create a wrapped service 
-        wrappedService = SecurityContextExecutorService.wrapExecutorWithSecurityContext(service);
-
-        testRunnableAgainstAllContexts();
-
-        testCallableAgainstAllContexts();
-
-        testCallableCollectionAgainstAllContexts();
-
-        testFailedRunnableResetsContext();
-    }
-
-    private void testRunnableAgainstAllContexts() throws Exception {
+    public void testRunnableAgainstAllContexts() throws Exception {
         Runnable r = new Runnable() {
             public void run() {
                 runnableThreadContext = SecurityContextHolder.getContext();
             }
         };
         SecurityContextHolder.setContext(systemContext);
-        wrappedService.execute(r);
-        wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
+        Future systemResult = wrappedService.submit(r);
+        // Assert the runnable completed successfully
+        assertNull(systemResult.get());
         // Assert the context inside the runnable thread was set to ACL.SYSTEM
         assertEquals(systemContext, runnableThreadContext);
 
         SecurityContextHolder.setContext(userContext);
-        wrappedService.execute(r);
-        wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
+        Future userResult = wrappedService.submit(r);
+        // Assert the runnable completed successfully
+        assertNull(userResult.get());
         // Assert the context inside the runnable thread was set to the user's context
         assertEquals(userContext, runnableThreadContext);
 
         SecurityContextHolder.setContext(nullContext);
-        wrappedService.execute(r);
-        wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
+        Future nullResult = wrappedService.submit(r);
+        // Assert the runnable completed successfully
+        assertNull(nullResult.get());
         // Assert the context inside the runnable thread was set to the null context
         assertEquals(nullContext, runnableThreadContext);
     }
 
-    private void testCallableAgainstAllContexts() throws Exception {
+    @Test
+    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
+    public void testCallableAgainstAllContexts() throws Exception {
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();
@@ -132,7 +130,9 @@ public class SecurityContextExecutorServiceTest {
         assertEquals(nullContext, result.get());
     }
 
-    private void testCallableCollectionAgainstAllContexts() throws Exception {
+    @Test
+    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
+    public void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new LinkedList<Callable<SecurityContext>>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             public SecurityContext call() throws Exception {
@@ -166,23 +166,30 @@ public class SecurityContextExecutorServiceTest {
         }
     }
 
-    private void testFailedRunnableResetsContext() throws Exception {
+    @Test
+    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
+    public void testFailedRunnableResetsContext() throws Exception {
         Runnable r = new Runnable() {
             public void run() {
                 SecurityContextHolder.setContext(nullContext);
-                assert (false);
+                throw new RuntimeException("Simulate a failure");
             }
         };
+
         SecurityContextHolder.setContext(systemContext);
-        wrappedService.execute(r);
-        wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
-        // Assert the current context is once again ACL.SYSTEM
-        assertEquals(systemContext, SecurityContextHolder.getContext());
+        try {
+            wrappedService.execute(r);
+        } catch (AssertionError expectedException) {
+            // Assert the current context is once again ACL.SYSTEM
+            assertEquals(systemContext, SecurityContextHolder.getContext());
+        }
 
         SecurityContextHolder.setContext(userContext);
-        wrappedService.execute(r);
-        wrappedService.awaitTermination(TIME_OUT, TimeUnit.SECONDS);
-        // Assert the current context is once again the userContext
-        assertEquals(userContext, SecurityContextHolder.getContext());
+        try {
+            wrappedService.execute(r);
+        } catch (AssertionError expectedException) {
+            // Assert the current context is once again the userContext
+            assertEquals(userContext, SecurityContextHolder.getContext());
+        }
     }
 }
