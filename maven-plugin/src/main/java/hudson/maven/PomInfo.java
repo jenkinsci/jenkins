@@ -101,12 +101,12 @@ final class PomInfo implements Serializable {
     /**
      * maven groupId
      */
-    private final String groupId;
+    public final String groupId;
     
     /**
      * maven artifactId
      */    
-    private final String artifactId;
+    public final String artifactId;
 
     public final Notifier mailNotifier;
     
