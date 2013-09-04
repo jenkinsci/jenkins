@@ -273,7 +273,7 @@ public class TestResultActionUpdater extends BuildWrapper {
         }
 
         @Override
-        protected Iterable<File> reportFiles() {
+        protected @Nonnull Iterable<File> reportFiles(final Set<String> parsedFiles) {
             final String[] fileNames = Util.createFileSet(build.getWorkspace(), build.getReportFiles())
                     .getDirectoryScanner()
                     .getIncludedFiles()
@@ -282,7 +282,9 @@ public class TestResultActionUpdater extends BuildWrapper {
             final ArrayList<File> files = new ArrayList<File>(fileNames.length);
             for (final String filename: fileNames) {
 
-                files.add(new File(build.getWorkspace(), filename));
+                final File file = new File(build.getWorkspace(), filename);
+                if (parsedFiles.contains(file.getAbsolutePath())) continue;
+                files.add(file);
             }
 
             return files;
@@ -315,7 +317,7 @@ public class TestResultActionUpdater extends BuildWrapper {
 
         public Void call(@Nonnull AbstractBuild<?, ?> build) throws IOException {
 
-            build.getAction(TestResultAction.class).setResult(testResult, listener);
+            build.getAction(TestResultAction.class).updateResult(testResult, listener);
             return null;
         }
     }

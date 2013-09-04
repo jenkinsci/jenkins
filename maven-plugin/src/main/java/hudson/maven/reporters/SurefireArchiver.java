@@ -51,8 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
@@ -65,7 +63,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
 /**
@@ -75,20 +72,22 @@ import com.google.common.collect.Iterators;
  */
 public class SurefireArchiver extends TestFailureDetector {
     private final AtomicBoolean hasTestFailures = new AtomicBoolean();
-    
+
     /**
-     * Store result files already parsed, so we don't parse them again,
-     * if a later running mojo specifies the same reports directory.
+     * {@link TestResultUpdater} to send updates to master periodically.
+     *
+     * Created by first executed test mojo and terminated as soon as build is done.
+     * The instance is shared between mojos to ensure shared report files are
+     * parsed only once.
      */
-    private transient ConcurrentMap<File, File> parsedFiles = new ConcurrentHashMap<File,File>();
-    
-    private transient TestResultUpdater reportWatcher;
+    private transient TestResultUpdater resultUpdater;
 
     @Override
     public boolean hasTestFailures() {
         return hasTestFailures.get();
     }
 
+    @Override
     public boolean preExecute(final MavenBuildProxy build, final MavenProject pom, final MojoInfo mojo, final BuildListener listener) throws InterruptedException, IOException {
         if (isTestMojo(mojo)) {
             // tell test mojo to keep going even if there was a failure,
@@ -115,34 +114,45 @@ public class SurefireArchiver extends TestFailureDetector {
                 }
             }
 
-            // Is there a way to avoid this call?
-            final String name = build.execute(new BuildCallable<String, IOException>() {
-                public String call(MavenBuild build) throws IOException, InterruptedException {
-                    return build.getFullDisplayName();
-                }
-            });
-            reportWatcher = new SurefireUpdaterThread(
-                    mojo, listener, build, pom, name + " - " + mojo.getGoal()
-            );
-            reportWatcher.start();
+            // Delay updater instantiation to the first test mojo start
+            if (resultUpdater == null) {
+                // Is there a way to avoid this call?
+                final String name = build.execute(new BuildCallable<String, IOException>() {
+                    private static final long serialVersionUID = 7948917969647522509L;
+                    @Override
+                    public String call(MavenBuild build) throws IOException, InterruptedException {
+                        return build.getFullDisplayName();
+                    }
+                });
+
+                resultUpdater = new SurefireUpdaterThread(
+                      mojo, listener, build, pom, name + " - " + mojo.getGoal()
+                );
+                resultUpdater.start();
+            }
         }
         return true;
     }
 
+    @Override
     public boolean postExecute(MavenBuildProxy build, MavenProject pom, MojoInfo mojo, final BuildListener listener, Throwable error) throws InterruptedException, IOException {
         TestMojo testMojo = getTestMojo(mojo);
         if (testMojo == null) return true;
 
-        listener.getLogger().println(Messages.SurefireArchiver_Recording());
-        reportWatcher.terminate();
-        
+        resultUpdater.parse();
+
+        // Can this be moved to SurefireUpdaterThread?
         synchronized (build) {
 
             int failCount = build.execute(new BuildCallable<Integer, IOException>() {
                 private static final long serialVersionUID = -1023888330720922136L;
-
+                @Override
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
-                    final int failCount = build.getAction(SurefireReport.class).getFailCount();
+                    final SurefireReport reportAction = build.getAction(SurefireReport.class);
+                    final int failCount = reportAction != null
+                            ? reportAction.getFailCount()
+                            : 0
+                    ;
                     if(failCount>0)
                         build.setResult(Result.UNSTABLE);
                     return failCount;
@@ -152,6 +162,7 @@ public class SurefireArchiver extends TestFailureDetector {
             // if surefire plugin is going to kill maven because of a test failure,
             // intercept that (or otherwise build will be marked as failure)
             if(failCount>0) {
+
                 markBuildAsSuccess(error,build.getMavenBuildInformation());
                 hasTestFailures.set(true);
             }
@@ -162,12 +173,12 @@ public class SurefireArchiver extends TestFailureDetector {
     
     @Override
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        //Discard unneeded test result objects so they can't waste memory
         for(MavenReporter reporter: build.getProject().getReporters()) {
             if(reporter instanceof SurefireArchiver) {
                 SurefireArchiver surefireReporter = (SurefireArchiver) reporter;
-                if(surefireReporter.reportWatcher != null) {
-                    surefireReporter.reportWatcher = null;
+                if(surefireReporter.resultUpdater != null) {
+                    surefireReporter.resultUpdater.terminate();
+                    surefireReporter.resultUpdater = null;
                 }
             }
         }    
@@ -200,7 +211,6 @@ public class SurefireArchiver extends TestFailureDetector {
     }
 
     private static final class SurefireUpdaterThread extends TestResultUpdater {
-        private static final long serialVersionUID = 5711499157558414668L;
 
         private final @Nonnull MojoInfo mojo;
         private final @Nonnull MavenBuildProxy build;
@@ -208,7 +218,7 @@ public class SurefireArchiver extends TestFailureDetector {
 
         private SurefireUpdaterThread(
                 @Nonnull MojoInfo mojo,
-                @Nonnull BuildListener listener,
+                final @Nonnull BuildListener listener,
                 @Nonnull MavenBuildProxy build,
                 @Nonnull MavenProject pom,
                 @Nonnull String name
@@ -220,11 +230,11 @@ public class SurefireArchiver extends TestFailureDetector {
         }
 
         @Override
-        protected @Nonnull Iterable<File> reportFiles() {
+        protected @Nonnull Iterable<File> reportFiles(@Nonnull Set<String> parsedFiles) {
 
             try {
 
-                final Iterable<File> files = getTestMojo(mojo).getReportFiles(pom, mojo);
+                final Iterable<File> files = getTestMojo(mojo).getReportFiles(pom, mojo, parsedFiles);
                 if (files == null) return Collections.emptyList();
                 return files;
             } catch (ComponentConfigurationException e) {
@@ -254,31 +264,36 @@ public class SurefireArchiver extends TestFailureDetector {
 
             } catch (IOException ex) {
 
+                ex.printStackTrace(System.out);
                 ex.printStackTrace(listener.error("Unable to update test results"));
             } catch (InterruptedException ex) {
 
+                ex.printStackTrace(System.out);
                 ex.printStackTrace(listener.error("Unable to update test results"));
             }
         }
 
         private static final class RemoteUpdaterCall implements BuildCallable<Void, IOException> {
+            private static final long serialVersionUID = -3976778790949241778L;
             private final BuildListener listener;
             private final TestResult testResult;
-            private static final long serialVersionUID = -3976778790949241778L;
 
             private RemoteUpdaterCall(BuildListener listener, TestResult testResult) {
                 this.listener = listener;
                 this.testResult = testResult;
             }
 
+            @Override
             public Void call(MavenBuild build) throws IOException, InterruptedException {
 
                 final SurefireReport sr = build.getAction(SurefireReport.class);
                 if(sr==null) {
+
                     build.getActions().add(new SurefireReport(build, testResult, listener));
                     build.registerAsProjectAction(new FactoryImpl());
                 } else {
-                    sr.setResult(testResult, listener);
+
+                    sr.updateResult(testResult, listener);
                 }
 
                 return null;

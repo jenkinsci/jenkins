@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
+
 /**
  * {@link Action} that displays the JUnit test result.
  *
@@ -93,7 +95,8 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         return new XmlFile(XSTREAM,new File(owner.getRootDir(), "junitResult.xml"));
     }
 
-    public synchronized TestResult getResult() {
+    @Override
+    public synchronized @Nonnull TestResult getResult() {
         TestResult r;
         if(result==null) {
             r = load();
@@ -112,6 +115,12 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
             skipCount = r.getSkipCount();
         }
         return r;
+    }
+
+    public synchronized void updateResult(TestResult result, BuildListener listener) {
+        final TestResult newResult = getResult();
+        newResult.include(result);
+        setResult(newResult, listener);
     }
 
     @Override
@@ -143,7 +152,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     /**
      * Loads a {@link TestResult} from disk.
      */
-    private TestResult load() {
+    private @Nonnull TestResult load() {
         TestResult r;
         try {
             r = (TestResult)getDataFile().read();

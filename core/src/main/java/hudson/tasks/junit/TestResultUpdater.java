@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
  *
  * Build is supposed to start this thread on slave before tests starts in order
  * to watch for a new test report files. Once new reports are discovered
- * {@link #update(TestResult)} method is called. The implementation
+ * {@link #update(TestResult)} method is called.
  *
  * The task can be adapted for different kinds of jobs overriding not-final methods.
  *
@@ -50,8 +50,8 @@ public abstract class TestResultUpdater extends Thread {
 
     protected static final Logger LOGGER = Logger.getLogger(TestResultUpdater.class.getName());
 
-    private final @Nonnull TestResult testResult = new TestResult();
     protected final @Nonnull BuildListener listener;
+    private final @Nonnull Set<String> parsedFiles = new HashSet<String>();
 
     private volatile boolean terminated = false;
 
@@ -71,8 +71,10 @@ public abstract class TestResultUpdater extends Thread {
 
     /**
      * Get files to be included in report.
+     *
+     * @param parsedFiles Files to exclude.
      */
-    abstract protected @Nonnull Iterable<File> reportFiles();
+    abstract protected @Nonnull Iterable<File> reportFiles(@Nonnull Set<String> parsedFiles);
 
     /**
      * Get the time of the build according to slave's clock.
@@ -115,26 +117,28 @@ public abstract class TestResultUpdater extends Thread {
     /**
      * Perform parsing cycle manually.
      */
-    public final void parse() {
+    public final synchronized void parse() {
         LOGGER.fine("Parsing realtime test results");
         try {
 
             final long started = System.currentTimeMillis();
 
             final long buildTime = buildTime();
-            final Iterable<File> reportFiles = reportFiles();
-
-            // Overloaded methods might have terminated the thread.
-            if (terminated) return;
+            final Iterable<File> reportFiles = reportFiles(parsedFiles);
 
             if (reportFiles == null || !reportFiles.iterator().hasNext()) {
                 LOGGER.fine("No reports files to parse");
                 return;
             }
 
-            testResult.parse(buildTime, reportFiles);
+            final TestResult result = new TestResult(keepLongStdio());
+            result.parse(buildTime, reportFiles);
             LOGGER.fine(String.format("Parsing took %d ms", System.currentTimeMillis() - started));
-            update(testResult);
+
+            if (!result.getSuites().isEmpty()) {
+                reportParsedFiles(result);
+                update(result);
+            }
         } catch (AbortException ex) {
             // Thrown when there are no reports or no workspace witch is normal
             // at the beginning the build. This is also a signal that there are
@@ -143,6 +147,13 @@ public abstract class TestResultUpdater extends Thread {
         } catch (IOException ex) {
 
             ex.printStackTrace(listener.error("Unable to parse the result"));
+        }
+    }
+
+    private void reportParsedFiles(final TestResult result) {
+
+        for (final SuiteResult suite: result.getSuites()) {
+            parsedFiles.add(suite.getFile());
         }
     }
 
@@ -156,9 +167,9 @@ public abstract class TestResultUpdater extends Thread {
     }
 
     /**
-     * And interface exposed for purposes of {@link Channel.export}.
+     * An interface exposed for {@link Channel.export} purposes to control the thread from master.
      *
-     * @author ogondza
+     * @see {@link TestResultUpdater#handler()}
      */
     public interface RemoteHandler {
         void terminate();

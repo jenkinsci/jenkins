@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -48,21 +49,26 @@ public class SurefireArchiverUnitTest {
     private MavenBuild build;
     private TestBuildProxy buildProxy;
     private MojoInfo mojoInfo;
+    private MavenProject project;
+
+    private BuildListener listener = new NullBuildListener();
 
     @Before
-    @SuppressWarnings("unchecked")
-    public void before() throws ComponentConfigurationException, URISyntaxException {
+    public void before() throws ComponentConfigurationException {
         this.archiver = new SurefireArchiver();
-        this.build = mock(MavenBuild.class);
+        this.build = createMavenBuild();
+        this.buildProxy = new TestBuildProxy(build);
+        this.mojoInfo = createMojoInfo();
+        this.project = createMavenProject();
+    }
+
+    @SuppressWarnings("unchecked")
+    private MavenBuild createMavenBuild() {
+        final MavenBuild build = mock(MavenBuild.class);
         when(build.getAction(Matchers.any(Class.class))).thenCallRealMethod();
         when(build.getActions()).thenCallRealMethod();
         when(build.getRootDir()).thenReturn(new File("target"));
-        
-        this.buildProxy = new TestBuildProxy(build);
-        
-        MojoInfo spy = createMojoInfo();
-        
-        this.mojoInfo = spy;
+        return build;
     }
 
     private MojoInfo createMojoInfo() throws ComponentConfigurationException {
@@ -75,16 +81,29 @@ public class SurefireArchiverUnitTest {
         return spy;
     }
     
+    private MavenProject createMavenProject() {
+        final MavenProject project = mock(MavenProject.class);
+        when(project.getGroupId()).thenReturn("fake.group");
+        when(project.getArtifactId()).thenReturn("fake-artifact");
+        when(project.getVersion()).thenReturn("3.14-SNAPSHOT");
+        return project;
+    }
+
     @Test
     public void testNotArchivingEmptyResults() throws InterruptedException, IOException, URISyntaxException, ComponentConfigurationException {
         URL resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test1");
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
-        
-        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
+
+        runMojo();
         
         SurefireReport action = this.build.getAction(SurefireReport.class);
         Assert.assertNull(action);
+    }
+
+    private void runMojo() throws InterruptedException, IOException {
+        archiver.preExecute(buildProxy, project, mojoInfo, listener);
+        archiver.postExecute(buildProxy, project, mojoInfo, listener, null);
     }
     
     @Test
@@ -95,23 +114,22 @@ public class SurefireArchiverUnitTest {
         
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
-        
-        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
-        
+
+        runMojo();
+
         SurefireReport action = this.build.getAction(SurefireReport.class);
         Assert.assertNotNull(action);
         TestResult result = action.getResult();
         Assert.assertNotNull(result);
         Assert.assertEquals(2658, result.getTotalCount());
-        
-        
+
         resource = SurefireArchiverUnitTest.class.getResource("/surefire-archiver-test3");
         reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
-        
-        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
-        
+
+        runMojo();
+
         action = this.build.getAction(SurefireReport.class);
         Assert.assertNotNull(action);
         result = action.getResult();
@@ -125,16 +143,21 @@ public class SurefireArchiverUnitTest {
         File reportsDir = new File(resource.toURI().getPath());
         doReturn(reportsDir).when(this.mojoInfo).getConfigurationValue("reportsDirectory", File.class);
         touchReportFiles(reportsDir);
-        
-        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
+
+        runMojo();
+
         SurefireReport action = this.build.getAction(SurefireReport.class);
+        Assert.assertNotNull(action);
         TestResult result = action.getResult();
+        Assert.assertNotNull(result);
         assertEquals(2658, result.getTotalCount());
         
-        // result count shouldn't increase if mojo is called again
-        this.archiver.postExecute(buildProxy, null, this.mojoInfo, new NullBuildListener(), null);
+        runMojo();
+
         action = this.build.getAction(SurefireReport.class);
+        Assert.assertNotNull(action);
         result = action.getResult();
+        Assert.assertNotNull(result);
         assertEquals(2658, result.getTotalCount());
     }
     
@@ -150,6 +173,7 @@ public class SurefireArchiverUnitTest {
         int count = 20;
         ArchiverThread t1 = new ArchiverThread(this.mojoInfo, count);
         ArchiverThread t2 = new ArchiverThread(mojoInfo2, count);
+
         t1.start();
         t2.start();
         
@@ -184,10 +208,12 @@ public class SurefireArchiverUnitTest {
             this.count = count;
         }
         
+        @Override
         public void run() {
             try {
                 for (int i=0; i < count; i++) {
-                    archiver.postExecute(buildProxy, null, this.info, new NullBuildListener(), null);
+                    archiver.preExecute(buildProxy, project, this.info, new NullBuildListener());
+                    archiver.postExecute(buildProxy, project, this.info, new NullBuildListener(), null);
                 }
             } catch (Throwable e) {
                 this.exception = e;

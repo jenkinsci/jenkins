@@ -73,6 +73,22 @@ public class TestResultPublishingTest extends HudsonTestCase {
         wc.getPage(build, "testReport/hudson.security/HudsonPrivateSecurityRealmTest/testDataCompatibilityWith1_282/"); // method
     }
 
+    @LocalData
+    public void testRealtime() throws Exception {
+        project.getBuildWrappersList().add(new TestResultActionUpdater());
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get(30, TimeUnit.SECONDS);
+
+        assertTestResults(build);
+
+        HudsonTestCase.WebClient wc = new HudsonTestCase.WebClient();
+        wc.getPage(project); // project page
+        wc.getPage(build); // build page
+        wc.getPage(build, "testReport");  // test report
+        wc.getPage(build, "testReport/hudson.security"); // package
+        wc.getPage(build, "testReport/hudson.security/HudsonPrivateSecurityRealmTest/"); // class
+        wc.getPage(build, "testReport/hudson.security/HudsonPrivateSecurityRealmTest/testDataCompatibilityWith1_282/"); // method
+    }
 
     @LocalData
     public void testSlave() throws Exception {

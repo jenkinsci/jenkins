@@ -6,16 +6,14 @@ import hudson.maven.MojoInfo;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
 
 /**
  * Description of a mojo which can run tests.
@@ -72,7 +70,7 @@ enum TestMojo {
     TOOLKIT_RESOLVER_PLUGIN("org.terracotta.maven.plugins", "toolkit-resolver-plugin", "toolkit-resolve-test","reportsDirectory"),
     SCALATEST_MAVEN_PLUGIN("org.scalatest", "scalatest-maven-plugin", "test", null) {
         @Override
-        public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo)
+        public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo, Set<String> parsedFiles)
                 throws ComponentConfigurationException {
             /* scalatest-maven-plugin has a configuration entry 'junitxml' which is a
              * comma-separated list of directories; commas may be escaped with a backslash
@@ -93,7 +91,7 @@ enum TestMojo {
                     String junitDirName = dir.trim().replaceAll("\\\\,", ",");
                     File junitDir = new File(reportsDir, junitDirName);
                     if (junitDir.exists()) {
-                        return super.getReportFiles(junitDir, super.getFileSet(junitDir));
+                        return super.getReportFiles(junitDir, super.getFileSet(junitDir), parsedFiles);
                     }
                 }
             }
@@ -136,10 +134,14 @@ enum TestMojo {
     }
     
     @CheckForNull public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo) throws ComponentConfigurationException {
+        return getReportFiles(pom, mojo, Collections.<String>emptySet());
+    }
+
+    @CheckForNull public Iterable<File> getReportFiles(MavenProject pom, MojoInfo mojo, Set<String> parsedFiles) throws ComponentConfigurationException {
         if (this.reportDirectoryConfigKey != null) {
             File reportsDir = mojo.getConfigurationValue(this.reportDirectoryConfigKey, File.class);
             if (reportsDir != null && reportsDir.exists()) {
-                return getReportFiles(reportsDir, getFileSet(reportsDir));
+                return getReportFiles(reportsDir, getFileSet(reportsDir), parsedFiles);
             } 
             
         }
@@ -147,27 +149,24 @@ enum TestMojo {
         // some plugins just default to this:        
         File reportsDir = new File(pom.getBuild().getDirectory(), "surefire-reports");
         if (reportsDir.exists()) {
-            return getReportFiles(reportsDir, getFileSet(reportsDir));
+            return getReportFiles(reportsDir, getFileSet(reportsDir), parsedFiles);
         }
         
         return null;
     }
     
-    private Iterable<File> getReportFiles(final File baseDir, FileSet set) {
+    private Iterable<File> getReportFiles(final File baseDir, FileSet set, Set<String> parsedFiles) {
         final String[] includedFiles = set.getDirectoryScanner().getIncludedFiles();
-        
-        return new Iterable<File>() {
-            public Iterator<File> iterator() {
-                return Iterators.transform(
-                    Iterators.forArray(includedFiles),
-                    new Function<String, File>() {
-                        @Override
-                        public File apply(String file) {
-                            return new File(baseDir,file);
-                        }
-                    });
-            }
-        };
+
+        final Set<File> reportFiles = new HashSet<File>(includedFiles.length - parsedFiles.size());
+        for(final String path: includedFiles) {
+
+            final File file = new File(baseDir, path);
+            if (parsedFiles.contains(file.getAbsolutePath())) continue;
+            reportFiles.add(file);
+        }
+
+        return reportFiles;
     }
     
     /**
