@@ -82,23 +82,17 @@ public class ListViewTest {
       checkLinkFromItemExistsAndIsValid(folder2, folder1, folder1, webClient);
       checkLinkFromViewExistsAndIsValid(job2, folder1, lv2, webClient);
     }
-
-    private void assertResourceExists(HtmlPage viewPage) {
-      assertEquals(200, viewPage.getWebResponse().getStatusCode());
-    }
     
     private void checkLinkFromViewExistsAndIsValid(Item item, ItemGroup ig, View view, WebClient webClient) throws IOException, SAXException {
       HtmlPage page = webClient.goTo(view.getUrl());
-      assertResourceExists(page);
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
-      assertResourceExists(webClient.getPage(view, link.getHrefAttribute()));
+      webClient.getPage(view, link.getHrefAttribute());
     }
 
     private void checkLinkFromItemExistsAndIsValid(Item item, ItemGroup ig, Item top, WebClient webClient) throws IOException, SAXException {
       HtmlPage page = webClient.goTo(top.getUrl());
-      assertResourceExists(page);
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
-      assertResourceExists(webClient.getPage(top, link.getHrefAttribute()));
+      webClient.getPage(top, link.getHrefAttribute());
     }
 
 }
