@@ -414,9 +414,9 @@ function registerValidator(e) {
 
         if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
             try {
-            	return eval(url); // need access to 'this', so no 'geval'
+                return eval(url); // need access to 'this', so no 'geval'
             } catch (e) {
-            	if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
+                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
                 if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid Javascript: "+e,"warn");
                 return url; // return plain url as fallback
             }
