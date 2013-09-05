@@ -87,11 +87,17 @@ public class Executor extends Thread implements ModelObject {
      */
     private volatile Queue.Executable executable;
 
+    /**
+     * When {@link Queue} allocates a work for this executor, this field is set
+     * and the executor is {@linkplain Thread#start() started}.
+     */
     private volatile WorkUnit workUnit;
 
     private Throwable causeOfDeath;
 
     private boolean induceDeath;
+
+    private volatile boolean started;
 
     /**
      * When the executor is interrupted, we allow the code that interrupted the thread to override the
@@ -183,7 +189,9 @@ public class Executor extends Thread implements ModelObject {
 
         try {
             finishTime = System.currentTimeMillis();
-            while(shouldRun()) {
+
+            MAIN:
+            do {
                 executable = null;
                 workUnit = null;
                 interruptStatus = null;
@@ -200,7 +208,7 @@ public class Executor extends Thread implements ModelObject {
                 // clear the interrupt flag as a precaution.
                 // sometime an interrupt aborts a build but without clearing the flag.
                 // see issue #1583
-                if (Thread.interrupted())   continue;
+                if (Thread.interrupted())   break MAIN;
                 if (induceDeath)        throw new ThreadDeath();
 
                 SubTask task;
@@ -208,8 +216,8 @@ public class Executor extends Thread implements ModelObject {
                     // transition from idle to building.
                     // perform this state change as an atomic operation wrt other queue operations
                     synchronized (queue) {
-                        workUnit = grabJob();
                         workUnit.setExecutor(this);
+                        queue.onStartExecuting(this);
                         if (LOGGER.isLoggable(FINE))
                             LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                         task = workUnit.work;
@@ -221,10 +229,10 @@ public class Executor extends Thread implements ModelObject {
                         LOGGER.log(FINE, getName()+" is going to execute "+executable);
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                    continue;
+                    break MAIN;
                 } catch (InterruptedException e) {
                     LOGGER.log(FINE, getName()+" interrupted",e);
-                    continue;
+                    break MAIN;
                 }
 
                 Throwable problems = null;
@@ -263,12 +271,16 @@ public class Executor extends Thread implements ModelObject {
                         workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
                     } catch (InterruptedException e) {
                         workUnit.context.abort(e);
-                        continue;
+                        break MAIN;
                     } finally {
                         workUnit.setExecutor(null);
                     }
                 }
-            }
+            } while (false);    // this pointless do-while allows "break" to come here
+
+            // let this thread die and be replaced by a fresh unstarted instance
+            owner.removeExecutor(this);
+
         } catch(RuntimeException e) {
             causeOfDeath = e;
             throw e;
@@ -284,17 +296,6 @@ public class Executor extends Thread implements ModelObject {
     public void killHard() {
         induceDeath = true;
         interrupt();
-    }
-
-    /**
-     * Returns true if we should keep going.
-     */
-    protected boolean shouldRun() {
-        return Jenkins.getInstance() != null && !Jenkins.getInstance().isTerminating();
-    }
-
-    protected WorkUnit grabJob() throws InterruptedException {
-        return queue.pop();
     }
 
     /**
@@ -367,6 +368,17 @@ public class Executor extends Thread implements ModelObject {
      */
     public boolean isBusy() {
         return executable!=null;
+    }
+
+    public boolean isActive() {
+        return !started || isAlive();
+    }
+
+    /**
+     * Returns true if this executor is waiting for a task to execute.
+     */
+    public boolean isParking() {
+        return !started;
     }
 
     /**
@@ -476,6 +488,23 @@ public class Executor extends Thread implements ModelObject {
 
         return eta;
     }
+
+    /**
+     * Can't start executor like you normally start a thread.
+     *
+     * @see #start(WorkUnit)
+     */
+    @Override
+    public synchronized void start() {
+        throw new UnsupportedOperationException();
+    }
+
+    /*protected*/ synchronized void start(WorkUnit task) {
+        this.workUnit = task;
+        super.start();
+        started = true;
+    }
+
 
     /**
      * @deprecated as of 1.489
@@ -588,5 +617,4 @@ public class Executor extends Thread implements ModelObject {
     private static final ThreadLocal<Executor> IMPERSONATION = new ThreadLocal<Executor>();
 
     private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());
-
 }

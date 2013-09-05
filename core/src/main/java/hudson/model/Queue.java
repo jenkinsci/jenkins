@@ -227,22 +227,15 @@ public class Queue extends ResourceController implements Saveable {
      * This is a job offer from the queue to an executor.
      *
      * <p>
-     * An idle executor (that calls {@link Queue#pop()} creates
-     * a new {@link JobOffer} and gets itself {@linkplain Queue#parked parked},
-     * and we'll eventually hand out an {@link #workUnit} to build.
+     * For each idle executor, this gets created to allow the scheduling logic
+     * to assign a work. Once a work is assigned, the executor actually gets
+     * started to carry out the task in question.
      */
     public class JobOffer extends MappingWorksheet.ExecutorSlot {
         public final Executor executor;
 
         /**
-         * Used to wake up an executor, when it has an offered
-         * {@link Project} to build.
-         */
-        private final OneShotEvent event = new OneShotEvent(Queue.this);
-
-        /**
          * The work unit that this {@link Executor} is going to handle.
-         * (Or null, in which case event is used to trigger a queue maintenance.)
          */
         private WorkUnit workUnit;
 
@@ -254,7 +247,8 @@ public class Queue extends ResourceController implements Saveable {
         protected void set(WorkUnit p) {
             assert this.workUnit == null;
             this.workUnit = p;
-            event.signal();
+            assert executor.isParking();
+            executor.start(workUnit);
         }
 
         @Override
@@ -313,7 +307,7 @@ public class Queue extends ResourceController implements Saveable {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
-        new MaintainTask(this);
+        new MaintainTask(this).periodic();
     }
 
     public LoadBalancer getLoadBalancer() {
@@ -903,94 +897,16 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Called by the executor to fetch something to build next.
-     * <p>
-     * This method blocks until a next project becomes buildable.
+     * Called when the executor actually starts executing the assigned work unit.
+     *
+     * This moves the task from the pending state to the "left the queue" state.
      */
-    public synchronized WorkUnit pop() throws InterruptedException {
-        final Executor exec = Executor.currentExecutor();
+    /*package*/ synchronized void onStartExecuting(Executor exec) throws InterruptedException {
+        final WorkUnit wu = exec.getCurrentWorkUnit();
+        pendings.remove(wu.context.item);
 
-        if (exec instanceof OneOffExecutor) {
-            OneOffExecutor ooe = (OneOffExecutor) exec;
-            final WorkUnit wu = ooe.getAssignedWorkUnit();
-            pendings.remove(wu.context.item);
-
-            LeftItem li = new LeftItem(wu.context);
-            li.enter(this);
-            return wu;
-        }
-
-        try {
-            while (true) {
-                final JobOffer offer = new JobOffer(exec);
-                long sleep = -1;
-
-                // consider myself parked
-                assert !parked.containsKey(exec);
-                parked.put(exec, offer);
-
-                // reuse executor thread to do a queue maintenance.
-                // at the end of this we get all the buildable jobs
-                // in the buildables field.
-                maintain();
-
-                // we went over all the buildable projects and awaken
-                // all the executors that got work to do. now, go to sleep
-                // until this thread is awakened. If this executor assigned a job to
-                // itself above, the block method will return immediately.
-
-                if (!waitingList.isEmpty()) {
-                    // wait until the first item in the queue is due
-                    sleep = peek().timestamp.getTimeInMillis() - new GregorianCalendar().getTimeInMillis();
-                    if (sleep < 100) sleep = 100;    // avoid wait(0)
-                }
-
-                if (sleep == -1)
-                    offer.event.block();
-                else
-                    offer.event.block(sleep);
-
-                // retract the offer object
-                assert parked.get(exec) == offer;
-                parked.remove(exec);
-
-                // am I woken up because I have a project to build?
-                if (offer.workUnit != null) {
-                    // if so, just build it
-                    LOGGER.log(Level.FINE, "Pop returning {0} for {1}", new Object[] {offer.workUnit, exec.getName()});
-
-                    // TODO: I think this has to be done by the last executor that leaves the pop(), not by main executor
-                    if (offer.workUnit.isMainWork()) {
-                        pendings.remove(offer.workUnit.context.item);
-                        LeftItem li = new LeftItem(offer.workUnit.context);
-                        li.enter(this);
-                    }
-
-                    return offer.workUnit;
-                }
-                // otherwise run a queue maintenance
-            }
-        } finally {
-            // remove myself from the parked list
-            JobOffer offer = parked.remove(exec);
-            if (offer != null && offer.workUnit != null) {
-                // we are already assigned a project, but now we can't handle it.
-                offer.workUnit.context.abort(new AbortException());
-                if(offer.workUnit.context.item!=null && pendings.contains(offer.workUnit.context.item)){
-                    //we are already assigned a project and moved it into pendings, but something wrong had happened before an executor could take it. 
-                    pendings.remove(offer.workUnit.context.item);
-                    //return it into queue, it does not have to cause this problem, it can be caused by another item.
-                    buildables.add(offer.workUnit.context.item);
-                }
-                    
-            }
-
-            // since this executor might have been chosen for
-            // maintenance, schedule another one. Worst case
-            // we'll just run a pointless maintenance, and that's
-            // fine.
-            scheduleMaintenance();
-        }
+        LeftItem li = new LeftItem(wu.context);
+        li.enter(this);
     }
 
     /**
@@ -1002,15 +918,7 @@ public class Queue extends ResourceController implements Saveable {
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
     public synchronized void scheduleMaintenance() {
-        // this code assumes that after this method is called
-        // no more executors will be offered job except by
-        // the pop() code.
-        for (Entry<Executor, JobOffer> av : parked.entrySet()) {
-            if (av.getValue().workUnit == null) {
-                av.getValue().event.signal();
-                return;
-            }
-        }
+        new MaintainTask(this).once();
     }
 
     /**
@@ -1057,6 +965,21 @@ public class Queue extends ResourceController implements Saveable {
      */
     public synchronized void maintain() {
         LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
+
+        {// update parked
+            for (Computer c : Jenkins.getInstance().getComputers()) {
+                for (Executor e : c.getExecutors()) {
+                    if (e.isParking()) {
+                        if (!parked.containsKey(e)) {
+                            parked.put(e,new JobOffer(e));
+                        }
+                    } else {
+                        parked.remove(e);
+                    }
+                }
+            }
+        }
+
 
         {// blocked -> buildable
             for (BlockedItem p : new ArrayList<BlockedItem>(blockedProjects.values())) {// copy as we'll mutate the list
@@ -2070,11 +1993,20 @@ public class Queue extends ResourceController implements Saveable {
 
         MaintainTask(Queue queue) {
             this.queue = new WeakReference<Queue>(queue);
+        }
 
+        private void periodic() {
             long interval = 5000;
             Timer timer = Trigger.timer;
             if (timer != null) {
                 timer.schedule(this, interval, interval);
+            }
+        }
+
+        private void once() {
+            Timer timer = Trigger.timer;
+            if (timer != null) {
+                timer.schedule(this,0);
             }
         }
 

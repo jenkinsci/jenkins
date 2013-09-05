@@ -718,7 +718,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         for (Integer number : availableNumbers) {
             Executor e = new Executor(this, number);
-            e.start();
             executors.add(e);
         }
     }
@@ -847,7 +846,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected boolean isAlive() {
         for (Executor e : executors)
-            if (e.isAlive())
+            if (e.isActive())
                 return true;
         return false;
     }
@@ -1015,8 +1014,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Starts executing a fly-weight task.
      */
     /*package*/ final void startFlyWeightTask(WorkUnit p) {
-        OneOffExecutor e = new OneOffExecutor(this, p);
-        e.start();
+        OneOffExecutor e = new OneOffExecutor(this);
+        e.start(p);
         oneOffExecutors.add(e);
     }
 
