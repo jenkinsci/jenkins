@@ -769,6 +769,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * Calls a build step.
          */
         protected final boolean perform(BuildStep bs, BuildListener listener) throws InterruptedException, IOException {
+            if (bs.isDisabled()) {
+                listener.getLogger().println("Skipping "+bs.getDescriptor().getDisplayName());
+                return true;
+            }
+
             BuildStepMonitor mon;
             try {
                 mon = bs.getRequiredMonitorService();

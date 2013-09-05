@@ -186,4 +186,12 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
     public Collection<? extends SubTask> getSubTasks() {
         return Collections.emptyList();
     }
+
+    /**
+     * Builder and Publisher can be temporarily disabled but not JobProperty.
+     */
+    @Override
+    public final boolean isDisabled() {
+        return false;
+    }
 }

@@ -44,7 +44,20 @@ import java.util.Collections;
  * @deprecated since 1.150
  */
 public abstract class BuildStepCompatibilityLayer implements BuildStep {
-//
+    /**
+     * Set to true if this build step is disabled.
+     */
+    private boolean disabled;
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    //
 // new definitions >= 1.150
 //
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {

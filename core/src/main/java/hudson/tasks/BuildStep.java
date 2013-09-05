@@ -143,6 +143,8 @@ public interface BuildStep {
      */
     Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
 
+    Descriptor<? extends BuildStep> getDescriptor();
+
 
     /**
      * Declares the scope of the synchronization monitor this {@link BuildStep} expects from outside.
@@ -207,6 +209,8 @@ public interface BuildStep {
      * @since 1.319
      */
     BuildStepMonitor getRequiredMonitorService();
+
+    boolean isDisabled();
 
     /**
      * List of all installed builders.

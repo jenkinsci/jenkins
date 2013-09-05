@@ -81,6 +81,12 @@ THE SOFTWARE.
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
+            <td>
+              <label style="word-wrap:">
+                <input type="checkbox" name="disabled" checked="${instance.disabled?'true':null}" />
+                Disabled
+              </label>
+            </td>
             <j:if test="${help!=null}">
               <td>
                 <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
