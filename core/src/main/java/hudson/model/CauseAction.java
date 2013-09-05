@@ -32,6 +32,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,15 @@ public class CauseAction implements FoldableAction, RunAction2 {
     public CauseAction(Cause c) {
    		this.causes.add(c);
    	}
-   	
+
+    public CauseAction(Cause... c) {
+   		this(Arrays.asList(c));
+   	}
+
+    public CauseAction(Collection<? extends Cause> causes) {
+   		this.causes.addAll(causes);
+   	}
+
    	public CauseAction(CauseAction ca) {
    		this.causes.addAll(ca.causes);
    	}
