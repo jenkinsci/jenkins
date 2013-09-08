@@ -23,43 +23,41 @@
  */
 package hudson.model;
 
-import hudson.model.Queue.Executable;
-import hudson.Util;
 import hudson.FilePath;
-import jenkins.model.CauseOfInterruption;
-import jenkins.model.CauseOfInterruption.UserInterruption;
+import hudson.Util;
+import hudson.model.Queue.Executable;
 import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
-import hudson.util.TimeUnit2;
-import hudson.util.InterceptingProxy;
 import hudson.security.ACL;
+import hudson.util.InterceptingProxy;
+import hudson.util.TimeUnit2;
+import jenkins.model.CauseOfInterruption;
+import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
-import static java.util.logging.Level.FINE;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import static java.util.logging.Level.*;
 
 
 /**
@@ -190,14 +188,6 @@ public class Executor extends Thread implements ModelObject {
         ACL.impersonate(ACL.SYSTEM);
 
         try {
-            synchronized(owner) {
-                if(owner.getNumExecutors()<owner.getExecutors().size()) {
-                    // we've got too many executors.
-                    owner.removeExecutor(this);
-                    return;
-                }
-            }
-
             // clear the interrupt flag as a precaution.
             // sometime an interrupt aborts a build but without clearing the flag.
             // see issue #1583
@@ -205,27 +195,19 @@ public class Executor extends Thread implements ModelObject {
             if (induceDeath)        throw new ThreadDeath();
 
             SubTask task;
-            try {
-                // transition from idle to building.
-                // perform this state change as an atomic operation wrt other queue operations
-                synchronized (queue) {
-                    workUnit.setExecutor(this);
-                    queue.onStartExecuting(this);
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
-                    task = workUnit.work;
-                    executable = task.createExecutable();
-                    workUnit.setExecutable(executable);
-                }
+            // transition from idle to building.
+            // perform this state change as an atomic operation wrt other queue operations
+            synchronized (queue) {
+                workUnit.setExecutor(this);
+                queue.onStartExecuting(this);
                 if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE, getName()+" is going to execute "+executable);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                return;
-            } catch (InterruptedException e) {
-                LOGGER.log(FINE, getName()+" interrupted",e);
-                return;
+                    LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
+                task = workUnit.work;
+                executable = task.createExecutable();
+                workUnit.setExecutable(executable);
             }
+            if (LOGGER.isLoggable(FINE))
+                LOGGER.log(FINE, getName()+" is going to execute "+executable);
 
             Throwable problems = null;
             try {
@@ -237,15 +219,11 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
-                final SecurityContext savedContext = ACL.impersonate(workUnit.context.item.authenticate());
-                try {
-                    setName(getName() + " : executing " + executable.toString());
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" is now executing "+executable);
-                    queue.execute(executable, task);
-                } finally {
-                    SecurityContextHolder.setContext(savedContext);
-                }
+                ACL.impersonate(workUnit.context.item.authenticate());
+                setName(getName() + " : executing " + executable.toString());
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE, getName()+" is now executing "+executable);
+                queue.execute(executable, task);
             } catch (Throwable e) {
                 // for some reason the executor died. this is really
                 // a bug in the code, but we don't want the executor to die,
@@ -265,12 +243,15 @@ public class Executor extends Thread implements ModelObject {
                     workUnit.setExecutor(null);
                 }
             }
-        } catch(RuntimeException e) {
+        } catch (InterruptedException e) {
+            LOGGER.log(FINE, getName()+" interrupted",e);
+            // die peacefully
+        } catch(Exception e) {
             causeOfDeath = e;
-            throw e;
+            LOGGER.log(SEVERE, "Unexpected executor death", e);
         } catch (Error e) {
             causeOfDeath = e;
-            throw e;
+            LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
             if (causeOfDeath==null)
                 // let this thread die and be replaced by a fresh unstarted instance
