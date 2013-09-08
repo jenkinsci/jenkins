@@ -825,15 +825,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
-        protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) {
+        protected final boolean preBuild(BuildListener listener,Map<?,? extends BuildStep> steps) throws AbortException {
             return preBuild(listener,steps.values());
         }
 
-        protected final boolean preBuild(BuildListener listener,Collection<? extends BuildStep> steps) {
+        protected final boolean preBuild(BuildListener listener,Collection<? extends BuildStep> steps) throws AbortException {
             return preBuild(listener,(Iterable<? extends BuildStep>)steps);
         }
 
-        protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
+        protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) throws AbortException {
             for (BuildStep bs : steps)
                 if (!bs.prebuild(AbstractBuild.this,listener)) {
                     LOGGER.fine(MessageFormat.format("{0} : {1} failed", AbstractBuild.this.toString(), bs));
