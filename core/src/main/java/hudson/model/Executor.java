@@ -76,7 +76,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Used to track when a job was last executed.
      */
-    private long finishTime;
+    private final long creationTime = System.currentTimeMillis();
 
     /**
      * Executor number that identifies it among other executors for the same {@link Computer}.
@@ -184,109 +184,97 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void run() {
+        startTime = System.currentTimeMillis();
+
         // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
         ACL.impersonate(ACL.SYSTEM);
 
         try {
-            finishTime = System.currentTimeMillis();
-
-            MAIN:
-            do {
-                executable = null;
-                workUnit = null;
-                interruptStatus = null;
-                causes.clear();
-
-                synchronized(owner) {
-                    if(owner.getNumExecutors()<owner.getExecutors().size()) {
-                        // we've got too many executors.
-                        owner.removeExecutor(this);
-                        return;
-                    }
+            synchronized(owner) {
+                if(owner.getNumExecutors()<owner.getExecutors().size()) {
+                    // we've got too many executors.
+                    owner.removeExecutor(this);
+                    return;
                 }
+            }
 
-                // clear the interrupt flag as a precaution.
-                // sometime an interrupt aborts a build but without clearing the flag.
-                // see issue #1583
-                if (Thread.interrupted())   break MAIN;
-                if (induceDeath)        throw new ThreadDeath();
+            // clear the interrupt flag as a precaution.
+            // sometime an interrupt aborts a build but without clearing the flag.
+            // see issue #1583
+            if (Thread.interrupted())   return;
+            if (induceDeath)        throw new ThreadDeath();
 
-                SubTask task;
-                try {
-                    // transition from idle to building.
-                    // perform this state change as an atomic operation wrt other queue operations
-                    synchronized (queue) {
-                        workUnit.setExecutor(this);
-                        queue.onStartExecuting(this);
-                        if (LOGGER.isLoggable(FINE))
-                            LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
-                        task = workUnit.work;
-                        startTime = System.currentTimeMillis();
-                        executable = task.createExecutable();
-                        workUnit.setExecutable(executable);
-                    }
+            SubTask task;
+            try {
+                // transition from idle to building.
+                // perform this state change as an atomic operation wrt other queue operations
+                synchronized (queue) {
+                    workUnit.setExecutor(this);
+                    queue.onStartExecuting(this);
                     if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" is going to execute "+executable);
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                    break MAIN;
-                } catch (InterruptedException e) {
-                    LOGGER.log(FINE, getName()+" interrupted",e);
-                    break MAIN;
+                        LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
+                    task = workUnit.work;
+                    executable = task.createExecutable();
+                    workUnit.setExecutable(executable);
+                }
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE, getName()+" is going to execute "+executable);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
+                return;
+            } catch (InterruptedException e) {
+                LOGGER.log(FINE, getName()+" interrupted",e);
+                return;
+            }
+
+            Throwable problems = null;
+            try {
+                workUnit.context.synchronizeStart();
+
+                if (executable instanceof Actionable) {
+                    for (Action action: workUnit.context.actions) {
+                        ((Actionable) executable).addAction(action);
+                    }
                 }
 
-                Throwable problems = null;
-                final String threadName = getName();
+                final SecurityContext savedContext = ACL.impersonate(workUnit.context.item.authenticate());
                 try {
-                    workUnit.context.synchronizeStart();
-
-                    if (executable instanceof Actionable) {
-                        for (Action action: workUnit.context.actions) {
-                            ((Actionable) executable).addAction(action);
-                        }
-                    }
-
-                    final SecurityContext savedContext = ACL.impersonate(workUnit.context.item.authenticate());
-                    try {
-                        setName(threadName + " : executing " + executable.toString());
-                        if (LOGGER.isLoggable(FINE))
-                            LOGGER.log(FINE, getName()+" is now executing "+executable);
-                        queue.execute(executable, task);
-                    } finally {
-                        SecurityContextHolder.setContext(savedContext);
-                    }
-                } catch (Throwable e) {
-                    // for some reason the executor died. this is really
-                    // a bug in the code, but we don't want the executor to die,
-                    // so just leave some info and go on to build other things
-                    LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                    workUnit.context.abort(e);
-                    problems = e;
+                    setName(getName() + " : executing " + executable.toString());
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" is now executing "+executable);
+                    queue.execute(executable, task);
                 } finally {
-                    setName(threadName);
-                    finishTime = System.currentTimeMillis();
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" completed "+executable+" in "+(finishTime-startTime)+"ms");
-                    try {
-                        workUnit.context.synchronizeEnd(executable,problems,finishTime - startTime);
-                    } catch (InterruptedException e) {
-                        workUnit.context.abort(e);
-                        break MAIN;
-                    } finally {
-                        workUnit.setExecutor(null);
-                    }
+                    SecurityContextHolder.setContext(savedContext);
                 }
-            } while (false);    // this pointless do-while allows "break" to come here
-
-            // let this thread die and be replaced by a fresh unstarted instance
-            owner.removeExecutor(this);
-
+            } catch (Throwable e) {
+                // for some reason the executor died. this is really
+                // a bug in the code, but we don't want the executor to die,
+                // so just leave some info and go on to build other things
+                LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
+                workUnit.context.abort(e);
+                problems = e;
+            } finally {
+                long time = System.currentTimeMillis()-startTime;
+                if (LOGGER.isLoggable(FINE))
+                    LOGGER.log(FINE, getName()+" completed "+executable+" in "+time+"ms");
+                try {
+                    workUnit.context.synchronizeEnd(executable,problems,time);
+                } catch (InterruptedException e) {
+                    workUnit.context.abort(e);
+                } finally {
+                    workUnit.setExecutor(null);
+                }
+            }
         } catch(RuntimeException e) {
             causeOfDeath = e;
             throw e;
         } catch (Error e) {
             causeOfDeath = e;
             throw e;
+        } finally {
+            if (causeOfDeath==null)
+                // let this thread die and be replaced by a fresh unstarted instance
+                owner.removeExecutor(this);
         }
     }
 
@@ -557,7 +545,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public long getIdleStartMilliseconds() {
         if (isIdle())
-            return Math.max(finishTime, owner.getConnectTime());
+            return Math.max(creationTime, owner.getConnectTime());
         else {
             return Math.max(startTime + Math.max(0, Executables.getEstimatedDurationFor(executable)),
                     System.currentTimeMillis() + 15000);
