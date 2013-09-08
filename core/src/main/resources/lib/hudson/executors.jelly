@@ -45,7 +45,7 @@ THE SOFTWARE.
               ${name}
             </td>
             <j:choose>
-              <j:when test="${!e.alive}">
+              <j:when test="${!e.active}">
                 <td class="pane">
                   <a href="${rootURL}/${c.url}${url}/causeOfDeath">
                     <div class="error">${%Dead} (!)</div>
