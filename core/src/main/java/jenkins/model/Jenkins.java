@@ -2653,7 +2653,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
         for( Computer c : computers.values() ) {
-            c.interrupt();
             killComputer(c);
             pending.add(c.disconnect(null));
         }
