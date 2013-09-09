@@ -144,6 +144,14 @@ public class Executor extends Thread implements ModelObject {
         if (LOGGER.isLoggable(FINE))
             LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
 
+        synchronized (this) {
+            if (!started) {
+                // not yet started, so simply dispose this
+                owner.removeExecutor(this);
+                return;
+            }
+        }
+
         interruptStatus = result;
         synchronized (this.causes) {
             for (CauseOfInterruption c : causes) {
