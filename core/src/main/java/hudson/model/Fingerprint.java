@@ -66,6 +66,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * A file being tracked by Jenkins.
@@ -879,7 +881,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 if (original != null) {
                     w.println("  <original>");
                     w.print("    <name>");
-                    w.print(original.name);
+                    w.print(Util.xmlEscape(original.name));
                     w.println("</name>");
                     w.print("    <number>");
                     w.print(original.number);
@@ -890,13 +892,13 @@ public class Fingerprint implements ModelObject, Saveable {
                 w.print(Util.toHexString(md5sum));
                 w.println("</md5sum>");
                 w.print("  <fileName>");
-                w.print(fileName);
+                w.print(Util.xmlEscape(fileName));
                 w.println("</fileName>");
                 w.println("  <usages>");
                 for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
                     w.println("    <entry>");
                     w.print("      <string>");
-                    w.print(e.getKey());
+                    w.print(Util.xmlEscape(e.getKey()));
                     w.println("</string>");
                     w.print("      <ranges>");
                     w.print(RangeSet.ConverterImpl.serialize(e.getValue()));
@@ -965,10 +967,10 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Loads a {@link Fingerprint} from a file in the image.
      */
-    /*package*/ static Fingerprint load(byte[] md5sum) throws IOException {
+    /*package*/ static @CheckForNull Fingerprint load(byte[] md5sum) throws IOException {
         return load(getFingerprintFile(md5sum));
     }
-    /*package*/ static Fingerprint load(File file) throws IOException {
+    /*package*/ static @CheckForNull Fingerprint load(File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
@@ -994,12 +996,29 @@ public class Fingerprint implements ModelObject, Saveable {
                 // generally we don't want to wipe out user data just because we can't load it,
                 // but if the file size is 0, which is what's reported in HUDSON-2012, then it seems
                 // like recovering it silently by deleting the file is not a bad idea.
-                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? "+configFile,e);
+                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
+                file.delete();
+                return null;
+            }
+            String parseError = messageOfXmlPullParserException(e);
+            if (parseError != null) {
+                logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
                 file.delete();
                 return null;
             }
             logger.log(Level.WARNING, "Failed to load "+configFile,e);
             throw e;
+        }
+    }
+    private static String messageOfXmlPullParserException(Throwable t) {
+        if (t instanceof XmlPullParserException) {
+            return t.getMessage();
+        }
+        Throwable t2 = t.getCause();
+        if (t2 != null) {
+            return messageOfXmlPullParserException(t2);
+        } else {
+            return null;
         }
     }
 
