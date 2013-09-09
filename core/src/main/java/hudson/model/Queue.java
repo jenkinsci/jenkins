@@ -917,7 +917,7 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
-    public synchronized void scheduleMaintenance() {
+    public void scheduleMaintenance() {
         new MaintainTask(this).once();
     }
 
