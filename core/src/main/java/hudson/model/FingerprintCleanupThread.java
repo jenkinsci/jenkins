@@ -100,7 +100,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     private boolean check(File fingerprintFile) {
         try {
             Fingerprint fp = Fingerprint.load(fingerprintFile);
-            if(!fp.isAlive()) {
+            if (fp == null || !fp.isAlive()) {
                 fingerprintFile.delete();
                 return true;
             } else {
