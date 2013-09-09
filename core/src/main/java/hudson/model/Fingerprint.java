@@ -38,11 +38,13 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.AtomicFileWriter;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.PersistedList;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import java.io.EOFException;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -995,8 +997,12 @@ public class Fingerprint implements ModelObject, Saveable {
             }
         }
 
-        if (modified)
+        if (modified) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Saving trimmed {0}", getFingerprintFile(md5sum));
+            }
             save();
+        }
 
         return modified;
     }
@@ -1101,8 +1107,9 @@ public class Fingerprint implements ModelObject, Saveable {
         if (facets.isEmpty()) {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
-            PrintWriter w = new PrintWriter(file, "UTF-8");
+            AtomicFileWriter afw = new AtomicFileWriter(file);
             try {
+                PrintWriter w = new PrintWriter(afw);
                 w.println("<?xml version='1.0' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
@@ -1139,8 +1146,9 @@ public class Fingerprint implements ModelObject, Saveable {
                 w.println("  <facets/>");
                 w.print("</fingerprint>");
                 w.flush();
+                afw.commit();
             } finally {
-                w.close();
+                afw.abort();
             }
         } else {
             // Slower fallback that can persist facets.
@@ -1230,7 +1238,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 file.delete();
                 return null;
             }
-            String parseError = messageOfXmlPullParserException(e);
+            String parseError = messageOfParseException(e);
             if (parseError != null) {
                 logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
                 file.delete();
@@ -1240,13 +1248,13 @@ public class Fingerprint implements ModelObject, Saveable {
             throw e;
         }
     }
-    private static String messageOfXmlPullParserException(Throwable t) {
-        if (t instanceof XmlPullParserException) {
+    private static String messageOfParseException(Throwable t) {
+        if (t instanceof XmlPullParserException || t instanceof EOFException) {
             return t.getMessage();
         }
         Throwable t2 = t.getCause();
         if (t2 != null) {
-            return messageOfXmlPullParserException(t2);
+            return messageOfParseException(t2);
         } else {
             return null;
         }
