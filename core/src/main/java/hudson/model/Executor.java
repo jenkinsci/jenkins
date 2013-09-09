@@ -196,10 +196,6 @@ public class Executor extends Thread implements ModelObject {
         ACL.impersonate(ACL.SYSTEM);
 
         try {
-            // clear the interrupt flag as a precaution.
-            // sometime an interrupt aborts a build but without clearing the flag.
-            // see issue #1583
-            if (Thread.interrupted())   return;
             if (induceDeath)        throw new ThreadDeath();
 
             SubTask task;
