@@ -135,7 +135,8 @@ public class ArtifactArchiver extends Recorder {
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
             if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
-                if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
+                Result result = build.getResult();
+                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
