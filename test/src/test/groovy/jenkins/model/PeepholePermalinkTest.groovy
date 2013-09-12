@@ -72,4 +72,16 @@ class PeepholePermalinkTest extends HudsonTestCase {
             assert new File(p.rootDir,"$n/build.xml").length() == new File(b1.rootDir,"build.xml").length()
         }
     }
+
+    void testRebuildBuildNumberPermalinks() {
+        def p = createFreeStyleProject()
+        def b = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        File f = new File(p.getBuildDir(), "1")
+        // assertTrue(Util.isSymlink(f))
+        f.delete()
+        PeepholePermalink link = p.getPermalinks().find({l -> l instanceof PeepholePermalink})
+        println(link)
+        link.updateCache(p, b)
+        assertTrue("build symlink hasn't been restored", f.exists())
+    }
 }
