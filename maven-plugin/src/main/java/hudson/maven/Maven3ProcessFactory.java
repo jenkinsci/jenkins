@@ -30,25 +30,28 @@ import hudson.model.BuildListener;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
+import org.jvnet.hudson.maven3.agent.Maven3Main;
+import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-
-import org.jvnet.hudson.maven3.agent.Maven3Main;
-import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
+import java.net.URL;
 
 /**
- * @author Olivier Lamy
+ * {@link AbstractMavenProcessFactory} for Maven 3.
  *
+ * @author Olivier Lamy
  */
 public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements ProcessCache.Factory
 {
 
-    Maven3ProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
-        super( mms, launcher, envVars, mavenOpts, workDir );
+    Maven3ProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        super( mms, build, launcher, envVars, mavenOpts, workDir );
     }
 
     @Override
@@ -71,6 +74,12 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
                 slaveRoot.child("maven3-interceptor.jar").getRemote();
     }
 
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+        return isMaster?
+            Which.jarFile(HudsonMavenExecutionResult.class).getAbsolutePath():
+            slaveRoot.child("maven3-interceptor-commons.jar").getRemote();
+    }
+
     @Override
     protected String getMavenInterceptorOverride(MavenInstallation mvn,
             boolean isMaster, FilePath slaveRoot) throws IOException,
@@ -78,15 +87,36 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
         return null;
     }
 
+    @Override
+    protected void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException {
+        channel.call(new InstallPlexusModulesTask(context));
+    }
+
+    private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
+        PlexusModuleContributor c;
+
+        public InstallPlexusModulesTask(AbstractMavenBuild<?, ?> context) throws IOException, InterruptedException {
+            c = PlexusModuleContributorFactory.aggregate(context);
+        }
+
+        public Void call() throws IOException {
+            Maven3Main.addPlexusComponents(c.getPlexusComponentJars().toArray(new URL[0]));
+            return null;
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+
     /**
      * Finds classworlds.jar
      */
-    private static final class GetClassWorldsJar implements Callable<String,IOException> {
+    protected static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = -2599434124883557137L;
         private final String mvnHome;
         private final TaskListener listener;
 
-        private GetClassWorldsJar(String mvnHome, TaskListener listener) {
+        protected GetClassWorldsJar(String mvnHome, TaskListener listener) {
             this.mvnHome = mvnHome;
             this.listener = listener;
         }

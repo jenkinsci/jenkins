@@ -40,7 +40,7 @@ import org.codehaus.plexus.logging.Logger;
  *
  * @author Benjamin Bentmann
  */
-// Note: copied from package org.apache.maven.cli with just one minor adaption for Maven3MojoNote
+// Note: copied from package org.apache.maven.cli with just one minor adaption for Maven3Mojo
 public class ExecutionEventLogger
     extends AbstractExecutionListener
 {

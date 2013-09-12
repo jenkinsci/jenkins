@@ -23,22 +23,27 @@
  */
 package hudson.maven;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import jenkins.model.Jenkins;
-import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Maven.ProjectWithMaven;
+import jenkins.model.Jenkins;
+import jenkins.mvn.SettingsProvider;
+import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.cli.logging.Slf4jLoggerManager;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+import org.codehaus.plexus.PlexusConstants;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,14 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -143,7 +140,7 @@ public class MavenUtil {
      *
      */
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public static MavenEmbedder createEmbedder(MavenEmbedderRequest mavenEmbedderRequest) throws MavenEmbedderException, IOException {
+    public static MavenEmbedder createEmbedder(MavenEmbedderRequest mer) throws MavenEmbedderException, IOException {
         
         
         MavenRequest mavenRequest = new MavenRequest();
@@ -154,50 +151,50 @@ public class MavenUtil {
         if(!m2Home.exists())
             throw new AbortException("Failed to create "+m2Home);
 
-        if (mavenEmbedderRequest.getPrivateRepository()!=null)
-            mavenRequest.setLocalRepositoryPath( mavenEmbedderRequest.getPrivateRepository() );
+        if (mer.getPrivateRepository()!=null)
+            mavenRequest.setLocalRepositoryPath( mer.getPrivateRepository() );
 
-        if (mavenEmbedderRequest.getProfiles() != null) {
-            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mavenEmbedderRequest.getProfiles(), "," ) ));    
+        if (mer.getProfiles() != null) {
+            mavenRequest.setProfiles(Arrays.asList( StringUtils.split( mer.getProfiles(), "," ) ));
         }
         
 
-        if ( mavenEmbedderRequest.getAlternateSettings() != null ) {
-            mavenRequest.setUserSettingsFile( mavenEmbedderRequest.getAlternateSettings().getAbsolutePath() );
+        if ( mer.getAlternateSettings() != null ) {
+            mavenRequest.setUserSettingsFile( mer.getAlternateSettings().getAbsolutePath() );
         } else {
             mavenRequest.setUserSettingsFile( new File( m2Home, "settings.xml" ).getAbsolutePath() );
         }
 
-        if ( mavenEmbedderRequest.getGlobalSettings() != null) {
-            mavenRequest.setGlobalSettingsFile( mavenEmbedderRequest.getGlobalSettings().getAbsolutePath() );
+        if ( mer.getGlobalSettings() != null) {
+            mavenRequest.setGlobalSettingsFile( mer.getGlobalSettings().getAbsolutePath() );
         } else {
-            mavenRequest.setGlobalSettingsFile( new File( mavenEmbedderRequest.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
+            mavenRequest.setGlobalSettingsFile( new File( mer.getMavenHome(), "conf/settings.xml" ).getAbsolutePath() );
         }
         
-        if (mavenEmbedderRequest.getWorkspaceReader() != null ) {
-            mavenRequest.setWorkspaceReader( mavenEmbedderRequest.getWorkspaceReader() );
+        if (mer.getWorkspaceReader() != null ) {
+            mavenRequest.setWorkspaceReader( mer.getWorkspaceReader() );
         }
         
-        mavenRequest.setUpdateSnapshots(mavenEmbedderRequest.isUpdateSnapshots());
+        mavenRequest.setUpdateSnapshots(mer.isUpdateSnapshots());
 
         // TODO olamy check this sould be userProperties 
-        mavenRequest.setSystemProperties(mavenEmbedderRequest.getSystemProperties());
+        mavenRequest.setSystemProperties(mer.getSystemProperties());
 
-        if (mavenEmbedderRequest.getTransferListener() != null) {
+        if (mer.getTransferListener() != null) {
             if (debugMavenEmbedder) {
-                mavenEmbedderRequest.getListener().getLogger()
-                    .println( "use transfertListener " + mavenEmbedderRequest.getTransferListener().getClass().getName() );
+                mer.getListener().getLogger()
+                    .println( "use transfertListener " + mer.getTransferListener().getClass().getName() );
             }
-            mavenRequest.setTransferListener( mavenEmbedderRequest.getTransferListener() );
+            mavenRequest.setTransferListener( mer.getTransferListener() );
         }
-        EmbedderLoggerImpl logger =
-            new EmbedderLoggerImpl( mavenEmbedderRequest.getListener(), debugMavenEmbedder ? org.codehaus.plexus.logging.Logger.LEVEL_DEBUG
-                            : org.codehaus.plexus.logging.Logger.LEVEL_INFO );
-        mavenRequest.setMavenLoggerManager( logger );
-        
-        ClassLoader mavenEmbedderClassLoader =
-            mavenEmbedderRequest.getClassLoader() == null ? new MaskingClassLoader( MavenUtil.class.getClassLoader() )
-                            : mavenEmbedderRequest.getClassLoader(); 
+
+        mavenRequest.setMavenLoggerManager( new Slf4jLoggerManager() );
+
+        //mavenRequest.setContainerClassPathScanning( PlexusConstants.SCANNING_OFF );
+
+        //mavenRequest.setContainerComponentVisibility( PlexusConstants.GLOBAL_VISIBILITY );
+
+        ClassLoader mavenEmbedderClassLoader = mer.getClassLoader();
 
         {// are we loading the right components.xml? (and not from Maven that's running Jetty, if we are running in "mvn hudson-dev:run" or "mvn hpi:run"?
             Enumeration<URL> e = mavenEmbedderClassLoader.getResources("META-INF/plexus/components.xml");
@@ -207,9 +204,9 @@ public class MavenUtil {
             }
         }
 
-        mavenRequest.setProcessPlugins( mavenEmbedderRequest.isProcessPlugins() );
-        mavenRequest.setResolveDependencies( mavenEmbedderRequest.isResolveDependencies() );
-        mavenRequest.setValidationLevel( mavenEmbedderRequest.getValidationLevel() );
+        mavenRequest.setProcessPlugins( mer.isProcessPlugins() );
+        mavenRequest.setResolveDependencies( mer.isResolveDependencies() );
+        mavenRequest.setValidationLevel( mer.getValidationLevel() );
             
         // TODO check this MaskingClassLoader with maven 3 artifacts
         MavenEmbedder maven = new MavenEmbedder( mavenEmbedderClassLoader, mavenRequest );
@@ -272,85 +269,56 @@ public class MavenUtil {
         project.setCollectedProjects( modules );
     }
 
-    /**
-     * When we run in Jetty during development, embedded Maven will end up
-     * seeing some of the Maven class visible through Jetty, and this confuses it.
-     *
-     * <p>
-     * Specifically, embedded Maven will find all the component descriptors
-     * visible through Jetty, yet when it comes to loading classes, classworlds
-     * still load classes from local realms created inside embedder.
-     *
-     * <p>
-     * This classloader prevents this issue by hiding the component descriptor
-     * visible through Jetty.
-     */
-    private static final class MaskingClassLoader extends ClassLoader {
-
-        public MaskingClassLoader(ClassLoader parent) {
-            super(parent);
-        }
-
-        public Enumeration<URL> getResources(String name) throws IOException {
-            final Enumeration<URL> e = super.getResources(name);
-            return new Enumeration<URL>() {
-                URL next;
-
-                public boolean hasMoreElements() {
-                    fetch();
-                    return next!=null;
-                }
-
-                public URL nextElement() {
-                    fetch();
-                    URL r = next;
-                    next = null;
-                    return r;
-                }
-
-                private void fetch() {
-                    while(next==null && e.hasMoreElements()) {
-                        next = e.nextElement();
-                        if(shouldBeIgnored(next))
-                            next = null;
-                    }
-                }
-
-                private boolean shouldBeIgnored(URL url) {
-                    String s = url.toExternalForm();
-                    if(s.contains("maven-plugin-tools-api"))
-                        return true;
-                    // because RemoteClassLoader mangles the path, we can't check for plexus/components.xml,
-                    // which would have otherwise made the test cheaper.
-                    if(s.endsWith("components.xml")) {
-                        BufferedReader r=null;
-                        try {
-                            // is this designated for interception purpose? If so, don't load them in the MavenEmbedder
-                            // earlier I tried to use a marker file in the same directory, but that won't work
-                            r = new BufferedReader(new InputStreamReader(url.openStream()));
-                            for (int i=0; i<2; i++) {
-                                String l = r.readLine();
-                                if(l!=null && l.contains("MAVEN-INTERCEPTION-TO-BE-MASKED"))
-                                    return true;
-                            }
-                        } catch (IOException _) {
-                            // let whoever requesting this resource re-discover an error and report it
-                        } finally {
-                            IOUtils.closeQuietly(r);
-                        }
-                    }
-                    return false;
-                }
-            };
-        }
-    }
-    
     public static boolean maven3orLater(String mavenVersion) {
         // null or empty so false !
         if (StringUtils.isBlank( mavenVersion )) {
             return false;
         }
-        return new ComparableVersion (mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+    }
+
+    public static MavenVersion getMavenVersion(String mavenVersion){
+        // we don't know so return maven 2
+        if(StringUtils.isBlank( mavenVersion )){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_0 = new ComparableVersion("3.0");
+
+        ComparableVersion maven2_0 = new ComparableVersion("2.0");
+
+        ComparableVersion mavenCurrent = new ComparableVersion( mavenVersion );
+
+        if (mavenCurrent.compareTo( maven2_0 ) >= 0 && mavenCurrent.compareTo( maven3_0 ) < 0){
+            return MavenVersion.MAVEN_2;
+        }
+
+        ComparableVersion maven3_1_0 = new ComparableVersion("3.1.0");
+
+        if (mavenCurrent.compareTo( maven3_0 ) >= 0 && mavenCurrent.compareTo( maven3_1_0 ) < 0){
+            return MavenVersion.MAVEN_3_0_X;
+        }
+
+        return MavenVersion.MAVEN_3_1;
+
+    }
+
+    /**
+     * support of {@link org.apache.maven.eventspy.EventSpy} only since 3.0.2
+     * due to the current implementation will be supported only for maven 3.1.0
+     * @param mavenVersion
+     * @return
+     */
+    public static boolean supportEventSpy(String mavenVersion){
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.1.0") ) >= 0;
+    }
+
+    public enum MavenVersion {
+        MAVEN_2,MAVEN_3_0_X,MAVEN_3_1;
     }
     
 

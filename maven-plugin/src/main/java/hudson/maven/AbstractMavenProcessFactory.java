@@ -69,12 +69,18 @@ import org.kohsuke.stapler.framework.io.IOException2;
  */
 
 /**
+ * Launches the maven process.
+ *
+ * This class captures the common part, and {@link MavenProcessFactory} and {@link Maven3ProcessFactory}
+ * adds Maven2/Maven3 flavors to it to make it concrete.
+ *
  * @author Olivier Lamy
  */
 public abstract class AbstractMavenProcessFactory
 {
 
     private final MavenModuleSet mms;
+    private final AbstractMavenBuild<?,?> build;
     private final Launcher launcher;
     /**
      * Environment variables to be set to the maven process.
@@ -94,7 +100,8 @@ public abstract class AbstractMavenProcessFactory
 
     private final String mavenOpts;
 
-    AbstractMavenProcessFactory(MavenModuleSet mms, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+    AbstractMavenProcessFactory(MavenModuleSet mms, AbstractMavenBuild<?,?> build, Launcher launcher, EnvVars envVars, String mavenOpts, FilePath workDir) {
+        this.build = build;
         this.mms = mms;
         this.launcher = launcher;
         this.envVars = envVars;
@@ -234,11 +241,14 @@ public abstract class AbstractMavenProcessFactory
                 throw e;
             }
 
-            return new NewProcess(
-                Channels.forProcess("Channel to Maven "+ Arrays.toString(cmds),
+            Channel ch = Channels.forProcess("Channel to Maven " + Arrays.toString(cmds),
                     Computer.threadPoolForRemoting, new BufferedInputStream(con.in), new BufferedOutputStream(con.out),
-                    listener.getLogger(), proc),
-                proc);
+                    listener.getLogger(), proc);
+
+            if (!PlexusModuleContributorFactory.all().isEmpty())
+                applyPlexusModuleContributor(ch,build);
+
+            return new NewProcess(ch,proc);
         } catch (IOException e) {
             if(fixNull(e.getMessage()).contains("java: not found")) {
                 // diagnose issue #659
@@ -249,6 +259,18 @@ public abstract class AbstractMavenProcessFactory
             throw e;
         }
     }
+
+    /**
+     * Apply extension plexus modules to the newly launched Maven process.
+     *
+     *
+     * @param channel
+     *      Channel to the Maven process.
+     * @param context
+     *      Context that {@link PlexusModuleContributor} needs to figure out what it needs to do.
+     * @since 1.519
+     */
+    protected abstract void applyPlexusModuleContributor(Channel channel, AbstractMavenBuild<?, ?> context) throws InterruptedException, IOException;
 
     /**
      * Builds the command line argument list to launch the maven process.
@@ -302,6 +324,12 @@ public abstract class AbstractMavenProcessFactory
         // interceptor.jar
         args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
 
+        String mavenInterceptorCommonClasspath = getMavenInterceptorCommonClassPath( mvn, isMaster, slaveRoot );
+
+        if (mavenInterceptorCommonClasspath!=null){
+            args.add( mavenInterceptorCommonClasspath );
+        }
+
         // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
         
@@ -322,6 +350,14 @@ public abstract class AbstractMavenProcessFactory
      * Returns the classpath string for the maven-interceptor jar
      */
     protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+
+    /**
+     * Returns the classpath string for the maven-interceptor jar
+     * @since 1.525
+     */
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+      return null;
+    }
     
     /**
      * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 
