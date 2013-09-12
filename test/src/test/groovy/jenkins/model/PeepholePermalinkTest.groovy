@@ -3,6 +3,7 @@ package jenkins.model
 import hudson.Functions
 import hudson.Util
 import hudson.model.Run
+import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.FailureBuilder
 import org.jvnet.hudson.test.HudsonTestCase
 
@@ -73,6 +74,7 @@ class PeepholePermalinkTest extends HudsonTestCase {
         }
     }
 
+    @Bug(19034)
     void testRebuildBuildNumberPermalinks() {
         def p = createFreeStyleProject()
         def b = assertBuildStatusSuccess(p.scheduleBuild2(0))
