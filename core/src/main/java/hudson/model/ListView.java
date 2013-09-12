@@ -166,7 +166,7 @@ public class ListView extends View implements Saveable {
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         for (TopLevelItem item : Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class)) {
             if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
-            // Add if no status filter or filter matches enabled/disabl2ed status:
+            // Add if no status filter or filter matches enabled/disabled status:
             if(statusFilter == null || !(item instanceof AbstractProject)
                               || ((AbstractProject)item).isDisabled() ^ statusFilter)
                 items.add(item);
