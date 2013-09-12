@@ -29,8 +29,6 @@ import hudson.remoting.Callable;
 
 import java.io.File;
 import java.io.IOException;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import org.kohsuke.stapler.framework.io.IOException2;
 
@@ -65,12 +63,7 @@ public class MavenVersionCallable
                 else
                     throw new AbortException(Messages.MavenVersionCallable_MavenHomeDoesntExist(home));
             }
-            MavenInformation mavenVersion = MavenEmbedderUtils.getMavenVersion(home);
-            String v = mavenVersion.getVersion();
-            if (!StringUtils.isBlank(v) && new ComparableVersion(v).compareTo(new ComparableVersion("3.1")) >= 0) {
-                throw new IOException(Messages.MavenVersionCallable_maven_3_1_0_is_not_supported_for_native_());
-            }
-            return mavenVersion;
+            return MavenEmbedderUtils.getMavenVersion(home);
         }
         catch ( MavenEmbedderException e )
         {
