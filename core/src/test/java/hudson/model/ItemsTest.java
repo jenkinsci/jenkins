@@ -57,6 +57,9 @@ public class ItemsTest {
 
         assertEquals("../meu,../bu,../zo", Items.computeRelativeNamesAfterRenaming("ga", "meu", "../ga,../bu,../zo", foo ));
         assertEquals("../qux/ga,bu,zo", Items.computeRelativeNamesAfterRenaming("foo/baz", "foo/qux", "../baz/ga,bu,zo", foo_bar ));
+
+        assertEquals("foo-renamed,foo_bar", Items.computeRelativeNamesAfterRenaming("foo", "foo-renamed", "foo,foo_bar", root ));
+
     }
 
 }

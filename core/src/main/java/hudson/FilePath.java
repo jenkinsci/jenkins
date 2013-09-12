@@ -632,7 +632,12 @@ public final class FilePath implements Serializable {
                 }
             }
             public OutputStream compress(OutputStream out) throws IOException {
-                return new GZIPOutputStream(new BufferedOutputStream(out));
+                return new GZIPOutputStream(new BufferedOutputStream(out),
+                        // TODO JENKINS-19473 workaround; replace when jzlib fixed
+                        new com.jcraft.jzlib.Deflater(6, 15+16, 9),   // use 9 for memLevel
+                        512,
+                        true
+                );
             }
         };
 
@@ -1936,13 +1941,19 @@ public final class FilePath implements Serializable {
                     }
                 }
             });
-            int r = writeToTar(new File(remote), scanner, TarCompression.GZIP.compress(pipe.getOut()));
+            Future<Integer> future2 = actAsync(new FileCallable<Integer>() {
+                private static final long serialVersionUID = 1L;
+                @Override public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+                    return writeToTar(new File(remote), scanner, TarCompression.GZIP.compress(pipe.getOut()));
+                }
+            });
             try {
+                // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
+                return future2.get();
             } catch (ExecutionException e) {
                 throw new IOException2(e);
             }
-            return r;
         } else {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();

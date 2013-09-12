@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.530-SNAPSHOT</version>
+    <version>1.532-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.217</stapler.version>
+    <stapler.version>1.218</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
@@ -91,6 +91,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
+      <classifier>no_aop</classifier>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
@@ -188,7 +189,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-      <version>2.0.21</version>
+      <version>2.0.23</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -218,7 +219,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-3</version>
+      <version>1.4.4-jenkins-4</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>

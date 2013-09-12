@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.530-SNAPSHOT</version>
+  <version>1.532-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -187,6 +187,7 @@ THE SOFTWARE.
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>4.0-beta</version>
+        <classifier>no_aop</classifier>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -748,25 +749,11 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.5.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>
           </plugin>
-          <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-pmd-plugin</artifactId>-->
-            <!--<version>2.5</version>-->
-            <!--<configuration>-->
-              <!--&lt;!&ndash;rulesets>-->
-                  <!--<ruleset>ruleset.xml</ruleset>-->
-                  <!--</rulesets&ndash;&gt;-->
-            <!--</configuration>-->
-          <!--</plugin>-->
-          <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
-            <!--<version>2.6</version>-->
-          <!--</plugin>-->
         </plugins>
       </reporting>
     </profile>

@@ -46,7 +46,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Within this page, the {@link UserProperty} instance is available
  * as <tt>instance</tt> variable (while <tt>it</tt> refers to {@link User}.
  * See {@link hudson.search.UserSearchProperty}'s <tt>config.jelly</tt> for an example.
- *
+ * <p>A property may also define a {@code summary.jelly} view to show in the main user screen.
  *
  * @author Kohsuke Kawaguchi
  */

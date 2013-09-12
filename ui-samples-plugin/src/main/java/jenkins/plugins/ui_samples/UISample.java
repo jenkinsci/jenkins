@@ -100,10 +100,10 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
         for (UISample uiSample : UISample.all()) {
             for (SourceFile src : uiSample.getSourceFiles()) {
                 if (src.name.contains("groovy")) {
-                    r.add(uiSample);
                     continue OUTER;
                 }
             }
+            r.add(uiSample);
         }
         return r;
     }

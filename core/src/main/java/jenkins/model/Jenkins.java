@@ -854,7 +854,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
             for (ItemListener l : ItemListener.all()) {
                 long itemListenerStart = System.currentTimeMillis();
-                l.onLoaded();
+                try {
+                    l.onLoaded();
+                } catch (RuntimeException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
                 if (LOG_STARTUP_PERFORMANCE)
                     LOGGER.info(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
@@ -3096,6 +3100,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * End point that intentionally throws an exception to test the error behaviour.
+     * @since 1.467
      */
     public void doException() {
         throw new RuntimeException();

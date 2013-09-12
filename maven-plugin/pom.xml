@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.530-SNAPSHOT</version>
+    <version>1.532-SNAPSHOT</version>
   </parent>
 
   <artifactId>maven-plugin</artifactId>
@@ -242,6 +242,7 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>4.0-beta</version>
+      <classifier>no_aop</classifier>
     </dependency>
 
     <!-- JENKINS-10819 : This wagon is safer and more configurable to provide http(s) support -->

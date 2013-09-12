@@ -3,6 +3,7 @@ package jenkins.model
 import hudson.Functions
 import hudson.Util
 import hudson.model.Run
+import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.FailureBuilder
 import org.jvnet.hudson.test.HudsonTestCase
 
@@ -71,5 +72,18 @@ class PeepholePermalinkTest extends HudsonTestCase {
             // test if they both point to b1
             assert new File(p.rootDir,"$n/build.xml").length() == new File(b1.rootDir,"build.xml").length()
         }
+    }
+
+    @Bug(19034)
+    void testRebuildBuildNumberPermalinks() {
+        def p = createFreeStyleProject()
+        def b = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        File f = new File(p.getBuildDir(), "1")
+        // assertTrue(Util.isSymlink(f))
+        f.delete()
+        PeepholePermalink link = p.getPermalinks().find({l -> l instanceof PeepholePermalink})
+        println(link)
+        link.updateCache(p, b)
+        assertTrue("build symlink hasn't been restored", f.exists())
     }
 }

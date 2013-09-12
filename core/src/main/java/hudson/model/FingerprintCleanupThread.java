@@ -100,12 +100,14 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     private boolean check(File fingerprintFile) {
         try {
             Fingerprint fp = Fingerprint.load(fingerprintFile);
-            if(!fp.isAlive()) {
+            if (fp == null || !fp.isAlive()) {
+                logger.fine("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
             } else {
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
+                logger.finer("possibly trimming " + fingerprintFile);
                 fp = Jenkins.getInstance()._getFingerprint(fp.getHashString());
                 return fp.trim();
             }

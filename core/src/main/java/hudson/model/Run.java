@@ -412,9 +412,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>
      * When a build is {@link #isBuilding() in progress}, this method
      * returns an intermediate result.
+     * @return The status of the build, if it has completed or some build step has set a status; may be null if the build is ongoing.
      */
     @Exported
-    public Result getResult() {
+    public @CheckForNull Result getResult() {
         return result;
     }
 
