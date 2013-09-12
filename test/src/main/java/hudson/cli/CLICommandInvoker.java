@@ -107,6 +107,7 @@ public class CLICommandInvoker {
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         for(Permission p: permissions) {
+            p.setEnabled(true);
             auth.add(p, username);
         }
         rule.jenkins.setAuthorizationStrategy(auth);
