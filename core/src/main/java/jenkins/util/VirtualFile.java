@@ -47,9 +47,11 @@ import javax.annotation.Nonnull;
 public abstract class VirtualFile implements Comparable<VirtualFile> {
     
     /**
-     * Gets the base getName.
+     * Gets the base name, meaning just the last portion of the path name without any
+     * directories.
+     *
      * For a “root directory” this may be the empty string.
-     * @return a simple getName (no slashes)
+     * @return a simple name (no slashes)
      */
     public abstract @Nonnull String getName();
 
