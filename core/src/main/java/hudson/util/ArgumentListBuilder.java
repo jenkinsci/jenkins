@@ -234,7 +234,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *
      * @param original Resolution will be delegated to this resolver. Resolved
      *                 values will be escaped afterwards.
-     * @see https://issues.jenkins-ci.org/browse/JENKINS-10539
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-10539">JENKINS-10539</a>
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
 
