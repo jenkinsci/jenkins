@@ -25,6 +25,7 @@ package hudson.maven;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.SurefireArchiver;
 import hudson.maven.reporters.TestFailureDetector;
@@ -43,6 +44,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Channel;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildWrapper;
@@ -71,12 +73,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import jenkins.model.ArtifactManager;
 
 import jenkins.mvn.SettingsProvider;
 
@@ -402,6 +407,8 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     class ProxyImpl implements MavenBuildProxy, Serializable {
         private static final long serialVersionUID = 8865133776526671879L;
 
+        private final Map<String,String> artifacts = new LinkedHashMap<String,String>();
+
         public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
             return program.call(MavenBuild.this);
         }
@@ -429,8 +436,45 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return new FilePath(MavenBuild.this.getParent().getParent().getRootDir());
         }
 
+        /**
+         * @deprecated Does not work with {@link ArtifactManager}.
+         */
+        @Deprecated
         public FilePath getArtifactsDir() {
             return new FilePath(MavenBuild.this.getArtifactsDir());
+        }
+
+        @Override public void queueArchiving(String artifactPath, String artifact) {
+            artifacts.put(artifactPath, artifact);
+        }
+
+        void performArchiving(Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
+                listener.getLogger().println("[JENKINS] Archiving " + e.getValue() + " to " + e.getKey());
+            }
+            ArtifactManager am = pickArtifactManager();
+            FilePath ws = getWorkspace();
+            Map<String,String> artifactsInsideWorkspace = new LinkedHashMap<String,String>();
+            String prefix = ws.act(new CanonicalPath()) + '/'; // try to relativize paths to workspace
+            Iterator<Map.Entry<String,String>> it = artifacts.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String,String> e = it.next();
+                String p = new FilePath(ws, e.getValue()).act(new CanonicalPath());
+                if (!p.startsWith(prefix)) {
+                    listener.getLogger().println(p + " is not inside " + prefix + "; will archive in a separate pass");
+                    continue;
+                }
+                artifactsInsideWorkspace.put(e.getKey(), p.substring(prefix.length()));
+                it.remove();
+            }
+            if (!artifactsInsideWorkspace.isEmpty()) {
+                am.archive(ws, launcher, listener, artifactsInsideWorkspace);
+            }
+            // Now handle other files outside the workspace, if any.
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
+                FilePath f = new FilePath(ws, e.getValue());
+                am.archive(f.getParent(), launcher, listener, Collections.singletonMap(e.getKey(), f.getName()));
+            }
         }
 
         public void setResult(Result result) {
@@ -473,6 +517,13 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
 
         public MavenBuildInformation getMavenBuildInformation() {
             return new MavenBuildInformation( MavenBuild.this.getModuleSetBuild().getMavenVersionUsed());
+        }
+    }
+
+    private static final class CanonicalPath implements FilePath.FileCallable<String> {
+        private static final long serialVersionUID = 1;
+        @Override public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            return f.getCanonicalPath().replace(File.separatorChar, '/');
         }
     }
 
@@ -761,9 +812,11 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             {
                 boolean normalExit = false;
                 try {
+                    ProxyImpl proxy = new ProxyImpl();
                     Result r = process.call(new Builder(
-                        listener,new ProxyImpl(),
+                        listener, proxy,
                         getProject(), margs.toList(), systemProps));
+                    proxy.performArchiving(launcher, listener);
                     normalExit = true;
                     return r;
                 } finally {

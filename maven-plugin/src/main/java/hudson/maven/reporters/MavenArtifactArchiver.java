@@ -24,7 +24,6 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.*;
 import hudson.model.BuildListener;
@@ -158,9 +157,9 @@ public class MavenArtifactArchiver extends MavenReporter {
             for (File assembly : assemblies) {
                 if(mavenArtifacts.contains(assembly))
                     continue;   // looks like this is already archived
-                FilePath target = build.getArtifactsDir().child(assembly.getName());
+                String target = assembly.getName();
                 listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                new FilePath(assembly).copyTo(target);
+                build.queueArchiving(target, assembly.getAbsolutePath());
                 // TODO: fingerprint
             }
         }
