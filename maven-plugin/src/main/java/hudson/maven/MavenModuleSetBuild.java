@@ -36,6 +36,7 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -43,8 +44,10 @@ import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Computer;
 import hudson.model.Environment;
+import hudson.model.EnvironmentContributingAction;
 import hudson.model.Executor;
 import hudson.model.Fingerprint;
+import hudson.model.InvisibleAction;
 import hudson.model.Node;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
@@ -72,6 +75,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -984,6 +988,27 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     needsDependencyGraphRecalculation = true;
                 }
                 modules.putAll(old);
+                
+                // Put GAV IDs etc as EnvVars (JENKINS-18272)
+                final Collection<String> newEnvVars = new ArrayList<String>(
+                    Arrays.asList(
+                        "POM_DISPLAYNAME=" + poms.get(0).displayName,
+                        "POM_VERSION=" + poms.get(0).version,
+                        "POM_GROUPID=" + poms.get(0).groupId,
+                        "POM_ARTIFACTID=" + poms.get(0).artifactId,
+                        "POM_PACKAGING=" + poms.get(0).packaging,
+                        "POM_RELATIVEPATH=" + poms.get(0).relativePath
+                    )
+                );
+
+                abstract class PublishEnvVarAction extends InvisibleAction implements EnvironmentContributingAction {}
+                addAction(new PublishEnvVarAction() {
+                    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+                        for (String s : newEnvVars) {
+                            env.addLine(s);
+                        }
+                    }
+                });
             }
 
             // we might have added new modules
