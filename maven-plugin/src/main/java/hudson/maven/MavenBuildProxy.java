@@ -25,7 +25,6 @@ package hudson.maven;
 
 import hudson.FilePath;
 import hudson.model.Result;
-import hudson.remoting.Asynchronous;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
 
@@ -106,7 +105,6 @@ public interface MavenBuildProxy {
      * @see ArtifactManager#archive
      * @since 1.531
      */
-    @Asynchronous
     void queueArchiving(String artifactPath, String artifact);
 
     /**
