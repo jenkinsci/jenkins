@@ -69,7 +69,7 @@ public class BatchFile extends CommandInterpreter {
             return new BatchFile(data.getString("command"));
         }
 
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return true;
         }
     }

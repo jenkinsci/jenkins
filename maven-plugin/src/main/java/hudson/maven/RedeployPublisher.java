@@ -349,7 +349,7 @@ public class RedeployPublisher extends Recorder {
             super(clazz);
         }
 
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
             return jobType==MavenModuleSet.class;
         }
 
