@@ -170,6 +170,7 @@ import org.apache.tools.zip.ZipEntry;
  * {@link FilePath} that represents the local computer causes it to become "remote."
  *
  * @author Kohsuke Kawaguchi
+ * @see VirtualFile
  */
 public final class FilePath implements Serializable {
     /**
@@ -1044,6 +1045,8 @@ public final class FilePath implements Serializable {
 
     /**
      * Gets the {@link VirtualFile} representation of this {@link FilePath}
+     *
+     * @since 1.532
      */
     public VirtualFile toVirtualFile() {
         return VirtualFile.forFilePath(this);

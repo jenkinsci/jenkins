@@ -26,6 +26,7 @@ package jenkins.util;
 
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
+import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
@@ -41,7 +42,18 @@ import javax.annotation.Nonnull;
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
  * Assumed to be read-only and makes very limited assumptions, just enough to display content and traverse directories.
+ *
+ * <p>
+ * To obtain a {@link VirtualFile} representation for an existing file, use {@link #forFile(File)} or {@link FilePath#toVirtualFile()}
+ *
+ * <h2>How are VirtualFile and FilePath different?</h2>
+ * <p>
+ * FilePath abstracts away {@link File}s on machines that are connected over {@link Channel}, whereas
+ * {@link VirtualFile} makes no assumption about where the actual files are, or whether there really exists
+ * {@link File}s somewhere. This makes VirtualFile more abstract.
+ *
  * @see DirectoryBrowserSupport
+ * @see FilePath
  * @since 1.531
  */
 public abstract class VirtualFile implements Comparable<VirtualFile> {
