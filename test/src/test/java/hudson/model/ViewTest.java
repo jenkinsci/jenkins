@@ -34,11 +34,14 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import hudson.XmlFile;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.MockFolder;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import java.io.File;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -191,6 +194,24 @@ public class ViewTest {
         assertEquals("two", view.getDescription());
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertTrue(xml, xml.contains("<description>two</description>"));
+    }
+
+    @Test public void items_should_have_relative_URL_to_View_within_folder() throws Exception {
+        MockFolder f = j.createFolder("f");
+        ListView v = new ListView("v", f);
+        f.addView(v);
+        FreeStyleProject p = f.createProject(FreeStyleProject.class, "p");
+        v.add(p);
+
+        assertEquals("job/p/", p.getRelativeUrl(v));
+        assertEquals("job/p/", p.getRelativeUrl(f));
+        assertEquals("job/f/job/p/", p.getRelativeUrl(j.jenkins));
+
+        // job inside folder inside view, with common folder ancestor
+        MockFolder ff = f.createProject(MockFolder.class, "ff");
+        FreeStyleProject fp = ff.createProject(FreeStyleProject.class, "fp");
+        v.add(fp);
+        assertEquals("job/ff/job/fp/", fp.getRelativeUrl(v));
     }
 
 }

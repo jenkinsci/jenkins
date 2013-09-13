@@ -930,6 +930,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Compute path for the current item relative to the provided ModelObject.
+     * @see AbstractItem#getRelativeUrl(ModelObject)
+     * @since TODO
+     */
+    public final String getRelativeUrl(ModelObject o) {
+        return project.getRelativeUrl(o)+getNumber()+'/';
+    }
+
+    /**
      * Obtains the absolute URL to this build.
      *
      * @deprecated

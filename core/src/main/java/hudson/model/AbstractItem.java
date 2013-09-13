@@ -401,6 +401,33 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getParent().getUrl()+getShortUrl();
     }
 
+    /**
+     * Compute path for the current item relative to the provided ModelObject.
+     * <p>
+     * This method allows to compute a project relative URL to an ItemGroup or a View.
+     * @param o ModelObject (actually View or ItemGroup, but no more specific common interface) to compute relative URL
+     *          from. MUST be an actual ancestor/owner for the current item
+     * @since TODO
+     */
+    public final String getRelativeUrl(ModelObject o) {
+        if (o == parent) return getShortUrl();
+        if ((o instanceof View) && ((View) o).getItems().contains(this)) {
+            ItemGroup owner = (ItemGroup) ((View) o).getOwner();
+            ItemGroup parent = this.parent;
+            String path = getShortUrl();
+            // rewind parent hierarchy up to common ancestor
+            while (parent != owner && parent instanceof Item) {
+                path = ((Item) parent).getShortUrl() + path;
+                parent = ((Item) parent).getParent();
+            }
+            return path;
+        }
+        if (parent instanceof AbstractItem)
+            return ((AbstractItem) parent).getRelativeUrl(o) + getShortUrl();
+        else
+            throw new IllegalArgumentException("o isn't an ancestor");
+    }
+
     public String getShortUrl() {
         String prefix = getParent().getUrlChildPrefix();
         String subdir = Util.rawEncode(getName());
