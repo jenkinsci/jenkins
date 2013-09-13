@@ -26,9 +26,6 @@ package hudson.model;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
-import static org.junit.Assert.*;
-
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -40,37 +37,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class RunTest  {
 
     @Rule public JenkinsRule j = new JenkinsRule();
-
-    private List<? extends Run<?,?>.Artifact> createArtifactList(String... paths) throws Exception {
-        FreeStyleProject prj = j.createFreeStyleProject();
-        FreeStyleBuild r = prj.scheduleBuild2(0).get();
-        Run<FreeStyleProject,FreeStyleBuild>.ArtifactList list = r.new ArtifactList();
-        for (String p : paths) {
-            list.add(r.new Artifact(p,p,p,String.valueOf(p.length()),"n"+list.size()));  // Assuming all test inputs don't need urlencoding
-        }
-        list.computeDisplayName();
-        return list;
-    }
-    
-    @Test public void artifactListDisambiguation1() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"j.xml");
-    }
-
-    @Test public void artifactListDisambiguation2() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"i/g.xml");
-    }
-
-    @Test public void artifactListDisambiguation3() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml","a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(),"a.xml");
-        assertEquals(a.get(1).getDisplayPath(),"a/a.xml");
-    }
 
     @Bug(17935)
     @Test public void getDynamicInvisibleTransientAction() throws Exception {

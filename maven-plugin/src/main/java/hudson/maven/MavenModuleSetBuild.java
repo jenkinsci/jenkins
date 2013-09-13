@@ -811,6 +811,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                             mpa = new MavenProbeAction(project,process.channel);
                             addAction(mpa);
                             r = process.call(builder);
+                            for (ProxyImpl2 proxy : proxies.values()) {
+                                proxy.performArchiving(launcher, listener);
+                            }
                             return r;
                         } finally {
                             builder.end(launcher);

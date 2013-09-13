@@ -28,6 +28,7 @@ import hudson.maven.RedeployPublisher.WrappedArtifactRepository;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
 import hudson.model.TaskListener;
+import java.io.File;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,8 +40,6 @@ import org.apache.maven.artifact.deployer.ArtifactDeployer;
 import org.apache.maven.artifact.deployer.ArtifactDeploymentException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.installer.ArtifactInstallationException;
-import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.metadata.GroupRepositoryMetadata;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -171,9 +170,11 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
             ((WrappedArtifactRepository) deploymentRepository).setUniqueVersion(true);
         }
         Artifact main = mainArtifact.toArtifact(handlerManager, artifactFactory, parent);
-        if (!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main, pomArtifact.getFile(parent)));
-
+        File pomFile = null;
+        if (!isPOM()) {
+            pomFile = pomArtifact.getFile(parent);
+            main.addMetadata(new ProjectArtifactMetadata(main, pomFile));
+        }
         if (main.getType().equals("maven-plugin")) {
             GroupRepositoryMetadata metadata = new GroupRepositoryMetadata(main.getGroupId());
             String goalPrefix = PluginDescriptor.getGoalPrefixFromArtifactId(main.getArtifactId());
@@ -188,29 +189,17 @@ public class MavenArtifactRecord extends MavenAbstractArtifactRecord<MavenBuild>
         // deploy the main artifact. This also deploys the POM
         logger.println(Messages.MavenArtifact_DeployingMainArtifact(main.getFile().getName()));
         deployer.deploy(main.getFile(), main, deploymentRepository, embedder.getLocalRepository());
+        main.getFile().delete();
+        if (pomFile != null) {
+            pomFile.delete();
+        }
 
         for (MavenArtifact aa : attachedArtifacts) {
             Artifact a = aa.toArtifact(handlerManager, artifactFactory, parent);
             logger.println(Messages.MavenArtifact_DeployingMainArtifact(a.getFile().getName()));
             deployer.deploy(a.getFile(), a, deploymentRepository, embedder.getLocalRepository());
+            a.getFile().delete();
         }
-    }
-    
-    /**
-     * Installs the artifact to the local Maven repository.
-     */
-    public void install(MavenEmbedder embedder) throws MavenEmbedderException, IOException, ComponentLookupException, ArtifactInstallationException {
-        ArtifactHandlerManager handlerManager = embedder.lookup(ArtifactHandlerManager.class);
-        ArtifactInstaller installer = embedder.lookup(ArtifactInstaller.class);
-        ArtifactFactory factory = embedder.lookup(ArtifactFactory.class);
-
-        Artifact main = mainArtifact.toArtifact(handlerManager,factory,parent);
-        if(!isPOM())
-            main.addMetadata(new ProjectArtifactMetadata(main,pomArtifact.getFile(parent)));
-        installer.install(mainArtifact.getFile(parent),main,embedder.getLocalRepository());
-
-        for (MavenArtifact aa : attachedArtifacts)
-            installer.install(aa.getFile(parent), aa.toArtifact(handlerManager, factory, parent), embedder.getLocalRepository());
     }
 
     public void recordFingerprints() throws IOException {
