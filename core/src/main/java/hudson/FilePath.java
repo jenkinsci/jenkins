@@ -53,6 +53,7 @@ import static hudson.FilePath.TarCompression.GZIP;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.util.VirtualFile;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -1039,6 +1040,13 @@ public final class FilePath implements Serializable {
                 return f.toURI();
             }
         });
+    }
+
+    /**
+     * Gets the {@link VirtualFile} representation of this {@link FilePath}
+     */
+    public VirtualFile toVirtualFile() {
+        return VirtualFile.forFilePath(this);
     }
 
     /**

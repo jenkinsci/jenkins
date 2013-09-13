@@ -247,7 +247,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
                 }
             }
             @Override public VirtualFile getParent() {
-                return forFilePath(f.getParent());
+                return f.getParent().toVirtualFile();
             }
             @Override public boolean isDirectory() throws IOException {
                 try {

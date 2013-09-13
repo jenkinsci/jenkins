@@ -93,7 +93,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      False to serve "index.html"
      */
     public DirectoryBrowserSupport(ModelObject owner, FilePath base, String title, String icon, boolean serveDirIndex) {
-        this(owner, VirtualFile.forFilePath(base), title, icon, serveDirIndex);
+        this(owner, base.toVirtualFile(), title, icon, serveDirIndex);
     }
 
     /**
@@ -148,7 +148,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
     public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
-        serveFile(req, rsp, VirtualFile.forFilePath(root), icon, serveDirIndex);
+        serveFile(req, rsp, root.toVirtualFile(), icon, serveDirIndex);
     }
 
     private void serveFile(StaplerRequest req, StaplerResponse rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
