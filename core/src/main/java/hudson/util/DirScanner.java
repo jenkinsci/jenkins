@@ -27,7 +27,7 @@ public abstract class DirScanner implements Serializable {
     public abstract void scan(File dir, FileVisitor visitor) throws IOException;
 
     /**
-     * @since TODO
+     * @since 1.531
      */
     protected final void scanSingle(File f, String relative, FileVisitor visitor) throws IOException {
         if (visitor.understandsSymlink()) {

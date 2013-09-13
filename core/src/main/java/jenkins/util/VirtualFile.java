@@ -42,7 +42,7 @@ import javax.annotation.Nonnull;
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
  * Assumed to be read-only and makes very limited assumptions, just enough to display content and traverse directories.
  * @see DirectoryBrowserSupport
- * @since TODO
+ * @since 1.531
  */
 public abstract class VirtualFile implements Comparable<VirtualFile> {
     

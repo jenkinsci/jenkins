@@ -104,7 +104,7 @@ public interface MavenBuildProxy {
      * @param artifactPath a relative {@code /}-separated path
      * @param artifact absolute path name on the slave in the workspace
      * @see ArtifactManager#archive
-     * @since TODO
+     * @since 1.531
      */
     @Asynchronous
     void queueArchiving(String artifactPath, String artifact);

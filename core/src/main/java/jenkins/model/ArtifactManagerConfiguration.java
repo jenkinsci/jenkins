@@ -32,7 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * List of configured {@link ArtifactManagerFactory}s.
- * @since TODO
+ * @since 1.531
  */
 @Extension
 public class ArtifactManagerConfiguration extends GlobalConfiguration {

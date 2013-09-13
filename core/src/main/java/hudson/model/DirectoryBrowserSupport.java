@@ -108,7 +108,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param serveDirIndex
      *      True to generate the directory index.
      *      False to serve "index.html"
-     * @since TODO
+     * @since 1.531
      */
     public DirectoryBrowserSupport(ModelObject owner, VirtualFile base, String title, String icon, boolean serveDirIndex) {
         this.owner = owner;

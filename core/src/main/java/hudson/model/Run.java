@@ -262,7 +262,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Artifact manager associated with this build, if any.
-     * @since TODO
+     * @since 1.531
      */
     private @CheckForNull ArtifactManager artifactManager;
 
@@ -984,7 +984,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>This method should be used when existing artifacts are to be loaded, displayed, or removed.
      * If adding artifacts, use {@link #pickArtifactManager} instead.
      * @return an appropriate artifact manager
-     * @since TODO
+     * @since 1.531
      */
     public final @Nonnull ArtifactManager getArtifactManager() {
         return artifactManager != null ? artifactManager : new StandardArtifactManager(this);
@@ -1000,7 +1000,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * If only displaying existing artifacts, use {@link #getArtifactManager} instead.
      * @return an appropriate artifact manager
      * @throws IOException if a custom manager was selected but the selection could not be saved
-     * @since TODO
+     * @since 1.531
      */
     public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
         if (artifactManager != null) {

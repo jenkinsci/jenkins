@@ -37,7 +37,7 @@ import jenkins.util.VirtualFile;
 /**
  * Default artifact manager which transfers files over the remoting channel and stores them inside the build directory.
  * May be subclassed to provide an artifact manager which uses the standard storage but which only overrides {@link #archive}.
- * @since TODO
+ * @since 1.531
  */
 public class StandardArtifactManager extends ArtifactManager {
 
