@@ -30,7 +30,7 @@ import hudson.model.Descriptor;
 /**
  * Definition of a kind of artifact manager.
  * @see ArtifactManagerFactory
- * @since 1.531
+ * @since 1.532
  */
 public abstract class ArtifactManagerFactoryDescriptor extends Descriptor<ArtifactManagerFactory> {
 

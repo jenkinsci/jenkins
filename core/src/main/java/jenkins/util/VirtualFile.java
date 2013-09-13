@@ -54,7 +54,7 @@ import javax.annotation.Nonnull;
  *
  * @see DirectoryBrowserSupport
  * @see FilePath
- * @since 1.531
+ * @since 1.532
  */
 public abstract class VirtualFile implements Comparable<VirtualFile> {
     

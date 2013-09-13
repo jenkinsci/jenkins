@@ -36,7 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Since the user can configure this class, you must have a {@link DataBoundConstructor}.
  * @see ArtifactManagerConfiguration
  * @see ArtifactManagerFactoryDescriptor
- * @since 1.531
+ * @since 1.532
  */
 public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<ArtifactManagerFactory> implements ExtensionPoint {
 

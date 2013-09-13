@@ -1900,7 +1900,7 @@ public final class FilePath implements Serializable {
      * @param target the destination basedir
      * @param description a description of the fileset, for logging purposes
      * @return the number of files copied
-     * @since 1.531
+     * @since 1.532
      */
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
@@ -2498,7 +2498,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Helper class to make it easy to send an explicit list of files using {@link FilePath} methods.
-     * @since 1.531
+     * @since 1.532
      */
     public static final class ExplicitlySpecifiedDirScanner extends DirScanner {
 

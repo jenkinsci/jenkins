@@ -37,7 +37,7 @@ import jenkins.util.VirtualFile;
 /**
  * Manager of artifacts for one build.
  * @see ArtifactManagerFactory
- * @since 1.531
+ * @since 1.532
  */
 public abstract class ArtifactManager {
 
