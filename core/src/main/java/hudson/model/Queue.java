@@ -28,7 +28,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.ExtensionList;
@@ -68,7 +67,6 @@ import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import hudson.util.OneShotEvent;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
@@ -95,7 +93,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
@@ -293,11 +290,6 @@ public class Queue extends ResourceController implements Saveable {
             return String.format("JobOffer[%s #%d]",executor.getOwner().getName(), executor.getNumber());
         }
     }
-
-    /**
-     * The executors that are currently waiting for a job to run.
-     */
-    private final Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
 
     private volatile transient LoadBalancer loadBalancer;
 
@@ -966,15 +958,14 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized void maintain() {
         LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
+        // The executors that are currently waiting for a job to run.
+        Map<Executor,JobOffer> parked = new HashMap<Executor,JobOffer>();
+
         {// update parked
             for (Computer c : Jenkins.getInstance().getComputers()) {
                 for (Executor e : c.getExecutors()) {
                     if (e.isParking()) {
-                        if (!parked.containsKey(e)) {
-                            parked.put(e,new JobOffer(e));
-                        }
-                    } else {
-                        parked.remove(e);
+                        parked.put(e,new JobOffer(e));
                     }
                 }
             }
