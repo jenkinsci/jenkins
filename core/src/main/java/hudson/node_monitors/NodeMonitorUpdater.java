@@ -1,6 +1,7 @@
 package hudson.node_monitors;
 
 import hudson.Extension;
+import hudson.init.*;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerListener;
@@ -41,5 +42,10 @@ public class NodeMonitorUpdater extends ComputerListener {
                 }
             }
         }, 5, TimeUnit.SECONDS);
+    }
+
+    @Terminator
+    public static void shutdownTimer() {
+        ComputerListener.all().get(NodeMonitorUpdater.class).timer.shutdown();
     }
 }
