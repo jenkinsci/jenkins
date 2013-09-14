@@ -268,7 +268,6 @@ public class Executor extends Thread implements ModelObject {
      */
     public void killHard() {
         induceDeath = true;
-        interrupt();
     }
 
     /**
