@@ -93,6 +93,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
@@ -106,6 +107,7 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.util.AtmostOneTaskExecutor;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
@@ -246,6 +248,7 @@ public class Queue extends ResourceController implements Saveable {
             this.workUnit = p;
             assert executor.isParking();
             executor.start(workUnit);
+            // LOGGER.info("Starting "+executor.getName());
         }
 
         @Override
@@ -294,6 +297,14 @@ public class Queue extends ResourceController implements Saveable {
     private volatile transient LoadBalancer loadBalancer;
 
     private volatile transient QueueSorter sorter;
+
+    private transient final AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<Void>(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+            maintain();
+            return null;
+        }
+    });
 
     public Queue(LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
@@ -910,7 +921,8 @@ public class Queue extends ResourceController implements Saveable {
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
     public void scheduleMaintenance() {
-        new MaintainTask(this).once();
+        // LOGGER.info("Scheduling maintenance");
+        maintainerThread.submit();
     }
 
     /**
@@ -1073,6 +1085,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private boolean makePending(BuildableItem p) {
+        // LOGGER.info("Making "+p.task+" pending"); // REMOVE
         p.isPending = true;
         return pendings.add(p);
     }
@@ -1991,13 +2004,6 @@ public class Queue extends ResourceController implements Saveable {
             Timer timer = Trigger.timer;
             if (timer != null) {
                 timer.schedule(this, interval, interval);
-            }
-        }
-
-        private void once() {
-            Timer timer = Trigger.timer;
-            if (timer != null) {
-                timer.schedule(this,0);
             }
         }
 
