@@ -260,6 +260,8 @@ public class Executor extends Thread implements ModelObject {
             if (causeOfDeath==null)
                 // let this thread die and be replaced by a fresh unstarted instance
                 owner.removeExecutor(this);
+
+            queue.scheduleMaintenance();
         }
     }
 
