@@ -344,8 +344,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (u==null && (create || getConfigFileFor(id).exists())) {
             User tmp = new User(id, fullName);
             User prev = byName.putIfAbsent(idkey, u = tmp);
-            if (prev!=null)
-                u = prev;   // if some has already put a value in the map, use it
+            if (prev != null) {
+                u = prev; // if some has already put a value in the map, use it
+                if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
+                    LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
+                }
+            }
         }
         return u;
     }
