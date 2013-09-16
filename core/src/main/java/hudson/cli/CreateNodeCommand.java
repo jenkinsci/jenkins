@@ -36,7 +36,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza
- * @since XXX
+ * @since 1.526
  */
 @Extension
 public class CreateNodeCommand extends CLICommand {

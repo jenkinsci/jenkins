@@ -1239,7 +1239,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Updates Job by its XML definition.
      *
-     * @since XXX
+     * @since 1.526
      */
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
