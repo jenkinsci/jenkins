@@ -102,15 +102,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.0</version>
+      <version>3.0.1</version>
     </dependency>
-    <!-- TODO JENKINS-19192 try when released to Central:
-    <dependency>
-      <groupId>com.github.jnr</groupId>
-      <artifactId>jnr-ffi</artifactId>
-      <version>1.0.6</version>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>trilead-putty-extension</artifactId>
