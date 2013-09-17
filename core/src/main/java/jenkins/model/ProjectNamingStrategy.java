@@ -142,6 +142,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             this(namePattern, null, forceExistingJobs);
         }
 
+        /** @since 1.533 */
         @DataBoundConstructor
         public PatternProjectNamingStrategy(String namePattern, String description, boolean forceExistingJobs) {
             this.namePattern = namePattern;
@@ -164,6 +165,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return namePattern;
         }
 
+        /** @since 1.533 */
         public String getDescription() {
             return description;
         }
