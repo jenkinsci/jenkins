@@ -406,9 +406,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     }
 
                     public void killRecursively() throws InterruptedException {
-                        LOGGER.finer("Killing recursively "+getPid());
-                        p.killRecursively();
-                        killByKiller();
+                        LOGGER.fine("Recursively killing pid="+getPid());
+                        for (OSProcess p : getChildren())
+                            p.killRecursively();                        
+                        kill();
                     }
 
                     public void kill() throws InterruptedException {
