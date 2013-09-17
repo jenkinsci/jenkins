@@ -56,9 +56,10 @@ public class AggregatedTestResultPublisherTest {
         buildAndSetupPageObjects();
 
         projectPage.getLatestAggregatedTestReportLink()
-                .assertHasLatestTestResultText()
+                .assertHasLatestAggregatedTestResultText()
                 .assertHasTests()
                 .follow().hasLinkToTestResultOfBuild(TEST_PROJECT_NAME, 1);
+
         projectPage.assertNoTestReportLink();
 
         buildPage.getAggregatedTestReportLink()
@@ -80,7 +81,10 @@ public class AggregatedTestResultPublisherTest {
                 .assertHasLatestTestResultText()
                 .assertHasTests()
                 .follow();
-        projectPage.assertNoAggregatedTestReportLink();
+        projectPage.getLatestAggregatedTestReportLink()
+                .assertHasLatestAggregatedTestResultText()
+                .assertNoTests()
+                .follow();
 
         buildPage.getTestReportLink()
                 .assertHasTestResultText()
@@ -88,7 +92,8 @@ public class AggregatedTestResultPublisherTest {
                 .follow();
         buildPage.getAggregatedTestReportLink()
                 .assertHasAggregatedTestResultText()
-                .assertNoTests();
+                .assertNoTests()
+                .follow();
     }
 
     @LocalData
@@ -103,7 +108,10 @@ public class AggregatedTestResultPublisherTest {
                 .assertHasLatestTestResultText()
                 .assertHasTests()
                 .follow();
-        projectPage.assertNoAggregatedTestReportLink();
+        projectPage.getLatestAggregatedTestReportLink()
+                .assertHasLatestAggregatedTestResultText()
+                .assertHasTests()
+                .follow();
 
         buildPage.getTestReportLink()
                 .assertHasTestResultText()
@@ -123,11 +131,15 @@ public class AggregatedTestResultPublisherTest {
     }
 
     private void buildOnce() throws Exception {
+        build(1);
+    }
+
+    private void build(int numberOfDownstreamBuilds) throws Exception {
         build = j.buildAndAssertSuccess(upstreamProject);
         j.waitUntilNoActivity();
 
         List<AbstractBuild<?, ?>> downstreamBuilds = ImmutableList.copyOf(build.getDownstreamBuilds(downstreamProject));
-        assertThat(downstreamBuilds, hasSize(1));
+        assertThat(downstreamBuilds, hasSize(numberOfDownstreamBuilds));
     }
 
 
@@ -169,7 +181,7 @@ public class AggregatedTestResultPublisherTest {
     private void addFingerprinterToProject(FreeStyleProject project, String[] contents, String[] files) throws Exception {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
-            project.getBuildersList().add(new Shell("echo " + contents[i] + " > " + files[i]));
+            project.getBuildersList().add(new Shell("echo $BUILD_NUMBER " + contents[i] + " > " + files[i]));
             targets.append(files[i]).append(',');
         }
 
