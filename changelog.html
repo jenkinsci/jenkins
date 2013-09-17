@@ -55,6 +55,16 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Offer alternate error message for pattern-based project naming strategy.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/914">pull request 914</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.532>What's new in 1.532</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class='major bug'>
     Working around a GZip compression bug in jzlib affecting transfer of certain large, repetitive artifacts.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19473">issue 19473</a>)
@@ -70,15 +80,15 @@ Upcoming changes</a>
   <li class='major rfe'>
     Added a new extension point to control where archived artifacts get stored.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17236">issue 17236</a>)
+  <li class=rfe>
+    Use fine-grained permissions for node manipulation via REST API &amp; CLI
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18485">issue 18485</a>)
   <li class='bug'>
     Make the link to the aggregated test result from the project page work.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9637">issue 9637</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.531>What's new in 1.531</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.531>What's new in 1.531</a> (2013/09/16)</h3>
 <ul class=image>
   <li class=bug>
     Deleting an external run did not immediately remove it from build list, leading to errors from log rotation.
@@ -105,7 +115,6 @@ Upcoming changes</a>
     No events fired when project is enable/disable or the description is changed
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17108">issue 17108</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.530>What's new in 1.530</a> (2013/09/09)</h3>
 <ul class=image>
   <li class=bug>

@@ -35,7 +35,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza
- * @since XXX
+ * @since 1.526
  */
 @Extension
 public class UpdateNodeCommand extends CLICommand {
