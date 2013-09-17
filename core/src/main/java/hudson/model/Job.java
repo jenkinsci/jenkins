@@ -32,6 +32,7 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.PermalinkList;
 import hudson.Util;
+import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.Range;
@@ -387,7 +388,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * @since 1.199 (before that, this method was package private.)
      */
-    public synchronized void updateNextBuildNumber(int next) throws IOException {
+    @CLIMethod(name="set-next-build-number")
+    public synchronized void updateNextBuildNumber(@Argument(required=true, metaVar="NEXT_BUILD_NUMBER",usage="Next build number") int next) throws IOException {
         RunT lb = getLastBuild();
         if (lb!=null ?  next>lb.getNumber() : next>0) {
             this.nextBuildNumber = next;
