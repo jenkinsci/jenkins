@@ -231,7 +231,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         }
         // wrap into ArrayList to enable mutation
         Arrays.sort(buildDirs);
-        idOnDisk = new SortedList(new ArrayList<String>(Arrays.asList(buildDirs)));
+        idOnDisk = new SortedList<String>(new ArrayList<String>(Arrays.asList(buildDirs)));
 
         // TODO: should we check that shortcuts is a symlink?
         String[] shortcuts = dir.list();
@@ -498,6 +498,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             }
             return getById(idOnDisk.get(lo-1));
         case EXACT:
+            if (hi<=0)                 return null;
+            R r = load(idOnDisk.get(hi-1), null);
+            if (r==null)               return null;
+
+            int found = getNumberOf(r);
+            if (found==n)
+                return r;   // exact match
             return null;
         default:
             throw new AssertionError();

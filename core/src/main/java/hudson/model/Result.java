@@ -87,6 +87,7 @@ public final class Result implements Serializable, CustomExportedBean {
     
     /**
      * Is this a complete build - i.e. did it run to the end (not aborted)?
+     * @since 1.526
      */
     public final boolean completeBuild;
 
@@ -125,8 +126,7 @@ public final class Result implements Serializable, CustomExportedBean {
     
     /**
      * Is this a complete build - i.e. did it run to the end (not aborted)?
-     * 
-     * @since TODO
+     * @since 1.526
      */
     public boolean isCompleteBuild() {
         return this.completeBuild;

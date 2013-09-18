@@ -409,10 +409,27 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl")); // need access to 'this'
+        var url = this.getAttribute("checkUrl");
+        var depends = this.getAttribute("checkDependsOn");
+
+        if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
+            try {
+                return eval(url); // need access to 'this', so no 'geval'
+            } catch (e) {
+                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
+                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid Javascript: "+e,"warn");
+                return url; // return plain url as fallback
+            }
+        } else {
+            var q = qs(this).addThis();
+            if (depends.length>0)
+                depends.split(" ").each(function (n) {
+                    q.nearBy(n);
+                });
+            return url+ q.toString();
+        }
     };
-    var method = e.getAttribute("checkMethod");
-    if (!method) method = "get";
+    var method = e.getAttribute("checkMethod") || "get";
 
     var url = e.targetUrl();
     try {
@@ -440,6 +457,19 @@ function registerValidator(e) {
     } else
         e.onchange = checker;
     e.onblur = checker;
+
+    var v = e.getAttribute("checkDependsOn");
+    if (v) {
+        v.split(" ").each(function (name) {
+            var c = findNearBy(e,name);
+            if (c==null) {
+                if (window.console!=null)  console.warn("Unable to find nearby "+name);
+                if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
+                return;
+            }
+            $(c).observe("change",checker.bind(e));
+        });
+    }
 
     e = null; // avoid memory leak
 }
@@ -895,7 +925,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start": function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
@@ -1001,7 +1031,7 @@ var jenkinsRules = {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
     },
 

@@ -290,7 +290,7 @@ public class JenkinsTest extends HudsonTestCase {
         jenkins.setCrumbIssuer(null);
         WebClient wc = createWebClient();
         wc.login("alice");
-        wc.assertFails("eval", HttpURLConnection.HTTP_INTERNAL_ERROR);
+        wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
         assertEquals("3", eval(wc));
         wc.login("bob");
         try {

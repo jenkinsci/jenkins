@@ -248,6 +248,12 @@ public class UserTest {
         assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
         assertTrue("User should participate in the project free.", user.getProjects().contains(project));
         assertFalse("User should not participate in the project free2.", user.getProjects().contains(project2));
+        
+        //JENKINS-16178: build should include also builds scheduled by user
+        build2.addAction(new CauseAction(new Cause.UserIdCause()));
+        assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
+        assertFalse("Current user should not participate in the last build of project free.", User.current().getBuilds().contains(build));
+        assertTrue("Current user should participate in the last build of project free2.", User.current().getBuilds().contains(build2));
     }
 
     @Test

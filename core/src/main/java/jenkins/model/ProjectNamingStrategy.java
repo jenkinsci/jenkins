@@ -30,6 +30,7 @@ import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
+import jenkins.model.Messages;
 import hudson.util.FormValidation;
 import java.io.IOException;
 
@@ -132,25 +133,41 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
          */
         private final String namePattern;
 
+        private final String description;
+
         private boolean forceExistingJobs;
 
-        @DataBoundConstructor
+        @Deprecated
         public PatternProjectNamingStrategy(String namePattern, boolean forceExistingJobs) {
+            this(namePattern, null, forceExistingJobs);
+        }
+
+        /** @since 1.533 */
+        @DataBoundConstructor
+        public PatternProjectNamingStrategy(String namePattern, String description, boolean forceExistingJobs) {
             this.namePattern = namePattern;
+            this.description = description;
             this.forceExistingJobs = forceExistingJobs;
         }
 
         @Override
-        public void checkName(String name) throws Failure {
+        public void checkName(String name) {
             if (StringUtils.isNotBlank(namePattern) && StringUtils.isNotBlank(name)) {
                 if (!Pattern.matches(namePattern, name)) {
-                    throw new Failure(jenkins.model.Messages._Hudson_JobNameConventionNotApplyed(name, namePattern).toString());
+                    throw new Failure(StringUtils.isEmpty(description) ?
+                        Messages.Hudson_JobNameConventionNotApplyed(name, namePattern) :
+                        description);
                 }
             }
         }
 
         public String getNamePattern() {
             return namePattern;
+        }
+
+        /** @since 1.533 */
+        public String getDescription() {
+            return description;
         }
 
         public boolean isForceExistingJobs() {

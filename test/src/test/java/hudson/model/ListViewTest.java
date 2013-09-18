@@ -25,11 +25,21 @@
 package hudson.model;
 
 import static org.junit.Assert.*;
+import hudson.Functions;
+
+import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.xml.sax.SAXException;
+
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class ListViewTest {
 
@@ -39,6 +49,50 @@ public class ListViewTest {
     @LocalData
     @Test public void nullJobNames() throws Exception {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
+    }
+    
+    @Test
+    public void testJobLinksAreValid() throws Exception {
+      /*
+       * jenkins
+       * + -- folder1
+       *      |-- job1
+       *      +-- folder2
+       *          +-- job2
+       */
+      MockFolder folder1 = j.jenkins.createProject(MockFolder.class, "folder1");
+      FreeStyleProject job1 = folder1.createProject(FreeStyleProject.class, "job1");
+      MockFolder folder2 = folder1.createProject(MockFolder.class, "folder2");
+      FreeStyleProject job2 = folder2.createProject(FreeStyleProject.class, "job2");
+      
+      ListView lv = new ListView("myview");
+      lv.setRecurse(true);
+      lv.setIncludeRegex(".*");
+      j.jenkins.addView(lv);
+      WebClient webClient = j.createWebClient();
+      checkLinkFromViewExistsAndIsValid(folder1, j.jenkins, lv, webClient);
+      checkLinkFromViewExistsAndIsValid(job1, j.jenkins, lv, webClient);
+      checkLinkFromViewExistsAndIsValid(folder2, j.jenkins, lv, webClient);
+      checkLinkFromViewExistsAndIsValid(job2, j.jenkins, lv, webClient);
+      ListView lv2 = new ListView("myview", folder1);
+      lv2.setRecurse(true);
+      lv2.setIncludeRegex(".*");
+      folder1.addView(lv2);
+      checkLinkFromItemExistsAndIsValid(job1, folder1, folder1, webClient);
+      checkLinkFromItemExistsAndIsValid(folder2, folder1, folder1, webClient);
+      checkLinkFromViewExistsAndIsValid(job2, folder1, lv2, webClient);
+    }
+    
+    private void checkLinkFromViewExistsAndIsValid(Item item, ItemGroup ig, View view, WebClient webClient) throws IOException, SAXException {
+      HtmlPage page = webClient.goTo(view.getUrl());
+      HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
+      webClient.getPage(view, link.getHrefAttribute());
+    }
+
+    private void checkLinkFromItemExistsAndIsValid(Item item, ItemGroup ig, Item top, WebClient webClient) throws IOException, SAXException {
+      HtmlPage page = webClient.goTo(top.getUrl());
+      HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
+      webClient.getPage(top, link.getHrefAttribute());
     }
 
 }

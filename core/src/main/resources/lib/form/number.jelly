@@ -75,4 +75,5 @@ THE SOFTWARE.
          value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
          type="number"
          ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+  <!-- TODO consider customizedFields -->
 </j:jelly>

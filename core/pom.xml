@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.527-SNAPSHOT</version>
+    <version>1.533-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,8 +42,9 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.214</stapler.version>
+    <stapler.version>1.218</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
+    <groovy.version>1.8.9</groovy.version>
   </properties>
 
   <dependencies>
@@ -87,29 +88,10 @@ THE SOFTWARE.
       <optional>true</optional>
     </dependency>
 
-    <!--
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>3.0</version>
-    </dependency>
-    -->
-    <dependency>
-      <!-- we'd like to use stock Guice, but that breaks Maven embedder
-           because it uses a modified Guice called Sisu -->
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-guice</artifactId>
-      <exclusions>
-        <!--
-             sisu-guice wants a patched version of guava, which is old.
-             but from what I can tell from changes, it's GWT related
-             and we don't care. So let's stick to the proper guava
-        -->
-        <exclusion>
-          <groupId>org.sonatype.sisu</groupId>
-          <artifactId>sisu-guava</artifactId>
-        </exclusion>
-      </exclusions>
+      <classifier>no_aop</classifier>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
@@ -120,7 +102,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.0</version>
+      <version>3.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -207,7 +189,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-      <version>2.0.21</version>
+      <version>2.0.23</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -237,7 +219,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-3</version>
+      <version>1.4.4-jenkins-4</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -408,7 +390,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.8.5</version>
+      <version>${groovy.version}</version>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>jline</groupId>
@@ -787,7 +769,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.8.5</version>
+            <version>${groovy.version}</version>
           </dependency>
         </dependencies>
       </plugin>

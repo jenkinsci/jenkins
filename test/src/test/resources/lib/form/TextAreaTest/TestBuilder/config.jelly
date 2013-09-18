@@ -1,0 +1,10 @@
+<!-- no config -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry field="text1" title="${%Text1}">
+    <f:textarea/>
+  </f:entry>
+  <f:entry field="text2" title="${%Text1}">
+    <f:textarea/>
+  </f:entry>
+</j:jelly>

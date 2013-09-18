@@ -31,7 +31,7 @@ THE SOFTWARE.
   </j:if>
 
   <p:projectActionFloatingBox />
-  
+
   <table style="margin-top: 1em; margin-left:1em;">
 
     <j:forEach var="act" items="${it.prominentActions}">
@@ -53,21 +53,24 @@ THE SOFTWARE.
 
     <j:set var="tr" value="${it.lastCompletedBuild.testResultAction}"/>
     <j:if test="${tr!=null}">
-      <j:if test="${tr.class.name != 'hudson.tasks.test.AggregatedTestResultAction'}">
+      <j:if test="${tr.class.name != 'hudson.tasks.test.AggregatedTestResultPublisher$TestResultAction'}">
         <t:summary icon="clipboard.png">
-          <a href="lastCompletedBuild/testReport/" class="model-link inside">${%Latest Test Result}</a>
+          <a href="lastCompletedBuild/${tr.urlName}/" class="model-link inside">${%Latest Test Result}</a>
           <t:test-result it="${tr}" />
         </t:summary>
       </j:if>
     </j:if>
 
-    <j:set var="atr" value="${it.lastCompletedBuild.aggregatedTestResultAction}"/>
-    <j:if test="${atr!=null}">
-      <t:summary icon="clipboard.png">
-        <a href="lastCompletedBuild/aggregatedTestReport/" class="model-link inside">${%Latest Aggregated Test Result}</a>
-        <t:test-result it="${atr}" />
-      </t:summary>
-    </j:if>
+    <j:forEach var="atr" items="${it.lastCompletedBuild.actions}">
+      <j:if test="${atr!=null}">
+        <j:if test="${atr.class.name == 'hudson.tasks.test.AggregatedTestResultPublisher$TestResultAction'}">
+          <t:summary icon="clipboard.png">
+            <a href="lastCompletedBuild/${atr.urlName}/" class="model-link inside">${%Latest Aggregated Test Result}</a>
+            <t:test-result it="${atr}" />
+          </t:summary>
+        </j:if>
+      </j:if>
+    </j:forEach>
     
   </table>
 

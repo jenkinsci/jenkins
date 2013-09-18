@@ -160,7 +160,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 
 			action.setData(data);
 
-			CHECKPOINT.block();
+			CHECKPOINT.block(listener, getDescriptor().getDisplayName());
 
 		} catch (AbortException e) {
 			if (build.getResult() == Result.FAILURE)

@@ -38,7 +38,7 @@ import org.kohsuke.args4j.spi.Setter;
  * Refers to {@link Node} by its name.
  *
  * @author ogondza
- * @since XXX
+ * @since 1.526
  */
 @MetaInfServices
 public class NodeOptionHandler extends OptionHandler<Node> {

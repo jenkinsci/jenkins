@@ -310,7 +310,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         else {
             User user = User.get(si.username, false);
             if (null != user)
-                si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
+                // Allow sign up. SCM people has no such property.
+                if (user.getProperty(Details.class) != null)
+                    si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
         }
 
         if(si.fullname==null || si.fullname.length()==0)

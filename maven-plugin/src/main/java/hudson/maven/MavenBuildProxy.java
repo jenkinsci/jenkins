@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
+import jenkins.model.ArtifactManager;
 
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
@@ -93,9 +94,18 @@ public interface MavenBuildProxy {
     FilePath getModuleSetRootDir();
 
     /**
-     * @see MavenBuild#getArtifactsDir()
+     * @deprecated Does not work with {@link ArtifactManager}.
      */
+    @Deprecated
     FilePath getArtifactsDir();
+
+    /**
+     * @param artifactPath a relative {@code /}-separated path
+     * @param artifact absolute path name on the slave in the workspace
+     * @see ArtifactManager#archive
+     * @since 1.532
+     */
+    void queueArchiving(String artifactPath, String artifact);
 
     /**
      * @see MavenBuild#setResult(Result)
@@ -209,6 +219,10 @@ public interface MavenBuildProxy {
 
         public FilePath getArtifactsDir() {
             return core.getArtifactsDir();
+        }
+
+        @Override public void queueArchiving(String artifactPath, String artifact) {
+            core.queueArchiving(artifactPath, artifact);
         }
 
         public void setResult(Result result) {

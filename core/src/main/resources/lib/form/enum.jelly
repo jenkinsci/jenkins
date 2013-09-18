@@ -40,4 +40,5 @@ THE SOFTWARE.
       </f:option>
     </j:forEach>
   </select>
+  <!-- TODO consider customizedFields -->
 </j:jelly>
