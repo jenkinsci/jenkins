@@ -242,8 +242,13 @@ public class JDKInstaller extends ToolInstaller {
                         + "\\jdk.exe.install.log\\\"\"");
             } else {
                 // Installed uses Windows Installer (MSI)
-                args.add(jdkBundle, "/s", "REBOOT=ReallySuppress",
-                        "INSTALLDIR=" + expectedLocation,
+                args.add(jdkBundle, "/s");
+
+                // Create a private JRE by omitting "PublicjreFeature"
+                // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
+                args.add("ADDLOCAL=\"ToolsFeature\"");
+
+                args.add("REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
                         "/L \\\"" + expectedLocation + "\\jdk.exe.install.log\\\"");
             }
             int r = launcher.launch().cmds(args).stdout(out)
