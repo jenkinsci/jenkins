@@ -32,6 +32,7 @@ import hudson.remoting.VirtualChannel;
 import java.io.IOException;
 import java.io.File;
 
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.DirectoryScanner;
 
 /**
@@ -73,40 +74,29 @@ public class JUnitParser extends TestResultParser {
                                        TaskListener listener)
             throws InterruptedException, IOException
     {
-        // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
-        // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
-
-        return parse(testResultLocations, null, build, launcher, listener);
-    }
-
-    @Override
-    public TestResult parse(
-            String includes, String excludes, AbstractBuild build, Launcher launcher, TaskListener listener
-    ) throws InterruptedException, IOException {
-
         final long buildTime = build.getTimestamp().getTimeInMillis();
         final long timeOnMaster = System.currentTimeMillis();
 
+        // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
+        // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
+        
         FilePath workspace = build.getWorkspace();
         if (workspace == null) {
             throw new AbortException(Messages.JUnitParser_no_workspace_found(build));
         }
-
-        return workspace.act(new ParseResultCallable(includes, excludes, buildTime, timeOnMaster, keepLongStdio));
+        return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
     }
 
     private static final class ParseResultCallable implements
             FilePath.FileCallable<TestResult> {
         private final long buildTime;
-        private final String includes;
-        private final String excludes;
+        private final String testResults;
         private final long nowMaster;
         private final boolean keepLongStdio;
 
-        private ParseResultCallable(String includes, String excludes, long buildTime, long nowMaster, boolean keepLongStdio) {
+        private ParseResultCallable(String testResults, long buildTime, long nowMaster, boolean keepLongStdio) {
             this.buildTime = buildTime;
-            this.includes = includes;
-            this.excludes = excludes;
+            this.testResults = testResults;
             this.nowMaster = nowMaster;
             this.keepLongStdio = keepLongStdio;
         }
@@ -114,7 +104,8 @@ public class JUnitParser extends TestResultParser {
         public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
             final long nowSlave = System.currentTimeMillis();
 
-            DirectoryScanner ds = Util.createFileSet(ws, includes, excludes).getDirectoryScanner();
+            FileSet fs = Util.createFileSet(ws, testResults);
+            DirectoryScanner ds = fs.getDirectoryScanner();
 
             String[] files = ds.getIncludedFiles();
             if (files.length == 0) {
