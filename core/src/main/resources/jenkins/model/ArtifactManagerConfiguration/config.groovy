@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2013, Red Hat, Inc.
+ * Copyright 2013 Jesse Glick.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,41 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
 
-import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.Node;
+package jenkins.model.ArtifactManagerConfiguration;
 
-import java.io.IOException;
+f = namespace(lib.FormTagLib);
 
-import jenkins.model.Jenkins;
-
-import org.kohsuke.args4j.Argument;
-
-/**
- * @author ogondza
- * @since 1.526
- */
-@Extension
-public class GetNodeCommand extends CLICommand {
-
-    @Argument(metaVar="NODE", usage="Name of the node", required=true)
-    public Node node;
-
-    @Override
-    public String getShortDescription() {
-
-        return Messages.GetNodeCommand_ShortDescription();
-    }
-
-    @Override
-    protected int run() throws IOException {
-
-        node.checkPermission(Computer.EXTENDED_READ);
-
-        Jenkins.XSTREAM2.toXMLUTF8(node, stdout);
-
-        return 0;
+if (!jenkins.model.ArtifactManagerFactoryDescriptor.all().isEmpty()) {
+    f.section(title: _("Artifact Management for Builds")) {
+        f.block() {
+            f.repeatableHeteroProperty(field: "artifactManagerFactories", hasHeader: true)
+        }
     }
 }

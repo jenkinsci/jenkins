@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
+import javax.annotation.Nonnull;
 
 /**
  * Serializable representation of the key information obtained from Maven POM.
@@ -51,7 +52,7 @@ final class PomInfo implements Serializable {
     
     public static final String PACKAGING_TYPE_PLUGIN = "maven-plugin";
 
-    public final ModuleName name;
+    public final @Nonnull ModuleName name;
 
     /**
      * This is a human readable name of the POM. Not necessarily unique

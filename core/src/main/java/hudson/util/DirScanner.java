@@ -27,28 +27,35 @@ public abstract class DirScanner implements Serializable {
     public abstract void scan(File dir, FileVisitor visitor) throws IOException;
 
     /**
+     * @since 1.532
+     */
+    protected final void scanSingle(File f, String relative, FileVisitor visitor) throws IOException {
+        if (visitor.understandsSymlink()) {
+            try {
+                String target;
+                try {
+                    target = Util.resolveSymlink(f);
+                } catch (IOException x) { // JENKINS-13202
+                    target = null;
+                }
+                if (target != null) {
+                    visitor.visitSymlink(f, target, relative);
+                    return;
+                }
+            } catch (InterruptedException e) {
+                throw (IOException) new InterruptedIOException().initCause(e);
+            }
+        }
+        visitor.visit(f, relative);
+    }
+
+    /**
      * Scans everything recursively.
      */
     public static class Full extends DirScanner {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
             if (f.canRead()) {
-                if (visitor.understandsSymlink()) {
-                    try {
-                        String target;
-                        try {
-                            target = Util.resolveSymlink(f);
-                        } catch (IOException x) { // JENKINS-13202
-                            target = null;
-                        }
-                        if (target!=null) {
-                            visitor.visitSymlink(f,target,path+f.getName());
-                            return;
-                        }
-                    } catch (InterruptedException e) {
-                        throw (IOException)new InterruptedIOException().initCause(e);
-                    }
-                }
-                visitor.visit(f,path+f.getName());
+                scanSingle(f, path + f.getName(), visitor);
                 if(f.isDirectory()) {
                     for( File child : f.listFiles() )
                         scan(child,path+f.getName()+'/',visitor);
@@ -113,24 +120,7 @@ public abstract class DirScanner implements Serializable {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
-
-                    if (visitor.understandsSymlink()) {
-                        try {
-                            String target;
-                            try {
-                                target = Util.resolveSymlink(file);
-                            } catch (IOException x) { // JENKINS-13202
-                                target = null;
-                            }
-                            if (target!=null) {
-                                visitor.visitSymlink(file,target,f);
-                                continue;
-                            }
-                        } catch (InterruptedException e) {
-                            throw (IOException)new InterruptedIOException().initCause(e);
-                        }
-                    }
-                    visitor.visit(file,f);
+                    scanSingle(file, f, visitor);
                 }
             }
         }

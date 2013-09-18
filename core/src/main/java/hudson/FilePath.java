@@ -53,10 +53,9 @@ import static hudson.FilePath.TarCompression.GZIP;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
-import org.apache.tools.ant.BuildException;
+import jenkins.util.VirtualFile;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.commons.io.input.CountingInputStream;
@@ -98,8 +97,10 @@ import com.jcraft.jzlib.GZIPOutputStream;
 
 import com.sun.jna.Native;
 import hudson.os.PosixException;
-import java.io.BufferedInputStream;
+import hudson.util.FileVisitor;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import org.apache.tools.ant.taskdefs.Chmod;
 
@@ -169,6 +170,7 @@ import org.apache.tools.zip.ZipEntry;
  * {@link FilePath} that represents the local computer causes it to become "remote."
  *
  * @author Kohsuke Kawaguchi
+ * @see VirtualFile
  */
 public final class FilePath implements Serializable {
     /**
@@ -197,7 +199,7 @@ public final class FilePath implements Serializable {
      *      that's connected to that machine. If null, that means the local file path.
      */
     public FilePath(VirtualChannel channel, String remote) {
-        this.channel = channel;
+        this.channel = channel == Jenkins.MasterComputer.localChannel ? null : channel;
         this.remote = normalize(remote);
     }
 
@@ -632,7 +634,12 @@ public final class FilePath implements Serializable {
                 }
             }
             public OutputStream compress(OutputStream out) throws IOException {
-                return new GZIPOutputStream(new BufferedOutputStream(out));
+                return new GZIPOutputStream(new BufferedOutputStream(out),
+                        // TODO JENKINS-19473 workaround; replace when jzlib fixed
+                        new com.jcraft.jzlib.Deflater(6, 15+16, 9),   // use 9 for memLevel
+                        512,
+                        true
+                );
             }
         };
 
@@ -1034,6 +1041,15 @@ public final class FilePath implements Serializable {
                 return f.toURI();
             }
         });
+    }
+
+    /**
+     * Gets the {@link VirtualFile} representation of this {@link FilePath}
+     *
+     * @since 1.532
+     */
+    public VirtualFile toVirtualFile() {
+        return VirtualFile.forFilePath(this);
     }
 
     /**
@@ -1875,6 +1891,18 @@ public final class FilePath implements Serializable {
      *      the number of files copied.
      */
     public int copyRecursiveTo(final String fileMask, final String excludes, final FilePath target) throws IOException, InterruptedException {
+        return copyRecursiveTo(new DirScanner.Glob(fileMask, excludes), target, fileMask);
+    }
+
+    /**
+     * Copies files according to a specified scanner to a target node.
+     * @param scanner a way of enumerating some files (must be serializable for possible delivery to remote side)
+     * @param target the destination basedir
+     * @param description a description of the fileset, for logging purposes
+     * @return the number of files copied
+     * @since 1.532
+     */
+    public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
             // local to local copy.
             return act(new FileCallable<Integer>() {
@@ -1882,37 +1910,30 @@ public final class FilePath implements Serializable {
                 public Integer invoke(File base, VirtualChannel channel) throws IOException {
                     if(!base.exists())  return 0;
                     assert target.channel==null;
-
-                    try {
-                        class CopyImpl extends Copy {
-                            private int copySize;
-
-                            public CopyImpl() {
-                                setProject(new org.apache.tools.ant.Project());
-                            }
-
-                            @Override
-                            protected void doFileOperations() {
-                                copySize = super.fileCopyMap.size();
-                                super.doFileOperations();
-                            }
-
-                            public int getNumCopied() {
-                                return copySize;
+                    final File dest = new File(target.remote);
+                    final AtomicInteger count = new AtomicInteger();
+                    scanner.scan(base, new FileVisitor() {
+                        @Override public void visit(File f, String relativePath) throws IOException {
+                            if (f.isFile()) {
+                                File target = new File(dest, relativePath);
+                                target.getParentFile().mkdirs();
+                                Util.copyFile(f, target);
+                                count.incrementAndGet();
                             }
                         }
-
-                        CopyImpl copyTask = new CopyImpl();
-                        copyTask.setTodir(new File(target.remote));
-                        copyTask.addFileset(Util.createFileSet(base,fileMask,excludes));
-                        copyTask.setOverwrite(true);
-                        copyTask.setIncludeEmptyDirs(false);
-
-                        copyTask.execute();
-                        return copyTask.getNumCopied();
-                    } catch (BuildException e) {
-                        throw new IOException2("Failed to copy "+base+"/"+fileMask+" to "+target,e);
-                    }
+                        @Override public boolean understandsSymlink() {
+                            return true;
+                        }
+                        @Override public void visitSymlink(File link, String target, String relativePath) throws IOException {
+                            try {
+                                Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
+                            } catch (InterruptedException x) {
+                                throw (IOException) new IOException(x.toString()).initCause(x);
+                            }
+                            count.incrementAndGet();
+                        }
+                    });
+                    return count.get();
                 }
             });
         } else
@@ -1924,7 +1945,7 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        readFromTar(remote+'/'+fileMask, f,TarCompression.GZIP.extract(pipe.getIn()));
+                        readFromTar(remote + '/' + description, f,TarCompression.GZIP.extract(pipe.getIn()));
                         return null;
                     } finally {
                         pipe.getIn().close();
@@ -1934,7 +1955,7 @@ public final class FilePath implements Serializable {
             Future<Integer> future2 = actAsync(new FileCallable<Integer>() {
                 private static final long serialVersionUID = 1L;
                 @Override public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                    return writeToTar(new File(remote),fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+                    return writeToTar(new File(remote), scanner, TarCompression.GZIP.compress(pipe.getOut()));
                 }
             });
             try {
@@ -1952,14 +1973,14 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
                 public Integer invoke(File f, VirtualChannel channel) throws IOException {
                     try {
-                        return writeToTar(f,fileMask,excludes,TarCompression.GZIP.compress(pipe.getOut()));
+                        return writeToTar(f, scanner, TarCompression.GZIP.compress(pipe.getOut()));
                     } finally {
                         pipe.getOut().close();
                     }
                 }
             });
             try {
-                readFromTar(remote+'/'+fileMask,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
+                readFromTar(remote + '/' + description,new File(target.remote),TarCompression.GZIP.extract(pipe.getIn()));
             } catch (IOException e) {// BuildException or IOException
                 try {
                     future.get(3,TimeUnit.SECONDS);
@@ -2008,10 +2029,10 @@ public final class FilePath implements Serializable {
      * @return
      *      number of files/directories that are written.
      */
-    private static Integer writeToTar(File baseDir, String fileMask, String excludes, OutputStream out) throws IOException {
+    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
-            new DirScanner.Glob(fileMask,excludes).scan(baseDir,tw);
+            scanner.scan(baseDir,tw);
         } finally {
             tw.close();
         }
@@ -2474,4 +2495,35 @@ public final class FilePath implements Serializable {
             }
         });
     }
+
+    /**
+     * Helper class to make it easy to send an explicit list of files using {@link FilePath} methods.
+     * @since 1.532
+     */
+    public static final class ExplicitlySpecifiedDirScanner extends DirScanner {
+
+        private static final long serialVersionUID = 1;
+
+        private final Map<String,String> files;
+
+        /**
+         * Create a “scanner” (it actually does no scanning).
+         * @param files a map from logical relative paths as per {@link FileVisitor#visit}, to actual relative paths within the scanned directory
+         */
+        public ExplicitlySpecifiedDirScanner(Map<String,String> files) {
+            this.files = files;
+        }
+
+        @Override public void scan(File dir, FileVisitor visitor) throws IOException {
+            for (Map.Entry<String,String> entry : files.entrySet()) {
+                String archivedPath = entry.getKey();
+                assert archivedPath.indexOf('\\') == -1;
+                String workspacePath = entry.getValue();
+                assert workspacePath.indexOf('\\') == -1;
+                scanSingle(new File(dir, workspacePath), archivedPath, visitor);
+            }
+        }
+
+    }
+
 }

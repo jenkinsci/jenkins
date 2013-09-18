@@ -25,18 +25,17 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.model.Run.Artifact;
 import hudson.util.StreamTaskListener;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.stream.events.Characters;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -112,6 +111,39 @@ public class RunTest {
         } finally {
             Util.deleteRecursive(tempDir);
         }
+    }
+
+    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
+        Run r = new Run(new StubJob(), 0) {};
+        Run.ArtifactList list = r.new ArtifactList();
+        for (String p : paths) {
+            list.add(r.new Artifact(p, p, p, String.valueOf(p.length()), "n" + list.size()));  // Assuming all test inputs don't need urlencoding
+        }
+        list.computeDisplayName();
+        return list;
+    }
+
+    @Test
+    public void artifactListDisambiguation1() throws Exception {
+        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
+        assertEquals(a.get(0).getDisplayPath(), "c.xml");
+        assertEquals(a.get(1).getDisplayPath(), "g.xml");
+        assertEquals(a.get(2).getDisplayPath(), "j.xml");
+    }
+
+    @Test
+    public void artifactListDisambiguation2() throws Exception {
+        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
+        assertEquals(a.get(0).getDisplayPath(), "c.xml");
+        assertEquals(a.get(1).getDisplayPath(), "f/g.xml");
+        assertEquals(a.get(2).getDisplayPath(), "i/g.xml");
+    }
+
+    @Test
+    public void artifactListDisambiguation3() throws Exception {
+        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
+        assertEquals(a.get(0).getDisplayPath(), "a.xml");
+        assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
     }
 
 }

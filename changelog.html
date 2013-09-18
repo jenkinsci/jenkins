@@ -55,6 +55,41 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=rfe>
+    Offer alternate error message for pattern-based project naming strategy.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/914">pull request 914</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.532>What's new in 1.532</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Working around a GZip compression bug in jzlib affecting transfer of certain large, repetitive artifacts.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19473">issue 19473</a>)
+  <li class='major bug'>
+    Lazy-loading bug: builds go missing.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19418">issue 19418</a>)
+  <li class=bug>
+    (re)create build number->id symlink if missing when updating permalink.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19034">issue 19034</a>)
+  <li class=rfe>
+    Display the full display name in title for jobs and views.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/884">pull request 884</a>)
+  <li class='major rfe'>
+    Added a new extension point to control where archived artifacts get stored.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17236">issue 17236</a>)
+  <li class=rfe>
+    Use fine-grained permissions for node manipulation via REST API &amp; CLI
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18485">issue 18485</a>)
+  <li class='bug'>
+    Make the link to the aggregated test result from the project page work.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9637">issue 9637</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.531>What's new in 1.531</a> (2013/09/16)</h3>
+<ul class=image>
   <li class=bug>
     Deleting an external run did not immediately remove it from build list, leading to errors from log rotation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19377">issue 19377</a>)
@@ -67,6 +102,9 @@ Upcoming changes</a>
   <li class=bug>
     Since 1.518, fingerprint serialization broke when job or file names contained XML special characters like ampersands.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18337">issue 18337</a>)
+  <li class=bug>
+    Robustness against truncated fingerprint files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19515">issue 19515</a>)
   <li class=rfe>
     JavaScript error in the checkUrl computation shouldn't break the job configuration page.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19457">issue 19457</a>)
@@ -77,11 +115,7 @@ Upcoming changes</a>
     No events fired when project is enable/disable or the description is changed
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17108">issue 17108</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.530>What's new in 1.530</a> <!--=DATE=--></h3>
+<h3><a name=v1.530>What's new in 1.530</a> (2013/09/09)</h3>
 <ul class=image>
   <li class=bug>
     Send Maven agent JARs to slaves on demand, not unconditionally upon connection.
@@ -99,7 +133,6 @@ Upcoming changes</a>
     Build number symlinks and permalinks not updated for Maven module builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18846">issue 18846</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.529>What's new in 1.529</a> (2013/08/26)</h3>
 <ul class=image>
   <li class=rfe>

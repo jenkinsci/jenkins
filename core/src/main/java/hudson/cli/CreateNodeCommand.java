@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.model.User;
@@ -35,7 +36,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza
- * @since XXX
+ * @since 1.526
  */
 @Extension
 public class CreateNodeCommand extends CLICommand {
@@ -53,7 +54,7 @@ public class CreateNodeCommand extends CLICommand {
     protected int run() throws Exception {
 
         final Jenkins jenkins = Jenkins.getInstance();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
+        jenkins.checkPermission(Computer.CREATE);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);
 

@@ -57,6 +57,21 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Rule
     public FakeMapBuilder localBuilder = new FakeMapBuilder();
 
+    @Rule
+    public FakeMapBuilder localExpiredBuilder = new FakeMapBuilder() {
+        @Override
+        public FakeMap make() {
+            assert getDir()!=null;
+            return new FakeMap(getDir()) {
+                @Override
+                protected BuildReference<Build> createReference(Build r) {
+                    return new BuildReference<Build>(getIdOf(r), /* pretend referent expired */ null);
+                }
+            };
+        }
+    };
+ 
+    
     @BeforeClass
     public static void setUpClass() {
         AbstractLazyLoadRunMap.LOGGER.setLevel(Level.OFF);
@@ -132,6 +147,18 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         // searching toward non-existent direction
         assertNull(a.search(99, Direction.ASC));
         assertNull(a.search(-99, Direction.DESC));
+    }
+
+    @Test
+    public void searchExactWhenIndexedButSoftReferenceExpired() throws IOException {
+        final FakeMap m = localExpiredBuilder.add(1, "A").add(2, "B").make();
+
+        // force index creation
+        m.entrySet();
+
+        m.search(1, Direction.EXACT).asserts(1, "A");
+        assertNull(m.search(3, Direction.EXACT));
+        assertNull(m.search(0, Direction.EXACT));
     }
 
     /**
