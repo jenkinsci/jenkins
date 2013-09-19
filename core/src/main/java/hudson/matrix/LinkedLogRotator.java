@@ -27,6 +27,7 @@ import hudson.model.Job;
 import hudson.tasks.LogRotator;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * {@link LogRotator} for {@link MatrixConfiguration},
@@ -60,11 +61,17 @@ final class LinkedLogRotator extends LogRotator {
 
         // copy it to the array because we'll be deleting builds as we go.
         for( MatrixRun r : job.getBuilds().toArray(new MatrixRun[0]) ) {
-            if(job.getParent().getBuildByNumber(r.getNumber())==null)
+            if(job.getParent().getBuildByNumber(r.getNumber())==null) {
+                LOGGER.fine("Deleting "+r.getFullDisplayName());
                 r.delete();
+            }
         }
 
-        if(!job.isActiveConfiguration() && job.getLastBuild()==null)
+        if(!job.isActiveConfiguration() && job.getLastBuild()==null) {
+            LOGGER.fine("Deleting "+job.getFullDisplayName()+" because the configuration is inactive and there's no builds");
             job.delete();
+        }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(LinkedLogRotator.class.getName());
 }
