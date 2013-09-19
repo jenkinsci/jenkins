@@ -53,6 +53,7 @@ import hudson.model.queue.SubTask;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
@@ -95,6 +96,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -242,6 +244,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of all {@link Trigger}s for this project.
      */
+    @AdaptField(was=List.class)
     protected volatile DescribableList<Trigger<?>,TriggerDescriptor> triggers = new DescribableList<Trigger<?>,TriggerDescriptor>(this);
     private static final AtomicReferenceFieldUpdater<AbstractProject,DescribableList> triggersUpdater
             = AtomicReferenceFieldUpdater.newUpdater(AbstractProject.class,DescribableList.class,"triggers");
@@ -700,7 +703,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
+        
         save();
+        ItemListener.fireOnUpdated(this);
     }
 
     /**

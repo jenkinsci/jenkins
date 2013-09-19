@@ -25,7 +25,6 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import com.thoughtworks.xstream.XStream;
 import hudson.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
@@ -325,7 +324,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         String id = null;
         for (CanonicalIdResolver resolver : resolvers) {
             id = resolver.resolveCanonicalId(idOrFullName, context);
-            if (id != null) break;
+            if (id != null) {
+                LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
+                break;
+            }
         }
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
 
@@ -342,8 +344,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (u==null && (create || getConfigFileFor(id).exists())) {
             User tmp = new User(id, fullName);
             User prev = byName.putIfAbsent(idkey, u = tmp);
-            if (prev!=null)
-                u = prev;   // if some has already put a value in the map, use it
+            if (prev != null) {
+                u = prev; // if some has already put a value in the map, use it
+                if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
+                    LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
+                }
+            }
         }
         return u;
     }
@@ -433,9 +439,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public RunList getBuilds() {
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
-            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds())
+            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds()){
                 if(b.hasParticipant(this))
                     r.add(b);
+                else {
+                    //append builds that were run by this user
+                    Cause.UserIdCause cause = b.getCause(Cause.UserIdCause.class);
+                    if (cause != null) {
+                        String userId = cause.getUserId();
+                        if (userId != null && this.getId() != null && userId.equals(this.getId()))
+                            r.add(b);
+                    }
+                }
+            }
         return RunList.fromRuns(r);
     }
 
@@ -700,7 +716,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return new ContextMenu().from(this,request,response);
     }
 
-    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements Comparable<CanonicalIdResolver> {
+    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retreived from.

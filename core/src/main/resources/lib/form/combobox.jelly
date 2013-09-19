@@ -52,4 +52,5 @@ THE SOFTWARE.
          autocomplete="off" class="combobox2 settings-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}" />
+  <!-- TODO consider customizedFields -->
 </j:jelly>

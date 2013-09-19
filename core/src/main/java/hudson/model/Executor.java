@@ -40,7 +40,6 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -125,7 +124,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public void interrupt(Result result) {
         Authentication a = Jenkins.getAuthentication();
-        if(a instanceof AnonymousAuthenticationToken || a==ACL.SYSTEM)
+        if (a == ACL.SYSTEM)
             interrupt(result, new CauseOfInterruption[0]);
         else {
             // worth recording who did it

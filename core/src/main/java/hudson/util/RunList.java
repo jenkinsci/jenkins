@@ -32,19 +32,11 @@ import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -67,12 +59,15 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     public RunList(View view) {// this is a type unsafe operation
-        List<Iterable<R>> jobs = new ArrayList<Iterable<R>>();
-        for (Item item : view.getItems())
-            for (Job<?,?> j : item.getAllJobs())
-                jobs.add(((Job)j).getBuilds());
+        Set<Job> jobs = new HashSet<Job>();
+        for (TopLevelItem item : view.getItems())
+            jobs.addAll(item.getAllJobs());
 
-        this.base = combine(jobs);
+        List<Iterable<R>> runs = new ArrayList<Iterable<R>>();
+        for (Job job : jobs) {
+            runs.add(job.getBuilds());
+        }
+        this.base = combine(runs);
     }
 
     public RunList(Collection<? extends Job> jobs) {

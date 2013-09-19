@@ -224,8 +224,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             try {
                 R b = cons.create(d);
                 b.onLoad();
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
+                if (LOGGER.isLoggable(FINEST))
+                    LOGGER.log(FINEST,"Loaded " + b.getFullDisplayName(),new ThisIsHowItsLoaded());
                 return b;
             } catch (Run.InvalidDirectoryNameException x) {
                 Level lvl;

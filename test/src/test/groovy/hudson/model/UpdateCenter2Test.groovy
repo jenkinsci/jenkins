@@ -23,7 +23,11 @@
  */
 package hudson.model
 
-import org.jvnet.hudson.test.HudsonTestCase
+import org.jvnet.hudson.test.JenkinsRule
+import org.junit.Rule
+import org.junit.Test
+import static org.junit.Assert.*
+import org.junit.Assume
 import hudson.model.UpdateCenter.DownloadJob.Success
 import hudson.model.UpdateSite
 
@@ -32,22 +36,26 @@ import hudson.model.UpdateSite
  *
  * @author Kohsuke Kawaguchi
  */
-public class UpdateCenter2Test extends HudsonTestCase {
+public class UpdateCenter2Test {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Makes sure a plugin installs fine.
      */
-    void testInstall() {
+    @Test void install() {
+        Assume.assumeFalse("SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")))
         UpdateSite.neverUpdate = false;
-        createWebClient().goTo("/") // load the metadata
-        def job = jenkins.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
+        j.createWebClient().goTo("") // load the metadata
+        def job = j.jenkins.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
         println job.status;
         assertTrue(job.status instanceof Success)
     }
 
-    void testGetLastUpdatedString() {
+    @Test void getLastUpdatedString() {
         UpdateSite.neverUpdate = false
-        assertTrue(jenkins.updateCenter.getById("default").due)
-        assertEquals(hudson.model.Messages.UpdateCenter_n_a(), jenkins.updateCenter.lastUpdatedString)
+        assertTrue(j.jenkins.updateCenter.getById("default").due)
+        assertEquals(hudson.model.Messages.UpdateCenter_n_a(), j.jenkins.updateCenter.lastUpdatedString)
     }
 
 }

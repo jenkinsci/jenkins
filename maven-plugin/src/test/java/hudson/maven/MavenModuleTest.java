@@ -14,12 +14,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

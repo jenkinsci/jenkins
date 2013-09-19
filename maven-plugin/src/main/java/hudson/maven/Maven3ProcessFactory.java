@@ -31,7 +31,6 @@ import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
-import hudson.remoting.Which;
 import hudson.tasks.Maven.MavenInstallation;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
@@ -55,10 +54,10 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     }
 
     @Override
-    protected String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException {
+    protected String getMavenAgentClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
         String classWorldsJar = getLauncher().getChannel().call(new GetClassWorldsJar(mvn.getHome(),listener));
         
-        return (isMaster? Which.jarFile(Maven3Main.class).getAbsolutePath():slaveRoot.child("maven3-agent.jar").getRemote())+
+        return classPathEntry(slaveRoot, Maven3Main.class, "maven3-agent", listener) +
             (getLauncher().isUnix()?":":";")+classWorldsJar;
     }
     
@@ -68,21 +67,17 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     }
     
     @Override
-    protected String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
-        return isMaster?
-                Which.jarFile(Maven3Launcher.class).getAbsolutePath():
-                slaveRoot.child("maven3-interceptor.jar").getRemote();
+    protected String getMavenInterceptorClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
+        return classPathEntry(slaveRoot, Maven3Launcher.class, "maven3-interceptor", listener);
     }
 
-    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
-        return isMaster?
-            Which.jarFile(HudsonMavenExecutionResult.class).getAbsolutePath():
-            slaveRoot.child("maven3-interceptor-commons.jar").getRemote();
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
+        return classPathEntry(slaveRoot, HudsonMavenExecutionResult.class, "maven3-interceptor-commons", listener);
     }
 
     @Override
     protected String getMavenInterceptorOverride(MavenInstallation mvn,
-            boolean isMaster, FilePath slaveRoot) throws IOException,
+            FilePath slaveRoot, BuildListener listener) throws IOException,
             InterruptedException {
         return null;
     }

@@ -26,19 +26,13 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.IOException2;
-import hudson.FilePath.FileCallable;
-import hudson.remoting.VirtualChannel;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.HttpResponse;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.ant.DirectoryScanner;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,6 +47,9 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import jenkins.util.VirtualFile;
 
 /**
  * Has convenience methods to serve file system.
@@ -69,7 +66,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     
     public final String title;
 
-    private final FilePath base;
+    private final VirtualFile base;
     private final String icon;
     private final boolean serveDirIndex;
     private String indexFileName = "index.html";
@@ -79,7 +76,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      Use {@link #DirectoryBrowserSupport(ModelObject, FilePath, String, String, boolean)}
      */
     public DirectoryBrowserSupport(ModelObject owner, String title) {
-        this(owner,null,title,null,false);
+        this(owner, (VirtualFile) null, title, null, false);
     }
 
     /**
@@ -96,6 +93,24 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      False to serve "index.html"
      */
     public DirectoryBrowserSupport(ModelObject owner, FilePath base, String title, String icon, boolean serveDirIndex) {
+        this(owner, base.toVirtualFile(), title, icon, serveDirIndex);
+    }
+
+    /**
+     * @param owner
+     *      The parent model object under which the directory browsing is added.
+     * @param base
+     *      The root of the directory that's bound to URL.
+     * @param title
+     *      Used in the HTML caption.
+     * @param icon
+     *      The icon file name, like "folder.gif"
+     * @param serveDirIndex
+     *      True to generate the directory index.
+     *      False to serve "index.html"
+     * @since 1.532
+     */
+    public DirectoryBrowserSupport(ModelObject owner, VirtualFile base, String title, String icon, boolean serveDirIndex) {
         this.owner = owner;
         this.base = base;
         this.title = title;
@@ -133,6 +148,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
     public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
+        serveFile(req, rsp, root.toVirtualFile(), icon, serveDirIndex);
+    }
+
+    private void serveFile(StaplerRequest req, StaplerResponse rsp, VirtualFile root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         // handle form submission
         String pattern = req.getParameter("pattern");
         if(pattern==null)
@@ -163,7 +182,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 String pathElement = pathTokens.nextToken();
                 // Treat * and ? as wildcard unless they match a literal filename
                 if((pathElement.contains("?") || pathElement.contains("*"))
-                        && inBase && !(new FilePath(root, (_base.length() > 0 ? _base + "/" : "") + pathElement).exists()))
+                        && inBase && !root.child((_base.length() > 0 ? _base + "/" : "") + pathElement).exists())
                     inBase = false;
                 if(pathElement.equals("*zip*")) {
                     // the expected syntax is foo/bar/*zip*/bar.zip
@@ -189,20 +208,23 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String rest = _rest.toString();
 
         // this is the base file/directory
-        FilePath baseFile = new FilePath(root,base);
+        VirtualFile baseFile = root.child(base);
 
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                baseFile.zip(rsp.getOutputStream(),rest);
+                zip(rsp.getOutputStream(), baseFile, rest);
                 return;
             }
             if (plain) {
                 rsp.setContentType("text/plain;charset=UTF-8");
                 OutputStream os = rsp.getOutputStream();
                 try {
-                    for (String kid : baseFile.act(new SimpleChildList())) {
-                        os.write(kid.getBytes("UTF-8"));
+                    for (VirtualFile kid : baseFile.list()) {
+                        os.write(kid.getName().getBytes("UTF-8"));
+                        if (kid.isDirectory()) {
+                            os.write('/');
+                        }
                         os.write('\n');
                     }
                     os.flush();
@@ -221,15 +243,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
             }
 
-            FileCallable<List<List<Path>>> glob = null;
+            List<List<Path>> glob = null;
 
             if(rest.length()>0) {
                 // the rest is Ant glob pattern
-                glob = new PatternScanner(rest,createBackRef(restSize));
+                glob = patternScan(baseFile, rest, createBackRef(restSize));
             } else
             if(serveDirIndex) {
                 // serve directory index
-                glob = new ChildPathBuilder(req.getLocale());
+                glob = buildChildPaths(baseFile, req.getLocale());
             }
 
             if(glob!=null) {
@@ -239,7 +261,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 req.setAttribute("parentPath",parentPaths);
                 req.setAttribute("backPath", createBackRef(restSize));
                 req.setAttribute("topPath", createBackRef(parentPaths.size()+restSize));
-                req.setAttribute("files", baseFile.act(glob));
+                req.setAttribute("files", glob);
                 req.setAttribute("icon", icon);
                 req.setAttribute("path", path);
                 req.setAttribute("pattern",rest);
@@ -262,24 +284,25 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         boolean view = rest.equals("*view*");
 
         if(rest.equals("*fingerprint*")) {
-            rsp.forward(Jenkins.getInstance().getFingerprint(baseFile.digest()),"/",req);
+            rsp.forward(Jenkins.getInstance().getFingerprint(Util.getDigestOf(baseFile.open())), "/", req);
             return;
         }
 
-        ContentInfo ci = baseFile.act(new ContentInfo());
+        long lastModified = baseFile.lastModified();
+        long length = baseFile.length();
 
         if(LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine("Serving "+baseFile+" with lastModified="+ci.lastModified+", contentLength="+ci.contentLength);
+            LOGGER.fine("Serving "+baseFile+" with lastModified=" + lastModified + ", length=" + length);
 
-        InputStream in = baseFile.read();
+        InputStream in = baseFile.open();
         if (view) {
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
             // pseudo file name to let the Stapler set text/plain
-            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, "plain.txt");
+            rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
         } else {
-            rsp.serveFile(req, in, ci.lastModified, -1, ci.contentLength, baseFile.getName() );
+            rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
 
@@ -288,19 +311,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(path.length()==0)
             path = "/";
         return path;
-    }
-
-    private static final class ContentInfo implements FileCallable<ContentInfo> {
-        long contentLength;
-        long lastModified;
-
-        public ContentInfo invoke(File f, VirtualChannel channel) throws IOException {
-            contentLength = f.length();
-            lastModified = f.lastModified();
-            return this;
-        }
-
-        private static final long serialVersionUID = 1L;
     }
 
     /**
@@ -328,6 +338,19 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         return buf.toString();
     }
 
+    private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
+        ZipOutputStream zos = new ZipOutputStream(outputStream);
+        for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
+            ZipEntry e = new ZipEntry(n);
+            VirtualFile f = dir.child(n);
+            e.setTime(f.lastModified());
+            zos.putNextEntry(e);
+            Util.copyStream(f.open(), outputStream);
+            zos.closeEntry();
+        }
+        zos.close();
+    }
+
     /**
      * Represents information about one file or folder.
      */
@@ -349,7 +372,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         private final long size;
         
         /**
-         * If the current user can read the file. 
+         * If the current user can read the file.
          */
         private final boolean isReadable;
 
@@ -393,14 +416,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
 
 
-    private static final class FileComparator implements Comparator<File> {
+    private static final class FileComparator implements Comparator<VirtualFile> {
         private Collator collator;
 
         public FileComparator(Locale locale) {
             this.collator = Collator.getInstance(locale);
         }
 
-        public int compare(File lhs, File rhs) {
+        public int compare(VirtualFile lhs, VirtualFile rhs) {
             // directories first, files next
             int r = dirRank(lhs)-dirRank(rhs);
             if(r!=0) return r;
@@ -408,29 +431,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return this.collator.compare(lhs.getName(), rhs.getName());
         }
 
-        private int dirRank(File f) {
+        private int dirRank(VirtualFile f) {
+            try {
             if(f.isDirectory())     return 0;
             else                    return 1;
-        }
-    }
-
-    /**
-     * Simple list of names of children of a folder.
-     * Subfolders will have a trailing slash appended.
-     */
-    private static final class SimpleChildList implements FileCallable<List<String>> {
-        private static final long serialVersionUID = 1L;
-        public List<String> invoke(File f, VirtualChannel channel) throws IOException {
-            List<String> r = new ArrayList<String>();
-            String[] kids = f.list(); // no need to sort
-            for (String kid : kids) {
-                if (new File(f, kid).isDirectory()) {
-                    r.add(kid + "/");
-                } else {
-                    r.add(kid);
-                }
+            } catch (IOException ex) {
+                return 0;
             }
-            return r;
         }
     }
 
@@ -439,22 +446,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * list of {@link Path} represents one child item to be shown
      * (this mechanism is used to skip empty intermediate directory.)
      */
-    private static final class ChildPathBuilder implements FileCallable<List<List<Path>>> {
-        private Locale locale;
-
-        public ChildPathBuilder(Locale locale) {
-            this.locale = locale;
-        }
-
-        public List<List<Path>> invoke(File cur, VirtualChannel channel) throws IOException {
+    private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
             List<List<Path>> r = new ArrayList<List<Path>>();
 
-            File[] files = cur.listFiles();
-            if (files != null) {
-                Arrays.sort(files,new FileComparator(this.locale));
+            VirtualFile[] files = cur.list();
+                Arrays.sort(files,new FileComparator(locale));
     
-                for( File f : files ) {
-                    Path p = new Path(Util.rawEncode(f.getName()),f.getName(),f.isDirectory(),f.length(), f.canRead());
+                for( VirtualFile f : files ) {
+                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead());
                     if(!f.isDirectory()) {
                         r.add(Collections.singletonList(p));
                     } else {
@@ -464,53 +463,38 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         String relPath = Util.rawEncode(f.getName());
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
-                            File[] sub = f.listFiles(new FilenameFilter() {
-                                public boolean accept(File dir, String name) {
-                                    return !name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn");
+                            List<VirtualFile> sub = new ArrayList<VirtualFile>();
+                            for (VirtualFile vf : f.list()) {
+                                String name = vf.getName();
+                                if (!name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn")) {
+                                    sub.add(vf);
                                 }
-                            });
-                            if(sub==null || sub.length!=1 || !sub[0].isDirectory())
+                            }
+                            if (sub.size() !=1 || !sub.get(0).isDirectory())
                                 break;
-                            f = sub[0];
+                            f = sub.get(0);
                             relPath += '/'+Util.rawEncode(f.getName());
                             l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
                         }
                         r.add(l);
                     }
                 }
-            }
 
             return r;
-        }
-
-        private static final long serialVersionUID = 1L;
     }
 
     /**
      * Runs ant GLOB against the current {@link FilePath} and returns matching
      * paths.
+     * @param baseRef String like "../../../" that cancels the 'rest' portion. Can be "./"
      */
-    private static class PatternScanner implements FileCallable<List<List<Path>>> {
-        private final String pattern;
-        /**
-         * String like "../../../" that cancels the 'rest' portion. Can be "./"
-         */
-        private final String baseRef;
-
-        public PatternScanner(String pattern,String baseRef) {
-            this.pattern = pattern;
-            this.baseRef = baseRef;
-        }
-
-        public List<List<Path>> invoke(File baseDir, VirtualChannel channel) throws IOException {
-            FileSet fs = Util.createFileSet(baseDir,pattern);
-            DirectoryScanner ds = fs.getDirectoryScanner();
-            String[] files = ds.getIncludedFiles();
+    private static List<List<Path>> patternScan(VirtualFile baseDir, String pattern, String baseRef) throws IOException {
+            String[] files = baseDir.list(pattern);
 
             if (files.length > 0) {
                 List<List<Path>> r = new ArrayList<List<Path>>(files.length);
                 for (String match : files) {
-                    List<Path> file = buildPathList(baseDir, new File(baseDir,match));
+                    List<Path> file = buildPathList(baseDir, baseDir.child(match), baseRef);
                     r.add(file);
                 }
                 return r;
@@ -522,7 +506,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         /**
          * Builds a path list from the current workspace directory down to the specified file path.
          */
-        private List<Path> buildPathList(File baseDir, File filePath) throws IOException {
+        private static List<Path> buildPathList(VirtualFile baseDir, VirtualFile filePath, String baseRef) throws IOException {
             List<Path> pathList = new ArrayList<Path>();
             StringBuilder href = new StringBuilder(baseRef);
 
@@ -533,8 +517,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         /**
          * Builds the path list and href recursively top-down.
          */
-        private void buildPathList(File baseDir, File filePath, List<Path> pathList, StringBuilder href) throws IOException {
-            File parent = filePath.getParentFile();
+        private static void buildPathList(VirtualFile baseDir, VirtualFile filePath, List<Path> pathList, StringBuilder href) throws IOException {
+            VirtualFile parent = filePath.getParent();
             if (!baseDir.equals(parent)) {
                 buildPathList(baseDir, parent, pathList, href);
             }
@@ -548,8 +532,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             pathList.add(path);
         }
 
-        private static final long serialVersionUID = 1L;
-    }
 
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
 }

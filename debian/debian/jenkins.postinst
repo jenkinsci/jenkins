@@ -30,6 +30,7 @@ case "$1" in
         if ! id $JENKINS_USER > /dev/null 2>&1 ; then
             adduser --system --home /var/lib/jenkins --no-create-home \
                 --ingroup nogroup --disabled-password --shell /bin/bash \
+                --gecos 'Jenkins' \
                 $JENKINS_USER
         fi
 	

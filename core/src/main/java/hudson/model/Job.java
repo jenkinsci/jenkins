@@ -254,7 +254,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
 
-    protected synchronized boolean isHoldOffBuildUntilSave() {
+    public synchronized boolean isHoldOffBuildUntilSave() {
         return holdOffBuildUntilSave;
     }
 
@@ -368,6 +368,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
         env.put("CLASSPATH","");
+
+        // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
+            ec.buildEnvironmentFor(this,env,listener);
+
 
         return env;
     }

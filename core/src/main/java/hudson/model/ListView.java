@@ -36,12 +36,7 @@ import hudson.views.ListViewColumn;
 import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -165,7 +160,8 @@ public class ListView extends View implements Saveable {
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwnerItemGroup();
-        includeItems(parent, names);
+        List<TopLevelItem> parentItems = new ArrayList<TopLevelItem>(parent.getItems());
+        includeItems(parent, parentItems, names);
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         for (TopLevelItem item : Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class)) {
@@ -178,7 +174,7 @@ public class ListView extends View implements Saveable {
 
         // check the filters
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(parent.getItems());
+        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(parentItems);
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
@@ -193,16 +189,12 @@ public class ListView extends View implements Saveable {
       return getItems().contains(item);
     }
     
-    private void includeItems(ItemGroup<? extends TopLevelItem> parent, SortedSet<String> names) {
-        includeItems(parent, parent, names);
-    }
-    
-    private void includeItems(ItemGroup<? extends TopLevelItem> root, ItemGroup<?> parent, SortedSet<String> names) {
+    private void includeItems(ItemGroup<? extends TopLevelItem> root, Collection<? extends Item> parentItems, SortedSet<String> names) {
         if (includePattern != null) {
-            for (Item item : parent.getItems()) {
+            for (Item item : parentItems) {
                 if (recurse && item instanceof ItemGroup) {
                     ItemGroup<?> ig = (ItemGroup<?>) item;
-                    includeItems(root, ig, names);
+                    includeItems(root, ig.getItems(), names);
                 }
                 if (item instanceof TopLevelItem) {
                     String itemName = item.getRelativeNameFrom(root);
@@ -329,7 +321,7 @@ public class ListView extends View implements Saveable {
             }
         }
 
-        setIncludeRegex(req.getParameter("useincluderegex"));
+        setIncludeRegex(req.getParameter("useincluderegex") != null ? req.getParameter("includeRegex") : null);
 
         if (columns == null) {
             columns = new DescribableList<ListViewColumn,Descriptor<ListViewColumn>>(this);
@@ -346,16 +338,11 @@ public class ListView extends View implements Saveable {
     }
     
     public void setIncludeRegex(String includeRegex) {
-        if (includeRegex != null) {
-            this.includeRegex = Util.nullify(includeRegex);
-            if (this.includeRegex == null)
-                this.includePattern = null;
-            else
-                this.includePattern = Pattern.compile(includeRegex);
-        } else {
-            this.includeRegex = null;
+        this.includeRegex = Util.nullify(includeRegex);
+        if (this.includeRegex == null)
             this.includePattern = null;
-        }
+        else
+            this.includePattern = Pattern.compile(includeRegex);
     }
 
     @Extension

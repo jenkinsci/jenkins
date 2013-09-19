@@ -31,14 +31,17 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
+import java.io.File;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
@@ -123,9 +126,6 @@ public class ArtifactArchiver extends Recorder {
             return true;
         }
 
-        File dir = build.getArtifactsDir();
-        dir.mkdirs();
-
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
             FilePath ws = build.getWorkspace();
@@ -134,8 +134,13 @@ public class ArtifactArchiver extends Recorder {
             }
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
-            if(ws.copyRecursiveTo(artifacts,excludes,new FilePath(dir))==0) {
-                if(build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
+
+            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes));
+            if (!files.isEmpty()) {
+                build.pickArtifactManager().archive(ws, launcher, listener, files);
+            } else {
+                Result result = build.getResult();
+                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
@@ -164,23 +169,42 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
+    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+        private static final long serialVersionUID = 1;
+        private final String includes, excludes;
+        ListFiles(String includes, String excludes) {
+            this.includes = includes;
+            this.excludes = excludes;
+        }
+        @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
+            Map<String,String> r = new HashMap<String,String>();
+            for (String f : Util.createFileSet(basedir, includes, excludes).getDirectoryScanner().getIncludedFiles()) {
+                f = f.replace(File.separatorChar, '/');
+                r.put(f, f);
+            }
+            return r;
+        }
+    }
+
     @Override
     public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
         if(latestOnly) {
             AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
             Result bestResultSoFar = Result.NOT_BUILT;
             while(b!=null) {
-                if (b.getResult().isBetterThan(bestResultSoFar)) {
-                    bestResultSoFar = b.getResult();
-                } else {
-                    // remove old artifacts
-                    File ad = b.getArtifactsDir();
-                    if(ad.exists()) {
-                        listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
+                if(b.getResult()!=null){
+                    if (b.getResult().isBetterThan(bestResultSoFar)) {
+                        bestResultSoFar = b.getResult();
+                    } else {
+                        // remove old artifacts
                         try {
-                            Util.deleteRecursive(ad);
+                            if (b.getArtifactManager().delete()) {
+                                listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
+                            }
                         } catch (IOException e) {
                             e.printStackTrace(listener.error(e.getMessage()));
+                        } catch (InterruptedException x) {
+                            x.printStackTrace(listener.error(x.getMessage()));
                         }
                     }
                 }
