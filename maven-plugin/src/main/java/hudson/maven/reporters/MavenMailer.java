@@ -31,6 +31,8 @@ import hudson.maven.MavenReporterDescriptor;
 import hudson.model.BuildListener;
 import hudson.tasks.MailSender;
 import hudson.tasks.Mailer;
+
+import org.jfree.util.Log;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -52,7 +54,7 @@ public class MavenMailer extends MavenReporter {
 
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if(perModuleEmail) {
-            new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
+        	new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
         }
         return true;
     }

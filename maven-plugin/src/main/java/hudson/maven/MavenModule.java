@@ -25,6 +25,7 @@ package hudson.maven;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
 import hudson.CopyOnWrite;
 import hudson.Functions;
 import hudson.Util;
@@ -48,12 +49,15 @@ import hudson.tasks.Publisher;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
+
+import org.apache.maven.model.Notifier;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.servlet.ServletException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -192,8 +196,9 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
      * <p>
      * This method is invoked on {@link MavenModule} that has the matching
      * {@link ModuleName}.
+     * @throws IOException 
      */
-    /*package*/ void reconfigure(PomInfo pom) {
+    /*package*/ void reconfigure(PomInfo pom) throws IOException {
         this.displayName = pom.displayName;
         this.version = pom.version;
         this.packaging = pom.packaging;
@@ -202,21 +207,58 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         this.children = pom.children;
         this.nestLevel = pom.getNestLevel();
         disabled = false;
-
-        if (pom.mailNotifier != null) {
-            MavenReporter reporter = getReporters().get(MavenMailer.class);
-            if (reporter != null) {
-                MavenMailer mailer = (MavenMailer) reporter;
-                mailer.dontNotifyEveryUnstableBuild = !pom.mailNotifier.isSendOnFailure();
-                String recipients = pom.mailNotifier.getConfiguration().getProperty("recipients");
+        
+        MavenMailer projectMailer = getParent().getReporters().get(MavenMailer.class);
+        if (projectMailer != null) {
+        	Notifier notifier = getCiManagementNotifier(pom);
+	        if (notifier != null) {
+	            MavenMailer mailer;
+	            
+	        	if (pom.parent == null) {//If isModuleRoot then..
+	        		mailer = projectMailer;
+	        	} else {
+	        		mailer = getOrCreateMavenMailer(pom);
+	        	}
+	            
+	        	mailer.perModuleEmail = projectMailer.perModuleEmail;
+                mailer.dontNotifyEveryUnstableBuild = !notifier.isSendOnFailure();
+                String recipients = notifier.getConfiguration().getProperty("recipients");
                 if (recipients != null) {
                     mailer.recipients = recipients;
                 }
-            }
+	        } else {
+	        	getReporters().remove(MavenMailer.class);
+	        }
+        } else {
+			// When "E-mail Notification" is unchecked then I remove the
+			// MavenMailer from the modules. 
+        	getReporters().remove(MavenMailer.class);
         }
     }
     
-    /**
+    private MavenMailer getOrCreateMavenMailer(PomInfo pom) {
+    	MavenMailer mavenMailer = getReporters().get(MavenMailer.class);
+    	if (mavenMailer == null) {
+    		mavenMailer = new MavenMailer();
+    		getReporters().add(mavenMailer);
+    	}
+    	
+		return mavenMailer;
+	}
+
+	private Notifier getCiManagementNotifier(PomInfo pom) {
+		Notifier notifier = null;
+		
+		if (pom.mailNotifier != null) {
+			notifier = pom.mailNotifier;
+		} else if (pom.parent != null) {
+			notifier = getCiManagementNotifier(pom.parent);
+		}
+		
+		return notifier;
+	}
+
+	/**
      * Returns if the given POM likely describes the same module with the same dependencies.
      * Implementation needs not be 100% accurate in the true case, but it MUST return false
      * if is not the same.
@@ -665,7 +707,12 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         List<MavenReporter> reporterList = new ArrayList<MavenReporter>();
 
         getReporters().addAllTo(reporterList);
-        getParent().getReporters().addAllTo(reporterList);
+        
+        for (MavenReporter r: getParent().getReporters()) {
+        	if (!getReporters().contains(r.getDescriptor())) {
+        		reporterList.add(r);
+        	}
+        }
 
         for (MavenReporterDescriptor d : MavenReporterDescriptor.all()) {
             if(getReporters().contains(d))
