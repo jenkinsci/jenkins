@@ -10,6 +10,7 @@ import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.MockHelper;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,7 @@ public class MavenModuleTest {
     private MavenProject project;
     
     @Before
-    public void before() {
+    public void before() throws IOException {
         suppress(constructor(AbstractProject.class));
         suppress(constructor(DescriptorImpl.class));
         
@@ -58,10 +59,11 @@ public class MavenModuleTest {
     /**
      * Tests that a {@link MavenModule} which builds a plugin is recognized as a snapshot
      * dependency in another module using that plugin.
+     * @throws IOException 
      */
     @Test
     @Bug(10530)
-    public void testMavenModuleAsPluginDependency() {
+    public void testMavenModuleAsPluginDependency() throws IOException {
         MavenModule pluginModule = createPluginProject();
         
         addModuleAsPluginDependency(this.module, pluginModule);
@@ -78,7 +80,7 @@ public class MavenModuleTest {
         Assert.assertSame(this.module, downstream.get(0));
     }
 
-    private static void addModuleAsPluginDependency(MavenModule module, MavenModule pluginModule) {
+    private static void addModuleAsPluginDependency(MavenModule module, MavenModule pluginModule) throws IOException {
         Build build = new Build();
         Plugin plugin = new Plugin();
         plugin.setGroupId(pluginModule.getModuleName().groupId);
@@ -96,7 +98,7 @@ public class MavenModuleTest {
         module.reconfigure(new PomInfo(project, null, "relPath"));
     }
 
-    private static MavenModule createPluginProject() {
+    private static MavenModule createPluginProject() throws IOException {
         MavenModule pluginModule = mock(MavenModule.class);
         basicMocking(pluginModule);
         
@@ -112,7 +114,7 @@ public class MavenModuleTest {
         return pluginModule;
     }
     
-    private static void basicMocking(MavenModule mock) {
+    private static void basicMocking(MavenModule mock) throws IOException {
         when(mock.isBuildable()).thenReturn(Boolean.TRUE);
         doCallRealMethod().when(mock).reconfigure(Matchers.any(PomInfo.class));
         doCallRealMethod().when(mock).buildDependencyGraph(Matchers.any(DependencyGraph.class));
@@ -129,9 +131,10 @@ public class MavenModuleTest {
     }
     /**
      * This test is a standard project that has a versioned dependency.
+     * @throws IOException 
      */
     @Test
-    public void testSimpleVersion() {
+    public void testSimpleVersion() throws IOException {
         TestComponents testComponents = createTestComponents("1.0.1-SNAPSHOT");
 
         DependencyGraph graph = testComponents.graph;
@@ -154,9 +157,10 @@ public class MavenModuleTest {
     /**
      * This tests that a version range declaration in the dependency of a top level project
      * resolves the up and downstream correctly.
+     * @throws IOException 
      */
     @Test
-    public void testSimpleVersionRange() {
+    public void testSimpleVersionRange() throws IOException {
         TestComponents testComponents = createTestComponents("[1.0.0, )");
 
         DependencyGraph graph = testComponents.graph;
@@ -179,9 +183,10 @@ public class MavenModuleTest {
     /**
      * Test multiple projects with dependencies on differing library versions declared with
      * multiple version definitions.
+     * @throws IOException 
      */
     @Test
-    public void testMultipleDependencies() {
+    public void testMultipleDependencies() throws IOException {
 
         MavenProject projectA = createMavenProject("ProjectA", "test", "projectA", "1.0-SNAPSHOT", "jar");
         Dependency dependencyA = createDependency("test", "library", "[1.0, 2.0)");
@@ -237,9 +242,10 @@ public class MavenModuleTest {
     /**
      * This tests a project that has a dependency on a specific version of X.
      * The project X has moved on and so should not have any dependencies on ProjectA.
+     * @throws IOException 
      */
     @Test
-    public void testProjectWithSpecifiedVersionAndNoDependencies() {
+    public void testProjectWithSpecifiedVersionAndNoDependencies() throws IOException {
         MavenProject projectA = createMavenProject("ProjectA", "test", "projectA", "1.0-SNAPSHOT", "jar");
         Dependency dependencyA = createDependency("test", "library", "1.0");
         projectA.getDependencies().add(dependencyA);
@@ -280,7 +286,7 @@ public class MavenModuleTest {
         Assert.assertEquals(0, upstreamX.size());
     }
 
-    private TestComponents createTestComponents(String libraryVersion) {
+    private TestComponents createTestComponents(String libraryVersion) throws IOException {
         MavenProject appProject = createMavenProject("testapp", "test", "application", "1.0-SNAPSHOT", "jar");
         Dependency dependency = createDependency("test", "library", libraryVersion);
         appProject.getDependencies().add(dependency);
@@ -319,7 +325,7 @@ public class MavenModuleTest {
         when(module.getAllMavenModules()).thenReturn(allProjects);
     }
 
-    private static MavenModule mockMavenModule(MavenProject project) {
+    private static MavenModule mockMavenModule(MavenProject project) throws IOException {
         MavenModule mavenModule = mock(MavenModule.class);
         when(mavenModule.getName()).thenReturn(project.getName());
         basicMocking(mavenModule);
