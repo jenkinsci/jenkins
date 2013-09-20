@@ -208,7 +208,7 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         this.nestLevel = pom.getNestLevel();
         disabled = false;
         
-        MavenMailer projectMailer = getParent().getReporters().get(MavenMailer.class);
+        MavenMailer projectMailer = getParent().getReporters() == null? null: getParent().getReporters().get(MavenMailer.class);
         if (projectMailer != null) {
         	Notifier notifier = getCiManagementNotifier(pom);
 	        if (notifier != null) {
@@ -232,7 +232,9 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         } else {
 			// When "E-mail Notification" is unchecked then I remove the
 			// MavenMailer from the modules. 
-        	getReporters().remove(MavenMailer.class);
+        	if (getReporters() != null) {
+        		getReporters().remove(MavenMailer.class);
+        	}
         }
     }
     
