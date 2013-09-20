@@ -82,6 +82,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.ArtifactManager;
+import javax.annotation.Nonnull;
 
 import jenkins.mvn.SettingsProvider;
 
@@ -254,6 +255,36 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
             return Collections.unmodifiableList(executedMojos);
     }
     
+    /**
+     * Update aggregated action with aggregatable while {@link MavenBuild} is still in progress.
+     *
+     * Traditionally, {@link MavenAggregatedReport}s are updated after
+     * {@link MavenBuild}'s completion. This method updates during the build.
+     *
+     * @param aggregatable Aggregatable action to propagate.
+     * @param aggregatedType Type of Aggregated report.
+     * @throws IOException Saving of corresponding {@link MavenModuleSetBuild} failed.
+     * @since TODO
+     */
+    public void updateAggregatedAction(
+            @Nonnull AggregatableAction aggregatable,
+            @Nonnull Class<? extends MavenAggregatedReport> aggregatedType
+    ) throws IOException {
+
+        final MavenModuleSetBuild mmsBuild = getModuleSetBuild();
+        final Map<MavenModule, List<MavenBuild>> moduleBuilds = mmsBuild.getModuleBuilds();
+
+        MavenAggregatedReport aggregatedReport = mmsBuild.getAction(aggregatedType);
+        if (aggregatedReport == null) {
+
+            aggregatedReport = aggregatable.createAggregatedAction(mmsBuild, moduleBuilds);
+            mmsBuild.addAction(aggregatedReport);
+        }
+
+        aggregatedReport.update(moduleBuilds, this);
+        mmsBuild.save();
+    }
+
     @Override
     public void run() {
         execute(new MavenBuildExecution());

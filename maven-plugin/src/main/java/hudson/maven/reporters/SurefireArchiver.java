@@ -131,6 +131,7 @@ public class SurefireArchiver extends TestFailureDetector {
                 resultUpdater.start();
             }
         }
+
         return true;
     }
 
@@ -148,6 +149,8 @@ public class SurefireArchiver extends TestFailureDetector {
                 private static final long serialVersionUID = -1023888330720922136L;
                 @Override
                 public Integer call(MavenBuild build) throws IOException, InterruptedException {
+
+                    // Null for modules without tests
                     final SurefireReport reportAction = build.getAction(SurefireReport.class);
                     final int failCount = reportAction != null
                             ? reportAction.getFailCount()
@@ -286,14 +289,15 @@ public class SurefireArchiver extends TestFailureDetector {
             @Override
             public Void call(MavenBuild build) throws IOException, InterruptedException {
 
-                final SurefireReport sr = build.getAction(SurefireReport.class);
-                if(sr==null) {
-
-                    build.getActions().add(new SurefireReport(build, testResult, listener));
+                SurefireReport report = build.getAction(SurefireReport.class);
+                if(report == null) {
+                    report = new SurefireReport(build, testResult, listener);
+                    build.getActions().add(report);
                     build.registerAsProjectAction(new FactoryImpl());
+                    build.updateAggregatedAction(report, SurefireAggregatedReport.class);
                 } else {
 
-                    sr.updateResult(testResult, listener);
+                    report.updateResult(testResult, listener);
                 }
 
                 return null;

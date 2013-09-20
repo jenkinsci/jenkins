@@ -158,7 +158,7 @@ enum TestMojo {
     private Iterable<File> getReportFiles(final File baseDir, FileSet set, Set<String> parsedFiles) {
         final String[] includedFiles = set.getDirectoryScanner().getIncludedFiles();
 
-        final Set<File> reportFiles = new HashSet<File>(includedFiles.length - parsedFiles.size());
+        final Set<File> reportFiles = new HashSet<File>(includedFiles.length);
         for(final String path: includedFiles) {
 
             final File file = new File(baseDir, path);
