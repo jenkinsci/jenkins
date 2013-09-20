@@ -1771,24 +1771,8 @@ public class Queue extends ResourceController implements Saveable {
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
             } else {
-                CauseOfBlockage c;
-                for (Node node : allNodes) {
-                    if (node.toComputer().isPartiallyIdle()) {
-                        c = canTake(node);
-                        if (c==null)    break;
-                    }
-                }
-
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
-        }
-
-        private CauseOfBlockage canTake(Node node) {
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                CauseOfBlockage cause = d.canTake(node, this);
-                if (cause!=null)    return cause;
-            }
-            return null;
         }
 
         @Override
