@@ -218,7 +218,15 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 
 	public MatrixAggregator createAggregator(MatrixBuild build,
 			Launcher launcher, BuildListener listener) {
-		return new TestResultAggregator(build, launcher, listener);
+
+        TestResultActionUpdater updater = build.getParent()
+                .getBuildWrappersList()
+                .get(TestResultActionUpdater.class)
+        ;
+        // Updated periodically. No need to aggregate.
+        if (updater != null) return null;
+
+        return new TestResultAggregator(build, launcher, listener);
 	}
 
 	/**

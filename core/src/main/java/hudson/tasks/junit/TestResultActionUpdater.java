@@ -39,6 +39,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.test.MatrixTestResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,8 +68,6 @@ public class TestResultActionUpdater extends BuildWrapper {
         final AbstractBuild<?, ?> build = b;
 
         if (!isApplicable(build)) return new Environment() {};
-
-        build.addAction(new TestResultAction(build, new TestResult(), listener));
 
         final TestResultUpdater.RemoteHandler threadHandler = build.getWorkspace()
                 .act(new StartTheThread(new BuildProxy(build), listener))
@@ -291,7 +290,7 @@ public class TestResultActionUpdater extends BuildWrapper {
         }
 
         @Override
-        protected void update(final TestResult testResult) {
+        protected void update(final @Nonnull TestResult testResult) {
             try {
                 build.execute(new UpdateCommand(testResult, listener));
             } catch (IOException ex) {
@@ -307,17 +306,38 @@ public class TestResultActionUpdater extends BuildWrapper {
     private static final class UpdateCommand implements BuildCallable<Void, IOException> {
         private static final long serialVersionUID = 4820144835418301518L;
 
-        private final TestResult testResult;
-        private final BuildListener listener;
+        private final @Nonnull TestResult testResult;
+        private final @Nonnull BuildListener listener;
 
-        private UpdateCommand(TestResult testResult, BuildListener listener) {
+        private UpdateCommand(@Nonnull TestResult testResult, @Nonnull BuildListener listener) {
             this.testResult = testResult;
             this.listener = listener;
         }
 
         public Void call(@Nonnull AbstractBuild<?, ?> build) throws IOException {
 
-            build.getAction(TestResultAction.class).updateResult(testResult, listener);
+            TestResultAction action = build.getAction(TestResultAction.class);
+            if (action == null) {
+                action = new TestResultAction(build, testResult, listener);
+                build.addAction(action);
+
+                if (build instanceof MatrixRun) {
+                    final MatrixBuild mb = ((MatrixRun) build).getParentBuild();
+                    MatrixTestResult aggregatedResult = mb.getAction(MatrixTestResult.class);
+                    if (aggregatedResult == null) {
+                        aggregatedResult = new MatrixTestResult(mb);
+                        mb.addAction(aggregatedResult);
+                    }
+                }
+            } else {
+
+              action.updateResult(testResult, listener);
+            }
+
+            if (build instanceof MatrixRun) {
+                ((MatrixRun) build).getParentBuild().getAction(MatrixTestResult.class).update();
+            }
+
             return null;
         }
     }
