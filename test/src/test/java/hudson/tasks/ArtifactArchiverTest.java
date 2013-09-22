@@ -172,7 +172,7 @@ public class ArtifactArchiverTest {
         int buildNumber = project.getNextBuildNumber();
         project.scheduleBuild2(0);
         int count = 0;
-        while(project.getBuildByNumber(buildNumber)==null && count<30){
+        while(project.getBuildByNumber(buildNumber)==null && count<50){
             Thread.sleep(100);
             count ++;
         }

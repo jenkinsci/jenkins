@@ -394,7 +394,7 @@ public class MatrixProjectTest {
         // should have gotten all unique names
         def f1 = p.scheduleBuild2(0)
         // get one going
-        Thread.sleep(1000)
+        f1.waitForStart()
         def f2 = p.scheduleBuild2(0)
         [f1,f2]*.get().each{ j.assertBuildStatusSuccess(it)}
 
