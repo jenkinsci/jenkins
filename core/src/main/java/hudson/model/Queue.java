@@ -173,6 +173,9 @@ public class Queue extends ResourceController implements Saveable {
      * @see Queue#getApproximateItemsQuickly()
      */
     private class CachedItemList {
+        
+        private static final int DATA_REFRESH_PERIOD = 10000;
+        
         /**
          * The current cached value.
          */
@@ -187,7 +190,7 @@ public class Queue extends ResourceController implements Saveable {
             long t = System.currentTimeMillis();
             long d = expires.get();
             if (t>d) {// need to refresh the cache
-                long next = t+1000;
+                long next = t+DATA_REFRESH_PERIOD;
                 if (expires.compareAndSet(d,next)) {
                     // avoid concurrent cache update via CAS.
                     // if the getItems() lock is contended,
