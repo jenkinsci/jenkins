@@ -334,9 +334,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                 AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
-                    if (!upstream && !item.hasPermission(Item.BUILD)) {
+                    /*if (!upstream && !item.hasPermission(Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
-                    }
+                    }*/
                     hasProjects = true;
                 }
             }
