@@ -597,6 +597,12 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
         
+        /**
+         * Optional dependencies of this plugin.
+         */
+        @Exported
+        public final Map<String,String> optionalDependencies = new HashMap<String,String>();
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -611,9 +617,12 @@ public class UpdateSite {
                 // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
                 // and that the optional value isn't true.
                 if (get(depObj,"name")!=null
-                    && !get(depObj,"name").equals("maven-plugin")
-                    && get(depObj,"optional").equals("false")) {
-                    dependencies.put(get(depObj,"name"), get(depObj,"version"));
+                    && !get(depObj,"name").equals("maven-plugin")) {
+                    if (get(depObj, "optional").equals("false")) {
+                        dependencies.put(get(depObj, "name"), get(depObj, "version"));
+                    } else {
+                        optionalDependencies.put(get(depObj, "name"), get(depObj, "version"));
+                    }
                 }
                 
             }
@@ -687,6 +696,22 @@ public class UpdateSite {
                 // If the dependency plugin is installed, is the version we depend on newer than
                 // what's installed? If so, upgrade.
                 else if (current.isOlderThan(requiredVersion)) {
+                    deps.add(depPlugin);
+                }
+            }
+
+            for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                if (depPlugin == null) {
+                    continue;
+                }
+                VersionNumber requiredVersion = new VersionNumber(e.getValue());
+
+                PluginWrapper current = depPlugin.getInstalled();
+
+                // If the optional dependency plugin is installed, is the version we depend on newer than
+                // what's installed? If so, upgrade.
+                if (current != null && current.isOlderThan(requiredVersion)) {
                     deps.add(depPlugin);
                 }
             }
