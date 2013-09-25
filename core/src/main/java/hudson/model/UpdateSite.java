@@ -728,6 +728,43 @@ public class UpdateSite {
             }
         }
 
+        public VersionNumber getNeededDependenciesRequiredCore() {
+            VersionNumber versionNumber = null;
+            try {
+                versionNumber = requiredCore == null ? null : new VersionNumber(requiredCore);
+            } catch (NumberFormatException nfe) {
+                // unable to parse version
+            }
+            for (Plugin p: getNeededDependencies()) {
+                VersionNumber v = p.getNeededDependenciesRequiredCore();
+                if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
+            }
+            return versionNumber;
+        }
+
+        public boolean isNeededDependenciesForNewerJenkins() {
+            for (Plugin p: getNeededDependencies()) {
+                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
+            }
+            return false;
+        }
+
+        /**
+         * If at least some of the plugin's needed dependencies are already installed, and the new version of the
+         * needed dependencies plugin have a "compatibleSinceVersion"
+         * value (i.e., it's only directly compatible with that version or later), this will check to
+         * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
+         * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
+         * specified, it'll return true.
+         */
+        public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
+            for (Plugin p: getNeededDependencies()) {
+                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
+                    return false;
+            }
+            return true;
+        }
+
         /**
          * @deprecated as of 1.326
          *      Use {@link #deploy()}.
