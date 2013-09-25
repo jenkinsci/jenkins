@@ -667,6 +667,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             } catch (Exception e) {
                                 throw new IOException2("Failed to parse changelog",e);
                             }
+
+                        // Get a chance to do something after checkout and changelog is done
+                        scm.postCheckout( build, launcher, build.getWorkspace(), listener );
+
                         return;
                     }
                 } catch (AbortException e) {
