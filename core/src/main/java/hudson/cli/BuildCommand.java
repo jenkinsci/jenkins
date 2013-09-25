@@ -144,6 +144,11 @@ public class BuildCommand extends CLICommand {
         }
 
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
+
+	if (f == null) {
+            stdout.println("Could not schedule build. A build could already be in Queue.");
+            return -1;
+	}
         
         if (wait || sync || follow) {
             AbstractBuild b = f.waitForStart();    // wait for the start
