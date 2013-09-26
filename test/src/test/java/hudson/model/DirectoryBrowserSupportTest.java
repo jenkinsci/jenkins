@@ -29,16 +29,28 @@ import static org.junit.Assert.assertTrue;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Util;
+import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipFile;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.TestBuilder;
+
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.UnexpectedPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -133,4 +145,36 @@ public class DirectoryBrowserSupportTest {
         assertFalse(text, text.contains("x.txt"));
     }
 
+    @Bug(19752)
+    @Test
+    public void zipDownload() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("artifact.out", "Hello world!"));
+        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        HtmlPage page = j.createWebClient().goTo("job/"+p.getName()+"/lastSuccessfulBuild/artifact/");
+        Page download = page.getAnchorByHref("./*zip*/archive.zip").click();
+        File zipfile = download((UnexpectedPage) download);
+
+        ZipFile readzip = new ZipFile(zipfile);
+
+        InputStream is = readzip.getInputStream(readzip.getEntry("artifact.out"));
+
+        // ZipException in case of JENKINS-19752
+        assertFalse("Downloaded zip file must not be empty", is.read() == -1);
+
+        is.close();
+        readzip.close();
+        zipfile.delete();
+    }
+
+    private File download(UnexpectedPage page) throws IOException {
+
+        File file = new File("/home/ogondza/zipfile");//File.createTempFile("DirectoryBrowserSupport", "zipDownload");
+        file.delete();
+        Util.copyStreamAndClose(page.getInputStream(), new FileOutputStream(file));
+
+        return file;
+    }
 }
