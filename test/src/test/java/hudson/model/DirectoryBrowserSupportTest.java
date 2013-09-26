@@ -171,7 +171,7 @@ public class DirectoryBrowserSupportTest {
 
     private File download(UnexpectedPage page) throws IOException {
 
-        File file = new File("/home/ogondza/zipfile");//File.createTempFile("DirectoryBrowserSupport", "zipDownload");
+        File file = File.createTempFile("DirectoryBrowserSupport", "zipDownload");
         file.delete();
         Util.copyStreamAndClose(page.getInputStream(), new FileOutputStream(file));
 
