@@ -23,28 +23,38 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import hudson.FilePath;
 import hudson.Functions;
-import hudson.tasks.Shell;
-import hudson.tasks.BatchFile;
 import hudson.Launcher;
-import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.TestBuilder;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Shell;
 
 import java.io.IOException;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DirectoryBrowserSupportTest extends HudsonTestCase {
+public class DirectoryBrowserSupportTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Double dots that appear in file name is OK.
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
-    public void testDoubleDots() throws Exception {
+    @Test
+    public void doubleDots() throws Exception {
         // create a problematic file name in the workspace
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         if(Functions.isWindows())
             p.getBuildersList().add(new BatchFile("echo > abc..def"));
         else
@@ -52,7 +62,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
         p.scheduleBuild2(0).get();
 
         // can we see it?
-        new WebClient().goTo("job/"+p.getName()+"/ws/abc..def","application/octet-stream");
+        j.createWebClient().goTo("job/"+p.getName()+"/ws/abc..def","application/octet-stream");
 
         // TODO: implement negative check to make sure we aren't serving unexpected directories.
         // the following trivial attempt failed. Someone in between is normalizing.
@@ -70,21 +80,23 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
      * To prevent directory traversal attack, we now treat '\\' just like '/'.
      */
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
-    public void testDoubleDots2() throws Exception {
+    @Test
+    public void doubleDots2() throws Exception {
         if(Functions.isWindows())  return; // can't test this on Windows
 
         // create a problematic file name in the workspace
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
         p.scheduleBuild2(0).get();
 
         // can we see it?
-        new WebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
+        j.createWebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
     }
 
-    public void testNonAsciiChar() throws Exception {
+    @Test
+    public void nonAsciiChar() throws Exception {
         // create a problematic file name in the workspace
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
@@ -94,11 +106,12 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
         p.scheduleBuild2(0).get();
 
         // can we see it?
-        new WebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
+        j.createWebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
     }
 
-    public void testGlob() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Test
+    public void glob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
@@ -113,7 +126,7 @@ public class DirectoryBrowserSupportTest extends HudsonTestCase {
             }
         });
         assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
-        String text = new WebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
+        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
         assertTrue(text, text.contains("X.java"));
         assertTrue(text, text.contains("XTest.java"));
         assertFalse(text, text.contains("pom.xml"));
