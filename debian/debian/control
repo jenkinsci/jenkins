@@ -11,5 +11,6 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, daemon, adduser, psmisc, default-jre-headless | java-runtime-headless
 Conflicts: hudson
 Replaces: hudson
-Description: Continuous integration system written in Java
- Jenkins is an extensible continuous engine written in Java.
+Description: continuous integration system
+ Jenkins is an application that monitors executions of repeated jobs,
+ such as building a software project or jobs run by cron.
