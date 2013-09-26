@@ -2,8 +2,8 @@ Source: jenkins
 Section: devel
 Priority: extra
 Maintainer: Kohsuke Kawaguchi <kk@kohsuke.org>
-Build-Depends: debhelper (>= 5)
-Standards-Version: 3.7.2
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.4
 Homepage: https://jenkins-ci.org/
 
 Package: jenkins
