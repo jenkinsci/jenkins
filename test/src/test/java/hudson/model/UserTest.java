@@ -234,13 +234,14 @@ public class UserTest {
         project.setScm(scm);
         Queue.getInstance().schedule(project,0);
         Build build = project.getLastBuild();
-        while(build==null){
+        // should wait until build completion otherwise this test might randomly fail depending on the server load
+        while(build == null || build.isBuilding()){
             Thread.sleep(100);
             build = project.getLastBuild();
         }
         Queue.getInstance().schedule(project2,0);
         Build build2 = project2.getLastBuild();
-        while(build2==null){
+        while(build2 == null || build2.isBuilding()){
             Thread.sleep(100);
             build2 = project2.getLastBuild();
         }
