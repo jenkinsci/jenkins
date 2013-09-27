@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout>
     <st:include it="${it.owner}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>${%Test Result}</h1>
+      <h1>${it.displayName}</h1>
 
       <j:set var="prev" value="${it.previousResult}" />
       <test:bar />
@@ -49,6 +49,7 @@ THE SOFTWARE.
                 <a href="${rootURL}/${it.resolveChild(c).url}testReport/">
                   ${c.name}
                 </a>
+                <j:if test="${p.pending}"><st:nbsp/>(pending)</j:if>
               </td>
               <td class="pane" style="text-align:right">${p.failCount}</td>
               <td class="pane" style="text-align:right">

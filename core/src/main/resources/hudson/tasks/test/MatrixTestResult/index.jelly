@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout title="Test">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
-      <h1>Test Result</h1>
+      <h1>${it.displayName}</h1>
       <test:bar/>
 
       <table class="pane sortable">
@@ -43,6 +43,7 @@ THE SOFTWARE.
           <tr>
             <td class="pane">
               <a href="../${report.child.project.shortUrl}testReport" class="model-link inside">${report.child.project.name}</a>
+              <j:if test="${report.child.project.isBuilding()}"><st:nbsp/>(pending)</j:if>
             </td>
             <td data="${report.result.duration}" class="pane" style="text-align:right">
               ${report.result.durationString}

@@ -106,7 +106,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     public String getDisplayName() {
-        return Messages.AbstractTestResultAction_getDisplayName();
+        return isPending()
+                ? Messages.AbstractTestResultAction_getPendingDisplayName()
+                : Messages.AbstractTestResultAction_getDisplayName()
+        ;
     }
 
     @Exported(visibility=2)
@@ -149,6 +152,16 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * return <tt>this</tt>.
      */
     public abstract Object getResult();
+
+    /**
+     * Determine whether test results are still being updated.
+     *
+     * @return false if there are not test results to come later.
+     * @since TODO
+     */
+    public boolean isPending() {
+        return owner.isBuilding();
+    }
 
     /**
      * Gets the test result of the previous build, if it's recorded, or null.

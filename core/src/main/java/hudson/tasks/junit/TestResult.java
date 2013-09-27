@@ -303,7 +303,10 @@ public final class TestResult extends MetaTabulatedResult {
     }
 
     public String getDisplayName() {
-        return Messages.TestResult_getDisplayName();
+        return getParentAction().isPending()
+                ? Messages.TestResult_getPendingDisplayName()
+                : Messages.TestResult_getDisplayName()
+        ;
     }
 
     @Override
@@ -359,7 +362,10 @@ public final class TestResult extends MetaTabulatedResult {
 
     @Override
     public String getTitle() {
-        return Messages.TestResult_getTitle();
+        return getParentAction().isPending()
+                ? Messages.TestResult_getPendingTitle()
+                : Messages.TestResult_getTitle()
+        ;
     }
 
     @Override
