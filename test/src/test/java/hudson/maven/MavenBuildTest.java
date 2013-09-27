@@ -5,6 +5,7 @@ import hudson.model.BuildListener;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
@@ -190,7 +191,40 @@ public class MavenBuildTest extends HudsonTestCase {
                 "</extensions></build></project>"));
         buildAndAssertSuccess(m);
     }
-    
+
+    @Bug(19801)
+    public void tetStopBuildAndAllSubmoduleBuilds() throws Exception {
+        configureDefaultMaven();
+        MavenModuleSet project = createMavenProject();
+        project.setGoals("clean package");
+        project.setScm(new ExtractResourceSCM(
+                getClass().getResource("/hudson/maven/maven-multimod.zip")
+        ));
+
+        MavenModuleSetBuild build = project.scheduleBuild2(0).waitForStart();
+
+        ensureSubmoduleBuildsStarted(build);
+
+        build.doStop();
+
+        Thread.sleep(2000);
+        assertBuildStatus(Result.ABORTED, build);
+        assertFalse(build.isBuilding());
+        for (MavenBuild mb: build.getModuleLastBuilds().values()) {
+            final String moduleName = mb.getParent().getDisplayName();
+            assertFalse("Module " + moduleName + " is still building", mb.isBuilding());
+        }
+    }
+
+    private void ensureSubmoduleBuildsStarted(MavenModuleSetBuild build) throws InterruptedException {
+        for (;;) {
+            for (MavenBuild mb: build.getModuleLastBuilds().values()) {
+                if (Result.SUCCESS.equals(mb.getResult())) return;
+            }
+            Thread.sleep(1000);
+        }
+    }
+
     private static class TestReporter extends MavenReporter {
         private static final long serialVersionUID = 1L;
 

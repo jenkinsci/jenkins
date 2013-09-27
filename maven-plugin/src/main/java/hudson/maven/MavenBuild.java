@@ -613,21 +613,31 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
                 e.printStackTrace();
             }
 
+            abstract class Terminate extends RunExecution {
+                @Override public void post(BuildListener listener) {}
+                @Override public void cleanUp(BuildListener listener) {}
+            }
+
+            if(isInProgress()) {
+                // Build was aborted, abort run as well.
+                MavenBuild.this.execute(new Terminate() {
+                    @Override
+                    public Result run(BuildListener listener) {
+                        return Result.ABORTED;
+                    }
+                });
+            }
+
             if(hasntStartedYet()) {
                 // Mark the build as not_built. This method is used when the aggregated build
                 // failed before it didn't even get to this module
                 // OR if the aggregated build is an incremental one and this
                 // module needn't be build.
-                MavenBuild.this.execute(new RunExecution() {
+                MavenBuild.this.execute(new Terminate() {
+                    @Override
                     public Result run(BuildListener listener) {
                         listener.getLogger().println(Messages.MavenBuild_FailedEarlier());
                         return Result.NOT_BUILT;
-                    }
-
-                    public void post(BuildListener listener) {
-                    }
-
-                    public void cleanUp(BuildListener listener) {
                     }
                 });
             }
