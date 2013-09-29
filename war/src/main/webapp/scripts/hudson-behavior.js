@@ -1187,6 +1187,7 @@ var jenkinsRules = {
         edge.className = "top-sticker-edge";
         sticker.insertBefore(edge,sticker.firstChild);
 
+        var initialBreadcrumbPosition = DOM.getRegion(shadow);
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
 
@@ -1194,7 +1195,9 @@ var jenkinsRules = {
             var pos = DOM.getRegion(shadow);
 
             sticker.style.position = "fixed";
-            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            if(pos.top <= initialBreadcrumbPosition.top) {
+                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            }
             sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
