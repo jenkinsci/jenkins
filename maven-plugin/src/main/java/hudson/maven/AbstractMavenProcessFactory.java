@@ -8,6 +8,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Platform;
 import hudson.Proc;
+import hudson.Util;
 import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
@@ -534,7 +535,7 @@ public abstract class AbstractMavenProcessFactory
             zip.setProject(new Project());
             zip.execute();
             jar = t;
-        } else if (copiedJar.lastModified() > jar.lastModified()) {
+        } else if (copiedJar.exists() && copiedJar.digest().equals(Util.getDigestOf(jar))) {
             log.println(seedName + ".jar already up to date");
             return copiedJar;
         }
