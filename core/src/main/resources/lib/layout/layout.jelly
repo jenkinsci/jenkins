@@ -140,7 +140,7 @@ ${h.initPageVariables(context)}
       <st:include it="${pd}" page="header.jelly" optional="true" />
     </j:forEach>
   </head>
-  <body class="yui-skin-sam">
+  <body id="jenkins jenkins-${h.version}" class="yui-skin-sam">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
@@ -149,7 +149,7 @@ ${h.initPageVariables(context)}
         <td id="top-panel" colspan="2">
           <table cellpadding="0" cellspacing="0" width="100%" border="0">
             <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" width="139" height="34" /></a>
+              <a id="jenkins-home-link" href="${rootURL}/"><img id="jenkins-home-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" /></a>
             </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
 
               <!-- search box -->

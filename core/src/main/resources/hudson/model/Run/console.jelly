@@ -60,7 +60,7 @@ THE SOFTWARE.
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre>
+          <pre class="console-output">
             <st:getOutput var="output" />
             <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
           </pre>
