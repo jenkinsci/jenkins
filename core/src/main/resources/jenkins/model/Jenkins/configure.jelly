@@ -46,6 +46,9 @@ THE SOFTWARE.
         <f:entry field="rawBuildsDir" title="${%Build Record Root Directory}">
           <f:textbox/>
         </f:entry>
+        <f:entry field="overwriteDirectories" title="${%Allow overwriting existing directories in renaming process}">
+          <f:checkbox/>
+        </f:entry>
       </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}"

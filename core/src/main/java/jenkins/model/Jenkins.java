@@ -399,6 +399,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see #getBuildDirFor(Job)
      */
     private String buildsDir = "${ITEM_ROOTDIR}/builds";
+    
+    private boolean overwriteDirectories = true;
 
     /**
      * Message displayed in the top page.
@@ -1947,6 +1949,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public String getRawWorkspaceDir() {
         return workspaceDir;
     }
+    
+    public boolean getOverwriteDirectories(){
+        return overwriteDirectories;
+    }
 
     public String getRawBuildsDir() {
         return buildsDir;
@@ -2728,6 +2734,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
+            overwriteDirectories = json.getBoolean("overwriteDirectories");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 

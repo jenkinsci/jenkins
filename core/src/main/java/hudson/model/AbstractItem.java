@@ -252,7 +252,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     if (interrupted)
                         Thread.currentThread().interrupt();
 
-                    if (!renamed) {
+                    if (!renamed && Jenkins.getInstance().getOverwriteDirectories()) {
                         // failed to rename. it must be that some lengthy
                         // process is going on
                         // to prevent a rename operation. So do a copy. Ideally
@@ -265,12 +265,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         cp.setProject(new org.apache.tools.ant.Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
-                        src.setDir(getRootDir());
+                        src.setDir(oldRoot);
                         cp.addFileset(src);
                         cp.setOverwrite(true);
                         cp.setPreserveLastModified(true);
                         cp.setFailOnError(false); // keep going even if
-                                                    // there's an error
+                                                // there's an error
                         cp.execute();
 
                         // try to delete as much as possible
@@ -280,6 +280,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                             // but ignore the error, since we expect that
                             e.printStackTrace();
                         }
+                    }
+                    else{
+                        throw new IllegalArgumentException("Directory with name " + newRoot.getAbsolutePath()
+                            + " already exists and overwriting is not allowed.");
                     }
 
                     success = true;
