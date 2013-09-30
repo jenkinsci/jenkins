@@ -35,5 +35,5 @@ THE SOFTWARE.
   </s:documentation>
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
-  <input type="button" value="${%Apply}" class="apply-button applyButton" /><!-- applyButton is legacy -->
+  <input type="button" value="${%Apply}" class="apply-button applyButton" name="Apply"/><!-- applyButton is legacy -->
 </j:jelly>
