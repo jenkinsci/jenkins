@@ -26,6 +26,7 @@ package hudson.maven;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.maven.agent.Main;
 import hudson.maven.agent.Maven21Interceptor;
 import hudson.model.BuildListener;
@@ -40,7 +41,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 
 
 /**
@@ -69,11 +69,10 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
             // TODO why would we not pick it up using GetClassWorldsJar like we do for M2 on master or M3 anywhere?
             FilePath jar = slaveRoot.child("classworlds.jar");
             // copied to root of this JAR using dependency:generate-resources:
-            URLConnection conn = MavenProcessFactory.class.getClassLoader().getResource("classworlds.jar").openConnection();
-            if (jar.lastModified() > conn.getLastModified()) {
+            if (jar.exists() && jar.digest().equals(Util.getDigestOf(MavenProcessFactory.class.getClassLoader().getResourceAsStream("classworlds.jar")))) {
                 listener.getLogger().println("classworlds.jar already up to date");
             } else {
-                InputStream in = conn.getInputStream();
+                InputStream in = MavenProcessFactory.class.getClassLoader().getResourceAsStream("classworlds.jar");
                 try {
                     jar.copyFrom(in);
                 } finally {

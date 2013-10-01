@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.Cause.UserIdCause;
 import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -224,7 +225,7 @@ public class UserTest {
     }
 
     @Test
-    public void testGetBuildsAndGetProjects() throws IOException, InterruptedException {
+    public void testGetBuildsAndGetProjects() throws Exception {
         User user = User.get("John Smith", true, Collections.emptyMap());
         FreeStyleProject project = j.createFreeStyleProject("free");
         FreeStyleProject project2 = j.createFreeStyleProject("free2");
@@ -232,24 +233,20 @@ public class UserTest {
         FakeChangeLogSCM scm = new FakeChangeLogSCM();
         scm.addChange().withAuthor(user.getId());
         project.setScm(scm);
-        Queue.getInstance().schedule(project,0);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project2);
         Build build = project.getLastBuild();
-        while(build==null){
-            Thread.sleep(100);
-            build = project.getLastBuild();
-        }
-        Queue.getInstance().schedule(project2,0);
         Build build2 = project2.getLastBuild();
-        while(build2==null){
-            Thread.sleep(100);
-            build2 = project2.getLastBuild();
-        }
         assertTrue("User should participate in the last build of project free.", user.getBuilds().contains(build));
         assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
         assertTrue("User should participate in the project free.", user.getProjects().contains(project));
         assertFalse("User should not participate in the project free2.", user.getProjects().contains(project2));
-        
+
         //JENKINS-16178: build should include also builds scheduled by user
+
+        CauseAction action = build2.getAction(CauseAction.class); //remove existing cause action
+        if(action!=null)
+            build2.getActions().remove(action);
         build2.addAction(new CauseAction(new Cause.UserIdCause()));
         assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
         assertFalse("Current user should not participate in the last build of project free.", User.current().getBuilds().contains(build));
