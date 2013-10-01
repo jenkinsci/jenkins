@@ -235,10 +235,11 @@ public final class FilePath implements Serializable {
      * Is the given path name an absolute path?
      */
     private static boolean isAbsolute(String rel) {
-        return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches();
+        return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches() || UNC_PATTERN.matcher(rel).matches();
     }
 
     private static final Pattern DRIVE_PATTERN = Pattern.compile("[A-Za-z]:[\\\\/].*"),
+            UNC_PATTERN = Pattern.compile("^\\\\\\\\.*"),
             ABSOLUTE_PREFIX_PATTERN = Pattern.compile("^(\\\\\\\\|(?:[A-Za-z]:)?[\\\\/])[\\\\/]*");
 
     /**
