@@ -471,7 +471,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since TODO
      */
     protected boolean isInProgress() {
-        return state.equals(State.BUILDING);
+        return state.equals(State.BUILDING) || state.equals(State.POST_PRODUCTION);
     }
 
     /**
