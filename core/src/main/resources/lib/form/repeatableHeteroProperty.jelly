@@ -27,14 +27,6 @@ THE SOFTWARE.
   <st:documentation> <![CDATA[
     Data-bound only version of <f:hetero-list> that assumes the type pointed by the property is data-bound as well.
     The nested property type must be Describable and it needs to have config.jelly.
-
-    The nested configuration fragment normally needs to have a delete button by adding a fragment like this:
-
-      	<f:entry title="">
-          <div align="right">
-            <f:repeatableDeleteButton />
-          </div>
-        </f:entry>
     ]]>
 
     <st:attribute name="field" use="required">

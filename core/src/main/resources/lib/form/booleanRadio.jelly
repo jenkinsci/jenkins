@@ -43,4 +43,5 @@ THE SOFTWARE.
   <label class="attach-previous">${attrs['true']?:'%Yes'}</label>
   <f:radio name="_.${attrs.field}" value="false" checked="${!instance[field]}" />
   <label class="attach-previous">${attrs['false']?:'%No'}</label>
+  <!-- TODO consider customizedFields -->
 </j:jelly>

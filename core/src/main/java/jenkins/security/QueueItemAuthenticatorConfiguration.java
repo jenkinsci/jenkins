@@ -28,6 +28,11 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
         load();
     }
 
+    private Object readResolve() {
+        authenticators.setOwner(this);
+        return this;
+    }
+
     @Override
     public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);

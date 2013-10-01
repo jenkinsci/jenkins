@@ -31,6 +31,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.ReportPlugin;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 
 /**
  * Version independent name of a Maven project. GroupID+artifactId.
@@ -39,10 +40,16 @@ import java.io.Serializable;
  * @see ModuleDependency
  */
 public class ModuleName implements Comparable<ModuleName>, Serializable {
-    public final String groupId;
-    public final String artifactId;
+    public final @Nonnull String groupId;
+    public final @Nonnull String artifactId;
 
     public ModuleName(String groupId, String artifactId) {
+        if (groupId == null) {
+            throw new NullPointerException("Must specify groupId");
+        }
+        if (artifactId == null) {
+            throw new NullPointerException("Must specify artifactId");
+        }
         this.groupId = groupId;
         this.artifactId = artifactId;
     }

@@ -2,13 +2,10 @@ package jenkins.scm;
 
 import com.google.common.collect.Lists;
 import hudson.DescriptorExtensionList;
-import hudson.matrix.MatrixExecutionStrategyDescriptor;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +27,7 @@ public abstract class SCMCheckoutStrategyDescriptor extends Descriptor<SCMChecko
     public abstract boolean isApplicable(AbstractProject project);
 
     /**
-     * Returns all the registered {@link MatrixExecutionStrategyDescriptor}s.
+     * Returns all the registered {@link SCMCheckoutStrategy}s.
      */
     public static DescriptorExtensionList<SCMCheckoutStrategy,SCMCheckoutStrategyDescriptor> all() {
         return Jenkins.getInstance().<SCMCheckoutStrategy,SCMCheckoutStrategyDescriptor>getDescriptorList(SCMCheckoutStrategy.class);

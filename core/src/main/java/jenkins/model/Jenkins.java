@@ -380,6 +380,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+
+    /**
+     * Disables the remember me on this computer option in the standard login screen.
+     *
+     * @since 1.534
+     */
+    private volatile boolean disableRememberMe;
     
     /**
      * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
@@ -854,7 +861,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
             for (ItemListener l : ItemListener.all()) {
                 long itemListenerStart = System.currentTimeMillis();
-                l.onLoaded();
+                try {
+                    l.onLoaded();
+                } catch (RuntimeException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
                 if (LOG_STARTUP_PERFORMANCE)
                     LOGGER.info(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
@@ -2054,6 +2065,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         authorizationStrategy = a;
     }
 
+    public boolean isDisableRememberMe() {
+        return disableRememberMe;
+    }
+
+    public void setDisableRememberMe(boolean disableRememberMe) {
+        this.disableRememberMe = disableRememberMe;
+    }
+
     public void disableSecurity() {
         useSecurity = null;
         setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
@@ -3096,6 +3115,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * End point that intentionally throws an exception to test the error behaviour.
+     * @since 1.467
      */
     public void doException() {
         throw new RuntimeException();

@@ -220,7 +220,7 @@ public class FingerprintTest {
     }
 
     @Test public void roundTrip() throws Exception {
-        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff.jar", SOME_MD5);
+        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar", SOME_MD5);
         f.addWithoutSaving("some", 1);
         f.addWithoutSaving("some", 2);
         f.addWithoutSaving("some", 3);
@@ -229,6 +229,7 @@ public class FingerprintTest {
         File xml = new File(new File(tmp.getRoot(), "dir"), "fp.xml");
         f.save(xml);
         Fingerprint f2 = Fingerprint.load(xml);
+        assertNotNull(f2);
         assertEquals(f.toString(), f2.toString());
         f.facets.setOwner(Saveable.NOOP);
         f.facets.add(new TestFacet(f, 123, "val"));

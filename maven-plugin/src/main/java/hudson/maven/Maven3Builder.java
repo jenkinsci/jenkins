@@ -196,6 +196,61 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
 
         public JenkinsEventSpy(AbstractMavenBuilder maven3Builder) {
            super(maven3Builder);
+            // avoid log event output duplication for maven 3.1 build which use eventSpy
+            // there is a delagation which duplicate log event.
+            this.eventLogger = new ExecutionEventLogger(  ){
+                @Override
+                public void projectDiscoveryStarted( ExecutionEvent event ) {  }
+
+                @Override
+                public void sessionStarted( ExecutionEvent event ){  }
+
+                @Override
+                public void sessionEnded( ExecutionEvent event ){  }
+
+                @Override
+                public void projectSkipped( ExecutionEvent event ){  }
+
+                @Override
+                public void projectStarted( ExecutionEvent event ){  }
+
+                @Override
+                public void mojoSkipped( ExecutionEvent event ){  }
+
+                @Override
+                public void mojoStarted( ExecutionEvent event ){  }
+
+                @Override
+                public void forkStarted( ExecutionEvent event ){  }
+
+                @Override
+                public void forkSucceeded( ExecutionEvent event ){  }
+
+                @Override
+                public void forkedProjectStarted( ExecutionEvent event ){  }
+
+                @Override
+                public void projectSucceeded( ExecutionEvent event ){  }
+
+                @Override
+                public void projectFailed( ExecutionEvent event ){  }
+
+                @Override
+                public void forkFailed( ExecutionEvent event ){  }
+
+                @Override
+                public void mojoSucceeded( ExecutionEvent event ){  }
+
+                @Override
+                public void mojoFailed( ExecutionEvent event ){  }
+
+                @Override
+                public void forkedProjectSucceeded( ExecutionEvent event ){  }
+
+                @Override
+                public void forkedProjectFailed( ExecutionEvent event ){  }
+
+            };
         }
 
         @Override
@@ -289,7 +344,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         private AtomicBoolean hasTestFailures = new AtomicBoolean();
 
         private org.slf4j.Logger logger = LoggerFactory.getLogger( MavenExecutionListener.class );
-       
+
         /**
          * Number of total nanoseconds {@link Maven3Builder} spent.
          */
@@ -304,7 +359,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
         
         private final Map<ModuleName, Long> currentMojoStartPerModuleName = new ConcurrentHashMap<ModuleName, Long>();
         
-        private ExecutionEventLogger eventLogger;
+        protected ExecutionEventLogger eventLogger;
 
         public MavenExecutionListener(AbstractMavenBuilder maven3Builder) {
             this.maven3Builder = maven3Builder;
@@ -318,7 +373,9 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
             // E.g. there's also the option to redirect logging to a file which is handled there, but not here.
             this.eventLogger = new ExecutionEventLogger( logger );
         }
-        
+
+
+
         /**
          * Whether there where test failures detected during the build.
          * @since 1.496
@@ -513,7 +570,7 @@ public class Maven3Builder extends AbstractMavenBuilder implements DelegatingCal
          * @see org.apache.maven.execution.ExecutionListener#mojoStarted(org.apache.maven.execution.ExecutionEvent)
          */
         public void mojoStarted( ExecutionEvent event ) {
-            debug("mojoStarted " + mojoExec(event));
+            debug( "mojoStarted " + mojoExec( event ) );
             recordMojoStarted(event);
             this.eventLogger.mojoStarted( event );
         }

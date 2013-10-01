@@ -8,6 +8,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Platform;
 import hudson.Proc;
+import hudson.Util;
 import hudson.maven.ProcessCache.NewProcess;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,6 +44,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 
 import jenkins.model.Jenkins;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Zip;
 
 import org.kohsuke.stapler.framework.io.IOException2;
 
@@ -357,7 +361,9 @@ public abstract class AbstractMavenProcessFactory
         args.addTokenized(getMavenOpts());
         
         args.add( "-cp" );
-        args.add(getMavenAgentClassPath(mvn,isMaster,slaveRoot,listener));
+        args.add(getMavenAgentClassPath(mvn, slaveRoot, listener));
+
+
         args.add(getMainClassName());
 
         // M2_HOME
@@ -372,9 +378,9 @@ public abstract class AbstractMavenProcessFactory
         args.add(remotingJar);
 
         // interceptor.jar
-        args.add(getMavenInterceptorClassPath(mvn,isMaster,slaveRoot));
+        args.add(getMavenInterceptorClassPath(mvn, slaveRoot, listener));
 
-        String mavenInterceptorCommonClasspath = getMavenInterceptorCommonClassPath( mvn, isMaster, slaveRoot );
+        String mavenInterceptorCommonClasspath = getMavenInterceptorCommonClassPath(mvn, slaveRoot, listener);
 
         if (mavenInterceptorCommonClasspath!=null){
             args.add( mavenInterceptorCommonClasspath );
@@ -383,36 +389,36 @@ public abstract class AbstractMavenProcessFactory
         // TCP/IP port to establish the remoting infrastructure
         args.add(tcpPort);
         
-        String interceptorOverride = getMavenInterceptorOverride(mvn,isMaster,slaveRoot);
+        String interceptorOverride = getMavenInterceptorOverride(mvn, slaveRoot, listener);
         if (interceptorOverride!=null) {
             args.add(interceptorOverride);
         }
 
         return args;
     }
-    
+
     /**
      * Returns the classpath string for the maven-agent jar including classworlds
      */
-    protected abstract String getMavenAgentClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException;
+    protected abstract String getMavenAgentClassPath(MavenInstallation mvn, FilePath slaveRoot,BuildListener listener) throws IOException, InterruptedException;
     
     /**
      * Returns the classpath string for the maven-interceptor jar
      */
-    protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    protected abstract String getMavenInterceptorClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException;
 
     /**
      * Returns the classpath string for the maven-interceptor jar
      * @since 1.525
      */
-    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException {
+    protected String getMavenInterceptorCommonClassPath(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException {
       return null;
     }
     
     /**
      * For Maven 2.1.x - 2.2.x we need an additional jar which overrides some classes in the other interceptor jar. 
      */
-    protected abstract String getMavenInterceptorOverride(MavenInstallation mvn,boolean isMaster,FilePath slaveRoot) throws IOException, InterruptedException;
+    protected abstract String getMavenInterceptorOverride(MavenInstallation mvn, FilePath slaveRoot, BuildListener listener) throws IOException, InterruptedException;
     
     /**
      * Returns the name of the Maven main class.
@@ -489,6 +495,56 @@ public abstract class AbstractMavenProcessFactory
         public String call() throws IOException {
             return Which.jarFile(hudson.remoting.Launcher.class).getPath();
         }
+    }
+
+    /**
+     * Copies a Maven-related JAR to the slave on demand.
+     * Can also be used when run on master.
+     * @param root the FS root of the slave (null means running on master)
+     * @param representative a representative class present in the JAR
+     * @param seedName the basename of the JAR
+     * @param listener a listener for any problems
+     * @return the (local or remote) absolute path of the JAR
+     * @throws IOException in case copying fails
+     * @throws InterruptedException in case copying is interrupted
+     * @since 1.530
+     */
+    protected final String classPathEntry(FilePath root, Class<?> representative, String seedName, TaskListener listener) throws IOException, InterruptedException {
+        if (root == null) { // master
+            return Which.jarFile(representative).getAbsolutePath();
+        } else {
+            return copyJar(listener.getLogger(), root, representative, seedName).getRemote();
+        }
+    }
+    /**
+     * Copies a jar file from the master to slave.
+     */
+    static FilePath copyJar(PrintStream log, FilePath dst, Class<?> representative, String seedName) throws IOException, InterruptedException {
+        // in normal execution environment, the master should be loading 'representative' from this jar, so
+        // in that way we can find it.
+        File jar = Which.jarFile(representative);
+        FilePath copiedJar = dst.child(seedName + ".jar");
+
+        if (jar.isDirectory()) {
+            // but during the development and unit test environment, we may be picking the class up from the classes dir
+            Zip zip = new Zip();
+            zip.setBasedir(jar);
+            File t = File.createTempFile(seedName, "jar");
+            t.delete();
+            zip.setDestFile(t);
+            zip.setProject(new Project());
+            zip.execute();
+            jar = t;
+        } else if (copiedJar.exists() && copiedJar.digest().equals(Util.getDigestOf(jar))) {
+            log.println(seedName + ".jar already up to date");
+            return copiedJar;
+        }
+
+        // Theoretically could be a race condition on a multi-executor Windows slave; symptom would be an IOException during the build.
+        // Could perhaps be solved by synchronizing on dst.getChannel() or similar.
+        new FilePath(jar).copyTo(copiedJar);
+        log.println("Copied " + seedName + ".jar");
+        return copiedJar;
     }
 
     /**

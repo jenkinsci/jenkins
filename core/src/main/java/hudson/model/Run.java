@@ -52,14 +52,12 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildStep;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
-import hudson.util.ProcessTree;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -121,7 +119,13 @@ import java.io.StringWriter;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.PeepholePermalink;
+import jenkins.model.StandardArtifactManager;
 import jenkins.model.RunAction2;
+import jenkins.util.VirtualFile;
 
 /**
  * A particular execution of {@link Job}.
@@ -256,6 +260,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private volatile transient RunExecution runner;
 
+    /**
+     * Artifact manager associated with this build, if any.
+     * @since 1.532
+     */
+    private @CheckForNull ArtifactManager artifactManager;
+
     private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
     private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
@@ -324,6 +334,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
             }
+        }
+        if (artifactManager != null) {
+            artifactManager.onLoad(this);
         }
     }
     
@@ -399,9 +412,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p>
      * When a build is {@link #isBuilding() in progress}, this method
      * returns an intermediate result.
+     * @return The status of the build, if it has completed or some build step has set a status; may be null if the build is ongoing.
      */
     @Exported
-    public Result getResult() {
+    public @CheckForNull Result getResult() {
         return result;
     }
 
@@ -963,8 +977,52 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Gets the directory where the artifacts are archived.
+     * Gets an object responsible for storing and retrieving build artifacts.
+     * If {@link #pickArtifactManager} has previously been called on this build,
+     * and a nondefault manager selected, that will be returned.
+     * Otherwise (including if we are loading a historical build created prior to this feature) {@link StandardArtifactManager} is used.
+     * <p>This method should be used when existing artifacts are to be loaded, displayed, or removed.
+     * If adding artifacts, use {@link #pickArtifactManager} instead.
+     * @return an appropriate artifact manager
+     * @since 1.532
      */
+    public final @Nonnull ArtifactManager getArtifactManager() {
+        return artifactManager != null ? artifactManager : new StandardArtifactManager(this);
+    }
+
+    /**
+     * Selects an object responsible for storing and retrieving build artifacts.
+     * The first time this is called on a running build, {@link ArtifactManagerConfiguration} is checked
+     * to see if one will handle this build.
+     * If so, that manager is saved in the build and it will be used henceforth.
+     * If no manager claimed the build, {@link StandardArtifactManager} is used.
+     * <p>This method should be used when a build step expects to archive some artifacts.
+     * If only displaying existing artifacts, use {@link #getArtifactManager} instead.
+     * @return an appropriate artifact manager
+     * @throws IOException if a custom manager was selected but the selection could not be saved
+     * @since 1.532
+     */
+    public final synchronized @Nonnull ArtifactManager pickArtifactManager() throws IOException {
+        if (artifactManager != null) {
+            return artifactManager;
+        } else {
+            for (ArtifactManagerFactory f : ArtifactManagerConfiguration.get().getArtifactManagerFactories()) {
+                ArtifactManager mgr = f.managerFor(this);
+                if (mgr != null) {
+                    artifactManager = mgr;
+                    save();
+                    return mgr;
+                }
+            }
+            return new StandardArtifactManager(this);
+        }
+    }
+
+    /**
+     * Gets the directory where the artifacts are archived.
+     * @deprecated Should only be used from {@link StandardArtifactManager} or subclasses.
+     */
+    @Deprecated
     public File getArtifactsDir() {
         return new File(getRootDir(),"archive");
     }
@@ -982,7 +1040,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public List<Artifact> getArtifactsUpTo(int n) {
         ArtifactList r = new ArtifactList();
-        addArtifacts(getArtifactsDir(),"","",r,null,n);
+        try {
+            addArtifacts(getArtifactManager().root(), "", "", r, null, n);
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, null, x);
+        }
         r.computeDisplayName();
         return r;
     }
@@ -997,18 +1059,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return !getArtifactsUpTo(1).isEmpty();
     }
 
-    private int addArtifacts( File dir, String path, String pathHref, ArtifactList r, Artifact parent, int upTo ) {
-        String[] children = dir.list();
-        if(children==null)  return 0;
-        Arrays.sort(children, String.CASE_INSENSITIVE_ORDER);
+    private int addArtifacts(VirtualFile dir, String path, String pathHref, ArtifactList r, Artifact parent, int upTo) throws IOException {
+        VirtualFile[] kids = dir.list();
+        Arrays.sort(kids);
 
         int n = 0;
-        for (String child : children) {
+        for (VirtualFile sub : kids) {
+            String child = sub.getName();
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
-            File sub = new File(dir, child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
-            boolean collapsed = (children.length==1 && parent!=null);
+            boolean collapsed = (kids.length==1 && parent!=null);
             Artifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
@@ -1136,7 +1197,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @ExportedBean
     public class Artifact {
         /**
-         * Relative path name from {@link Run#getArtifactsDir()}
+         * Relative path name from artifacts root.
          */
     	@Exported(visibility=3)
         public final String relativePath;
@@ -1179,7 +1240,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Gets the artifact file.
+         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#load} with {@link #relativePath} instead.
          */
+        @Deprecated
         public File getFile() {
             return new File(getArtifactsDir(),relativePath);
         }
@@ -1597,8 +1660,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    // create a symlink from build number to ID.
-                    Util.createSymlink(getParent().getBuildDir(),getId(),String.valueOf(getNumber()),listener);
+                    updateSymlinks(listener);
 
                     setResult(job.run(listener));
 
@@ -1672,6 +1734,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } finally {
             onEndBuilding();
         }
+    }
+
+    /**
+     * Creates a symlink from build number to ID.
+     * Also makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
+     * Normally you do not need to call this explicitly, since {@link #execute} does so,
+     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
+     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
+     * @param listener probably unused
+     * @throws InterruptedException probably not thrown
+     * @since 1.530
+     */
+    public final void updateSymlinks(TaskListener listener) throws InterruptedException {
+        Util.createSymlink(getParent().getBuildDir(), getId(), String.valueOf(getNumber()), listener);
+        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
+        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
+    }
+    /**
+     * Backward compatibility.
+     *
+     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
+     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
+     * resolves to the symlink created by {@link PeepholePermalink}.
+     */
+    private void createSymlink(TaskListener listener, String name, PermalinkProjectAction.Permalink target) throws InterruptedException {
+        File buildDir = getParent().getBuildDir();
+        File rootDir = getParent().getRootDir();
+        String targetDir;
+        if (buildDir.equals(new File(rootDir, "builds"))) {
+            targetDir = "builds" + File.separator + target.getId();
+        } else {
+            targetDir = buildDir + File.separator + target.getId();
+        }
+        Util.createSymlink(rootDir, targetDir, name, listener);
     }
 
     /**
@@ -1898,7 +1994,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(Functions.isArtifactsPermissionEnabled()) {
           checkPermission(ARTIFACTS);
         }
-        return new DirectoryBrowserSupport(this,new FilePath(getArtifactsDir()), project.getDisplayName()+' '+getDisplayName(), "package.png", true);
+        return new DirectoryBrowserSupport(this, getArtifactManager().root(), project.getDisplayName() + ' ' + getDisplayName(), "package.png", true);
     }
 
     /**

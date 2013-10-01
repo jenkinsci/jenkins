@@ -51,7 +51,6 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
-import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
@@ -86,6 +85,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1060,7 +1061,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(
+            new ThreadFactory() {
+                
+                private final AtomicInteger threadNumber = new AtomicInteger(1);
+                
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("Jenkins-Remoting-Thread-"+threadNumber.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                }
+            }));
 
 //
 //
@@ -1186,9 +1199,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @WebMethod(name = "config.xml")
     public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        checkPermission(Jenkins.ADMINISTER);
+
         if (req.getMethod().equals("GET")) {
             // read
+            checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml");
             Jenkins.XSTREAM2.toXMLUTF8(getNode(), rsp.getOutputStream());
             return;
@@ -1225,10 +1239,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Updates Job by its XML definition.
      *
-     * @since XXX
+     * @since 1.526
      */
     public void updateByXml(final InputStream source) throws IOException, ServletException {
-        checkPermission(Jenkins.ADMINISTER);
+        checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
         replaceBy(result);
     }
@@ -1349,10 +1363,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(Computer.class,Messages._Computer_Permissions_Title());
-    /**
-     * Permission to configure slaves.
-     */
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._Computer_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.COMPUTER);
+    /**
+     * @since 1.532
+     */
+    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.COMPUTER);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);

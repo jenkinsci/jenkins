@@ -1,6 +1,8 @@
 package hudson.maven;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.FilePath;
+import hudson.Functions;
 import org.junit.Assert;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -8,16 +10,31 @@ import org.jvnet.hudson.test.ExtractResourceWithChangesSCM;
 import org.jvnet.hudson.test.ExtractChangeLogSet;
 
 import hudson.Launcher;
+import hudson.Util;
 import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
+import hudson.model.Job;
+import hudson.model.PermalinkProjectAction;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Maven.MavenInstallation;
+import java.io.File;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import jenkins.model.ArtifactManager;
+import java.util.Set;
+import java.util.TreeSet;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +58,36 @@ public class MavenMultiModuleTest {
         m.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
 	    assertFalse("MavenModuleSet.isNonRecursive() should be false", m.isNonRecursive());
         j.buildAndAssertSuccess(m);
+    }
+
+    @Bug(18846)
+    @Test public void symlinksUpdated() throws Exception {
+        Assume.assumeFalse(Functions.isWindows());
+        j.configureDefaultMaven();
+        MavenModuleSet mms = j.createMavenProject();
+        mms.setScm(new ExtractResourceSCM(MavenMultiModuleTest.class.getResource("maven-multimod.zip")));
+        j.buildAndAssertSuccess(mms);
+        MavenModule mm = mms.getModule("org.jvnet.hudson.main.test.multimod:moduleA");
+        j.buildAndAssertSuccess(mms);
+        assertEquals(2, mms.getLastStableBuild().number);
+        assertEquals(mms.getLastBuild().getId(), Util.resolveSymlink(new File(mms.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mms.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mms.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mms).toString());
+        assertEquals(2, mm.getLastStableBuild().number);
+        assertEquals(mm.getLastBuild().getId(), Util.resolveSymlink(new File(mm.getRootDir(), "builds/2")));
+        assertEquals("2", Util.resolveSymlink(new File(mm.getRootDir(), "builds/lastStableBuild")));
+        assertEquals("builds/lastStableBuild", Util.resolveSymlink(new File(mm.getRootDir(), "lastStable")));
+        assertEquals("[lastBuild, lastStableBuild, lastSuccessfulBuild]", permalinks(mm).toString());
+    }
+    private static Set<String> permalinks(Job<?,?> j) {
+        Set<String> r = new TreeSet<String>();
+        for (PermalinkProjectAction.Permalink l : j.getPermalinks()) {
+            if (l.resolve(j) != null) {
+                r.add(l.getId());
+            }
+        }
+        return r;
     }
 
     @Test public void incrementalMultiModMaven() throws Exception {
@@ -424,6 +471,83 @@ public class MavenMultiModuleTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage modulesPage = wc.getPage(ms, "modules");
         modulesPage.getAnchorByText(m.getDisplayName()).openLinkInNewWindow();
+    }
+
+    @Bug(17236)
+    @Test public void artifactArchiving() throws Exception {
+        ArtifactManagerConfiguration.get().getArtifactManagerFactories().add(new TestAMF());
+        j.configureDefaultMaven(); // using Maven 2 so we can test single-module builds
+        MavenModuleSet mms = j.createMavenProject();
+        mms.setScm(new ExtractResourceSCM(getClass().getResource("maven-multimod.zip")));
+        mms.setAssignedNode(j.createOnlineSlave());
+        j.buildAndAssertSuccess(mms);
+        // We want all the artifacts in a given module to be archived in one operation. But modules are archived separately.
+        Map<String,Map<String,FilePath>> expected = new TreeMap<String,Map<String,FilePath>>();
+        FilePath ws = mms.getModule("org.jvnet.hudson.main.test.multimod$multimod-top").getBuildByNumber(1).getWorkspace();
+        expected.put("org.jvnet.hudson.main.test.multimod:multimod-top", Collections.singletonMap("org.jvnet.hudson.main.test.multimod/multimod-top/1.0-SNAPSHOT/multimod-top-1.0-SNAPSHOT.pom", new FilePath(ws.getChannel(), "…/org/jvnet/hudson/main/test/multimod/multimod-top/1.0-SNAPSHOT/multimod-top-1.0-SNAPSHOT.pom")));
+        for (String module : new String[] {"moduleA", "moduleB", "moduleC"}) {
+            Map<String,FilePath> m = new TreeMap<String,FilePath>();
+            ws = mms.getModule("org.jvnet.hudson.main.test.multimod$" + module).getBuildByNumber(1).getWorkspace();
+            m.put("org.jvnet.hudson.main.test.multimod/" + module + "/1.0-SNAPSHOT/" + module + "-1.0-SNAPSHOT.pom", ws.child("pom.xml"));
+            m.put("org.jvnet.hudson.main.test.multimod/" + module + "/1.0-SNAPSHOT/" + module + "-1.0-SNAPSHOT.jar", ws.child("target/" + module + "-1.0-SNAPSHOT.jar"));
+            expected.put("org.jvnet.hudson.main.test.multimod:" + module, m);
+        }
+        assertEquals(expected.toString(), TestAM.archivings.toString()); // easy to read
+        assertEquals(expected, TestAM.archivings); // compares also FileChannel
+        // Also check single-module build.
+        expected.clear();
+        TestAM.archivings.clear();
+        MavenBuild isolated = j.buildAndAssertSuccess(mms.getModule("org.jvnet.hudson.main.test.multimod$moduleA"));
+        assertEquals(2, isolated.number);
+        Map<String,FilePath> m = new TreeMap<String,FilePath>();
+        ws = isolated.getWorkspace();
+        m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.pom", ws.child("pom.xml"));
+        m.put("org.jvnet.hudson.main.test.multimod/moduleA/1.0-SNAPSHOT/moduleA-1.0-SNAPSHOT.jar", ws.child("target/moduleA-1.0-SNAPSHOT.jar"));
+        expected.put("org.jvnet.hudson.main.test.multimod:moduleA", m);
+        assertEquals(expected, TestAM.archivings);
+    }
+
+    public static final class TestAMF extends ArtifactManagerFactory {
+        @Override public ArtifactManager managerFor(Run<?,?> build) {
+            return new TestAM(build);
+        }
+    }
+    public static final class TestAM extends ArtifactManager {
+        static final Map</* module name */String,Map</* archive path */String,/* file in workspace */FilePath>> archivings = new TreeMap<String,Map<String,FilePath>>();
+        transient Run<?,?> build;
+        TestAM(Run<?,?> build) {
+            onLoad(build);
+        }
+        @Override public void onLoad(Run<?, ?> build) {
+            this.build = build;
+        }
+        @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
+            String name = build.getParent().getName();
+            if (archivings.containsKey(name)) {
+                // Would be legitimate only if some archived files for a given module were outside workspace, such as repository parent POM, *and* others were inside, which is not the case in this test.
+                throw new IOException("repeated archiving to " + name);
+            }
+            Map<String,FilePath> m = new TreeMap<String,FilePath>();
+            for (Map.Entry<String,String> e : artifacts.entrySet()) {
+                FilePath f = workspace.child(e.getValue());
+                if (f.exists()) {
+                    if (f.getRemote().replace('\\', '/').contains("/org/jvnet/hudson/main/test/")) {
+                        // Inside the local repository. Hard to know exactly what that path might be, so just mask it out.
+                        f = new FilePath(f.getChannel(), f.getRemote().replaceFirst("^.+(?=[/\\\\]org[/\\\\]jvnet[/\\\\]hudson[/\\\\]main[/\\\\]test[/\\\\])", "…"));
+                    }
+                    m.put(e.getKey(), f);
+                } else {
+                    throw new IOException("no such file " + f);
+                }
+            }
+            archivings.put(name, m);
+        }
+        @Override public boolean delete() throws IOException, InterruptedException {
+            throw new IOException();
+        }
+        @Override public VirtualFile root() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /*

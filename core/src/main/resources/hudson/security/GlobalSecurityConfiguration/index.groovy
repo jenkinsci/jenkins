@@ -28,6 +28,10 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                     f.serverTcpPort()
                 }
 
+                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
+                    f.checkbox()
+                }
+
                 f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
                 f.entry(title:_("Access Control")) {
