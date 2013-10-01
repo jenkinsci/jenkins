@@ -210,7 +210,6 @@ import java.util.logging.Logger;
 import jenkins.model.JenkinsLocationConfiguration;
 
 import org.acegisecurity.GrantedAuthorityImpl;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -1537,10 +1536,22 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                                 .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
                                         (File) null, null);
                         for( String dep : dependencies.split(",")) {
+                            String suffix = ";resolution:=optional";
+                            boolean optional = dep.endsWith(suffix);
+                            if (optional) {
+                                dep = dep.substring(0, dep.length() - suffix.length());
+                            }
                             String[] tokens = dep.split(":");
                             String artifactId = tokens[0];
                             String version = tokens[1];
                             File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
+                            if (dependencyJar == null) {
+                                if (optional) {
+                                    System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
+                                    continue;
+                                }
+                                throw new IOException("Could not resolve " + dep);
+                            }
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
@@ -1600,9 +1611,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
 				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
 				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
-                if (jpi.getFile() == null) {
-                    throw new ArtifactNotFoundException("cannot find plugin dependency", jpi);
-                }
 				return jpi.getFile();
 				
 			}
