@@ -59,8 +59,8 @@ THE SOFTWARE.
   <j:set var="id" value="${h.jsStringEscape(url)}"/>
   <j:set var="open" value="javascript:showStackTrace('test-${id}','${url}/summary')"/>
   <j:set var="close" value="javascript:hideStackTrace('test-${id}')"/>
-  <a id="test-${id}-showlink" href="${open}" title="${%Show details}">&gt;&gt;&gt;</a>
-  <a id="test-${id}-hidelink" href="${close}" title="${%Hide details}" style="display:none">&lt;&lt;&lt;</a>
+  <a id="test-${id}-showlink" href="${open}" title="${%Show details}"><img src="${imagesURL}/16x16/document_add.png"/></a>
+  <a id="test-${id}-hidelink" href="${close}" title="${%Hide details}" style="display:none"><img src="${imagesURL}/16x16/document_delete.png"/></a>
   <st:nbsp/>
   <a href="${url}" class="model-link inside"><st:out value="${result.fullDisplayName}"/></a>
   <j:forEach var="badge" items="${result.testActions}">
