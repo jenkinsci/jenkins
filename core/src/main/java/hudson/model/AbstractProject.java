@@ -2053,7 +2053,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Serves the workspace files.
      */
     public DirectoryBrowserSupport doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        checkPermission(AbstractProject.WORKSPACE);
+        checkPermission(Item.WORKSPACE);
         FilePath ws = getSomeWorkspace();
         if ((ws == null) || (!ws.exists())) {
             // if there's no workspace, report a nice error message
