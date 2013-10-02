@@ -82,6 +82,7 @@ public class LabelLoadStatisticsQueueLengthTest {
     public void queueLengthReflectsBuildableItemsAssignedLabel()
             throws Exception {
         final Label label = Label.get(LABEL_STRING);
+        final Label altLabel = Label.get(ALT_LABEL_STRING);
 
         FreeStyleProject project = createTestProject();
 
@@ -110,9 +111,10 @@ public class LabelLoadStatisticsQueueLengthTest {
                 labelQueueLength > 0f);
 
         // Assign an alternate label to the project and update the load stats.
-        project.setAssignedLabel(Label.get(LABEL_STRING + "alt"));
+        project.setAssignedLabel(altLabel);
         maintainQueueAndForceRunOfLoadStatisticsUpdater(project);
 
+        // Verify that the queue length load stat continues to reflect the labels assigned to the items in the queue.
         float labelQueueLengthNew = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
         assertTrue(
@@ -166,6 +168,7 @@ public class LabelLoadStatisticsQueueLengthTest {
         project.setAssignedLabel(altLabel);
         maintainQueueAndForceRunOfLoadStatisticsUpdater(project);
 
+        // Verify that the queue length load stats of the labels reflect the newly project's newly assigned label.
         float labelQueueLengthNew = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
         assertTrue(
