@@ -102,6 +102,30 @@ public class JenkinsGetRootUrlTest {
         accessing("http://localhost:8080/");
         rootUrlIs("https://ci/jenkins/");
     }
+    
+    @Bug(10675)
+    @Test
+    public void useForwardedProtoWhenPresent() {
+        configured("https://ci/jenkins/");
+        
+        // Without a forwarded protocol, it should use the request protocol
+        accessing("http://ci/jenkins/");
+        rootUrlFromRequestIs("http://ci/jenkins/");
+        
+        // With a forwarded protocol, it should use the forwarded protocol
+        accessing("http://ci/jenkins/");
+        withHeader("X-Forwarded-Proto", "https");
+        rootUrlFromRequestIs("https://ci/jenkins/");
+        
+        accessing("https://ci/jenkins/");
+        withHeader("X-Forwarded-Proto", "http");
+        rootUrlFromRequestIs("http://ci/jenkins/");
+    }
+    
+    private void rootUrlFromRequestIs(final String expectedRootUrl) {
+        
+        assertThat(jenkins.getRootUrlFromRequest(), equalTo(expectedRootUrl));
+    }
 
     private void rootUrlIs(final String expectedRootUrl) {
 
@@ -111,6 +135,11 @@ public class JenkinsGetRootUrlTest {
     private void configured(final String configuredHost) {
 
         when(config.getUrl()).thenReturn(configuredHost);
+    }
+    
+    private void withHeader(String name, String value) {
+        final StaplerRequest req = Stapler.getCurrentRequest();
+        when(req.getHeader(name)).thenReturn(value);
     }
 
     private void accessing(final String realUrl) {
