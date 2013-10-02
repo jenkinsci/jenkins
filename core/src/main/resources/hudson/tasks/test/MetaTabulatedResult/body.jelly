@@ -25,28 +25,6 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-
-  <script type="text/javascript">
-		<!-- TODO make sure load doesn't happen every time -->
-		function showStackTrace(id,query) {
-			var element = document.getElementById(id)
-			element.style.display = "";
-			document.getElementById(id + "-showlink").style.display = "none";
-			document.getElementById(id + "-hidelink").style.display = "";
-			
-			var rqo = new XMLHttpRequest();
-			rqo.open('GET', query, true);
-			rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText; }  
-			rqo.send(null);
-		}
-		
-		function hideStackTrace(id) {
-			document.getElementById(id).style.display = "none";
-			document.getElementById(id + "-showlink").style.display = "";
-			document.getElementById(id + "-hidelink").style.display = "none";
-		}
-  </script>
-
   <j:if test="${it.failCount!=0}">
     <h2>${%All Failed Tests}</h2>
     <table class="pane sortable">
@@ -57,21 +35,7 @@ THE SOFTWARE.
       </tr>
       <j:forEach var="f" items="${it.failedTests}" varStatus="i">
         <tr>
-          <td class="pane">
-            <a id="test-${f.fullName}-showlink"
-               href="javascript:showStackTrace('test-${h.jsStringEscape(f.fullName)}','${f.getRelativePathFrom(it)}/summary')">&gt;&gt;&gt;</a>
-            <a id="test-${f.fullName}-hidelink" style="display:none"
-               href="javascript:hideStackTrace('test-${h.jsStringEscape(f.fullName)}')">&lt;&lt;&lt;</a>
-            <st:nbsp/>
-            <a href="${f.getRelativePathFrom(it)}" class="model-link inside"><st:out value="${f.fullDisplayName}"/></a>
-            <j:forEach var="badge" items="${f.testActions}">
-              <st:include it="${badge}" page="badge.jelly" optional="true"/>
-            </j:forEach>
-            <div id="test-${f.fullName}" class="hidden" style="display:none">
-              ${%Loading...}
-            </div>
-          </td>
-          
+          <td class="pane"><t:failed-test result="${f}" url="${f.getRelativePathFrom(it)}"/></td>
           <td class="pane" style="text-align:right;" data="${f.duration}">
             ${f.durationString}
           </td>
