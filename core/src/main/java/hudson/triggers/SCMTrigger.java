@@ -41,6 +41,7 @@ import hudson.util.FormValidation;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import hudson.util.SequentialExecutionQueue;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.stapler.StaplerRequest;
@@ -53,8 +54,10 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -62,6 +65,7 @@ import java.util.logging.Logger;
 import java.text.DateFormat;
 
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -115,7 +119,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         DescriptorImpl d = getDescriptor();
 
-        LOGGER.fine("Scheduling a polling for "+job);
+        LOGGER.fine("Scheduling a polling for "+job+" with SCM "+job.getScm().getType());
         if (d.synchronousPolling) {
         	LOGGER.fine("Running the trigger directly without threading, " +
         			"as it's already taken care of by Trigger.Cron");
@@ -125,7 +129,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             // even if we end up submitting this too many times, that's OK.
             // the real exclusion control happens inside Runner.
         	LOGGER.fine("scheduling the trigger to (asynchronously) run");
-            d.queue.execute(new Runner(additionalActions));
+        	String queueName = d.useSeparateQueues ? job.getScm().getType() : "default";
+        	d.getQueue(queueName).execute(new Runner(additionalActions));
             d.clogCheck();
         }
     }
@@ -157,7 +162,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * of a potential workspace lock between a build and a polling, we may end up using executor threads unwisely --- they
          * may block.
          */
-        private transient final SequentialExecutionQueue queue = new SequentialExecutionQueue(Executors.newSingleThreadExecutor());
+        private transient final Map<String, SequentialExecutionQueue> queues = new HashMap<String, SequentialExecutionQueue>();
 
         /**
          * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
@@ -171,6 +176,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private int maximumThreads;
 
+        private boolean useSeparateQueues = false;
+
         public DescriptorImpl() {
             load();
             resizeThreadPool();
@@ -181,7 +188,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public ExecutorService getExecutor() {
-            return queue.getExecutors();
+            return queues.get("default").getExecutors();
         }
 
         /**
@@ -189,7 +196,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * than it can handle.
          */
         public boolean isClogged() {
-            return queue.isStarving(STARVATION_THRESHOLD);
+            for(SequentialExecutionQueue queue : queues.values()) {
+                if(queue.isStarving(STARVATION_THRESHOLD))
+                    return true;
+            }
+            return false;
         }
 
         /**
@@ -204,7 +215,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          * Gets the snapshot of {@link Runner}s that are performing polling.
          */
         public List<Runner> getRunners() {
-            return Util.filter(queue.getInProgress(),Runner.class);
+            List<Runner> result = new ArrayList<SCMTrigger.Runner>();
+            for(SequentialExecutionQueue queue : queues.values()) {
+                result.addAll(Util.filter(queue.getInProgress(), Runner.class));
+            }
+            return result;
         }
 
         /**
@@ -245,12 +260,40 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             resizeThreadPool();
         }
 
+        public boolean useSeparateQueues() {
+            return useSeparateQueues;
+        }
+
+        public void setUseSeparateQueues(boolean b) {
+            useSeparateQueues = b;
+        }
+
         /**
          * Update the {@link ExecutorService} instance.
          */
         /*package*/ synchronized void resizeThreadPool() {
-            queue.setExecutors(
-                    (maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads)));
+            for(SequentialExecutionQueue queue : queues.values()) {
+                queue.setExecutors((maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads)));
+            }
+            if(!queues.containsKey("default")) {
+                addQueue("default");
+            }
+        }
+
+        /*package*/ synchronized SequentialExecutionQueue addQueue(String name)
+        {
+            ExecutorService es = (maximumThreads==0 ? Executors.newCachedThreadPool() : Executors.newFixedThreadPool(maximumThreads));
+            SequentialExecutionQueue queue = new SequentialExecutionQueue(es);
+            queues.put(name, queue);
+            return queue;
+        }
+
+        public SequentialExecutionQueue getQueue(String queueName)
+        {
+            if(queues.containsKey(queueName))
+                return queues.get(queueName);
+            else
+                return addQueue(queueName);
         }
 
         @Override
@@ -260,6 +303,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                 setPollingThreadCount(0);
             else
                 setPollingThreadCount(Integer.parseInt(t));
+
+            setUseSeparateQueues(json.optBoolean("useSeparateQueues",false));
 
             // Save configuration
             save();

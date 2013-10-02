@@ -34,6 +34,9 @@ THE SOFTWARE.
         <f:number value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"
            clazz="positive-number" min="1" step="1"/>
       </f:entry>
+      <f:entry title="${%Use separate queues per SCM type}" field="useSeparateQueues">
+        <f:checkbox checked="${descriptor.useSeparateQueues()}"/>
+      </f:entry>
     </f:section>
   </j:if>
 </j:jelly>
