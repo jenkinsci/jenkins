@@ -46,15 +46,22 @@ public class MavenMailer extends MavenReporter {
      * @see Mailer
      */
     public String recipients;
+    public String mavenRecipients;
     public boolean dontNotifyEveryUnstableBuild;
     public boolean sendToIndividuals;
     public boolean perModuleEmail;
 
     public boolean end(MavenBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if(perModuleEmail) {
-            new MailSender(recipients,dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
+            new MailSender(getAllRecipients(),dontNotifyEveryUnstableBuild,sendToIndividuals).execute(build,listener);
         }
         return true;
+    }
+    
+    public String getAllRecipients() {
+    	return this.recipients == null ?
+    			this.mavenRecipients :
+    			this.recipients + " " + this.mavenRecipients; 
     }
 
     @Extension
