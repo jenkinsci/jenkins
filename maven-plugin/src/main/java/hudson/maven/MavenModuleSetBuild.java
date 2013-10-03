@@ -1032,7 +1032,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
         public void cleanUp(BuildListener listener) throws Exception {
             MavenMailer mailer = project.getReporters().get(MavenMailer.class);
             if (mailer != null) {
-                new MailSender(mailer.recipients,
+                new MailSender(mailer.getAllRecipients(),
                         mailer.dontNotifyEveryUnstableBuild,
                         mailer.sendToIndividuals).execute(MavenModuleSetBuild.this, listener);
             }
