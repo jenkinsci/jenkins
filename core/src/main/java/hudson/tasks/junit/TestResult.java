@@ -88,9 +88,14 @@ public final class TestResult extends MetaTabulatedResult {
     private float duration;
 
     /**
-     * Number of failed/error tests.
+     * Number of failed tests.
      */
     private transient List<CaseResult> failedTests;
+
+    /**
+     * Number of error tests.
+     */
+    private transient List<CaseResult> errorTests;
 
     private final boolean keepLongStdio;
 
@@ -366,7 +371,7 @@ public final class TestResult extends MetaTabulatedResult {
     @Exported(visibility=999)
     @Override
     public int getPassCount() {
-        return totalTests-getFailCount()-getSkipCount();
+        return totalTests-getFailCount()-getErrorCount()-getSkipCount();
     }
 
     @Exported(visibility=999)
@@ -376,6 +381,15 @@ public final class TestResult extends MetaTabulatedResult {
             return 0;
         else
         return failedTests.size();
+    }
+
+    @Exported(visibility=999)
+    @Override
+    public int getErrorCount() {
+        if(errorTests==null)
+            return 0;
+        else
+        return errorTests.size();
     }
 
     @Exported(visibility=999)
@@ -396,6 +410,19 @@ public final class TestResult extends MetaTabulatedResult {
     @Override
     public List<CaseResult> getFailedTests() {
         return failedTests;
+    }
+
+    @Override
+    public List<CaseResult> getErrorTests() {
+        return errorTests;
+    }
+
+    @Override
+    public List<CaseResult> getFailedAndErrorTests() {
+        List<CaseResult> list = new ArrayList<CaseResult>();
+        if(failedTests!=null) { list.addAll(failedTests); }
+        if(errorTests!=null) { list.addAll(errorTests); }
+        return list;
     }
 
     /**
@@ -497,7 +524,7 @@ public final class TestResult extends MetaTabulatedResult {
      */
     @Override
     public boolean isPassed() {
-       return (getFailCount() == 0);
+       return (getFailCount() == 0) && (getErrorCount() == 0);
     }
 
     @Override
@@ -566,6 +593,7 @@ public final class TestResult extends MetaTabulatedResult {
         // TODO: free children? memmory leak?
         suitesByName = new HashMap<String,SuiteResult>();
         failedTests = new ArrayList<CaseResult>();
+        errorTests = new ArrayList<CaseResult>();
         byPackages = new TreeMap<String,PackageResult>();
 
         totalTests = 0;
@@ -593,6 +621,7 @@ public final class TestResult extends MetaTabulatedResult {
             pr.tally();
             skippedTests += pr.getSkipCount();
             failedTests.addAll(pr.getFailedTests());
+            errorTests.addAll(pr.getErrorTests());
             totalTests += pr.getTotalCount();
         }
     }
@@ -612,6 +641,7 @@ public final class TestResult extends MetaTabulatedResult {
             suitesByName = new HashMap<String,SuiteResult>();
             totalTests = 0;
             failedTests = new ArrayList<CaseResult>();
+            errorTests = new ArrayList<CaseResult>();
             byPackages = new TreeMap<String,PackageResult>();
         }
 
@@ -625,8 +655,14 @@ public final class TestResult extends MetaTabulatedResult {
             for(CaseResult cr : s.getCases()) {
                 if(cr.isSkipped())
                     skippedTests++;
-                else if(!cr.isPassed())
-                    failedTests.add(cr);
+                else if(!cr.isPassed()) {
+                    if(cr.isFailureAnError()!=null && cr.isFailureAnError()) {
+                        errorTests.add(cr);
+                    }
+                    else {
+                        failedTests.add(cr);
+                    }
+                }
 
                 String pkg = cr.getPackageName(), spkg = safe(pkg);
                 PackageResult pr = byPackage(spkg);
@@ -637,6 +673,7 @@ public final class TestResult extends MetaTabulatedResult {
         }
 
         Collections.sort(failedTests,CaseResult.BY_AGE);
+        Collections.sort(errorTests,CaseResult.BY_AGE);
 
         for (PackageResult pr : byPackages.values())
             pr.freeze();

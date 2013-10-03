@@ -113,12 +113,14 @@ public class History {
                    data.add(((double) o.getDuration()) / (1000), "", new ChartLabel(o)  {
                        @Override
                        public Color getColor() {
-                           if (o.getFailCount() > 0)
-                               return ColorPalette.RED;
+                           if (o.getErrorCount() > 0)
+                               return CaseResult.Status.ERROR.color;
+                           else if (o.getFailCount() > 0)
+                               return CaseResult.Status.FAILED.color;
                            else if (o.getSkipCount() > 0)
-                               return ColorPalette.YELLOW;
+                               return CaseResult.Status.SKIPPED.color;
                            else
-                               return ColorPalette.BLUE;
+                               return CaseResult.Status.PASSED.color;
                        }
                    });
                }
@@ -146,9 +148,10 @@ public class History {
                 }
                 
                 for (TestResult o: list) {
-                    data.add(o.getPassCount(), "2Passed", new ChartLabel(o));
+                    data.add(o.getPassCount(), "3Passed", new ChartLabel(o));
+                    data.add(o.getSkipCount(), "2Skipped", new ChartLabel(o));
                     data.add(o.getFailCount(), "1Failed", new ChartLabel(o));
-                    data.add(o.getSkipCount(), "0Skipped", new ChartLabel(o));
+                    data.add(o.getErrorCount(), "0Error", new ChartLabel(o));
                 }
                 return data;
             }
@@ -228,9 +231,10 @@ public class History {
                 }
             };
             plot.setRenderer(ar);
-            ar.setSeriesPaint(0,ColorPalette.RED); // Failures.
-            ar.setSeriesPaint(1,ColorPalette.YELLOW); // Skips.
-            ar.setSeriesPaint(2,ColorPalette.BLUE); // Total.
+            ar.setSeriesPaint(0,CaseResult.Status.ERROR.color); // Errors.
+            ar.setSeriesPaint(1,CaseResult.Status.FAILED.color); // Failures.
+            ar.setSeriesPaint(2,CaseResult.Status.SKIPPED.color); // Skips.
+            ar.setSeriesPaint(3,CaseResult.Status.PASSED.color); // Total.
 
             // crop extra space around the graph
             plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));

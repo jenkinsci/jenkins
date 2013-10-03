@@ -44,7 +44,7 @@ import java.util.List;
  */
 @ExportedBean
 public abstract class AggregatedTestResultAction extends AbstractTestResultAction {
-    private int failCount,skipCount,totalCount;
+    private int failCount,errorCount,skipCount,totalCount;
 
     public static final class Child {
         /**
@@ -72,7 +72,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     }
 
     protected void update(List<? extends AbstractTestResultAction> children) {
-        failCount = skipCount = totalCount = 0;
+        failCount = errorCount = skipCount = totalCount = 0;
         this.children.clear();
         for (AbstractTestResultAction tr : children)
             add(tr);
@@ -80,13 +80,20 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
 
     protected void add(AbstractTestResultAction child) {
         failCount += child.getFailCount();
+        errorCount += child.getErrorCount();
         skipCount += child.getSkipCount();
         totalCount += child.getTotalCount();
         this.children.add(new Child(getChildName(child),child.owner.number));
     }
 
+    @Override
     public int getFailCount() {
         return failCount;
+    }
+
+    @Override
+    public int getErrorCount() {
+        return errorCount;
     }
 
     @Override
@@ -94,6 +101,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         return skipCount;
     }
 
+    @Override
     public int getTotalCount() {
         return totalCount;
     }
@@ -112,6 +120,17 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
             }
         }
         return failedTests;
+    }
+
+    @Override
+    public List<CaseResult> getErrorTests() {
+        List<CaseResult> errorTests = new ArrayList<CaseResult>(errorCount);
+        for (ChildReport childReport : getChildReports()) {
+            if (childReport.result instanceof TestResult) {
+                errorTests.addAll(((TestResult) childReport.result).getErrorTests());
+            }
+        }
+        return errorTests;
     }
 
     /**

@@ -46,7 +46,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
 
     private final List<CaseResult> cases = new ArrayList<CaseResult>();
 
-    private int passCount,failCount,skipCount;
+    private int passCount,failCount,errorCount,skipCount;
     
     private float duration; 
 
@@ -162,6 +162,11 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     @Exported
+    public int getErrorCount() {
+        return errorCount;
+    }
+
+    @Exported
     public int getSkipCount() {
         return skipCount;
     }
@@ -175,7 +180,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
      */
     @Override
     public void tally() {
-        passCount=failCount=skipCount=0;
+        passCount=failCount=errorCount=skipCount=0;
         duration=0;
         for (CaseResult r : cases) {
             r.setClass(this);
@@ -184,6 +189,9 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
             }
             else if(r.isPassed()) {
                 passCount++;
+            }
+            else if(r.isFailureAnError()!=null && r.isFailureAnError()){
+                errorCount++;
             }
             else {
                 failCount++;
@@ -194,7 +202,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
 
 
     void freeze() {
-        passCount=failCount=skipCount=0;
+        passCount=failCount=errorCount=skipCount=0;
         duration=0;
         for (CaseResult r : cases) {
             r.setClass(this);
@@ -203,6 +211,9 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
             }
             else if(r.isPassed()) {
                 passCount++;
+            }
+            else if(r.isFailureAnError()!=null && r.isFailureAnError()){
+                errorCount++;
             }
             else {
                 failCount++;

@@ -367,6 +367,8 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     public abstract int getFailCount();
 
+    public abstract int getErrorCount();
+
     /**
      * Gets the total number of skipped tests.
      */
@@ -377,7 +379,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     @Override
     public int getTotalCount() {
-        return getPassCount() + getFailCount() + getSkipCount();
+        return getPassCount() + getFailCount() + getErrorCount() + getSkipCount();
     }
 
     @Override

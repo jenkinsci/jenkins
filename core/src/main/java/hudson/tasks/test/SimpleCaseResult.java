@@ -91,6 +91,11 @@ public class SimpleCaseResult extends TestResult {
         return emptyList();
     }
 
+    @Override
+    public Collection<? extends TestResult> getErrorTests() {
+        return emptyList();
+    }
+
     /**
      * Gets the "children" of this test result that passed
      *
@@ -136,6 +141,10 @@ public class SimpleCaseResult extends TestResult {
         return false; 
     }
 
+    public boolean isError() {
+        return false; 
+    }
+
     /**
      * Time took to run this test. In seconds. 
      */
@@ -165,6 +174,11 @@ public class SimpleCaseResult extends TestResult {
      */
     @Override
     public int getFailCount() {
+        return 0;
+    }
+
+    @Override
+    public int getErrorCount() {
         return 0;
     }
 

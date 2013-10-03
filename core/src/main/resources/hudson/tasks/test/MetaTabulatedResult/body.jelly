@@ -52,10 +52,11 @@ THE SOFTWARE.
     <table class="pane sortable">
       <tr>
         <td class="pane-header">${%Test Name}</td>
+        <td class="pane-header" style="width:4em">${%Status}</td>
         <td class="pane-header" style="width:4em">${%Duration}</td>
         <td class="pane-header" style="width:3em">${%Age}</td>
       </tr>
-      <j:forEach var="f" items="${it.failedTests}" varStatus="i">
+      <j:forEach var="f" items="${it.failedAndErrorTests}" varStatus="i">
         <tr>
           <td class="pane">
             <a id="test-${f.fullName}-showlink"
@@ -72,6 +73,12 @@ THE SOFTWARE.
             </div>
           </td>
           
+          <td class="pane" style="text-align:right;">
+            <j:set var="pst" value="${f.status}" />
+            <span class="${pst.cssClass}">
+              ${pst.message}
+            </span>
+          </td>
           <td class="pane" style="text-align:right;" data="${f.duration}">
             ${f.durationString}
           </td>
@@ -89,6 +96,8 @@ THE SOFTWARE.
       <tr>
         <td class="pane-header">${it.childTitle}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
+        <td class="pane-header" style="width:5em">${%Error}</td>
+        <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
@@ -108,6 +117,10 @@ THE SOFTWARE.
               </j:forEach>
             </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
+            <td class="pane" style="text-align:right">${p.errorCount}</td>
+            <td class="pane" style="text-align:right" data="${p.errorCount-prev.errorCount}">
+              ${h.getDiffString2(p.errorCount-prev.errorCount)}
+            </td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right" data="${p.failCount-prev.failCount}">
               ${h.getDiffString2(p.failCount-prev.failCount)}
