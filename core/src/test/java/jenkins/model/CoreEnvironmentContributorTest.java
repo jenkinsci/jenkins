@@ -1,9 +1,7 @@
 package jenkins.model;
 
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import hudson.EnvVars;
 import hudson.model.Computer;
@@ -16,6 +14,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Bug;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
@@ -41,6 +40,7 @@ public class CoreEnvironmentContributorTest {
         instance = new CoreEnvironmentContributor();
     }
 
+    @Bug(19307)
     @Test
     @PrepareForTest(fullyQualifiedNames={"hudson.model.Computer", "jenkins.model.Jenkins"})
     public void buildEnvironmentForJobShouldntUseCurrentComputer() throws IOException, InterruptedException {
