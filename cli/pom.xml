@@ -36,7 +36,24 @@
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build214-jenkins-1</version>
+      <version>build217-jenkins-1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.svnkit-trilead-ssh2</artifactId>
+      <version>0.0.6</version>
+      <exclusions>
+        <exclusion>
+          <!-- we use our own forked version -->
+          <groupId>com.trilead</groupId>
+          <artifactId>trilead-ssh2</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.connector-factory</artifactId>
+      <version>0.0.6</version>
     </dependency>
   </dependencies>
 
