@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.os.PosixAPI;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -1432,32 +1433,12 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Run chmod via libc if we can, otherwise fall back to Ant.
+     * Run chmod via jnr-posix
      */
     private static void _chmod(File f, int mask) throws IOException {
         if (Functions.isWindows())  return; // noop
 
-        try {
-            if(LIBC.chmod(f.getAbsolutePath(),mask)!=0) {
-                throw new IOException("Failed to chmod "+f+" : "+LIBC.strerror(Native.getLastError()));
-            }
-        } catch(NoClassDefFoundError e) {  // cf. https://groups.google.com/group/hudson-dev/browse_thread/thread/6d16c3e8ea0dbc9?hl=fr
-            _chmodAnt(f, mask);
-        } catch(UnsatisfiedLinkError e2) { // HUDSON-8155: use Ant's chmod task on non-GNU C systems
-            _chmodAnt(f, mask);
-        }
-    }
-
-    private static void _chmodAnt(File f, int mask) {
-        if (!CHMOD_WARNED) { // only warn this once to avoid flooding the log
-            CHMOD_WARNED = true;
-            LOGGER.warning("GNU C Library not available: Using Ant's chmod task instead.");
-        }
-        Chmod chmodTask = new Chmod();
-        chmodTask.setProject(new Project());
-        chmodTask.setFile(f);
-        chmodTask.setPerm(Integer.toOctalString(mask));
-        chmodTask.execute();
+        PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
     }
 
     private static boolean CHMOD_WARNED = false;
