@@ -634,12 +634,7 @@ public final class FilePath implements Serializable {
                 }
             }
             public OutputStream compress(OutputStream out) throws IOException {
-                return new GZIPOutputStream(new BufferedOutputStream(out),
-                        // TODO JENKINS-19473 workaround; replace when jzlib fixed
-                        new com.jcraft.jzlib.Deflater(6, 15+16, 9),   // use 9 for memLevel
-                        512,
-                        true
-                );
+                return new GZIPOutputStream(new BufferedOutputStream(out));
             }
         };
 
