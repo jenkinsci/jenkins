@@ -41,7 +41,7 @@ THE SOFTWARE.
               <td>${%Password}:</td>
               <td><input type="password" name="j_password" /></td>
             </tr>
-            <j:if test="${app.security.name()=='SECURED'}">
+            <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
               <!-- remember me service only available for Acegi -->
               <tr>
                 <td align="right"><input id="remember_me" type="checkbox" name="remember_me" /></td>

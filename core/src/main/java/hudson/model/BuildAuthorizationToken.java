@@ -75,7 +75,7 @@ public final class BuildAuthorizationToken {
                 throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
         }
 
-        project.checkPermission(AbstractProject.BUILD);
+        project.checkPermission(Item.BUILD);
 
         if (req.getMethod().equals("POST")) {
             return;

@@ -337,6 +337,7 @@ public class ListView extends View implements Saveable {
         statusFilter = filter != null ? "1".equals(filter) : null;
     }
     
+    /** @since 1.526 */
     public void setIncludeRegex(String includeRegex) {
         this.includeRegex = Util.nullify(includeRegex);
         if (this.includeRegex == null)

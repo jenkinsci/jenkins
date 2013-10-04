@@ -63,6 +63,8 @@ THE SOFTWARE.
                     <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
                       <img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16"/>
                     </a>
+                    <st:nbsp/>
+                    <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
                   </td>
                 </tr>
               </j:forEach>

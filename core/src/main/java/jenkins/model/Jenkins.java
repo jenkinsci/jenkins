@@ -380,6 +380,13 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+
+    /**
+     * Disables the remember me on this computer option in the standard login screen.
+     *
+     * @since 1.534
+     */
+    private volatile boolean disableRememberMe;
     
     /**
      * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
@@ -1909,7 +1916,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        buf.append(req.getScheme()+"://");
+        String scheme = req.getScheme();
+        String forwardedScheme = req.getHeader("X-Forwarded-Proto");
+        if (forwardedScheme != null) {
+            scheme = forwardedScheme;
+        }
+        buf.append(scheme+"://");
         buf.append(req.getServerName());
         if(req.getServerPort()!=80)
             buf.append(':').append(req.getServerPort());
@@ -2056,6 +2068,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             a = AuthorizationStrategy.UNSECURED;
         useSecurity = true;
         authorizationStrategy = a;
+    }
+
+    public boolean isDisableRememberMe() {
+        return disableRememberMe;
+    }
+
+    public void setDisableRememberMe(boolean disableRememberMe) {
+        this.disableRememberMe = disableRememberMe;
     }
 
     public void disableSecurity() {
