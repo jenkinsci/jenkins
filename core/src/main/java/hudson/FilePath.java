@@ -49,7 +49,6 @@ import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 
 import static hudson.Util.*;
-import static hudson.util.jna.GNUCLibrary.LIBC;
 import static hudson.FilePath.TarCompression.GZIP;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
