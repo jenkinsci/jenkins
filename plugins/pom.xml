@@ -54,12 +54,6 @@
       <version>1.535-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>ui-samples-plugin</artifactId>
-      <version>1.535-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
     <!--
       Maven is so brain-dead that when a dependency is like:
 
