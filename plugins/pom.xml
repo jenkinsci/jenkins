@@ -31,6 +31,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
   </properties>
 
   <dependencies>
@@ -158,7 +159,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>2.16</version>
         <configuration>
           <systemProperties>
             <property>
@@ -166,6 +167,9 @@
               <value>33849</value>
             </property>
           </systemProperties>
+          <reuseForks>true</reuseForks>
+          <forkCount>${concurrency}</forkCount>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>

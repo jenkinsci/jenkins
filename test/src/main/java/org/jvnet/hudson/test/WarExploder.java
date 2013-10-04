@@ -94,6 +94,7 @@ final class WarExploder {
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
             System.out.println("Exploding jenkins.war at "+war);
             new FilePath(explodeDir).deleteRecursive();
+            // TODO this can fail (race condition?) when running tests in parallel; need a three-state flag, and switch to a different explodeDir as needed
             new FilePath(war).unzip(new FilePath(explodeDir));
             if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
                 throw new IOException("Failed to explode "+war);
