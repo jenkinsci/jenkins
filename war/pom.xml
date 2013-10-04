@@ -79,11 +79,10 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -448,14 +447,12 @@ THE SOFTWARE.
               <value>
                   ../core/src/main/resources;
                   ../ui-samples-plugin/src/main/resources;
-                  ../maven-plugin/src/main/resources
               </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
               <value><!-- run "mvn install" once will generate the.hpl -->
-                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
                   ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
                   ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>

@@ -33,16 +33,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>maven-plugin</artifactId>
-        <version>1.535-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>

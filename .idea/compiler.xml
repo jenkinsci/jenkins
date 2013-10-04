@@ -42,7 +42,6 @@
         <module name="jenkins-core" />
         <module name="jenkins-test-harness" />
         <module name="jenkins-war" />
-        <module name="maven-plugin" />
         <module name="ui-samples-plugin" />
       </profile>
     </annotationProcessing>
