@@ -4,7 +4,6 @@
     <excludes>
       <directory url="file://$PROJECT_DIR$/maven-plugin/src/main/resources" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/core/src/main/resources" includeSubdirectories="true" />
-      <directory url="file://$PROJECT_DIR$/ui-samples-plugin/src/main/resources" includeSubdirectories="true" />
     </excludes>
   </component>
 </project>
