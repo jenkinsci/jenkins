@@ -629,6 +629,9 @@ THE SOFTWARE.
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.${java.level}</maxJdkVersion>
+                  <ignoreClasses>
+                    <ignoreClass>org.eclipse.jetty.spdy.*</ignoreClass>
+                  </ignoreClasses>
                 </enforceBytecodeVersion>
               </rules>
             </configuration>
@@ -653,7 +656,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-alpha-5</version>
+            <version>1.0-beta-1+kohsuke</version>
           </dependency>
         </dependencies>
       </plugin>
