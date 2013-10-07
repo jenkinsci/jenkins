@@ -723,7 +723,11 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     public synchronized boolean removeValue(R run) {
         Index copy = copy();
-        copy.byNumber.remove(getNumberOf(run));
+        int n = getNumberOf(run);
+        copy.byNumber.remove(n);
+        SortedIntList a = new SortedIntList(numberOnDisk);
+        a.removeValue(n);
+        numberOnDisk = a;
         BuildReference<R> old = copy.byId.remove(getIdOf(run));
         this.index = copy;
 
