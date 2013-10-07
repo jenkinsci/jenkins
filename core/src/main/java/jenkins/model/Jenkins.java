@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
+import hudson.model.ChoiceParameterDefinition;
 import hudson.model.LoadStatistics;
 import hudson.model.Messages;
 import hudson.model.Node;
@@ -3557,6 +3558,17 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             return FormValidation.ok();
         else
             return FormValidation.error(Messages.Hudson_ViewAlreadyExists(view));
+    }
+
+    /**
+     * Checks if parameterised build choices are valid.
+     */
+    public FormValidation doCheckChoices(@QueryParameter String value) {
+        if (ChoiceParameterDefinition.areValidChoices(value)) {
+            return FormValidation.ok();
+        } else {
+            return FormValidation.error(Messages.ChoiceParameterDefinition_MissingChoices());
+        }
     }
 
     /**
