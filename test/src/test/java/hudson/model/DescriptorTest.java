@@ -27,10 +27,17 @@ package hudson.model;
 import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.Shell;
 import static org.junit.Assert.*;
+
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.util.concurrent.Callable;
 
 public class DescriptorTest {
 
@@ -49,6 +56,44 @@ public class DescriptorTest {
                 assertTrue(text + " mentioned in " + x, x.toString().contains(text));
             }
         }
+    }
+
+    /**
+     * Make sure Descriptor.newInstance gets invoked.
+     */
+    @Bug(18629) @Test
+    public void callDescriptor_newInstance() throws Exception {
+        rule.executeOnServer(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                DataBoundBean v = Stapler.getCurrentRequest().bindJSON(DataBoundBean.class, new JSONObject());
+                assertEquals(5,v.x);
+                return null;
+            }
+        });
+    }
+
+    public static class DataBoundBean extends AbstractDescribableImpl<DataBoundBean> {
+        int x;
+
+        // not @DataBoundConstructor
+        public DataBoundBean(int x) {
+            this.x = x;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<DataBoundBean> {
+            @Override
+            public String getDisplayName() {
+                return "";
+            }
+
+            @Override
+            public DataBoundBean newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                return new DataBoundBean(5);
+            }
+        }
+
     }
 
 }
