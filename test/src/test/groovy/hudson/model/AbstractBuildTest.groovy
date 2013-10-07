@@ -29,21 +29,28 @@ import hudson.slaves.EnvironmentVariablesNodeProperty
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry
 
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder
-import org.jvnet.hudson.test.GroovyHudsonTestCase
+import org.jvnet.hudson.test.GroovyJenkinsRule
 
 import org.jvnet.hudson.test.FakeChangeLogSCM
 import org.jvnet.hudson.test.FailureBuilder
 import org.jvnet.hudson.test.UnstableBuilder
 
-public class AbstractBuildTest extends GroovyHudsonTestCase {
-	void testVariablesResolved() {
-		def project = createFreeStyleProject();
-		jenkins.nodeProperties.replaceBy([
+import static org.junit.Assert.*
+import org.junit.Rule
+import org.junit.Test
+
+public class AbstractBuildTest {
+
+    @Rule public GroovyJenkinsRule j = new GroovyJenkinsRule();
+
+    @Test void variablesResolved() {
+		def project = j.createFreeStyleProject();
+		j.jenkins.nodeProperties.replaceBy([
                 new EnvironmentVariablesNodeProperty(new Entry("KEY1", "value"), new Entry("KEY2",'$KEY1'))]);
 		def builder = new CaptureEnvironmentBuilder();
 		project.buildersList.add(builder);
 		
-		buildAndAssertSuccess(project);
+		j.buildAndAssertSuccess(project);
 		
 		def envVars = builder.getEnvVars();
 		assertEquals("value", envVars["KEY1"]);
@@ -53,15 +60,15 @@ public class AbstractBuildTest extends GroovyHudsonTestCase {
     /**
      * Makes sure that raw console output doesn't get affected by XML escapes.
      */
-    void testRawConsoleOutput() {
+    @Test void rawConsoleOutput() {
         def out = "<test>&</test>";
 
-        def p = createFreeStyleProject();
-        p.buildersList.add(builder { builder,launcher,BuildListener listener ->
+        def p = j.createFreeStyleProject();
+        p.buildersList.add(j.builder { builder,launcher,BuildListener listener ->
             listener.logger.println(out);
         })
-        def b = buildAndAssertSuccess(p);
-        Page rsp = createWebClient().goTo("${b.url}/consoleText", "text/plain");
+        def b = j.buildAndAssertSuccess(p);
+        Page rsp = j.createWebClient().goTo("${b.url}/consoleText", "text/plain");
         println "Output:\n"+rsp.webResponse.contentAsString
         assertTrue(rsp.webResponse.contentAsString.contains(out));
     }
@@ -70,48 +77,48 @@ public class AbstractBuildTest extends GroovyHudsonTestCase {
         assertEquals(expectedIds as Set, b.culprits*.id as Set);
     }
 
-    void testCulprits() {
+    @Test void culprits() {
 
-        def p = createFreeStyleProject();
+        def p = j.createFreeStyleProject();
         def scm = new FakeChangeLogSCM()
         p.scm = scm
 
         // 1st build, successful, no culprits
         scm.addChange().withAuthor("alice")
-        def b = assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
+        def b = j.assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
         assertCulprits(b,["alice"])
 
         // 2nd build
         scm.addChange().withAuthor("bob")
         p.buildersList.add(new FailureBuilder())
-        b = assertBuildStatus(Result.FAILURE,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.FAILURE,p.scheduleBuild2(0).get())
         assertCulprits(b,["bob"])
 
         // 3rd build. bob continues to be in culprit
         scm.addChange().withAuthor("charlie")
-        b = assertBuildStatus(Result.FAILURE,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.FAILURE,p.scheduleBuild2(0).get())
         assertCulprits(b,["bob","charlie"])
 
         // 4th build, unstable. culprit list should continue
         scm.addChange().withAuthor("dave")
         p.buildersList.replaceBy([new UnstableBuilder()])
-        b = assertBuildStatus(Result.UNSTABLE,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.UNSTABLE,p.scheduleBuild2(0).get())
         assertCulprits(b,["bob","charlie","dave"])
 
         // 5th build, unstable. culprit list should continue
         scm.addChange().withAuthor("eve")
-        b = assertBuildStatus(Result.UNSTABLE,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.UNSTABLE,p.scheduleBuild2(0).get())
         assertCulprits(b,["bob","charlie","dave","eve"])
 
         // 6th build, success, accumulation continues up to this point
         scm.addChange().withAuthor("fred")
         p.buildersList.replaceBy([])
-        b = assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
         assertCulprits(b,["bob","charlie","dave","eve","fred"])
 
         // 7th build, back to empty culprits
         scm.addChange().withAuthor("george")
-        b = assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
+        b = j.assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
         assertCulprits(b,["george"])
     }
 }
