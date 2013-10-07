@@ -38,6 +38,7 @@ import org.jvnet.hudson.test.UnstableBuilder
 import static org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
+import org.jvnet.hudson.test.Bug
 
 public class AbstractBuildTest {
 
@@ -121,4 +122,18 @@ public class AbstractBuildTest {
         b = j.assertBuildStatus(Result.SUCCESS,p.scheduleBuild2(0).get())
         assertCulprits(b,["george"])
     }
+
+    @Bug(19920)
+    @Test void lastBuildNextBuild() {
+        FreeStyleProject p = j.createFreeStyleProject();
+        AbstractBuild b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        AbstractBuild b2 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(b2, p.getLastBuild());
+        b2.getNextBuild(); // force this to be initialized
+        b2.delete();
+        assertEquals(b1, p.getLastBuild());
+        b1 = p.getLastBuild();
+        assertEquals(null, b1.getNextBuild());
+    }
+
 }
