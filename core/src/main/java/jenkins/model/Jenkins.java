@@ -3561,17 +3561,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Checks if parameterised build choices are valid.
-     */
-    public FormValidation doCheckChoices(@QueryParameter String value) {
-        if (ChoiceParameterDefinition.areValidChoices(value)) {
-            return FormValidation.ok();
-        } else {
-            return FormValidation.error(Messages.ChoiceParameterDefinition_MissingChoices());
-        }
-    }
-
-    /**
      * Serves static resources placed along with Jelly view files.
      * <p>
      * This method can serve a lot of files, so care needs to be taken

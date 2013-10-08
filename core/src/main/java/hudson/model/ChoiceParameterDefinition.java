@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
@@ -95,6 +97,17 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         @Override
         public String getHelpFile() {
             return "/help/parameter/choice.html";
+        }
+
+        /**
+         * Checks if parameterised build choices are valid.
+         */
+        public FormValidation doCheckChoices(@QueryParameter String value) {
+            if (ChoiceParameterDefinition.areValidChoices(value)) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error(Messages.ChoiceParameterDefinition_MissingChoices());
+            }
         }
     }
 

@@ -311,14 +311,6 @@ public class JenkinsTest extends HudsonTestCase {
         }
     }
 
-    @Test
-    public void testCheckChoices() throws Exception {
-        Jenkins jenkins = Jenkins.getInstance();
-
-        assertEquals(FormValidation.Kind.OK, jenkins.doCheckChoices("abc\ndef").kind);
-        assertEquals(FormValidation.Kind.ERROR, jenkins.doCheckChoices("").kind);
-    }
-
     private String eval(WebClient wc) throws Exception {
         WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
