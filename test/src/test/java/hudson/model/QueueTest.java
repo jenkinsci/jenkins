@@ -169,7 +169,7 @@ public class QueueTest extends HudsonTestCase {
         Thread.sleep(1000);
         Queue.Item[] items = q.getItems();
         assertEquals(1,items.length);
-        assertTrue(items[0] instanceof BlockedItem);
+        assertTrue("Got "+items[0], items[0] instanceof BlockedItem);
 
         q.save();
     }
