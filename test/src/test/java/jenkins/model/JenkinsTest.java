@@ -46,11 +46,8 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author kingfai
@@ -310,7 +307,6 @@ public class JenkinsTest extends HudsonTestCase {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
         }
     }
-
     private String eval(WebClient wc) throws Exception {
         WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");

@@ -30,7 +30,6 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
-import hudson.model.ChoiceParameterDefinition;
 import hudson.model.LoadStatistics;
 import hudson.model.Messages;
 import hudson.model.Node;
