@@ -597,6 +597,12 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
         
+        /**
+         * Optional dependencies of this plugin.
+         */
+        @Exported
+        public final Map<String,String> optionalDependencies = new HashMap<String,String>();
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -611,9 +617,12 @@ public class UpdateSite {
                 // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
                 // and that the optional value isn't true.
                 if (get(depObj,"name")!=null
-                    && !get(depObj,"name").equals("maven-plugin")
-                    && get(depObj,"optional").equals("false")) {
-                    dependencies.put(get(depObj,"name"), get(depObj,"version"));
+                    && !get(depObj,"name").equals("maven-plugin")) {
+                    if (get(depObj, "optional").equals("false")) {
+                        dependencies.put(get(depObj, "name"), get(depObj, "version"));
+                    } else {
+                        optionalDependencies.put(get(depObj, "name"), get(depObj, "version"));
+                    }
                 }
                 
             }
@@ -691,6 +700,22 @@ public class UpdateSite {
                 }
             }
 
+            for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
+                Plugin depPlugin = Jenkins.getInstance().getUpdateCenter().getPlugin(e.getKey());
+                if (depPlugin == null) {
+                    continue;
+                }
+                VersionNumber requiredVersion = new VersionNumber(e.getValue());
+
+                PluginWrapper current = depPlugin.getInstalled();
+
+                // If the optional dependency plugin is installed, is the version we depend on newer than
+                // what's installed? If so, upgrade.
+                if (current != null && current.isOlderThan(requiredVersion)) {
+                    deps.add(depPlugin);
+                }
+            }
+
             return deps;
         }
         
@@ -701,6 +726,43 @@ public class UpdateSite {
             } catch (NumberFormatException nfe) {
                 return true;  // If unable to parse version
             }
+        }
+
+        public VersionNumber getNeededDependenciesRequiredCore() {
+            VersionNumber versionNumber = null;
+            try {
+                versionNumber = requiredCore == null ? null : new VersionNumber(requiredCore);
+            } catch (NumberFormatException nfe) {
+                // unable to parse version
+            }
+            for (Plugin p: getNeededDependencies()) {
+                VersionNumber v = p.getNeededDependenciesRequiredCore();
+                if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
+            }
+            return versionNumber;
+        }
+
+        public boolean isNeededDependenciesForNewerJenkins() {
+            for (Plugin p: getNeededDependencies()) {
+                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
+            }
+            return false;
+        }
+
+        /**
+         * If at least some of the plugin's needed dependencies are already installed, and the new version of the
+         * needed dependencies plugin have a "compatibleSinceVersion"
+         * value (i.e., it's only directly compatible with that version or later), this will check to
+         * see if the installed version is older than the compatible-since version. If it is older, it'll return false.
+         * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
+         * specified, it'll return true.
+         */
+        public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
+            for (Plugin p: getNeededDependencies()) {
+                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
+                    return false;
+            }
+            return true;
         }
 
         /**

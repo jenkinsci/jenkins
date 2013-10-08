@@ -29,9 +29,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Slave;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
@@ -50,15 +50,15 @@ public class CreateNodeCommandTest {
         command = new CLICommandInvoker(j, new CreateNodeCommand());
     }
 
-    @Test public void createNodeShouldFailWithoutAdministerPermision() throws Exception {
+    @Test public void createNodeShouldFailWithoutComputerCreatePermission() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Permission.READ)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invoke()
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
+        assertThat(result.stderr(), containsString("user is missing the Slave/Create permission"));
         assertThat("No output expected", result.stdout(), isEmptyString());
         assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
     }
@@ -66,8 +66,8 @@ public class CreateNodeCommandTest {
     @Test public void createNode() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invoke()
         ;
 
@@ -83,8 +83,8 @@ public class CreateNodeCommandTest {
     @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invokeWithArgs("CustomSlaveName")
         ;
 
@@ -104,8 +104,8 @@ public class CreateNodeCommandTest {
         final Node originalSlave = j.createSlave("SlaveFromXml", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invokeWithArgs("CustomSlaveName")
         ;
 
@@ -125,8 +125,8 @@ public class CreateNodeCommandTest {
         j.createSlave("SlaveFromXML", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invoke()
         ;
 
@@ -140,8 +140,8 @@ public class CreateNodeCommandTest {
         j.createSlave("ExistingSlave", null, null);
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.ADMINISTER)
-                .withStdin(getClass().getResourceAsStream("node.xml"))
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(Computer.class.getResourceAsStream("node.xml"))
                 .invokeWithArgs("ExistingSlave")
         ;
 

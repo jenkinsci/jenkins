@@ -30,17 +30,17 @@ THE SOFTWARE.
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <j:choose>
                       <j:when test="${job.parameterized}">
-                          <img src="${imagesURL}/${subIconSize}/clock.png"
-                               title="${%Schedule a build with parameters}" alt="${%Schedule a build with parameters}"
-                               border="0"/>
+                          <j:set var="title" value="${%Schedule a build with parameters}"/>
                       </j:when>
                       <j:otherwise>
-                          <img src="${imagesURL}/${subIconSize}/clock.png"
-                               title="${%Schedule a build}" alt="${%Schedule a build}"
-                               onclick="return build_${id}(this)"
-                               border="0"/>
+                          <j:set var="title" value="${%Schedule a build}"/>
                       </j:otherwise>
                   </j:choose>
+                  <j:set var="icon" value="${app.queue.contains(job) ? 'clock_anime.gif' : 'clock.png'}"/>
+                  <img src="${imagesURL}/${subIconSize}/${icon}"
+                         title="${title}" alt="${title}"
+                         onclick="return build_${id}(this)"
+                         border="0"/>
               </a>
               <script>
                 function build_${id}(img) {

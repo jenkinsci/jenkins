@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.531-SNAPSHOT</version>
+    <version>1.536-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.28</version>
+      <version>1.29</version>
       <scope>provided</scope>
     </dependency>
 
@@ -79,11 +79,10 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -104,7 +103,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-47</version>
+      <version>2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -339,6 +338,12 @@ THE SOFTWARE.
                   <version>1.5</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>matrix-auth</artifactId>
+                  <version>1.0.2</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
               <stripVersion>true</stripVersion>
@@ -447,16 +452,12 @@ THE SOFTWARE.
               <name>stapler.resourcePath</name>
               <value>
                   ../core/src/main/resources;
-                  ../ui-samples-plugin/src/main/resources;
-                  ../maven-plugin/src/main/resources
               </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
               <value><!-- run "mvn install" once will generate the.hpl -->
-                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
                   ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>

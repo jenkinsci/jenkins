@@ -28,7 +28,7 @@ THE SOFTWARE.
     Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well.
     The nested property type must be Describable and it needs to have config.jelly.
 
-    The nested configuration fragment normally needs to have a delete button by adding a fragment like this:
+    Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
 
       	<f:entry title="">
           <div align="right">
@@ -64,6 +64,7 @@ THE SOFTWARE.
   <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}">
     <table style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
+      <d:invokeBody/>
     </table>
   </f:repeatable>
 </j:jelly>

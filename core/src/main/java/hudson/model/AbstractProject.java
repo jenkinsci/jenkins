@@ -53,6 +53,7 @@ import hudson.model.queue.SubTask;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
+import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.SubTaskContributor;
@@ -702,7 +703,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
+        
         save();
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
@@ -2050,7 +2053,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Serves the workspace files.
      */
     public DirectoryBrowserSupport doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        checkPermission(AbstractProject.WORKSPACE);
+        checkPermission(Item.WORKSPACE);
         FilePath ws = getSomeWorkspace();
         if ((ws == null) || (!ws.exists())) {
             // if there's no workspace, report a nice error message

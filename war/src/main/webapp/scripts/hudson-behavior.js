@@ -413,7 +413,13 @@ function registerValidator(e) {
         var depends = this.getAttribute("checkDependsOn");
 
         if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
-            return eval(url); // need access to 'this', so no 'geval'
+            try {
+                return eval(url); // need access to 'this', so no 'geval'
+            } catch (e) {
+                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
+                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid Javascript: "+e,"warn");
+                return url; // return plain url as fallback
+            }
         } else {
             var q = qs(this).addThis();
             if (depends.length>0)
@@ -1181,6 +1187,7 @@ var jenkinsRules = {
         edge.className = "top-sticker-edge";
         sticker.insertBefore(edge,sticker.firstChild);
 
+        var initialBreadcrumbPosition = DOM.getRegion(shadow);
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
 
@@ -1188,7 +1195,9 @@ var jenkinsRules = {
             var pos = DOM.getRegion(shadow);
 
             sticker.style.position = "fixed";
-            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            if(pos.top <= initialBreadcrumbPosition.top) {
+                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            }
             sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 

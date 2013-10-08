@@ -103,6 +103,12 @@ THE SOFTWARE.
                       <j:if test="${p.isForNewerHudson()}">
                         <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
                       </j:if>
+                      <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion()}">
+                        <div class="compatWarning">${%depCompatWarning}</div>
+                      </j:if>
+                      <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
+                        <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${isUpdates}">
