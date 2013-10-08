@@ -162,9 +162,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * <p>
      * Unlike {@link Run}, {@link AbstractBuild}s do lazy-loading, so we don't use
      * {@link Run#previousBuild} and {@link Run#nextBuild}, and instead use these
-     * fields and point to {@link #selfReference} of adjacent builds.
+     * fields and point to {@link #selfReference} (or {@link #none}) of adjacent builds.
      */
     private volatile transient BuildReference<R> previousBuild, nextBuild;
+
+    @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
+    @SuppressWarnings("unchecked") private BuildReference<R> none() {return NONE;}
 
     /*package*/ final transient BuildReference<R> selfReference = new BuildReference<R>(getId(),_this());
 
@@ -193,11 +196,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if(nextBuild!=null) {
             AbstractBuild nb = nextBuild.get();
             if (nb!=null) {
-                // remove the oldest build
-                if (previousBuild == selfReference) 
-                    nb.previousBuild = nextBuild;
-                else 
-                    nb.previousBuild = previousBuild;
+                nb.previousBuild = previousBuild;
             }
         }
         if(previousBuild!=null) {
@@ -223,13 +222,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     this.previousBuild = pb.selfReference;
                     return pb;
                 } else {
-                    // this indicates that we know there's no previous build
-                    // (as opposed to we don't know if/what our previous build is.
-                    this.previousBuild = selfReference;
+                    this.previousBuild = none();
                     return null;
                 }
             }
-            if (r==selfReference)
+            if (r==none())
                 return null;
 
             R referent = r.get();
@@ -253,13 +250,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     this.nextBuild = nb.selfReference;
                     return nb;
                 } else {
-                    // this indicates that we know there's no next build
-                    // (as opposed to we don't know if/what our next build is.
-                    this.nextBuild = selfReference;
+                    this.nextBuild = none();
                     return null;
                 }
             }
-            if (r==selfReference)
+            if (r==none())
                 return null;
 
             R referent = r.get();
